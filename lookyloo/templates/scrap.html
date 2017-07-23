@@ -1,0 +1,16 @@
+{% extends "main.html" %}
+{% block title %}Scrap{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Scrap a page</h1>
+
+    <form class="form-inline" role="form" action="scrap" method=post>
+        <div class="form-group">
+            <input type="text" class="form-control" name="url" id=url placeholder="URL to scrap">
+            <input type="text" class="form-control" name="depth" id=depth placeholder="Depth">
+        </div>
+        <button type="submit" class="btn btn-default">Scrap</button>
+    </form>
+</div>
+{% endblock %}

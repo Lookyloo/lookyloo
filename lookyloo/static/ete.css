@@ -1,0 +1,8 @@
+#highlighter {
+  position: absolute;
+  visibility: visible;
+  z-index:100;
+  top:0; left:0;
+  width: 70px; height: 70px;
+  border: 2px solid indianred;
+}

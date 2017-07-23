@@ -1,0 +1,11 @@
+{% extends "bootstrap/base.html" %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src='{{ url_for('static', filename='ete.js') }}'></script>
+{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='ete.css') }}">
+{% endblock %}

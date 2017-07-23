@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+
+{% block title %}Tree{% endblock %}
+
+{% block content %}
+  <center>
+    <h2><a href="{{ url_for('scrap') }}">Scrap a page</a></h2></br></br>
+  </center>
+  <center>
+    {% for id, page_title in titles %}
+      <a href="{{ url_for('tree', tree_id=id) }}">{{ page_title }}</a></br>
+    </br>
+    {% endfor %}
+  </center>
+{% endblock %}
