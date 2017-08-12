@@ -69,6 +69,8 @@ def tree(tree_id):
 def index():
     i = 0
     titles = []
+    if not os.path.exists(HAR_DIR):
+        os.makedirs(HAR_DIR)
     for report_dir in sorted(os.listdir(HAR_DIR)):
         har_files = sorted(glob(os.path.join(HAR_DIR, report_dir, '*.har')))
         if not har_files:
@@ -82,4 +84,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(port=5001)
+    app.run(port=5001, threaded=True)
