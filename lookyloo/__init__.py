@@ -57,9 +57,17 @@ def scrap():
     return render_template('scrap.html')
 
 
+def get_report_dirs():
+    # Cleanup HAR_DIR of failed runs.
+    for report_dir in os.listdir(HAR_DIR):
+        if not os.listdir(os.path.join(HAR_DIR, report_dir)):
+            os.rmdir(os.path.join(HAR_DIR, report_dir))
+    return sorted(os.listdir(HAR_DIR))
+
+
 @app.route('/tree/<int:tree_id>', methods=['GET'])
 def tree(tree_id):
-    report_dir = sorted(os.listdir(HAR_DIR))[tree_id]
+    report_dir = get_report_dirs()[tree_id]
     tree = load_tree(report_dir)
     nodes, faces, base64 = tree.redraw()
     return render_template('tree.html', nodes=nodes, faces=faces, base64_img=base64)
@@ -71,7 +79,7 @@ def index():
     titles = []
     if not os.path.exists(HAR_DIR):
         os.makedirs(HAR_DIR)
-    for report_dir in sorted(os.listdir(HAR_DIR)):
+    for report_dir in get_report_dirs():
         har_files = sorted(glob(os.path.join(HAR_DIR, report_dir, '*.har')))
         if not har_files:
             continue
