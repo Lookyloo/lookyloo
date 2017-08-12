@@ -26,13 +26,39 @@ This code is very heavily inspired by https://github.com/etetoolkit/webplugin an
 The core dependency is ETE Toolkit, which you can install following the guide
 on the official website: http://etetoolkit.org/download/
 
-## Protip
-
-If you like using virtualenv and have `pew` installed you can also do it this way:
+We install python-qt4 and python3-pyqt4 systemwide because they are painful to install manually:
 
 ```bash
-sudo apt-get install python3-pyqt4
+sudo apt-get install python-qt4 python3-pyqt4
 ```
+
+## Server install (Ubuntu 16.04):
+
+You need to install a basic X server:
+
+```bash
+apt-get install xserver-xorg xdm xfonts-base xfonts-100dpi xfonts-75dpi
+```
+
+And configure xdm in `/etc/X11/xdm/xdm-config`:
+
+Replace:
+
+```
+DisplayManager*authorize:      true
+```
+with
+
+```
+DisplayManager*authorize:      false
+```
+
+And restart xdm:
+
+```bash
+service xdm restart
+```
+
 
 # Installation of scrapysplashwrapper
 
@@ -47,7 +73,7 @@ sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash
 
 # Installation of the whole thing
 
-(assuming you already installed the dependencies ete3 and splash in docker)
+If you have `pew` installed you can enable the use of pyqt4 installed globally this way (instead of installing PyQT4 manually):
 
 ```bash
 pew toggleglobalsitepackages  # PyQt4 is not easily installable in a virtualenv
