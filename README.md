@@ -101,7 +101,14 @@ You have to configure the two following files:
 * `etc/systemd/system/lookyloo.service`
 
 And copy them to the appropriate directories and run the following command:
-`sudo ln -s /etc/nginx/sites-available/lookyloo /etc/nginx/sites-enabled`
+```bash
+sudo ln -s /etc/nginx/sites-available/lookyloo /etc/nginx/sites-enabled
+```
+
+If needed, remove the default site
+```bash
+sudo rm /etc/nginx/sites-enabled/default
+```
 
 Make sure everything is working:
 
@@ -112,4 +119,8 @@ sudo nginx -t
 # If it is cool:
 sudo service restart nginx
 ```
+
+And you can open http://<IP-or-domain>/
+
+Now, you should configure TLS (let's encrypt and so on) -> https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
 
