@@ -1,0 +1,16 @@
+[Unit]
+Description=uWSGI instance to serve lookyloo
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/home/<CHANGE_ME>/lookyloo
+Environment="PATH=/home/<CHANGE_ME>/<MY_VIRTUALENV_PATH>/bin"
+ExecStart=/home/<CHANGE_ME>/<MY_VIRTUALENV_PATH>/bin/uwsgi --ini lookyloo.ini
+Environment=DISPLAY=:0
+Environment=FLASK_APP=lookyloo
+
+[Install]
+WantedBy=multi-user.target
+

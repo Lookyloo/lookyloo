@@ -59,7 +59,6 @@ And restart xdm:
 service xdm restart
 ```
 
-
 # Installation of scrapysplashwrapper
 
 You need a running splash instance, preferably on docker: https://splash.readthedocs.io/en/stable/install.html
@@ -80,3 +79,37 @@ pew toggleglobalsitepackages  # PyQt4 is not easily installable in a virtualenv
 pip install -r requirements.txt
 pip install -e .
 ```
+# Run the app locally
+
+```bash
+export DISPLAY=:0
+export FLASK_APP=lookyloo
+flask run
+```
+
+## With a reverse proxy (Nginx)
+
+```bash
+pip install uwsgi
+```
+
+### Config files
+
+You have to configure the two following files:
+
+* `etc/nginxsites-available/lookyloo`
+* `etc/systemd/system/lookyloo.service`
+
+And copy them to the appropriate directories and run the following command:
+`sudo ln -s /etc/nginx/sites-available/lookyloo /etc/nginx/sites-enabled`
+
+Make sure everything is working:
+
+```bash
+sudo systemctl start lookyloo
+sudo systemctl enable lookyloo
+sudo nginx -t
+# If it is cool:
+sudo service restart nginx
+```
+

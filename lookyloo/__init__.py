@@ -5,7 +5,7 @@ import json
 
 from har2tree import CrawledTree, hostname_treestyle
 from scrapysplashwrapper import crawl
-from ete3_webserver import NodeActions, WebTreeHandler
+from .ete3_webserver import NodeActions, WebTreeHandler
 
 from flask import Flask, render_template, request
 from flask_bootstrap import Bootstrap
