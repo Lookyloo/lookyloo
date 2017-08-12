@@ -66,8 +66,9 @@ You need a running splash instance, preferably on docker: https://splash.readthe
 ```bash
 sudo apt install docker.io
 sudo docker pull scrapinghub/splash
-sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash
-
+sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui --disable-lua
+# On a server with a decent abount of RAM, you may want to run it this way:
+# sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui -s 100 --disable-lua -m 50000
 ```
 
 # Installation of the whole thing
