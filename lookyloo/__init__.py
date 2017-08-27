@@ -40,6 +40,8 @@ def scrap():
     if request.form.get('url'):
         url = request.form.get('url')
         depth = request.form.get('depth')
+        if depth is None:
+            depth = 1
         items = crawl(SPLASH, url, depth)
         if not items:
             # broken
