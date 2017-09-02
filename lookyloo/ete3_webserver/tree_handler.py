@@ -4,6 +4,8 @@ import random
 # import logging as log
 from ete3 import Tree  # , TreeStyle
 from ete3.parser.newick import NewickError
+import tempfile
+import base64
 
 
 def timeit(f):
@@ -38,10 +40,13 @@ class WebTreeHandler(object):
 
     @timeit
     def redraw(self):
-        base64_img, img_map = self.tree.render("%%return.PNG", tree_style=self.tree.tree_style)
+        with tempfile.NamedTemporaryFile(suffix='.PNG') as temp:
+            img_map = self.tree.render(temp.name, tree_style=self.tree.tree_style)
+            temp.seek(0)
+            base64_img = base64.b64encode(temp.read())
         nodes, faces = self.get_html_map(img_map)
-        base64 = base64_img.data().decode()
-        return nodes, faces, base64
+        base64_img = base64_img.decode()
+        return nodes, faces, base64_img
 
     def get_html_map(self, img_map):
         nodes = []
