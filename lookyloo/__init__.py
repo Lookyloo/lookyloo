@@ -35,8 +35,8 @@ def load_tree(report_dir):
     return WebTreeHandler(ct.root_hartree.hostname_tree, actions, style)
 
 
-@app.route('/scrap', methods=['GET', 'POST'])
-def scrap():
+@app.route('/scrape', methods=['GET', 'POST'])
+def scrape():
     if request.form.get('url'):
         url = request.form.get('url')
         depth = request.form.get('depth')
@@ -56,7 +56,7 @@ def scrap():
                 json.dump(harfile, f)
             i += 1
         return tree(-1)
-    return render_template('scrap.html')
+    return render_template('scrape.html')
 
 
 def get_report_dirs():
