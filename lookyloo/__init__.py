@@ -55,7 +55,7 @@ def scrape():
             with open(os.path.join(dirpath, '{0:0{width}}.har'.format(i, width=width)), 'w') as f:
                 json.dump(harfile, f)
             i += 1
-        return tree(-1)
+        return tree(0)
     return render_template('scrape.html')
 
 
@@ -64,7 +64,7 @@ def get_report_dirs():
     for report_dir in os.listdir(HAR_DIR):
         if not os.listdir(os.path.join(HAR_DIR, report_dir)):
             os.rmdir(os.path.join(HAR_DIR, report_dir))
-    return sorted(os.listdir(HAR_DIR))
+    return sorted(os.listdir(HAR_DIR), reverse=True)
 
 
 @app.route('/tree/<int:tree_id>', methods=['GET'])
