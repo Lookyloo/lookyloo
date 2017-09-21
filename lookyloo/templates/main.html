@@ -2,10 +2,11 @@
 
 {% block scripts %}
     {{ super() }}
-    <script src='{{ url_for('static', filename='ete.js') }}'></script>
+    <script src='{{ url_for('static', filename='d3.v4.min.js') }}'></script>
+    <script src='{{ url_for('static', filename='tree.js') }}'></script>
 {% endblock %}
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='ete.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='tree.css') }}">
 {% endblock %}

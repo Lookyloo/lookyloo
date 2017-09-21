@@ -2,30 +2,10 @@
 
 {% block title %}Tree{% endblock %}
 
+
+
 {% block content %}
-  <div id="highlighter" style="display: none;"></div>
-  <MAP NAME="map" class="ete_tree_img">
-      {% for x1, y1, x2, y2, nodeid, text, area in nodes %}
-        <div class="popup">
-        <AREA SHAPE="rect" COORDS="{{ x1 }}, {{ y1 }}, {{ x2 }}, {{ y2 }}"
-           onMouseOut='unhighlight_node();'
-           onMouseOver='highlight_node("{{ nodeid }}", "{{ text }}", {{ area[0] }}, {{ area[1] }}, {{ area[2]-area[0] }}, {{ area[3]-area[1] }});'
-           onclick='showPopup({{ nodeid }});'
-           href="javascript:void('{{ nodeid }}');">
-        </div>
-      {% endfor %}
-      {% for x1, y1, x2, y2, nodeid, text, area in faces %}
-        <div class="popup">
-        <AREA SHAPE="rect" COORDS="{{ x1 }}, {{ y1 }}, {{ x2 }}, {{ y2 }}"
-           onMouseOut='unhighlight_node();'
-           onMouseOver='highlight_node({{ area[0] }}, {{ area[1] }}, {{ area[2]-area[0] }}, {{ area[3]-area[1] }});'
-           onclick='showPopup("{{ nodeid }}");'
-           href="javascript:void('{{ nodeid }}');">
-        </div>
-      {% endfor %}
-  </MAP>
-  <div id="box">
-    <img id="img" class="ete_tree_img" USEMAP="#map" src="data:image/png;base64,{{ base64_img }}">
-    <div style="margin:0px;padding:0px;text-align:left;"><a href="http://etetoolkit.org" style="font-size:7pt;" target="_blank" >Powered by etetoolkit</a></div>
-  </div>
+<script>
+	var treeData = {{ tree_json | safe }};
+</script>
 {% endblock %}

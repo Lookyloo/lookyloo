@@ -3,9 +3,8 @@
 
 import json
 
-from har2tree import CrawledTree, hostname_treestyle
+from har2tree import CrawledTree
 from scrapysplashwrapper import crawl
-from .ete3_webserver import NodeActions, WebTreeHandler
 
 from flask import Flask, render_template, request
 from flask_bootstrap import Bootstrap
@@ -29,10 +28,7 @@ def load_tree(report_dir):
     ct = CrawledTree(har_files)
     ct.find_parents()
     ct.join_trees()
-    ct.root_hartree.make_hostname_tree()
-    actions = NodeActions()
-    style = hostname_treestyle()
-    return WebTreeHandler(ct.root_hartree.hostname_tree, actions, style)
+    return ct.jsonify()
 
 
 @app.route('/scrape', methods=['GET', 'POST'])
@@ -70,9 +66,8 @@ def get_report_dirs():
 @app.route('/tree/<int:tree_id>', methods=['GET'])
 def tree(tree_id):
     report_dir = get_report_dirs()[tree_id]
-    tree = load_tree(report_dir)
-    nodes, faces, base64 = tree.redraw()
-    return render_template('tree.html', nodes=nodes, faces=faces, base64_img=base64)
+    tree_json = load_tree(report_dir)
+    return render_template('tree.html', tree_json=tree_json)
 
 
 @app.route('/', methods=['GET'])
