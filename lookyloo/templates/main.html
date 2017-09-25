@@ -10,3 +10,7 @@
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='tree.css') }}">
 {% endblock %}
+
+{% block content %}
+    {{ super() }}
+{% endblock %}

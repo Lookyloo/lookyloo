@@ -13,3 +13,39 @@
   stroke: #ccc;
   stroke-width: 2px;
 }
+
+#lookyloo-icon {
+  position: fixed;
+  top: 5px;
+  left: 5px;
+  background-image: url("lookyloo.jpeg");
+  background-size: cover;
+  width: 200px;
+  height: 110px;
+  resize: both;
+  border: 2px solid;
+}
+
+#legend {
+  position: fixed;
+  bottom: 5px;
+  left: 5px;
+  background: white;
+  border: 2px solid;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+}
+
+#tree-details {
+  position: fixed;
+  bottom: 5px;
+  right: 5px;
+  background: white;
+  border: 2px solid;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+}

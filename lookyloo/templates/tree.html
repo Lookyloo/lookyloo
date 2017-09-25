@@ -5,7 +5,32 @@
 
 
 {% block content %}
+{{super()}}
 <script>
 	var treeData = {{ tree_json | safe }};
 </script>
-{% endblock %}
+
+<div id=lookyloo-icon></div>
+<div id=legend>
+    <img src="{{ url_for('static', filename='javascript.png') }}"
+         alt="JavaScript" height="20" width="20"> Javascript </br>
+
+    <img src="{{ url_for('static', filename='cookie_received.png') }}"
+         alt="Cookie received" height="20" width="20"> Cookie received</br>
+
+    <img src="{{ url_for('static', filename='cookie_read.png') }}"
+         alt="Cookie read" height="20" width="20"> Cookie read</br>
+
+    <img src="{{ url_for('static', filename='redirect.png') }}"
+         alt="Redirect" height="20" width="20"> Redirect</br>
+
+    <img src="{{ url_for('static', filename='cookie_in_url.png') }}"
+         alt="Cookie in URL" height="20" width="20"> Cookie in URL</br>
+</div>
+<div id=tree-details><center><b>Tree details</b></center></br>
+    <b>Root URL</b>: {{ root_url }}</br>
+    <b>Start time</b>: {{ start_time }}</br>
+    <b>User Agent</b>: {{ user_agent }}</br>
+</div>
+
+{% endblock content %}

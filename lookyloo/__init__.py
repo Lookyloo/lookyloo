@@ -28,7 +28,7 @@ def load_tree(report_dir):
     ct = CrawledTree(har_files)
     ct.find_parents()
     ct.join_trees()
-    return ct.jsonify()
+    return ct.jsonify(), ct.start_time.isoformat(), ct.user_agent, ct.root_url
 
 
 @app.route('/scrape', methods=['GET', 'POST'])
@@ -66,8 +66,9 @@ def get_report_dirs():
 @app.route('/tree/<int:tree_id>', methods=['GET'])
 def tree(tree_id):
     report_dir = get_report_dirs()[tree_id]
-    tree_json = load_tree(report_dir)
-    return render_template('tree.html', tree_json=tree_json)
+    tree_json, start_time, user_agent, root_url = load_tree(report_dir)
+    return render_template('tree.html', tree_json=tree_json, start_time=start_time,
+                           user_agent=user_agent, root_url=root_url)
 
 
 @app.route('/', methods=['GET'])
