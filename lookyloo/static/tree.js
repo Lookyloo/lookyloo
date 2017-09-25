@@ -5,15 +5,36 @@ var margin = {top: 20, right: 200, bottom: 30, left: 90},
     width = 9600 - margin.left - margin.right,
     height = 10000 - margin.top - margin.bottom;
 
+var node_width = 0
+
+var init = d3.select("body").append("svg")
+            .attr("width", width + margin.right + margin.left)
+            .attr("height", height + margin.top + margin.bottom)
+
+// Add background pattern
+var pattern = init.append("defs").append('pattern')
+    .attr('id', 'backstripes')
+    .attr('x', margin.left)
+    .attr("width", 400)
+    .attr("height", 10)
+    .attr('patternUnits', "userSpaceOnUse" )
+
+pattern.append('rect')
+    .attr('width', 200)
+    .attr('height', height)
+    .attr("fill", "#EEEEEE");
+
+init.append('rect')
+    .attr('y', 0)
+    .attr('width', width)
+    .attr('height', height)
+    .style('fill', "url(#backstripes)");
+
 // append the svg object to the body of the page
 // appends a 'group' element to 'svg'
 // moves the 'group' element to the top left margin
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.right + margin.left)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate("
-          + margin.left + "," + margin.top + ")");
+var svg = init.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 var i = 0,
     duration = 750,
@@ -59,7 +80,8 @@ function update(source) {
       links = treeData.descendants().slice(1);
 
   // Normalize for fixed-depth.
-  nodes.forEach(function(d){ d.y = d.depth * 180});
+  // TODO: update this value based on the longest node name
+  nodes.forEach(function(d){ d.y = d.depth * 200});
 
   // ****************** Nodes section ***************************
 
@@ -68,7 +90,7 @@ function update(source) {
   var node = svg.selectAll('g.node')
       .data(nodes, function(d) {return d.id || (d.id = ++i); });
 
-  // Enter any new modes at the parent's previous position.
+    // Enter any new modes at the parent's previous position.
   var nodeEnter = node.enter().append('g')
       .attr('class', 'node')
       .attr("transform", function(d) {
@@ -88,8 +110,7 @@ function update(source) {
   var nodeContent = nodeEnter
         .append('svg')
         .attr('x', 10)
-        .attr('y', -20)
-        .attr('width', function(d) { return d.data.name.length + 'em'; });
+        .attr('y', -20);
 
   // Add labels for the nodes
   nodeContent.append("text")
