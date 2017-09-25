@@ -5,7 +5,7 @@ var margin = {top: 20, right: 200, bottom: 30, left: 90},
     width = 9600 - margin.left - margin.right,
     height = 10000 - margin.top - margin.bottom;
 
-var node_width = 0
+var node_width = 0;
 
 var init = d3.select("body").append("svg")
             .attr("width", width + margin.right + margin.left)
@@ -63,6 +63,13 @@ function collapse(d) {
   }
 }
 
+function updateNodeLength(selection) {
+    selection.each(function(d) {
+        var tmp = this.getBBox().width;
+        node_width = node_width > tmp ? node_width : tmp;
+    })
+}
+
 function getBB(selection) {
     selection.each(function(d) {
         d.data.total_width = d.data.total_width ? d.data.total_width : 0;
@@ -79,9 +86,6 @@ function update(source) {
   var nodes = treeData.descendants(),
       links = treeData.descendants().slice(1);
 
-  // Normalize for fixed-depth.
-  // TODO: update this value based on the longest node name
-  nodes.forEach(function(d){ d.y = d.depth * 200});
 
   // ****************** Nodes section ***************************
 
@@ -119,8 +123,14 @@ function update(source) {
         .style("font-size", "16px")
         .attr("stroke-width", ".2px")
         .style("opacity", .9)
-        .attr('width', function(d) { return d.data.name.length + 'em'; })
-        .text(function(d) { return d.data.name; });
+        .text(function(d) { return d.data.name; }).call(updateNodeLength);
+
+  // Normalize for fixed-depth.
+  nodes.forEach(function(d){ d.y = d.depth * node_width});
+  init.selectAll('pattern')
+    .attr('width', node_width * 2)
+  pattern.selectAll('rect')
+    .attr('width', node_width)
 
   // Put all the icone in one sub svg document
   var icons = nodeEnter
