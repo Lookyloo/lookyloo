@@ -5,8 +5,8 @@ var margin = {top: 20, right: 200, bottom: 30, left: 90},
     width = 9600 - margin.left - margin.right,
     height = 10000 - margin.top - margin.bottom;
 
-var node_width = 200;
-var node_height = 40;
+var node_width = 0;
+var node_height = 35;
 
 var init = d3.select("body").append("svg")
             .attr("width", width + margin.right + margin.left)
@@ -64,13 +64,6 @@ function collapse(d) {
   }
 }
 
-function updateNodeLength(selection) {
-    selection.each(function(d) {
-        var tmp = this.getBBox().width;
-        node_width = node_width > tmp ? node_width : tmp;
-    })
-}
-
 function getBB(selection) {
     selection.each(function(d) {
         d.data.total_width = d.data.total_width ? d.data.total_width : 0;
@@ -126,7 +119,7 @@ function update(source) {
         .attr('y', -20);
 
   // Add labels for the nodes
-  nodeContent.append("text")
+  var text_nodes = nodeContent.append("text")
         .attr('dy', '.9em')
         .attr("stroke", "white")
         .style("font-size", "16px")
@@ -135,7 +128,16 @@ function update(source) {
         .text(function(d) {
             d.data.total_width = 0; // reset total_width
             return d.data.name;
-        }).call(updateNodeLength);
+        });
+
+  // This value has to be set once for all for the whole tree and cannot be updated
+  // on click as clicking only updates a part of the tree
+  if (node_width === 0) {
+    text_nodes.each(function(d) {
+      node_width = node_width > this.getBBox().width ? node_width : this.getBBox().width;
+    })
+    node_width += 20;
+  };
 
   // Normalize for fixed-depth.
   nodes.forEach(function(d){ d.y = d.depth * node_width});
@@ -151,9 +153,9 @@ function update(source) {
         max_depth = d.depth > max_depth ? d.depth : max_depth;
       }
   });
-  var newWidth = Math.max((max_depth + 1) * node_width, node_width);
-  background.attr('height', newHeight)
-  background.attr('width', newWidth)
+  var newWidth = Math.max((max_depth + 2) * node_width, node_width);
+  background.attr('height', newHeight + margin.top + margin.bottom)
+  background.attr('width', newWidth + margin.right + margin.left)
   treemap.size([newHeight, newWidth])
   d3.select("body svg")
     .attr("width", newWidth + margin.right + margin.left)
