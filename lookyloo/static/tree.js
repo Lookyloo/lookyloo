@@ -5,7 +5,8 @@ var margin = {top: 20, right: 200, bottom: 30, left: 90},
     width = 9600 - margin.left - margin.right,
     height = 10000 - margin.top - margin.bottom;
 
-var node_width = 0;
+var node_width = 200;
+var node_height = 40;
 
 var init = d3.select("body").append("svg")
             .attr("width", width + margin.right + margin.left)
@@ -15,16 +16,16 @@ var init = d3.select("body").append("svg")
 var pattern = init.append("defs").append('pattern')
     .attr('id', 'backstripes')
     .attr('x', margin.left)
-    .attr("width", 400)
+    .attr("width", node_width * 2)
     .attr("height", 10)
     .attr('patternUnits', "userSpaceOnUse" )
 
 pattern.append('rect')
-    .attr('width', 200)
+    .attr('width', node_width)
     .attr('height', height)
     .attr("fill", "#EEEEEE");
 
-init.append('rect')
+var background = init.append('rect')
     .attr('y', 0)
     .attr('width', width)
     .attr('height', height)
@@ -79,6 +80,14 @@ function getBB(selection) {
 
 function update(source) {
 
+  // reinitialize max_depth
+  var max_depth = 1
+
+  // Update height
+  // 50 is the height of a node, 500 is the minimum so the root node isn't behind the icon
+  var newHeight = Math.max(treemap(root).descendants().reverse().length * node_height, 10 * node_height);
+  treemap = d3.tree().size([newHeight, width]);
+
   // Assigns the x and y position for the nodes
   var treeData = treemap(root);
 
@@ -123,14 +132,32 @@ function update(source) {
         .style("font-size", "16px")
         .attr("stroke-width", ".2px")
         .style("opacity", .9)
-        .text(function(d) { return d.data.name; }).call(updateNodeLength);
+        .text(function(d) {
+            d.data.total_width = 0; // reset total_width
+            return d.data.name;
+        }).call(updateNodeLength);
 
   // Normalize for fixed-depth.
   nodes.forEach(function(d){ d.y = d.depth * node_width});
+  // Update pattern
   init.selectAll('pattern')
     .attr('width', node_width * 2)
   pattern.selectAll('rect')
     .attr('width', node_width)
+
+  // Update svg width
+  nodes.forEach(function(d){
+      if (d.children){
+        max_depth = d.depth > max_depth ? d.depth : max_depth;
+      }
+  });
+  var newWidth = Math.max((max_depth + 1) * node_width, node_width);
+  background.attr('height', newHeight)
+  background.attr('width', newWidth)
+  treemap.size([newHeight, newWidth])
+  d3.select("body svg")
+    .attr("width", newWidth + margin.right + margin.left)
+    .attr("height", newHeight + margin.top + margin.bottom)
 
   // Put all the icone in one sub svg document
   var icons = nodeEnter
@@ -237,7 +264,6 @@ function update(source) {
       .attr("dy", 8)
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
       .text(function(d) { return d.data.redirect_to_nohing; }).call(getBB);
-
 
   // UPDATE
   var nodeUpdate = nodeEnter.merge(node);
