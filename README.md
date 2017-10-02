@@ -14,23 +14,23 @@ Same as Looky Lou; often spelled as Looky-loo (hyphen) or lookylou
 In L.A. usually the lookyloo's cause more accidents by not paying full attention to what is ahead of them.
 ```
 
-Source: Urban Dictionary
+Source: [Urban Dictionary](https://www.urbandictionary.com/define.php?term=lookyloo)
 
 
 # Implementation details
 
-This code is very heavily inspired by https://github.com/etetoolkit/webplugin and adapted to use flask as backend.
+This code is very heavily inspired by [webplugin](https://github.com/etetoolkit/webplugin) and adapted to use flask as backend.
 
 # Installation of har2tree
 
 The core dependency is ETE Toolkit, which you can install following the guide
-on the official website: http://etetoolkit.org/download/
+on the official [website](http://etetoolkit.org/download/)
 
 Note: all the PyQt4 dependencies are optional.
 
 # Installation of scrapysplashwrapper
 
-You need a running splash instance, preferably on docker: https://splash.readthedocs.io/en/stable/install.html
+You need a running splash instance, preferably on [docker](https://splash.readthedocs.io/en/stable/install.html)
 
 ```bash
 sudo apt install docker.io
@@ -64,7 +64,7 @@ pip install uwsgi
 
 You have to configure the two following files:
 
-* `etc/nginxsites-available/lookyloo`
+* `etc/nginx/sites-available/lookyloo`
 * `etc/systemd/system/lookyloo.service`
 
 And copy them to the appropriate directories and run the following command:
@@ -84,10 +84,10 @@ sudo systemctl start lookyloo
 sudo systemctl enable lookyloo
 sudo nginx -t
 # If it is cool:
-sudo service restart nginx
+sudo service nginx restart
 ```
 
 And you can open http://<IP-or-domain>/
 
-Now, you should configure TLS (let's encrypt and so on) -> https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04
+Now, you should configure [TLS (let's encrypt and so on)](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04)
 
