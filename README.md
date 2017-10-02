@@ -26,38 +26,7 @@ This code is very heavily inspired by https://github.com/etetoolkit/webplugin an
 The core dependency is ETE Toolkit, which you can install following the guide
 on the official website: http://etetoolkit.org/download/
 
-We install python-qt4 and python3-pyqt4 systemwide because they are painful to install manually:
-
-```bash
-sudo apt-get install python-qt4 python3-pyqt4
-```
-
-## Server install (Ubuntu 16.04):
-
-You need to install a basic X server:
-
-```bash
-apt-get install xserver-xorg xdm xfonts-base xfonts-100dpi xfonts-75dpi
-```
-
-And configure xdm in `/etc/X11/xdm/xdm-config`:
-
-Replace:
-
-```
-DisplayManager*authorize:      true
-```
-with
-
-```
-DisplayManager*authorize:      false
-```
-
-And restart xdm:
-
-```bash
-service xdm restart
-```
+Note: all the PyQt4 dependencies are optional.
 
 # Installation of scrapysplashwrapper
 
@@ -73,17 +42,13 @@ sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui --disa
 
 # Installation of the whole thing
 
-If you have `pew` installed you can enable the use of pyqt4 installed globally this way (instead of installing PyQT4 manually):
-
 ```bash
-pew toggleglobalsitepackages  # PyQt4 is not easily installable in a virtualenv
 pip install -r requirements.txt
 pip install -e .
 ```
 # Run the app locally
 
 ```bash
-export DISPLAY=:0
 export FLASK_APP=lookyloo
 flask run
 ```
