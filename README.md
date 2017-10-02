@@ -87,7 +87,7 @@ sudo nginx -t
 sudo service nginx restart
 ```
 
-And you can open http://<IP-or-domain>/
+And you can open **http://<IP-or-domain>/**
 
 Now, you should configure [TLS (let's encrypt and so on)](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04)
 
