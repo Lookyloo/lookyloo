@@ -6,7 +6,11 @@ var margin = {top: 20, right: 200, bottom: 30, left: 90},
     height = 10000 - margin.top - margin.bottom;
 
 var node_width = 0;
-var node_height = 35;
+var node_height = 45;
+
+var hostnode_tooltip = d3.select("body").append("div")
+                            .attr("class", "tooltip")
+                            .style("opacity", 0);
 
 var init = d3.select("body").append("svg")
             .attr("width", width + margin.right + margin.left)
@@ -29,7 +33,12 @@ var background = init.append('rect')
     .attr('y', 0)
     .attr('width', width)
     .attr('height', height)
-    .style('fill', "url(#backstripes)");
+    .style('fill', "url(#backstripes)")
+    .on('click', function(d) {
+        hostnode_tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+    });
 
 // append the svg object to the body of the page
 // appends a 'group' element to 'svg'
@@ -71,6 +80,41 @@ function getBB(selection) {
     })
 }
 
+function urlnode_click(uuid) {
+    var url = "url/" + uuid;
+    d3.json(url, function(error, u) {
+        if (error) throw error;
+        console.log(u)
+    })
+}
+
+
+function hostnode_click(d) {
+    // Modal display
+    var url = "hostname/" + d.data.uuid;
+    var pageX=d3.event.pageX;
+    var pageY=d3.event.pageY;
+    hostnode_tooltip.selectAll("ul").remove();
+    d3.json(url, function(error, urls) {
+          if (error) throw error;
+          hostnode_tooltip.transition()
+            .duration(200)
+            .style("opacity", .9)
+            .style("left", (pageX) + "px")
+            .style("top", (pageY - 28) + "px");
+          var list = hostnode_tooltip.append('ul')
+            .attr("class", "list-group");
+          urls.forEach(function(url){
+            jdata = JSON.parse(url)
+            var entry = list.append('li')
+                .attr("class", "list-group-item")
+                .attr("url_uuid", jdata['uuid'])
+                .text(jdata['name'])
+                .on('click', urlnode_click(jdata['uuid']));
+        })
+    });
+}
+
 function update(source) {
 
   // reinitialize max_depth
@@ -101,8 +145,7 @@ function update(source) {
       .attr('class', 'node')
       .attr("transform", function(d) {
         return "translate(" + source.y0 + "," + source.x0 + ")";
-    })
-    .on('click', click);
+    });
 
   // Add Circle for the nodes
   nodeEnter.append('circle')
@@ -110,11 +153,13 @@ function update(source) {
       .attr('r', 1e-6)
       .style("fill", function(d) {
           return d._children ? "lightsteelblue" : "#fff";
-      });
+      })
+      .on('click', click);
 
   // Avoid hiding the content after the circle
   var nodeContent = nodeEnter
         .append('svg')
+        .attr('height',node_height)
         .attr('x', 10)
         .attr('y', -20);
 
@@ -128,7 +173,8 @@ function update(source) {
         .text(function(d) {
             d.data.total_width = 0; // reset total_width
             return d.data.name;
-        });
+        })
+        .on('click', hostnode_click);
 
   // This value has to be set once for all for the whole tree and cannot be updated
   // on click as clicking only updates a part of the tree
@@ -361,4 +407,5 @@ function update(source) {
       }
     update(d);
   }
+
 }

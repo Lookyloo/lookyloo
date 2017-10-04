@@ -49,3 +49,24 @@
   padding-bottom: 5px;
   padding-left: 5px;
 }
+
+.tooltip {
+    position: absolute;
+    text-align: left;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+		z-index: 1;
+		border: 2px solid;
+		padding-top: 5px;
+		padding-right: 5px;
+		padding-bottom: 5px;
+		padding-left: 5px;
+}
+
+.tooltip text {
+	font: 15px sans-serif;
+	z-index: 2;
+}

@@ -6,14 +6,22 @@ import json
 from har2tree import CrawledTree
 from scrapysplashwrapper import crawl
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 from flask_bootstrap import Bootstrap
 
 from glob import glob
 import os
 from datetime import datetime
 
+import pickle
+import tempfile
+
 app = Flask(__name__)
+
+app.secret_key = 'changeme'
+
+if app.secret_key == 'changeme':
+    raise Exception('FFS, please set a proper secret key...')
 
 Bootstrap(app)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
@@ -23,11 +31,25 @@ HAR_DIR = 'scraped'
 SPLASH = 'http://127.0.0.1:8050'
 
 
+@app.before_request
+def session_management():
+    # make the session last indefinitely until it is cleared
+    session.permanent = True
+
+
 def load_tree(report_dir):
+    if session.get('tree'):
+        # TODO delete file
+        pass
+    session.clear()
     har_files = sorted(glob(os.path.join(HAR_DIR, report_dir, '*.har')))
     ct = CrawledTree(har_files)
     ct.find_parents()
     ct.join_trees()
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    pickle.dump(ct, temp)
+    temp.close()
+    session["tree"] = temp.name
     return ct.jsonify(), ct.start_time.isoformat(), ct.user_agent, ct.root_url
 
 
@@ -61,6 +83,25 @@ def get_report_dirs():
         if not os.listdir(os.path.join(HAR_DIR, report_dir)):
             os.rmdir(os.path.join(HAR_DIR, report_dir))
     return sorted(os.listdir(HAR_DIR), reverse=True)
+
+
+@app.route('/tree/hostname/<node_uuid>', methods=['GET'])
+def hostnode_details(node_uuid):
+    with open(session["tree"], 'rb') as f:
+        ct = pickle.load(f)
+    hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
+    urls = []
+    for url in hostnode.urls:
+        urls.append(url.jsonify())
+    return json.dumps(urls)
+
+
+@app.route('/tree/url/<node_uuid>', methods=['GET'])
+def urlnode_details(node_uuid):
+    with open(session["tree"], 'rb') as f:
+        ct = pickle.load(f)
+    urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
+    return urlnode.jsonify()
 
 
 @app.route('/tree/<int:tree_id>', methods=['GET'])
