@@ -80,8 +80,8 @@ function getBB(selection) {
     })
 }
 
-function urlnode_click(uuid) {
-    var url = "url/" + uuid;
+function urlnode_click(data) {
+    var url = "url/" + data['uuid'];
     d3.json(url, function(error, u) {
         if (error) throw error;
         console.log(u)
@@ -105,12 +105,12 @@ function hostnode_click(d) {
           var list = hostnode_tooltip.append('ul')
             .attr("class", "list-group");
           urls.forEach(function(url){
-            jdata = JSON.parse(url)
+            var jdata = JSON.parse(url)
             var entry = list.append('li')
                 .attr("class", "list-group-item")
                 .attr("url_uuid", jdata['uuid'])
                 .text(jdata['name'])
-                .on('click', urlnode_click(jdata['uuid']));
+                .on('click', function(){urlnode_click(jdata)});
         })
     });
 }
