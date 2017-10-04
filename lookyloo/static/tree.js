@@ -217,7 +217,7 @@ function update(source) {
   var jsContent = icons
         .append('svg');
 
-  jsContent.filter(function(d,i){
+  jsContent.filter(function(d){
       return d.data.js > 0;
   }).append('image')
       .attr("width", 16)
@@ -225,7 +225,7 @@ function update(source) {
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
       .attr("xlink:href", "/static/javascript.png").call(getBB);
 
-  jsContent.filter(function(d,i){
+  jsContent.filter(function(d){
      return d.data.js > 0;
   }).append('text')
     .attr("dy", 8)
@@ -238,7 +238,7 @@ function update(source) {
   var cookieReadContent = icons
         .append('svg');
 
-  cookieReadContent.filter(function(d,i){
+  cookieReadContent.filter(function(d){
     return d.data.request_cookie > 0;
   }).append('image')
 	  .attr("width", 16)
@@ -246,7 +246,7 @@ function update(source) {
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
 	  .attr("xlink:href", "/static/cookie_read.png").call(getBB);
 
-  cookieReadContent.filter(function(d,i){
+  cookieReadContent.filter(function(d){
      return d.data.request_cookie > 0;
   }).append('text')
     .attr("dy", 8)
@@ -258,7 +258,7 @@ function update(source) {
   var cookieSetContent = icons
         .append('svg');
 
-    cookieSetContent.filter(function(d,i){
+  cookieSetContent.filter(function(d){
     return d.data.response_cookie > 0;
   }).append('image')
 	  .attr("width", 16)
@@ -266,7 +266,7 @@ function update(source) {
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
 	  .attr("xlink:href", "/static/cookie_received.png").call(getBB);
 
-  cookieSetContent.filter(function(d,i){
+  cookieSetContent.filter(function(d){
      return d.data.response_cookie > 0;
   }).append('text')
     .attr("dy", 8)
@@ -278,7 +278,7 @@ function update(source) {
   var redirectContent = icons
         .append('svg');
 
-  redirectContent.filter(function(d,i){
+  redirectContent.filter(function(d){
     return d.data.redirect > 0;
   }).append('image')
   	  .attr("width", 16)
@@ -286,7 +286,7 @@ function update(source) {
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width +1 : 0 })
   	  .attr("xlink:href", "/static/redirect.png").call(getBB);
 
-  redirectContent.filter(function(d,i){
+  redirectContent.filter(function(d){
      return d.data.redirect > 0;
   }).append('text')
     .attr("dy", 8)
@@ -298,7 +298,7 @@ function update(source) {
   var cookieURLContent = icons
         .append('svg');
 
-  cookieURLContent.filter(function(d,i){
+  cookieURLContent.filter(function(d){
     return d.data.redirect_to_nothing > 0;
   }).append('image')
       .attr("width", 16)
@@ -306,7 +306,7 @@ function update(source) {
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
       .attr("xlink:href", "/static/cookie_in_url.png").call(getBB);
 
-    cookieURLContent.filter(function(d,i){
+    cookieURLContent.filter(function(d){
        return d.data.redirect_to_nothing > 0;
     }).append('text')
       .attr("dy", 8)
