@@ -46,7 +46,7 @@ def load_tree(report_dir):
     ct = CrawledTree(har_files)
     ct.find_parents()
     ct.join_trees()
-    temp = tempfile.NamedTemporaryFile(delete=False)
+    temp = tempfile.NamedTemporaryFile(prefix='lookyloo', delete=False)
     pickle.dump(ct, temp)
     temp.close()
     session["tree"] = temp.name

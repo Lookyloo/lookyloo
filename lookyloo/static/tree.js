@@ -37,7 +37,8 @@ var background = init.append('rect')
     .on('click', function(d) {
         hostnode_tooltip.transition()
             .duration(500)
-            .style("opacity", 0);
+            .style("opacity", 0)
+            .style("z-index", -10);
     });
 
 // append the svg object to the body of the page
@@ -100,6 +101,7 @@ function hostnode_click(d) {
           hostnode_tooltip.transition()
             .duration(200)
             .style("opacity", .9)
+            .style("z-index", 1)
             .style("left", (pageX) + "px")
             .style("top", (pageY - 28) + "px");
           var list = hostnode_tooltip.append('ul')
@@ -109,8 +111,8 @@ function hostnode_click(d) {
             var entry = list.append('li')
                 .attr("class", "list-group-item")
                 .attr("url_uuid", jdata['uuid'])
-                .text(jdata['name'])
-                .on('click', function(){urlnode_click(jdata)});
+                .text(jdata['name']);
+                //.on('click', function(){urlnode_click(jdata)});
         })
     });
 }
@@ -407,5 +409,4 @@ function update(source) {
       }
     update(d);
   }
-
 }
