@@ -57,6 +57,8 @@ def load_tree(report_dir):
 def scrape():
     if request.form.get('url'):
         url = request.form.get('url')
+        if not url.startswith('http'):
+            url = 'http://{}'.format(url)
         depth = request.form.get('depth')
         if depth is None:
             depth = 1
