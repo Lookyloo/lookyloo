@@ -16,6 +16,9 @@ In L.A. usually the lookyloo's cause more accidents by not paying full attention
 
 Source: [Urban Dictionary](https://www.urbandictionary.com/define.php?term=lookyloo)
 
+# Screenshot
+
+![Screenshot of Lookyloo](doc/example.png)
 
 # Implementation details
 
