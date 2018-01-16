@@ -78,9 +78,8 @@ function getBB(selection) {
     })
 }
 
-// Not used yet.
-function urlnode_click(data) {
-    var url = "url/" + data['uuid'];
+function urlnode_click(d) {
+    var url = "url/" + d['uuid'];
     d3.json(url, function(error, u) {
         if (error) throw error;
         console.log(u)
@@ -120,13 +119,14 @@ function hostnode_click(d) {
           urls.forEach(function(url, index, array){
             var jdata = JSON.parse(url)
             overlay_hostname.append('text')
+				.datum(jdata)
 				.attr("class", "urls_in_overlay_" + d.data.uuid)
                 .attr("url_uuid", jdata['uuid'])
                 .attr("dx", d.y + 20)
                 .attr("dy", d.x + 30 + (30 * index))
 				.attr("fill", "black")
-                .text(jdata['name']);
-                //.on('click', function(){urlnode_click(jdata)});
+                .text(jdata['name'])
+                .on('click', urlnode_click);
         });
 		var urls_in_overlay = overlay_hostname.selectAll('text')
 		var maxTextWidth = d3.max(urls_in_overlay.nodes(), n => n.getComputedTextLength());
