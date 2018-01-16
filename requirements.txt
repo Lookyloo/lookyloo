@@ -1,10 +1,8 @@
 # Web thing
 flask
 flask-bootstrap
+ete3
 
 # Backend libs
 git+https://github.com/viper-framework/har2tree.git
 git+https://github.com/viper-framework/ScrapySplashWrapper.git
-
-# Required for the drawing (latest version)
-git+https://github.com/etetoolkit/ete.git

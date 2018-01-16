@@ -8,16 +8,12 @@ var margin = {top: 20, right: 200, bottom: 30, left: 90},
 var node_width = 0;
 var node_height = 45;
 
-var hostnode_tooltip = d3.select("body").append("div")
-                            .attr("class", "tooltip")
-                            .style("opacity", 0);
-
-var init = d3.select("body").append("svg")
+var main_svg = d3.select("body").append("svg")
             .attr("width", width + margin.right + margin.left)
             .attr("height", height + margin.top + margin.bottom)
 
 // Add background pattern
-var pattern = init.append("defs").append('pattern')
+var pattern = main_svg.append("defs").append('pattern')
     .attr('id', 'backstripes')
     .attr('x', margin.left)
     .attr("width", node_width * 2)
@@ -29,23 +25,22 @@ pattern.append('rect')
     .attr('height', height)
     .attr("fill", "#EEEEEE");
 
-var background = init.append('rect')
+var background = main_svg.append('rect')
     .attr('y', 0)
     .attr('width', width)
     .attr('height', height)
     .style('fill', "url(#backstripes)")
     .on('click', function(d) {
-        hostnode_tooltip.transition()
-            .duration(500)
-            .style("opacity", 0)
-            .style("z-index", -10);
+        // Remove the
+        main_svg.selectAll('.overlay').remove()
     });
 
 // append the svg object to the body of the page
 // appends a 'group' element to 'svg'
 // moves the 'group' element to the top left margin
-var svg = init.append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var node_container = main_svg
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 var i = 0,
     duration = 750,
@@ -59,11 +54,12 @@ root = d3.hierarchy(treeData, function(d) { return d.children; });
 root.x0 = height / 2;
 root.y0 = 0;
 
+
+// Fancy expand all the nodes one after the other
 // Collapse after the second level
-// root.children.forEach(collapse);
+//root.children.forEach(collapse);
 
 update(root);
-
 
 // Collapse the node and all it's children
 function collapse(d) {
@@ -74,6 +70,7 @@ function collapse(d) {
   }
 }
 
+// Gets the size of the box and increase it
 function getBB(selection) {
     selection.each(function(d) {
         d.data.total_width = d.data.total_width ? d.data.total_width : 0;
@@ -81,6 +78,7 @@ function getBB(selection) {
     })
 }
 
+// Not used yet.
 function urlnode_click(data) {
     var url = "url/" + data['uuid'];
     d3.json(url, function(error, u) {
@@ -89,34 +87,60 @@ function urlnode_click(data) {
     })
 }
 
-
+// What happen when clicking on a domain (load a modal display)
 function hostnode_click(d) {
+    // Insert new svg element at this position
+    var overlay_hostname = main_svg.select("g")
+							.append("svg")
+	  						.append('g').attr('class', 'overlay');
+	overlay_hostname
+		.datum({x: 0, y: 0})
+		.attr('id', 'overlay_' + d.data.uuid)
+		.style("opacity", .9)
+		.attr("transform", "translate(" + 0 + "," + 0 + ")")
+		.call(d3.drag().on("drag", function(d, i) {
+			d.x += d3.event.dx
+            d.y += d3.event.dy
+			d3.select(this)
+				.attr("transform", "translate(" + d.x + "," + d.y + ")");
+		}));
+
+    overlay_hostname.append('rect')
+		.attr("rx", 6)
+	    .attr("ry", 6)
+		.attr('x', d.y + 15)
+		.attr('y', d.x + 10)
+		.style("opacity", .9)
+		.attr("fill", "pink");
+
     // Modal display
-    var url = "hostname/" + d.data.uuid;
-    var pageX=d3.event.pageX;
-    var pageY=d3.event.pageY;
-    hostnode_tooltip.selectAll("ul").remove();
+    var url = "/tree/hostname/" + d.data.uuid;
     d3.json(url, function(error, urls) {
           if (error) throw error;
-          hostnode_tooltip.transition()
-            .duration(200)
-            .style("opacity", .9)
-            .style("z-index", 1)
-            .style("left", (pageX) + "px")
-            .style("top", (pageY - 28) + "px");
-          var list = hostnode_tooltip.append('ul')
-            .attr("class", "list-group");
-          urls.forEach(function(url){
+          urls.forEach(function(url, index, array){
             var jdata = JSON.parse(url)
-            var entry = list.append('li')
-                .attr("class", "list-group-item")
+            overlay_hostname.append('text')
+				.attr("class", "urls_in_overlay_" + d.data.uuid)
                 .attr("url_uuid", jdata['uuid'])
+                .attr("dx", d.y + 20)
+                .attr("dy", d.x + 30 + (30 * index))
+				.attr("fill", "black")
                 .text(jdata['name']);
                 //.on('click', function(){urlnode_click(jdata)});
-        })
+        });
+		var urls_in_overlay = overlay_hostname.selectAll('text')
+		var maxTextWidth = d3.max(urls_in_overlay.nodes(), n => n.getComputedTextLength());
+		overlay_hostname
+			.attr('width', maxTextWidth + 10)
+			.attr('height', 30 * urls_in_overlay.size());
+		overlay_hostname.select('rect')
+			.attr('width', maxTextWidth + 10)
+			.attr('height', 30 * urls_in_overlay.size());
+
     });
 }
 
+// Recursiveluy generate the tree
 function update(source) {
 
   // reinitialize max_depth
@@ -139,10 +163,10 @@ function update(source) {
 
   // Update the nodes...
   // TODO: set that ID to the ete3 node ID
-  var node = svg.selectAll('g.node')
+  var node = node_container.selectAll('g.node')
       .data(nodes, function(d) {return d.id || (d.id = ++i); });
 
-    // Enter any new modes at the parent's previous position.
+  // Enter any new modes at the parent's previous position.
   var nodeEnter = node.enter().append('g')
       .attr('class', 'node')
       .attr("transform", function(d) {
@@ -190,7 +214,7 @@ function update(source) {
   // Normalize for fixed-depth.
   nodes.forEach(function(d){ d.y = d.depth * node_width});
   // Update pattern
-  init.selectAll('pattern')
+  main_svg.selectAll('pattern')
     .attr('width', node_width * 2)
   pattern.selectAll('rect')
     .attr('width', node_width)
@@ -353,7 +377,7 @@ function update(source) {
   // ****************** links section ***************************
 
   // Update the links...
-  var link = svg.selectAll('path.link')
+  var link = node_container.selectAll('path.link')
       .data(links, function(d) { return d.id; });
 
   // Enter any new links at the parent's previous position.
