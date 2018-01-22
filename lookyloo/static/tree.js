@@ -90,27 +90,30 @@ function urlnode_click(d) {
 function hostnode_click(d) {
     // Insert new svg element at this position
     var overlay_hostname = main_svg.select("g")
-							.append("svg")
-	  						.append('g').attr('class', 'overlay');
-	overlay_hostname
-		.datum({x: 0, y: 0})
-		.attr('id', 'overlay_' + d.data.uuid)
-		.style("opacity", .9)
-		.attr("transform", "translate(" + 0 + "," + 0 + ")")
-		.call(d3.drag().on("drag", function(d, i) {
-			d.x += d3.event.dx
+                            .append("svg")
+                            .append('g').attr('class', 'overlay');
+    overlay_hostname
+        .datum({x: 0, y: 0})
+        .attr('id', 'overlay_' + d.data.uuid)
+        .attr("transform", "translate(" + 0 + "," + 0 + ")")
+        .call(d3.drag().on("drag", function(d, i) {
+            d.x += d3.event.dx
             d.y += d3.event.dy
-			d3.select(this)
-				.attr("transform", "translate(" + d.x + "," + d.y + ")");
-		}));
+            d3.select(this)
+                .attr("transform", "translate(" + d.x + "," + d.y + ")");
+        }));
 
     overlay_hostname.append('rect')
-		.attr("rx", 6)
-	    .attr("ry", 6)
-		.attr('x', d.y + 15)
-		.attr('y', d.x + 10)
-		.style("opacity", .9)
-		.attr("fill", "pink");
+        .attr("rx", 6)
+        .attr("ry", 6)
+        .attr('x', d.y + 15)
+        .attr('y', d.x + 10)
+        .style("opacity", "0.95")
+        .attr("stroke", "black")
+        .attr('stroke-opacity', "0.8")
+        .attr("stroke-width", "2")
+        .attr("stroke-linecap", "round")
+        .attr("fill", "white");
 
     // Modal display
     var url = "/tree/hostname/" + d.data.uuid;
@@ -119,23 +122,23 @@ function hostnode_click(d) {
           urls.forEach(function(url, index, array){
             var jdata = JSON.parse(url)
             overlay_hostname.append('text')
-				.datum(jdata)
-				.attr("class", "urls_in_overlay_" + d.data.uuid)
+                .datum(jdata)
+                .attr("class", "urls_in_overlay_" + d.data.uuid)
                 .attr("url_uuid", jdata['uuid'])
                 .attr("dx", d.y + 20)
                 .attr("dy", d.x + 30 + (30 * index))
-				.attr("fill", "black")
+                .attr("fill", "black")
                 .text(jdata['name'])
                 .on('click', urlnode_click);
         });
-		var urls_in_overlay = overlay_hostname.selectAll('text')
-		var maxTextWidth = d3.max(urls_in_overlay.nodes(), n => n.getComputedTextLength());
-		overlay_hostname
-			.attr('width', maxTextWidth + 10)
-			.attr('height', 30 * urls_in_overlay.size());
-		overlay_hostname.select('rect')
-			.attr('width', maxTextWidth + 10)
-			.attr('height', 30 * urls_in_overlay.size());
+        var urls_in_overlay = overlay_hostname.selectAll('text')
+        var maxTextWidth = d3.max(urls_in_overlay.nodes(), n => n.getComputedTextLength());
+        overlay_hostname
+            .attr('width', maxTextWidth + 10)
+            .attr('height', 30 * urls_in_overlay.size());
+        overlay_hostname.select('rect')
+            .attr('width', maxTextWidth + 10)
+            .attr('height', 30 * urls_in_overlay.size());
 
     });
 }
@@ -267,10 +270,10 @@ function update(source) {
   cookieReadContent.filter(function(d){
     return d.data.request_cookie > 0;
   }).append('image')
-	  .attr("width", 16)
-	  .attr("height", 16)
+      .attr("width", 16)
+      .attr("height", 16)
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-	  .attr("xlink:href", "/static/cookie_read.png").call(getBB);
+      .attr("xlink:href", "/static/cookie_read.png").call(getBB);
 
   cookieReadContent.filter(function(d){
      return d.data.request_cookie > 0;
@@ -287,10 +290,10 @@ function update(source) {
   cookieSetContent.filter(function(d){
     return d.data.response_cookie > 0;
   }).append('image')
-	  .attr("width", 16)
-	  .attr("height", 16)
+      .attr("width", 16)
+      .attr("height", 16)
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-	  .attr("xlink:href", "/static/cookie_received.png").call(getBB);
+      .attr("xlink:href", "/static/cookie_received.png").call(getBB);
 
   cookieSetContent.filter(function(d){
      return d.data.response_cookie > 0;
@@ -307,10 +310,10 @@ function update(source) {
   redirectContent.filter(function(d){
     return d.data.redirect > 0;
   }).append('image')
-  	  .attr("width", 16)
-  	  .attr("height", 16)
+      .attr("width", 16)
+      .attr("height", 16)
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width +1 : 0 })
-  	  .attr("xlink:href", "/static/redirect.png").call(getBB);
+      .attr("xlink:href", "/static/redirect.png").call(getBB);
 
   redirectContent.filter(function(d){
      return d.data.redirect > 0;
