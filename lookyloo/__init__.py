@@ -50,7 +50,7 @@ def load_tree(report_dir):
     pickle.dump(ct, temp)
     temp.close()
     session["tree"] = temp.name
-    return ct.jsonify(), ct.start_time.isoformat(), ct.user_agent, ct.root_url
+    return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url
 
 
 @app.route('/scrape', methods=['GET', 'POST'])
@@ -94,7 +94,7 @@ def hostnode_details(node_uuid):
     hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
     urls = []
     for url in hostnode.urls:
-        urls.append(url.jsonify())
+        urls.append(url.to_json())
     return json.dumps(urls)
 
 
@@ -103,7 +103,7 @@ def urlnode_details(node_uuid):
     with open(session["tree"], 'rb') as f:
         ct = pickle.load(f)
     urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
-    return urlnode.jsonify()
+    return urlnode.to_json()
 
 
 @app.route('/tree/<int:tree_id>', methods=['GET'])

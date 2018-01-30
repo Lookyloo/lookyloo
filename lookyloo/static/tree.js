@@ -240,7 +240,7 @@ function update(source) {
   var icons = nodeEnter
         .append('svg')
         .attr('x', 10)
-        .attr('y', 10);
+        .attr('y', 12);
 
   // Add JavaScript information
   var jsContent = icons
@@ -340,7 +340,7 @@ function update(source) {
     }).append('text')
       .attr("dy", 8)
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-      .text(function(d) { return d.data.redirect_to_nohing; }).call(getBB);
+      .text(function(d) { return d.data.redirect_to_nothing; }).call(getBB);
 
   // UPDATE
   var nodeUpdate = nodeEnter.merge(node);
