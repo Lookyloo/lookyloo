@@ -90,7 +90,6 @@ function urlnode_click(d) {
 function hostnode_click(d) {
     // Insert new svg element at this position
     var overlay_hostname = main_svg.select("g")
-                            .append("svg")
                             .append('g').attr('class', 'overlay');
     overlay_hostname
         .datum({x: 0, y: 0})
@@ -120,30 +119,63 @@ function hostnode_click(d) {
     // Modal display
     var url = "/tree/hostname/" + d.data.uuid;
     d3.json(url, function(error, urls) {
+        var top_margin = 15;
+        var left_margin = 30;
+        var interval_entries = 40;
           if (error) throw error;
           urls.forEach(function(url, index, array){
             var jdata = JSON.parse(url)
             overlay_hostname.datum({'data': jdata});
-            overlay_hostname.append('text')
-                .attr("class", "urls_in_overlay_" + d.data.uuid)
-                .attr("url_uuid", jdata['uuid'])
-                .attr("dx", d.y + 20)
-                .attr("dy", d.x + 30 + (30 * index))
-                .attr("fill", "black")
-                .text(function(d) { return d.data.name; })
-                .on('click', urlnode_click);
+            var text_node = text_entry(overlay_hostname, d.y + left_margin, d.x + top_margin + (interval_entries * index), urlnode_click);
+            height_text = text_node.node().getBBox().height
+            icon_list(overlay_hostname, d.y + left_margin + 5, d.x + top_margin + height_text + (interval_entries * index));
         });
-        var urls_in_overlay = overlay_hostname.selectAll('text')
-        var maxTextWidth = d3.max(urls_in_overlay.nodes(), n => n.getComputedTextLength());
-        overlay_hostname
-            .attr('width', maxTextWidth + 10)
-            .attr('height', 30 * urls_in_overlay.size());
+        overlay_bbox = overlay_hostname.node().getBBox()
         overlay_hostname.select('rect')
-            .attr('width', maxTextWidth + 10)
-            .attr('height', 30 * urls_in_overlay.size());
+            .attr('width', overlay_bbox.width + left_margin)
+            .attr('height', overlay_bbox.height + top_margin);
 
     });
 }
+
+function icon(icons, key, icon_path){
+    var content = icons.append("g");
+    var icon_size = 16;
+
+    content.filter(function(d){
+            if (typeof d.data[key] === 'boolean') {
+                return d.data[key];
+            } else if (typeof d.data[key] === 'number') {
+                return d.data[key] > 0;
+            } else if (d.data[key] instanceof Array) {
+                return d.data[key].length > 0;
+            }
+            return false;
+        }).append('image')
+            .attr("width", icon_size)
+            .attr("height", icon_size)
+            .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
+            .attr("xlink:href", icon_path).call(getBB);
+
+    content.filter(function(d){
+            if (typeof d.data[key] === 'boolean') {
+                return false;
+                // return d.data[key];
+            } else if (typeof d.data[key] === 'number') {
+                d.to_print = d.data[key]
+                return d.data[key] > 0;
+            } else if (d.data[key] instanceof Array) {
+                d.to_print = d.data[key].length
+                return d.data[key].length > 0;
+            }
+            return false;
+        }).append('text')
+          .attr("dy", 8)
+          .style("font-size", "12px")
+          .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
+          .attr('width', function(d) { return d.to_print.toString().length + 'em'; })
+          .text(function(d) { return d.to_print; }).call(getBB);
+};
 
 function icon_list(parent_svg, relative_x_pos, relative_y_pos) {
     // Put all the icone in one sub svg document
@@ -152,109 +184,14 @@ function icon_list(parent_svg, relative_x_pos, relative_y_pos) {
           .attr('x', relative_x_pos)
           .attr('y', relative_y_pos);
 
-    // Add JavaScript information
-    var jsContent = icons
-          .append('svg');
-
-    jsContent.filter(function(d){
-        return d.data.js > 0;
-    }).append('image')
-        .attr("width", 16)
-        .attr("height", 16)
-        .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-        .attr("xlink:href", "/static/javascript.png").call(getBB);
-
-    jsContent.filter(function(d){
-       return d.data.js > 0;
-    }).append('text')
-      .attr("dy", 8)
-      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-      .attr('width', function(d) { return d.data.js.toString().length + 'em'; })
-      .text(function(d) { return d.data.js; }).call(getBB);
-
-
-    // Add Cookie read information
-    var cookieReadContent = icons
-          .append('svg');
-
-    cookieReadContent.filter(function(d){
-      return d.data.request_cookie > 0;
-    }).append('image')
-        .attr("width", 16)
-        .attr("height", 16)
-        .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-        .attr("xlink:href", "/static/cookie_read.png").call(getBB);
-
-    cookieReadContent.filter(function(d){
-       return d.data.request_cookie > 0;
-    }).append('text')
-      .attr("dy", 8)
-      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-      .attr('width', function(d) { return d.data.request_cookie.toString().length + 'em'; })
-      .text(function(d) { return d.data.request_cookie; }).call(getBB);
-
-    // Add Cookie set information
-    var cookieSetContent = icons
-          .append('svg');
-
-    cookieSetContent.filter(function(d){
-      return d.data.response_cookie > 0;
-    }).append('image')
-        .attr("width", 16)
-        .attr("height", 16)
-        .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-        .attr("xlink:href", "/static/cookie_received.png").call(getBB);
-
-    cookieSetContent.filter(function(d){
-       return d.data.response_cookie > 0;
-    }).append('text')
-      .attr("dy", 8)
-      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-      .attr('width', function(d) { return d.data.response_cookie.toString().length + 'em'; })
-      .text(function(d) { return d.data.response_cookie; }).call(getBB);
-
-    // Add redirect information
-    var redirectContent = icons
-          .append('svg');
-
-    redirectContent.filter(function(d){
-      return d.data.redirect > 0;
-    }).append('image')
-        .attr("width", 16)
-        .attr("height", 16)
-        .attr('x', function(d) { return d.data.total_width ? d.data.total_width +1 : 0 })
-        .attr("xlink:href", "/static/redirect.png").call(getBB);
-
-    redirectContent.filter(function(d){
-       return d.data.redirect > 0;
-    }).append('text')
-      .attr("dy", 8)
-      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 2 : 0 })
-      .attr('width', function(d) { return d.data.redirect.toString().length + 'em'; })
-      .text(function(d) { return d.data.redirect; }).call(getBB);
-
-    // Add cookie in URL information
-    var cookieURLContent = icons
-          .append('svg');
-
-    cookieURLContent.filter(function(d){
-      return d.data.redirect_to_nothing > 0;
-    }).append('image')
-        .attr("width", 16)
-        .attr("height", 16)
-        .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-        .attr("xlink:href", "/static/cookie_in_url.png").call(getBB);
-
-      cookieURLContent.filter(function(d){
-         return d.data.redirect_to_nothing > 0;
-      }).append('text')
-        .attr("dy", 8)
-        .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-        .text(function(d) { return d.data.redirect_to_nothing; }).call(getBB);
-
+    icon(icons, 'js', "/static/javascript.png");
+    icon(icons, 'request_cookie', "/static/cookie_read.png");
+    icon(icons, 'response_cookie', "/static/cookie_received.png");
+    icon(icons, 'redirect', "/static/redirect.png");
+    icon(icons, 'redirect_to_nothing', "/static/cookie_in_url.png");
 }
 
-function text_entry(parent_svg, relative_x_pos, relative_y_pos) {
+function text_entry(parent_svg, relative_x_pos, relative_y_pos, onclick_callback) {
     // Avoid hiding the content after the circle
     var nodeContent = parent_svg
           .append('svg')
@@ -273,7 +210,7 @@ function text_entry(parent_svg, relative_x_pos, relative_y_pos) {
               d.data.total_width = 0; // reset total_width
               return d.data.name;
           })
-          .on('click', hostnode_click);
+          .on('click', onclick_callback);
 
     // This value has to be set once for all for the whole tree and cannot be updated
     // on click as clicking only updates a part of the tree
@@ -283,6 +220,7 @@ function text_entry(parent_svg, relative_x_pos, relative_y_pos) {
       })
       node_width += 20;
     };
+    return text_nodes;
 
 }
 
@@ -329,7 +267,7 @@ function update(source) {
       .on('click', click);
 
   // Set Hostname text
-  text_entry(nodeEnter, 10, -20);
+  text_entry(nodeEnter, 10, -20, hostnode_click);
   // Set list of icons
   icon_list(nodeEnter, 12, 10);
 
