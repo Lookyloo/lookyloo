@@ -79,7 +79,7 @@ function getBB(selection) {
 }
 
 function urlnode_click(d) {
-    var url = "url/" + d['uuid'];
+    var url = "url/" + d.data.uuid;
     d3.json(url, function(error, u) {
         if (error) throw error;
         console.log(u)
@@ -97,6 +97,8 @@ function hostnode_click(d) {
         .attr('id', 'overlay_' + d.data.uuid)
         .attr("transform", "translate(" + 0 + "," + 0 + ")")
         .call(d3.drag().on("drag", function(d, i) {
+            if (typeof d.x === 'undefined') { d.x = 0; }  // Any real JS dev would kill me fo that, right?
+            if (typeof d.y === 'undefined') { d.y = 0; }  // Maybe even twice.
             d.x += d3.event.dx
             d.y += d3.event.dy
             d3.select(this)
@@ -121,14 +123,14 @@ function hostnode_click(d) {
           if (error) throw error;
           urls.forEach(function(url, index, array){
             var jdata = JSON.parse(url)
+            overlay_hostname.datum({'data': jdata});
             overlay_hostname.append('text')
-                .datum(jdata)
                 .attr("class", "urls_in_overlay_" + d.data.uuid)
                 .attr("url_uuid", jdata['uuid'])
                 .attr("dx", d.y + 20)
                 .attr("dy", d.x + 30 + (30 * index))
                 .attr("fill", "black")
-                .text(jdata['name'])
+                .text(function(d) { return d.data.name; })
                 .on('click', urlnode_click);
         });
         var urls_in_overlay = overlay_hostname.selectAll('text')
@@ -141,6 +143,147 @@ function hostnode_click(d) {
             .attr('height', 30 * urls_in_overlay.size());
 
     });
+}
+
+function icon_list(parent_svg, relative_x_pos, relative_y_pos) {
+    // Put all the icone in one sub svg document
+    var icons = parent_svg
+          .append('svg')
+          .attr('x', relative_x_pos)
+          .attr('y', relative_y_pos);
+
+    // Add JavaScript information
+    var jsContent = icons
+          .append('svg');
+
+    jsContent.filter(function(d){
+        return d.data.js > 0;
+    }).append('image')
+        .attr("width", 16)
+        .attr("height", 16)
+        .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
+        .attr("xlink:href", "/static/javascript.png").call(getBB);
+
+    jsContent.filter(function(d){
+       return d.data.js > 0;
+    }).append('text')
+      .attr("dy", 8)
+      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
+      .attr('width', function(d) { return d.data.js.toString().length + 'em'; })
+      .text(function(d) { return d.data.js; }).call(getBB);
+
+
+    // Add Cookie read information
+    var cookieReadContent = icons
+          .append('svg');
+
+    cookieReadContent.filter(function(d){
+      return d.data.request_cookie > 0;
+    }).append('image')
+        .attr("width", 16)
+        .attr("height", 16)
+        .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
+        .attr("xlink:href", "/static/cookie_read.png").call(getBB);
+
+    cookieReadContent.filter(function(d){
+       return d.data.request_cookie > 0;
+    }).append('text')
+      .attr("dy", 8)
+      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
+      .attr('width', function(d) { return d.data.request_cookie.toString().length + 'em'; })
+      .text(function(d) { return d.data.request_cookie; }).call(getBB);
+
+    // Add Cookie set information
+    var cookieSetContent = icons
+          .append('svg');
+
+    cookieSetContent.filter(function(d){
+      return d.data.response_cookie > 0;
+    }).append('image')
+        .attr("width", 16)
+        .attr("height", 16)
+        .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
+        .attr("xlink:href", "/static/cookie_received.png").call(getBB);
+
+    cookieSetContent.filter(function(d){
+       return d.data.response_cookie > 0;
+    }).append('text')
+      .attr("dy", 8)
+      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
+      .attr('width', function(d) { return d.data.response_cookie.toString().length + 'em'; })
+      .text(function(d) { return d.data.response_cookie; }).call(getBB);
+
+    // Add redirect information
+    var redirectContent = icons
+          .append('svg');
+
+    redirectContent.filter(function(d){
+      return d.data.redirect > 0;
+    }).append('image')
+        .attr("width", 16)
+        .attr("height", 16)
+        .attr('x', function(d) { return d.data.total_width ? d.data.total_width +1 : 0 })
+        .attr("xlink:href", "/static/redirect.png").call(getBB);
+
+    redirectContent.filter(function(d){
+       return d.data.redirect > 0;
+    }).append('text')
+      .attr("dy", 8)
+      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 2 : 0 })
+      .attr('width', function(d) { return d.data.redirect.toString().length + 'em'; })
+      .text(function(d) { return d.data.redirect; }).call(getBB);
+
+    // Add cookie in URL information
+    var cookieURLContent = icons
+          .append('svg');
+
+    cookieURLContent.filter(function(d){
+      return d.data.redirect_to_nothing > 0;
+    }).append('image')
+        .attr("width", 16)
+        .attr("height", 16)
+        .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
+        .attr("xlink:href", "/static/cookie_in_url.png").call(getBB);
+
+      cookieURLContent.filter(function(d){
+         return d.data.redirect_to_nothing > 0;
+      }).append('text')
+        .attr("dy", 8)
+        .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
+        .text(function(d) { return d.data.redirect_to_nothing; }).call(getBB);
+
+}
+
+function text_entry(parent_svg, relative_x_pos, relative_y_pos) {
+    // Avoid hiding the content after the circle
+    var nodeContent = parent_svg
+          .append('svg')
+          .attr('height',node_height)
+          .attr('x', relative_x_pos)
+          .attr('y', relative_y_pos);
+
+    // Add labels for the nodes
+    var text_nodes = nodeContent.append("text")
+          .attr('dy', '.9em')
+          .attr("stroke", "white")
+          .style("font-size", "16px")
+          .attr("stroke-width", ".2px")
+          .style("opacity", .9)
+          .text(function(d) {
+              d.data.total_width = 0; // reset total_width
+              return d.data.name;
+          })
+          .on('click', hostnode_click);
+
+    // This value has to be set once for all for the whole tree and cannot be updated
+    // on click as clicking only updates a part of the tree
+    if (node_width === 0) {
+      text_nodes.each(function(d) {
+        node_width = node_width > this.getBBox().width ? node_width : this.getBBox().width;
+      })
+      node_width += 20;
+    };
+
 }
 
 // Recursiveluy generate the tree
@@ -185,34 +328,10 @@ function update(source) {
       })
       .on('click', click);
 
-  // Avoid hiding the content after the circle
-  var nodeContent = nodeEnter
-        .append('svg')
-        .attr('height',node_height)
-        .attr('x', 10)
-        .attr('y', -20);
-
-  // Add labels for the nodes
-  var text_nodes = nodeContent.append("text")
-        .attr('dy', '.9em')
-        .attr("stroke", "white")
-        .style("font-size", "16px")
-        .attr("stroke-width", ".2px")
-        .style("opacity", .9)
-        .text(function(d) {
-            d.data.total_width = 0; // reset total_width
-            return d.data.name;
-        })
-        .on('click', hostnode_click);
-
-  // This value has to be set once for all for the whole tree and cannot be updated
-  // on click as clicking only updates a part of the tree
-  if (node_width === 0) {
-    text_nodes.each(function(d) {
-      node_width = node_width > this.getBBox().width ? node_width : this.getBBox().width;
-    })
-    node_width += 20;
-  };
+  // Set Hostname text
+  text_entry(nodeEnter, 10, -20);
+  // Set list of icons
+  icon_list(nodeEnter, 12, 10);
 
   // Normalize for fixed-depth.
   nodes.forEach(function(d){ d.y = d.depth * node_width});
@@ -228,6 +347,8 @@ function update(source) {
         max_depth = d.depth > max_depth ? d.depth : max_depth;
       }
   });
+
+  // Re-compute SVG size depending on the generated tree
   var newWidth = Math.max((max_depth + 2) * node_width, node_width);
   background.attr('height', newHeight + margin.top + margin.bottom)
   background.attr('width', newWidth + margin.right + margin.left)
@@ -236,111 +357,6 @@ function update(source) {
     .attr("width", newWidth + margin.right + margin.left)
     .attr("height", newHeight + margin.top + margin.bottom)
 
-  // Put all the icone in one sub svg document
-  var icons = nodeEnter
-        .append('svg')
-        .attr('x', 10)
-        .attr('y', 12);
-
-  // Add JavaScript information
-  var jsContent = icons
-        .append('svg');
-
-  jsContent.filter(function(d){
-      return d.data.js > 0;
-  }).append('image')
-      .attr("width", 16)
-      .attr("height", 16)
-      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-      .attr("xlink:href", "/static/javascript.png").call(getBB);
-
-  jsContent.filter(function(d){
-     return d.data.js > 0;
-  }).append('text')
-    .attr("dy", 8)
-    .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-    .attr('width', function(d) { return d.data.js.toString().length + 'em'; })
-    .text(function(d) { return d.data.js; }).call(getBB);
-
-
-  // Add Cookie read information
-  var cookieReadContent = icons
-        .append('svg');
-
-  cookieReadContent.filter(function(d){
-    return d.data.request_cookie > 0;
-  }).append('image')
-      .attr("width", 16)
-      .attr("height", 16)
-      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-      .attr("xlink:href", "/static/cookie_read.png").call(getBB);
-
-  cookieReadContent.filter(function(d){
-     return d.data.request_cookie > 0;
-  }).append('text')
-    .attr("dy", 8)
-    .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-    .attr('width', function(d) { return d.data.request_cookie.toString().length + 'em'; })
-    .text(function(d) { return d.data.request_cookie; }).call(getBB);
-
-  // Add Cookie set information
-  var cookieSetContent = icons
-        .append('svg');
-
-  cookieSetContent.filter(function(d){
-    return d.data.response_cookie > 0;
-  }).append('image')
-      .attr("width", 16)
-      .attr("height", 16)
-      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-      .attr("xlink:href", "/static/cookie_received.png").call(getBB);
-
-  cookieSetContent.filter(function(d){
-     return d.data.response_cookie > 0;
-  }).append('text')
-    .attr("dy", 8)
-    .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-    .attr('width', function(d) { return d.data.response_cookie.toString().length + 'em'; })
-    .text(function(d) { return d.data.response_cookie; }).call(getBB);
-
-  // Add redirect information
-  var redirectContent = icons
-        .append('svg');
-
-  redirectContent.filter(function(d){
-    return d.data.redirect > 0;
-  }).append('image')
-      .attr("width", 16)
-      .attr("height", 16)
-      .attr('x', function(d) { return d.data.total_width ? d.data.total_width +1 : 0 })
-      .attr("xlink:href", "/static/redirect.png").call(getBB);
-
-  redirectContent.filter(function(d){
-     return d.data.redirect > 0;
-  }).append('text')
-    .attr("dy", 8)
-    .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 2 : 0 })
-    .attr('width', function(d) { return d.data.redirect.toString().length + 'em'; })
-    .text(function(d) { return d.data.redirect; }).call(getBB);
-
-  // Add cookie in URL information
-  var cookieURLContent = icons
-        .append('svg');
-
-  cookieURLContent.filter(function(d){
-    return d.data.redirect_to_nothing > 0;
-  }).append('image')
-      .attr("width", 16)
-      .attr("height", 16)
-      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-      .attr("xlink:href", "/static/cookie_in_url.png").call(getBB);
-
-    cookieURLContent.filter(function(d){
-       return d.data.redirect_to_nothing > 0;
-    }).append('text')
-      .attr("dy", 8)
-      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
-      .text(function(d) { return d.data.redirect_to_nothing; }).call(getBB);
 
   // UPDATE
   var nodeUpdate = nodeEnter.merge(node);
