@@ -6,7 +6,7 @@ import json
 from har2tree import CrawledTree
 from scrapysplashwrapper import crawl
 
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, send_file
 from flask_bootstrap import Bootstrap
 
 from glob import glob
@@ -15,6 +15,10 @@ from datetime import datetime
 
 import pickle
 import tempfile
+import pathlib
+
+from zipfile import ZipFile, ZIP_DEFLATED
+from io import BytesIO
 
 app = Flask(__name__)
 
@@ -29,6 +33,8 @@ app.debug = True
 
 HAR_DIR = 'scraped'
 SPLASH = 'http://127.0.0.1:8050'
+
+pathlib.Path(HAR_DIR).mkdir(parents=True, exist_ok=True)
 
 
 @app.before_request
@@ -103,7 +109,18 @@ def urlnode_details(node_uuid):
     with open(session["tree"], 'rb') as f:
         ct = pickle.load(f)
     urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
-    return urlnode.to_json()
+
+    to_return = BytesIO()
+    if hasattr(urlnode, 'body'):
+        with ZipFile(to_return, 'a', ZIP_DEFLATED, False) as zfile:
+            zfile.writestr(urlnode.filename, urlnode.body.getvalue())
+        to_return.seek(0)
+    # return send_file(urlnode.body, mimetype='application/zip',
+    #                 as_attachment=True, attachment_filename='file.zip')
+    with open('foo.bin', 'wb') as f:
+        f.write(to_return.getvalue())
+    return send_file(to_return, mimetype='application/zip',
+                     as_attachment=True, attachment_filename='file.zip')
 
 
 @app.route('/tree/<int:tree_id>', methods=['GET'])

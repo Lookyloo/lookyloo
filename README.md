@@ -49,6 +49,7 @@ sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui --disa
 pip install -r requirements.txt
 pip install -e .
 wget https://d3js.org/d3.v4.min.js -O lookyloo/static/d3.v4.min.js
+wget https://cdn.rawgit.com/eligrey/FileSaver.js/5733e40e5af936eb3f48554cf6a8a7075d71d18a/FileSaver.js -O lookyloo/static/FileSaver.js
 ```
 # Run the app locally
 

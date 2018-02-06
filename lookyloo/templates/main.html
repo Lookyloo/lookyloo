@@ -2,6 +2,7 @@
 
 {% block scripts %}
     {{ super() }}
+    <script src='{{ url_for('static', filename='FileSaver.js') }}'></script>
     <script src='{{ url_for('static', filename='d3.v4.min.js') }}'></script>
 {% endblock %}
 

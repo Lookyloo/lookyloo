@@ -68,7 +68,7 @@ function collapse(d) {
     d._children.forEach(collapse)
     d.children = null
   }
-}
+};
 
 // Gets the size of the box and increase it
 function getBB(selection) {
@@ -76,15 +76,30 @@ function getBB(selection) {
         d.data.total_width = d.data.total_width ? d.data.total_width : 0;
         d.data.total_width += this.getBBox().width;
     })
+};
+
+function str2bytes (str) {
+    var bytes = new Uint8Array(str.length);
+    for (var i=0; i<str.length; i++) {
+        bytes[i] = str.charCodeAt(i);
+    }
+    return bytes;
 }
 
 function urlnode_click(d) {
     var url = "url/" + d.data.uuid;
-    d3.json(url, function(error, u) {
-        if (error) throw error;
-        console.log(u)
-    })
-}
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', url, true);
+	xhr.responseType = "blob";
+	xhr.withCredentials = true;
+	xhr.onreadystatechange = function (){
+		if (xhr.readyState === 4) {
+			var blob = xhr.response;
+			saveAs(blob, 'file.zip');
+		}
+	};
+	xhr.send();
+};
 
 // What happen when clicking on a domain (load a modal display)
 function hostnode_click(d) {
@@ -208,7 +223,11 @@ function text_entry(parent_svg, relative_x_pos, relative_y_pos, onclick_callback
           .style("opacity", .9)
           .text(function(d) {
               d.data.total_width = 0; // reset total_width
-              return d.data.name;
+              to_display = d.data.name
+              if (d.data.urls_count) {
+                  to_display += ' (' + d.data.urls_count + ')';
+              };
+              return to_display;
           })
           .on('click', onclick_callback);
 
