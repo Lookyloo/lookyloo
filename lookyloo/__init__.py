@@ -19,6 +19,7 @@ import pathlib
 
 from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
+import base64
 
 app = Flask(__name__)
 
@@ -68,19 +69,23 @@ def scrape():
         depth = request.form.get('depth')
         if depth is None:
             depth = 1
-        items = crawl(SPLASH, url, depth)
+        items = crawl(SPLASH, url, depth, log_enabled=True, log_level='INFO')
         if not items:
             # broken
             pass
         width = len(str(len(items)))
-        i = 1
         dirpath = os.path.join(HAR_DIR, datetime.now().isoformat())
         os.makedirs(dirpath)
-        for item in items:
+        for i, item in enumerate(items):
             harfile = item['har']
+            png = base64.b64decode(item['png'])
+            child_frames = item['childFrames']
             with open(os.path.join(dirpath, '{0:0{width}}.har'.format(i, width=width)), 'w') as f:
                 json.dump(harfile, f)
-            i += 1
+            with open(os.path.join(dirpath, '{0:0{width}}.png'.format(i, width=width)), 'wb') as f:
+                f.write(png)
+            with open(os.path.join(dirpath, '{0:0{width}}.frames.json'.format(i, width=width)), 'w') as f:
+                json.dump(child_frames, f)
         return tree(0)
     return render_template('scrape.html')
 
