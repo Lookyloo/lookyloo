@@ -88,24 +88,42 @@ function str2bytes (str) {
 
 function urlnode_click(d) {
     var url = "url/" + d.data.uuid;
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', url, true);
-	xhr.responseType = "blob";
-	xhr.withCredentials = true;
-	xhr.onreadystatechange = function (){
-		if (xhr.readyState === 4) {
-			var blob = xhr.response;
-			saveAs(blob, 'file.zip');
-		}
-	};
-	xhr.send();
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = "blob";
+    xhr.withCredentials = true;
+    xhr.onreadystatechange = function (){
+        if (xhr.readyState === 4) {
+            var blob = xhr.response;
+            saveAs(blob, 'file.zip');
+        }
+    };
+    xhr.send();
+};
+
+d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
 };
 
 // What happen when clicking on a domain (load a modal display)
 function hostnode_click(d) {
+    // Move the node to the front (end of the list)
+    var cur_node = d3.select("#node_" + d.data.uuid).moveToFront();
+    // Avoid duplicating overlays
+    cur_node.selectAll('.overlay').remove();
     // Insert new svg element at this position
-    var overlay_hostname = main_svg.select("g")
-                            .append('g').attr('class', 'overlay');
+    var overlay_hostname = cur_node.append('g')
+                                .attr('class', 'overlay');
+
+    cur_node.append('line')
+                .attr('class', 'overlay')
+                .style("stroke", "black");
+
+    var top_margin = 15;
+    var left_margin = 30;
+
     overlay_hostname
         .datum({x: 0, y: 0})
         .attr('id', 'overlay_' + d.data.uuid)
@@ -117,13 +135,16 @@ function hostnode_click(d) {
             d.y += d3.event.dy
             d3.select(this)
                 .attr("transform", "translate(" + d.x + "," + d.y + ")");
+            cur_node.select('line')
+                .attr("x2", d.x + top_margin)
+                .attr("y2", d.y + left_margin);
         }));
 
     overlay_hostname.append('rect')
         .attr("rx", 6)
         .attr("ry", 6)
-        .attr('x', d.y + 15)
-        .attr('y', d.x + 10)
+        .attr('x', 15)
+        .attr('y', 10)
         .style("opacity", "0.95")
         .attr("stroke", "black")
         .attr('stroke-opacity', "0.8")
@@ -134,22 +155,26 @@ function hostnode_click(d) {
     // Modal display
     var url = "/tree/hostname/" + d.data.uuid;
     d3.json(url, function(error, urls) {
-        var top_margin = 15;
-        var left_margin = 30;
         var interval_entries = 40;
           if (error) throw error;
           urls.forEach(function(url, index, array){
             var jdata = JSON.parse(url)
             overlay_hostname.datum({'data': jdata});
-            var text_node = text_entry(overlay_hostname, d.y + left_margin, d.x + top_margin + (interval_entries * index), urlnode_click);
-            height_text = text_node.node().getBBox().height
-            icon_list(overlay_hostname, d.y + left_margin + 5, d.x + top_margin + height_text + (interval_entries * index));
+            var text_node = text_entry(overlay_hostname, left_margin, top_margin + (interval_entries * index), urlnode_click);
+            height_text = text_node.node().getBBox().height;
+            icon_list(overlay_hostname, left_margin + 5, top_margin + height_text + (interval_entries * index));
         });
-        overlay_bbox = overlay_hostname.node().getBBox()
+        overlay_bbox = overlay_hostname.node().getBBox();
+        console.log(overlay_bbox);
         overlay_hostname.select('rect')
             .attr('width', overlay_bbox.width + left_margin)
             .attr('height', overlay_bbox.height + top_margin);
 
+        cur_node.select('line')
+                    .attr("x1", cur_node.x)
+                    .attr("y1", cur_node.y)
+                    .attr("x2", top_margin)
+                    .attr("y2", left_margin);
     });
 }
 
@@ -240,7 +265,6 @@ function text_entry(parent_svg, relative_x_pos, relative_y_pos, onclick_callback
       node_width += 20;
     };
     return text_nodes;
-
 }
 
 // Recursiveluy generate the tree
@@ -272,6 +296,9 @@ function update(source) {
   // Enter any new modes at the parent's previous position.
   var nodeEnter = node.enter().append('g')
       .attr('class', 'node')
+      .attr("id", function(d) {
+        return 'node_' + d.data.uuid;
+      })
       .attr("transform", function(d) {
         return "translate(" + source.y0 + "," + source.x0 + ")";
     });
