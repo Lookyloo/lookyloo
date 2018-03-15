@@ -156,8 +156,8 @@ function hostnode_click(d) {
     var url = "/tree/hostname/" + d.data.uuid;
     d3.json(url, function(error, urls) {
         var interval_entries = 40;
-          if (error) throw error;
-          urls.forEach(function(url, index, array){
+        if (error) throw error;
+        urls.forEach(function(url, index, array) {
             var jdata = JSON.parse(url)
             overlay_hostname.datum({'data': jdata});
             var text_node = text_entry(overlay_hostname, left_margin, top_margin + (interval_entries * index), urlnode_click);
@@ -165,7 +165,6 @@ function hostnode_click(d) {
             icon_list(overlay_hostname, left_margin + 5, top_margin + height_text + (interval_entries * index));
         });
         overlay_bbox = overlay_hostname.node().getBBox();
-        console.log(overlay_bbox);
         overlay_hostname.select('rect')
             .attr('width', overlay_bbox.width + left_margin)
             .attr('height', overlay_bbox.height + top_margin);
@@ -176,7 +175,7 @@ function hostnode_click(d) {
                     .attr("x2", top_margin)
                     .attr("y2", left_margin);
     });
-}
+};
 
 function icon(icons, key, icon_path){
     var content = icons.append("g");
@@ -211,7 +210,7 @@ function icon(icons, key, icon_path){
             return false;
         }).append('text')
           .attr("dy", 8)
-          .style("font-size", "12px")
+          .style("font-size", "10px")
           .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
           .attr('width', function(d) { return d.to_print.toString().length + 'em'; })
           .text(function(d) { return d.to_print; }).call(getBB);
@@ -225,6 +224,15 @@ function icon_list(parent_svg, relative_x_pos, relative_y_pos) {
           .attr('y', relative_y_pos);
 
     icon(icons, 'js', "/static/javascript.png");
+    icon(icons, 'exe', "/static/exe.png");
+    icon(icons, 'css', "/static/css.png");
+    icon(icons, 'font', "/static/font.png");
+    icon(icons, 'html', "/static/html.png");
+    icon(icons, 'json', "/static/json.png");
+    icon(icons, 'iframe', "/static/ifr.png");
+    icon(icons, 'image', "/static/img.png");
+    icon(icons, 'unknown_mimetype', "/static/wtf.png");
+    icon(icons, 'video', "/static/video.png");
     icon(icons, 'request_cookie', "/static/cookie_read.png");
     icon(icons, 'response_cookie', "/static/cookie_received.png");
     icon(icons, 'redirect', "/static/redirect.png");
