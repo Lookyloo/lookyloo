@@ -2,6 +2,7 @@
 flask
 flask-bootstrap
 ete3
+bs4
 
 # Backend libs
 git+https://github.com/viper-framework/har2tree.git
