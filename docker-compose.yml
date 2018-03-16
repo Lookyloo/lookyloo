@@ -1,0 +1,13 @@
+version: '3'
+services:
+  splash:
+    image: "scrapinghub/splash"
+    expose:
+     - "8050"
+     - "5023"
+    command: --disable-ui --disable-lua
+  lookyloo:
+     build: .
+     ports:
+      - "5000:5000"
+      
