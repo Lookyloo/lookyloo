@@ -30,6 +30,7 @@ if app.secret_key == 'changeme':
 
 Bootstrap(app)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
+app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.debug = True
 
 HAR_DIR = 'scraped'
@@ -46,8 +47,7 @@ def session_management():
 
 def load_tree(report_dir):
     if session.get('tree'):
-        # TODO delete file
-        pass
+        os.unlink(session.get('tree'))
     session.clear()
     har_files = sorted(glob(os.path.join(HAR_DIR, report_dir, '*.har')))
     ct = CrawledTree(har_files)
@@ -80,10 +80,13 @@ def scrape():
             harfile = item['har']
             png = base64.b64decode(item['png'])
             child_frames = item['childFrames']
+            html = item['html']
             with open(os.path.join(dirpath, '{0:0{width}}.har'.format(i, width=width)), 'w') as f:
                 json.dump(harfile, f)
             with open(os.path.join(dirpath, '{0:0{width}}.png'.format(i, width=width)), 'wb') as f:
                 f.write(png)
+            with open(os.path.join(dirpath, '{0:0{width}}.html'.format(i, width=width)), 'w') as f:
+                f.write(html)
             with open(os.path.join(dirpath, '{0:0{width}}.frames.json'.format(i, width=width)), 'w') as f:
                 json.dump(child_frames, f)
         return tree(0)
