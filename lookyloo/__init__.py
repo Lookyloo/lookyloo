@@ -38,12 +38,6 @@ SPLASH = 'http://127.0.0.1:8050'
 HAR_DIR.mkdir(parents=True, exist_ok=True)
 
 
-@app.before_request
-def session_management():
-    # make the session last indefinitely until it is cleared
-    session.permanent = True
-
-
 def cleanup_old_tmpfiles():
     for tmpfile in pathlib.Path(tempfile.gettempdir()).glob('lookyloo*'):
         if time.time() - tmpfile.stat().st_atime > 36000:
@@ -145,6 +139,7 @@ def tree(tree_id):
 @app.route('/', methods=['GET'])
 def index():
     cleanup_old_tmpfiles()
+    session.clear()
     i = 0
     titles = []
     if not HAR_DIR.exists():

@@ -88,17 +88,9 @@ function str2bytes (str) {
 
 function urlnode_click(d) {
     var url = "url/" + d.data.uuid;
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = "blob";
-    xhr.withCredentials = true;
-    xhr.onreadystatechange = function (){
-        if (xhr.readyState === 4) {
-            var blob = xhr.response;
-            saveAs(blob, 'file.zip');
-        }
-    };
-    xhr.send();
+    d3.blob(url, {credentials: 'same-origin'}).then(function(data) {
+        saveAs(data, 'file.zip');
+    });
 };
 
 d3.selection.prototype.moveToFront = function() {
@@ -154,9 +146,8 @@ function hostnode_click(d) {
 
     // Modal display
     var url = "/tree/hostname/" + d.data.uuid;
-    d3.json(url, function(error, urls) {
+    d3.json(url, {credentials: 'same-origin'}).then(function(urls) {
         var interval_entries = 40;
-        if (error) throw error;
         urls.forEach(function(url, index, array) {
             var jdata = JSON.parse(url)
             overlay_hostname.datum({'data': jdata});
