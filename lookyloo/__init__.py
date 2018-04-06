@@ -62,7 +62,7 @@ def scrape():
     if request.form.get('url'):
         url = request.form.get('url')
         if not url.startswith('http'):
-            url = 'http://{}'.format(url)
+            url = f'http://{url}'
         depth = request.form.get('depth')
         if depth is None:
             depth = 1
@@ -98,6 +98,24 @@ def get_report_dirs():
     return sorted(HAR_DIR.iterdir(), reverse=True)
 
 
+@app.route('/tree/hostname/<node_uuid>/text', methods=['GET'])
+def hostnode_details_text(node_uuid):
+    with open(session["tree"], 'rb') as f:
+        ct = pickle.load(f)
+    hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
+    urls = []
+    for url in hostnode.urls:
+        urls.append(url.name)
+    content = '''# URLs
+
+{}
+'''.format('\n'.join(urls))
+    to_return = BytesIO(content.encode())
+    to_return.seek(0)
+    return send_file(to_return, mimetype='text/markdown',
+                     as_attachment=True, attachment_filename='file.md')
+
+
 @app.route('/tree/hostname/<node_uuid>', methods=['GET'])
 def hostnode_details(node_uuid):
     with open(session["tree"], 'rb') as f:
@@ -114,16 +132,18 @@ def urlnode_details(node_uuid):
     with open(session["tree"], 'rb') as f:
         ct = pickle.load(f)
     urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
-
     to_return = BytesIO()
+    got_content = False
     if hasattr(urlnode, 'body'):
-        with ZipFile(to_return, 'a', ZIP_DEFLATED, False) as zfile:
-            zfile.writestr(urlnode.filename, urlnode.body.getvalue())
-        to_return.seek(0)
-    # return send_file(urlnode.body, mimetype='application/zip',
-    #                 as_attachment=True, attachment_filename='file.zip')
-    with open('foo.bin', 'wb') as f:
-        f.write(to_return.getvalue())
+        body_content = urlnode.body.getvalue()
+        if body_content:
+            got_content = True
+            with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
+                zfile.writestr(urlnode.filename, urlnode.body.getvalue())
+    if not got_content:
+        with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
+            zfile.writestr('file.txt', b'Response body empty')
+    to_return.seek(0)
     return send_file(to_return, mimetype='application/zip',
                      as_attachment=True, attachment_filename='file.zip')
 
