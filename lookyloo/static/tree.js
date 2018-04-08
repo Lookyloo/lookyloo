@@ -6,11 +6,18 @@ var margin = {top: 20, right: 200, bottom: 30, left: 90},
     height = 10000 - margin.top - margin.bottom;
 
 var node_width = 0;
+var max_overlay_width = 1500;
 var node_height = 45;
 
 var main_svg = d3.select("body").append("svg")
             .attr("width", width + margin.right + margin.left)
             .attr("height", height + margin.top + margin.bottom)
+
+main_svg.append("clipPath")
+    .attr("id", "textOverlay")
+    .append("rect")
+    .attr('width', max_overlay_width - 25)
+    .attr('height', node_height);
 
 // Add background pattern
 var pattern = main_svg.append("defs").append('pattern')
@@ -29,11 +36,7 @@ var background = main_svg.append('rect')
     .attr('y', 0)
     .attr('width', width)
     .attr('height', height)
-    .style('fill', "url(#backstripes)")
-    .on('click', function(d) {
-        // Remove the
-        main_svg.selectAll('.overlay').remove()
-    });
+    .style('fill', "url(#backstripes)");
 
 // append the svg object to the body of the page
 // appends a 'group' element to 'svg'
@@ -78,27 +81,11 @@ function getBB(selection) {
     })
 };
 
-function str2bytes (str) {
-    var bytes = new Uint8Array(str.length);
-    for (var i=0; i<str.length; i++) {
-        bytes[i] = str.charCodeAt(i);
-    }
-    return bytes;
-}
-
 function urlnode_click(d) {
-    var url = "url/" + d.data.uuid;
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = "blob";
-    xhr.withCredentials = true;
-    xhr.onreadystatechange = function (){
-        if (xhr.readyState === 4) {
-            var blob = xhr.response;
-            saveAs(blob, 'file.zip');
-        }
-    };
-    xhr.send();
+    var url = "tree/url/" + d.data.uuid;
+    d3.blob(url, {credentials: 'same-origin'}).then(function(data) {
+        saveAs(data, 'file.zip');
+    });
 };
 
 d3.selection.prototype.moveToFront = function() {
@@ -106,6 +93,9 @@ d3.selection.prototype.moveToFront = function() {
     this.parentNode.appendChild(this);
   });
 };
+
+
+
 
 // What happen when clicking on a domain (load a modal display)
 function hostnode_click(d) {
@@ -118,14 +108,17 @@ function hostnode_click(d) {
                                 .attr('class', 'overlay');
 
     cur_node.append('line')
-                .attr('class', 'overlay')
-                .style("stroke", "black");
+                .attr('id', 'overlay_link')
+                .style("opacity", "0.95")
+                .attr("stroke-width", "2")
+                .style("stroke", "gray");
 
     var top_margin = 15;
+    var overlay_header_height = 50;
     var left_margin = 30;
 
     overlay_hostname
-        .datum({x: 0, y: 0})
+        .datum({x: 0, y: 0, overlay_uuid: d.data.uuid})
         .attr('id', 'overlay_' + d.data.uuid)
         .attr("transform", "translate(" + 0 + "," + 0 + ")")
         .call(d3.drag().on("drag", function(d, i) {
@@ -135,9 +128,9 @@ function hostnode_click(d) {
             d.y += d3.event.dy
             d3.select(this)
                 .attr("transform", "translate(" + d.x + "," + d.y + ")");
-            cur_node.select('line')
-                .attr("x2", d.x + top_margin)
-                .attr("y2", d.y + left_margin);
+            cur_node.select('#overlay_link')
+                .attr("x2", d.x + left_margin + 3)
+                .attr("y2", d.y + top_margin + 7);
         }));
 
     overlay_hostname.append('rect')
@@ -154,26 +147,94 @@ function hostnode_click(d) {
 
     // Modal display
     var url = "/tree/hostname/" + d.data.uuid;
-    d3.json(url, function(error, urls) {
+    d3.json(url, {credentials: 'same-origin'}).then(function(urls) {
+        overlay_hostname
+            .append('circle')
+            .attr('id', 'overlay_circle_' + d.data.uuid)
+            .attr('height', overlay_header_height)
+            .attr('cx', left_margin + 10)
+            .attr('cy', top_margin + 15)
+            .attr('r', 12);
+
+        overlay_hostname
+            .append('text')
+            .attr('id', 'overlay_close_' + d.data.uuid)
+            .attr('height', overlay_header_height)
+            .attr('x', left_margin + 500)
+            .attr('y', top_margin + 25)
+            .style("font-size", overlay_header_height - 20)
+            .text('\u2716')
+            .attr('cursor', 'pointer')
+            .on("click", function() {
+                    main_svg.selectAll('#overlay_' + d.data.uuid).remove();
+                    cur_node.select('#overlay_link').remove();
+                }
+            );
+
+        overlay_hostname.append('line')
+            .attr('id', 'overlay_separator_header' + d.data.uuid)
+            .style("stroke", "gray")
+            .style('stroke-width', 2)
+            .attr('x1', 15)
+            .attr('y1', overlay_header_height)
+            .attr('x2', 500)
+            .attr('y2', overlay_header_height);
+
         var interval_entries = 40;
-        if (error) throw error;
         urls.forEach(function(url, index, array) {
             var jdata = JSON.parse(url)
             overlay_hostname.datum({'data': jdata});
-            var text_node = text_entry(overlay_hostname, left_margin, top_margin + (interval_entries * index), urlnode_click);
+            var text_node = text_entry(overlay_hostname, left_margin, top_margin + overlay_header_height + (interval_entries * index), urlnode_click);
             height_text = text_node.node().getBBox().height;
-            icon_list(overlay_hostname, left_margin + 5, top_margin + height_text + (interval_entries * index));
+            icon_list(overlay_hostname, left_margin + 5, top_margin + height_text + overlay_header_height + (interval_entries * index));
         });
+        overlay_hostname.append('line')
+            .attr('id', 'overlay_separator_footer' + d.data.uuid)
+            .style("stroke", "gray")
+            .style('stroke-width', 2)
+            .attr('x1', 15)
+            .attr('y1', overlay_hostname.node().getBBox().height + 15)
+            .attr('x2', 500)
+            .attr('y2', overlay_hostname.node().getBBox().height);
+
+        overlay_hostname
+            .append('text')
+            .attr('id', 'overlay_download_' + d.data.uuid)
+            .attr('height', overlay_header_height - 10)
+            .attr('x', left_margin)
+            .attr('y', overlay_hostname.node().getBBox().height + 40)
+            .style("font-size", overlay_header_height - 30)
+            .text('Download URLs as text')
+            .attr('cursor', 'pointer')
+            .on("click", function() {
+                var url = "/tree/hostname/" + d.data.uuid + '/text';
+                d3.blob(url, {credentials: 'same-origin'}).then(function(data) {
+                    saveAs(data, 'file.md');
+                });
+            });
+
         overlay_bbox = overlay_hostname.node().getBBox();
         overlay_hostname.select('rect')
-            .attr('width', overlay_bbox.width + left_margin)
-            .attr('height', overlay_bbox.height + top_margin);
+            .attr('width', function() {
+                optimal_size = overlay_bbox.width + left_margin
+                return optimal_size < max_overlay_width ? optimal_size : max_overlay_width;
+            })
+            .attr('height', overlay_bbox.height + 10);
 
-        cur_node.select('line')
-                    .attr("x1", cur_node.x)
-                    .attr("y1", cur_node.y)
-                    .attr("x2", top_margin)
-                    .attr("y2", left_margin);
+        overlay_hostname.select('#overlay_close_' + d.data.uuid)
+            .attr('x', overlay_hostname.select('rect').node().getBBox().width - left_margin);
+
+        overlay_hostname.select('#overlay_separator_header' + d.data.uuid)
+            .attr('x2', overlay_hostname.select('rect').node().getBBox().width + 14);
+        overlay_hostname.select('#overlay_separator_footer' + d.data.uuid)
+            .attr('x2', overlay_hostname.select('rect').node().getBBox().width + 14);
+
+
+        cur_node.select('#overlay_link')
+                    .attr("x1", 10)
+                    .attr("y1", 0)
+                    .attr("x2", left_margin + 3)
+                    .attr("y2", top_margin + 7);
     });
 };
 
@@ -243,7 +304,7 @@ function text_entry(parent_svg, relative_x_pos, relative_y_pos, onclick_callback
     // Avoid hiding the content after the circle
     var nodeContent = parent_svg
           .append('svg')
-          .attr('height',node_height)
+          .attr('height', node_height)
           .attr('x', relative_x_pos)
           .attr('y', relative_y_pos);
 
@@ -254,6 +315,8 @@ function text_entry(parent_svg, relative_x_pos, relative_y_pos, onclick_callback
           .style("font-size", "16px")
           .attr("stroke-width", ".2px")
           .style("opacity", .9)
+          .attr('cursor', 'pointer')
+          .attr("clip-path", "url(#textOverlay)")
           .text(function(d) {
               d.data.total_width = 0; // reset total_width
               to_display = d.data.name

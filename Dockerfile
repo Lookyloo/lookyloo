@@ -8,7 +8,7 @@ WORKDIR lookyloo
 
 RUN pip3 install -r requirements.txt
 RUN pip3 install -e .
-RUN wget https://d3js.org/d3.v4.min.js -O lookyloo/static/d3.v4.min.js
+RUN wget https://d3js.org/d3.v5.min.js -O lookyloo/static/d3.v5.min.js
 RUN wget https://cdn.rawgit.com/eligrey/FileSaver.js/5733e40e5af936eb3f48554cf6a8a7075d71d18a/FileSaver.js -O lookyloo/static/FileSaver.js
 
 RUN sed -i "s/SPLASH = 'http:\/\/127.0.0.1:8050'/SPLASH = 'http:\/\/splash:8050'/g" lookyloo/__init__.py

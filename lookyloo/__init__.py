@@ -9,13 +9,12 @@ from scrapysplashwrapper import crawl
 from flask import Flask, render_template, request, session, send_file
 from flask_bootstrap import Bootstrap
 
-from glob import glob
-import os
 from datetime import datetime
 
 import pickle
 import tempfile
 import pathlib
+import time
 
 from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
@@ -30,26 +29,24 @@ if app.secret_key == 'changeme':
 
 Bootstrap(app)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
+app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.debug = True
 
-HAR_DIR = 'scraped'
+HAR_DIR = pathlib.Path('scraped')
 SPLASH = 'http://127.0.0.1:8050'
 
-pathlib.Path(HAR_DIR).mkdir(parents=True, exist_ok=True)
+HAR_DIR.mkdir(parents=True, exist_ok=True)
 
 
-@app.before_request
-def session_management():
-    # make the session last indefinitely until it is cleared
-    session.permanent = True
+def cleanup_old_tmpfiles():
+    for tmpfile in pathlib.Path(tempfile.gettempdir()).glob('lookyloo*'):
+        if time.time() - tmpfile.stat().st_atime > 36000:
+            tmpfile.unlink()
 
 
 def load_tree(report_dir):
-    if session.get('tree'):
-        # TODO delete file
-        pass
     session.clear()
-    har_files = sorted(glob(os.path.join(HAR_DIR, report_dir, '*.har')))
+    har_files = sorted(report_dir.glob('*.har'))
     ct = CrawledTree(har_files)
     ct.find_parents()
     ct.join_trees()
@@ -65,7 +62,7 @@ def scrape():
     if request.form.get('url'):
         url = request.form.get('url')
         if not url.startswith('http'):
-            url = 'http://{}'.format(url)
+            url = f'http://{url}'
         depth = request.form.get('depth')
         if depth is None:
             depth = 1
@@ -74,17 +71,20 @@ def scrape():
             # broken
             pass
         width = len(str(len(items)))
-        dirpath = os.path.join(HAR_DIR, datetime.now().isoformat())
-        os.makedirs(dirpath)
+        dirpath = HAR_DIR / datetime.now().isoformat()
+        dirpath.mkdir()
         for i, item in enumerate(items):
             harfile = item['har']
             png = base64.b64decode(item['png'])
             child_frames = item['childFrames']
-            with open(os.path.join(dirpath, '{0:0{width}}.har'.format(i, width=width)), 'w') as f:
+            html = item['html']
+            with (dirpath / '{0:0{width}}.har'.format(i, width=width)).open('w') as f:
                 json.dump(harfile, f)
-            with open(os.path.join(dirpath, '{0:0{width}}.png'.format(i, width=width)), 'wb') as f:
+            with (dirpath / '{0:0{width}}.png'.format(i, width=width)).open('wb') as f:
                 f.write(png)
-            with open(os.path.join(dirpath, '{0:0{width}}.frames.json'.format(i, width=width)), 'w') as f:
+            with (dirpath / '{0:0{width}}.html'.format(i, width=width)).open('w') as f:
+                f.write(html)
+            with (dirpath / '{0:0{width}}.frames.json'.format(i, width=width)).open('w') as f:
                 json.dump(child_frames, f)
         return tree(0)
     return render_template('scrape.html')
@@ -92,10 +92,28 @@ def scrape():
 
 def get_report_dirs():
     # Cleanup HAR_DIR of failed runs.
-    for report_dir in os.listdir(HAR_DIR):
-        if not os.listdir(os.path.join(HAR_DIR, report_dir)):
-            os.rmdir(os.path.join(HAR_DIR, report_dir))
-    return sorted(os.listdir(HAR_DIR), reverse=True)
+    for report_dir in HAR_DIR.iterdir():
+        if report_dir.is_dir() and not report_dir.iterdir():
+            report_dir.rmdir()
+    return sorted(HAR_DIR.iterdir(), reverse=True)
+
+
+@app.route('/tree/hostname/<node_uuid>/text', methods=['GET'])
+def hostnode_details_text(node_uuid):
+    with open(session["tree"], 'rb') as f:
+        ct = pickle.load(f)
+    hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
+    urls = []
+    for url in hostnode.urls:
+        urls.append(url.name)
+    content = '''# URLs
+
+{}
+'''.format('\n'.join(urls))
+    to_return = BytesIO(content.encode())
+    to_return.seek(0)
+    return send_file(to_return, mimetype='text/markdown',
+                     as_attachment=True, attachment_filename='file.md')
 
 
 @app.route('/tree/hostname/<node_uuid>', methods=['GET'])
@@ -114,16 +132,18 @@ def urlnode_details(node_uuid):
     with open(session["tree"], 'rb') as f:
         ct = pickle.load(f)
     urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
-
     to_return = BytesIO()
+    got_content = False
     if hasattr(urlnode, 'body'):
-        with ZipFile(to_return, 'a', ZIP_DEFLATED, False) as zfile:
-            zfile.writestr(urlnode.filename, urlnode.body.getvalue())
-        to_return.seek(0)
-    # return send_file(urlnode.body, mimetype='application/zip',
-    #                 as_attachment=True, attachment_filename='file.zip')
-    with open('foo.bin', 'wb') as f:
-        f.write(to_return.getvalue())
+        body_content = urlnode.body.getvalue()
+        if body_content:
+            got_content = True
+            with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
+                zfile.writestr(urlnode.filename, urlnode.body.getvalue())
+    if not got_content:
+        with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
+            zfile.writestr('file.txt', b'Response body empty')
+    to_return.seek(0)
     return send_file(to_return, mimetype='application/zip',
                      as_attachment=True, attachment_filename='file.zip')
 
@@ -138,12 +158,14 @@ def tree(tree_id):
 
 @app.route('/', methods=['GET'])
 def index():
+    cleanup_old_tmpfiles()
+    session.clear()
     i = 0
     titles = []
-    if not os.path.exists(HAR_DIR):
-        os.makedirs(HAR_DIR)
+    if not HAR_DIR.exists():
+        HAR_DIR.mkdir(parents=True)
     for report_dir in get_report_dirs():
-        har_files = sorted(glob(os.path.join(HAR_DIR, report_dir, '*.har')))
+        har_files = sorted(report_dir.glob('*.har'))
         if not har_files:
             continue
         with open(har_files[0], 'r') as f:
