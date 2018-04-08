@@ -95,3 +95,21 @@ And you can open ```http://<IP-or-domain>/```
 
 Now, you should configure [TLS (let's encrypt and so on)](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04)
 
+
+
+# Run the app with Docker
+
+The repository includes a [Dockerfile](Dockerfile) for building a containerized installation of the app.
+
+Additionally you can start a complete setup, including the necessary Docker instance of splashy, by using
+Docker Compose and the included service definition in [docker-compose.yml](docker-compose.yml) by running
+
+```
+docker-compose up
+```
+
+After building and startup is complete lookyloo should be available at 
+ [http://localhost:5000/](http://localhost:5000/)
+
+If you want to persist the data between different runs uncomment  the "volumes" definition in the last two lines of 
+[docker-compose.yml](docker-compose.yml) and define a data storage directory in your Docker host system there. 
