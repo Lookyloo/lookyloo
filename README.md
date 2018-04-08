@@ -99,8 +99,12 @@ Now, you should configure [TLS (let's encrypt and so on)](https://www.digitaloce
 
 # Run the app with Docker
 
-The repository includes a [Dockerfile](Dockerfile) for building a containerized installation of the app.
+## Dockerfile
+The repository includes a [Dockerfile](Dockerfile) for building a containerized instance of the app.
 
+Lookyloo stores the scraped data in /lookyloo/scraped. If you want to persist the scraped data between runs it is sufficient to define a volume for this directory.
+
+## Running a complete setup with Docker Compose
 Additionally you can start a complete setup, including the necessary Docker instance of splashy, by using
 Docker Compose and the included service definition in [docker-compose.yml](docker-compose.yml) by running
 
