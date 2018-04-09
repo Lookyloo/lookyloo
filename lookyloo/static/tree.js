@@ -82,7 +82,7 @@ function getBB(selection) {
 };
 
 function urlnode_click(d) {
-    var url = "tree/url/" + d.data.uuid;
+    var url = "/tree/url/" + d.data.uuid;
     d3.blob(url, {credentials: 'same-origin'}).then(function(data) {
         saveAs(data, 'file.zip');
     });
@@ -93,9 +93,6 @@ d3.selection.prototype.moveToFront = function() {
     this.parentNode.appendChild(this);
   });
 };
-
-
-
 
 // What happen when clicking on a domain (load a modal display)
 function hostnode_click(d) {
@@ -160,7 +157,7 @@ function hostnode_click(d) {
             .append('text')
             .attr('id', 'overlay_close_' + d.data.uuid)
             .attr('height', overlay_header_height)
-            .attr('x', left_margin + 500)
+            .attr('x', left_margin + 500)  // Value updated based on the size of the rectangle max: max_overlay_width
             .attr('y', top_margin + 25)
             .style("font-size", overlay_header_height - 20)
             .text('\u2716')
