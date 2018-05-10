@@ -44,6 +44,11 @@ def cleanup_old_tmpfiles():
             tmpfile.unlink()
 
 
+def load_image(report_dir):
+    with open(list(report_dir.glob('*.png'))[0], 'rb') as f:
+        return BytesIO(f.read())
+
+
 def load_tree(report_dir):
     session.clear()
     har_files = sorted(report_dir.glob('*.har'))
@@ -148,12 +153,20 @@ def urlnode_details(node_uuid):
                      as_attachment=True, attachment_filename='file.zip')
 
 
+@app.route('/tree/<int:tree_id>/image', methods=['GET'])
+def image(tree_id):
+    report_dir = get_report_dirs()[tree_id]
+    to_return = load_image(report_dir)
+    return send_file(to_return, mimetype='image/png',
+                     as_attachment=True, attachment_filename='image.png')
+
+
 @app.route('/tree/<int:tree_id>', methods=['GET'])
 def tree(tree_id):
     report_dir = get_report_dirs()[tree_id]
     tree_json, start_time, user_agent, root_url = load_tree(report_dir)
     return render_template('tree.html', tree_json=tree_json, start_time=start_time,
-                           user_agent=user_agent, root_url=root_url)
+                           user_agent=user_agent, root_url=root_url, tree_id=tree_id)
 
 
 @app.route('/', methods=['GET'])
