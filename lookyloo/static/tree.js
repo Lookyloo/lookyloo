@@ -7,6 +7,7 @@ var margin = {top: 20, right: 200, bottom: 30, left: 90},
 
 var node_width = 0;
 var max_overlay_width = 1500;
+var default_max_overlay_height = 500;
 var node_height = 45;
 
 var main_svg = d3.select("body").append("svg")
@@ -18,6 +19,13 @@ main_svg.append("clipPath")
     .append("rect")
     .attr('width', max_overlay_width - 25)
     .attr('height', node_height);
+
+main_svg.append("clipPath")
+    .attr("id", "overlayHeight")
+    .append("rect")
+    .attr('width', max_overlay_width)
+    .attr('height', default_max_overlay_height + 100);
+
 
 // Add background pattern
 var pattern = main_svg.append("defs").append('pattern')
@@ -159,7 +167,7 @@ function hostnode_click(d) {
             .attr('height', overlay_header_height)
             .attr('x', left_margin + 500)  // Value updated based on the size of the rectangle max: max_overlay_width
             .attr('y', top_margin + 25)
-            .style("font-size", overlay_header_height - 20)
+            .style("font-size", '30px')
             .text('\u2716')
             .attr('cursor', 'pointer')
             .on("click", function() {
@@ -177,30 +185,35 @@ function hostnode_click(d) {
             .attr('x2', 500)
             .attr('y2', overlay_header_height);
 
+        var url_entries = overlay_hostname.append('svg');
+
         var interval_entries = 40;
         urls.forEach(function(url, index, array) {
             var jdata = JSON.parse(url)
-            overlay_hostname.datum({'data': jdata});
-            var text_node = text_entry(overlay_hostname, left_margin, top_margin + overlay_header_height + (interval_entries * index), urlnode_click);
-            height_text = text_node.node().getBBox().height;
-            icon_list(overlay_hostname, left_margin + 5, top_margin + height_text + overlay_header_height + (interval_entries * index));
+            url_entries.datum({'data': jdata});
+            var text_node = text_entry(url_entries, left_margin, top_margin + overlay_header_height + (interval_entries * index), urlnode_click);
+            var height_text = text_node.node().getBBox().height;
+            icon_list(url_entries, left_margin + 5, top_margin + height_text + overlay_header_height + (interval_entries * index));
         });
+
+        var overlay_bbox = overlay_hostname.node().getBBox()
         overlay_hostname.append('line')
             .attr('id', 'overlay_separator_footer' + d.data.uuid)
             .style("stroke", "gray")
             .style('stroke-width', 2)
             .attr('x1', 15)
-            .attr('y1', overlay_hostname.node().getBBox().height + 15)
+            .attr('y1', overlay_bbox.height + 20)
             .attr('x2', 500)
-            .attr('y2', overlay_hostname.node().getBBox().height);
+            .attr('y2', overlay_bbox.height + 20);
 
+        var overlay_bbox = overlay_hostname.node().getBBox()
         overlay_hostname
             .append('text')
             .attr('id', 'overlay_download_' + d.data.uuid)
             .attr('height', overlay_header_height - 10)
             .attr('x', left_margin)
-            .attr('y', overlay_hostname.node().getBBox().height + 40)
-            .style("font-size", overlay_header_height - 30)
+            .attr('y', overlay_bbox.height + overlay_header_height)
+            .style("font-size", '20px')
             .text('Download URLs as text')
             .attr('cursor', 'pointer')
             .on("click", function() {
@@ -210,16 +223,16 @@ function hostnode_click(d) {
                 });
             });
 
-        overlay_bbox = overlay_hostname.node().getBBox();
+        var overlay_bbox = overlay_hostname.node().getBBox();
         overlay_hostname.select('rect')
             .attr('width', function() {
                 optimal_size = overlay_bbox.width + left_margin
                 return optimal_size < max_overlay_width ? optimal_size : max_overlay_width;
             })
-            .attr('height', overlay_bbox.height + 10);
+            .attr('height', overlay_bbox.height + overlay_header_height);
 
         overlay_hostname.select('#overlay_close_' + d.data.uuid)
-            .attr('x', overlay_hostname.select('rect').node().getBBox().width - left_margin);
+            .attr('x', overlay_hostname.select('rect').node().getBBox().width - 20);
 
         overlay_hostname.select('#overlay_separator_header' + d.data.uuid)
             .attr('x2', overlay_hostname.select('rect').node().getBBox().width + 14);
