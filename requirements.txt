@@ -3,6 +3,7 @@ flask
 flask-bootstrap
 ete3
 beautifulsoup4
+requests
 
 # Backend libs
 git+https://github.com/viper-framework/har2tree.git

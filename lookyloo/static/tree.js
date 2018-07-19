@@ -267,6 +267,7 @@ function icon(icons, key, icon_path){
             .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
             .attr("xlink:href", icon_path).call(getBB);
 
+
     content.filter(function(d){
             if (typeof d.data[key] === 'boolean') {
                 return false;
@@ -285,6 +286,7 @@ function icon(icons, key, icon_path){
           .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 1 : 0 })
           .attr('width', function(d) { return d.to_print.toString().length + 'em'; })
           .text(function(d) { return d.to_print; }).call(getBB);
+
 };
 
 function icon_list(parent_svg, relative_x_pos, relative_y_pos) {
@@ -308,6 +310,18 @@ function icon_list(parent_svg, relative_x_pos, relative_y_pos) {
     icon(icons, 'response_cookie', "/static/cookie_received.png");
     icon(icons, 'redirect', "/static/redirect.png");
     icon(icons, 'redirect_to_nothing', "/static/cookie_in_url.png");
+
+    icons.filter(function(d){
+        if (d.data.sane_js_details) {
+            d.libname = d.data.sane_js_details[0]['libname'];
+            return d.data.sane_js_details;
+        }
+        return false;
+    }).append('text')
+      .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 5 : 0 })
+      .attr('y', 15)
+      .style("font-size", "15px")
+      .text(function(d) { return 'Library name: ' + d.libname }).call(getBB);
 }
 
 function text_entry(parent_svg, relative_x_pos, relative_y_pos, onclick_callback) {
@@ -331,6 +345,7 @@ function text_entry(parent_svg, relative_x_pos, relative_y_pos, onclick_callback
               d.data.total_width = 0; // reset total_width
               to_display = d.data.name
               if (d.data.urls_count) {
+                  // Only on Hostname node.
                   to_display += ' (' + d.data.urls_count + ')';
               };
               return to_display;
