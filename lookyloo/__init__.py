@@ -91,7 +91,7 @@ def sane_js_query(sha512, details=False):
     if has_sane_js:
         r = requests.post(SANE_JS, json={"sha512": sha512, 'details': details})
         return r.json()
-    return {}
+    return {'exists': False}
 
 
 @app.route('/scrape', methods=['GET', 'POST'])
