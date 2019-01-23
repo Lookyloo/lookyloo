@@ -9,6 +9,6 @@ services:
   lookyloo:
      build: .
      ports:
-      - "5000:5000"
+      - "5100:5100"
      #volumes:
      # - /path/to/your/data/directory:/lookyloo/scraped

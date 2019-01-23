@@ -15,5 +15,5 @@ run echo FLASK_APP="'`pwd`/lookyloo'" >> .env
 
 RUN sed -i "s/SPLASH = 'http:\/\/127.0.0.1:8050'/SPLASH = 'http:\/\/splash:8050'/g" lookyloo/__init__.py
 
-EXPOSE 5000
+EXPOSE 5100
 ENTRYPOINT ["pipenv", "run", "start_website.py"]
