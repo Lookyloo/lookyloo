@@ -24,14 +24,19 @@ Source: [Urban Dictionary](https://www.urbandictionary.com/define.php?term=looky
 
 This code is very heavily inspired by [webplugin](https://github.com/etetoolkit/webplugin) and adapted to use flask as backend.
 
-# Installation of har2tree
+The two core dependencies of this project are the following:
 
-The core dependency is ETE Toolkit, which you can install following the guide
-on the official [website](http://etetoolkit.org/download/)
+* [ETE Toolkit](http://etetoolkit.org/): A Python framework for the analysis and visualization of trees.
+* [Splash](https://splash.readthedocs.io/en/stable/): Lightweight, scriptable browser as a service with an HTTP API
 
-Note: all the PyQt4 dependencies are optional.
 
-# Installation of scrapysplashwrapper
+# Installation
+
+**IMPORTANT**: Use [pipenv](https://pipenv.readthedocs.io/en/latest/)
+
+**NOTE**: Yes, it requires python3.6+. No, it will never support anything older.
+
+## Installation of Splash
 
 You need a running splash instance, preferably on [docker](https://splash.readthedocs.io/en/stable/install.html)
 
@@ -43,20 +48,25 @@ sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui --disa
 # sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui -s 100 --disable-lua -m 50000
 ```
 
-# Installation of the whole thing
+## Installation of Lookyloo
 
 ```bash
-pip install -r requirements.txt
-pip install -e .
+got clone https://github.com/CIRCL/lookyloo.git
+cd lookyloo
+pipenv install
+echo LOOKYLOO_HOME="'`pwd`'" > .env
+echo FLASK_APP="'`pwd`/lookyloo'" >> .env
 wget https://d3js.org/d3.v5.min.js -O lookyloo/static/d3.v5.min.js
 wget https://cdn.rawgit.com/eligrey/FileSaver.js/5733e40e5af936eb3f48554cf6a8a7075d71d18a/FileSaver.js -O lookyloo/static/FileSaver.js
 ```
-# Run the app locally
+
+# Run the app
 
 ```bash
-export FLASK_APP=lookyloo
 flask run
 ```
+
+# Run the app in production
 
 ## With a reverse proxy (Nginx)
 
@@ -64,7 +74,7 @@ flask run
 pip install uwsgi
 ```
 
-### Config files
+## Config files
 
 You have to configure the two following files:
 
@@ -96,7 +106,6 @@ And you can open ```http://<IP-or-domain>/```
 Now, you should configure [TLS (let's encrypt and so on)](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04)
 
 
-
 # Run the app with Docker
 
 ## Dockerfile
@@ -112,8 +121,7 @@ Docker Compose and the included service definition in [docker-compose.yml](docke
 docker-compose up
 ```
 
-After building and startup is complete lookyloo should be available at 
- [http://localhost:5000/](http://localhost:5000/)
+After building and startup is complete lookyloo should be available at [http://localhost:5000/](http://localhost:5000/)
 
-If you want to persist the data between different runs uncomment  the "volumes" definition in the last two lines of 
-[docker-compose.yml](docker-compose.yml) and define a data storage directory in your Docker host system there. 
+If you want to persist the data between different runs uncomment  the "volumes" definition in the last two lines of
+[docker-compose.yml](docker-compose.yml) and define a data storage directory in your Docker host system there.

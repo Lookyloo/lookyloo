@@ -12,6 +12,7 @@ setup(
     url='https://github.com/CIRCL/lookyloo',
     description='Web interface to track the trackers.',
     packages=['lookyloo'],
+    scripts=['bin/start_website.py'],
     include_package_data=True,
     classifiers=[
         'License :: OSI Approved :: BSD License',

@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+scrapysplashwrapper = {editable = true,git = "https://github.com/viper-framework/ScrapySplashWrapper.git"}
+har2tree = {editable = true,git = "https://github.com/viper-framework/har2tree.git"}
+requests = "*"
+flask = "*"
+flask-bootstrap = "*"
+gunicorn = {extras = ["eventlet"],version = "*"}
+lookyloo = {editable = true,path = "."}
+cchardet = "*"
+
+[requires]
+python_version = "3.6"

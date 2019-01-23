@@ -21,26 +21,33 @@ from io import BytesIO
 import base64
 import socket
 from urllib.parse import urlparse
+import os
 
 import requests
 
+from .helpers import get_homedir
+
 app = Flask(__name__)
 
-app.secret_key = 'changeme'
 
-if app.secret_key == 'changeme':
-    raise Exception('FFS, please set a proper secret key...')
+secret_file_path = get_homedir() / 'secret_key'
+
+if not secret_file_path.exists() or secret_file_path.stat().st_size < 64:
+    with open(secret_file_path, 'wb') as f:
+        f.write(os.urandom(64))
+
+with open(secret_file_path, 'rb') as f:
+    app.config['SECRET_KEY'] = f.read()
 
 Bootstrap(app)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
-app.debug = True
+app.debug = False
 
-HAR_DIR = pathlib.Path('scraped')
-SPLASH = 'http://127.0.0.1:8050'
-
+HAR_DIR = get_homedir() / 'scraped'
 HAR_DIR.mkdir(parents=True, exist_ok=True)
 
+SPLASH = 'http://127.0.0.1:8050'
 SANE_JS = 'http://127.0.0.1:5007'
 
 

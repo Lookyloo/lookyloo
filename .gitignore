@@ -104,3 +104,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+
+# Lookyloo
+secret_key
+FileSaver.js
+d3.v5.min.js
