@@ -20,10 +20,9 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 import base64
 import socket
-from urllib.parse import urlparse
 import os
 
-import requests
+from pysanejs import SaneJS
 
 from .helpers import get_homedir
 
@@ -63,8 +62,8 @@ def is_open(ip, port):
 
 
 if SANE_JS:
-    parsed = urlparse(SANE_JS)
-    if is_open(parsed.hostname, parsed.port):
+    sanejs = SaneJS(SANE_JS)
+    if sanejs.is_up:
         has_sane_js = True
     else:
         has_sane_js = False
@@ -94,11 +93,10 @@ def load_tree(report_dir):
     return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url
 
 
-def sane_js_query(sha512, details=False):
+def sane_js_query(sha512):
     if has_sane_js:
-        r = requests.post(SANE_JS, json={"sha512": sha512, 'details': details})
-        return r.json()
-    return {'exists': False}
+        return sanejs.sha512(sha512)
+    return {'response': []}
 
 
 @app.route('/scrape', methods=['GET', 'POST'])
@@ -168,9 +166,9 @@ def hostnode_details(node_uuid):
     urls = []
     for url in hostnode.urls:
         if hasattr(url, 'body_hash'):
-            sane_js_r = sane_js_query(url.body_hash, details=True)
-            if sane_js_r['exists']:
-                url.add_feature('sane_js_details', sane_js_r['details'])
+            sane_js_r = sane_js_query(url.body_hash)
+            if sane_js_r.get('response'):
+                url.add_feature('sane_js_details', sane_js_r['response'])
                 print(url.sane_js_details)
         urls.append(url.to_json())
     return json.dumps(urls)

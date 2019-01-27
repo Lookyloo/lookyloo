@@ -313,7 +313,7 @@ function icon_list(parent_svg, relative_x_pos, relative_y_pos) {
 
     icons.filter(function(d){
         if (d.data.sane_js_details) {
-            d.libname = d.data.sane_js_details[0]['libname'];
+            d.libinfo = d.data.sane_js_details[0];
             return d.data.sane_js_details;
         }
         return false;
@@ -321,7 +321,7 @@ function icon_list(parent_svg, relative_x_pos, relative_y_pos) {
       .attr('x', function(d) { return d.data.total_width ? d.data.total_width + 5 : 0 })
       .attr('y', 15)
       .style("font-size", "15px")
-      .text(function(d) { return 'Library name: ' + d.libname }).call(getBB);
+      .text(function(d) { return 'Library inforamtion: ' + d.libinfo }).call(getBB);
 }
 
 function text_entry(parent_svg, relative_x_pos, relative_y_pos, onclick_callback) {

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6b8daa132362733ad56e82a23ffc6141ebbb39c5ed74054b1d445aeec88d5b30"
+            "sha256": "6468b6eae67fd44ea812c2d4d5cdfe2faf39a109374cc8ef526b6c9419927968"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -378,10 +378,10 @@
         },
         "pyasn1-modules": {
             "hashes": [
-                "sha256:642afdabb681d39f5948fd5477764d94faf17ce40e5691e9998b52815fbb4e71",
-                "sha256:d14fcb29dabecba3d7b360bf72327c26c385248a5d603cf6be5f566ce999b261"
+                "sha256:79580acf813e3b7d6e69783884e6e83ac94bf4617b36a135b85c599d8a818a7b",
+                "sha256:a52090e8c5841ebbf08ae455146792d9ef3e8445b21055d3a3b7ed9c712b7c7c"
             ],
-            "version": "==0.2.3"
+            "version": "==0.2.4"
         },
         "pycparser": {
             "hashes": [
@@ -409,6 +409,11 @@
                 "sha256:c727930ad54b10fc157015014b666f2d8b41f70c0d03e83ab67624fd3dd5d1e6"
             ],
             "version": "==19.0.0"
+        },
+        "pysanejs": {
+            "editable": true,
+            "git": "https://github.com/CIRCL/PySaneJS.git",
+            "ref": "a91ebf014754b1b84e1c2874759315446d4a6b85"
         },
         "queuelib": {
             "hashes": [

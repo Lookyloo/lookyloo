@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 scrapysplashwrapper = {editable = true,git = "https://github.com/viper-framework/ScrapySplashWrapper.git"}
 har2tree = {editable = true,git = "https://github.com/viper-framework/har2tree.git"}
+pysanejs = {editable = true,git = "https://github.com/CIRCL/PySaneJS.git"}
 requests = "*"
 flask = "*"
 flask-bootstrap = "*"
