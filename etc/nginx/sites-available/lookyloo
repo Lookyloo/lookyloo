@@ -3,7 +3,13 @@ server {
     server_name server_domain_or_IP;
 
     location / {
-        include uwsgi_params;
-        uwsgi_pass unix:/home/<CHANGE_ME>/lookyloo/lookyloo.sock;
+        proxy_pass_header Server;
+        proxy_set_header Host $http_host;
+        proxy_redirect off;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Scheme $scheme;
+        proxy_connect_timeout 10;
+        proxy_read_timeout 10;
+        proxy_pass http://localhost:5100/;
     }
 }

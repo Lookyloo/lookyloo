@@ -7,8 +7,8 @@ User=www-data
 Group=www-data
 WorkingDirectory=/home/<CHANGE_ME>/lookyloo
 Environment="PATH=/home/<CHANGE_ME>/<MY_VIRTUALENV_PATH>/bin"
-ExecStart=/home/<CHANGE_ME>/<MY_VIRTUALENV_PATH>/bin/uwsgi --ini lookyloo.ini
-Environment=FLASK_APP=lookyloo
+ExecStart=/home/<CHANGE_ME>/<MY_VIRTUALENV_PATH>/bin/start_website.py
+Environment=LOOKYLOO_HOME=/home/<CHANGE_ME>/lookyloo
 
 [Install]
 WantedBy=multi-user.target
