@@ -111,3 +111,6 @@ secret_key
 FileSaver.js
 d3.v5.min.js
 d3.v5.js
+
+cache.pid
+dump.rdb

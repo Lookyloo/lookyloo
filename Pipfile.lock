@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6468b6eae67fd44ea812c2d4d5cdfe2faf39a109374cc8ef526b6c9419927968"
+            "sha256": "c3c9657b345f0168789235083c9309852a08bdcfec02df214e6d54f5927e9f20"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -413,7 +413,7 @@
         "pysanejs": {
             "editable": true,
             "git": "https://github.com/CIRCL/PySaneJS.git",
-            "ref": "a91ebf014754b1b84e1c2874759315446d4a6b85"
+            "ref": "9153b38c1819d93725aee70c8b0195d7e662f978"
         },
         "queuelib": {
             "hashes": [
@@ -421,6 +421,14 @@
                 "sha256:ff43b5b74b9266f8df4232a8f768dc4d67281a271905e2ed4a3689d4d304cd02"
             ],
             "version": "==1.5.0"
+        },
+        "redis": {
+            "hashes": [
+                "sha256:74c892041cba46078ae1ef845241548baa3bd3634f9a6f0f952f006eb1619c71",
+                "sha256:7ba8612bbfd966dea8c62322543fed0095da2834dbd5a7c124afbc617a156aa7"
+            ],
+            "index": "pypi",
+            "version": "==3.1.0"
         },
         "requests": {
             "hashes": [

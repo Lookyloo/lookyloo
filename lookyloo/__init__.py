@@ -6,7 +6,7 @@ import json
 from har2tree import CrawledTree
 from scrapysplashwrapper import crawl
 
-from flask import Flask, render_template, request, session, send_file, redirect, url_for
+from flask import Flask, render_template, request, session, send_file, redirect, url_for, Response
 from flask_bootstrap import Bootstrap
 
 from datetime import datetime
@@ -24,7 +24,8 @@ from uuid import uuid4
 
 from pysanejs import SaneJS
 
-from .helpers import get_homedir
+from .helpers import get_homedir, get_socket_path
+from redis import Redis
 
 app = Flask(__name__)
 
@@ -55,6 +56,8 @@ if SANE_JS:
         has_sane_js = True
     else:
         has_sane_js = False
+
+r = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
 
 
 def get_report_dirs():
@@ -136,6 +139,17 @@ def scrape(url, depth: int=1, user_agent: str=None, perma_uuid: str=None):
         with (dirpath / 'uuid').open('w') as f:
             f.write(perma_uuid)
     return perma_uuid
+
+
+@app.route('/submit', methods=['POST', 'GET'])
+def submit():
+    to_query = request.get_json(force=True)
+    perma_uuid = str(uuid4())
+    p = r.pipeline()
+    p.hmset(perma_uuid, to_query)
+    p.sadd('to_scrape', perma_uuid)
+    p.execute()
+    return Response(perma_uuid, mimetype='text/text')
 
 
 @app.route('/scrape', methods=['GET', 'POST'])
@@ -221,6 +235,9 @@ def tree(tree_uuid):
 
 @app.route('/', methods=['GET'])
 def index():
+    if request.method == 'HEAD':
+        # Just returns ack if the webserver is running
+        return 'Ack'
     cleanup_old_tmpfiles()
     session.clear()
     titles = []

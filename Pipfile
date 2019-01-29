@@ -15,6 +15,7 @@ flask-bootstrap = "*"
 gunicorn = {extras = ["eventlet"],version = "*"}
 lookyloo = {editable = true,path = "."}
 cchardet = "*"
+redis = "*"
 
 [requires]
 python_version = "3.6"
