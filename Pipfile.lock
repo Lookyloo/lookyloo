@@ -447,7 +447,7 @@
         "scrapysplashwrapper": {
             "editable": true,
             "git": "https://github.com/viper-framework/ScrapySplashWrapper.git",
-            "ref": "e6d9da1a971011b2925800b168d762e7f86b2b29"
+            "ref": "d0e129f9962098603f6686c8152030f7d31a604a"
         },
         "service-identity": {
             "hashes": [
