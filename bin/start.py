@@ -10,4 +10,5 @@ if __name__ == '__main__':
     get_homedir()
     p = Popen(['run_backend.py', '--start'])
     p.wait()
+    Popen(['async_scrape.py'])
     Popen(['start_website.py'])

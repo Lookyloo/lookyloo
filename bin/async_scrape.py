@@ -5,9 +5,8 @@ from pathlib import Path
 import logging
 
 from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import get_homedir, get_socket_path
-from lookyloo import scrape
-from redis import Redis
+from lookyloo.helpers import get_homedir
+from lookyloo.lookyloo import Lookyloo
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO, datefmt='%I:%M:%S')
@@ -19,15 +18,10 @@ class AsyncScraper(AbstractManager):
         super().__init__(loglevel)
         if not storage_directory:
             self.storage_directory = get_homedir() / 'scraped'
-        self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
+        self.lookyloo = Lookyloo(loglevel=loglevel)
 
     def _to_run_forever(self):
-        uuid = self.redis.spop('to_scrape')
-        if not uuid:
-            return
-        to_scrape = self.redis.hgetall(uuid)
-        to_scrape['perma_uuid'] = uuid
-        scrape(**to_scrape)
+        self.lookyloo.process_scrape_queue()
 
 
 if __name__ == '__main__':
