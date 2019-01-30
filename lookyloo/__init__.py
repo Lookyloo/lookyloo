@@ -51,10 +51,13 @@ SPLASH = 'http://127.0.0.1:8050'
 SANE_JS = 'http://127.0.0.1:5007'
 
 if SANE_JS:
-    sanejs = SaneJS(SANE_JS)
-    if sanejs.is_up:
-        has_sane_js = True
-    else:
+    try:
+        sanejs = SaneJS(SANE_JS)
+        if sanejs.is_up:
+            has_sane_js = True
+        else:
+            has_sane_js = False
+    except Exception:
         has_sane_js = False
 
 r = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
