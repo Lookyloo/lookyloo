@@ -16,6 +16,7 @@ gunicorn = {extras = ["eventlet"],version = "*"}
 lookyloo = {editable = true,path = "."}
 cchardet = "*"
 redis = "*"
+pylookyloo = {editable = true,path = "./client"}
 
 [requires]
 python_version = "3.6"

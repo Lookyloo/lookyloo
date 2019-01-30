@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c3c9657b345f0168789235083c9309852a08bdcfec02df214e6d54f5927e9f20"
+            "sha256": "766c81240a1f3be46b1f7e845ee38ff7306eeb9a91ffa6aa6be204f51c582b7c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -403,6 +403,10 @@
             ],
             "version": "==1.9.0"
         },
+        "pylookyloo": {
+            "editable": true,
+            "path": "./client"
+        },
         "pyopenssl": {
             "hashes": [
                 "sha256:aeca66338f6de19d1aa46ed634c3b9ae519a64b458f8468aec688e7e3c20f200",
@@ -413,7 +417,7 @@
         "pysanejs": {
             "editable": true,
             "git": "https://github.com/CIRCL/PySaneJS.git",
-            "ref": "9153b38c1819d93725aee70c8b0195d7e662f978"
+            "ref": "d4d9125e04eba1fc41dcd82302e346343d10b2a1"
         },
         "queuelib": {
             "hashes": [

@@ -113,8 +113,9 @@ def urlnode_details(node_uuid):
 
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
 def image(tree_uuid):
-    lookup_dirs = lookyloo.lookup_dirs
-    report_dir = lookup_dirs[tree_uuid]
+    report_dir = lookyloo.lookup_dirs.get(tree_uuid)
+    if not report_dir:
+        return Response('Not available.', mimetype='text/text')
     to_return = lookyloo.load_image(report_dir)
     return send_file(to_return, mimetype='image/png',
                      as_attachment=True, attachment_filename='image.png')
@@ -122,8 +123,10 @@ def image(tree_uuid):
 
 @app.route('/tree/<string:tree_uuid>', methods=['GET'])
 def tree(tree_uuid):
-    lookup_dirs = lookyloo.lookup_dirs
-    report_dir = lookup_dirs[tree_uuid]
+    report_dir = lookyloo.lookup_dirs.get(tree_uuid)
+    if not report_dir:
+        return redirect(url_for('index'))
+
     tree_json, start_time, user_agent, root_url = load_tree(report_dir)
     return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                            user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid)
