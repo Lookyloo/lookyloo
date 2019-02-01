@@ -113,7 +113,7 @@ def urlnode_details(node_uuid):
 
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
 def image(tree_uuid):
-    report_dir = lookyloo.lookup_dirs.get(tree_uuid)
+    report_dir = lookyloo.lookup_report_dir(tree_uuid)
     if not report_dir:
         return Response('Not available.', mimetype='text/text')
     to_return = lookyloo.load_image(report_dir)
@@ -123,7 +123,7 @@ def image(tree_uuid):
 
 @app.route('/tree/<string:tree_uuid>', methods=['GET'])
 def tree(tree_uuid):
-    report_dir = lookyloo.lookup_dirs.get(tree_uuid)
+    report_dir = lookyloo.lookup_report_dir(tree_uuid)
     if not report_dir:
         return redirect(url_for('index'))
 
@@ -141,14 +141,9 @@ def index():
     session.clear()
     titles = []
     for report_dir in lookyloo.report_dirs:
-        har_files = sorted(report_dir.glob('*.har'))
-        if not har_files:
+        cached = lookyloo.report_cache(report_dir)
+        if not cached:
             continue
-        with har_files[0].open() as f:
-            j = json.load(f)
-            title = j['log']['pages'][0]['title']
-        with (report_dir / 'uuid').open() as f:
-            uuid = f.read().strip()
-        titles.append((uuid, title))
+        titles.append((cached['uuid'], cached['title']))
 
     return render_template('index.html', titles=titles)

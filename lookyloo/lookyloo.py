@@ -36,6 +36,8 @@ class Lookyloo():
         if not self.scrape_dir.exists():
             self.scrape_dir.mkdir(parents=True, exist_ok=True)
 
+        self._init_existing_dumps()
+
         # Try to reach sanejs
         self.sanejs = SaneJS()
         if not self.sanejs.is_up:
@@ -44,6 +46,31 @@ class Lookyloo():
     def __init_logger(self, loglevel) -> None:
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(loglevel)
+
+    def _set_report_cache(self, report_dir: str):
+        har_files = sorted(report_dir.glob('*.har'))
+        if not har_files:
+            self.logger.warning(f'No har files in {report_dir}')
+            return
+        with (report_dir / 'uuid').open() as f:
+            uuid = f.read().strip()
+        with har_files[0].open() as f:
+            j = json.load(f)
+            title = j['log']['pages'][0]['title']
+            if not title:
+                title = '!! No title found !! '
+        cache = {'uuid': uuid, 'title': title}
+        self.redis.hmset(str(report_dir), cache)
+        self.redis.hset('lookup_dirs', uuid, str(report_dir))
+
+    def report_cache(self, report_dir) -> dict:
+        if isinstance(report_dir, Path):
+            report_dir = str(report_dir)
+        return self.redis.hgetall(report_dir)
+
+    def _init_existing_dumps(self):
+        for report_dir in self.report_dirs:
+            self._set_report_cache(report_dir)
 
     @property
     def report_dirs(self):
@@ -57,14 +84,11 @@ class Lookyloo():
                     f.write(str(uuid4()))
         return sorted(self.scrape_dir.iterdir(), reverse=True)
 
-    @property
-    def lookup_dirs(self):
-        # Build lookup table trees
-        lookup_dirs = {}
-        for report_dir in self.report_dirs:
-            with (report_dir / 'uuid').open() as f:
-                lookup_dirs[f.read().strip()] = report_dir
-        return lookup_dirs
+    def lookup_report_dir(self, uuid) -> Path:
+        report_dir = self.redis.hget('lookup_dirs', uuid)
+        if report_dir:
+            return Path(report_dir)
+        return None
 
     def enqueue_scrape(self, query: dict):
         perma_uuid = str(uuid4())
@@ -134,4 +158,5 @@ class Lookyloo():
                 json.dump(child_frames, f)
             with (dirpath / 'uuid').open('w') as f:
                 f.write(perma_uuid)
+        self._set_report_cache(dirpath)
         return perma_uuid
