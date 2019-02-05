@@ -48,22 +48,29 @@ sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui --disa
 # sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui -s 100 --disable-lua -m 50000
 ```
 
+## Install redis
+
+```bash
+git clone https://github.com/antirez/redis.git
+cd redis
+git checkout 5.0
+make
+cd ..
+```
+
 ## Installation of Lookyloo
 
 ```bash
-got clone https://github.com/CIRCL/lookyloo.git
+git clone https://github.com/CIRCL/lookyloo.git
 cd lookyloo
 pipenv install
 echo LOOKYLOO_HOME="'`pwd`'" > .env
-echo FLASK_APP="'`pwd`/lookyloo'" >> .env
-wget https://d3js.org/d3.v5.min.js -O lookyloo/static/d3.v5.min.js
-wget https://cdn.rawgit.com/eligrey/FileSaver.js/5733e40e5af936eb3f48554cf6a8a7075d71d18a/FileSaver.js -O lookyloo/static/FileSaver.js
 ```
 
 # Run the app
 
 ```bash
-flask run
+pipenv run start.py
 ```
 
 # Run the app in production
