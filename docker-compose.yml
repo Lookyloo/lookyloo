@@ -10,5 +10,13 @@ services:
      build: .
      ports:
       - "5100:5100"
+     tty: true
+     command:
+         - /bin/sh
+         - -c
+         - |
+             pipenv run run_backend.py --start
+             pipenv run async_scrape.py &
+             pipenv run start_website.py
      #volumes:
      # - /path/to/your/data/directory:/lookyloo/scraped
