@@ -14,6 +14,26 @@
   stroke-width: 2px;
 }
 
+#screenshot {
+  position: fixed;
+  top: 5px;
+  right: 5px;
+  background: white;
+  border: 2px solid;
+}
+
+.thumbnail:hover {
+  position:relative;
+  width:100%;
+  height:auto;
+  display:block;
+  z-index:999;
+}
+
+.thumbnail {
+	overflow: hidden;
+}
+
 #lookyloo-icon {
   position: fixed;
   top: 5px;

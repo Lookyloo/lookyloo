@@ -14,6 +14,9 @@
 </script>
 
 <div id=lookyloo-icon></div>
+<div id=screenshot>
+    <img src="{{ url_for('image', tree_uuid=tree_uuid) }}" class="thumbnail" height="300" width="200" overflow="hidden"/>
+</div>
 <div id=legend>
     <img src="{{ url_for('static', filename='javascript.png') }}"
          alt="JavaScript" height="20" width="20"> Javascript </br>
