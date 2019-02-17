@@ -147,7 +147,6 @@ def index():
         cached = lookyloo.report_cache(report_dir)
         if not cached:
             continue
-        if cached['noindex'] == 'False':  # Hide noindex requests
+        if cached['no_index'] == 'False':  # Hide no_index requests
             titles.append((cached['uuid'], cached['title']))
-
     return render_template('index.html', titles=titles)

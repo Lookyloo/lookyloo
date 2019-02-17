@@ -48,9 +48,9 @@ class Lookyloo():
         self.logger.setLevel(loglevel)
 
     def _set_report_cache(self, report_dir: str):
-        noindex = 'False'
-        if (report_dir / 'noindex').exists():  # If the folders claims anonymity
-            noindex = 'True'  # HMSet strings not boolean.
+        no_index = 'False'
+        if (report_dir / 'no_index').exists():  # If the folders claims anonymity
+            no_index = 'True'  # HMSet strings not boolean.
         har_files = sorted(report_dir.glob('*.har'))
         if not har_files:
             self.logger.warning(f'No har files in {report_dir}')
@@ -62,7 +62,7 @@ class Lookyloo():
             title = j['log']['pages'][0]['title']
             if not title:
                 title = '!! No title found !! '
-        cache = {'uuid': uuid, 'title': title, 'noindex': noindex}
+        cache = {'uuid': uuid, 'title': title, 'no_index': no_index}
         self.redis.hmset(str(report_dir), cache)
         self.redis.hset('lookup_dirs', uuid, str(report_dir))
 
@@ -146,8 +146,8 @@ class Lookyloo():
         width = len(str(len(items)))
         dirpath = self.scrape_dir / datetime.now().isoformat()
         dirpath.mkdir()
-        if not listing:  # Write noindex marker
-            (dirpath / 'noindex').open('w')
+        if not listing:  # Write no_index marker
+            (dirpath / 'no_index').open('w')
         for i, item in enumerate(items):
             harfile = item['har']
             png = base64.b64decode(item['png'])
