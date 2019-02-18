@@ -12,6 +12,7 @@ from flask_bootstrap import Bootstrap
 
 from lookyloo.helpers import get_homedir
 from lookyloo.lookyloo import Lookyloo
+from lookyloo.exceptions import NoValidHarFile
 
 
 app = Flask(__name__)
@@ -127,9 +128,12 @@ def tree(tree_uuid):
     if not report_dir:
         return redirect(url_for('index'))
 
-    tree_json, start_time, user_agent, root_url = load_tree(report_dir)
-    return render_template('tree.html', tree_json=tree_json, start_time=start_time,
-                           user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid)
+    try:
+        tree_json, start_time, user_agent, root_url = load_tree(report_dir)
+        return render_template('tree.html', tree_json=tree_json, start_time=start_time,
+                               user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid)
+    except NoValidHarFile as e:
+        return render_template('error.html', error_message=e.message)
 
 
 @app.route('/', methods=['GET'])

@@ -3,8 +3,12 @@
 
 
 class LookylooException(Exception):
-        pass
+    pass
 
 
 class MissingEnv(LookylooException):
+    pass
+
+
+class NoValidHarFile(LookylooException):
     pass

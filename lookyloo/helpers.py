@@ -43,7 +43,6 @@ def get_socket_path(name: str) -> str:
 
 def check_running(name: str) -> bool:
     socket_path = get_socket_path(name)
-    print(socket_path)
     try:
         r = Redis(unix_socket_path=socket_path)
         if r.ping():

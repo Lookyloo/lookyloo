@@ -4,7 +4,7 @@
 import json
 
 from scrapysplashwrapper import crawl
-from har2tree import CrawledTree
+from har2tree import CrawledTree, Har2TreeError
 import pickle
 
 from datetime import datetime
@@ -21,6 +21,7 @@ from pysanejs import SaneJS
 
 from pathlib import Path
 from .helpers import get_homedir, get_socket_path
+from .exceptions import NoValidHarFile
 from redis import Redis
 
 import logging
@@ -109,13 +110,16 @@ class Lookyloo():
 
     def load_tree(self, report_dir: Path):
         har_files = sorted(report_dir.glob('*.har'))
-        ct = CrawledTree(har_files)
-        ct.find_parents()
-        ct.join_trees()
-        temp = tempfile.NamedTemporaryFile(prefix='lookyloo', delete=False)
-        pickle.dump(ct, temp)
-        temp.close()
-        return temp.name, ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url
+        try:
+            ct = CrawledTree(har_files)
+            ct.find_parents()
+            ct.join_trees()
+            temp = tempfile.NamedTemporaryFile(prefix='lookyloo', delete=False)
+            pickle.dump(ct, temp)
+            temp.close()
+            return temp.name, ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url
+        except Har2TreeError as e:
+            raise NoValidHarFile(e.message)
 
     def cleanup_old_tmpfiles(self):
         for tmpfile in pathlib.Path(tempfile.gettempdir()).glob('lookyloo*'):
