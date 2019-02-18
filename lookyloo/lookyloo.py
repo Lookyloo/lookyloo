@@ -61,6 +61,8 @@ class Lookyloo():
             if not title:
                 title = '!! No title found !! '
         cache = {'uuid': uuid, 'title': title}
+        if (report_dir / 'no_index').exists():  # If the folders claims anonymity
+            cache['no_index'] = 1
         self.redis.hmset(str(report_dir), cache)
         self.redis.hset('lookup_dirs', uuid, str(report_dir))
 
@@ -135,7 +137,7 @@ class Lookyloo():
             return self.sanejs.sha512(sha512)
         return {'response': []}
 
-    def scrape(self, url, depth: int=1, user_agent: str=None, perma_uuid: str=None):
+    def scrape(self, url, depth: int=1, listing: bool=True, user_agent: str=None, perma_uuid: str=None):
         if not url.startswith('http'):
             url = f'http://{url}'
         items = crawl(self.splash_url, url, depth, user_agent=user_agent, log_enabled=True, log_level='INFO')
@@ -147,6 +149,8 @@ class Lookyloo():
         width = len(str(len(items)))
         dirpath = self.scrape_dir / datetime.now().isoformat()
         dirpath.mkdir()
+        if not listing:  # Write no_index marker
+            (dirpath / 'no_index').touch()
         for i, item in enumerate(items):
             harfile = item['har']
             png = base64.b64decode(item['png'])
