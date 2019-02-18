@@ -52,7 +52,10 @@ def submit():
 @app.route('/scrape', methods=['GET', 'POST'])
 def scrape_web():
     if request.form.get('url'):
-        perma_uuid = lookyloo.scrape(request.form.get('url'), request.form.get('depth'))
+        listing = False
+        if request.form.get('listing') == "True":
+            listing = True
+        perma_uuid = lookyloo.scrape(request.form.get('url'), request.form.get('depth'), listing)
         return redirect(url_for('tree', tree_uuid=perma_uuid))
     return render_template('scrape.html')
 
@@ -148,6 +151,6 @@ def index():
         cached = lookyloo.report_cache(report_dir)
         if not cached:
             continue
-        titles.append((cached['uuid'], cached['title']))
-
+        if cached['no_index'] == 'False':  # Hide no_index requests
+            titles.append((cached['uuid'], cached['title']))
     return render_template('index.html', titles=titles)
