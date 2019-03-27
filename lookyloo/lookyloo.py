@@ -52,6 +52,7 @@ class Lookyloo():
         har_files = sorted(report_dir.glob('*.har'))
         if not har_files:
             self.logger.warning(f'No har files in {report_dir}')
+            report_dir.rmdir()
             return
         with (report_dir / 'uuid').open() as f:
             uuid = f.read().strip()
