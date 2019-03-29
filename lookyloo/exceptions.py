@@ -12,3 +12,7 @@ class MissingEnv(LookylooException):
 
 class NoValidHarFile(LookylooException):
     pass
+
+
+class CreateDirectoryException(LookylooException):
+    pass

@@ -43,9 +43,9 @@ You need a running splash instance, preferably on [docker](https://splash.readth
 ```bash
 sudo apt install docker.io
 sudo docker pull scrapinghub/splash
-sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui --disable-lua
+sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui --disable-lua --disable-browser-caches
 # On a server with a decent abount of RAM, you may want to run it this way:
-# sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui -s 100 --disable-lua -m 50000
+# sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-ui -s 100 --disable-lua -m 50000 --disable-browser-caches
 ```
 
 ## Install redis

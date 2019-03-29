@@ -24,7 +24,53 @@
             <label for="listing">Public</label>
             <input type="checkbox" name="listing" checked="true"></input>
         </div>
+        <label for="os">Choose an operating system</label>
+        <select class="form-control" name="os" id="os">
+            {% for os in user_agents.keys() %}
+                <option value="{{ os }}">{{ os }}</option>
+            {% endfor%}
+        </select>
+        {% for os, browsers in user_agents.items() %}
+        <div id="{{os.replace(' ', '_')}}" class="style-sub-1" {% if loop.index0 != 0 %}style="display: none;"{%endif%}>
+            <select class="form-control" name="browser">
+                {% for browser in browsers.keys()%}
+                <option value="{{ browser }}">{{ browser }}</option>
+                {% endfor%}
+            </select>
+        </div>
+            {% set outer_loop = loop %}
+            {% for browser, user_agents in browsers.items()%}
+            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2" {% if not loop.first or not outer_loop.first %} style="display: none;"{%endif%}>
+            {% set ua_displayed = True %}
+                <select class="form-control" name="user_agent">
+                    {% for user_agent in user_agents %}
+                        <option value="{{ user_agent }}">{{ user_agent }}</option>
+                    {% endfor%}
+                </select>
+            </div>
+            {% endfor%}
+        {% endfor%}
         <button type="submit" class="btn btn-default">Scrape</button>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $("#os").change(function(){
+           var os_name = $(this).find(":selected").val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
+           var first_browser_name = $("[id='" + os_name + "']").find('select option:first-child').val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
+           $(".style-sub-1").hide();
+           $(".style-sub-2").hide();
+           $("[id='" + os_name + "']").show();
+           $("[id='" + os_name + '_' + first_browser_name + "']").show();
+        });
+        $('select[name="browser"]').change(function(){
+           var browser_name = $(this).find(":selected").val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
+           var os_name = $(this).parent().attr("id").replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
+           $(".style-sub-2").hide();
+           $("[id='" + os_name + '_' + browser_name + "']").show();
+        });
+    </script>
 {% endblock %}

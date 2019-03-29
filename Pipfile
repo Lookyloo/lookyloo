@@ -17,6 +17,7 @@ lookyloo = {editable = true,path = "."}
 cchardet = "*"
 redis = "*"
 pylookyloo = {editable = true,path = "./client"}
+beautifulsoup4 = "*"
 
 [requires]
 python_version = "3.6"

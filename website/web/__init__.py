@@ -10,7 +10,7 @@ import os
 from flask import Flask, render_template, request, session, send_file, redirect, url_for, Response
 from flask_bootstrap import Bootstrap
 
-from lookyloo.helpers import get_homedir
+from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents
 from lookyloo.lookyloo import Lookyloo
 from lookyloo.exceptions import NoValidHarFile
 
@@ -54,7 +54,9 @@ def scrape_web():
     if request.form.get('url'):
         perma_uuid = lookyloo.scrape(request.form.get('url'), request.form.get('depth'), request.form.get('listing'))
         return redirect(url_for('tree', tree_uuid=perma_uuid))
-    return render_template('scrape.html')
+    user_agents = get_user_agents()
+    user_agents.pop('by_frequency')
+    return render_template('scrape.html', user_agents=user_agents)
 
 
 @app.route('/tree/hostname/<node_uuid>/text', methods=['GET'])
@@ -142,6 +144,7 @@ def index():
         # Just returns ack if the webserver is running
         return 'Ack'
     lookyloo.cleanup_old_tmpfiles()
+    update_user_agents()
     session.clear()
     titles = []
     for report_dir in lookyloo.report_dirs:

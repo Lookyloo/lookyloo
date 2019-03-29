@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 import os
 from pathlib import Path
-from .exceptions import MissingEnv
+from .exceptions import MissingEnv, CreateDirectoryException
 from redis import Redis
 from redis.exceptions import ConnectionError
 from datetime import datetime, timedelta
 import time
+from bs4 import BeautifulSoup
+import json
+import requests
+from glob import glob
 
 
 def get_homedir():
@@ -16,6 +20,12 @@ def get_homedir():
 Run the following command (assuming you run the code from the clonned repository):\
     export LOOKYLOO_HOME='{guessed_home}'")
     return Path(os.environ['LOOKYLOO_HOME'])
+
+
+def safe_create_dir(to_create: Path):
+    if to_create.exists() and not to_create.is_dir():
+        raise CreateDirectoryException(f'The path {to_create} already exists and is not a directory')
+    os.makedirs(to_create, exist_ok=True)
 
 
 def set_running(name: str) -> None:
@@ -70,3 +80,38 @@ def long_sleep(sleep_in_sec: int, shutdown_check: int=10) -> bool:
         if shutdown_requested():
             return False
     return True
+
+
+def update_user_agents():
+    today = datetime.now()
+    ua_path = get_homedir() / 'user_agents' / str(today.year) / f'{today.month:02}'
+    safe_create_dir(ua_path)
+    ua_file_name = ua_path / f'{today.date().isoformat()}.json'
+    if ua_file_name.exists():
+        # Already have a UA for that day.
+        return
+    r = requests.get('https://techblog.willshouse.com/2012/01/03/most-common-user-agents/')
+    soup = BeautifulSoup(r.text, 'html.parser')
+    uas = soup.find_all('textarea')[1].text
+    to_store = {'by_frequency': []}
+    for ua in json.loads(uas):
+        os = ua['system'].split(' ')[-1]
+        if os not in to_store:
+            to_store[os] = {}
+        browser = ' '.join(ua['system'].split(' ')[:-1])
+        if browser not in to_store[os]:
+            to_store[os][browser] = []
+        to_store[os][browser].append(ua['useragent'])
+        to_store['by_frequency'].append({'os': os, 'browser': browser, 'useragent': ua['useragent']})
+    with open(ua_file_name, 'w') as f:
+        json.dump(to_store, f, indent=2)
+
+
+def get_user_agents():
+    ua_files_path = str(get_homedir() / 'user_agents' / '*' / '*' / '*.json')
+    paths = sorted(glob(ua_files_path), reverse=True)
+    if not paths:
+        update_user_agents()
+        paths = sorted(glob(ua_files_path), reverse=True)
+    with open(paths[0]) as f:
+        return json.load(f)
