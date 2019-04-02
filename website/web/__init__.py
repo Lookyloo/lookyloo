@@ -52,7 +52,8 @@ def submit():
 @app.route('/scrape', methods=['GET', 'POST'])
 def scrape_web():
     if request.form.get('url'):
-        perma_uuid = lookyloo.scrape(request.form.get('url'), request.form.get('depth'), request.form.get('listing'))
+        perma_uuid = lookyloo.scrape(url=request.form.get('url'), depth=request.form.get('depth'),
+                                     listing=request.form.get('listing'), user_agent=request.form.get('user_agent'))
         return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents = get_user_agents()
     user_agents.pop('by_frequency')
