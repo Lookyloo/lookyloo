@@ -456,7 +456,7 @@
         "scrapysplashwrapper": {
             "editable": true,
             "git": "https://github.com/viper-framework/ScrapySplashWrapper.git",
-            "ref": "f01752e30926ae2b6eb98530cb1fc59791246ecd"
+            "ref": "cf53edeeff2ed2ba3bc65050baae2175127078e2"
         },
         "service-identity": {
             "hashes": [
@@ -507,10 +507,10 @@
         },
         "werkzeug": {
             "hashes": [
-                "sha256:96da23fa8ccecbc3ae832a83df5c722c11547d021637faacb0bec4dd2f4666c8",
-                "sha256:ca5c2dcd367d6c0df87185b9082929d255358f5391923269335782b213d52655"
+                "sha256:0a73e8bb2ff2feecfc5d56e6f458f5b99290ef34f565ffb2665801ff7de6af7a",
+                "sha256:7fad9770a8778f9576693f0cc29c7dcc36964df916b83734f4431c0e612a7fbc"
             ],
-            "version": "==0.15.1"
+            "version": "==0.15.2"
         },
         "zope.interface": {
             "hashes": [
