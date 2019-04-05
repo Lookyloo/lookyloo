@@ -5,6 +5,7 @@ import time
 import signal
 from subprocess import Popen
 from lookyloo.helpers import get_homedir, shutdown_requested, set_running, unset_running, get_socket_path
+from redis import StrictRedis
 
 
 if __name__ == '__main__':
