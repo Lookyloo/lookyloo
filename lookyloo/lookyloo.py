@@ -113,11 +113,14 @@ class Lookyloo():
     def process_scrape_queue(self):
         uuid = self.redis.spop('to_scrape')
         if not uuid:
-            return
+            return None
         to_scrape = self.redis.hgetall(uuid)
         self.redis.delete(uuid)
         to_scrape['perma_uuid'] = uuid
-        self.scrape(**to_scrape)
+        if self.scrape(**to_scrape):
+            self.logger.info(f'Processed {to_scrape["url"]}')
+            return True
+        return False
 
     def load_tree(self, report_dir: Path):
         har_files = sorted(report_dir.glob('*.har'))
@@ -152,7 +155,7 @@ class Lookyloo():
         items = crawl(self.splash_url, url, depth, user_agent=user_agent, log_enabled=True, log_level='INFO')
         if not items:
             # broken
-            pass
+            return False
         if not perma_uuid:
             perma_uuid = str(uuid4())
         width = len(str(len(items)))
