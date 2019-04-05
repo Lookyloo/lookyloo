@@ -4,9 +4,12 @@
 import time
 import signal
 from subprocess import Popen
-from lookyloo.helpers import get_homedir, shutdown_requested, set_running, unset_running
+from lookyloo.helpers import get_homedir, shutdown_requested, set_running, unset_running, get_socket_path
+
 
 if __name__ == '__main__':
+    r = StrictRedis(unix_socket_path=get_socket_path('cache'), db=1)
+    r.delete('cache_loaded')
     website_dir = get_homedir() / 'website'
     Popen([str(website_dir / '3rdparty.sh')], cwd=website_dir)
     try:

@@ -37,7 +37,8 @@ class Lookyloo():
         if not self.scrape_dir.exists():
             self.scrape_dir.mkdir(parents=True, exist_ok=True)
 
-        self._init_existing_dumps()
+        if not self.redis.exists('cache_loaded'):
+            self._init_existing_dumps()
 
         # Try to reach sanejs
         self.sanejs = SaneJS()
@@ -68,7 +69,7 @@ class Lookyloo():
         cache = {'uuid': uuid, 'title': title}
         if (report_dir / 'no_index').exists():  # If the folders claims anonymity
             cache['no_index'] = 1
-        if uuid and not self.redis.hexists('lookup_dirs', uuid):
+        if uuid and not self.redis.exists(str(report_dir)):
             self.redis.hmset(str(report_dir), cache)
             self.redis.hset('lookup_dirs', uuid, str(report_dir))
 
@@ -79,7 +80,9 @@ class Lookyloo():
 
     def _init_existing_dumps(self):
         for report_dir in self.report_dirs:
-            self._set_report_cache(report_dir)
+            if report_dir.exists():
+                self._set_report_cache(report_dir)
+        self.redis.set('cache_loaded', 1)
 
     @property
     def report_dirs(self):
