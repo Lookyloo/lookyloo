@@ -68,8 +68,9 @@ class Lookyloo():
         cache = {'uuid': uuid, 'title': title}
         if (report_dir / 'no_index').exists():  # If the folders claims anonymity
             cache['no_index'] = 1
-        self.redis.hmset(str(report_dir), cache)
-        self.redis.hset('lookup_dirs', uuid, str(report_dir))
+        if uuid and not self.redis.hexists('lookup_dirs', uuid):
+            self.redis.hmset(str(report_dir), cache)
+            self.redis.hset('lookup_dirs', uuid, str(report_dir))
 
     def report_cache(self, report_dir) -> dict:
         if isinstance(report_dir, Path):
