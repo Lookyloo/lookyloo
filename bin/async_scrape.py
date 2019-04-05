@@ -5,7 +5,7 @@ from pathlib import Path
 import logging
 
 from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import get_homedir
+from lookyloo.helpers import get_homedir, set_running, unset_running
 from lookyloo.lookyloo import Lookyloo
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
@@ -21,7 +21,9 @@ class AsyncScraper(AbstractManager):
         self.lookyloo = Lookyloo(loglevel=loglevel)
 
     def _to_run_forever(self):
+        set_running('async_scrape')
         self.lookyloo.process_scrape_queue()
+        unset_running('async_scrape')
 
 
 if __name__ == '__main__':

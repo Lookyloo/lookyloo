@@ -1,0 +1,18 @@
+[Unit]
+Description=uWSGI instance to serve lookyloo
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+Type=forking
+WorkingDirectory=</git/home/directory>
+Environment=LOOKYLOO_HOME=</git/home/directory>
+Environment=PATH=</path/to/virtualenv>/bin:$PATH
+ExecStart=</path/to/virtualenv>/bin/start.py
+ExecStop=</path/to/virtualenv>/bin/stop.py
+
+
+[Install]
+WantedBy=multi-user.target
+
