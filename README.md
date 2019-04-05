@@ -88,7 +88,7 @@ You have to configure the two following files:
 * `etc/nginx/sites-available/lookyloo`
 * `etc/systemd/system/lookyloo.service`
 
-And copy them to the appropriate directories and run the following command:
+Copy them to the appropriate directories, and run the following command:
 ```bash
 sudo ln -s /etc/nginx/sites-available/lookyloo /etc/nginx/sites-enabled
 ```
