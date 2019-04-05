@@ -136,7 +136,7 @@ def tree(tree_uuid):
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid)
     except NoValidHarFile as e:
-        return render_template('error.html', error_message=e.message)
+        return render_template('error.html', error_message=e)
 
 
 @app.route('/', methods=['GET'])
