@@ -62,6 +62,11 @@
     <b>Root URL</b>: {{ root_url }}</br>
     <b>Start time</b>: {{ start_time }}</br>
     <b>User Agent</b>: {{ user_agent }}</br>
+    {% if meta %}
+        {%for k, v in meta.items()%}
+        <b>{{k.title()}}</b>: {{ v }}</br>
+        {%endfor%}
+    {%endif%}
     <center><a href="{{ url_for('image', tree_uuid=tree_uuid) }}">Download Image</a></center>
 </div>
 

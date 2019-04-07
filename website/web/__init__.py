@@ -37,9 +37,9 @@ lookyloo = Lookyloo()
 # keep
 def load_tree(report_dir):
     session.clear()
-    temp_file_name, tree_json, tree_time, tree_ua, tree_root_url = lookyloo.load_tree(report_dir)
+    temp_file_name, tree_json, tree_time, tree_ua, tree_root_url, meta = lookyloo.load_tree(report_dir)
     session["tree"] = temp_file_name
-    return tree_json, tree_time, tree_ua, tree_root_url
+    return tree_json, tree_time, tree_ua, tree_root_url, meta
 
 
 @app.route('/submit', methods=['POST', 'GET'])
@@ -53,7 +53,8 @@ def submit():
 def scrape_web():
     if request.form.get('url'):
         perma_uuid = lookyloo.scrape(url=request.form.get('url'), depth=request.form.get('depth'),
-                                     listing=request.form.get('listing'), user_agent=request.form.get('user_agent'))
+                                     listing=request.form.get('listing'), user_agent=request.form.get('user_agent'),
+                                     os=request.form.get('os'), browser=request.form.get('browser'))
         return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents = get_user_agents()
     user_agents.pop('by_frequency')
@@ -132,9 +133,10 @@ def tree(tree_uuid):
         return redirect(url_for('index'))
 
     try:
-        tree_json, start_time, user_agent, root_url = load_tree(report_dir)
+        tree_json, start_time, user_agent, root_url, meta = load_tree(report_dir)
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
-                               user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid)
+                               user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
+                               meta=meta)
     except NoValidHarFile as e:
         return render_template('error.html', error_message=e)
 

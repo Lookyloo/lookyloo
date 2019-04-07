@@ -125,13 +125,17 @@ class Lookyloo():
     def load_tree(self, report_dir: Path):
         har_files = sorted(report_dir.glob('*.har'))
         try:
+            meta = {}
+            if (report_dir / 'meta').exists():
+                with open((report_dir / 'meta'), 'r') as f:
+                    meta = json.load(f)
             ct = CrawledTree(har_files)
             ct.find_parents()
             ct.join_trees()
             temp = tempfile.NamedTemporaryFile(prefix='lookyloo', delete=False)
             pickle.dump(ct, temp)
             temp.close()
-            return temp.name, ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url
+            return temp.name, ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 
@@ -149,7 +153,8 @@ class Lookyloo():
             return self.sanejs.sha512(sha512)
         return {'response': []}
 
-    def scrape(self, url, depth: int=1, listing: bool=True, user_agent: str=None, perma_uuid: str=None):
+    def scrape(self, url, depth: int=1, listing: bool=True, user_agent: str=None, perma_uuid: str=None,
+               os: str=None, browser: str=None):
         if not url.startswith('http'):
             url = f'http://{url}'
         items = crawl(self.splash_url, url, depth, user_agent=user_agent, log_enabled=True, log_level='INFO')
@@ -161,8 +166,6 @@ class Lookyloo():
         width = len(str(len(items)))
         dirpath = self.scrape_dir / datetime.now().isoformat()
         dirpath.mkdir()
-        if not listing:  # Write no_index marker
-            (dirpath / 'no_index').touch()
         for i, item in enumerate(items):
             harfile = item['har']
             png = base64.b64decode(item['png'])
@@ -178,5 +181,15 @@ class Lookyloo():
                 json.dump(child_frames, f)
             with (dirpath / 'uuid').open('w') as f:
                 f.write(perma_uuid)
+            if not listing:  # Write no_index marker
+                (dirpath / 'no_index').touch()
+            if os or browser:
+                meta = {}
+                if os:
+                    meta['os'] = os
+                if browser:
+                    meta['browser'] = browser
+                with (dirpath / 'meta').open('w') as f:
+                    json.dump(meta, f)
         self._set_report_cache(dirpath)
         return perma_uuid
