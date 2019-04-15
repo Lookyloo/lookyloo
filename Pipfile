@@ -18,6 +18,7 @@ cchardet = "*"
 redis = "*"
 pylookyloo = {editable = true,path = "./client"}
 beautifulsoup4 = "*"
+Jinja2 = ">=2.10.1" # CVE-2019-10906
 
 [requires]
 python_version = "3.6"
