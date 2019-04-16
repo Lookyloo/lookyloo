@@ -247,7 +247,7 @@
         "har2tree": {
             "editable": true,
             "git": "https://github.com/viper-framework/har2tree.git",
-            "ref": "a90418ace183e5ebf8891bebe0a7efc7a8d910f7"
+            "ref": "518808567e9d69b4047eba9e15b34838eae1962a"
         },
         "hyperlink": {
             "hashes": [
@@ -457,7 +457,7 @@
         "scrapysplashwrapper": {
             "editable": true,
             "git": "https://github.com/viper-framework/ScrapySplashWrapper.git",
-            "ref": "cf53edeeff2ed2ba3bc65050baae2175127078e2"
+            "ref": "aafeb155b8637662c396685bd104f95661441759"
         },
         "service-identity": {
             "hashes": [

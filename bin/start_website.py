@@ -9,7 +9,7 @@ from redis import StrictRedis
 
 
 if __name__ == '__main__':
-    r = StrictRedis(unix_socket_path=get_socket_path('cache'), db=1)
+    r = StrictRedis(unix_socket_path=get_socket_path('cache'))
     r.delete('cache_loaded')
     website_dir = get_homedir() / 'website'
     Popen([str(website_dir / '3rdparty.sh')], cwd=website_dir)
