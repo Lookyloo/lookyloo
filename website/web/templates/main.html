@@ -1,17 +1,30 @@
-{% extends "bootstrap/base.html" %}
+<!doctype html>
+<html lang="en">
+  <head>
+    {% block head %}
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
-{% block scripts %}
-    {{ super() }}
-    <script src='{{ url_for('static', filename='FileSaver.js') }}'></script>
-    <script src='{{ url_for('static', filename='d3.v5.min.js') }}'></script>
-{% endblock %}
+    {% block styles %}
+    <!-- Bootstrap CSS -->
+    {{ bootstrap.load_css() }}
+	<link rel="stylesheet" href="{{ url_for('static', filename='tree.css') }}">
+    {% endblock %}
 
-{% block head %}
-    {{ super() }}
-    <link rel="stylesheet" href="{{ url_for('static', filename='tree.css') }}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-{% endblock %}
+    <title>Your page title</title>
+    {% endblock %}
+  </head>
+  <body>
+    <!-- Your page contont -->
+    {% block content %}{% endblock%}
 
-{% block content %}
-    {{ super() }}
-{% endblock %}
+    {% block scripts %}
+    <!-- Optional JavaScript -->
+    {{ bootstrap.load_js() }}
+	<script src='{{ url_for('static', filename='FileSaver.js') }}'></script>
+	<script src='{{ url_for('static', filename='d3.v5.min.js') }}'></script>
+    {% endblock %}
+  </body>
+</html>

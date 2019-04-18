@@ -46,6 +46,16 @@
   border: 2px solid;
 }
 
+#legend_container {
+  position: fixed;
+  bottom: 5px;
+  left: 5px;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+}
+
 #legend {
   position: fixed;
   bottom: 5px;
@@ -89,4 +99,14 @@
 .tooltip text {
 	font: 15px sans-serif;
 	z-index: 2;
+}
+
+hr {
+  display: block;
+  margin-top: 0.1em;
+  margin-bottom: 0.5em;
+  margin-left: auto;
+  margin-right: auto;
+  border-style: inset;
+  border-width: 1px;
 }

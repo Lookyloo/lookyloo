@@ -11,7 +11,6 @@ har2tree = {editable = true,git = "https://github.com/viper-framework/har2tree.g
 pysanejs = {editable = true,git = "https://github.com/CIRCL/PySaneJS.git"}
 requests = "*"
 flask = "*"
-flask-bootstrap = "*"
 gunicorn = {extras = ["eventlet"],version = "*"}
 lookyloo = {editable = true,path = "."}
 cchardet = "*"
@@ -19,6 +18,7 @@ redis = "*"
 pylookyloo = {editable = true,path = "./client"}
 beautifulsoup4 = "*"
 Jinja2 = ">=2.10.1" # CVE-2019-10906
+bootstrap-flask = "*"
 
 [requires]
 python_version = "3.6"
