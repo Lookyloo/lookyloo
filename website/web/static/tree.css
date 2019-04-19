@@ -20,18 +20,16 @@
   right: 5px;
   background: white;
   border: 2px solid;
+  height: 1030px;
+  overflow: hidden;
 }
 
-.thumbnail:hover {
-  position:relative;
-  width:100%;
-  height:auto;
-  display:block;
-  z-index:999;
-}
-
-.thumbnail {
-	overflow: hidden;
+#screenshot .img-thumbnail {
+  width: auto;
+	height: auto;
+  max-height: 100%;
+	max-width: 100%;
+  display: block;
 }
 
 #lookyloo-icon {
@@ -66,6 +64,16 @@
   padding-right: 5px;
   padding-bottom: 5px;
   padding-left: 5px;
+}
+
+#tree-details_container {
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+	padding-top: 5px;
+	padding-right: 5px;
+	padding-bottom: 5px;
+	padding-left: 5px;
 }
 
 #tree-details {
