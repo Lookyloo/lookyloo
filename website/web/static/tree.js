@@ -125,7 +125,7 @@ function hostnode_click(d) {
     overlay_hostname
         .datum({x: 0, y: 0, overlay_uuid: d.data.uuid})
         .attr('id', 'overlay_' + d.data.uuid)
-        .attr("transform", "translate(" + 0 + "," + 0 + ")")
+        .attr("transform", "translate(" + 10 + "," + 15 + ")")
         .call(d3.drag().on("drag", function(d, i) {
             if (typeof d.x === 'undefined') { d.x = 0; }  // Any real JS dev would kill me fo that, right?
             if (typeof d.y === 'undefined') { d.y = 0; }  // Maybe even twice.
@@ -134,8 +134,8 @@ function hostnode_click(d) {
             d3.select(this)
                 .attr("transform", "translate(" + d.x + "," + d.y + ")");
             cur_node.select('#overlay_link')
-                .attr("x2", d.x + left_margin + 3)
-                .attr("y2", d.y + top_margin + 7);
+                .attr("x2", d.x + left_margin + 10)
+                .attr("y2", d.y + top_margin + 15);
         }));
 
     overlay_hostname.append('rect')
@@ -159,7 +159,7 @@ function hostnode_click(d) {
             .attr('height', overlay_header_height)
             .attr('cx', left_margin + 10)
             .attr('cy', top_margin + 15)
-            .attr('r', 12);
+            .attr('r', 2);
 
         overlay_hostname
             .append('text')
@@ -178,9 +178,9 @@ function hostnode_click(d) {
 
         overlay_hostname.append('line')
             .attr('id', 'overlay_separator_header' + d.data.uuid)
-            .style("stroke", "gray")
-            .style('stroke-width', 2)
-            .attr('x1', 15)
+            .style("stroke", "black")
+            .style('stroke-width', "1px")
+            .attr('x1', 20)
             .attr('y1', overlay_header_height)
             .attr('x2', 500)
             .attr('y2', overlay_header_height);
@@ -199,9 +199,9 @@ function hostnode_click(d) {
         var overlay_bbox = overlay_hostname.node().getBBox()
         overlay_hostname.append('line')
             .attr('id', 'overlay_separator_footer' + d.data.uuid)
-            .style("stroke", "gray")
-            .style('stroke-width', 2)
-            .attr('x1', 15)
+            .style("stroke", "black")
+            .style('stroke-width', "1px")
+            .attr('x1', 20)
             .attr('y1', overlay_bbox.height + 20)
             .attr('x2', 500)
             .attr('y2', overlay_bbox.height + 20);
@@ -235,9 +235,9 @@ function hostnode_click(d) {
             .attr('x', overlay_hostname.select('rect').node().getBBox().width - 20);
 
         overlay_hostname.select('#overlay_separator_header' + d.data.uuid)
-            .attr('x2', overlay_hostname.select('rect').node().getBBox().width + 14);
+            .attr('x2', overlay_hostname.select('rect').node().getBBox().width + 10);
         overlay_hostname.select('#overlay_separator_footer' + d.data.uuid)
-            .attr('x2', overlay_hostname.select('rect').node().getBBox().width + 14);
+            .attr('x2', overlay_hostname.select('rect').node().getBBox().width + 10);
 
 
         cur_node.select('#overlay_link')

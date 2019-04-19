@@ -24,14 +24,6 @@
   overflow: hidden;
 }
 
-#screenshot .img-thumbnail {
-  width: auto;
-	height: auto;
-  max-height: 100%;
-	max-width: 100%;
-  display: block;
-}
-
 #lookyloo-icon {
   position: fixed;
   top: 5px;
@@ -115,6 +107,7 @@ hr {
   margin-bottom: 0.5em;
   margin-left: auto;
   margin-right: auto;
+  border-color: black;
   border-style: inset;
   border-width: 1px;
 }
