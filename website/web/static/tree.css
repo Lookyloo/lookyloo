@@ -59,7 +59,7 @@
 }
 
 #tree-details_container {
-	position: absolute;
+	position: fixed;
 	bottom: 5px;
 	right: 5px;
 	padding-top: 5px;

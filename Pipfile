@@ -21,4 +21,4 @@ Jinja2 = ">=2.10.1" # CVE-2019-10906
 bootstrap-flask = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3"
