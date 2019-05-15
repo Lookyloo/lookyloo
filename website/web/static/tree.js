@@ -367,6 +367,7 @@ function update(root, computed_node_width=0) {
   });
 
   if (computed_node_width != 0) {
+    computed_node_width += 30;
     // Re-compute SVG size depending on the generated tree
     var newWidth = Math.max((max_depth + 1) * computed_node_width, node_width);
     // Update height
@@ -428,13 +429,13 @@ function update(root, computed_node_width=0) {
             var node_data = node_group
               .append('svg')
               .attr('class', 'node_data')
-              .attr('x', 12)
+              .attr('x', 0)
               .attr('y', -30);
 
             node_data.append('rect')
               .attr("rx", 6)
               .attr("ry", 6)
-              .attr('x', 0)
+              .attr('x', 12)
               .attr('y', 0)
               .style("opacity", "0.5")
               .attr("stroke", "black")
@@ -445,25 +446,25 @@ function update(root, computed_node_width=0) {
 
             // Set Hostname text
             node_data
-              .append(d => text_entry(2, 5, hostnode_click, d));
+              .append(d => text_entry(15, 5, hostnode_click, d));
             // Set list of icons
             node_data
-              .append(d => icon_list(4, 35, d));
+              .append(d => icon_list(17, 35, d));
 
 
             node_group.select('.node_data').each(function(p, j){
-                selected_node_bbox = d3.select(this).node().getBBox();
-                // Set the width for all the nodes
-                node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
+                var selected_node_bbox = d3.select(this).node().getBBox();
 
                 d3.select(this).select('rect')
                 // Rectangle around the domain name & icons
-                  .attr('height', selected_node_bbox.height + 15)
-                  .attr('width', selected_node_bbox.width + 20);
-            });
-            // FIXME: should get the bbox of the whole node group
-            node_width += 50;
+                  .attr('height', d3.select(this).node().getBBox().height + 15)
+                  .attr('width', d3.select(this).node().getBBox().width + 50);
 
+                var selected_node_bbox = d3.select(this).node().getBBox();
+                // Set the width for all the nodes
+                node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
+
+            });
             return node_group;
         },
         update =>  update,
