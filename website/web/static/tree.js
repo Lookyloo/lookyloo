@@ -239,11 +239,11 @@ function hostnode_click(d) {
 
 function icon(key, icon_path, d){
     var iconContent = d3.create("svg") // WARNING: svg is required there, "g" doesn't have getBBox
-						.attr('class', 'icon');
+                        .attr('class', 'icon');
     var icon_size = 16;
-	var has_icon = false;
+    var has_icon = false;
 
-	iconContent.datum(d);
+    iconContent.datum(d);
     iconContent.filter(d => {
             if (typeof d.data[key] === 'boolean') {
                 has_icon = d.data[key];
@@ -277,10 +277,10 @@ function icon(key, icon_path, d){
           .attr('x', icon_size + 1)
           .attr('width', d => d.to_print.toString().length + 'em')
           .text(d => d.to_print);
-	if (has_icon) {
-		return iconContent.node();
-	}
-	return false;
+    if (has_icon) {
+        return iconContent.node();
+    }
+    return false;
 };
 
 function icon_list(relative_x_pos, relative_y_pos, d) {
@@ -288,36 +288,36 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
     var icons = d3.create("svg")  // WARNING: svg is required there, "g" doesn't have getBBox
           .attr('x', relative_x_pos)
           .attr('y', relative_y_pos)
-		  .datum(d);
-	icon_options = [
-		['js', "/static/javascript.png"],
-		['exe', "/static/exe.png"],
-		['css', "/static/css.png"],
-		['font', "/static/font.png"],
-		['html', "/static/html.png"],
-		['json', "/static/json.png"],
-		['iframe', "/static/ifr.png"],
-		['image', "/static/img.png"],
-		['unknown_mimetype', "/static/wtf.png"],
-		['video', "/static/video.png"],
-		['request_cookie', "/static/cookie_read.png"],
-		['response_cookie', "/static/cookie_received.png"],
-		['redirect', "/static/redirect.png"],
-		['redirect_to_nothing', "/static/cookie_in_url.png"]
-	];
+          .datum(d);
+    icon_options = [
+        ['js', "/static/javascript.png"],
+        ['exe', "/static/exe.png"],
+        ['css', "/static/css.png"],
+        ['font', "/static/font.png"],
+        ['html', "/static/html.png"],
+        ['json', "/static/json.png"],
+        ['iframe', "/static/ifr.png"],
+        ['image', "/static/img.png"],
+        ['unknown_mimetype', "/static/wtf.png"],
+        ['video', "/static/video.png"],
+        ['request_cookie', "/static/cookie_read.png"],
+        ['response_cookie', "/static/cookie_received.png"],
+        ['redirect', "/static/redirect.png"],
+        ['redirect_to_nothing', "/static/cookie_in_url.png"]
+    ];
 
-	nb_icons = 0
-	icon_options.forEach(entry => {
-		bloc = icon(entry[0], entry[1], d);
-		if (bloc){
-			icons
-				.append(() => bloc)
-				.attr('x', 25 * nb_icons);  // FIXME: make that distance a variable
-			nb_icons += 1;
-		};
-	})
+    nb_icons = 0
+    icon_options.forEach(entry => {
+        bloc = icon(entry[0], entry[1], d);
+        if (bloc){
+            icons
+              .append(() => bloc)
+              .attr('x', 25 * nb_icons);  // FIXME: make that distance a variable
+            nb_icons += 1;
+        };
+    })
 
-	// FIXME: that need to move somewhere else, doesn't make sense here.
+    // FIXME: that need to move somewhere else, doesn't make sense here.
     icons.filter(function(d){
         if (d.data.sane_js_details) {
             d.libinfo = d.data.sane_js_details[0];
@@ -339,7 +339,7 @@ function text_entry(relative_x_pos, relative_y_pos, onclick_callback, d) {
           .attr('height', node_height)
           .attr('x', relative_x_pos)
           .attr('y', relative_y_pos)
-		  .datum(d);
+          .datum(d);
 
     // Add labels for the nodes
     var text_nodes = nodeContent.append("text")
@@ -350,8 +350,8 @@ function text_entry(relative_x_pos, relative_y_pos, onclick_callback, d) {
           .style("opacity", .9)
           .attr('cursor', 'pointer')
           .attr("clip-path", "url(#textOverlay)")
-          .text(d.data.name + ' (' + d.data.urls_count + ')')
-          .on('click',onclick_callback);
+          .text(d.data.name + ' (' + d.data.urls_count + ')');
+          // .on('click',onclick_callback);
     return nodeContent.node();
 }
 
@@ -377,20 +377,20 @@ function update(root, computed_node_width=0) {
     // Set background based on the computed width and height
     var background = main_svg.insert('rect', ':first-child')
       .attr('y', 0)
-	  // FIXME: + 200 doesn't make much sense...
+      // FIXME: + 200 doesn't make much sense...
       .attr('width', newWidth + margin.right + margin.left + 200)
       .attr('height', newHeight + margin.top + margin.bottom)
       .style('fill', "url(#backstripes)");
 
-	// Update size
+    // Update size
     d3.select("body svg")
-	  // FIXME: + 200 doesn't make much sense...
+      // FIXME: + 200 doesn't make much sense...
       .attr("width", newWidth + margin.right + margin.left + 200)
       .attr("height", newHeight + margin.top + margin.bottom)
 
     // Update pattern
     main_svg.selectAll('pattern')
-	  .attr('width', computed_node_width * 2)
+      .attr('width', computed_node_width * 2)
     pattern.selectAll('rect')
       .attr('width', computed_node_width)
 
@@ -412,35 +412,57 @@ function update(root, computed_node_width=0) {
   tree_nodes.join(
         // Enter any new modes at the parent's previous position.
         enter => {
-            var node_group = enter.append('g');
-            node_group
+            var node_group = enter.append('g')
                 .attr('class', 'node')
                 .attr("id", d => 'node_' + d.data.uuid)
                 .attr("transform", "translate(" + root.y0 + "," + root.x0 + ")")
+
+            node_group
                 // Add Circle for the nodes
                 .append('circle')
                 .attr('class', 'node')
                 .attr('r', 1e-6)
                 .style("fill", d => d._children ? "lightsteelblue" : "#fff")
                 .on('click', click);
-            // Rectangle around the domain name & icons
-            //.append('rect')
-            //.attr("rx", 6)
-            //.attr("ry", 6)
-            //.attr('x', 13)
-            //.attr('y', -23)
-            //.style("opacity", "0.5")
-            //.attr("stroke", "black")
-            //.attr('stroke-opacity', "0.8")
-            //.attr("stroke-width", "1.5")
-            //.attr("stroke-linecap", "round")
-            //.attr("fill", "white")
+
+            var node_data = node_group
+              .append('svg')
+              .attr('class', 'node_data')
+              .attr('x', 12)
+              .attr('y', -30);
+
+            node_data.append('rect')
+              .attr("rx", 6)
+              .attr("ry", 6)
+              .attr('x', 0)
+              .attr('y', 0)
+              .style("opacity", "0.5")
+              .attr("stroke", "black")
+              .attr('stroke-opacity', "0.8")
+              .attr("stroke-width", "2")
+              .attr("stroke-linecap", "round")
+              .attr("fill", "white");
+
             // Set Hostname text
-            node_group
-                .append(d => text_entry(15, -20, hostnode_click, d));
+            node_data
+              .append(d => text_entry(2, 5, hostnode_click, d));
             // Set list of icons
-             node_group
-                .append(d => icon_list(17, 10, d));
+            node_data
+              .append(d => icon_list(4, 35, d));
+
+
+            node_group.select('.node_data').each(function(p, j){
+                selected_node_bbox = d3.select(this).node().getBBox();
+                // Set the width for all the nodes
+                node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
+
+                d3.select(this).select('rect')
+                // Rectangle around the domain name & icons
+                  .attr('height', selected_node_bbox.height + 15)
+                  .attr('width', selected_node_bbox.width + 20);
+            });
+            // FIXME: should get the bbox of the whole node group
+            node_width += 50;
 
             return node_group;
         },
@@ -448,7 +470,7 @@ function update(root, computed_node_width=0) {
         exit => exit
             // Remove any exiting nodes
             .call(exit => exit
-			   .transition(t)
+               .transition(t)
                .attr("transform", "translate(" + root.y0 + "," + root.x0 + ")")
                .remove()
             )
@@ -464,12 +486,7 @@ function update(root, computed_node_width=0) {
         .attr('r', 10)
         .style("fill", node => node._children ? "lightsteelblue" : "#fff")
         .attr('cursor', 'pointer');
-      node.selectAll('text').nodes().forEach(n => {
-        // Set the width for all the nodes
-        node_width = node_width > n.getBBox().width ? node_width : n.getBBox().width;
-      });
-	  // FIXME: should get the bbox of the whole node group
-	  node_width += 30;
+
     });
 
   nodes.forEach(d => {
@@ -531,7 +548,7 @@ function update(root, computed_node_width=0) {
         d.children = d._children;
         d._children = null;
     }
-	// Call update on the whole Tree
+    // Call update on the whole Tree
     update(d.ancestors().reverse()[0]);
   }
 
