@@ -180,9 +180,8 @@ function hostnode_click(d) {
         urls.forEach(function(url, index, array) {
             var jdata = JSON.parse(url)
             url_entries.datum({'data': jdata});
-            var text_node = text_entry(url_entries, left_margin, top_margin + overlay_header_height + (interval_entries * index), urlnode_click);
-            var height_text = text_node.node().getBBox().height;
-            icon_list(url_entries, left_margin + 5, top_margin + height_text + overlay_header_height + (interval_entries * index));
+            url_entries.append(d => text_entry(left_margin, top_margin + overlay_header_height + (interval_entries * index), urlnode_click, d));
+            url_entries.append(d => icon_list(left_margin + 5, top_margin + 20 + overlay_header_height + (interval_entries * index), d));
         });
 
         var overlay_bbox = overlay_hostname.node().getBBox()
@@ -350,8 +349,13 @@ function text_entry(relative_x_pos, relative_y_pos, onclick_callback, d) {
           .style("opacity", .9)
           .attr('cursor', 'pointer')
           .attr("clip-path", "url(#textOverlay)")
-          .text(d.data.name + ' (' + d.data.urls_count + ')');
-          // .on('click',onclick_callback);
+          .text(d => {
+            if (d.data.urls_count) {
+              return d.data.name + ' (' + d.data.urls_count + ')'
+            }
+            return d.data.name
+          })
+          .on('click',onclick_callback);
     return nodeContent.node();
 }
 
@@ -469,24 +473,23 @@ function update(root, computed_node_width=0) {
         },
         update =>  update,
         exit => exit
-            // Remove any exiting nodes
-            .call(exit => exit
-               .transition(t)
-               .attr("transform", "translate(" + root.y0 + "," + root.x0 + ")")
-               .remove()
-            )
-            // On exit reduce the node circles size to 0
-            .attr('r', 1e-6)
-            // On exit reduce the opacity of text labels
-            .style('fill-opacity', 1e-6)
+            .transition(t)
+              // Remove any exiting nodes
+              .attr("transform", node => "translate(" + node.y0 + "," + node.x0 + ")")
+              // On exit reduce the node circles size to 0
+              .attr('r', 1e-6)
+              // On exit reduce the opacity of text labels
+              .style('fill-opacity', 1e-6)
+              .remove()
     ).call(node => {
-      // Transition to the proper position for the node
-      node.attr("transform", node => "translate(" + node.y + "," + node.x + ")");
-      // Update the node attributes and style
-      node.select('circle.node')
-        .attr('r', 10)
-        .style("fill", node => node._children ? "lightsteelblue" : "#fff")
-        .attr('cursor', 'pointer');
+      node
+        // Transition to the proper position for the node
+        .attr("transform", node => "translate(" + node.y + "," + node.x + ")")
+        // Update the node attributes and style
+        .select('circle.node')
+          .attr('r', 10)
+          .style("fill", node => node._children ? "lightsteelblue" : "#fff")
+          .attr('cursor', 'pointer');
 
     });
 
@@ -510,21 +513,19 @@ function update(root, computed_node_width=0) {
         .insert('path', "g")
         .attr("class", "link")
         .attr('d', d => {
-          var o = {x: root.x0, y: root.y0}
+          var o = {x: d.x0, y: d.y0}
           return diagonal(o, o)
         }),
     update => update,
     exit => exit
       .call(exit => exit
-                .transition(t)
                 .attr('d', d => {
-                    var o = {x: root.x0, y: root.y0}
+                    var o = {x: d.x0, y: d.y0}
                     return diagonal(o, o)
                 })
       .remove()
       )
   ).call(link => link
-    //.transition(t)
     .attr('d', d => diagonal(d, d.parent))
   );
 
