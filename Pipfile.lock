@@ -241,7 +241,7 @@
         "har2tree": {
             "editable": true,
             "git": "https://github.com/viper-framework/har2tree.git",
-            "ref": "9cd7db28f2de217ca5ccd7b3f93e627a904ff967"
+            "ref": "f28160151f30278ec176df54554e7a58e67e4a14"
         },
         "hyperlink": {
             "hashes": [
@@ -428,11 +428,11 @@
         },
         "requests": {
             "hashes": [
-                "sha256:502a824f31acdacb3a35b6690b5fbf0bc41d63a24a45c4004352b0242707598e",
-                "sha256:7bf2a778576d825600030a110f3c0e3e8edc51dfaafe1c146e39a2027784957b"
+                "sha256:11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4",
+                "sha256:9cf5292fcd0f598c671cfc1e0d7d1a7f13bb8085e9a590f48c010551dc6c4b31"
             ],
             "index": "pypi",
-            "version": "==2.21.0"
+            "version": "==2.22.0"
         },
         "scrapy": {
             "hashes": [
@@ -451,7 +451,7 @@
         "scrapysplashwrapper": {
             "editable": true,
             "git": "https://github.com/viper-framework/ScrapySplashWrapper.git",
-            "ref": "3e9d6617ac136bc14d1296772eb2b03cb393b26b"
+            "ref": "017096256edac63761f5f06ec40d58a6f774edc8"
         },
         "service-identity": {
             "hashes": [
@@ -483,10 +483,10 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:4c291ca23bbb55c76518905869ef34bdd5f0e46af7afe6861e8375643ffee1a0",
-                "sha256:9a247273df709c4fedb38c711e44292304f73f39ab01beda9f6b9fc375669ac3"
+                "sha256:a53063d8b9210a7bdec15e7b272776b9d42b2fd6816401a0d43006ad2f9902db",
+                "sha256:d363e3607d8de0c220d31950a8f38b18d5ba7c0830facd71a1c6b1036b7ce06c"
             ],
-            "version": "==1.24.2"
+            "version": "==1.25.2"
         },
         "w3lib": {
             "hashes": [
@@ -497,10 +497,10 @@
         },
         "werkzeug": {
             "hashes": [
-                "sha256:0a73e8bb2ff2feecfc5d56e6f458f5b99290ef34f565ffb2665801ff7de6af7a",
-                "sha256:7fad9770a8778f9576693f0cc29c7dcc36964df916b83734f4431c0e612a7fbc"
+                "sha256:865856ebb55c4dcd0630cdd8f3331a1847a819dda7e8c750d3db6f2aa6c0209c",
+                "sha256:a0b915f0815982fb2a09161cb8f31708052d0951c3ba433ccc5e1aa276507ca6"
             ],
-            "version": "==0.15.2"
+            "version": "==0.15.4"
         },
         "zope.interface": {
             "hashes": [
