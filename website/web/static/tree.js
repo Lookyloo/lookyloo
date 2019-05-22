@@ -71,13 +71,13 @@ function collapse(d) {
 
 function urlnode_click(d) {
     var url = "/tree/url/" + d.data.uuid;
-    d3.blob(url, {credentials: 'same-origin'}).then(function(data) {
+    d3.blob(url, {credentials: 'same-origin'}).then(data => {
         saveAs(data, 'file.zip');
     });
 };
 
 d3.selection.prototype.moveToFront = function() {
-  return this.each(function(){
+  return this.each(function() {
     this.parentNode.appendChild(this);
   });
 };
@@ -141,7 +141,7 @@ function hostnode_click(d) {
 
     // Modal display
     var url = "/tree/hostname/" + d.data.uuid;
-    d3.json(url, {credentials: 'same-origin'}).then(function(urls) {
+    d3.json(url, {credentials: 'same-origin'}).then(urls => {
         overlay_hostname
             .append('circle')
             .attr('id', 'overlay_circle_' + d.data.uuid)
@@ -159,7 +159,7 @@ function hostnode_click(d) {
             .style("font-size", '30px')
             .text('\u2716')
             .attr('cursor', 'pointer')
-            .on("click", function() {
+            .on("click", () => {
                     main_svg.selectAll('#overlay_' + d.data.uuid).remove();
                     cur_node.select('#overlay_link').remove();
                 }
@@ -177,7 +177,7 @@ function hostnode_click(d) {
         var url_entries = overlay_hostname.append('svg');
 
         var interval_entries = 40;
-        urls.forEach(function(url, index, array) {
+        urls.forEach((url, index, array) => {
             var jdata = JSON.parse(url)
             url_entries.datum({'data': jdata});
             url_entries.append(d => text_entry(left_margin, top_margin + overlay_header_height + (interval_entries * index), urlnode_click, d));
@@ -204,16 +204,16 @@ function hostnode_click(d) {
             .style("font-size", '20px')
             .text('Download URLs as text')
             .attr('cursor', 'pointer')
-            .on("click", function() {
+            .on("click", () => {
                 var url = "/tree/hostname/" + d.data.uuid + '/text';
-                d3.blob(url, {credentials: 'same-origin'}).then(function(data) {
+                d3.blob(url, {credentials: 'same-origin'}).then(data => {
                     saveAs(data, 'file.md');
                 });
             });
 
         var overlay_bbox = overlay_hostname.node().getBBox();
         overlay_hostname.select('rect')
-            .attr('width', function() {
+            .attr('width', () => {
                 optimal_size = overlay_bbox.width + left_margin
                 return optimal_size < max_overlay_width ? optimal_size : max_overlay_width;
             })
@@ -236,10 +236,9 @@ function hostnode_click(d) {
     });
 };
 
-function icon(key, icon_path, d){
+function icon(key, icon_path, d, icon_size){
     var iconContent = d3.create("svg") // WARNING: svg is required there, "g" doesn't have getBBox
                         .attr('class', 'icon');
-    var icon_size = 16;
     var has_icon = false;
 
     iconContent.datum(d);
@@ -274,7 +273,6 @@ function icon(key, icon_path, d){
           .attr("dy", 8)
           .style("font-size", "10px")
           .attr('x', icon_size + 1)
-          .attr('width', d => d.to_print.toString().length + 'em')
           .text(d => d.to_print);
     if (has_icon) {
         return iconContent.node();
@@ -283,6 +281,8 @@ function icon(key, icon_path, d){
 };
 
 function icon_list(relative_x_pos, relative_y_pos, d) {
+    var icon_size = 16;
+
     // Put all the icone in one sub svg document
     var icons = d3.create("svg")  // WARNING: svg is required there, "g" doesn't have getBBox
           .attr('x', relative_x_pos)
@@ -307,27 +307,24 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
 
     nb_icons = 0
     icon_options.forEach(entry => {
-        bloc = icon(entry[0], entry[1], d);
+        bloc = icon(entry[0], entry[1], d, icon_size);
         if (bloc){
-            icons
-              .append(() => bloc)
-              .attr('x', 25 * nb_icons);  // FIXME: make that distance a variable
-            nb_icons += 1;
+            icons.append(() => bloc);
         };
     })
 
     // FIXME: that need to move somewhere else, doesn't make sense here.
-    icons.filter(function(d){
+    icons.filter(d => {
         if (d.data.sane_js_details) {
             d.libinfo = d.data.sane_js_details[0];
             return d.data.sane_js_details;
         }
         return false;
     }).append('text')
-      .attr('x', 5)
-      .attr('y', 15)
+      .attr('x', icon_size + 4)
+      .attr('y', relative_y_pos + 7)
       .style("font-size", "15px")
-      .text(function(d) { return 'Library information: ' + d.libinfo });
+      .text(d => 'Library information: ' + d.libinfo);
 
     return icons.node();
 }
@@ -457,15 +454,22 @@ function update(root, computed_node_width=0) {
 
 
             node_group.select('.node_data').each(function(p, j){
-                var selected_node_bbox = d3.select(this).node().getBBox();
+                // set position of icons based of their length
+                var cur_icon_list_len = 0;
+                d3.select(this).selectAll('.icon').each(function(p, j){
+                    d3.select(this).attr('x', cur_icon_list_len);
+                    cur_icon_list_len += d3.select(this).node().getBBox().width;
+                });
 
-                d3.select(this).select('rect')
+
                 // Rectangle around the domain name & icons
-                  .attr('height', d3.select(this).node().getBBox().height + 15)
-                  .attr('width', d3.select(this).node().getBBox().width + 50);
-
                 var selected_node_bbox = d3.select(this).node().getBBox();
+                d3.select(this).select('rect')
+                  .attr('height', selected_node_bbox.height + 15)
+                  .attr('width', selected_node_bbox.width + 50);
+
                 // Set the width for all the nodes
+                var selected_node_bbox = d3.select(this).node().getBBox();  // Required, as the node width need to include the rectangle
                 node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
 
             });
