@@ -9,7 +9,11 @@ from datetime import datetime, timedelta
 import time
 from bs4 import BeautifulSoup
 import json
-import requests
+try:
+    import cfscrape
+    HAS_CF = True
+except ImportError:
+    HAS_CF = False
 from glob import glob
 
 
@@ -83,6 +87,10 @@ def long_sleep(sleep_in_sec: int, shutdown_check: int=10) -> bool:
 
 
 def update_user_agents():
+    if not HAS_CF:
+        # The website with the UAs is behind Cloudflare's anti-bot page, we need cfscrape that depends on nodejs
+        return
+
     today = datetime.now()
     ua_path = get_homedir() / 'user_agents' / str(today.year) / f'{today.month:02}'
     safe_create_dir(ua_path)
@@ -90,7 +98,8 @@ def update_user_agents():
     if ua_file_name.exists():
         # Already have a UA for that day.
         return
-    r = requests.get('https://techblog.willshouse.com/2012/01/03/most-common-user-agents/')
+    with cfscrape.create_scraper() as s:
+        r = s.get('https://techblog.willshouse.com/2012/01/03/most-common-user-agents/')
     soup = BeautifulSoup(r.text, 'html.parser')
     uas = soup.find_all('textarea')[1].text
     to_store = {'by_frequency': []}

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f75dcd662160295d344535967b3f400afe9cf25c05ccc32315b10bc83a5af54a"
+            "sha256": "3b0f7f1c056d81f31b5ef4af0c4ea8350da0512d39bea7f910f0da48fdeafda5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -123,6 +123,15 @@
             ],
             "version": "==1.12.3"
         },
+        "cfscrape": {
+            "hashes": [
+                "sha256:bf8fca4c1229d97216958f2fa7394c749e4d58ea51a74bdffd591286a808d98f",
+                "sha256:c02268ad5a0c3a00772d94cb071d42e3f2edeb808bc68cea3b90d3aaf4f8dea8",
+                "sha256:d95c16b0677127dfae3ea529f3601d1474cae7e325278e1d9d89a2a73ef21fa9"
+            ],
+            "index": "pypi",
+            "version": "==2.0.5"
+        },
         "chardet": {
             "hashes": [
                 "sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae",
@@ -190,10 +199,10 @@
         },
         "eventlet": {
             "hashes": [
-                "sha256:c584163e006e613707e224552fafc63e4e0aa31d7de0ab18b481ac0b385254c8",
-                "sha256:d9d31a3c8dbcedbcce5859a919956d934685b17323fc80e1077cb344a2ffa68d"
+                "sha256:62b9d7581229c5195c3411dd30d15dea351daa5ee37e45a1329ee56fac0e4ef4",
+                "sha256:f0610bd0d3bb3d51d69f74caa4ad04fc7bce424cdb72e54d08ccda90d8c69800"
             ],
-            "version": "==0.24.1"
+            "version": "==0.25.0"
         },
         "flask": {
             "hashes": [
@@ -483,10 +492,10 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:a53063d8b9210a7bdec15e7b272776b9d42b2fd6816401a0d43006ad2f9902db",
-                "sha256:d363e3607d8de0c220d31950a8f38b18d5ba7c0830facd71a1c6b1036b7ce06c"
+                "sha256:b246607a25ac80bedac05c6f282e3cdaf3afb65420fd024ac94435cabe6e18d1",
+                "sha256:dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232"
             ],
-            "version": "==1.25.2"
+            "version": "==1.25.3"
         },
         "w3lib": {
             "hashes": [
