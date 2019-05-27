@@ -3,6 +3,9 @@
 *Lookyloo* is a web interface allowing to scrape a website and then displays a
 tree of domains calling each other.
 
+Thank you very much [Tech Blog @ willshouse.com](https://techblog.willshouse.com/2012/01/03/most-common-user-agents/)
+for the up-to-date list of UserAgents.
+
 # What is that name?!
 
 
