@@ -115,8 +115,17 @@ And you can open ```http://<IP-or-domain>/```
 
 Now, you should configure [TLS (let's encrypt and so on)](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04)
 
+# Use aquarium for a reliable multi-users app
 
-# Run the app with Docker
+Aquarium is a haproxy + splash bundle that will allow lookyloo to be used by more than one user at once.
+
+The initial version of the project was created by [TeamHG-Memex](https://github.com/TeamHG-Memex/aquarium) but
+we have a [dedicated repository](https://github.com/circl/aquarium) that fits our needs better.
+
+Follow [the documentation](https://github.com/CIRCL/aquarium/blob/master/README.rst) if you want to use it.
+
+
+# Run the app with a simple docker setup
 
 ## Dockerfile
 The repository includes a [Dockerfile](Dockerfile) for building a containerized instance of the app.
