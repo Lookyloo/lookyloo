@@ -439,9 +439,19 @@ function update(root, computed_node_width=0) {
               .attr('x', 12)
               .attr('y', 0)
               .style("opacity", "0.5")
-              .attr("stroke", "black")
+              .attr("stroke", d => {
+                  if (d.data.mixed_content){
+                      return "red";
+                  }
+                  return "black";
+              })
               .attr('stroke-opacity', "0.8")
-              .attr("stroke-width", "2")
+              .attr("stroke-width", d => {
+                  if (d.data.mixed_content){
+                      return "4";
+                  }
+                  return "2";
+              })
               .attr("stroke-linecap", "round")
               .attr("fill", "white");
 
