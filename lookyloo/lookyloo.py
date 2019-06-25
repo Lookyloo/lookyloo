@@ -50,6 +50,8 @@ class Lookyloo():
         self.logger.setLevel(loglevel)
 
     def _set_report_cache(self, report_dir: str):
+        if self.redis.exists(str(report_dir)):
+            return
         har_files = sorted(report_dir.glob('*.har'))
         if not har_files:
             self.logger.warning(f'No har files in {report_dir}')
