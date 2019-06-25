@@ -247,7 +247,7 @@
         "har2tree": {
             "editable": true,
             "git": "https://github.com/viper-framework/har2tree.git",
-            "ref": "729511265f7d58cb0aa9c8d4f0e6cc286cfbb87e"
+            "ref": "460606c5231392b3162e3b75422600e4154c5600"
         },
         "hyperlink": {
             "hashes": [
@@ -473,10 +473,10 @@
         },
         "soupsieve": {
             "hashes": [
-                "sha256:6898e82ecb03772a0d82bd0d0a10c0d6dcc342f77e0701d0ec4a8271be465ece",
-                "sha256:b20eff5e564529711544066d7dc0f7661df41232ae263619dede5059799cdfca"
+                "sha256:72b5f1aea9101cf720a36bb2327ede866fd6f1a07b1e87c92a1cc18113cbc946",
+                "sha256:e4e9c053d59795e440163733a7fec6c5972210e1790c507e4c7b051d6c5259de"
             ],
-            "version": "==1.9.1"
+            "version": "==1.9.2"
         },
         "twisted": {
             "hashes": [
