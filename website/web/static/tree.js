@@ -440,14 +440,14 @@ function update(root, computed_node_width=0) {
               .attr('y', 0)
               .style("opacity", "0.5")
               .attr("stroke", d => {
-                  if (d.data.mixed_content){
+                  if (d.data.http_content){
                       return "red";
                   }
                   return "black";
               })
               .attr('stroke-opacity', "0.8")
               .attr("stroke-width", d => {
-                  if (d.data.mixed_content){
+                  if (d.data.http_content){
                       return "4";
                   }
                   return "2";
