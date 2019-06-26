@@ -32,6 +32,20 @@ The two core dependencies of this project are the following:
 * [ETE Toolkit](http://etetoolkit.org/): A Python framework for the analysis and visualization of trees.
 * [Splash](https://splash.readthedocs.io/en/stable/): Lightweight, scriptable browser as a service with an HTTP API
 
+# Python client
+
+```bash
+$ pip install git+https://github.com/CIRCL/lookyloo.git/#egg=pylookyloo\&subdirectory=client
+$ lookyloo --help
+usage: lookyloo [-h] [--url URL] --query QUERY
+
+Enqueue a URL on Lookyloo
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --url URL      URL of the instance.
+  --query QUERY  URL to unqueue
+```
 
 # Installation
 
