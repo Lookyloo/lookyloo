@@ -247,7 +247,7 @@
         "har2tree": {
             "editable": true,
             "git": "https://github.com/viper-framework/har2tree.git",
-            "ref": "852d9d12200aea64c41a3dae13f84fde80856f27"
+            "ref": "a1ab7df6fd564b920984bc268e2bb46bd8c12119"
         },
         "hyperlink": {
             "hashes": [
