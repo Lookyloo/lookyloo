@@ -344,15 +344,18 @@ function text_entry(relative_x_pos, relative_y_pos, onclick_callback, d) {
           .style("font-size", "16px")
           .attr("stroke-width", ".2px")
           .style("opacity", .9)
-          .attr('cursor', 'pointer')
           .attr("clip-path", "url(#textOverlay)")
           .text(d => {
             if (d.data.urls_count) {
               return d.data.name + ' (' + d.data.urls_count + ')'
             }
             return d.data.name
-          })
-          .on('click',onclick_callback);
+          });
+    if (d.data.name != 'orphan.url'){
+        text_nodes
+            .attr('cursor', 'pointer')
+            .on('click', onclick_callback);
+    };
     return nodeContent.node();
 }
 
