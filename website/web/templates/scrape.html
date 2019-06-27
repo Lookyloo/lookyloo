@@ -5,12 +5,18 @@
 <div class="container">
   <h1>Scrape a page</h1>
 
-    <form class="form-inline" role="form" action="scrape" method=post>
-        <div class="form-group">
-            <label for="url">URL to scrape:</label>
-            <input type="text" class="form-control" name="url" id=url placeholder="URL to scrape">
-            <label for="depth">Depth:</label>
-            <select class="form-control" name="depth" id=depth>
+    <form role="form" action="scrape" method=post>
+        <div class="form-group row">
+            <label for="url" class="col-sm-2 col-form-label">URL:</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" name="url" id=url placeholder="URL to scrape">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="depth" class="col-sm-2 col-form-label">Link Depth:</label>
+            <div class="col-sm-2">
+              <select class="form-control" name="depth" id=depth>
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -20,36 +26,57 @@
                 <option value="7">7</option>
                 <option value="8">8</option>
                 <option value="9">9</option>
-            </select>
-            <label for="listing">Public</label>
-            <input type="checkbox" name="listing" checked="true"></input>
-        </div>
-        <label for="os">Choose an operating system</label>
-        <select class="form-control" name="os" id="os">
-            {% for os in user_agents.keys() %}
-                <option value="{{ os }}">{{ os }}</option>
-            {% endfor%}
-        </select>
-        {% for os, browsers in user_agents.items() %}
-        <div id="{{os.replace(' ', '_')}}" class="style-sub-1" {% if loop.index0 != 0 %}style="display: none;"{%endif%}>
-            <select class="form-control" name="browser">
-                {% for browser in browsers.keys()%}
-                <option value="{{ browser }}">{{ browser }}</option>
-                {% endfor%}
-            </select>
-        </div>
-            {% set outer_loop = loop %}
-            {% for browser, user_agents in browsers.items()%}
-            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2" {% if not loop.first or not outer_loop.first %} style="display: none;"{%endif%}>
-                <select class="form-control" name="user_agent">
-                    {% for user_agent in user_agents %}
-                    <option value="{{ user_agent }}" >{{ user_agent }}</option>
-                    {% endfor%}
-                </select>
+              </select>
             </div>
+          </div>
+
+        <div class="form-group row">
+            <div class="col-sm-10">
+              <div class="form-check">
+                <input class="form-check-input"type="checkbox" name="listing" checked="true"></input>
+                <label for="listing" class="form-check-label">Display on main page</label>
+              </div>
+            </div>
+        </div>
+
+        <p><u>Browser Configuration</u></p>
+        <div class="form-group row">
+          <label for="os" class="col-sm-3 col-form-label">Operating System:</label>
+          <div class="col-sm-7">
+            <select class="form-control" name="os" id="os">
+              {% for os in user_agents.keys() %}
+                <option value="{{ os }}">{{ os }}</option>
+              {% endfor%}
+            </select>
+          </div>
+        </div>
+
+        {% for os, browsers in user_agents.items() %}
+        <div id="{{os.replace(' ', '_')}}" class="style-sub-1 form-group row" {% if loop.index0 != 0 %}style="display: none;"{%endif%}>
+          <div class="col-sm-10">
+            <label for="browser" class="col-sm-3 col-form-label">Browser Type:</label>
+            <select class="form-control" name="browser">
+            {% for browser in browsers.keys()%}
+              <option value="{{ browser }}">{{ browser }}</option>
             {% endfor%}
+            </select>
+          </div>
+        </div>
+          {% set outer_loop = loop %}
+          {% for browser, user_agents in browsers.items()%}
+        <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 form-group row" {% if not loop.first or not outer_loop.first %} style="display: none;"{%endif%}>
+          <div class="col-sm-10">
+            <label for="user_agent" class="col-sm-3 col-form-label">User Agent:</label>
+            <select class="form-control" name="user_agent">
+            {% for user_agent in user_agents %}
+              <option value="{{ user_agent }}" >{{ user_agent }}</option>
+            {% endfor%}
+            </select>
+          </div>
+        </div>
+          {% endfor%}
         {% endfor%}
-        <button type="submit" class="btn btn-default">Scrape</button>
+        <center><button type="submit" class="btn btn-default">Start looking!</button></center>
     </form>
 </div>
 {% endblock %}
@@ -73,7 +100,7 @@
         });
         $('select[name="browser"]').change(function(){
            var browser_name = $(this).find(":selected").val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
-           var os_name = $(this).parent().attr("id").replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
+           var os_name = $(this).parent().parent().attr("id").replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
 
            // Hide what makes sense
            $(".style-sub-2").hide();
