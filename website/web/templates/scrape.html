@@ -3,111 +3,115 @@
 
 {% block content %}
 <div class="container">
-  <h1>Scrape a page</h1>
-
+  <center>
+    <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
+         alt="Lookyloo" width="500">
+  </center>
+  </br>
     <form role="form" action="scrape" method=post>
-        <div class="form-group row">
-            <label for="url" class="col-sm-2 col-form-label">URL:</label>
-            <div class="col-sm-10">
-              <input type="text" class="form-control" name="url" id=url placeholder="URL to scrape">
-            </div>
+      <div class="form-group row">
+        <label for="url" class="col-sm-2 col-form-label">URL:</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" name="url" id=url placeholder="URL to scrape">
         </div>
+      </div>
 
-        <div class="form-group row">
-            <label for="depth" class="col-sm-2 col-form-label">Link Depth:</label>
-            <div class="col-sm-2">
-              <select class="form-control" name="depth" id=depth>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-              </select>
-            </div>
-          </div>
-
-        <div class="form-group row">
-            <div class="col-sm-10">
-              <div class="form-check">
-                <input class="form-check-input"type="checkbox" name="listing" checked="true"></input>
-                <label for="listing" class="form-check-label">Display on main page</label>
-              </div>
-            </div>
+      <div class="form-group row">
+        <label for="depth" class="col-sm-2 col-form-label">Link Depth:</label>
+        <div class="col-sm-1">
+          <select class="form-control" name="depth" id=depth>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
         </div>
+      </div>
 
-        <p><u>Browser Configuration</u></p>
-        <div class="form-group row">
-          <label for="os" class="col-sm-3 col-form-label">Operating System:</label>
-          <div class="col-sm-7">
-            <select class="form-control" name="os" id="os">
-              {% for os in user_agents.keys() %}
-                <option value="{{ os }}">{{ os }}</option>
-              {% endfor%}
-            </select>
+      <div class="form-group row">
+        <div class="col-sm-10">
+          <div class="form-check">
+            <input class="form-check-input"type="checkbox" name="listing" checked="true"></input>
+            <label for="listing" class="form-check-label">Display on main page</label>
           </div>
         </div>
-
-        {% for os, browsers in user_agents.items() %}
-        <div id="{{os.replace(' ', '_')}}" class="style-sub-1 form-group row" {% if loop.index0 != 0 %}style="display: none;"{%endif%}>
-          <div class="col-sm-10">
-            <label for="browser" class="col-sm-3 col-form-label">Browser Type:</label>
-            <select class="form-control" name="browser">
-            {% for browser in browsers.keys()%}
-              <option value="{{ browser }}">{{ browser }}</option>
+      </div>
+      <div class="dropdown-divider"></div>
+      <p><u>Browser Configuration</u></p>
+      <div class="form-group row">
+        <label for="os" class="col-sm-2 col-form-label">Operating System:</label>
+        <div class="col-sm-10">
+          <select class="form-control" name="os" id="os">
+            {% for os in user_agents.keys() %}
+              <option value="{{ os }}">{{ os }}</option>
             {% endfor%}
-            </select>
-          </div>
+          </select>
         </div>
+      </div>
+
+      {% for os, browsers in user_agents.items() %}
+      <div id="{{os.replace(' ', '_')}}" class="style-sub-1 form-group row" {% if loop.index0 != 0 %}style="display: none;"{%endif%}>
+        <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
+        <div class="col-sm-10">
+          <select class="form-control" name="browser">
+          {% for browser in browsers.keys()%}
+            <option value="{{ browser }}">{{ browser }}</option>
+          {% endfor%}
+          </select>
+        </div>
+      </div>
           {% set outer_loop = loop %}
           {% for browser, user_agents in browsers.items()%}
-        <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 form-group row" {% if not loop.first or not outer_loop.first %} style="display: none;"{%endif%}>
-          <div class="col-sm-10">
-            <label for="user_agent" class="col-sm-3 col-form-label">User Agent:</label>
-            <select class="form-control" name="user_agent">
+      <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 form-group row" {% if not loop.first or not outer_loop.first %} style="display: none;"{%endif%}>
+        <label for="user_agent" class="col-sm-2 col-form-label">User Agent:</label>
+        <div class="col-sm-10">
+          <select class="form-control" name="user_agent">
             {% for user_agent in user_agents %}
               <option value="{{ user_agent }}" >{{ user_agent }}</option>
             {% endfor%}
-            </select>
-          </div>
+          </select>
         </div>
+      </div>
           {% endfor%}
-        {% endfor%}
-        <center><button type="submit" class="btn btn-default">Start looking!</button></center>
-    </form>
+      {% endfor%}
+      <div class="dropdown-divider"></div>
+      <center><button type="submit" class="btn btn-default">Start looking!</button></center>
+  </form>
 </div>
 {% endblock %}
 
 {% block scripts %}
-    {{ super() }}
-    <script>
-        $("#os").change(function(){
-           var os_name = $(this).find(":selected").val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
-           var first_browser_name = $("[id='" + os_name + "']").find('select option:first-child').val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
-           // Hide and disable everything
-           $(".style-sub-1").hide();
-           $(".style-sub-1 > select").attr('disabled', true);
-           $(".style-sub-2").hide();
-           $(".style-sub-2 > select").attr('disabled', true);
+  {{ super() }}
+  <script>
+    $("#os").change(function(){
+      var os_name = $(this).find(":selected").val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
+      var first_browser_name = $("[id='" + os_name + "']").find('select option:first-child').val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
+      // Hide and disable everything
+      $(".style-sub-1").hide();
+      $(".style-sub-1 > select").attr('disabled', true);
+      $(".style-sub-2").hide();
+      $(".style-sub-2 > select").attr('disabled', true);
 
-           $("[id='" + os_name + "']").show();
-           $("[id='" + os_name + "'] > select").removeAttr('disabled');
-           $("[id='" + os_name + '_' + first_browser_name + "']").show();
-           $("[id='" + os_name + '_' + first_browser_name + "'] > select").removeAttr('disabled');
-        });
-        $('select[name="browser"]').change(function(){
-           var browser_name = $(this).find(":selected").val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
-           var os_name = $(this).parent().parent().attr("id").replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
+      $("[id='" + os_name + "']").show();
+      $("[id='" + os_name + "'] > select").removeAttr('disabled');
+      $("[id='" + os_name + '_' + first_browser_name + "']").show();
+      $("[id='" + os_name + '_' + first_browser_name + "'] > select").removeAttr('disabled');
+    });
+    $('select[name="browser"]').change(function(){
+      var browser_name = $(this).find(":selected").val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
+      var os_name = $(this).parent().parent().attr("id").replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
 
-           // Hide what makes sense
-           $(".style-sub-2").hide();
-           $(".style-sub-2 > select").attr('disabled', true);
+      // Hide what makes sense
+      $(".style-sub-2").hide();
+      $(".style-sub-2 > select").attr('disabled', true);
 
-           $("[id='" + os_name + '_' + browser_name + "']").show();
-           $("[id='" + os_name + '_' + browser_name + "'] > select").removeAttr('disabled');
-        });
-    </script>
+      $("[id='" + os_name + '_' + browser_name + "']").show();
+      $("[id='" + os_name + '_' + browser_name + "'] > select").removeAttr('disabled');
+    });
+  </script>
 {% endblock %}
