@@ -167,12 +167,11 @@ class Lookyloo():
         if self.only_global_lookups:
             splitted_url = urlsplit(url)
             if splitted_url.netloc:
-                if ':' in splitted_url.netloc:
-                    ip = socket.gethostbyname(splitted_url.netloc.split(':')[0])
-                else:
-                    ip = socket.gethostbyname(splitted_url.netloc)
+                ip = socket.gethostbyname(splitted_url.hostname)
                 if not ipaddress.ip_address(ip).is_global:
                     return False
+            else:
+                return False
 
         items = crawl(self.splash_url, url, depth, user_agent=user_agent, log_enabled=True, log_level='INFO')
         if not items:
