@@ -53,6 +53,9 @@ optional arguments:
 
 **NOTE**: Yes, it requires python3.6+. No, it will never support anything older.
 
+**NOTE**: If you want to run a public instance, you should set `only_global_lookups=True`
+in `website/web/__init__.py` and `bin/async_scrape.py` to disallow scraping of private IPs.
+
 ## Installation of Splash
 
 You need a running splash instance, preferably on [docker](https://splash.readthedocs.io/en/stable/install.html)
