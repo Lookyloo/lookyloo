@@ -12,7 +12,7 @@
       <div class="form-group row">
         <label for="url" class="col-sm-2 col-form-label">URL:</label>
         <div class="col-sm-10">
-          <input type="text" class="form-control" name="url" id=url placeholder="URL to scrape">
+          <input type="text" class="form-control" name="url" id=url placeholder="URL to scrape" required>
         </div>
       </div>
 
@@ -55,10 +55,11 @@
       </div>
 
       {% for os, browsers in user_agents.items() %}
-      <div id="{{os.replace(' ', '_')}}" class="style-sub-1 form-group row" {% if loop.index0 != 0 %}style="display: none;"{%endif%}>
+      <div id="{{os.replace(' ', '_')}}" class="style-sub-1 form-group row" {% if not loop.first %}style="display: none;"{%endif%}>
         <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
         <div class="col-sm-10">
-          <select class="form-control" name="browser">
+          <!-- Disable all the selects, unless it is the first one in the OS list-->
+          <select class="form-control" name="browser" {% if not loop.first %}disabled{%endif%}>
           {% for browser in browsers.keys()%}
             <option value="{{ browser }}">{{ browser }}</option>
           {% endfor%}
@@ -70,9 +71,10 @@
       <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 form-group row" {% if not loop.first or not outer_loop.first %} style="display: none;"{%endif%}>
         <label for="user_agent" class="col-sm-2 col-form-label">User Agent:</label>
         <div class="col-sm-10">
-          <select class="form-control" name="user_agent">
+          <!-- Disable all the selects, unless it is the first one in the OS list and in the browser list-->
+          <select class="form-control" name="user_agent" {% if not outer_loop.first or not loop.first %}disabled{%endif%}>
             {% for user_agent in user_agents %}
-              <option value="{{ user_agent }}" >{{ user_agent }}</option>
+              <option value="{{ user_agent }}">{{ user_agent }}</option>
             {% endfor%}
           </select>
         </div>
@@ -87,31 +89,5 @@
 
 {% block scripts %}
   {{ super() }}
-  <script>
-    $("#os").change(function(){
-      var os_name = $(this).find(":selected").val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
-      var first_browser_name = $("[id='" + os_name + "']").find('select option:first-child').val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
-      // Hide and disable everything
-      $(".style-sub-1").hide();
-      $(".style-sub-1 > select").attr('disabled', true);
-      $(".style-sub-2").hide();
-      $(".style-sub-2 > select").attr('disabled', true);
-
-      $("[id='" + os_name + "']").show();
-      $("[id='" + os_name + "'] > select").removeAttr('disabled');
-      $("[id='" + os_name + '_' + first_browser_name + "']").show();
-      $("[id='" + os_name + '_' + first_browser_name + "'] > select").removeAttr('disabled');
-    });
-    $('select[name="browser"]').change(function(){
-      var browser_name = $(this).find(":selected").val().replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
-      var os_name = $(this).parent().parent().attr("id").replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g,"_");
-
-      // Hide what makes sense
-      $(".style-sub-2").hide();
-      $(".style-sub-2 > select").attr('disabled', true);
-
-      $("[id='" + os_name + '_' + browser_name + "']").show();
-      $("[id='" + os_name + '_' + browser_name + "'] > select").removeAttr('disabled');
-    });
-  </script>
+  <script src='{{ url_for('static', filename='scrape.js') }}'></script>
 {% endblock %}
