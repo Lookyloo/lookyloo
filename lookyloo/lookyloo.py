@@ -13,6 +13,10 @@ import tempfile
 import pathlib
 import time
 
+import ipaddress
+import socket
+from urllib.parse import urlsplit
+
 from io import BytesIO
 import base64
 from uuid import uuid4
@@ -29,11 +33,12 @@ import logging
 
 class Lookyloo():
 
-    def __init__(self, splash_url: str='http://127.0.0.1:8050', loglevel: int=logging.DEBUG):
+    def __init__(self, splash_url: str='http://127.0.0.1:8050', loglevel: int=logging.DEBUG, only_global_lookups=False):
         self.__init_logger(loglevel)
         self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
         self.scrape_dir = get_homedir() / 'scraped'
         self.splash_url = splash_url
+        self.only_global_lookups = only_global_lookups
         if not self.scrape_dir.exists():
             self.scrape_dir.mkdir(parents=True, exist_ok=True)
 
@@ -159,6 +164,16 @@ class Lookyloo():
                os: str=None, browser: str=None):
         if not url.startswith('http'):
             url = f'http://{url}'
+        if self.only_global_lookups:
+            splitted_url = urlsplit(url)
+            if splitted_url.netloc:
+                if ':' in splitted_url.netloc:
+                    ip = socket.gethostbyname(splitted_url.netloc.split(':')[0])
+                else:
+                    ip = socket.gethostbyname(splitted_url.netloc)
+                if not ipaddress.ip_address(ip).is_global:
+                    return False
+
         items = crawl(self.splash_url, url, depth, user_agent=user_agent, log_enabled=True, log_level='INFO')
         if not items:
             # broken

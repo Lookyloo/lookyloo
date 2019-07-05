@@ -6,6 +6,7 @@ import pickle
 from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 import os
+import logging
 
 from flask import Flask, render_template, request, session, send_file, redirect, url_for, Response
 from flask_bootstrap import Bootstrap
@@ -31,7 +32,14 @@ app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.debug = False
 
-lookyloo = Lookyloo()
+# API entry point for splash
+splash_url = 'http://127.0.0.1:8050'
+# Splash log level
+loglevel = logging.DEBUG
+# Set it to True if your instance is publicly available so users aren't able to scan your internal network
+only_global_lookups = False
+
+lookyloo = Lookyloo(splash_url=splash_url, loglevel=loglevel, only_global_lookups=only_global_lookups)
 
 
 # keep
