@@ -11,6 +11,9 @@ from lookyloo.lookyloo import Lookyloo
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO, datefmt='%I:%M:%S')
 
+# Set it to True if your instance is publicly available so users aren't able to scan your internal network
+only_global_lookups = False
+
 
 class AsyncScraper(AbstractManager):
 
@@ -18,7 +21,7 @@ class AsyncScraper(AbstractManager):
         super().__init__(loglevel)
         if not storage_directory:
             self.storage_directory = get_homedir() / 'scraped'
-        self.lookyloo = Lookyloo(loglevel=loglevel)
+        self.lookyloo = Lookyloo(loglevel=loglevel, only_global_lookups=only_global_lookups)
 
     def _to_run_forever(self):
         set_running('async_scrape')
