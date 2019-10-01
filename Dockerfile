@@ -9,9 +9,6 @@ RUN pip3 install pipenv
 
 WORKDIR root_lookyloo
 
-run git clone https://github.com/antirez/redis.git
-run cd redis && git checkout 5.0 && make && cd ..
-
 RUN git clone https://github.com/CIRCL/lookyloo.git
 WORKDIR lookyloo
 RUN sed -i "s/str='http:\/\/127.0.0.1:8050'/str='http:\/\/splash:8050'/g" lookyloo/lookyloo.py

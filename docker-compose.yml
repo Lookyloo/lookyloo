@@ -1,5 +1,7 @@
 version: '3'
 services:
+  redis:
+    image: redis
   splash:
     image: "scrapinghub/splash"
     expose:
