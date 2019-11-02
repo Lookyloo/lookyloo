@@ -33,7 +33,10 @@ app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.debug = False
 
 # API entry point for splash
-splash_url = 'http://127.0.0.1:8050'
+if os.environ.get('SPLASH_URL'):
+    splash_url = os.environ.get('SPLASH_URL')
+else:
+    splash_url = 'http://127.0.0.1:8050'
 # Splash log level
 loglevel = logging.DEBUG
 # Set it to True if your instance is publicly available so users aren't able to scan your internal network

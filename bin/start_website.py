@@ -17,6 +17,7 @@ if __name__ == '__main__':
         p = Popen(['gunicorn', '--worker-class', 'eventlet', '-w', '10',
                    '--graceful-timeout', '2', '--timeout', '30',
                    '-b', '0.0.0.0:5100',
+                   '--log-level', 'info',
                    'web:app'],
                   cwd=website_dir)
         set_running('website')

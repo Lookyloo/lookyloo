@@ -1,24 +1,38 @@
 version: '3'
 services:
+
   redis:
     image: redis
+    working_dir: /cache
+    command: ./cache.conf --daemonize no
+    volumes:
+        - ./cache:/cache
+
   splash:
     image: "scrapinghub/splash"
-    expose:
-     - "8050"
-     - "5023"
-    command: --disable-ui --disable-lua
+    ports:
+        - "8050:8050"
+        - "5023:5023"
+    command: --disable-lua --disable-private-mode
+
   lookyloo:
-     build: .
-     ports:
-      - "5100:5100"
-     tty: true
-     command:
-         - /bin/sh
-         - -c
-         - |
-             pipenv run run_backend.py --start
-             pipenv run async_scrape.py &
-             pipenv run start_website.py
-     #volumes:
-     # - /path/to/your/data/directory:/lookyloo/scraped
+    build: .
+    working_dir: /lookyloo
+    tty: true
+    environment:
+        - SPLASH_URL=http://splash:8050
+    command:
+        - /bin/sh
+        - -c
+        - |
+            pipenv run async_scrape.py &
+            pipenv run start_website.py
+    volumes:
+        - ./cache:/lookyloo/cache
+        - ./scraped:/lookyloo/scraped
+        - ./user_agents:/lookyloo/user_agents
+    ports:
+        - "5100:5100"
+    links:
+        - "redis"
+        - "splash"

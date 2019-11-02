@@ -4,18 +4,20 @@ ENV LANG=C.UTF-8
 
 RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get -y install git wget python3-pip
+RUN apt-get -y install wget python3-pip nodejs git
 RUN pip3 install pipenv
 
-WORKDIR root_lookyloo
-
-RUN git clone https://github.com/CIRCL/lookyloo.git
 WORKDIR lookyloo
-RUN sed -i "s/str='http:\/\/127.0.0.1:8050'/str='http:\/\/splash:8050'/g" lookyloo/lookyloo.py
-RUN pipenv install
-run echo LOOKYLOO_HOME="'`pwd`'" > .env
 
-run nohup pipenv run run_backend.py --start
-run nohup pipenv run async_scrape.py
-CMD ["pipenv", "run", "start_website.py"]
-EXPOSE 5100
+COPY lookyloo lookyloo/
+COPY client client/
+COPY bin bin/
+COPY website website/
+COPY setup.py .
+COPY Pipfile .
+COPY Pipfile.lock .
+
+RUN mkdir cache user_agents scraped
+
+RUN pipenv install
+RUN echo LOOKYLOO_HOME="'`pwd`'" > .env
