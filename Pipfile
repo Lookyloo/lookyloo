@@ -11,7 +11,7 @@ har2tree = {editable = true,git = "https://github.com/viper-framework/har2tree.g
 pysanejs = {editable = true,git = "https://github.com/CIRCL/PySaneJS.git"}
 requests = "*"
 flask = "*"
-gunicorn = {extras = ["eventlet"],version = "*"}
+gunicorn = {extras = ["eventlet"],version = "<20"}
 lookyloo = {editable = true,path = "."}
 cchardet = "*"
 redis = "*"
