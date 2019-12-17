@@ -98,8 +98,11 @@ def update_user_agents():
     if ua_file_name.exists():
         # Already have a UA for that day.
         return
-    with cfscrape.create_scraper() as s:
-        r = s.get('https://techblog.willshouse.com/2012/01/03/most-common-user-agents/')
+    try:
+        with cfscrape.create_scraper() as s:
+            r = s.get('https://techblog.willshouse.com/2012/01/03/most-common-user-agents/')
+    except Exception:
+        return
     soup = BeautifulSoup(r.text, 'html.parser')
     uas = soup.find_all('textarea')[1].text
     to_store = {'by_frequency': []}

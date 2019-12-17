@@ -72,7 +72,8 @@ function collapse(d) {
 function urlnode_click(d) {
     var url = "/tree/url/" + d.data.uuid;
     d3.blob(url, {credentials: 'same-origin'}).then(data => {
-        saveAs(data, 'file.zip');
+        var file = new File([data], "file.zip", {type: "application/zip"});
+        saveAs(file);
     });
 };
 
