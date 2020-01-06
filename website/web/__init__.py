@@ -7,18 +7,20 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 import os
 import logging
+from pathlib import Path
 
 from flask import Flask, render_template, request, session, send_file, redirect, url_for, Response
-from flask_bootstrap import Bootstrap
+from flask_bootstrap import Bootstrap  # type: ignore
 
 from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents
 from lookyloo.lookyloo import Lookyloo
 from lookyloo.exceptions import NoValidHarFile
 
+from typing import Tuple
 
-app = Flask(__name__)
+app: Flask = Flask(__name__)
 
-secret_file_path = get_homedir() / 'secret_key'
+secret_file_path: Path = get_homedir() / 'secret_key'
 
 if not secret_file_path.exists() or secret_file_path.stat().st_size < 64:
     with secret_file_path.open('wb') as f:
@@ -32,21 +34,20 @@ app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.debug = False
 
+splash_url: str = 'http://127.0.0.1:8050'
 # API entry point for splash
 if os.environ.get('SPLASH_URL'):
-    splash_url = os.environ.get('SPLASH_URL')
-else:
-    splash_url = 'http://127.0.0.1:8050'
+    splash_url = os.environ['SPLASH_URL']
 # Splash log level
 loglevel = logging.DEBUG
 # Set it to True if your instance is publicly available so users aren't able to scan your internal network
-only_global_lookups = False
+only_global_lookups: bool = False
 
-lookyloo = Lookyloo(splash_url=splash_url, loglevel=loglevel, only_global_lookups=only_global_lookups)
+lookyloo: Lookyloo = Lookyloo(splash_url=splash_url, loglevel=loglevel, only_global_lookups=only_global_lookups)
 
 
 # keep
-def load_tree(report_dir):
+def load_tree(report_dir: Path) -> Tuple[dict, str, str, str, dict]:
     session.clear()
     temp_file_name, tree_json, tree_time, tree_ua, tree_root_url, meta = lookyloo.load_tree(report_dir)
     session["tree"] = temp_file_name

@@ -7,17 +7,18 @@ from redis import Redis
 from redis.exceptions import ConnectionError
 from datetime import datetime, timedelta
 import time
-from bs4 import BeautifulSoup
+from glob import glob
 import json
+
+from bs4 import BeautifulSoup  # type: ignore
 try:
-    import cfscrape
+    import cfscrape  # type: ignore
     HAS_CF = True
 except ImportError:
     HAS_CF = False
-from glob import glob
 
 
-def get_homedir():
+def get_homedir() -> Path:
     if not os.environ.get('LOOKYLOO_HOME'):
         guessed_home = Path(__file__).resolve().parent.parent
         raise MissingEnv(f"LOOKYLOO_HOME is missing. \
@@ -59,8 +60,7 @@ def check_running(name: str) -> bool:
     socket_path = get_socket_path(name)
     try:
         r = Redis(unix_socket_path=socket_path)
-        if r.ping():
-            return True
+        return True if r.ping() else False
     except ConnectionError:
         return False
 
@@ -68,7 +68,7 @@ def check_running(name: str) -> bool:
 def shutdown_requested() -> bool:
     try:
         r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
-        return r.exists('shutdown')
+        return True if r.exists('shutdown') else False
     except ConnectionRefusedError:
         return True
     except ConnectionError:
@@ -119,7 +119,7 @@ def update_user_agents():
         json.dump(to_store, f, indent=2)
 
 
-def get_user_agents():
+def get_user_agents() -> dict:
     ua_files_path = str(get_homedir() / 'user_agents' / '*' / '*' / '*.json')
     paths = sorted(glob(ua_files_path), reverse=True)
     if not paths:
