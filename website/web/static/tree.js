@@ -179,10 +179,21 @@ function hostnode_click(d) {
 
         var interval_entries = 40;
         urls.forEach((url, index, array) => {
-            var jdata = JSON.parse(url)
-            url_entries.datum({'data': jdata});
-            url_entries.append(d => text_entry(left_margin, top_margin + overlay_header_height + (interval_entries * index), urlnode_click, d));
-            url_entries.append(d => icon_list(left_margin + 5, top_margin + 20 + overlay_header_height + (interval_entries * index), d));
+            var jdata = JSON.parse(url);
+            var url_data = url_entries.append('svg')
+                                      .attr('class', 'url_data');
+            url_data.datum({'data': jdata});
+            url_data.append(d => text_entry(left_margin, top_margin + overlay_header_height + (interval_entries * index), urlnode_click, d));
+            url_data.append(d => icon_list(left_margin + 5, top_margin + 20 + overlay_header_height + (interval_entries * index), d));
+        });
+
+        url_entries.selectAll('.url_data').each(function(p, j){
+            var cur_icon_list_len = 0;
+            // set position of icons based of their length
+            d3.select(this).selectAll('.icon').each(function(p, j){
+                d3.select(this).attr('x', cur_icon_list_len);
+                cur_icon_list_len += d3.select(this).node().getBBox().width;
+            });
         });
 
         var overlay_bbox = overlay_hostname.node().getBBox()
