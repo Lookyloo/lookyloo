@@ -250,7 +250,7 @@
         "har2tree": {
             "editable": true,
             "git": "https://github.com/viper-framework/har2tree.git",
-            "ref": "09421d04b9e3c985b61404bec828b4be7d892e01"
+            "ref": "a486a8bd16ae3fd6ef69bedea6bcd0bfec572b16"
         },
         "hyperlink": {
             "hashes": [
@@ -386,10 +386,10 @@
         },
         "pyasn1-modules": {
             "hashes": [
-                "sha256:0c35a52e00b672f832e5846826f1fb7507907f7d52fba6faa9e3c4cbe874fe4b",
-                "sha256:b6ada4f840fe51abf5a6bd545b45bf537bea62221fa0dde2e8a553ed9f06a4e3"
+                "sha256:905f84c712230b2c592c19470d3ca8d552de726050d1d1716282a1f6146be65e",
+                "sha256:a50b808ffeb97cb3601dd25981f6b016cbb3d31fbf57a8b8a87428e6158d0c74"
             ],
-            "version": "==0.2.7"
+            "version": "==0.2.8"
         },
         "pycparser": {
             "hashes": [
@@ -467,7 +467,7 @@
         "scrapysplashwrapper": {
             "editable": true,
             "git": "https://github.com/viper-framework/ScrapySplashWrapper.git",
-            "ref": "235b090d5b3024459ba9f91fa5f61660b4af5014"
+            "ref": "3bd1786995c52ea75705940769d3f81979b4c830"
         },
         "service-identity": {
             "hashes": [

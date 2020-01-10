@@ -139,8 +139,6 @@ class Lookyloo():
                 with open((report_dir / 'meta'), 'r') as f:
                     meta = json.load(f)
             ct = CrawledTree(har_files)
-            ct.find_parents()
-            ct.join_trees()
             temp = tempfile.NamedTemporaryFile(prefix='lookyloo', delete=False)
             pickle.dump(ct, temp)
             temp.close()

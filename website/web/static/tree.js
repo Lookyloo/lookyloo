@@ -177,17 +177,20 @@ function hostnode_click(d) {
 
         var url_entries = overlay_hostname.append('svg');
 
-        var interval_entries = 40;
+        var interval_entries = 10;
         urls.forEach((url, index, array) => {
             var jdata = JSON.parse(url);
             var url_data = url_entries.append('svg')
                                       .attr('class', 'url_data');
             url_data.datum({'data': jdata});
             url_data.append(d => text_entry(left_margin, top_margin + overlay_header_height + (interval_entries * index), urlnode_click, d));
-            url_data.append(d => icon_list(left_margin + 5, top_margin + 20 + overlay_header_height + (interval_entries * index), d));
+            url_data.append(d => icon_list(left_margin + 5, top_margin + 20 + overlay_header_height + (interval_entries * index), d, url_view=true));
         });
 
+        var cur_url_data_height = 0;
         url_entries.selectAll('.url_data').each(function(p, j){
+            d3.select(this).attr('y', cur_url_data_height);
+            cur_url_data_height += d3.select(this).node().getBBox().height;
             var cur_icon_list_len = 0;
             // set position of icons based of their length
             d3.select(this).selectAll('.icon').each(function(p, j){
@@ -255,6 +258,9 @@ function icon(key, icon_path, d, icon_size){
 
     iconContent.datum(d);
     iconContent.filter(d => {
+            if (['cookies_sent', 'cookies_received'].includes(key)) {
+                return false;
+            }
             if (typeof d.data[key] === 'boolean') {
                 has_icon = d.data[key];
             } else if (typeof d.data[key] === 'number') {
@@ -270,6 +276,9 @@ function icon(key, icon_path, d, icon_size){
 
 
     iconContent.filter(d => {
+            if (['cookies_sent', 'cookies_received'].includes(key)) {
+                return false;
+            }
             if (typeof d.data[key] === 'boolean') {
                 return false;
                 // return d.data[key];
@@ -286,13 +295,14 @@ function icon(key, icon_path, d, icon_size){
           .style("font-size", "10px")
           .attr('x', icon_size + 1)
           .text(d => d.to_print);
+
     if (has_icon) {
         return iconContent.node();
     }
     return false;
 };
 
-function icon_list(relative_x_pos, relative_y_pos, d) {
+function icon_list(relative_x_pos, relative_y_pos, d, url_view=false) {
     var icon_size = 16;
 
     // Put all the icone in one sub svg document
@@ -312,14 +322,15 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
         ['unknown_mimetype', "/static/wtf.png"],
         ['video', "/static/video.png"],
         ['request_cookie', "/static/cookie_read.png"],
+        ['cookies_sent', "/static/cookie_read.png"],
         ['response_cookie', "/static/cookie_received.png"],
+        ['cookies_received', "/static/cookie_received.png"],
         ['redirect', "/static/redirect.png"],
         ['redirect_to_nothing', "/static/cookie_in_url.png"]
     ];
 
-    nb_icons = 0
     icon_options.forEach(entry => {
-        bloc = icon(entry[0], entry[1], d, icon_size);
+        bloc = icon(entry[0], entry[1], d, icon_size, url_view);
         if (bloc){
             icons.append(() => bloc);
         };
