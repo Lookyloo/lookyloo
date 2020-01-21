@@ -240,7 +240,7 @@ category = "main"
 description = ""
 name = "har2tree"
 optional = false
-python-versions = "^3.7"
+python-versions = "^3.6"
 version = "0.1.0"
 
 [package.dependencies]
@@ -250,7 +250,7 @@ lxml = "^4.4.2"
 six = "^1.14.0"
 
 [package.source]
-reference = "4d96ec33def0626b16c1c4989aad0e9dafc693ed"
+reference = "8b986b8b0db9736ca5e4ffae1cb2ba5ab7ae6589"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
@@ -432,7 +432,7 @@ description = ""
 develop = true
 name = "pylookyloo"
 optional = false
-python-versions = "^3.7"
+python-versions = "^3.6"
 version = "0.1.0"
 
 [package.dependencies]
@@ -571,7 +571,7 @@ category = "main"
 description = ""
 name = "scrapysplashwrapper"
 optional = false
-python-versions = "^3.7"
+python-versions = "^3.6"
 version = "0.1.0"
 
 [package.dependencies]
@@ -579,7 +579,7 @@ scrapy = "^1.8.0"
 scrapy-splash = "^0.7.2"
 
 [package.source]
-reference = "183bff0b71cf135dfc5c08a04bef20de945e1502"
+reference = "b1e96b1d3c871c6e621d5463a3515cfb652ea5db"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
 [[package]]
@@ -718,8 +718,8 @@ test = ["zope.event"]
 testing = ["coverage", "nose", "zope.event"]
 
 [metadata]
-content-hash = "f9d17e3db9e1fcadf417d9810713882cc985b6053cd7315577090f3b7b713a31"
-python-versions = "^3.7"
+content-hash = "eeff503c9a500dc8fbd14da0f04cf64e3ec2b11689cde2d8c2135f79b15d60c7"
+python-versions = "^3.6"
 
 [metadata.files]
 attrs = [
