@@ -160,7 +160,7 @@ class Lookyloo():
             return self.sanejs.sha512(sha512)
         return {'response': []}
 
-    def scrape(self, url: str, depth: int=1, listing: bool=True, user_agent: str=None, perma_uuid: str=None,
+    def scrape(self, url: str, cookies: List[dict]=[], depth: int=1, listing: bool=True, user_agent: str=None, perma_uuid: str=None,
                os: str=None, browser: str=None) -> Union[bool, str]:
         if not url.startswith('http'):
             url = f'http://{url}'
@@ -174,7 +174,7 @@ class Lookyloo():
             else:
                 return False
 
-        items = crawl(self.splash_url, url, depth, user_agent=user_agent, log_enabled=True, log_level='INFO')
+        items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=user_agent, log_enabled=True, log_level='INFO')
         if not items:
             # broken
             return False
@@ -186,7 +186,17 @@ class Lookyloo():
         for i, item in enumerate(items):
             harfile = item['har']
             png = base64.b64decode(item['png'])
-            child_frames = item['childFrames']
+
+            if 'childFrames' in item:
+                child_frames = item['childFrames']
+                with (dirpath / '{0:0{width}}.frames.json'.format(i, width=width)).open('w') as _iframes:
+                    json.dump(child_frames, _iframes)
+
+            if 'cookies' in item:
+                cookies = item['cookies']
+                with (dirpath / '{0:0{width}}.cookies.json'.format(i, width=width)).open('w') as _cookies:
+                    json.dump(cookies, _cookies)
+
             html = item['html']
             with (dirpath / '{0:0{width}}.har'.format(i, width=width)).open('w') as _har:
                 json.dump(harfile, _har)
@@ -194,8 +204,6 @@ class Lookyloo():
                 _img.write(png)
             with (dirpath / '{0:0{width}}.html'.format(i, width=width)).open('w') as _html:
                 _html.write(html)
-            with (dirpath / '{0:0{width}}.frames.json'.format(i, width=width)).open('w') as _iframes:
-                json.dump(child_frames, _iframes)
             with (dirpath / 'uuid').open('w') as _uuid:
                 _uuid.write(perma_uuid)
             if not listing:  # Write no_index marker
