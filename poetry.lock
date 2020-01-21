@@ -87,17 +87,6 @@ pycparser = "*"
 
 [[package]]
 category = "main"
-description = "A simple Python module to bypass Cloudflare's anti-bot page. See https://github.com/Anorov/cloudflare-scrape for more information."
-name = "cfscrape"
-optional = false
-python-versions = "*"
-version = "2.0.8"
-
-[package.dependencies]
-requests = ">=2.6.1"
-
-[[package]]
-category = "main"
 description = "Universal encoding detector for Python 2 and 3"
 name = "chardet"
 optional = false
@@ -718,7 +707,7 @@ test = ["zope.event"]
 testing = ["coverage", "nose", "zope.event"]
 
 [metadata]
-content-hash = "eeff503c9a500dc8fbd14da0f04cf64e3ec2b11689cde2d8c2135f79b15d60c7"
+content-hash = "198949088eb5482613989b450505d4abfcf6be6d9b54b28c4d56e08c0538095f"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -802,11 +791,6 @@ cffi = [
     {file = "cffi-1.13.2-cp38-cp38-win32.whl", hash = "sha256:6d4f18483d040e18546108eb13b1dfa1000a089bcf8529e30346116ea6240506"},
     {file = "cffi-1.13.2-cp38-cp38-win_amd64.whl", hash = "sha256:2781e9ad0e9d47173c0093321bb5435a9dfae0ed6a762aabafa13108f5f7b2ba"},
     {file = "cffi-1.13.2.tar.gz", hash = "sha256:599a1e8ff057ac530c9ad1778293c665cb81a791421f46922d80a86473c13346"},
-]
-cfscrape = [
-    {file = "cfscrape-2.0.8-py27-none-any.whl", hash = "sha256:7c52c19b74a10dd29223f03926581754d0f0bf7f94caaeca163e4bb911ca1c4b"},
-    {file = "cfscrape-2.0.8-py3-none-any.whl", hash = "sha256:45fb82043f824717345b03bfabd80b19b615eaf3d8228cf1d5c3c50e2c6eb259"},
-    {file = "cfscrape-2.0.8.tar.gz", hash = "sha256:55913cb9ff2f39ad796fad2ba8888f12707daba4d8a28f3e34957804a4d8ecb8"},
 ]
 chardet = [
     {file = "chardet-3.0.4-py2.py3-none-any.whl", hash = "sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"},

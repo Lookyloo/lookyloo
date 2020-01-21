@@ -39,7 +39,6 @@ redis = "^3.3.11"
 pylookyloo = {path = "client"}
 beautifulsoup4 = "^4.8.2"
 bootstrap-flask = "^1.2.0"
-cfscrape = "^2.0.8"
 cloudscraper = "^1.2.20"
 
 [tool.poetry.dev-dependencies]
