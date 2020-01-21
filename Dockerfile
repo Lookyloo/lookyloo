@@ -5,7 +5,7 @@ ENV LANG=C.UTF-8
 RUN apt-get update
 RUN apt-get -y upgrade
 RUN apt-get -y install wget python3-pip nodejs git
-RUN pip3 install pipenv
+RUN pip3 install poetry
 
 WORKDIR lookyloo
 
@@ -14,10 +14,10 @@ COPY client client/
 COPY bin bin/
 COPY website website/
 COPY setup.py .
-COPY Pipfile .
-COPY Pipfile.lock .
+COPY pyproject.toml .
+COPY poetry.lock .
 
 RUN mkdir cache user_agents scraped
 
-RUN pipenv install
+RUN poetry install
 RUN echo LOOKYLOO_HOME="'`pwd`'" > .env

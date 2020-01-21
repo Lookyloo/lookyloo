@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "lookyloo"
+version = "0.1.0"
+description = "Web interface to track the trackers."
+authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
+license = "BSD-3-Clause"
+repository = "https://github.com/CIRCL/lookyloo"
+
+classifiers = [
+    'License :: OSI Approved :: BSD License',
+    'Operating System :: POSIX :: Linux',
+    'Intended Audience :: Science/Research',
+    'Intended Audience :: Telecommunications Industry',
+    'Intended Audience :: Information Technology',
+    'Programming Language :: Python :: 3',
+    'Topic :: Security',
+    'Topic :: Internet',
+]
+
+[tool.poetry.scripts]
+start_website = "bin/start_website.py"
+start = "bin/start.py"
+run_backend = "bin/run_backend.py"
+async_scrape = "bin/async_scrape.py"
+shutdown = "bin/shutdown.py"
+stop = "bin/stop.py"
+
+
+[tool.poetry.dependencies]
+python = "^3.7"
+scrapysplashwrapper = {git = "https://github.com/viper-framework/ScrapySplashWrapper.git"}
+har2tree = {git = "https://github.com/viper-framework/har2tree.git"}
+pysanejs = {git = "https://github.com/CIRCL/PySaneJS.git"}
+requests = "^2.22.0"
+flask = "^1.1.1"
+gunicorn = {extras = ["gevent"], version = "^20.0.4"}
+cchardet = "^2.1.5"
+redis = "^3.3.11"
+pylookyloo = {path = "client"}
+beautifulsoup4 = "^4.8.2"
+bootstrap-flask = "^1.2.0"
+cfscrape = "^2.0.8"
+cloudscraper = "^1.2.20"
+
+[tool.poetry.dev-dependencies]
+mypy = "^0.761"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

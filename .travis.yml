@@ -9,8 +9,8 @@ python:
   - "3.8-dev"
 
 install:
-    - pip install pipenv
-    - pipenv install --dev
+    - pip install poetry
+    - poetry install
 
 script:
-    - pipenv run mypy .
+    - poetry run mypy .

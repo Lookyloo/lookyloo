@@ -9,16 +9,27 @@ from datetime import datetime, timedelta
 import time
 from glob import glob
 import json
+import traceback
 
 from bs4 import BeautifulSoup  # type: ignore
 try:
-    import cfscrape  # type: ignore
+    import cloudscraper  # type: ignore
     HAS_CF = True
 except ImportError:
     HAS_CF = False
 
 
 def get_homedir() -> Path:
+    if not os.environ.get('LOOKYLOO_HOME'):
+        # Try to open a .env file in the home directory if it exists.
+        if (Path(__file__).resolve().parent.parent / '.env').exists():
+            with (Path(__file__).resolve().parent.parent / '.env').open() as f:
+                for line in f:
+                    key, value = line.strip().split('=', 1)
+                    if value[0] in ['"', "'"]:
+                        value = value[1:-1]
+                    os.environ[key] = value
+
     if not os.environ.get('LOOKYLOO_HOME'):
         guessed_home = Path(__file__).resolve().parent.parent
         raise MissingEnv(f"LOOKYLOO_HOME is missing. \
@@ -88,7 +99,7 @@ def long_sleep(sleep_in_sec: int, shutdown_check: int=10) -> bool:
 
 def update_user_agents():
     if not HAS_CF:
-        # The website with the UAs is behind Cloudflare's anti-bot page, we need cfscrape that depends on nodejs
+        # The website with the UAs is behind Cloudflare's anti-bot page, we need cloudscraper
         return
 
     today = datetime.now()
@@ -99,9 +110,10 @@ def update_user_agents():
         # Already have a UA for that day.
         return
     try:
-        with cfscrape.create_scraper() as s:
-            r = s.get('https://techblog.willshouse.com/2012/01/03/most-common-user-agents/')
-    except Exception:
+        s = cloudscraper.create_scraper()
+        r = s.get('https://techblog.willshouse.com/2012/01/03/most-common-user-agents/')
+    except Exception as e:
+        traceback.print_exc()
         return
     soup = BeautifulSoup(r.text, 'html.parser')
     uas = soup.find_all('textarea')[1].text
