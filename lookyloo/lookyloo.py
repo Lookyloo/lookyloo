@@ -20,17 +20,17 @@ import base64
 from uuid import uuid4
 
 from pathlib import Path
-from .helpers import get_homedir, get_socket_path
+from .helpers import get_homedir, get_socket_path, load_cookies
 from .exceptions import NoValidHarFile
 from redis import Redis
 
-from typing import Union, Dict, List, Tuple
+from typing import Union, Dict, List, Tuple, Optional
 
 import logging
 
-from pysanejs import SaneJS  # type: ignore
-from scrapysplashwrapper import crawl  # type: ignore
-from har2tree import CrawledTree, Har2TreeError  # type: ignore
+from pysanejs import SaneJS
+from scrapysplashwrapper import crawl
+from har2tree import CrawledTree, Har2TreeError
 
 
 class Lookyloo():
@@ -50,7 +50,9 @@ class Lookyloo():
         # Try to reach sanejs
         self.sanejs = SaneJS()
         if not self.sanejs.is_up:
-            self.sanejs = None
+            self.use_sane_js = False
+        else:
+            self.use_sane_js = True
 
     def __init_logger(self, loglevel: int) -> None:
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
@@ -156,11 +158,11 @@ class Lookyloo():
             return BytesIO(f.read())
 
     def sane_js_query(self, sha512: str) -> Dict:
-        if self.sanejs:
+        if self.use_sane_js:
             return self.sanejs.sha512(sha512)
         return {'response': []}
 
-    def scrape(self, url: str, cookies: List[dict]=[], depth: int=1, listing: bool=True, user_agent: str=None, perma_uuid: str=None,
+    def scrape(self, url: str, cookies: List[dict]=[], depth: int=1, listing: bool=True, user_agent: Optional[str]=None, perma_uuid: str=None,
                os: str=None, browser: str=None) -> Union[bool, str]:
         if not url.startswith('http'):
             url = f'http://{url}'
@@ -173,7 +175,7 @@ class Lookyloo():
                         return False
             else:
                 return False
-
+        cookies = load_cookies()
         items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=user_agent, log_enabled=True, log_level='INFO')
         if not items:
             # broken

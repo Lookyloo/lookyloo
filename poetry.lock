@@ -239,7 +239,7 @@ lxml = "^4.4.2"
 six = "^1.14.0"
 
 [package.source]
-reference = "8b986b8b0db9736ca5e4ffae1cb2ba5ab7ae6589"
+reference = "3f7771a1467c27a45ebcc3ff00e3e6e834d54e72"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
@@ -459,17 +459,17 @@ version = "2.1.2"
 
 [[package]]
 category = "main"
-description = "Python client for SaneJS"
+description = ""
 name = "pysanejs"
 optional = false
-python-versions = "*"
-version = "0.1"
+python-versions = "^3.6"
+version = "0.1.0"
 
 [package.dependencies]
-requests = "*"
+requests = "^2.22.0"
 
 [package.source]
-reference = "3dfe0530a24e4caff04f27830ad4a38c52c74a2c"
+reference = "bdc091fbae7019c39b47a149b12f8ac032eda2a3"
 type = "git"
 url = "https://github.com/CIRCL/PySaneJS.git"
 [[package]]
@@ -568,7 +568,7 @@ scrapy = "^1.8.0"
 scrapy-splash = "^0.7.2"
 
 [package.source]
-reference = "b1e96b1d3c871c6e621d5463a3515cfb652ea5db"
+reference = "6165ff2d4f95618d6be99c5bc44fc707685364e1"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
 [[package]]
@@ -658,8 +658,8 @@ category = "main"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 name = "urllib3"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4"
-version = "1.25.7"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
+version = "1.25.8"
 
 [package.extras]
 brotli = ["brotlipy (>=0.6.0)"]
@@ -1135,8 +1135,8 @@ typing-extensions = [
     {file = "typing_extensions-3.7.4.1.tar.gz", hash = "sha256:091ecc894d5e908ac75209f10d5b4f118fbdb2eb1ede6a63544054bb1edb41f2"},
 ]
 urllib3 = [
-    {file = "urllib3-1.25.7-py2.py3-none-any.whl", hash = "sha256:a8a318824cc77d1fd4b2bec2ded92646630d7fe8619497b142c84a9e6f5a7293"},
-    {file = "urllib3-1.25.7.tar.gz", hash = "sha256:f3c5fd51747d450d4dcf6f923c81f78f811aab8205fda64b0aba34a4e48b0745"},
+    {file = "urllib3-1.25.8-py2.py3-none-any.whl", hash = "sha256:2f3db8b19923a873b3e5256dc9c2dedfa883e33d87c690d9c7913e1f40673cdc"},
+    {file = "urllib3-1.25.8.tar.gz", hash = "sha256:87716c2d2a7121198ebcb7ce7cccf6ce5e9ba539041cfbaeecfb641dc0bf6acc"},
 ]
 w3lib = [
     {file = "w3lib-1.21.0-py2.py3-none-any.whl", hash = "sha256:847704b837b2b973cddef6938325d466628e6078266bc2e1f7ac49ba85c34823"},

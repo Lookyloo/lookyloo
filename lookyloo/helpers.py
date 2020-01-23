@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
+from typing import List
 from pathlib import Path
 from .exceptions import MissingEnv, CreateDirectoryException
 from redis import Redis
@@ -10,6 +11,8 @@ import time
 from glob import glob
 import json
 import traceback
+from urllib.parse import urlparse
+from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup  # type: ignore
 try:
@@ -139,3 +142,23 @@ def get_user_agents() -> dict:
         paths = sorted(glob(ua_files_path), reverse=True)
     with open(paths[0]) as f:
         return json.load(f)
+
+def load_cookies() -> List[dict]:
+    if not (get_homedir() / 'cookies.json').exists():
+        return []
+
+    with (get_homedir() / 'cookies.json').open() as f:
+        cookies = json.load(f)
+    to_return = []
+    for cookie in cookies:
+        u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]
+        to_add = {'path': cookie['Path raw'],
+                  'name': cookie['Name raw'],
+                  'httpOnly': cookie['HTTP only raw'] == 'true',
+                  'secure': cookie['Send for'] == 'Encrypted connections only',
+                  'expires': (datetime.now() + timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
+                  'domain': u,
+                  'value': cookie['Content raw']
+                 }
+        to_return.append(to_add)
+    return to_return
