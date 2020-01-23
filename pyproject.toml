@@ -33,7 +33,7 @@ har2tree = {git = "https://github.com/viper-framework/har2tree.git"}
 pysanejs = {git = "https://github.com/CIRCL/PySaneJS.git"}
 requests = "^2.22.0"
 flask = "^1.1.1"
-gunicorn = {extras = ["gevent"], version = "^20.0.4"}
+gunicorn = {version = "^20.0.4"}
 cchardet = "^2.1.5"
 redis = "^3.3.11"
 pylookyloo = {path = "client"}

@@ -14,7 +14,7 @@ if __name__ == '__main__':
     website_dir = get_homedir() / 'website'
     Popen([str(website_dir / '3rdparty.sh')], cwd=website_dir)
     try:
-        p = Popen(['gunicorn', '--worker-class', 'gevent', '-w', '10',
+        p = Popen(['gunicorn','-w', '10',
                    '--graceful-timeout', '2', '--timeout', '300',
                    '-b', '0.0.0.0:5100',
                    '--log-level', 'info',
