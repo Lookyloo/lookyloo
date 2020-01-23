@@ -32,6 +32,18 @@ The two core dependencies of this project are the following:
 * [ETE Toolkit](http://etetoolkit.org/): A Python framework for the analysis and visualization of trees.
 * [Splash](https://splash.readthedocs.io/en/stable/): Lightweight, scriptable browser as a service with an HTTP API
 
+# Cookies
+
+If you want to scrape a website as if you were loggged in, you need to pass your sessions cookies.
+You can do it the the folloing way:
+
+1. Install [Cookie Quick Manager](https://addons.mozilla.org/en-US/firefox/addon/cookie-quick-manager/)
+2. Click onthe icon in the top right of your browser > Manage all cookies
+3. Search for a domain, tick the Sub-domain box if needed
+4. Right clock on the domain you want to export > save to file > $LOOKYLOO_HOME/cookies.json
+
+Then, you need to restart the webserver and from now on, every cookies you have in that file will be available for the browser used by Splash
+
 # Python client
 
 ```bash
