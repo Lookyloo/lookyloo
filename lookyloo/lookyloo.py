@@ -15,7 +15,7 @@ import ipaddress
 import socket
 from urllib.parse import urlsplit
 
-from io import BytesIO
+from io import BufferedIOBase, BytesIO
 import base64
 from uuid import uuid4
 
@@ -162,7 +162,7 @@ class Lookyloo():
             return self.sanejs.sha512(sha512)
         return {'response': []}
 
-    def scrape(self, url: str, cookies_pseudofile: Optional[BytesIO]=None, depth: int=1, listing: bool=True, user_agent: Optional[str]=None, perma_uuid: str=None,
+    def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None, depth: int=1, listing: bool=True, user_agent: Optional[str]=None, perma_uuid: str=None,
                os: str=None, browser: str=None) -> Union[bool, str]:
         if not url.startswith('http'):
             url = f'http://{url}'

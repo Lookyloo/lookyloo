@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 from typing import List, Optional
-from io import BytesIO
+from io import BufferedIOBase
 from pathlib import Path
 from .exceptions import MissingEnv, CreateDirectoryException
 from redis import Redis
@@ -144,7 +144,7 @@ def get_user_agents() -> dict:
     with open(paths[0]) as f:
         return json.load(f)
 
-def load_cookies(cookie_pseudofile: Optional[BytesIO]=None) -> List[dict]:
+def load_cookies(cookie_pseudofile: Optional[BufferedIOBase]=None) -> List[dict]:
     if cookie_pseudofile:
         cookies = json.load(cookie_pseudofile)
     else:

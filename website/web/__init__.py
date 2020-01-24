@@ -65,8 +65,8 @@ def submit():
 def scrape_web():
     if request.form.get('url'):
         # check if the post request has the file part
-        if 'file' in request.files and request.files['file'].filename:
-            cookie_file = BytesIO(request.files['file'].stream.read())
+        if 'cookies' in request.files and request.files['cookies'].filename:
+            cookie_file = request.files['cookies'].stream
         else:
             cookie_file = None
         perma_uuid = lookyloo.scrape(url=request.form.get('url'),
