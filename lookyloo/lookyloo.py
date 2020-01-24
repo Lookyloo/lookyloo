@@ -162,7 +162,7 @@ class Lookyloo():
             return self.sanejs.sha512(sha512)
         return {'response': []}
 
-    def scrape(self, url: str, cookies: List[dict]=[], depth: int=1, listing: bool=True, user_agent: Optional[str]=None, perma_uuid: str=None,
+    def scrape(self, url: str, cookies_pseudofile: Optional[BytesIO]=None, depth: int=1, listing: bool=True, user_agent: Optional[str]=None, perma_uuid: str=None,
                os: str=None, browser: str=None) -> Union[bool, str]:
         if not url.startswith('http'):
             url = f'http://{url}'
@@ -175,7 +175,8 @@ class Lookyloo():
                         return False
             else:
                 return False
-        cookies = load_cookies()
+
+        cookies = load_cookies(cookies_pseudofile)
         items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=user_agent, log_enabled=True, log_level='INFO')
         if not items:
             # broken

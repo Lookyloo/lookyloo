@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
-from typing import List
+from typing import List, Optional
+from io import BytesIO
 from pathlib import Path
 from .exceptions import MissingEnv, CreateDirectoryException
 from redis import Redis
@@ -143,22 +144,28 @@ def get_user_agents() -> dict:
     with open(paths[0]) as f:
         return json.load(f)
 
-def load_cookies() -> List[dict]:
-    if not (get_homedir() / 'cookies.json').exists():
-        return []
+def load_cookies(cookie_pseudofile: Optional[BytesIO]=None) -> List[dict]:
+    if cookie_pseudofile:
+        cookies = json.load(cookie_pseudofile)
+    else:
+        if not (get_homedir() / 'cookies.json').exists():
+            return []
 
-    with (get_homedir() / 'cookies.json').open() as f:
-        cookies = json.load(f)
+        with (get_homedir() / 'cookies.json').open() as f:
+            cookies = json.load(f)
     to_return = []
-    for cookie in cookies:
-        u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]
-        to_add = {'path': cookie['Path raw'],
-                  'name': cookie['Name raw'],
-                  'httpOnly': cookie['HTTP only raw'] == 'true',
-                  'secure': cookie['Send for'] == 'Encrypted connections only',
-                  'expires': (datetime.now() + timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
-                  'domain': u,
-                  'value': cookie['Content raw']
-                 }
-        to_return.append(to_add)
+    try:
+        for cookie in cookies:
+            u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]
+            to_add = {'path': cookie['Path raw'],
+                      'name': cookie['Name raw'],
+                      'httpOnly': cookie['HTTP only raw'] == 'true',
+                      'secure': cookie['Send for'] == 'Encrypted connections only',
+                      'expires': (datetime.now() + timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
+                      'domain': u,
+                      'value': cookie['Content raw']
+                     }
+            to_return.append(to_add)
+    except Exception as e:
+        print(f'Unable to load the cookie file: {e}')
     return to_return

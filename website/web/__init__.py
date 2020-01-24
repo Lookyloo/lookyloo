@@ -64,7 +64,14 @@ def submit():
 @app.route('/scrape', methods=['GET', 'POST'])
 def scrape_web():
     if request.form.get('url'):
-        perma_uuid = lookyloo.scrape(url=request.form.get('url'), depth=request.form.get('depth'),
+        # check if the post request has the file part
+        if 'file' in request.files and request.files['file'].filename:
+            cookie_file = BytesIO(request.files['file'].stream.read())
+        else:
+            cookie_file = None
+        perma_uuid = lookyloo.scrape(url=request.form.get('url'),
+                                     cookies_pseudofile=cookie_file,
+                                     depth=request.form.get('depth'),
                                      listing=request.form.get('listing'), user_agent=request.form.get('user_agent'),
                                      os=request.form.get('os'), browser=request.form.get('browser'))
         return redirect(url_for('tree', tree_uuid=perma_uuid))
