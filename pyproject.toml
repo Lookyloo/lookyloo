@@ -6,6 +6,8 @@ authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
 repository = "https://github.com/CIRCL/lookyloo"
 
+readme = "README.md"
+
 classifiers = [
     'License :: OSI Approved :: BSD License',
     'Operating System :: POSIX :: Linux',
