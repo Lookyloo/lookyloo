@@ -208,7 +208,7 @@ lxml = "^4.4.2"
 six = "^1.14.0"
 
 [package.source]
-reference = "12c88d6298e52a8458e220b6910597cb5539daa9"
+reference = "147ac0f014249358af7b54cf02d5c85644a60645"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]

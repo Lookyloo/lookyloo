@@ -30,7 +30,7 @@ import logging
 
 from pysanejs import SaneJS
 from scrapysplashwrapper import crawl
-from har2tree import CrawledTree, Har2TreeError
+from har2tree import CrawledTree, Har2TreeError, HarFile
 
 
 class Lookyloo():
@@ -72,17 +72,13 @@ class Lookyloo():
             return
         with (report_dir / 'uuid').open() as f:
             uuid = f.read().strip()
-        with har_files[0].open() as f:
-            j = json.load(f)
-            title = j['log']['pages'][0]['title']
-            timestamp = j['log']['pages'][0]['startedDateTime']
-            if j['log']['entries']:
-                first_url = j['log']['entries'][0]['request']['url']
-            else:
-                first_url = '-'
-            if not title:
-                title = '!! No title found !! '
-        cache = {'uuid': uuid, 'title': title, 'timestamp': timestamp, 'url': first_url}
+        har = HarFile(har_files[0])
+
+        cache: Dict[str, Union[str, int]] = {'uuid': uuid,
+                                             'title': har.initial_title,
+                                             'timestamp': har.initial_start_time,
+                                             'url': har.first_url,
+                                             'redirects': json.dumps(har.initial_redirects)}
         if (report_dir / 'no_index').exists():  # If the folders claims anonymity
             cache['no_index'] = 1
         if uuid and not self.redis.exists(str(report_dir)):
@@ -92,7 +88,9 @@ class Lookyloo():
     def report_cache(self, report_dir: Union[str, Path]) -> Dict:
         if isinstance(report_dir, Path):
             report_dir = str(report_dir)
-        return self.redis.hgetall(report_dir)
+        cached = self.redis.hgetall(report_dir)
+        cached['redirects'] = json.loads(cached['redirects'])
+        return cached
 
     def _init_existing_dumps(self) -> None:
         for report_dir in self.report_dirs:

@@ -8,23 +8,35 @@
     </br></br>
   </center>
 
-  <table class="table table-hover" data-toggle="table" data-search="true">
-  <thead>
-        <tr>
-            <th scope="col">Page title</th>
-            <th scope="col">Initial URL</th>
-        <tr>
+  <table class="table" data-toggle="table" data-search="true" data-show-columns="true">
+    <thead>
+     <tr>
+       <th>Page title</th>
+       <th>Initial URL</th>
+       <th>Initial redirects</th>
+     <tr>
     </thead>
     <tbody>
-        {% for uuid, page_title, date, time, url in titles %}
-        <tr>
-            <td>
-                <a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a>
-                <div id="timestamp">  <b>{{ date }}</b> {{ time }}</div>
-            </td>
-            <td>{{ url }}</td>
-        </tr>
-        {% endfor %}
+      {% for uuid, page_title, date, time, url, redirects in titles %}
+      <tr>
+        <td>
+          <a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a>
+          <div id="timestamp">  <b>{{ date }}</b> {{ time }}</div>
+        </td>
+        <td>{{ url }}</td>
+        <td>
+          {% if redirects %}
+            <ul>
+            {% for r in redirects %}
+              <li>{{ r }}</li>
+            {% endfor %}
+            </ul>
+          {% else%}
+            No redirect
+          {%endif%}
+        </td>
+      </tr>
+      {% endfor %}
     </tbody>
   </table>
 {% endblock %}
