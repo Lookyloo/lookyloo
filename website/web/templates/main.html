@@ -10,21 +10,27 @@
     {% block styles %}
     <!-- Bootstrap CSS -->
     {{ bootstrap.load_css() }}
-	<link rel="stylesheet" href="{{ url_for('static', filename='tree.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-table.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='tree.css') }}">
     {% endblock %}
 
-    <title>Lookyloo</title>
+    <title>
+        {% block title %}{% endblock%}
+    </title>
     {% endblock %}
   </head>
   <body>
     <!-- Your page contont -->
-    {% block content %}{% endblock%}
+    <div class="container">
+      {% block content %}{% endblock%}
+    </div>
 
     {% block scripts %}
     <!-- Optional JavaScript -->
     {{ bootstrap.load_js() }}
-	<script src='{{ url_for('static', filename='FileSaver.js') }}'></script>
 	<script src='{{ url_for('static', filename='d3.v5.min.js') }}'></script>
+    <script src='{{ url_for('static', filename='FileSaver.js') }}'></script>
+    <script src='{{ url_for('static', filename='bootstrap-table.min.js') }}'></script>
     {% endblock %}
   </body>
 </html>

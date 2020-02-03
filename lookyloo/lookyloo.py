@@ -75,9 +75,14 @@ class Lookyloo():
         with har_files[0].open() as f:
             j = json.load(f)
             title = j['log']['pages'][0]['title']
+            timestamp = j['log']['pages'][0]['startedDateTime']
+            if j['log']['entries']:
+                first_url = j['log']['entries'][0]['request']['url']
+            else:
+                first_url = '-'
             if not title:
                 title = '!! No title found !! '
-        cache = {'uuid': uuid, 'title': title}
+        cache = {'uuid': uuid, 'title': title, 'timestamp': timestamp, 'url': first_url}
         if (report_dir / 'no_index').exists():  # If the folders claims anonymity
             cache['no_index'] = 1
         if uuid and not self.redis.exists(str(report_dir)):
