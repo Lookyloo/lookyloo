@@ -14,7 +14,7 @@
        <th>Page title</th>
        <th>Initial URL</th>
        <th>Initial redirects</th>
-     <tr>
+     </tr>
     </thead>
     <tbody>
       {% for uuid, page_title, date, time, url, redirects in titles %}
@@ -26,11 +26,13 @@
         <td>{{ url }}</td>
         <td>
           {% if redirects %}
-            <ul>
             {% for r in redirects %}
-              <li>{{ r }}</li>
+              {{ r }}
+              {% if loop.nextitem %}
+                </br>{{ ("&nbsp;" * (loop.index *2) )|safe }}↪
+              {%endif%}
+
             {% endfor %}
-            </ul>
           {% else%}
             No redirect
           {%endif%}
