@@ -8,12 +8,14 @@
     </br></br>
   </center>
 
-  <table class="table" data-toggle="table" data-search="true" data-show-columns="true">
+  <center>
+  <div class="table-responsive">
+  <table id="table" class="table" data-toggle="table" data-search="true" data-show-columns="true">
     <thead>
      <tr>
-       <th>Page title</th>
-       <th>Initial URL</th>
-       <th>Initial redirects</th>
+       <th data-field="title" data-width="200">Page title</th>
+       <th data-flield="url" data-width="75">Initial URL</th>
+       <th data-field="redirects" data-width="75">Initial redirects</th>
      </tr>
     </thead>
     <tbody>
@@ -41,4 +43,6 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
+  </center>
 {% endblock %}
