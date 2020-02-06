@@ -199,7 +199,7 @@ description = ""
 name = "har2tree"
 optional = false
 python-versions = "^3.6"
-version = "0.1.0"
+version = "1.0"
 
 [package.dependencies]
 beautifulsoup4 = "^4.8.2"
@@ -208,7 +208,7 @@ lxml = "^4.4.2"
 six = "^1.14.0"
 
 [package.source]
-reference = "147ac0f014249358af7b54cf02d5c85644a60645"
+reference = "17d2b6627637b77382aad862795435d5e770bdaa"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
@@ -431,13 +431,13 @@ description = ""
 name = "pysanejs"
 optional = false
 python-versions = "^3.6"
-version = "0.1.0"
+version = "1.0"
 
 [package.dependencies]
 requests = "^2.22.0"
 
 [package.source]
-reference = "bdc091fbae7019c39b47a149b12f8ac032eda2a3"
+reference = "3ea143f44d37ab701c70ffb38408528ddb4e2b6e"
 type = "git"
 url = "https://github.com/CIRCL/PySaneJS.git"
 [[package]]
@@ -529,14 +529,14 @@ description = ""
 name = "scrapysplashwrapper"
 optional = false
 python-versions = "^3.6"
-version = "0.1.0"
+version = "1.0"
 
 [package.dependencies]
 scrapy = "^1.8.0"
 scrapy-splash = "^0.7.2"
 
 [package.source]
-reference = "2bbc9c1dd405993bc775e62447fac3355dfbde74"
+reference = "0e5cbcca53dd26c07db725f4fabed4df9c555bc6"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
 [[package]]
