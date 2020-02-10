@@ -28,18 +28,20 @@
       {% for uuid, page_title, date, time, url, redirects in titles %}
       <tr>
         <td>
-          <a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a>
+            <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
           <div id="url">{{ url }}</div>
         </td>
         <td>{{ date }} {{ time }}</td>
         <td>
           {% if redirects %}
             {% for r in redirects %}
+            <p title="{{ r }}">
+            {% if loop.previtem %}
+              {{ ("&nbsp;" * (loop.index *2) )|safe }}↪ {{ r }}
+            {%else%}
               {{ r }}
-              {% if loop.nextitem %}
-                </br>{{ ("&nbsp;" * (loop.index *2) )|safe }}↪
-              {%endif%}
-
+            {%endif%}
+            </p>
             {% endfor %}
           {% else%}
             No redirect
