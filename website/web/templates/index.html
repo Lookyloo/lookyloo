@@ -4,18 +4,24 @@
 
 {% block content %}
   <center>
-    <h2><a href="{{ url_for('scrape_web') }}">Use Lookyloo to scrape a page</a></h2>
+    <a href="{{ url_for('scrape_web') }}">
+      <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
+           alt="Lookyloo" width="200">
+    </a>
+  </center>
+  <center>
+    <h2><a href="{{ url_for('scrape_web') }}">Start a new capture</a></h2>
     </br></br>
   </center>
 
   <center>
   <div class="table-responsive">
-  <table id="table" class="table" data-toggle="table" data-search="true" data-show-columns="true">
+  <table id="table" class="table" data-toggle="table" data-search="true">
     <thead>
      <tr>
-       <th data-field="title" data-width="200">Page title</th>
-       <th data-flield="url" data-width="75">Initial URL</th>
-       <th data-field="redirects" data-width="75">Initial redirects</th>
+       <th data-width="200">Page</th>
+       <th data-width="80">Timestamp</th>
+       <th data-width="200">Redirects</th>
      </tr>
     </thead>
     <tbody>
@@ -23,9 +29,9 @@
       <tr>
         <td>
           <a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a>
-          <div id="timestamp">  <b>{{ date }}</b> {{ time }}</div>
+          <div id="url">{{ url }}</div>
         </td>
-        <td>{{ url }}</td>
+        <td>{{ date }} {{ time }}</td>
         <td>
           {% if redirects %}
             {% for r in redirects %}

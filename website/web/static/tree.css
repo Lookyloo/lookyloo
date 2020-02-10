@@ -112,8 +112,11 @@ hr {
   border-width: 1px;
 }
 
-#timestamp {
-  text-align: right;
-  color: gray;
-  font-size: small;
+table {
+  table-layout: fixed;
+}
+
+table td{
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
