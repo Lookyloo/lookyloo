@@ -111,3 +111,13 @@ hr {
   border-style: inset;
   border-width: 1px;
 }
+
+table {
+  table-layout: fixed;
+}
+
+table td p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}

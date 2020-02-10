@@ -173,5 +173,8 @@ def index():
         cached = lookyloo.report_cache(report_dir)
         if not cached or 'no_index' in cached:
             continue
-        titles.append((cached['uuid'], cached['title']))
+        date, time = cached['timestamp'].split('T')
+        time, _ = time.split('.', 1)
+        titles.append((cached['uuid'], cached['title'], date, time, cached['url'], cached['redirects']))
+    titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
     return render_template('index.html', titles=titles)
