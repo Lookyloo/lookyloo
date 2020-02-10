@@ -28,8 +28,8 @@
       {% for uuid, page_title, date, time, url, redirects in titles %}
       <tr>
         <td>
-            <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
-          <div id="url">{{ url }}</div>
+          <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
+          <p title="{{ url }}">{{ url }}</div>
         </td>
         <td>{{ date }} {{ time }}</td>
         <td>
