@@ -4,7 +4,7 @@ ENV LANG=C.UTF-8
 
 RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get -y install wget python3-pip nodejs git python3-venv
+RUN apt-get -y install wget python3-pip git python3-venv
 RUN pip3 install poetry
 
 WORKDIR lookyloo
@@ -16,6 +16,7 @@ COPY website website/
 COPY setup.py .
 COPY pyproject.toml .
 COPY poetry.lock .
+COPY README.md .
 
 RUN mkdir cache user_agents scraped
 
