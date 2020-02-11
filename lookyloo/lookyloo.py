@@ -85,12 +85,16 @@ class Lookyloo():
             self.redis.hmset(str(report_dir), cache)
             self.redis.hset('lookup_dirs', uuid, str(report_dir))
 
-    def report_cache(self, report_dir: Union[str, Path]) -> Dict:
+    def report_cache(self, report_dir: Union[str, Path]) -> Optional[Dict[str, Union[str, int]]]:
         if isinstance(report_dir, Path):
             report_dir = str(report_dir)
         cached = self.redis.hgetall(report_dir)
-        cached['redirects'] = json.loads(cached['redirects'])
-        return cached
+        if all(key in ['uuid', 'title', 'timestamp', 'url', 'redirects'] for key in cached):
+            cached['redirects'] = json.loads(cached['redirects'])
+            return cached
+
+        self.logger.warning(f'Cache ({report_dir}) is invalid: {json.dumps(report_dir, indent=2)}')
+        return None
 
     def _init_existing_dumps(self) -> None:
         for report_dir in self.report_dirs:
