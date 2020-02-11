@@ -89,7 +89,7 @@ class Lookyloo():
         if isinstance(report_dir, Path):
             report_dir = str(report_dir)
         cached = self.redis.hgetall(report_dir)
-        if all(key in ['uuid', 'title', 'timestamp', 'url', 'redirects'] for key in cached):
+        if all(key in cached.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects']):
             cached['redirects'] = json.loads(cached['redirects'])
             return cached
 
