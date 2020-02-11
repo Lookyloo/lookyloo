@@ -93,7 +93,7 @@ class Lookyloo():
             cached['redirects'] = json.loads(cached['redirects'])
             return cached
 
-        self.logger.warning(f'Cache ({report_dir}) is invalid: {json.dumps(report_dir, indent=2)}')
+        self.logger.warning(f'Cache ({report_dir}) is invalid: {json.dumps(cached, indent=2)}')
         return None
 
     def _init_existing_dumps(self) -> None:
