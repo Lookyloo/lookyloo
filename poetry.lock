@@ -208,7 +208,7 @@ lxml = "^4.4.2"
 six = "^1.14.0"
 
 [package.source]
-reference = "ff0f6294728902e7e36c294e5b51ac51ba894a03"
+reference = "75394903d86c2d8bc08405d549a4f4d14b2e34bc"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
@@ -390,7 +390,7 @@ develop = true
 name = "pylookyloo"
 optional = false
 python-versions = "^3.6"
-version = "0.1.0"
+version = "1.0"
 
 [package.dependencies]
 requests = "^2.22.0"
