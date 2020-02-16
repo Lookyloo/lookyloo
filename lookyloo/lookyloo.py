@@ -92,7 +92,7 @@ class Lookyloo():
         if isinstance(report_dir, Path):
             report_dir = str(report_dir)
         if (Path(report_dir) / 'error.txt').exists():
-            with (report_dir / 'error.txt').open() as _error:
+            with (Path(report_dir) / 'error.txt').open() as _error:
                 self.logger.warning(f'Capture in ({report_dir}) has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go')
         cached = self.redis.hgetall(report_dir)
         if all(key in cached.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects']):
