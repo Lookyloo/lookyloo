@@ -61,14 +61,17 @@ class Lookyloo():
     def _set_report_cache(self, report_dir: Path) -> None:
         if self.redis.exists(str(report_dir)):
             return
+        if (report_dir / 'error.txt').exists():
+            # Something went wrong
+            return
         har_files = sorted(report_dir.glob('*.har'))
         if not har_files:
             self.logger.warning(f'No har files in {report_dir}')
-            if (report_dir / 'uuid').exists():
-                (report_dir / 'uuid').unlink()
-            if (report_dir / 'no_index').exists():
-                (report_dir / 'no_index').unlink()
-            report_dir.rmdir()
+            # if (report_dir / 'uuid').exists():
+            #    (report_dir / 'uuid').unlink()
+            # if (report_dir / 'no_index').exists():
+            #    (report_dir / 'no_index').unlink()
+            # report_dir.rmdir()
             return
         with (report_dir / 'uuid').open() as f:
             uuid = f.read().strip()
@@ -88,6 +91,9 @@ class Lookyloo():
     def report_cache(self, report_dir: Union[str, Path]) -> Optional[Dict[str, Union[str, int]]]:
         if isinstance(report_dir, Path):
             report_dir = str(report_dir)
+        if (Path(report_dir) / 'error.txt').exists():
+            with (report_dir / 'error.txt').open() as _error:
+                self.logger.warning(f'Capture in ({report_dir}) has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go')
         cached = self.redis.hgetall(report_dir)
         if all(key in cached.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects']):
             cached['redirects'] = json.loads(cached['redirects'])
@@ -194,8 +200,34 @@ class Lookyloo():
         dirpath = self.scrape_dir / datetime.now().isoformat()
         dirpath.mkdir()
         for i, item in enumerate(items):
+            if not listing:  # Write no_index marker
+                (dirpath / 'no_index').touch()
+            with (dirpath / 'uuid').open('w') as _uuid:
+                _uuid.write(perma_uuid)
+            if os or browser:
+                meta = {}
+                if os:
+                    meta['os'] = os
+                if browser:
+                    meta['browser'] = browser
+                with (dirpath / 'meta').open('w') as _meta:
+                    json.dump(meta, _meta)
+            if 'error' in item:
+                with (dirpath / 'error.txt').open('w') as _error:
+                    _error.write(item['error'])
+                continue
+
+            # The capture went fine
             harfile = item['har']
             png = base64.b64decode(item['png'])
+            html = item['html']
+
+            with (dirpath / '{0:0{width}}.har'.format(i, width=width)).open('w') as _har:
+                json.dump(harfile, _har)
+            with (dirpath / '{0:0{width}}.png'.format(i, width=width)).open('wb') as _img:
+                _img.write(png)
+            with (dirpath / '{0:0{width}}.html'.format(i, width=width)).open('w') as _html:
+                _html.write(html)
 
             if 'childFrames' in item:
                 child_frames = item['childFrames']
@@ -207,24 +239,5 @@ class Lookyloo():
                 with (dirpath / '{0:0{width}}.cookies.json'.format(i, width=width)).open('w') as _cookies:
                     json.dump(cookies, _cookies)
 
-            html = item['html']
-            with (dirpath / '{0:0{width}}.har'.format(i, width=width)).open('w') as _har:
-                json.dump(harfile, _har)
-            with (dirpath / '{0:0{width}}.png'.format(i, width=width)).open('wb') as _img:
-                _img.write(png)
-            with (dirpath / '{0:0{width}}.html'.format(i, width=width)).open('w') as _html:
-                _html.write(html)
-            with (dirpath / 'uuid').open('w') as _uuid:
-                _uuid.write(perma_uuid)
-            if not listing:  # Write no_index marker
-                (dirpath / 'no_index').touch()
-            if os or browser:
-                meta = {}
-                if os:
-                    meta['os'] = os
-                if browser:
-                    meta['browser'] = browser
-                with (dirpath / 'meta').open('w') as _meta:
-                    json.dump(meta, _meta)
         self._set_report_cache(dirpath)
         return perma_uuid

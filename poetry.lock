@@ -19,10 +19,10 @@ marker = "python_version >= \"3.5\""
 name = "automat"
 optional = false
 python-versions = "*"
-version = "0.8.0"
+version = "20.2.0"
 
 [package.dependencies]
-attrs = ">=16.1.0"
+attrs = ">=19.2.0"
 six = "*"
 
 [package.extras]
@@ -107,7 +107,7 @@ description = "A Python module to bypass Cloudflare's anti-bot page."
 name = "cloudscraper"
 optional = false
 python-versions = "*"
-version = "1.2.20"
+version = "1.2.23"
 
 [package.dependencies]
 requests = ">=2.9.2"
@@ -208,7 +208,7 @@ lxml = "^4.4.2"
 six = "^1.14.0"
 
 [package.source]
-reference = "7df6b07111fc039e813f9a43968ad430ff8eb73b"
+reference = "4d16f46b6ad9f86e34422cea7d48652012092e53"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
@@ -536,7 +536,7 @@ scrapy = "^1.8.0"
 scrapy-splash = "^0.7.2"
 
 [package.source]
-reference = "d781ff5867504f50ce9411fc7cad1a653dd2a02d"
+reference = "f327de3dbbdab0b4eaf85928a637df33d28538a1"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
 [[package]]
@@ -683,8 +683,8 @@ attrs = [
     {file = "attrs-19.3.0.tar.gz", hash = "sha256:f7b7ce16570fe9965acd6d30101a28f62fb4a7f9e926b3bbc9b61f8b04247e72"},
 ]
 automat = [
-    {file = "Automat-0.8.0-py2.py3-none-any.whl", hash = "sha256:81c93c55d2742c55e74e6497a48e048a859fa01d7aa0b91a032be432229837e2"},
-    {file = "Automat-0.8.0.tar.gz", hash = "sha256:269a09dfb063a3b078983f4976d83f0a0d3e6e7aaf8e27d8df1095e09dc4a484"},
+    {file = "Automat-20.2.0-py2.py3-none-any.whl", hash = "sha256:b6feb6455337df834f6c9962d6ccf771515b7d939bca142b29c20c2376bc6111"},
+    {file = "Automat-20.2.0.tar.gz", hash = "sha256:7979803c74610e11ef0c0d68a2942b152df52da55336e0c9d58daf1831cbdf33"},
 ]
 beautifulsoup4 = [
     {file = "beautifulsoup4-4.8.2-py2-none-any.whl", hash = "sha256:e1505eeed31b0f4ce2dbb3bc8eb256c04cc2b3b72af7d551a4ab6efd5cbe5dae"},
@@ -763,8 +763,8 @@ click = [
     {file = "Click-7.0.tar.gz", hash = "sha256:5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"},
 ]
 cloudscraper = [
-    {file = "cloudscraper-1.2.20-py2.py3-none-any.whl", hash = "sha256:63a93877552b6e8d5b6b020f6893aa275c1d3a0b586984be6da5343978985166"},
-    {file = "cloudscraper-1.2.20.tar.gz", hash = "sha256:3168535f56e33a4db66e754e5a968e3e12c2f891082214f51269bee7a57de8ef"},
+    {file = "cloudscraper-1.2.23-py2.py3-none-any.whl", hash = "sha256:a50e366d6d5ae299ce1554fc025c1e756b2598bc0b2232efa76e36c3e8f79e63"},
+    {file = "cloudscraper-1.2.23.tar.gz", hash = "sha256:b01bd3ab916d30624643d7c14569218024b3f81b20da8045af4a301129f3bc11"},
 ]
 constantly = [
     {file = "constantly-15.1.0-py2.py3-none-any.whl", hash = "sha256:dd2fa9d6b1a51a83f0d7dd76293d734046aa176e384bf6e33b7e44880eb37c5d"},
