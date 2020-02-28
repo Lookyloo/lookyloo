@@ -107,7 +107,7 @@ description = "A Python module to bypass Cloudflare's anti-bot page."
 name = "cloudscraper"
 optional = false
 python-versions = "*"
-version = "1.2.23"
+version = "1.2.24"
 
 [package.dependencies]
 requests = ">=2.9.2"
@@ -205,10 +205,11 @@ version = "1.0"
 beautifulsoup4 = "^4.8.2"
 ete3 = "^3.1.1"
 lxml = "^4.4.2"
+publicsuffix2 = "^2.20191221"
 six = "^1.14.0"
 
 [package.source]
-reference = "4d16f46b6ad9f86e34422cea7d48652012092e53"
+reference = "841ff943999d2926e6e83b40e9fc01896788e324"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
@@ -229,7 +230,7 @@ description = "Internationalized Domain Names in Applications (IDNA)"
 name = "idna"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "2.8"
+version = "2.9"
 
 [[package]]
 category = "main"
@@ -341,6 +342,14 @@ six = "*"
 
 [[package]]
 category = "main"
+description = "Get a public suffix for a domain name using the Public Suffix List. Forked from and using the same API as the publicsuffix package."
+name = "publicsuffix2"
+optional = false
+python-versions = "*"
+version = "2.20191221"
+
+[[package]]
+category = "main"
 description = "ASN.1 types and codecs"
 name = "pyasn1"
 optional = false
@@ -381,7 +390,7 @@ marker = "python_version >= \"3.5\""
 name = "pyhamcrest"
 optional = false
 python-versions = ">=3.5"
-version = "2.0.0"
+version = "2.0.1"
 
 [[package]]
 category = "main"
@@ -465,16 +474,16 @@ description = "Python HTTP for Humans."
 name = "requests"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-version = "2.22.0"
+version = "2.23.0"
 
 [package.dependencies]
 certifi = ">=2017.4.17"
-chardet = ">=3.0.2,<3.1.0"
-idna = ">=2.5,<2.9"
+chardet = ">=3.0.2,<4"
+idna = ">=2.5,<3"
 urllib3 = ">=1.21.1,<1.25.0 || >1.25.0,<1.25.1 || >1.25.1,<1.26"
 
 [package.extras]
-security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)"]
+security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)"]
 socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
 
 [[package]]
@@ -536,7 +545,7 @@ scrapy = "^1.8.0"
 scrapy-splash = "^0.7.2"
 
 [package.source]
-reference = "f327de3dbbdab0b4eaf85928a637df33d28538a1"
+reference = "d0037488d93b856c5e848f1c6924ee696da8a101"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
 [[package]]
@@ -572,8 +581,8 @@ category = "main"
 description = "A modern CSS selector implementation for Beautiful Soup."
 name = "soupsieve"
 optional = false
-python-versions = "*"
-version = "1.9.5"
+python-versions = ">=3.5"
+version = "2.0"
 
 [[package]]
 category = "main"
@@ -763,8 +772,8 @@ click = [
     {file = "Click-7.0.tar.gz", hash = "sha256:5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"},
 ]
 cloudscraper = [
-    {file = "cloudscraper-1.2.23-py2.py3-none-any.whl", hash = "sha256:a50e366d6d5ae299ce1554fc025c1e756b2598bc0b2232efa76e36c3e8f79e63"},
-    {file = "cloudscraper-1.2.23.tar.gz", hash = "sha256:b01bd3ab916d30624643d7c14569218024b3f81b20da8045af4a301129f3bc11"},
+    {file = "cloudscraper-1.2.24-py2.py3-none-any.whl", hash = "sha256:21529940fd7dc675fbed9aa5042ee6a6f3cd09d17edb6d9ed3ed25bbfb69ef35"},
+    {file = "cloudscraper-1.2.24.tar.gz", hash = "sha256:293a7947ef958725b6c16e1d330030d18728610a189b729b0fd75ee228225c98"},
 ]
 constantly = [
     {file = "constantly-15.1.0-py2.py3-none-any.whl", hash = "sha256:dd2fa9d6b1a51a83f0d7dd76293d734046aa176e384bf6e33b7e44880eb37c5d"},
@@ -814,8 +823,8 @@ hyperlink = [
     {file = "hyperlink-19.0.0.tar.gz", hash = "sha256:4288e34705da077fada1111a24a0aa08bb1e76699c9ce49876af722441845654"},
 ]
 idna = [
-    {file = "idna-2.8-py2.py3-none-any.whl", hash = "sha256:ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c"},
-    {file = "idna-2.8.tar.gz", hash = "sha256:c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407"},
+    {file = "idna-2.9-py2.py3-none-any.whl", hash = "sha256:a068a21ceac8a4d63dbfd964670474107f541babbd2250d61922f029858365fa"},
+    {file = "idna-2.9.tar.gz", hash = "sha256:7588d1c14ae4c77d74036e8c22ff447b26d0fde8f007354fd48a7814db15b7cb"},
 ]
 incremental = [
     {file = "incremental-17.5.0-py2.py3-none-any.whl", hash = "sha256:717e12246dddf231a349175f48d74d93e2897244939173b01974ab6661406b9f"},
@@ -915,6 +924,10 @@ parsel = [
 protego = [
     {file = "Protego-0.1.16.tar.gz", hash = "sha256:a682771bc7b51b2ff41466460896c1a5a653f9a1e71639ef365a72e66d8734b4"},
 ]
+publicsuffix2 = [
+    {file = "publicsuffix2-2.20191221-py2.py3-none-any.whl", hash = "sha256:786b5e36205b88758bd3518725ec8cfe7a8173f5269354641f581c6b80a99893"},
+    {file = "publicsuffix2-2.20191221.tar.gz", hash = "sha256:00f8cc31aa8d0d5592a5ced19cccba7de428ebca985db26ac852d920ddd6fe7b"},
+]
 pyasn1 = [
     {file = "pyasn1-0.4.8-py2.4.egg", hash = "sha256:fec3e9d8e36808a28efb59b489e4528c10ad0f480e57dcc32b4de5c9d8c9fdf3"},
     {file = "pyasn1-0.4.8-py2.5.egg", hash = "sha256:0458773cfe65b153891ac249bcf1b5f8f320b7c2ce462151f8fa74de8934becf"},
@@ -953,8 +966,8 @@ pydispatcher = [
     {file = "PyDispatcher-2.0.5.zip", hash = "sha256:5be4a8be12805ef7d712dd9a93284fb8bc53f309867e573f653a72e5fd10e433"},
 ]
 pyhamcrest = [
-    {file = "PyHamcrest-2.0.0-py3-none-any.whl", hash = "sha256:36cda5e849e3ee9ce54628667471e5e769f596259bb3c13c3596f6059a615ef8"},
-    {file = "PyHamcrest-2.0.0.tar.gz", hash = "sha256:5959cb4ab465b303522d2e0d270a6ee581c3ad9ba419e304bb6ebe50a60ea37a"},
+    {file = "PyHamcrest-2.0.1-py3-none-any.whl", hash = "sha256:55abfc14ec38ed2bd6093add3be72385c1b7fd8e6aeb27448c00f95cb501c60e"},
+    {file = "PyHamcrest-2.0.1.tar.gz", hash = "sha256:9f12b9b3b109d4877b2a1a42a9fb8acbf350213d3b1873eecf6eb07d6ac3caef"},
 ]
 pylookyloo = []
 pyopenssl = [
@@ -974,8 +987,8 @@ redis = [
     {file = "redis-3.4.1.tar.gz", hash = "sha256:0dcfb335921b88a850d461dc255ff4708294943322bd55de6cfd68972490ca1f"},
 ]
 requests = [
-    {file = "requests-2.22.0-py2.py3-none-any.whl", hash = "sha256:9cf5292fcd0f598c671cfc1e0d7d1a7f13bb8085e9a590f48c010551dc6c4b31"},
-    {file = "requests-2.22.0.tar.gz", hash = "sha256:11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"},
+    {file = "requests-2.23.0-py2.py3-none-any.whl", hash = "sha256:43999036bfa82904b6af1d99e4882b560e5e2c68e5c4b0aa03b655f3d7d73fee"},
+    {file = "requests-2.23.0.tar.gz", hash = "sha256:b3f43d496c6daba4493e7c431722aeb7dbc6288f52a6e04e7b6023b0247817e6"},
 ]
 requests-toolbelt = [
     {file = "requests-toolbelt-0.9.1.tar.gz", hash = "sha256:968089d4584ad4ad7c171454f0a5c6dac23971e9472521ea3b6d49d610aa6fc0"},
@@ -999,8 +1012,8 @@ six = [
     {file = "six-1.14.0.tar.gz", hash = "sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a"},
 ]
 soupsieve = [
-    {file = "soupsieve-1.9.5-py2.py3-none-any.whl", hash = "sha256:bdb0d917b03a1369ce964056fc195cfdff8819c40de04695a80bc813c3cfa1f5"},
-    {file = "soupsieve-1.9.5.tar.gz", hash = "sha256:e2c1c5dee4a1c36bcb790e0fabd5492d874b8ebd4617622c4f6a731701060dda"},
+    {file = "soupsieve-2.0-py2.py3-none-any.whl", hash = "sha256:fcd71e08c0aee99aca1b73f45478549ee7e7fc006d51b37bec9e9def7dc22b69"},
+    {file = "soupsieve-2.0.tar.gz", hash = "sha256:e914534802d7ffd233242b785229d5ba0766a7f487385e3f714446a07bf540ae"},
 ]
 twisted = [
     {file = "Twisted-19.10.0-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:257dbc78e72bc69c2970035fc74df54b04573d5ddd380251a8a23f74d619db03"},
