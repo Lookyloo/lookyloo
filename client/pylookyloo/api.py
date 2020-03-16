@@ -16,10 +16,10 @@ class Lookyloo():
         self.session = requests.session()
 
     @property
-    def is_up(self):
+    def is_up(self) -> bool:
         r = self.session.head(self.root_url)
         return r.status_code == 200
 
-    def enqueue(self, url: str):
+    def enqueue(self, url: str) -> str:
         response = self.session.post(urljoin(self.root_url, 'submit'), data=json.dumps({'url': url}))
         return urljoin(self.root_url, f'tree/{response.text}')

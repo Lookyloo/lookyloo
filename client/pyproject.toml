@@ -1,25 +1,28 @@
 [tool.poetry]
 name = "pylookyloo"
-version = "1.0"
+version = "0.5"
 description = "Python client for Lookyloo"
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "AGPL-3.0-or-later"
 repository = "https://github.com/CIRCL/lookyloo/client"
 
 classifiers = [
-    'Development Status :: 3 - Alpha',
+    'Development Status :: 4 - Beta',
     'Environment :: Console',
     'Operating System :: POSIX :: Linux',
     'Intended Audience :: Science/Research',
     'Intended Audience :: Telecommunications Industry',
     'Intended Audience :: Information Technology',
     'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
     'Topic :: Security',
     'Topic :: Internet',
 ]
 
 [tool.poetry.scripts]
-lookyloo = "bin/lookyloo"
+lookyloo = 'pylookyloo:main'
 
 [tool.poetry.dependencies]
 python = "^3.6"
