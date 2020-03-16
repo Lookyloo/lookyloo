@@ -1,10 +1,12 @@
 [tool.poetry]
 name = "pylookyloo"
-version = "0.5"
+version = "0.6"
 description = "Python client for Lookyloo"
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "AGPL-3.0-or-later"
 repository = "https://github.com/CIRCL/lookyloo/client"
+
+readme = "README.md"
 
 classifiers = [
     'Development Status :: 4 - Beta',
@@ -20,6 +22,8 @@ classifiers = [
     'Topic :: Security',
     'Topic :: Internet',
 ]
+
+include = ['README.md']
 
 [tool.poetry.scripts]
 lookyloo = 'pylookyloo:main'
