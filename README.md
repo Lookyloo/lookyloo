@@ -46,18 +46,7 @@ Then, you need to restart the webserver and from now on, every cookies you have 
 
 # Python client
 
-```bash
-$ pip install git+https://github.com/CIRCL/lookyloo.git/#egg=pylookyloo\&subdirectory=client
-$ lookyloo --help
-usage: lookyloo [-h] [--url URL] --query QUERY
-
-Enqueue a URL on Lookyloo
-
-optional arguments:
-  -h, --help     show this help message and exit
-  --url URL      URL of the instance.
-  --query QUERY  URL to unqueue
-```
+You can use `pylookyloo` as a standalone script, or as a library, [more details here](https://github.com/CIRCL/lookyloo/tree/master/client)
 
 # Installation
 
