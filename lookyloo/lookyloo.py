@@ -32,6 +32,8 @@ from pysanejs import SaneJS
 from scrapysplashwrapper import crawl
 from har2tree import CrawledTree, Har2TreeError, HarFile
 
+from defang import refang  # type: ignore
+
 
 class Lookyloo():
 
@@ -179,6 +181,8 @@ class Lookyloo():
                os: str=None, browser: str=None) -> Union[bool, str]:
         if not url.startswith('http'):
             url = f'http://{url}'
+        else:
+            url = refang(url)
         if self.only_global_lookups:
             splitted_url = urlsplit(url)
             if splitted_url.netloc:
