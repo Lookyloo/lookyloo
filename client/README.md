@@ -33,7 +33,7 @@ The response is the permanent URL where you can see the result of the capture.
 from pylookyloo import Lookyloo
 
 lookyloo = Lookyloo('https://url.of.lookyloo.instance')
-if lookyloo.is_up():  # to make sure it is up and reachable
+if lookyloo.is_up:  # to make sure it is up and reachable
 	permaurl = lookyloo.enqueue('http://url.to.lookup')
 
 ```

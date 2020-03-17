@@ -14,7 +14,7 @@ def main():
     else:
         lookyloo = Lookyloo()
 
-    if lookyloo.is_up():
+    if lookyloo.is_up:
         url = lookyloo.enqueue(args.query)
         print(url)
     else:
