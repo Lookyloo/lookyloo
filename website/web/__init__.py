@@ -147,6 +147,9 @@ def image(tree_uuid):
 
 @app.route('/tree/<string:tree_uuid>', methods=['GET'])
 def tree(tree_uuid):
+    if tree_uuid == 'False':
+        flash(f'Unable to process your request. The domain may not exist.', 'error')
+        return redirect(url_for('index'))
     report_dir = lookyloo.lookup_report_dir(tree_uuid)
     if not report_dir:
         flash(f'Unable to find this UUID ({tree_uuid}). The capture may still be ongoing, try again later.', 'error')

@@ -81,7 +81,7 @@ description = "cChardet is high speed universal character encoding detector."
 name = "cchardet"
 optional = false
 python-versions = "*"
-version = "2.1.5"
+version = "2.1.6"
 
 [[package]]
 category = "main"
@@ -251,10 +251,9 @@ publicsuffix2 = "^2.20191221"
 six = "^1.14.0"
 
 [package.source]
-reference = "58e054bc35f6489641f2eb1f56ebe9889334fef9"
+reference = "7436a88dcc41d26e9e95b24401f26e6f7fe68e32"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
-
 [[package]]
 category = "main"
 description = "A featureful, immutable, and correct URL for Python."
@@ -556,7 +555,7 @@ develop = true
 name = "pylookyloo"
 optional = false
 python-versions = "^3.6"
-version = "1.0"
+version = "0.7"
 
 [package.dependencies]
 requests = "^2.22.0"
@@ -606,7 +605,6 @@ requests = "^2.22.0"
 reference = "3ea143f44d37ab701c70ffb38408528ddb4e2b6e"
 type = "git"
 url = "https://github.com/CIRCL/PySaneJS.git"
-
 [[package]]
 category = "main"
 description = "Collection of persistent (disk-based) queues"
@@ -706,7 +704,6 @@ scrapy-splash = "^0.7.2"
 reference = "0bf40df2bfd1c857169300bac21d47311fde1046"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
-
 [[package]]
 category = "main"
 description = "Service identity verification for pyOpenSSL & cryptography."
@@ -896,29 +893,35 @@ bootstrap-flask = [
     {file = "Bootstrap_Flask-1.2.0-py2.py3-none-any.whl", hash = "sha256:ed817e82acadac4c8b3fc2d1a310325b6ed395d13b0f6ca9d14e1742f880e685"},
 ]
 cchardet = [
-    {file = "cchardet-2.1.5-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:f87bdef26758a0a8de93bbfd7651ac4fcf798a7a06c049c347a0103279698b23"},
-    {file = "cchardet-2.1.5-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:af48965b752490d8e330e41a46ba47f07c63f22ac5c7f4c396b7efd3958daa2e"},
-    {file = "cchardet-2.1.5-cp27-cp27m-win32.whl", hash = "sha256:8126798ec34b9fb444472d849b6510817939347809b898a0d6d6463e41c5901a"},
-    {file = "cchardet-2.1.5-cp27-cp27m-win_amd64.whl", hash = "sha256:6bf07931fa81238d9174266aaf83605204192977671ef230d5651a8f9d4acf56"},
-    {file = "cchardet-2.1.5-cp27-cp27mu-manylinux1_i686.whl", hash = "sha256:30f461d876cf3ea40c6fd949b9725c7c6e2522a3e87d33817d221e9f478d7e4d"},
-    {file = "cchardet-2.1.5-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:3ae84e6ee215925cd06a772d87c17d5485d862e2f1677aa0d6c295ea9313f117"},
-    {file = "cchardet-2.1.5-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:bb05580cd40f4cb7ccda5f90163fc43e27820046a6d0af11c1747d515fc69859"},
-    {file = "cchardet-2.1.5-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:7f22a8194c4e696cea3eff28723f77858495dec52baf93261943c8bb8ce08035"},
-    {file = "cchardet-2.1.5-cp35-cp35m-win32.whl", hash = "sha256:a4e346151042b5cfae34fff65911842f04849be4a74f22bc52b1e99c11650210"},
-    {file = "cchardet-2.1.5-cp35-cp35m-win_amd64.whl", hash = "sha256:92341348fed2fb53899e9cccf030da5377beb8ed26dfddc6acf87f1f0ce4b80e"},
-    {file = "cchardet-2.1.5-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:1a6d00b7cbd8acfc5e3093cb5f983a667d0752dc328123c8dcb293e252bfb024"},
-    {file = "cchardet-2.1.5-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:379a0bbd630bca677990df7509672a2ca43faf928939fd4b063fc2215b025b91"},
-    {file = "cchardet-2.1.5-cp36-cp36m-win32.whl", hash = "sha256:4bd54ff3a239b4fe598ba262d8730372e339fdd314286ceb6706a003d3e03d7b"},
-    {file = "cchardet-2.1.5-cp36-cp36m-win_amd64.whl", hash = "sha256:6a192cce3009c9cd671588574ad0cb81322c78265ebcb33b2def63c15e44ea47"},
-    {file = "cchardet-2.1.5-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:4d015296e96c0b2022495e4685b6fc0f3c9feed88fb062135f7f4748df7e0921"},
-    {file = "cchardet-2.1.5-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:5011ab33557913489c98d2fbdd7d88f06736f0bb456c60952fc5e52886b2a410"},
-    {file = "cchardet-2.1.5-cp37-cp37m-win32.whl", hash = "sha256:8e3a50bcad2ca0921fbbd46d29cc215dcc0d6d360570d594aeb7b0e2de716e8c"},
-    {file = "cchardet-2.1.5-cp37-cp37m-win_amd64.whl", hash = "sha256:b7cad0a062675acb42eb5170b07be774a5d9ca35a24388e918e5b78cb40ccbf2"},
-    {file = "cchardet-2.1.5-cp38-cp38-manylinux1_i686.whl", hash = "sha256:950fb40918772efe5779747a2f6c83a053a26b623a674f1d4f271b35331a9968"},
-    {file = "cchardet-2.1.5-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:b5cebf47f498e5ad4a9a5ef089b7ab6ef7926eaeea0b239c8e54f8217ce81cf2"},
-    {file = "cchardet-2.1.5-cp38-cp38m-win32.whl", hash = "sha256:4001620ba761b2ddd51caef6194444b5cd2f131de7c8c51a0f4896cb1ea1111a"},
-    {file = "cchardet-2.1.5-cp38-cp38m-win_amd64.whl", hash = "sha256:0f7ec49fcd28088c387d4afcc02c0549434d9e07deb2519365a6baa5b6c7ebb4"},
-    {file = "cchardet-2.1.5.tar.gz", hash = "sha256:240efe3f255f916769458343840b9c6403cf3192720bc5129792cbcb88bf72fb"},
+    {file = "cchardet-2.1.6-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:2aa1b008965c703ad6597361b0f6d427c8971fe94a2c99ec3724c228ae50d6a6"},
+    {file = "cchardet-2.1.6-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:fd16f57ce42a72397cd9fe38977fc809eb02172731cb354572f28a6d8e4cf322"},
+    {file = "cchardet-2.1.6-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:953fe382304b19f5aa8fc2da4b092a3bb58a477d33af4def4b81abdce4c9288c"},
+    {file = "cchardet-2.1.6-cp35-cp35m-manylinux2010_i686.whl", hash = "sha256:ccb9f6f06265382028468b47e726f2d42539256fb498d1b0e473c39037b42b8a"},
+    {file = "cchardet-2.1.6-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:2c05b66b12f9ab0493c5ffb666036fd8c9004a9cc9d5a9264dc24738b50ab8c3"},
+    {file = "cchardet-2.1.6-cp35-cp35m-win32.whl", hash = "sha256:dff9480d9b6260f59ad10e1cec5be13905be5da88a4a2bd5a5bd4d49c49c4a05"},
+    {file = "cchardet-2.1.6-cp35-cp35m-win_amd64.whl", hash = "sha256:84d2ce838cf3c2fe7f0517941702d42f7e598e5173632ec47a113cd521669b98"},
+    {file = "cchardet-2.1.6-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:4486f6e5bdf06f0081d13832f2a061d9e90597eb02093fda9d37e3985e3b2ef2"},
+    {file = "cchardet-2.1.6-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:7a2d98df461d3f36b403fdd8d7890c823ed05bd98eb074412ed56fbfedb94751"},
+    {file = "cchardet-2.1.6-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:27b0f23088873d1dd36d2c8a2e45c9167e312e1aac7e4baeb47f7428a2669638"},
+    {file = "cchardet-2.1.6-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:cf134e1cfb0c53f08abb1ab9158a7e7f859c3ddb451d5fe535a2cc5f2958a688"},
+    {file = "cchardet-2.1.6-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:f5c94994d876d8709847c3a92643309d716f43716580a2e5831262366a9ee8b6"},
+    {file = "cchardet-2.1.6-cp36-cp36m-win32.whl", hash = "sha256:217a7008bd399bdb61f6a0a2570acc5c3a9f96140e0a0d089b9e748c4d4e4c4e"},
+    {file = "cchardet-2.1.6-cp36-cp36m-win_amd64.whl", hash = "sha256:2a958fb093f69ee5f16be7a1aee5122e07aff4350fa4dc9b953b87c34468e605"},
+    {file = "cchardet-2.1.6-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:4096759825a130cb27a58ddf6d58e10abdd0127d29fbf53fde26df7ad879737b"},
+    {file = "cchardet-2.1.6-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:7bba1cbb4358dc9a2d2da00f4b38b159a5483d2f3b1d698a7c2cae518f955170"},
+    {file = "cchardet-2.1.6-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:0f6e4e464e332da776b9c1a34e4e83b6301d38c2724efc93848c46ade66d02bb"},
+    {file = "cchardet-2.1.6-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:acc96b4a8f756af289fa90ffa67ddef57401d99131e51e71872e3609483941ce"},
+    {file = "cchardet-2.1.6-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:79b0e113144c2ef0050bc9fe647c7657c5298f3012ecd8937d930b24ddd61404"},
+    {file = "cchardet-2.1.6-cp37-cp37m-win32.whl", hash = "sha256:8b1d02c99f6444c63336a76638741eaf4ac4005b454e3b8252a40074bf0d84a1"},
+    {file = "cchardet-2.1.6-cp37-cp37m-win_amd64.whl", hash = "sha256:e27771798c8ad50df1375e762d59369354af94eb8ac21eca5bfd1eeef589f545"},
+    {file = "cchardet-2.1.6-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:68409e00d75ff13dd7a192ec49559f5527ee8959a51a9f4dd7b168df972b4d44"},
+    {file = "cchardet-2.1.6-cp38-cp38-manylinux1_i686.whl", hash = "sha256:40c199f9c0569ac479fae7c4e12d2e16fc1e8237836b928474fdd228b8d11477"},
+    {file = "cchardet-2.1.6-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:8f7ade2578b2326a0a554c03f60c8d079331220179a592e83e143c9556b7f5b2"},
+    {file = "cchardet-2.1.6-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:5e38cfad9d3ca0f571c4352e9ca0f5ab718508f492a37d3236ae70810140e250"},
+    {file = "cchardet-2.1.6-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:af284494ea6c40f9613b4d939abe585eb9290cb92037eab66122c93190fcb338"},
+    {file = "cchardet-2.1.6-cp38-cp38-win32.whl", hash = "sha256:54d2653520237ebbd2928f2c0f2eb7c616ee2b5194d73d945060cd54a7846b64"},
+    {file = "cchardet-2.1.6-cp38-cp38-win_amd64.whl", hash = "sha256:f245f045054e8d6dab2a0e366d3c74f3a47fb7dec2595ae2035b234b1a829c7a"},
+    {file = "cchardet-2.1.6.tar.gz", hash = "sha256:b76afb2059ad69eab576949980a17413c1e9e5a5624abf9e43542d8853f146b3"},
 ]
 certifi = [
     {file = "certifi-2019.11.28-py2.py3-none-any.whl", hash = "sha256:017c25db2a153ce562900032d5bc68e9f191e44e9a0f762f373977de9df1fbb3"},

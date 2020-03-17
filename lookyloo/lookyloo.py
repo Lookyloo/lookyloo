@@ -66,15 +66,14 @@ class Lookyloo():
         with (report_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
-        error_cache: Dict[str, str] = {}
+        har_files = sorted(report_dir.glob('*.har'))
 
+        error_cache: Dict[str, str] = {}
         if (report_dir / 'error.txt').exists():
             # Something went wrong
             with (Path(report_dir) / 'error.txt').open() as _error:
-                error_cache['error'] = f'Capture in ({report_dir}) has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go and https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum'
-
-        har_files = sorted(report_dir.glob('*.har'))
-        if not har_files:
+                error_cache['error'] = f'Capture in {report_dir} has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go and https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum'
+        elif not har_files:
             error_cache['error'] = f'No har files in {report_dir}'
 
         if error_cache:
