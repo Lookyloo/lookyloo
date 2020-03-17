@@ -41,43 +41,43 @@
     </div>
     <hr/>
     <img src="{{ url_for('static', filename='javascript.png') }}"
-         alt="JavaScript" height="20" width="20"> Javascript </br>
+         alt="JavaScript" height="20" width="20"> Javascript <br>
 
     <img src="{{ url_for('static', filename='cookie_received.png') }}"
-         alt="Cookie received" height="20" width="20"> Cookie received</br>
+         alt="Cookie received" height="20" width="20"> Cookie received<br>
 
     <img src="{{ url_for('static', filename='cookie_read.png') }}"
-         alt="Cookie read" height="20" width="20"> Cookie read</br>
+         alt="Cookie read" height="20" width="20"> Cookie read<br>
 
     <img src="{{ url_for('static', filename='redirect.png') }}"
-         alt="Redirect" height="20" width="20"> Redirect</br>
+         alt="Redirect" height="20" width="20"> Redirect<br>
 
     <img src="{{ url_for('static', filename='font.png') }}"
-         alt="Font" height="20" width="20"> Font</br>
+         alt="Font" height="20" width="20"> Font<br>
 
     <img src="{{ url_for('static', filename='html.png') }}"
-         alt="HTML" height="20" width="20"> HTML</br>
+         alt="HTML" height="20" width="20"> HTML<br>
 
     <img src="{{ url_for('static', filename='json.png') }}"
-         alt="JSON" height="20" width="20"> JSON</br>
+         alt="JSON" height="20" width="20"> JSON<br>
 
     <img src="{{ url_for('static', filename='css.png') }}"
-         alt="CSS" height="20" width="20"> CSS</br>
+         alt="CSS" height="20" width="20"> CSS<br>
 
     <img src="{{ url_for('static', filename='exe.png') }}"
-        alt="EXE" height="20" width="20"> EXE</br>
+        alt="EXE" height="20" width="20"> EXE<br>
 
     <img src="{{ url_for('static', filename='img.png') }}"
-        alt="Image" height="20" width="20"> Image</br>
+        alt="Image" height="20" width="20"> Image<br>
 
     <img src="{{ url_for('static', filename='video.png') }}"
-        alt="Video" height="20" width="20"> Video</br>
+        alt="Video" height="20" width="20"> Video<br>
 
     <img src="{{ url_for('static', filename='ifr.png') }}"
-        alt="iFrame" height="20" width="20"> iFrame</br>
+        alt="iFrame" height="20" width="20"> iFrame<br>
 
     <img src="{{ url_for('static', filename='wtf.png') }}"
-        alt="Content type not set/unknown" height="20" width="20"> Content type not set/unknown</br>
+        alt="Content type not set/unknown" height="20" width="20"> Content type not set/unknown<br>
   </div>
   <div style="width: 100px">
       <div style="display: inline;">
@@ -107,19 +107,19 @@
       </center>
     </div>
     <hr/>
-    <b>Root URL</b>: {{ root_url }}</br>
-    <b>Start time</b>: {{ start_time }}</br>
-    <b>User Agent</b>: {{ user_agent }}</br>
+    <b>Root URL</b>: {{ root_url }}<br>
+    <b>Start time</b>: {{ start_time }}<br>
+    <b>User Agent</b>: {{ user_agent }}<br>
     {% if meta %}
       {%for k, v in meta.items()%}
-        <b>{{k.title()}}</b>: {{ v }}</br>
+        <b>{{k.title()}}</b>: {{ v }}<br>
       {%endfor%}
     {%endif%}
     <b>Screenshot</b>:
     <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" class="btn btn-info" role="button">Download</a>
     <button id="screenshot_view_button" type="button" class="btn btn-info"
             data-toggle="collapse" data-target="#screenshot">View</button>
-    </br>
+    <br>
   </div>
   <div style="width: 100px;float: right;">
     <div style="display: inline;">

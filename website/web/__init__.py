@@ -9,7 +9,7 @@ import os
 import logging
 from pathlib import Path
 
-from flask import Flask, render_template, request, session, send_file, redirect, url_for, Response
+from flask import Flask, render_template, request, session, send_file, redirect, url_for, Response, flash
 from flask_bootstrap import Bootstrap  # type: ignore
 
 from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents
@@ -149,6 +149,12 @@ def image(tree_uuid):
 def tree(tree_uuid):
     report_dir = lookyloo.lookup_report_dir(tree_uuid)
     if not report_dir:
+        flash(f'Unable to find this UUID ({tree_uuid}). The capture may still be ongoing, try again later.', 'error')
+        return redirect(url_for('index'))
+
+    cache = lookyloo.report_cache(report_dir)
+    if 'error' in cache:
+        flash(cache['error'], 'error')
         return redirect(url_for('index'))
 
     try:
@@ -167,11 +173,10 @@ def index():
         return 'Ack'
     lookyloo.cleanup_old_tmpfiles()
     update_user_agents()
-    session.clear()
     titles = []
     for report_dir in lookyloo.report_dirs:
         cached = lookyloo.report_cache(report_dir)
-        if not cached or 'no_index' in cached:
+        if not cached or 'no_index' in cached or 'error' in cached:
             continue
         date, time = cached['timestamp'].split('T')
         time, _ = time.split('.', 1)

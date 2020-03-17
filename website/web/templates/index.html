@@ -1,5 +1,7 @@
 {% extends "main.html" %}
 
+{% from 'bootstrap/utils.html' import render_messages %}
+
 {% block title %}Lookyloo{% endblock %}
 
 {% block content %}
@@ -11,7 +13,8 @@
   </center>
   <center>
     <h2><a href="{{ url_for('scrape_web') }}">Start a new capture</a></h2>
-    </br></br>
+    <br><br>
+    {{ render_messages(container=True, dismissible=True) }}
   </center>
 
   <center>
@@ -29,7 +32,7 @@
       <tr>
         <td>
           <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
-          <p title="{{ url }}">{{ url }}</div>
+          <p title="{{ url }}">{{ url }}</p>
         </td>
         <td>{{ date }} {{ time }}</td>
         <td>

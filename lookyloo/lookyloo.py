@@ -63,20 +63,26 @@ class Lookyloo():
     def _set_report_cache(self, report_dir: Path) -> None:
         if self.redis.exists(str(report_dir)):
             return
-        if (report_dir / 'error.txt').exists():
-            # Something went wrong
-            return
-        har_files = sorted(report_dir.glob('*.har'))
-        if not har_files:
-            self.logger.warning(f'No har files in {report_dir}')
-            # if (report_dir / 'uuid').exists():
-            #    (report_dir / 'uuid').unlink()
-            # if (report_dir / 'no_index').exists():
-            #    (report_dir / 'no_index').unlink()
-            # report_dir.rmdir()
-            return
         with (report_dir / 'uuid').open() as f:
             uuid = f.read().strip()
+
+        error_cache: Dict[str, str] = {}
+
+        if (report_dir / 'error.txt').exists():
+            # Something went wrong
+            with (Path(report_dir) / 'error.txt').open() as _error:
+                error_cache['error'] = f'Capture in ({report_dir}) has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go and https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum'
+
+        har_files = sorted(report_dir.glob('*.har'))
+        if not har_files:
+            error_cache['error'] = f'No har files in {report_dir}'
+
+        if error_cache:
+            self.logger.warning(error_cache['error'])
+            self.redis.hmset(str(report_dir), error_cache)
+            self.redis.hset('lookup_dirs', uuid, str(report_dir))
+            return
+
         har = HarFile(har_files[0])
 
         cache: Dict[str, Union[str, int]] = {'uuid': uuid,
@@ -93,16 +99,15 @@ class Lookyloo():
     def report_cache(self, report_dir: Union[str, Path]) -> Optional[Dict[str, Union[str, int]]]:
         if isinstance(report_dir, Path):
             report_dir = str(report_dir)
-        if (Path(report_dir) / 'error.txt').exists():
-            with (Path(report_dir) / 'error.txt').open() as _error:
-                self.logger.warning(f'Capture in ({report_dir}) has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go')
         cached = self.redis.hgetall(report_dir)
         if all(key in cached.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects']):
             cached['redirects'] = json.loads(cached['redirects'])
             return cached
-
-        self.logger.warning(f'Cache ({report_dir}) is invalid: {json.dumps(cached, indent=2)}')
-        return None
+        elif 'error' in cached:
+            return cached
+        else:
+            self.logger.warning(f'Cache ({report_dir}) is invalid: {json.dumps(cached, indent=2)}')
+            return None
 
     def _init_existing_dumps(self) -> None:
         for report_dir in self.report_dirs:
