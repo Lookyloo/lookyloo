@@ -191,7 +191,11 @@ class Lookyloo():
             splitted_url = urlsplit(url)
             if splitted_url.netloc:
                 if splitted_url.hostname:
-                    ip = socket.gethostbyname(splitted_url.hostname)
+                    try:
+                        ip = socket.gethostbyname(splitted_url.hostname)
+                    except socket.gaierror, err::
+                        self.logger.info(f'Name or service not known')
+                        return False
                     if not ipaddress.ip_address(ip).is_global:
                         return False
             else:
