@@ -233,6 +233,7 @@ class Lookyloo():
             harfile = item['har']
             png = base64.b64decode(item['png'])
             html = item['html']
+            last_redirect = item['last_redirected_url']
 
             with (dirpath / '{0:0{width}}.har'.format(i, width=width)).open('w') as _har:
                 json.dump(harfile, _har)
@@ -240,6 +241,8 @@ class Lookyloo():
                 _img.write(png)
             with (dirpath / '{0:0{width}}.html'.format(i, width=width)).open('w') as _html:
                 _html.write(html)
+            with (dirpath / '{0:0{width}}.last_redirect.txt'.format(i, width=width)).open('w') as _redir:
+                _redir.write(last_redirect)
 
             if 'childFrames' in item:
                 child_frames = item['childFrames']

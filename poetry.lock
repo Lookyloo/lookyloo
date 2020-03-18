@@ -251,7 +251,7 @@ publicsuffix2 = "^2.20191221"
 six = "^1.14.0"
 
 [package.source]
-reference = "7436a88dcc41d26e9e95b24401f26e6f7fe68e32"
+reference = "a66c797125bc21d31f9b85c435b9d802904da5fc"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
@@ -701,7 +701,7 @@ scrapy = "^1.8.0"
 scrapy-splash = "^0.7.2"
 
 [package.source]
-reference = "0bf40df2bfd1c857169300bac21d47311fde1046"
+reference = "ea7a492213a47386357ce03edb7e17b455ee2c48"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
 [[package]]
