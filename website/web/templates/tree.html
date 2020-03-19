@@ -20,7 +20,7 @@
   var treeData = {{ tree_json | safe }};
 </script>
 
-<div id=lookyloo-icon></div>
+<a id="lookyloo-icon" href="/" ></a>
 <div id=screenshot class="collapse">
   <img src="{{ url_for('image', tree_uuid=tree_uuid) }}" class="img-fluid"/>
 </div>
