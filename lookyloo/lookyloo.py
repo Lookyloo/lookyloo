@@ -183,10 +183,9 @@ class Lookyloo():
 
     def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None, depth: int=1, listing: bool=True, user_agent: Optional[str]=None, perma_uuid: str=None,
                os: str=None, browser: str=None) -> Union[bool, str]:
+        url = refang(url)
         if not url.startswith('http'):
             url = f'http://{url}'
-        else:
-            url = refang(url)
         if self.only_global_lookups:
             splitted_url = urlsplit(url)
             if splitted_url.netloc:
