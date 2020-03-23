@@ -109,7 +109,7 @@ def update_user_agents():
     today = datetime.now()
     ua_path = get_homedir() / 'user_agents' / str(today.year) / f'{today.month:02}'
     safe_create_dir(ua_path)
-    ua_file_name = ua_path / f'{today.date().isoformat()}.json'
+    ua_file_name: Path = ua_path / f'{today.date().isoformat()}.json'
     if ua_file_name.exists():
         # Already have a UA for that day.
         return
@@ -143,6 +143,7 @@ def get_user_agents() -> dict:
         paths = sorted(glob(ua_files_path), reverse=True)
     with open(paths[0]) as f:
         return json.load(f)
+
 
 def load_cookies(cookie_pseudofile: Optional[BufferedIOBase]=None) -> List[dict]:
     if cookie_pseudofile:

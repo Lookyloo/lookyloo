@@ -145,10 +145,23 @@ def image(tree_uuid):
                      as_attachment=True, attachment_filename='image.png')
 
 
+@app.route('/redirects/<string:tree_uuid>', methods=['GET'])
+def redirects(tree_uuid):
+    report_dir = lookyloo.lookup_report_dir(tree_uuid)
+    if not report_dir:
+        return Response('Not available.', mimetype='text/text')
+    cache = lookyloo.report_cache(report_dir)
+    if not cache['redirects']:
+        return Response('No redirects.', mimetype='text/text')
+    to_return = BytesIO('\n'.join(cache['redirects']).encode())
+    return send_file(to_return, mimetype='text/text',
+                     as_attachment=True, attachment_filename='redirects.txt')
+
+
 @app.route('/tree/<string:tree_uuid>', methods=['GET'])
 def tree(tree_uuid):
     if tree_uuid == 'False':
-        flash(f'Unable to process your request. The domain may not exist.', 'error')
+        flash("Unable to process your request. The domain may not exist, or splash isn't started", 'error')
         return redirect(url_for('index'))
     report_dir = lookyloo.lookup_report_dir(tree_uuid)
     if not report_dir:

@@ -46,6 +46,7 @@
             {%endif%}
             </p>
             {% endfor %}
+            <a style="float: right;" href="{{ url_for('redirects', tree_uuid=uuid) }}">Download redirects</a>
           {% else%}
             No redirect
           {%endif%}
