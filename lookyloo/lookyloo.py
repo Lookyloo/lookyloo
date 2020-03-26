@@ -189,7 +189,7 @@ class Lookyloo():
                 ct = CrawledTree(har_files)
                 with pickle_file.open('wb') as _p:
                     pickle.dump(ct, _p)
-            return pickle_file.name, ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
+            return str(pickle_file), ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 
