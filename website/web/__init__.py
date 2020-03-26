@@ -47,9 +47,9 @@ lookyloo: Lookyloo = Lookyloo(splash_url=splash_url, loglevel=loglevel, only_glo
 
 
 # keep
-def load_tree(report_dir: Path) -> Tuple[dict, str, str, str, dict]:
+def load_tree(capture_dir: Path) -> Tuple[dict, str, str, str, dict]:
     session.clear()
-    temp_file_name, tree_json, tree_time, tree_ua, tree_root_url, meta = lookyloo.load_tree(report_dir)
+    temp_file_name, tree_json, tree_time, tree_ua, tree_root_url, meta = lookyloo.load_tree(capture_dir)
     session["tree"] = temp_file_name
     return tree_json, tree_time, tree_ua, tree_root_url, meta
 
@@ -137,20 +137,20 @@ def urlnode_details(node_uuid):
 
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
 def image(tree_uuid):
-    report_dir = lookyloo.lookup_report_dir(tree_uuid)
-    if not report_dir:
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
         return Response('Not available.', mimetype='text/text')
-    to_return = lookyloo.load_image(report_dir)
+    to_return = lookyloo.load_image(capture_dir)
     return send_file(to_return, mimetype='image/png',
                      as_attachment=True, attachment_filename='image.png')
 
 
 @app.route('/redirects/<string:tree_uuid>', methods=['GET'])
 def redirects(tree_uuid):
-    report_dir = lookyloo.lookup_report_dir(tree_uuid)
-    if not report_dir:
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
         return Response('Not available.', mimetype='text/text')
-    cache = lookyloo.report_cache(report_dir)
+    cache = lookyloo.capture_cache(capture_dir)
     if not cache['redirects']:
         return Response('No redirects.', mimetype='text/text')
     to_return = BytesIO('\n'.join(cache['redirects']).encode())
@@ -158,23 +158,31 @@ def redirects(tree_uuid):
                      as_attachment=True, attachment_filename='redirects.txt')
 
 
+@app.route('/cache_tree/<string:tree_uuid>', methods=['GET'])
+def cache_tree(tree_uuid):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if capture_dir:
+        lookyloo.load_tree(capture_dir)
+    return redirect(url_for('index'))
+
+
 @app.route('/tree/<string:tree_uuid>', methods=['GET'])
 def tree(tree_uuid):
     if tree_uuid == 'False':
         flash("Unable to process your request. The domain may not exist, or splash isn't started", 'error')
         return redirect(url_for('index'))
-    report_dir = lookyloo.lookup_report_dir(tree_uuid)
-    if not report_dir:
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
         flash(f'Unable to find this UUID ({tree_uuid}). The capture may still be ongoing, try again later.', 'error')
         return redirect(url_for('index'))
 
-    cache = lookyloo.report_cache(report_dir)
+    cache = lookyloo.capture_cache(capture_dir)
     if 'error' in cache:
         flash(cache['error'], 'error')
         return redirect(url_for('index'))
 
     try:
-        tree_json, start_time, user_agent, root_url, meta = load_tree(report_dir)
+        tree_json, start_time, user_agent, root_url, meta = load_tree(capture_dir)
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
                                meta=meta)
@@ -190,12 +198,13 @@ def index():
     lookyloo.cleanup_old_tmpfiles()
     update_user_agents()
     titles = []
-    for report_dir in lookyloo.report_dirs:
-        cached = lookyloo.report_cache(report_dir)
+    for capture_dir in lookyloo.capture_dirs:
+        cached = lookyloo.capture_cache(capture_dir)
         if not cached or 'no_index' in cached or 'error' in cached:
             continue
         date, time = cached['timestamp'].split('T')
         time, _ = time.split('.', 1)
-        titles.append((cached['uuid'], cached['title'], date, time, cached['url'], cached['redirects']))
+        titles.append((cached['uuid'], cached['title'], date, time, cached['url'],
+                       cached['redirects'], True if cached['incomplete_redirects'] == '1' else False))
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
     return render_template('index.html', titles=titles)

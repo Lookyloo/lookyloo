@@ -251,7 +251,7 @@ publicsuffix2 = "^2.20191221"
 six = "^1.14.0"
 
 [package.source]
-reference = "7656d60b3a200285205f991f6646d9a1e366c7cf"
+reference = "02c7e19229c33a62bfabbc3a1981f0401d7b3a71"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
@@ -701,7 +701,7 @@ scrapy = "^1.8.0"
 scrapy-splash = "^0.7.2"
 
 [package.source]
-reference = "383fafad20a111e02fa53dc639b4cc53c7b8456c"
+reference = "bf18e5e1c88c9263b90a69348e0020ceccf2aa12"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
 [[package]]
@@ -795,7 +795,7 @@ python-versions = "*"
 version = "1.4.1"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Backported and Experimental Type Hints for Python 3.5+"
 name = "typing-extensions"
 optional = false

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
-from typing import List, Optional
+from typing import List, Optional, Dict, Union, Any
 from io import BufferedIOBase
 from pathlib import Path
 from .exceptions import MissingEnv, CreateDirectoryException
@@ -116,7 +116,7 @@ def update_user_agents():
     try:
         s = cloudscraper.create_scraper()
         r = s.get('https://techblog.willshouse.com/2012/01/03/most-common-user-agents/')
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
         return
     soup = BeautifulSoup(r.text, 'html.parser')
@@ -165,7 +165,7 @@ def load_cookies(cookie_pseudofile: Optional[BufferedIOBase]=None) -> List[dict]
                       'expires': (datetime.now() + timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
                       'domain': u,
                       'value': cookie['Content raw']
-                     }
+                      }
             to_return.append(to_add)
     except Exception as e:
         print(f'Unable to load the cookie file: {e}')

@@ -24,7 +24,7 @@ from .helpers import get_homedir, get_socket_path, load_cookies
 from .exceptions import NoValidHarFile
 from redis import Redis
 
-from typing import Union, Dict, List, Tuple, Optional
+from typing import Union, Dict, List, Tuple, Optional, Any
 
 import logging
 
@@ -60,76 +60,93 @@ class Lookyloo():
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(loglevel)
 
-    def _set_report_cache(self, report_dir: Path) -> None:
-        if self.redis.exists(str(report_dir)):
+    def _set_capture_cache(self, capture_dir: Path, force: bool=False) -> None:
+        if force or not self.redis.exists(str(capture_dir)):
+            # (re)build cache
+            pass
+        else:
             return
-        with (report_dir / 'uuid').open() as f:
+
+        with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
-        har_files = sorted(report_dir.glob('*.har'))
+        har_files = sorted(capture_dir.glob('*.har'))
 
         error_cache: Dict[str, str] = {}
-        if (report_dir / 'error.txt').exists():
+        if (capture_dir / 'error.txt').exists():
             # Something went wrong
-            with (Path(report_dir) / 'error.txt').open() as _error:
-                error_cache['error'] = f'Capture in {report_dir} has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go and https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum'
+            with (Path(capture_dir) / 'error.txt').open() as _error:
+                error_cache['error'] = f'Capture in {capture_dir} has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go and https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum'
         elif not har_files:
-            error_cache['error'] = f'No har files in {report_dir}'
+            error_cache['error'] = f'No har files in {capture_dir}'
 
         if error_cache:
             self.logger.warning(error_cache['error'])
-            self.redis.hmset(str(report_dir), error_cache)
-            self.redis.hset('lookup_dirs', uuid, str(report_dir))
+            self.redis.hmset(str(capture_dir), error_cache)
+            self.redis.hset('lookup_dirs', uuid, str(capture_dir))
             return
 
         har = HarFile(har_files[0])
+
+        redirects = har.initial_redirects
+        incomplete_redirects = False
+        if redirects and har.need_tree_redirects:
+            # load tree from disk, get redirects
+            ct = self._load_pickle(capture_dir / 'tree.pickle')
+            if ct:
+                redirects = ct.redirects
+            else:
+                # Pickle not available
+                incomplete_redirects = True
 
         cache: Dict[str, Union[str, int]] = {'uuid': uuid,
                                              'title': har.initial_title,
                                              'timestamp': har.initial_start_time,
                                              'url': har.first_url,
-                                             'redirects': json.dumps(har.initial_redirects)}
-        if (report_dir / 'no_index').exists():  # If the folders claims anonymity
+                                             'redirects': json.dumps(redirects),
+                                             'incomplete_redirects': 1 if incomplete_redirects else 0}
+        if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
             cache['no_index'] = 1
-        if uuid and not self.redis.exists(str(report_dir)):
-            self.redis.hmset(str(report_dir), cache)
-            self.redis.hset('lookup_dirs', uuid, str(report_dir))
 
-    def report_cache(self, report_dir: Union[str, Path]) -> Optional[Dict[str, Union[str, int]]]:
-        if isinstance(report_dir, Path):
-            report_dir = str(report_dir)
-        cached = self.redis.hgetall(report_dir)
+        self.redis.hmset(str(capture_dir), cache)
+        self.redis.hset('lookup_dirs', uuid, str(capture_dir))
+
+    def capture_cache(self, capture_dir: Path) -> Optional[Dict[str, Union[str, int]]]:
+        if self.redis.hget(str(capture_dir), 'incomplete_redirects') == '1':
+            # try to rebuild the cache
+            self._set_capture_cache(capture_dir, force=True)
+        cached = self.redis.hgetall(str(capture_dir))
         if all(key in cached.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects']):
             cached['redirects'] = json.loads(cached['redirects'])
             return cached
         elif 'error' in cached:
             return cached
         else:
-            self.logger.warning(f'Cache ({report_dir}) is invalid: {json.dumps(cached, indent=2)}')
+            self.logger.warning(f'Cache ({capture_dir}) is invalid: {json.dumps(cached, indent=2)}')
             return None
 
     def _init_existing_dumps(self) -> None:
-        for report_dir in self.report_dirs:
-            if report_dir.exists():
-                self._set_report_cache(report_dir)
+        for capture_dir in self.capture_dirs:
+            if capture_dir.exists():
+                self._set_capture_cache(capture_dir)
         self.redis.set('cache_loaded', 1)
 
     @property
-    def report_dirs(self) -> List[Path]:
-        for report_dir in self.scrape_dir.iterdir():
-            if report_dir.is_dir() and not report_dir.iterdir():
+    def capture_dirs(self) -> List[Path]:
+        for capture_dir in self.scrape_dir.iterdir():
+            if capture_dir.is_dir() and not capture_dir.iterdir():
                 # Cleanup self.scrape_dir of failed runs.
-                report_dir.rmdir()
-            if not (report_dir / 'uuid').exists():
+                capture_dir.rmdir()
+            if not (capture_dir / 'uuid').exists():
                 # Create uuid if missing
-                with (report_dir / 'uuid').open('w') as f:
+                with (capture_dir / 'uuid').open('w') as f:
                     f.write(str(uuid4()))
         return sorted(self.scrape_dir.iterdir(), reverse=True)
 
-    def lookup_report_dir(self, uuid) -> Union[Path, None]:
-        report_dir = self.redis.hget('lookup_dirs', uuid)
-        if report_dir:
-            return Path(report_dir)
+    def lookup_capture_dir(self, uuid) -> Union[Path, None]:
+        capture_dir = self.redis.hget('lookup_dirs', uuid)
+        if capture_dir:
+            return Path(capture_dir)
         return None
 
     def enqueue_scrape(self, query: dict) -> str:
@@ -152,18 +169,27 @@ class Lookyloo():
             return True
         return False
 
-    def load_tree(self, report_dir: Path) -> Tuple[str, dict, str, str, str, dict]:
-        har_files = sorted(report_dir.glob('*.har'))
+    def _load_pickle(self, pickle_file: Path) -> Optional[CrawledTree]:
+        if pickle_file.exists():
+            with pickle_file.open('rb') as _p:
+                return pickle.load(_p)
+        return None
+
+    def load_tree(self, capture_dir: Path) -> Tuple[str, dict, str, str, str, dict]:
+        har_files = sorted(capture_dir.glob('*.har'))
+        pickle_file = capture_dir / 'tree.pickle'
         try:
             meta = {}
-            if (report_dir / 'meta').exists():
-                with open((report_dir / 'meta'), 'r') as f:
+            if (capture_dir / 'meta').exists():
+                # NOTE: Legacy, the meta file should be present
+                with open((capture_dir / 'meta'), 'r') as f:
                     meta = json.load(f)
-            ct = CrawledTree(har_files)
-            temp = tempfile.NamedTemporaryFile(prefix='lookyloo', delete=False)
-            pickle.dump(ct, temp)
-            temp.close()
-            return temp.name, ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
+            ct = self._load_pickle(pickle_file)
+            if not ct:
+                ct = CrawledTree(har_files)
+                with pickle_file.open('wb') as _p:
+                    pickle.dump(ct, _p)
+            return pickle_file.name, ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 
@@ -172,8 +198,8 @@ class Lookyloo():
             if time.time() - tmpfile.stat().st_atime > 36000:
                 tmpfile.unlink()
 
-    def load_image(self, report_dir: Path) -> BytesIO:
-        with open(list(report_dir.glob('*.png'))[0], 'rb') as f:
+    def load_image(self, capture_dir: Path) -> BytesIO:
+        with open(list(capture_dir.glob('*.png'))[0], 'rb') as f:
             return BytesIO(f.read())
 
     def sane_js_query(self, sha512: str) -> Dict:
@@ -254,5 +280,5 @@ class Lookyloo():
                 with (dirpath / '{0:0{width}}.cookies.json'.format(i, width=width)).open('w') as _cookies:
                     json.dump(cookies, _cookies)
 
-        self._set_report_cache(dirpath)
+        self._set_capture_cache(dirpath)
         return perma_uuid

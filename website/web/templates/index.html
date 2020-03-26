@@ -28,7 +28,7 @@
      </tr>
     </thead>
     <tbody>
-      {% for uuid, page_title, date, time, url, redirects in titles %}
+      {% for uuid, page_title, date, time, url, redirects, incomplete_redirects in titles %}
       <tr>
         <td>
           <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
@@ -46,7 +46,11 @@
             {%endif%}
             </p>
             {% endfor %}
-            <a style="float: right;" href="{{ url_for('redirects', tree_uuid=uuid) }}">Download redirects</a>
+            {% if incomplete_redirects %}
+                <a style="float: right;" href="{{ url_for('cache_tree', tree_uuid=uuid) }}">Unable to find the redirects, click here to build the tree</a>
+            {%else%}
+              <a style="float: right;" href="{{ url_for('redirects', tree_uuid=uuid) }}">Download redirects</a>
+            {%endif%}
           {% else%}
             No redirect
           {%endif%}
