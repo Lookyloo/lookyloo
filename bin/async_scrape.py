@@ -21,7 +21,7 @@ class AsyncScraper(AbstractManager):
         super().__init__(loglevel)
         if not storage_directory:
             self.storage_directory = get_homedir() / 'scraped'
-        self.lookyloo = Lookyloo(loglevel=loglevel, only_global_lookups=only_global_lookups)
+        self.lookyloo = Lookyloo()
 
     def _to_run_forever(self):
         set_running('async_scrape')
