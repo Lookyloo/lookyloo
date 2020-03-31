@@ -1,0 +1,6 @@
+{
+  "VirusTotal": {
+    "apikey": "KEY",
+    "autosubmit": false
+  }
+}

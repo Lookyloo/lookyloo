@@ -1,0 +1,9 @@
+{
+  "loglevel": "INFO",
+  "only_global_lookups": true,
+  "splash_url": "http://127.0.0.1:8050",
+  "_notes": {
+    "only_global_lookups": "Set it to True if your instance is publicly available so users aren't able to scan your internal network",
+    "loglevel": "Can be one of the value listed here: https://docs.python.org/3/library/logging.html#levels"
+  }
+}

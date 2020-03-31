@@ -43,6 +43,7 @@ beautifulsoup4 = "^4.8.2"
 bootstrap-flask = "^1.2.0"
 cloudscraper = "^1.2.20"
 defang = "^0.5.3"
+vt-py = "^0.5.2"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.761"

@@ -16,3 +16,7 @@ class NoValidHarFile(LookylooException):
 
 class CreateDirectoryException(LookylooException):
     pass
+
+
+class ConfigError(LookylooException):
+    pass

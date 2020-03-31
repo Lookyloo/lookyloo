@@ -20,7 +20,7 @@ import base64
 from uuid import uuid4
 
 from pathlib import Path
-from .helpers import get_homedir, get_socket_path, load_cookies
+from .helpers import get_homedir, get_socket_path, load_cookies, load_configs
 from .exceptions import NoValidHarFile
 from redis import Redis
 
@@ -34,17 +34,31 @@ from har2tree import CrawledTree, Har2TreeError, HarFile
 
 from defang import refang  # type: ignore
 
+from .modules import VirusTotal
+
 
 class Lookyloo():
 
-    def __init__(self, splash_url: str='http://127.0.0.1:8050', loglevel: int=logging.DEBUG, only_global_lookups: bool=False) -> None:
-        self.__init_logger(loglevel)
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.configs: Dict[str, Dict[str, Any]] = load_configs()
+        self.logger.setLevel(self.get_config('loglevel'))
+
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
         self.scrape_dir: Path = get_homedir() / 'scraped'
-        self.splash_url: str = splash_url
-        self.only_global_lookups: bool = only_global_lookups
+        self.splash_url: str = self.get_config('splash_url')
+        self.only_global_lookups: bool = self.get_config('only_global_lookups')
         if not self.scrape_dir.exists():
             self.scrape_dir.mkdir(parents=True, exist_ok=True)
+
+        # Initialize 3rd party components
+        if 'modules' not in self.configs:
+            self.logger.info('No third party components available in the config directory')
+        else:
+            if 'VirusTotal' in self.configs['modules']:
+                self.vt = VirusTotal(self.configs['modules']['VirusTotal'])
+                if not self.vt.available:
+                    self.logger.warning('Unable to setup the VirusTotal module')
 
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
@@ -56,9 +70,19 @@ class Lookyloo():
         else:
             self.use_sane_js = True
 
-    def __init_logger(self, loglevel: int) -> None:
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(loglevel)
+    def get_config(self, entry: str) -> Union[str, int, bool]:
+        """Get an entry from the generic config file. Automatic fallback to the sample file"""
+        if 'generic' in self.configs:
+            if entry in self.configs['generic']:
+                return self.configs['generic'][entry]
+            else:
+                self.logger.warning(f'Unable to fing {entry} in config file.')
+        else:
+            self.logger.warning('No generic config file available.')
+        self.logger.warning('Falling back on sample config, please initialize the generic config file.')
+        with (get_homedir() / 'config' / 'generic.json.sample').open() as _c:
+            sample_config = json.load(_c)
+        return sample_config[entry]
 
     def _set_capture_cache(self, capture_dir: Path, force: bool=False) -> None:
         if force or not self.redis.exists(str(capture_dir)):

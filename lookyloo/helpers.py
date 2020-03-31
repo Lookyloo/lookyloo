@@ -4,7 +4,7 @@ import os
 from typing import List, Optional, Dict, Union, Any
 from io import BufferedIOBase
 from pathlib import Path
-from .exceptions import MissingEnv, CreateDirectoryException
+from .exceptions import MissingEnv, CreateDirectoryException, ConfigError
 from redis import Redis
 from redis.exceptions import ConnectionError
 from datetime import datetime, timedelta
@@ -13,7 +13,6 @@ from glob import glob
 import json
 import traceback
 from urllib.parse import urlparse
-from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup  # type: ignore
 try:
@@ -40,6 +39,26 @@ def get_homedir() -> Path:
 Run the following command (assuming you run the code from the clonned repository):\
     export LOOKYLOO_HOME='{guessed_home}'")
     return Path(os.environ['LOOKYLOO_HOME'])
+
+
+def load_configs(path_to_config_files: Optional[Union[str, Path]]=None) -> Dict[str, Dict[str, Any]]:
+    if path_to_config_files:
+        if isinstance(path_to_config_files, str):
+            config_path = Path(path_to_config_files)
+        else:
+            config_path = path_to_config_files
+    else:
+        config_path = get_homedir() / 'config'
+    if not config_path.exists():
+        raise ConfigError(f'Configuration directory {config_path} does not exists.')
+    elif not config_path.is_dir():
+        raise ConfigError(f'Configuration directory {config_path} is not a directory.')
+
+    to_return = {}
+    for path in config_path.glob('*.json'):
+        with path.open() as _c:
+            to_return[path.stem] = json.load(_c)
+    return to_return
 
 
 def safe_create_dir(to_create: Path):

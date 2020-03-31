@@ -114,3 +114,7 @@ d3.v5.js
 
 cache.pid
 dump.rdb
+
+# Local config files
+config/*.json
+config/*.json.bkp
