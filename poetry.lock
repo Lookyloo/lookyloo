@@ -302,7 +302,7 @@ publicsuffix2 = "^2.20191221"
 six = "^1.14.0"
 
 [package.source]
-reference = "c5d26f5bf3be2ffbe6991d326c81cc0f9a803d34"
+reference = "9ec997b0f1c09d3034fd861fd17d972da479f505"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
