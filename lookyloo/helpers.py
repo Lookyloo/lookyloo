@@ -64,7 +64,7 @@ def load_configs(path_to_config_files: Optional[Union[str, Path]]=None) -> Dict[
 def safe_create_dir(to_create: Path):
     if to_create.exists() and not to_create.is_dir():
         raise CreateDirectoryException(f'The path {to_create} already exists and is not a directory')
-    os.makedirs(to_create, exist_ok=True)
+    to_create.mkdir(parents=True, exist_ok=True)
 
 
 def set_running(name: str) -> None:

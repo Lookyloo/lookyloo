@@ -20,7 +20,7 @@ import base64
 from uuid import uuid4
 
 from pathlib import Path
-from .helpers import get_homedir, get_socket_path, load_cookies, load_configs
+from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir
 from .exceptions import NoValidHarFile
 from redis import Redis
 
@@ -48,8 +48,8 @@ class Lookyloo():
         self.scrape_dir: Path = get_homedir() / 'scraped'
         self.splash_url: str = self.get_config('splash_url')
         self.only_global_lookups: bool = self.get_config('only_global_lookups')
-        if not self.scrape_dir.exists():
-            self.scrape_dir.mkdir(parents=True, exist_ok=True)
+
+        safe_create_dir(self.scrape_dir)
 
         # Initialize 3rd party components
         if 'modules' not in self.configs:
@@ -70,7 +70,7 @@ class Lookyloo():
         else:
             self.use_sane_js = True
 
-    def get_config(self, entry: str) -> Union[str, int, bool]:
+    def get_config(self, entry: str) -> Any:
         """Get an entry from the generic config file. Automatic fallback to the sample file"""
         if 'generic' in self.configs:
             if entry in self.configs['generic']:
@@ -260,7 +260,7 @@ class Lookyloo():
             perma_uuid = str(uuid4())
         width = len(str(len(items)))
         dirpath = self.scrape_dir / datetime.now().isoformat()
-        dirpath.mkdir()
+        safe_create_dir(dirpath)
         for i, item in enumerate(items):
             if not listing:  # Write no_index marker
                 (dirpath / 'no_index').touch()
