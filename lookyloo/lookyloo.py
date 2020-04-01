@@ -70,6 +70,19 @@ class Lookyloo():
         else:
             self.use_sane_js = True
 
+    def rebuild_cache(self):
+        self.redis.flushdb()
+        self._init_existing_dumps()
+
+    def remove_pickle(self, capture_dir: Path):
+        if (capture_dir / 'tree.pickle').exists():
+            (capture_dir / 'tree.pickle').unlink()
+
+    def rebuild_all(self):
+        for capture_dir in self.capture_dirs:
+            self.remove_pickle(capture_dir)
+        self.rebuild_cache()
+
     def get_config(self, entry: str) -> Any:
         """Get an entry from the generic config file. Automatic fallback to the sample file"""
         if 'generic' in self.configs:

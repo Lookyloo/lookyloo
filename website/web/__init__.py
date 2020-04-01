@@ -10,6 +10,7 @@ from pathlib import Path
 
 from flask import Flask, render_template, request, session, send_file, redirect, url_for, Response, flash
 from flask_bootstrap import Bootstrap  # type: ignore
+from flask_httpauth import HTTPDigestAuth  # type: ignore
 
 from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents
 from lookyloo.lookyloo import Lookyloo
@@ -32,8 +33,42 @@ Bootstrap(app)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.debug = False
+auth = HTTPDigestAuth()
 
 lookyloo: Lookyloo = Lookyloo()
+
+user = lookyloo.get_config('cache_clean_user')
+
+
+@auth.get_password
+def get_pw(username):
+    if username in user:
+        return user.get(username)
+    return None
+
+
+@app.route('/rebuild_all')
+@auth.login_required
+def rebuild_all():
+    lookyloo.rebuild_all()
+    return redirect(url_for('index'))
+
+
+@app.route('/rebuild_cache')
+@auth.login_required
+def rebuild_cache():
+    lookyloo.rebuild_cache()
+    return redirect(url_for('index'))
+
+
+@app.route('/tree/<tree_uuid>/rebuild')
+@auth.login_required
+def rebuild_tree(tree_uuid):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if capture_dir:
+        lookyloo.remove_pickle(capture_dir)
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
+    return redirect(url_for('index'))
 
 
 # keep

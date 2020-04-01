@@ -271,6 +271,17 @@ dotenv = ["python-dotenv"]
 
 [[package]]
 category = "main"
+description = "Basic and Digest HTTP authentication for Flask routes"
+name = "flask-httpauth"
+optional = false
+python-versions = "*"
+version = "3.3.0"
+
+[package.dependencies]
+Flask = "*"
+
+[[package]]
+category = "main"
 description = "WSGI HTTP Server for UNIX"
 name = "gunicorn"
 optional = false
@@ -305,6 +316,7 @@ six = "^1.14.0"
 reference = "9ec997b0f1c09d3034fd861fd17d972da479f505"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
+
 [[package]]
 category = "main"
 description = "A featureful, immutable, and correct URL for Python."
@@ -744,6 +756,7 @@ requests = "^2.22.0"
 reference = "3ea143f44d37ab701c70ffb38408528ddb4e2b6e"
 type = "git"
 url = "https://github.com/CIRCL/PySaneJS.git"
+
 [[package]]
 category = "main"
 description = "pytest: simple powerful testing with Python"
@@ -884,6 +897,7 @@ scrapy-splash = "^0.7.2"
 reference = "300ee49cb21784514dd2a35b374ce06c4b7f04a6"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
+
 [[package]]
 category = "main"
 description = "Service identity verification for pyOpenSSL & cryptography."
@@ -1082,7 +1096,7 @@ test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
-content-hash = "4294a7aa675b6d425096a74ce78486ed9f3c4a50e2549837dfc86c389290fa68"
+content-hash = "23715c6f42d23f07b8be767480974259f8ac2e99a209d04cb076b5d2b6d0e6b4"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -1264,6 +1278,10 @@ ete3 = [
 flask = [
     {file = "Flask-1.1.1-py2.py3-none-any.whl", hash = "sha256:45eb5a6fd193d6cf7e0cf5d8a5b31f83d5faae0293695626f539a823e93b13f6"},
     {file = "Flask-1.1.1.tar.gz", hash = "sha256:13f9f196f330c7c2c5d7a5cf91af894110ca0215ac051b5844701f2bfd934d52"},
+]
+flask-httpauth = [
+    {file = "Flask-HTTPAuth-3.3.0.tar.gz", hash = "sha256:6ef8b761332e780f9ff74d5f9056c2616f52babc1998b01d9f361a1e439e61b9"},
+    {file = "Flask_HTTPAuth-3.3.0-py2.py3-none-any.whl", hash = "sha256:0149953720489407e51ec24bc2f86273597b7973d71cd51f9443bd0e2a89bd72"},
 ]
 gunicorn = [
     {file = "gunicorn-20.0.4-py2.py3-none-any.whl", hash = "sha256:cd4a810dd51bf497552cf3f863b575dabd73d6ad6a91075b65936b151cbf4f9c"},
