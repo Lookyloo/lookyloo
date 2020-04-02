@@ -4,6 +4,30 @@
 
 {% block title %}Lookyloo{% endblock %}
 
+{% block scripts %}
+{{ super() }}
+<script src='{{ url_for('static', filename='datatables.min.js') }}'></script>
+<script>
+$(document).ready(function () {
+  $('#table').DataTable( {
+    "order": [[ 1, "desc" ]],
+    "pageLength": 50,
+    "columns": [
+        { "orderable": false, "width": 400 },
+        { "orderable": false, "width": 150 },
+        { "orderable": false, "width": 400 }
+    ]
+  } );
+});
+</script>
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='datatables.min.css') }}">
+{% endblock %}
+
+
 {% block content %}
   <center>
     <a href="{{ url_for('scrape_web') }}">
@@ -17,14 +41,13 @@
     {{ render_messages(container=True, dismissible=True) }}
   </center>
 
-  <center>
   <div class="table-responsive">
-  <table id="table" class="table" data-toggle="table" data-search="true">
+  <table id="table" class="table" style="width:96%">
     <thead>
      <tr>
-       <th data-width="200">Page</th>
-       <th data-width="80">Timestamp</th>
-       <th data-width="200">Redirects</th>
+       <th>Page</th>
+       <th>Timestamp</th>
+       <th>Redirects</th>
      </tr>
     </thead>
     <tbody>
@@ -60,5 +83,4 @@
     </tbody>
   </table>
   </div>
-  </center>
 {% endblock %}

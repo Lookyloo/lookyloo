@@ -11,7 +11,7 @@ FileSaver="v2.0.2"
 
 wget -q https://raw.githubusercontent.com/eligrey/FileSaver.js/${FileSaver}/src/FileSaver.js -O web/static/FileSaver.js
 
-bootstrap_table="1.16.0"
+datatables="1.10.20"
 
-wget -q https://unpkg.com/bootstrap-table@${bootstrap_table}/dist/bootstrap-table.min.css -O web/static/bootstrap-table.min.css
-wget -q https://unpkg.com/bootstrap-table@${bootstrap_table}/dist/bootstrap-table.min.js -O web/static/bootstrap-table.min.js
+wget -q https://cdn.datatables.net/v/bs4/dt-${datatables}/datatables.min.css -O web/static/datatables.min.css
+wget -q https://cdn.datatables.net/v/bs4/dt-${datatables}/datatables.min.js -O web/static/datatables.min.js

@@ -4,6 +4,8 @@
 
 {% block scripts %}
   {{ super() }}
+  <script src='{{ url_for('static', filename='d3.v5.min.js') }}'></script>
+  <script src='{{ url_for('static', filename='FileSaver.js') }}'></script>
   <script src='{{ url_for('static', filename='tree.js') }}'></script>
   <script>
     $('#screenshot_view_button').click(function(){
