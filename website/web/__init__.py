@@ -18,6 +18,8 @@ from lookyloo.exceptions import NoValidHarFile
 
 from typing import Tuple
 
+import logging
+
 app: Flask = Flask(__name__)
 
 secret_file_path: Path = get_homedir() / 'secret_key'
@@ -38,6 +40,8 @@ auth = HTTPDigestAuth()
 lookyloo: Lookyloo = Lookyloo()
 
 user = lookyloo.get_config('cache_clean_user')
+
+logging.basicConfig(level=lookyloo.get_config('loglevel'))
 
 
 @auth.get_password

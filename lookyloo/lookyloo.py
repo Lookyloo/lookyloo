@@ -89,7 +89,7 @@ class Lookyloo():
             if entry in self.configs['generic']:
                 return self.configs['generic'][entry]
             else:
-                self.logger.warning(f'Unable to fing {entry} in config file.')
+                self.logger.warning(f'Unable to find {entry} in config file.')
         else:
             self.logger.warning('No generic config file available.')
         self.logger.warning('Falling back on sample config, please initialize the generic config file.')
@@ -223,7 +223,9 @@ class Lookyloo():
                     meta = json.load(f)
             ct = self._load_pickle(pickle_file)
             if not ct:
-                ct = CrawledTree(har_files)
+                with open((capture_dir / 'uuid'), 'r') as f:
+                    uuid = f.read()
+                ct = CrawledTree(har_files, uuid)
                 with pickle_file.open('wb') as _p:
                     pickle.dump(ct, _p)
             return str(pickle_file), ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
@@ -265,7 +267,8 @@ class Lookyloo():
                 return False
 
         cookies = load_cookies(cookies_pseudofile)
-        items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=user_agent, log_enabled=True, log_level='INFO')
+        items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=user_agent,
+                      log_enabled=True, log_level=self.get_config('splash_loglevel'))
         if not items:
             # broken
             return False
