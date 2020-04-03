@@ -29,7 +29,7 @@ stop = "bin/stop.py"
 
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 scrapysplashwrapper = {git = "https://github.com/viper-framework/ScrapySplashWrapper.git"}
 har2tree = {git = "https://github.com/viper-framework/har2tree.git"}
 pysanejs = {git = "https://github.com/CIRCL/PySaneJS.git"}
