@@ -4,7 +4,7 @@ ENV LANG=C.UTF-8
 
 RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get -y install wget python3.7-pip git python3.7-venv
+RUN apt-get -y install wget python3.7-dev git python3.7-venv python3-pip
 RUN pip3 install poetry
 
 WORKDIR lookyloo
