@@ -21,7 +21,7 @@ $(document).ready(function () {
         "targets": 1,
         "render": function ( data, type, row, meta ) {
             let date = new Date(data);
-            return date.toLocaleString();
+            return date.getFullYear() + '-' + date.getMonth().toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
         }
     }]
   } );
