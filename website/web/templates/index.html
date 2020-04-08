@@ -7,7 +7,7 @@
 {% block scripts %}
 {{ super() }}
 <script src='{{ url_for('static', filename='datatables.min.js') }}'></script>
-<script>
+<script type="text/javascript">
 $(document).ready(function () {
   $('#table').DataTable( {
     "order": [[ 1, "desc" ]],
@@ -16,10 +16,18 @@ $(document).ready(function () {
         { "orderable": false, "width": 400 },
         { "orderable": false, "width": 150 },
         { "orderable": false, "width": 400 }
-    ]
+    ],
+    "columnDefs": [{
+        "targets": 1,
+        "render": function ( data, type, row, meta ) {
+            let date = new Date(data);
+            return date.toLocaleString();
+        }
+    }]
   } );
 });
 </script>
+
 {% endblock %}
 
 {% block styles %}
@@ -51,13 +59,13 @@ $(document).ready(function () {
      </tr>
     </thead>
     <tbody>
-      {% for uuid, page_title, date, time, url, redirects, incomplete_redirects in titles %}
+      {% for uuid, page_title, datetime, url, redirects, incomplete_redirects in titles %}
       <tr>
         <td>
           <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
           <p title="{{ url }}">{{ url }}</p>
         </td>
-        <td>{{ date }} {{ time }}</td>
+        <td>{{ datetime }}</td>
         <td>
           {% if redirects %}
             {% for r in redirects %}
