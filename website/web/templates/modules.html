@@ -1,0 +1,23 @@
+<div>
+{% if vt %}
+    <center><h1 class="display-4">Virus Total</h1></center>
+    {% for url, entries in vt.items() %}
+        <div class="border-top my-3"></div>
+        <center><h3><small class="text-muted">URL</small><br>{{ url }}</h3>
+        {% if entries['malicious'] %}
+            <center>
+            <p class="lead">Detected as malicious by the following vendors</p>
+            <dl class="row">
+            {% for e in entries['malicious'] %}
+                <dt class="col-sm-3">{{ e[0] }}</dt>
+                <dd class="col-sm-3">{{ e[1] }}</li>
+            {% endfor %}
+            </center>
+            </ul>
+        {% else %}
+            <p class="lead">No vendors consider this URL as malicious.</p>
+        {% endif%}
+        <h5 class="text-right"><a href="{{ entries['permaurl'] }}">Full report on VirusTotal</a></h5>
+    {% endfor %}
+{% endif%}
+</div>
