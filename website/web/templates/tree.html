@@ -14,6 +14,20 @@
       });
     });
   </script>
+  <script>
+  $('#modulesModal').on('show.bs.modal', function(e) {
+	  var button = $(e.relatedTarget);
+	  var modal = $(this);
+	  modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
+  $('.modulesForceRefresh').on('click',function(){
+	  $('.modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}",function(){
+		  $('#modulesModal').modal({show:true});
+	  });
+  });
+  </script>
 {% endblock %}
 
 {% block content %}
@@ -122,6 +136,10 @@
     <button id="screenshot_view_button" type="button" class="btn btn-info"
             data-toggle="collapse" data-target="#screenshot">View</button>
     <br>
+	<br>
+
+	<a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
+	   data-toggle="modal" data-target="#modulesModal" class="btn btn-info" role="button">Show third party reports</a>
   </div>
   <div style="width: 100px;float: right;">
     <div style="display: inline;">
@@ -133,6 +151,26 @@
       <b>Tree details</b>
     </div>
   </div>
+</div>
+
+<div class="modal fade" id="modulesModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modulesModalLabel">Reports from 3rd party services</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ... loading results from 3rd party modules ...
+            </div>
+            <div class="modal-footer">
+				<button type="button" class="btn btn-success modulesForceRefresh">Re-run all modules</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endblock content %}

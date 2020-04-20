@@ -97,6 +97,32 @@ class Lookyloo():
             sample_config = json.load(_c)
         return sample_config[entry]
 
+    def trigger_modules(self, capture_dir: Path, force: bool=False) -> None:
+        # We need the pickle
+        ct = self._load_pickle(capture_dir / 'tree.pickle')
+        if not ct:
+            self.logger.warning('Unable to trigger the modules unless the tree ({capture_dir}) is cached.')
+            return
+
+        if hasattr(self, 'vt') and self.vt.available:
+            if ct.redirects:
+                for redirect in ct.redirects:
+                    self.vt.url_lookup(redirect, force)
+            else:
+                self.vt.url_lookup(ct.root_hartree.har.first_url, force)
+
+    def get_modules_responses(self, capture_dir: Path) -> Dict:
+        ct = self._load_pickle(capture_dir / 'tree.pickle')
+        to_return = {}
+        if hasattr(self, 'vt') and self.vt.available:
+            to_return['vt'] = {}
+            if ct.redirects:
+                for redirect in ct.redirects:
+                    to_return['vt'][redirect] = self.vt.get_url_lookup(redirect)
+            else:
+                to_return['vt'][ct.root_hartree.har.first_url] = self.vt.get_url_lookup(ct.root_hartree.har.first_url)
+        return to_return
+
     def _set_capture_cache(self, capture_dir: Path, force: bool=False) -> None:
         if force or not self.redis.exists(str(capture_dir)):
             # (re)build cache

@@ -164,6 +164,42 @@ def urlnode_details(node_uuid):
                      as_attachment=True, attachment_filename='file.zip')
 
 
+@app.route('/tree/<string:tree_uuid>/trigger_modules/', defaults={'force': False})
+@app.route('/tree/<string:tree_uuid>/trigger_modules/<int:force>', methods=['GET'])
+def trigger_modules(tree_uuid, force):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return Response('Not available.', mimetype='text/text')
+    lookyloo.trigger_modules(capture_dir, force)
+    return redirect(url_for('modules', tree_uuid=tree_uuid))
+
+
+@app.route('/tree/<string:tree_uuid>/modules', methods=['GET'])
+def modules(tree_uuid):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return Response('Not available.', mimetype='text/text')
+    modules_responses = lookyloo.get_modules_responses(capture_dir)
+    if not modules_responses:
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+    vt_short_result = {}
+    if 'vt' in modules_responses:
+        # VirusTotal cleanup
+        vt = modules_responses.pop('vt')
+        # Get malicious entries
+        for url, full_report in vt.items():
+            vt_short_result[url] = {
+                'permaurl': f'https://www.virustotal.com/gui/url/{full_report["id"]}/detection',
+                'malicious': []
+            }
+            for vendor, result in full_report['attributes']['last_analysis_results'].items():
+                if result['category'] == 'malicious':
+                    vt_short_result[url]['malicious'].append((vendor, result['result']))
+
+    return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result)
+
+
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
 def image(tree_uuid):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
