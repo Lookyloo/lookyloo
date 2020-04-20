@@ -111,9 +111,12 @@ class Lookyloo():
             else:
                 self.vt.url_lookup(ct.root_hartree.har.first_url, force)
 
-    def get_modules_responses(self, capture_dir: Path) -> Dict:
+    def get_modules_responses(self, capture_dir: Path) -> Optional[Dict]:
         ct = self._load_pickle(capture_dir / 'tree.pickle')
-        to_return = {}
+        if not ct:
+            self.logger.warning('Unable to get the modules responses unless the tree ({capture_dir}) is cached.')
+            return None
+        to_return: Dict[str, Any] = {}
         if hasattr(self, 'vt') and self.vt.available:
             to_return['vt'] = {}
             if ct.redirects:
