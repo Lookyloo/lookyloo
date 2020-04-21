@@ -260,7 +260,6 @@ def index():
     if request.method == 'HEAD':
         # Just returns ack if the webserver is running
         return 'Ack'
-    lookyloo.cleanup_old_tmpfiles()
     update_user_agents()
     titles = []
     for capture_dir in lookyloo.capture_dirs:

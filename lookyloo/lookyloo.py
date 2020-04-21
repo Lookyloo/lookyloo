@@ -218,6 +218,10 @@ class Lookyloo():
     def enqueue_scrape(self, query: dict) -> str:
         perma_uuid = str(uuid4())
         p = self.redis.pipeline()
+        for key, value in query.items():
+            if isinstance(value, bool):
+                # Yes, empty string because that's False.
+                query[key] = 1 if value else ''
         p.hmset(perma_uuid, query)
         p.sadd('to_scrape', perma_uuid)
         p.execute()
@@ -261,11 +265,6 @@ class Lookyloo():
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 
-    def cleanup_old_tmpfiles(self):
-        for tmpfile in pathlib.Path(tempfile.gettempdir()).glob('lookyloo*'):
-            if time.time() - tmpfile.stat().st_atime > 36000:
-                tmpfile.unlink()
-
     def load_image(self, capture_dir: Path) -> BytesIO:
         with open(list(capture_dir.glob('*.png'))[0], 'rb') as f:
             return BytesIO(f.read())
@@ -275,8 +274,9 @@ class Lookyloo():
             return self.sanejs.sha512(sha512)
         return {'response': []}
 
-    def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None, depth: int=1, listing: bool=True, user_agent: Optional[str]=None, perma_uuid: str=None,
-               os: str=None, browser: str=None) -> Union[bool, str]:
+    def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None,
+               depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
+               perma_uuid: str=None, os: str=None, browser: str=None) -> Union[bool, str]:
         url = url.strip()
         url = refang(url)
         if not url.startswith('http'):
