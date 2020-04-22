@@ -7,7 +7,7 @@ server {
         proxy_set_header Host $http_host;
         proxy_redirect off;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Scheme $scheme;
+        proxy_set_header X_FORWARDED_PROTO $scheme;
         proxy_connect_timeout 300;
         proxy_read_timeout 300;
         proxy_pass http://localhost:5100/;

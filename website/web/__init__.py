@@ -16,12 +16,14 @@ from flask_httpauth import HTTPDigestAuth  # type: ignore
 from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents
 from lookyloo.lookyloo import Lookyloo
 from lookyloo.exceptions import NoValidHarFile
+from .proxied import ReverseProxied
 
 from typing import Tuple
 
 import logging
 
 app: Flask = Flask(__name__)
+app.wsgi_app = ReverseProxied(app.wsgi_app)
 
 secret_file_path: Path = get_homedir() / 'secret_key'
 
