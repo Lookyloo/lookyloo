@@ -23,7 +23,7 @@ from typing import Tuple
 import logging
 
 app: Flask = Flask(__name__)
-app.wsgi_app = ReverseProxied(app.wsgi_app)
+app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore
 
 secret_file_path: Path = get_homedir() / 'secret_key'
 
