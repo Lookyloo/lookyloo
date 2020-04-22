@@ -259,12 +259,7 @@ def tree(tree_uuid):
         return render_template('error.html', error_message=e)
 
 
-@app.route('/', methods=['GET'])
-def index():
-    if request.method == 'HEAD':
-        # Just returns ack if the webserver is running
-        return 'Ack'
-    update_user_agents()
+def index_generic(show_hidden=False):
     titles = []
     if time_delta_on_index:
         # We want to filter the captures on the index
@@ -273,7 +268,13 @@ def index():
         cut_time = None
     for capture_dir in lookyloo.capture_dirs:
         cached = lookyloo.capture_cache(capture_dir)
-        if not cached or 'no_index' in cached or 'error' in cached:
+        if not cached or 'error' in cached:
+            continue
+        if show_hidden:
+            if 'no_index' not in cached:
+                # Only display the hidden ones
+                continue
+        elif 'no_index' in cached:
             continue
         if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:
             continue
@@ -281,3 +282,18 @@ def index():
                        cached['redirects'], True if cached['incomplete_redirects'] == '1' else False))
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
     return render_template('index.html', titles=titles)
+
+
+@app.route('/', methods=['GET'])
+def index():
+    if request.method == 'HEAD':
+        # Just returns ack if the webserver is running
+        return 'Ack'
+    update_user_agents()
+    return index_generic()
+
+
+@app.route('/hidden', methods=['GET'])
+@auth.login_required
+def index_hidden():
+    return index_generic(show_hidden=True)
