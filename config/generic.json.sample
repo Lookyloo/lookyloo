@@ -4,11 +4,17 @@
   "only_global_lookups": true,
   "splash_url": "http://127.0.0.1:8050",
   "cache_clean_user": {},
+  "time_delta_on_index": {
+    "weeks": 0,
+    "days": 1,
+    "hours": 0
+  },
   "_notes": {
     "loglevel": "(lookyloo) Can be one of the value listed here: https://docs.python.org/3/library/logging.html#levels",
     "splash_loglevel": "(Splash) INFO is *very* verbose.",
     "only_global_lookups": "Set it to True if your instance is publicly available so users aren't able to scan your internal network",
     "splash_url": "URL to connect to splash",
-    "cache_clean_user": "Format: {username: password}"
+    "cache_clean_user": "Format: {username: password}",
+    "time_delta_on_index": "Time interval of the capture displayed on the index"
   }
 }

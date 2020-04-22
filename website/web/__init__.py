@@ -7,6 +7,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 import os
 from pathlib import Path
+from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, session, send_file, redirect, url_for, Response, flash
 from flask_bootstrap import Bootstrap  # type: ignore
@@ -40,6 +41,7 @@ auth = HTTPDigestAuth()
 lookyloo: Lookyloo = Lookyloo()
 
 user = lookyloo.get_config('cache_clean_user')
+time_delta_on_index = lookyloo.get_config('time_delta_on_index')
 
 logging.basicConfig(level=lookyloo.get_config('loglevel'))
 
@@ -262,9 +264,16 @@ def index():
         return 'Ack'
     update_user_agents()
     titles = []
+    if time_delta_on_index:
+        # We want to filter the captures on the index
+        cut_time = datetime.now() - timedelta(**time_delta_on_index)
+    else:
+        cut_time = None
     for capture_dir in lookyloo.capture_dirs:
         cached = lookyloo.capture_cache(capture_dir)
         if not cached or 'no_index' in cached or 'error' in cached:
+            continue
+        if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:
             continue
         titles.append((cached['uuid'], cached['title'], cached['timestamp'], cached['url'],
                        cached['redirects'], True if cached['incomplete_redirects'] == '1' else False))
