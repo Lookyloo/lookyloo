@@ -109,7 +109,7 @@ description = "Bootstrap helper for Flask/Jinja2."
 name = "bootstrap-flask"
 optional = false
 python-versions = "*"
-version = "1.2.0"
+version = "1.3.0"
 
 [package.dependencies]
 Flask = "*"
@@ -197,7 +197,7 @@ description = "cryptography is a package which provides cryptographic recipes an
 name = "cryptography"
 optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
-version = "2.9.1"
+version = "2.9.2"
 
 [package.dependencies]
 cffi = ">=1.8,<1.11.3 || >1.11.3"
@@ -305,7 +305,7 @@ publicsuffix2 = "^2.20191221"
 six = "^1.14.0"
 
 [package.source]
-reference = "7ed43558d8be42e5ec8e114ba6c5714548a2fec4"
+reference = "4a7902234c9be7e6dcf7cf58b271cda416820b70"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
@@ -872,7 +872,7 @@ scrapy = "^1.8.0"
 scrapy-splash = "^0.7.2"
 
 [package.source]
-reference = "a79fd929f3a306b27050b3049089171520a541bb"
+reference = "61a0a67290fd7d2ee3353aad0b03fa125ded1a5d"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
 [[package]]
@@ -1127,8 +1127,8 @@ beautifulsoup4 = [
     {file = "beautifulsoup4-4.9.0.tar.gz", hash = "sha256:594ca51a10d2b3443cbac41214e12dbb2a1cd57e1a7344659849e2e20ba6a8d8"},
 ]
 bootstrap-flask = [
-    {file = "Bootstrap-Flask-1.2.0.tar.gz", hash = "sha256:d03c738f5377dbe7ecce010e28afcc0fb8373c4c9d01f8590af7657b53342c1d"},
-    {file = "Bootstrap_Flask-1.2.0-py2.py3-none-any.whl", hash = "sha256:ed817e82acadac4c8b3fc2d1a310325b6ed395d13b0f6ca9d14e1742f880e685"},
+    {file = "Bootstrap-Flask-1.3.0.tar.gz", hash = "sha256:a05b18a85aa4c095bb49b9edfe77c42099cb8ed9ce8e445ff76510353632c32f"},
+    {file = "Bootstrap_Flask-1.3.0-py2.py3-none-any.whl", hash = "sha256:fee2b907cd064eabbb9a94f497a5962381e10b165e18333c801482246017a0a5"},
 ]
 cchardet = [
     {file = "cchardet-2.1.6-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:2aa1b008965c703ad6597361b0f6d427c8971fe94a2c99ec3724c228ae50d6a6"},
@@ -1216,7 +1216,25 @@ constantly = [
     {file = "constantly-15.1.0.tar.gz", hash = "sha256:586372eb92059873e29eba4f9dec8381541b4d3834660707faf8ba59146dfc35"},
 ]
 cryptography = [
-    {file = "cryptography-2.9.1.tar.gz", hash = "sha256:ce0bd68b4b946bd4bcebc3d4d1325bf0e938e445ae18cedddd60e33dd85a368e"},
+    {file = "cryptography-2.9.2-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:daf54a4b07d67ad437ff239c8a4080cfd1cc7213df57d33c97de7b4738048d5e"},
+    {file = "cryptography-2.9.2-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:3b3eba865ea2754738616f87292b7f29448aec342a7c720956f8083d252bf28b"},
+    {file = "cryptography-2.9.2-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:c447cf087cf2dbddc1add6987bbe2f767ed5317adb2d08af940db517dd704365"},
+    {file = "cryptography-2.9.2-cp27-cp27m-win32.whl", hash = "sha256:f118a95c7480f5be0df8afeb9a11bd199aa20afab7a96bcf20409b411a3a85f0"},
+    {file = "cryptography-2.9.2-cp27-cp27m-win_amd64.whl", hash = "sha256:c4fd17d92e9d55b84707f4fd09992081ba872d1a0c610c109c18e062e06a2e55"},
+    {file = "cryptography-2.9.2-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:d0d5aeaedd29be304848f1c5059074a740fa9f6f26b84c5b63e8b29e73dfc270"},
+    {file = "cryptography-2.9.2-cp27-cp27mu-manylinux2010_x86_64.whl", hash = "sha256:1e4014639d3d73fbc5ceff206049c5a9a849cefd106a49fa7aaaa25cc0ce35cf"},
+    {file = "cryptography-2.9.2-cp35-abi3-macosx_10_9_x86_64.whl", hash = "sha256:96c080ae7118c10fcbe6229ab43eb8b090fccd31a09ef55f83f690d1ef619a1d"},
+    {file = "cryptography-2.9.2-cp35-abi3-manylinux1_x86_64.whl", hash = "sha256:e993468c859d084d5579e2ebee101de8f5a27ce8e2159959b6673b418fd8c785"},
+    {file = "cryptography-2.9.2-cp35-abi3-manylinux2010_x86_64.whl", hash = "sha256:88c881dd5a147e08d1bdcf2315c04972381d026cdb803325c03fe2b4a8ed858b"},
+    {file = "cryptography-2.9.2-cp35-cp35m-win32.whl", hash = "sha256:651448cd2e3a6bc2bb76c3663785133c40d5e1a8c1a9c5429e4354201c6024ae"},
+    {file = "cryptography-2.9.2-cp35-cp35m-win_amd64.whl", hash = "sha256:726086c17f94747cedbee6efa77e99ae170caebeb1116353c6cf0ab67ea6829b"},
+    {file = "cryptography-2.9.2-cp36-cp36m-win32.whl", hash = "sha256:091d31c42f444c6f519485ed528d8b451d1a0c7bf30e8ca583a0cac44b8a0df6"},
+    {file = "cryptography-2.9.2-cp36-cp36m-win_amd64.whl", hash = "sha256:bb1f0281887d89617b4c68e8db9a2c42b9efebf2702a3c5bf70599421a8623e3"},
+    {file = "cryptography-2.9.2-cp37-cp37m-win32.whl", hash = "sha256:18452582a3c85b96014b45686af264563e3e5d99d226589f057ace56196ec78b"},
+    {file = "cryptography-2.9.2-cp37-cp37m-win_amd64.whl", hash = "sha256:22e91636a51170df0ae4dcbd250d318fd28c9f491c4e50b625a49964b24fe46e"},
+    {file = "cryptography-2.9.2-cp38-cp38-win32.whl", hash = "sha256:844a76bc04472e5135b909da6aed84360f522ff5dfa47f93e3dd2a0b84a89fa0"},
+    {file = "cryptography-2.9.2-cp38-cp38-win_amd64.whl", hash = "sha256:1dfa985f62b137909496e7fc182dac687206d8d089dd03eaeb28ae16eec8e7d5"},
+    {file = "cryptography-2.9.2.tar.gz", hash = "sha256:a0c30272fb4ddda5f5ffc1089d7405b7a71b0b0f51993cb4e5dbb4590b2fc229"},
 ]
 cssselect = [
     {file = "cssselect-1.1.0-py2.py3-none-any.whl", hash = "sha256:f612ee47b749c877ebae5bb77035d8f4202c6ad0f0fc1271b3c18ad6c4468ecf"},
