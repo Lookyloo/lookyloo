@@ -101,7 +101,7 @@ class Lookyloo():
         # We need the pickle
         ct = self._load_pickle(capture_dir / 'tree.pickle')
         if not ct:
-            self.logger.warning('Unable to trigger the modules unless the tree ({capture_dir}) is cached.')
+            self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_dir}) is cached.')
             return
 
         if hasattr(self, 'vt') and self.vt.available:
