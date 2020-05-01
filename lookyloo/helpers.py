@@ -139,7 +139,13 @@ def update_user_agents():
         traceback.print_exc()
         return
     soup = BeautifulSoup(r.text, 'html.parser')
-    uas = soup.find_all('textarea')[1].text
+
+    try:
+        uas = soup.find_all('textarea')[1].text
+    except Exception:
+        traceback.print_exc()
+        return
+
     to_store = {'by_frequency': []}
     for ua in json.loads(uas):
         os = ua['system'].split(' ')[-1]
