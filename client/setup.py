@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='pylookyloo',
-    version='0.1',
+    version='0.7',
     author='Raphaël Vinot',
     author_email='raphael.vinot@circl.lu',
     maintainer='Raphaël Vinot',
