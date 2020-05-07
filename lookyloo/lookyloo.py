@@ -142,7 +142,7 @@ class Lookyloo():
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
             with (Path(capture_dir) / 'error.txt').open() as _error:
-                error_cache['error'] = f'Capture in {capture_dir} has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go and https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum'
+                error_cache['error'] = f'Capture in {capture_dir.name} has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go and https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum'
         elif not har_files:
             error_cache['error'] = f'No har files in {capture_dir}'
 
