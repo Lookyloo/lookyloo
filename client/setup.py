@@ -11,6 +11,7 @@ setup(
     url='https://github.com/CIRCL/lookyloo/client',
     description='Python client for Lookyloo',
     packages=['pylookyloo'],
+    entry_points={"console_scripts": ["lookyloo = pylookyloo:main"]},
     install_requires=['requests'],
     classifiers=[
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
