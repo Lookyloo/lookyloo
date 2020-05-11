@@ -235,7 +235,7 @@ def cache_tree(tree_uuid):
     return redirect(url_for('index'))
 
 
-@app.route('/tree/<string:tree_uuid>/send_mail', methods=['POST'])
+@app.route('/tree/<string:tree_uuid>/send_mail', methods=['POST', 'GET'])
 def send_mail(tree_uuid):
     comment = request.form.get('comment') if request.form.get('comment') else ''
     lookyloo.send_mail(tree_uuid, comment)
