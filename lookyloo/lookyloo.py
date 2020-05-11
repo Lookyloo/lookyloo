@@ -1,39 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import json
-
-import pickle
-
-from datetime import datetime
-
-import tempfile
-import pathlib
-import time
-
-import ipaddress
-import socket
-from urllib.parse import urlsplit
-
-from io import BufferedIOBase, BytesIO
 import base64
+from datetime import datetime
+from email.message import EmailMessage
+from io import BufferedIOBase, BytesIO
+import ipaddress
+import json
+import logging
+from pathlib import Path
+import pickle
+import smtplib
+import socket
+from typing import Union, Dict, List, Tuple, Optional, Any
+from urllib.parse import urlsplit
 from uuid import uuid4
 
-from pathlib import Path
-from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir
-from .exceptions import NoValidHarFile
-from redis import Redis
-
-from typing import Union, Dict, List, Tuple, Optional, Any
-
-import logging
-
-from pysanejs import SaneJS
-from scrapysplashwrapper import crawl
-from har2tree import CrawledTree, Har2TreeError, HarFile
-
 from defang import refang  # type: ignore
+from har2tree import CrawledTree, Har2TreeError, HarFile
+from pysanejs import SaneJS
+from redis import Redis
+from scrapysplashwrapper import crawl
 
+from .exceptions import NoValidHarFile
+from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template
 from .modules import VirusTotal
 
 
@@ -244,6 +234,30 @@ class Lookyloo():
             with pickle_file.open('rb') as _p:
                 return pickle.load(_p)
         return None
+
+    def send_mail(self, capture_uuid: str, comment: str=''):
+        if not self.get_config('enable_mail_notification'):
+            return
+        email_config = self.get_config('email')
+        msg = EmailMessage()
+        msg['From'] = email_config['from']
+        msg['To'] = email_config['to']
+        msg['Subject'] = email_config['subject']
+        body = get_email_template()
+        body = body.format(
+            recipient=msg['To'].addresses[0].display_name,
+            domain=email_config['domain'],
+            uuid=capture_uuid,
+            comment=comment,
+            sender=msg['From'].addresses[0].display_name,
+        )
+        msg.set_content(body)
+        try:
+            s = smtplib.SMTP(email_config['smtp_host'], email_config['smtp_port'])
+            s.send_message(msg)
+            s.quit()
+        except Exception as e:
+            logging.exception(e)
 
     def load_tree(self, capture_dir: Path) -> Tuple[str, dict, str, str, str, dict]:
         har_files = sorted(capture_dir.glob('*.har'))

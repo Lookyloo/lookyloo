@@ -41,6 +41,11 @@ Run the following command (assuming you run the code from the clonned repository
     return Path(os.environ['LOOKYLOO_HOME'])
 
 
+def get_email_template():
+    with (get_homedir() / 'config' / 'email.tmpl').open() as f:
+        return f.read()
+
+
 def load_configs(path_to_config_files: Optional[Union[str, Path]]=None) -> Dict[str, Dict[str, Any]]:
     if path_to_config_files:
         if isinstance(path_to_config_files, str):

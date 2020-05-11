@@ -235,6 +235,13 @@ def cache_tree(tree_uuid):
     return redirect(url_for('index'))
 
 
+@app.route('/tree/<string:tree_uuid>/send_mail', methods=['POST'])
+def send_mail(tree_uuid):
+    comment = request.form.get('comment') if request.form.get('comment') else ''
+    lookyloo.send_mail(tree_uuid, comment)
+    return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+
 @app.route('/tree/<string:tree_uuid>', methods=['GET'])
 def tree(tree_uuid):
     if tree_uuid == 'False':
@@ -251,10 +258,14 @@ def tree(tree_uuid):
         return redirect(url_for('index'))
 
     try:
+        if lookyloo.get_config('enable_mail_notification'):
+            enable_mail_notification = True
+        else:
+            enable_mail_notification = False
         tree_json, start_time, user_agent, root_url, meta = load_tree(capture_dir)
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
-                               meta=meta)
+                               meta=meta, enable_mail_notification=enable_mail_notification)
     except NoValidHarFile as e:
         return render_template('error.html', error_message=e)
 
