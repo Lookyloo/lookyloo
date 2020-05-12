@@ -15,6 +15,7 @@ import socket
 from typing import Union, Dict, List, Tuple, Optional, Any
 from urllib.parse import urlsplit
 from uuid import uuid4
+from zipfile import ZipFile
 
 from defang import refang  # type: ignore
 from har2tree import CrawledTree, Har2TreeError, HarFile
@@ -279,9 +280,29 @@ class Lookyloo():
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 
-    def load_image(self, capture_dir: Path) -> BytesIO:
-        with open(list(capture_dir.glob('*.png'))[0], 'rb') as f:
-            return BytesIO(f.read())
+    def _get_raw(self, capture_dir: Path, extension: str='*', all_files: bool=True) -> BytesIO:
+        all_paths = sorted(list(capture_dir.glob(f'*.{extension}')))
+        if not all_files:
+            # Only get the first one in the list
+            with open(all_paths[0], 'rb') as f:
+                return BytesIO(f.read())
+        to_return = BytesIO()
+        with ZipFile(to_return, 'w') as myzip:
+            for path in all_paths:
+                if path.name.endswith('pickle'):
+                    continue
+                myzip.write(path, arcname=f'{capture_dir.name}/{path.name}')
+        to_return.seek(0)
+        return to_return
+
+    def get_html(self, capture_dir: Path, all_html: bool=False) -> BytesIO:
+        return self._get_raw(capture_dir, 'html', all_html)
+
+    def get_screenshot(self, capture_dir: Path, all_images: bool=False) -> BytesIO:
+        return self._get_raw(capture_dir, 'png', all_images)
+
+    def get_capture(self, capture_dir: Path) -> BytesIO:
+        return self._get_raw(capture_dir)
 
     def sane_js_query(self, sha512: str) -> Dict:
         if self.use_sane_js:

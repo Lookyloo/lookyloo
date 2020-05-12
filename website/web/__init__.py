@@ -209,9 +209,29 @@ def image(tree_uuid):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if not capture_dir:
         return Response('Not available.', mimetype='text/text')
-    to_return = lookyloo.load_image(capture_dir)
+    to_return = lookyloo.get_screenshot(capture_dir)
     return send_file(to_return, mimetype='image/png',
                      as_attachment=True, attachment_filename='image.png')
+
+
+@app.route('/tree/<string:tree_uuid>/html', methods=['GET'])
+def html(tree_uuid):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return Response('Not available.', mimetype='text/text')
+    to_return = lookyloo.get_html(capture_dir)
+    return send_file(to_return, mimetype='text/html',
+                     as_attachment=True, attachment_filename='page.html')
+
+
+@app.route('/tree/<string:tree_uuid>/export', methods=['GET'])
+def export(tree_uuid):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return Response('Not available.', mimetype='text/text')
+    to_return = lookyloo.get_capture(capture_dir)
+    return send_file(to_return, mimetype='application/zip',
+                     as_attachment=True, attachment_filename='capture.zip')
 
 
 @app.route('/redirects/<string:tree_uuid>', methods=['GET'])
