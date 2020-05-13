@@ -10,10 +10,10 @@
             <dl class="row">
             {% for e in entries['malicious'] %}
                 <dt class="col-sm-3">{{ e[0] }}</dt>
-                <dd class="col-sm-3">{{ e[1] }}</li>
+                <dd class="col-sm-3">{{ e[1] }}</dd>
             {% endfor %}
             </center>
-            </ul>
+            </dl>
         {% else %}
             <p class="lead">No vendors consider this URL as malicious.</p>
         {% endif%}

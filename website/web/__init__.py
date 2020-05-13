@@ -178,6 +178,15 @@ def trigger_modules(tree_uuid, force):
     return redirect(url_for('modules', tree_uuid=tree_uuid))
 
 
+@app.route('/tree/<string:tree_uuid>/stats', methods=['GET'])
+def stats(tree_uuid):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return Response('Not available.', mimetype='text/text')
+    stats = lookyloo.get_statistics(capture_dir)
+    return render_template('statistics.html', uuid=tree_uuid, stats=stats)
+
+
 @app.route('/tree/<string:tree_uuid>/modules', methods=['GET'])
 def modules(tree_uuid):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)

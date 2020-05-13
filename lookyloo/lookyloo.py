@@ -88,6 +88,14 @@ class Lookyloo():
             sample_config = json.load(_c)
         return sample_config[entry]
 
+    def get_statistics(self, capture_dir: Path) -> Dict:
+        # We need the pickle
+        ct = self._load_pickle(capture_dir / 'tree.pickle')
+        if not ct:
+            self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_dir}) is cached.')
+            return
+        return ct.root_hartree.stats
+
     def trigger_modules(self, capture_dir: Path, force: bool=False) -> None:
         # We need the pickle
         ct = self._load_pickle(capture_dir / 'tree.pickle')

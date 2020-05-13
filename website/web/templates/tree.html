@@ -22,6 +22,13 @@
   });
   </script>
   <script>
+  $('#statsModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
   $('.modulesForceRefresh').on('click',function(){
 	  $('.modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}",function(){
 		  $('#modulesModal').modal({show:true});
@@ -140,6 +147,8 @@
 
 	<a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
 	   data-toggle="modal" data-target="#modulesModal" class="btn btn-info" role="button">Show third party reports</a>
+    <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
+       data-toggle="modal" data-target="#statsModal" class="btn btn-info" role="button">Show Statistics</a>
     {% if enable_mail_notification %}
       <a href="#emailModal" data-toggle="modal" data-target="#emailModal" class="btn btn-info" role="button">Notify by mail</a>
     {%endif%}
@@ -154,6 +163,25 @@
       <b>Tree details</b>
     </div>
   </div>
+</div>
+
+<div class="modal fade" id="statsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modulesModalLabel">Statistics</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ... loading statistics ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="modulesModal" tabindex="-1" role="dialog">
