@@ -93,7 +93,7 @@ class Lookyloo():
         ct = self._load_pickle(capture_dir / 'tree.pickle')
         if not ct:
             self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_dir}) is cached.')
-            return
+            return {}
         return ct.root_hartree.stats
 
     def trigger_modules(self, capture_dir: Path, force: bool=False) -> None:
