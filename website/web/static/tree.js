@@ -92,6 +92,24 @@ d3.selection.prototype.moveToBack = function() {
     });
 };
 
+function hostnode_click_popup(d) {
+    window.open('/tree/hostname_popup/' + d.data.uuid, '_blank', 'width=700,height=500,left=200,top=100');
+};
+
+function ProcessChildMessage(message) {
+    var element = document.getElementById("node_" + message);
+    element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+
+    var to_blink = d3.select("#node_" + message).select('text');
+    to_blink
+        .transition().duration(500)  //Set transition
+        .style('fill', 'red')
+        .style('font-size', '20px')
+        .transition().duration(500)  //Set transition
+        .style('fill', 'black')
+        .style('font-size', '16px');
+};
+
 // What happen when clicking on a domain (load a modal display)
 function hostnode_click(d) {
     // Move the node to the front (end of the list)
@@ -483,7 +501,8 @@ function update(root, computed_node_width=0) {
 
             // Set Hostname text
             node_data
-              .append(d => text_entry(15, 5, hostnode_click, d));
+              // .append(d => text_entry(15, 5, hostnode_click, d));  // In-tree block
+              .append(d => text_entry(15, 5, hostnode_click_popup, d));  // Popup
             // Set list of icons
             node_data
               .append(d => icon_list(17, 35, d));

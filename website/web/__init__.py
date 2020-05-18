@@ -134,6 +134,11 @@ def hostnode_details_text(node_uuid: str):
                      as_attachment=True, attachment_filename='file.md')
 
 
+@app.route('/tree/hostname_popup/<string:node_uuid>', methods=['GET'])
+def hostnode_popup(node_uuid: str):
+    return render_template('hostname_popup.html', hostname_uuid=node_uuid)
+
+
 @app.route('/tree/hostname/<string:node_uuid>', methods=['GET'])
 def hostnode_details(node_uuid: str):
     with open(session["tree"], 'rb') as f:

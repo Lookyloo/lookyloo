@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+
+{% block title %}Details for hostname {% endblock %}
+
+{% block scripts %}
+  <script>
+      function whereAmI() {
+          window.opener.ProcessChildMessage("{{ hostname_uuid }}");
+      };
+  </script>
+{% endblock %}
+
+{% block content %}
+  <button onclick="whereAmI()">Where am I</button>
+{% endblock %}
