@@ -12,7 +12,7 @@ from pathlib import Path
 import pickle
 import smtplib
 import socket
-from typing import Union, Dict, List, Tuple, Optional, Any
+from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping
 from urllib.parse import urlsplit
 from uuid import uuid4
 from zipfile import ZipFile
@@ -61,15 +61,15 @@ class Lookyloo():
         else:
             self.use_sane_js = True
 
-    def rebuild_cache(self):
+    def rebuild_cache(self) -> None:
         self.redis.flushdb()
         self._init_existing_dumps()
 
-    def remove_pickle(self, capture_dir: Path):
+    def remove_pickle(self, capture_dir: Path) -> None:
         if (capture_dir / 'tree.pickle').exists():
             (capture_dir / 'tree.pickle').unlink()
 
-    def rebuild_all(self):
+    def rebuild_all(self) -> None:
         for capture_dir in self.capture_dirs:
             self.remove_pickle(capture_dir)
         self.rebuild_cache()
@@ -88,7 +88,7 @@ class Lookyloo():
             sample_config = json.load(_c)
         return sample_config[entry]
 
-    def get_statistics(self, capture_dir: Path) -> Dict:
+    def get_statistics(self, capture_dir: Path) -> Dict[str, Any]:
         # We need the pickle
         ct = self._load_pickle(capture_dir / 'tree.pickle')
         if not ct:
@@ -110,7 +110,7 @@ class Lookyloo():
             else:
                 self.vt.url_lookup(ct.root_hartree.har.first_url, force)
 
-    def get_modules_responses(self, capture_dir: Path) -> Optional[Dict]:
+    def get_modules_responses(self, capture_dir: Path) -> Optional[Dict[str, Any]]:
         ct = self._load_pickle(capture_dir / 'tree.pickle')
         if not ct:
             self.logger.warning('Unable to get the modules responses unless the tree ({capture_dir}) is cached.')
@@ -176,7 +176,7 @@ class Lookyloo():
         self.redis.hmset(str(capture_dir), cache)
         self.redis.hset('lookup_dirs', uuid, str(capture_dir))
 
-    def capture_cache(self, capture_dir: Path) -> Optional[Dict[str, Union[str, int]]]:
+    def capture_cache(self, capture_dir: Path) -> Optional[Dict[str, Any]]:
         if self.redis.hget(str(capture_dir), 'incomplete_redirects') == '1':
             # try to rebuild the cache
             self._set_capture_cache(capture_dir, force=True)
@@ -208,13 +208,13 @@ class Lookyloo():
                     f.write(str(uuid4()))
         return sorted(self.scrape_dir.iterdir(), reverse=True)
 
-    def lookup_capture_dir(self, uuid) -> Union[Path, None]:
+    def lookup_capture_dir(self, uuid: str) -> Union[Path, None]:
         capture_dir = self.redis.hget('lookup_dirs', uuid)
         if capture_dir:
             return Path(capture_dir)
         return None
 
-    def enqueue_scrape(self, query: dict) -> str:
+    def enqueue_scrape(self, query: MutableMapping[str, Any]) -> str:
         perma_uuid = str(uuid4())
         p = self.redis.pipeline()
         for key, value in query.items():
@@ -244,7 +244,7 @@ class Lookyloo():
                 return pickle.load(_p)
         return None
 
-    def send_mail(self, capture_uuid: str, comment: str=''):
+    def send_mail(self, capture_uuid: str, comment: str='') -> None:
         if not self.get_config('enable_mail_notification'):
             return
         email_config = self.get_config('email')
@@ -268,7 +268,7 @@ class Lookyloo():
         except Exception as e:
             logging.exception(e)
 
-    def load_tree(self, capture_dir: Path) -> Tuple[str, dict, str, str, str, dict]:
+    def load_tree(self, capture_dir: Path) -> Tuple[str, str, str, str, str, Dict[str, str]]:
         har_files = sorted(capture_dir.glob('*.har'))
         pickle_file = capture_dir / 'tree.pickle'
         try:
@@ -312,7 +312,7 @@ class Lookyloo():
     def get_capture(self, capture_dir: Path) -> BytesIO:
         return self._get_raw(capture_dir)
 
-    def sane_js_query(self, sha512: str) -> Dict:
+    def sane_js_query(self, sha512: str) -> Dict[str, Any]:
         if self.use_sane_js:
             return self.sanejs.sha512(sha512)
         return {'response': []}

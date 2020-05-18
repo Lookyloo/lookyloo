@@ -41,7 +41,7 @@ Run the following command (assuming you run the code from the clonned repository
     return Path(os.environ['LOOKYLOO_HOME'])
 
 
-def get_email_template():
+def get_email_template() -> str:
     with (get_homedir() / 'config' / 'email.tmpl').open() as f:
         return f.read()
 
@@ -66,7 +66,7 @@ def load_configs(path_to_config_files: Optional[Union[str, Path]]=None) -> Dict[
     return to_return
 
 
-def safe_create_dir(to_create: Path):
+def safe_create_dir(to_create: Path) -> None:
     if to_create.exists() and not to_create.is_dir():
         raise CreateDirectoryException(f'The path {to_create} already exists and is not a directory')
     to_create.mkdir(parents=True, exist_ok=True)
@@ -82,7 +82,7 @@ def unset_running(name: str) -> None:
     r.hdel('running', name)
 
 
-def is_running() -> dict:
+def is_running() -> Dict[Any, Any]:
     r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
     return r.hgetall('running')
 
@@ -125,7 +125,7 @@ def long_sleep(sleep_in_sec: int, shutdown_check: int=10) -> bool:
     return True
 
 
-def update_user_agents():
+def update_user_agents() -> None:
     if not HAS_CF:
         # The website with the UAs is behind Cloudflare's anti-bot page, we need cloudscraper
         return
@@ -151,7 +151,7 @@ def update_user_agents():
         traceback.print_exc()
         return
 
-    to_store = {'by_frequency': []}
+    to_store: Dict[str, Any] = {'by_frequency': []}
     for ua in json.loads(uas):
         os = ua['system'].split(' ')[-1]
         if os not in to_store:
@@ -165,7 +165,7 @@ def update_user_agents():
         json.dump(to_store, f, indent=2)
 
 
-def get_user_agents() -> dict:
+def get_user_agents() -> Dict[str, Any]:
     ua_files_path = str(get_homedir() / 'user_agents' / '*' / '*' / '*.json')
     paths = sorted(glob(ua_files_path), reverse=True)
     if not paths:
@@ -175,7 +175,7 @@ def get_user_agents() -> dict:
         return json.load(f)
 
 
-def load_cookies(cookie_pseudofile: Optional[BufferedIOBase]=None) -> List[dict]:
+def load_cookies(cookie_pseudofile: Optional[BufferedIOBase]=None) -> List[Dict[str, str]]:
     if cookie_pseudofile:
         cookies = json.load(cookie_pseudofile)
     else:

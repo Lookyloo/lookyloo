@@ -18,7 +18,7 @@ from lookyloo.lookyloo import Lookyloo
 from lookyloo.exceptions import NoValidHarFile
 from .proxied import ReverseProxied
 
-from typing import Tuple
+from typing import Tuple, Optional, Dict, Any
 
 import logging
 
@@ -49,7 +49,7 @@ logging.basicConfig(level=lookyloo.get_config('loglevel'))
 
 
 @auth.get_password
-def get_pw(username):
+def get_pw(username: str) -> Optional[str]:
     if username in user:
         return user.get(username)
     return None
@@ -69,9 +69,9 @@ def rebuild_cache():
     return redirect(url_for('index'))
 
 
-@app.route('/tree/<tree_uuid>/rebuild')
+@app.route('/tree/<string:tree_uuid>/rebuild')
 @auth.login_required
-def rebuild_tree(tree_uuid):
+def rebuild_tree(tree_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if capture_dir:
         lookyloo.remove_pickle(capture_dir)
@@ -80,7 +80,7 @@ def rebuild_tree(tree_uuid):
 
 
 # keep
-def load_tree(capture_dir: Path) -> Tuple[dict, str, str, str, dict]:
+def load_tree(capture_dir: Path) -> Tuple[str, str, str, str, Dict[str, Any]]:
     session.clear()
     temp_file_name, tree_json, tree_time, tree_ua, tree_root_url, meta = lookyloo.load_tree(capture_dir)
     session["tree"] = temp_file_name
@@ -102,19 +102,22 @@ def scrape_web():
             cookie_file = request.files['cookies'].stream
         else:
             cookie_file = None
-        perma_uuid = lookyloo.scrape(url=request.form.get('url'),
-                                     cookies_pseudofile=cookie_file,
-                                     depth=request.form.get('depth'),
-                                     listing=request.form.get('listing'), user_agent=request.form.get('user_agent'),
-                                     os=request.form.get('os'), browser=request.form.get('browser'))
-        return redirect(url_for('tree', tree_uuid=perma_uuid))
+        url = request.form.get('url')
+        if url:
+            depth: int = request.form.get('depth') if request.form.get('depth') else 1  # type: ignore
+            listing: bool = request.form.get('listing') if request.form.get('listing') else False  # type: ignore
+            perma_uuid = lookyloo.scrape(url=url, cookies_pseudofile=cookie_file,
+                                         depth=depth, listing=listing,
+                                         user_agent=request.form.get('user_agent'),
+                                         os=request.form.get('os'), browser=request.form.get('browser'))
+            return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents = get_user_agents()
     user_agents.pop('by_frequency')
     return render_template('scrape.html', user_agents=user_agents)
 
 
-@app.route('/tree/hostname/<node_uuid>/text', methods=['GET'])
-def hostnode_details_text(node_uuid):
+@app.route('/tree/hostname/<string:node_uuid>/text', methods=['GET'])
+def hostnode_details_text(node_uuid: str):
     with open(session["tree"], 'rb') as f:
         ct = pickle.load(f)
     hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
@@ -131,8 +134,8 @@ def hostnode_details_text(node_uuid):
                      as_attachment=True, attachment_filename='file.md')
 
 
-@app.route('/tree/hostname/<node_uuid>', methods=['GET'])
-def hostnode_details(node_uuid):
+@app.route('/tree/hostname/<string:node_uuid>', methods=['GET'])
+def hostnode_details(node_uuid: str):
     with open(session["tree"], 'rb') as f:
         ct = pickle.load(f)
     hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
@@ -147,8 +150,8 @@ def hostnode_details(node_uuid):
     return json.dumps(urls)
 
 
-@app.route('/tree/url/<node_uuid>', methods=['GET'])
-def urlnode_details(node_uuid):
+@app.route('/tree/url/<string:node_uuid>', methods=['GET'])
+def urlnode_details(node_uuid: str):
     with open(session["tree"], 'rb') as f:
         ct = pickle.load(f)
     urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
@@ -170,16 +173,16 @@ def urlnode_details(node_uuid):
 
 @app.route('/tree/<string:tree_uuid>/trigger_modules/', defaults={'force': False})
 @app.route('/tree/<string:tree_uuid>/trigger_modules/<int:force>', methods=['GET'])
-def trigger_modules(tree_uuid, force):
+def trigger_modules(tree_uuid: str, force: int):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if not capture_dir:
         return Response('Not available.', mimetype='text/text')
-    lookyloo.trigger_modules(capture_dir, force)
+    lookyloo.trigger_modules(capture_dir, True if force else False)
     return redirect(url_for('modules', tree_uuid=tree_uuid))
 
 
 @app.route('/tree/<string:tree_uuid>/stats', methods=['GET'])
-def stats(tree_uuid):
+def stats(tree_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if not capture_dir:
         return Response('Not available.', mimetype='text/text')
@@ -188,7 +191,7 @@ def stats(tree_uuid):
 
 
 @app.route('/tree/<string:tree_uuid>/modules', methods=['GET'])
-def modules(tree_uuid):
+def modules(tree_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if not capture_dir:
         return Response('Not available.', mimetype='text/text')
@@ -196,7 +199,7 @@ def modules(tree_uuid):
     if not modules_responses:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
 
-    vt_short_result = {}
+    vt_short_result: Dict[str, Dict[str, Any]] = {}
     if 'vt' in modules_responses:
         # VirusTotal cleanup
         vt = modules_responses.pop('vt')
@@ -214,7 +217,7 @@ def modules(tree_uuid):
 
 
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
-def image(tree_uuid):
+def image(tree_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if not capture_dir:
         return Response('Not available.', mimetype='text/text')
@@ -224,7 +227,7 @@ def image(tree_uuid):
 
 
 @app.route('/tree/<string:tree_uuid>/html', methods=['GET'])
-def html(tree_uuid):
+def html(tree_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if not capture_dir:
         return Response('Not available.', mimetype='text/text')
@@ -234,7 +237,7 @@ def html(tree_uuid):
 
 
 @app.route('/tree/<string:tree_uuid>/export', methods=['GET'])
-def export(tree_uuid):
+def export(tree_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if not capture_dir:
         return Response('Not available.', mimetype='text/text')
@@ -244,11 +247,13 @@ def export(tree_uuid):
 
 
 @app.route('/redirects/<string:tree_uuid>', methods=['GET'])
-def redirects(tree_uuid):
+def redirects(tree_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if not capture_dir:
         return Response('Not available.', mimetype='text/text')
     cache = lookyloo.capture_cache(capture_dir)
+    if not cache:
+        return Response('Not available.', mimetype='text/text')
     if not cache['redirects']:
         return Response('No redirects.', mimetype='text/text')
     to_return = BytesIO('\n'.join(cache['redirects']).encode())
@@ -257,7 +262,7 @@ def redirects(tree_uuid):
 
 
 @app.route('/cache_tree/<string:tree_uuid>', methods=['GET'])
-def cache_tree(tree_uuid):
+def cache_tree(tree_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if capture_dir:
         lookyloo.load_tree(capture_dir)
@@ -265,14 +270,14 @@ def cache_tree(tree_uuid):
 
 
 @app.route('/tree/<string:tree_uuid>/send_mail', methods=['POST', 'GET'])
-def send_mail(tree_uuid):
-    comment = request.form.get('comment') if request.form.get('comment') else ''
+def send_mail(tree_uuid: str):
+    comment: str = request.form.get('comment') if request.form.get('comment') else ''  # type: ignore
     lookyloo.send_mail(tree_uuid, comment)
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
 @app.route('/tree/<string:tree_uuid>', methods=['GET'])
-def tree(tree_uuid):
+def tree(tree_uuid: str):
     if tree_uuid == 'False':
         flash("Unable to process your request. The domain may not exist, or splash isn't started", 'error')
         return redirect(url_for('index'))
@@ -282,6 +287,10 @@ def tree(tree_uuid):
         return redirect(url_for('index'))
 
     cache = lookyloo.capture_cache(capture_dir)
+    if not cache:
+        flash(f'Invalid cache.', 'error')
+        return redirect(url_for('index'))
+
     if 'error' in cache:
         flash(cache['error'], 'error')
         return redirect(url_for('index'))
@@ -299,13 +308,13 @@ def tree(tree_uuid):
         return render_template('error.html', error_message=e)
 
 
-def index_generic(show_hidden=False):
+def index_generic(show_hidden: bool=False):
     titles = []
     if time_delta_on_index:
         # We want to filter the captures on the index
         cut_time = datetime.now() - timedelta(**time_delta_on_index)
     else:
-        cut_time = None
+        cut_time = None  # type: ignore
     for capture_dir in lookyloo.capture_dirs:
         cached = lookyloo.capture_cache(capture_dir)
         if not cached or 'error' in cached:
@@ -316,7 +325,7 @@ def index_generic(show_hidden=False):
                 continue
         elif 'no_index' in cached:
             continue
-        if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:
+        if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:  # type: ignore
             continue
         titles.append((cached['uuid'], cached['title'], cached['timestamp'], cached['url'],
                        cached['redirects'], True if cached['incomplete_redirects'] == '1' else False))

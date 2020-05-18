@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from typing import MutableMapping, Any
 
 
 class ReverseProxied():
-    def __init__(self, app):
+    def __init__(self, app: Any) -> None:
         self.app = app
 
-    def __call__(self, environ, start_response):
+    def __call__(self, environ: MutableMapping[str, Any], start_response: Any) -> Any:
         scheme = environ.get('HTTP_X_FORWARDED_PROTO')
         if not scheme:
             scheme = environ.get('HTTP_X_SCHEME')

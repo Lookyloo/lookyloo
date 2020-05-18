@@ -15,13 +15,13 @@ class AbstractManager(ABC):
         self.logger.setLevel(loglevel)
         self.logger.info(f'Initializing {self.__class__.__name__}')
 
-    async def _to_run_forever_async(self):
+    async def _to_run_forever_async(self) -> None:
         pass
 
-    def _to_run_forever(self):
+    def _to_run_forever(self) -> None:
         pass
 
-    def run(self, sleep_in_sec: int):
+    def run(self, sleep_in_sec: int) -> None:
         self.logger.info(f'Launching {self.__class__.__name__}')
         while True:
             if shutdown_requested():

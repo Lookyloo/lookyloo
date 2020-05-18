@@ -30,7 +30,7 @@ class VirusTotal():
         self.storage_dir_vt = get_homedir() / 'vt_url'
         self.storage_dir_vt.mkdir(parents=True, exist_ok=True)
 
-    def __del__(self):
+    def __del__(self) -> None:
         if hasattr(self, 'client'):
             self.client.close()
 
@@ -40,7 +40,7 @@ class VirusTotal():
         m.update(url_id.encode())
         return self.storage_dir_vt / m.hexdigest()
 
-    def get_url_lookup(self, url: str) -> Optional[Dict]:
+    def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
         url_storage_dir = self.__get_cache_directory(url)
         if not url_storage_dir.exists():
             return None
@@ -51,7 +51,7 @@ class VirusTotal():
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def url_lookup(self, url: str, force: bool=False):
+    def url_lookup(self, url: str, force: bool=False) -> None:
         '''Lookup an URL on VT
         Note: force means 2 things:
             * (re)scan of the URL
