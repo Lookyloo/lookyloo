@@ -2,5 +2,8 @@
   "VirusTotal": {
     "apikey": "KEY",
     "autosubmit": false
+  },
+  "SaneJS": {
+    "enabled": true
   }
 }

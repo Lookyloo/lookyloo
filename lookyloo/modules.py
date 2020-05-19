@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Union
 from datetime import date
 import hashlib
 import json
@@ -13,6 +13,65 @@ from .helpers import get_homedir
 from .exceptions import ConfigError
 
 import vt  # type: ignore
+from pysanejs import SaneJS
+
+
+class SaneJavaScript():
+
+    def __init__(self, config: Dict[str, Any]):
+        if not ('enabled' in config or config['enabled']):
+            self.available = False
+            return
+        self.client = SaneJS()
+        if not self.client.is_up:
+            self.available = False
+            return
+        self.available = True
+        self.storage_dir = get_homedir() / 'sanejs'
+        self.storage_dir.mkdir(parents=True, exist_ok=True)
+
+    def hashes_lookup(self, sha512: Union[List[str], str], force: bool=False) -> Optional[Dict[str, Any]]:
+        if isinstance(sha512, str):
+            hashes = [sha512]
+        else:
+            hashes = sha512
+
+        today_dir = self.storage_dir / date.today().isoformat()
+        today_dir.mkdir(parents=True, exist_ok=True)
+        sanejs_unknowns = today_dir / 'unknown'
+        unknown_hashes = []
+        if sanejs_unknowns.exists():
+            with sanejs_unknowns.open() as f:
+                unknown_hashes = [line.strip() for line in f.readlines()]
+
+        if force:
+            to_lookup = hashes
+        else:
+            to_lookup = [h for h in sha512 if (h not in unknown_hashes
+                                               and not (today_dir / h).exists())]
+        to_return = {}
+        for h in to_lookup:
+            response = self.client.sha512(h)
+            if 'error' in response:
+                # Server not ready
+                break
+            if 'response' in response and response['response']:
+                cached_path = today_dir / h
+                with cached_path.open('w') as f:
+                    json.dump(response['response'], f)
+                to_return[h] = response['response']
+            else:
+                unknown_hashes.append(h)
+
+        for h in hashes:
+            cached_path = today_dir / h
+            if h in unknown_hashes or h in to_return:
+                continue
+            elif cached_path.exists():
+                with cached_path.open() as f:
+                    to_return[h] = json.load(f)
+
+        return to_return
 
 
 class VirusTotal():

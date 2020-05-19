@@ -19,13 +19,12 @@ from zipfile import ZipFile
 
 from defang import refang  # type: ignore
 from har2tree import CrawledTree, Har2TreeError, HarFile
-from pysanejs import SaneJS
 from redis import Redis
 from scrapysplashwrapper import crawl
 
 from .exceptions import NoValidHarFile
 from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template
-from .modules import VirusTotal
+from .modules import VirusTotal, SaneJavaScript
 
 
 class Lookyloo():
@@ -50,16 +49,13 @@ class Lookyloo():
                 self.vt = VirusTotal(self.configs['modules']['VirusTotal'])
                 if not self.vt.available:
                     self.logger.warning('Unable to setup the VirusTotal module')
+            if 'SaneJS' in self.configs['modules']:
+                self.sanejs = SaneJavaScript(self.configs['modules']['SaneJS'])
+                if not self.sanejs.available:
+                    self.logger.warning('Unable to setup the SaneJS module')
 
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
-
-        # Try to reach sanejs
-        self.sanejs = SaneJS()
-        if not self.sanejs.is_up:
-            self.use_sane_js = False
-        else:
-            self.use_sane_js = True
 
     def rebuild_cache(self) -> None:
         self.redis.flushdb()
@@ -311,11 +307,6 @@ class Lookyloo():
 
     def get_capture(self, capture_dir: Path) -> BytesIO:
         return self._get_raw(capture_dir)
-
-    def sane_js_query(self, sha512: str) -> Dict[str, Any]:
-        if self.use_sane_js:
-            return self.sanejs.sha512(sha512)
-        return {'response': []}
 
     def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None,
                depth: int=1, listing: bool=True, user_agent: Optional[str]=None,

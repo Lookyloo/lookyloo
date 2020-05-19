@@ -136,7 +136,40 @@ def hostnode_details_text(node_uuid: str):
 
 @app.route('/tree/hostname_popup/<string:node_uuid>', methods=['GET'])
 def hostnode_popup(node_uuid: str):
-    return render_template('hostname_popup.html', hostname_uuid=node_uuid)
+    with open(session["tree"], 'rb') as f:
+        ct = pickle.load(f)
+    hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
+    table_keys = {
+        'js': "/static/javascript.png",
+        'exe': "/static/exe.png",
+        'css': "/static/css.png",
+        'font': "/static/font.png",
+        'html': "/static/html.png",
+        'json': "/static/json.png",
+        'iframe': "/static/ifr.png",
+        'image': "/static/img.png",
+        'unknown_mimetype': "/static/wtf.png",
+        'video': "/static/video.png",
+        'request_cookie': "/static/cookie_read.png",
+        'response_cookie': "/static/cookie_received.png",
+        'redirect': "/static/redirect.png",
+        'redirect_to_nothing': "/static/cookie_in_url.png"
+    }
+
+    urls = []
+    if lookyloo.sanejs.available:
+        to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
+        lookups = lookyloo.sanejs.hashes_lookup(to_lookup)
+    for url in hostnode.urls:
+        if lookyloo.sanejs.available and hasattr(url, 'body_hash') and url.body_hash in lookups:
+            url.add_feature('sane_js_details', lookups[url.body_hash])
+            # TODO: Do something with it.
+        urls.append(url)
+    return render_template('hostname_popup.html',
+                           hostname_uuid=node_uuid,
+                           hostname=hostnode.name,
+                           urls=urls,
+                           keys=table_keys)
 
 
 @app.route('/tree/hostname/<string:node_uuid>', methods=['GET'])
