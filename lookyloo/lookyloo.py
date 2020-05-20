@@ -18,7 +18,7 @@ from uuid import uuid4
 from zipfile import ZipFile
 
 from defang import refang  # type: ignore
-from har2tree import CrawledTree, Har2TreeError, HarFile
+from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from redis import Redis
 from scrapysplashwrapper import crawl
 
@@ -83,6 +83,14 @@ class Lookyloo():
         with (get_homedir() / 'config' / 'generic.json.sample').open() as _c:
             sample_config = json.load(_c)
         return sample_config[entry]
+
+    def get_urlnode_from_tree(self, capture_dir: Path, node_uuid: str) -> URLNode:
+        ct = self._load_pickle(capture_dir / 'tree.pickle')
+        return ct.root_hartree.get_url_node_by_uuid(node_uuid)
+
+    def get_hostnode_from_tree(self, capture_dir: Path, node_uuid: str) -> HostNode:
+        ct = self._load_pickle(capture_dir / 'tree.pickle')
+        return ct.root_hartree.get_host_node_by_uuid(node_uuid)
 
     def get_statistics(self, capture_dir: Path) -> Dict[str, Any]:
         # We need the pickle
@@ -280,7 +288,7 @@ class Lookyloo():
                 ct = CrawledTree(har_files, uuid)
                 with pickle_file.open('wb') as _p:
                     pickle.dump(ct, _p)
-            return str(pickle_file), ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
+            return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 

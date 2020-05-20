@@ -14,7 +14,7 @@
   <center>
     <h3>{{ hostname }}</h3>
     <button type="button" class="btn btn-secondary" onclick="whereAmI()">Locate node on tree</button>
-    <a href="{{ url_for('hostnode_details_text', node_uuid=hostname_uuid) }}" class="btn btn-info" role="button">Get URLs as text</a>
+    <a href="{{ url_for('hostnode_details_text', tree_uuid=tree_uuid, node_uuid=hostname_uuid) }}" class="btn btn-info" role="button">Get URLs as text</a>
   </center>
   <p>Click on the URL to get the content of the response</p>
   <div class="table-responsive">
@@ -22,6 +22,7 @@
       <thead>
         <tr>
           <th>URL</th>
+          <th>Known file</th>
           {% for alt, path in keys.items() %}
           <th><img src="{{ path }}" alt="{{ alt }}" width="21" height="21"/></th>
           {% endfor %}
@@ -31,7 +32,14 @@
     {% for url in urls %}
       <tr>
         <td style="white-space:nowrap">
-          <a href="{{ url_for('urlnode_details', node_uuid=url.uuid) }}">{{ url.name }}</a>
+          <a href="{{ url_for('urlnode_details', tree_uuid=tree_uuid, node_uuid=url.uuid) }}">{{ url.name }}</a>
+        </td>
+        <td><br/>
+            {% if url.sane_js_details_to_print %}
+                {{ url.sane_js_details_to_print }}
+            {% else %}
+                {{ url.sane_js_details }}
+            {% endif %}
         </td>
         {% for key in keys.keys() %}
         <td><br/>

@@ -93,7 +93,7 @@ d3.selection.prototype.moveToBack = function() {
 };
 
 function hostnode_click_popup(d) {
-    window.open('/tree/hostname_popup/' + d.data.uuid, '_blank', 'width=700,height=500,left=200,top=100');
+    window.open('/tree/' + treeUUID + '/hostname_popup/' + d.data.uuid, '_blank', 'width=1024,height=768,left=200,top=100');
 };
 
 function ProcessChildMessage(message) {

@@ -18,6 +18,11 @@ from pysanejs import SaneJS
 
 class SaneJavaScript():
 
+    skip_lookup: Dict[str, str] = {
+        "717ea0ff7f3f624c268eccb244e24ec1305ab21557abb3d6f1a7e183ff68a2d28f13d1d2af926c9ef6d1fb16dd8cbe34cd98cacf79091dddc7874dcee21ecfdc": "1*1px gif",
+        "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e": "Empty file"
+    }
+
     def __init__(self, config: Dict[str, Any]):
         if not ('enabled' in config or config['enabled']):
             self.available = False
@@ -44,12 +49,12 @@ class SaneJavaScript():
             with sanejs_unknowns.open() as f:
                 unknown_hashes = [line.strip() for line in f.readlines()]
 
-        if force:
-            to_lookup = hashes
-        else:
-            to_lookup = [h for h in sha512 if (h not in unknown_hashes
-                                               and not (today_dir / h).exists())]
-        to_return = {}
+        to_return = {h: details for h, details in self.skip_lookup.items() if h in sha512}
+
+        to_lookup = [h for h in hashes if h not in self.skip_lookup]
+        if not force:
+            to_lookup = [h for h in to_lookup if (h not in unknown_hashes
+                                                  and not (today_dir / h).exists())]
         for h in to_lookup:
             response = self.client.sha512(h)
             if 'error' in response:
