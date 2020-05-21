@@ -35,7 +35,7 @@ class SaneJavaScript():
         self.storage_dir = get_homedir() / 'sanejs'
         self.storage_dir.mkdir(parents=True, exist_ok=True)
 
-    def hashes_lookup(self, sha512: Union[List[str], str], force: bool=False) -> Optional[Dict[str, Any]]:
+    def hashes_lookup(self, sha512: Union[List[str], str], force: bool=False) -> Dict[str, Any]:
         if isinstance(sha512, str):
             hashes = [sha512]
         else:

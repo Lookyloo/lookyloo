@@ -22,7 +22,7 @@ from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from redis import Redis
 from scrapysplashwrapper import crawl
 
-from .exceptions import NoValidHarFile
+from .exceptions import NoValidHarFile, MissingUUID
 from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template
 from .modules import VirusTotal, SaneJavaScript
 
@@ -86,10 +86,14 @@ class Lookyloo():
 
     def get_urlnode_from_tree(self, capture_dir: Path, node_uuid: str) -> URLNode:
         ct = self._load_pickle(capture_dir / 'tree.pickle')
+        if not ct:
+            raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
         return ct.root_hartree.get_url_node_by_uuid(node_uuid)
 
     def get_hostnode_from_tree(self, capture_dir: Path, node_uuid: str) -> HostNode:
         ct = self._load_pickle(capture_dir / 'tree.pickle')
+        if not ct:
+            raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
         return ct.root_hartree.get_host_node_by_uuid(node_uuid)
 
     def get_statistics(self, capture_dir: Path) -> Dict[str, Any]:
@@ -272,7 +276,7 @@ class Lookyloo():
         except Exception as e:
             logging.exception(e)
 
-    def load_tree(self, capture_dir: Path) -> Tuple[str, str, str, str, str, Dict[str, str]]:
+    def load_tree(self, capture_dir: Path) -> Tuple[str, str, str, str, Dict[str, str]]:
         har_files = sorted(capture_dir.glob('*.har'))
         pickle_file = capture_dir / 'tree.pickle'
         try:

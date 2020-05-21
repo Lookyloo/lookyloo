@@ -109,6 +109,8 @@ def scrape_web():
 @app.route('/tree/<string:tree_uuid>/hostname/<string:node_uuid>/text', methods=['GET'])
 def hostnode_details_text(tree_uuid: str, node_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return
     hostnode = lookyloo.get_hostnode_from_tree(capture_dir, node_uuid)
     urls = []
     for url in hostnode.urls:
@@ -126,6 +128,8 @@ def hostnode_details_text(tree_uuid: str, node_uuid: str):
 @app.route('/tree/<string:tree_uuid>/hostname_popup/<string:node_uuid>', methods=['GET'])
 def hostnode_popup(tree_uuid: str, node_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return
     hostnode = lookyloo.get_hostnode_from_tree(capture_dir, node_uuid)
     table_keys = {
         'js': "/static/javascript.png",
@@ -165,6 +169,8 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>', methods=['GET'])
 def urlnode_details(tree_uuid: str, node_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return
     urlnode = lookyloo.get_urlnode_from_tree(capture_dir, node_uuid)
     to_return = BytesIO()
     got_content = False
