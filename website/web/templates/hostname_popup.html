@@ -17,42 +17,38 @@
     <a href="{{ url_for('hostnode_details_text', tree_uuid=tree_uuid, node_uuid=hostname_uuid) }}" class="btn btn-info" role="button">Get URLs as text</a>
   </center>
   <p>Click on the URL to get the content of the response</p>
-  <div class="table-responsive">
-    <table id="table" class="table">
-      <thead>
-        <tr>
-          <th>URL</th>
-          <th>Known file</th>
-          {% for alt, path in keys.items() %}
-          <th><img src="{{ path }}" alt="{{ alt }}" width="21" height="21"/></th>
-          {% endfor %}
-        </tr>
-      </thead>
-    <tbody>
-    {% for url in urls %}
-      <tr>
-        <td style="white-space:nowrap">
-          <a href="{{ url_for('urlnode_details', tree_uuid=tree_uuid, node_uuid=url.uuid) }}">{{ url.name }}</a>
-        </td>
-        <td><br/>
-            {% if url.sane_js_details_to_print %}
-                {{ url.sane_js_details_to_print }}
-            {% else %}
-                {{ url.sane_js_details }}
-            {% endif %}
-        </td>
-        {% for key in keys.keys() %}
-        <td><br/>
-        {% if url[key] %}
-        X
-        {% else%}
-        -
-        {%endif%}
-        </td>
+  <ul class="list-group-flush">
+      {% for url in urls %}
+      <li class="list-group-item">
+        <a href="{{ url_for('urlnode_details', tree_uuid=tree_uuid, node_uuid=url.uuid) }}">{{ url.name }}</a>
+        <div>
+        {% for key, path in keys.items() %}
+          {% if url[key] %}
+            <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+          {%endif%}
         {% endfor %}
-      </tr>
-    {% endfor %}
-    </tbody>
-    </table>
-  </div>
+        </div>
+        {% if url.body %}
+        <div>
+          Body size: {{ url.body.getbuffer().nbytes}}
+        </div>
+        {% else %}
+          Empty body.
+        {%endif%}
+        {% if url.sane_js_details_to_print %}
+        <div>
+          {% if url.sane_js_details_to_print is string %}
+            {{ url.sane_js_details_to_print }}
+          {% else %}
+            This file is known as part of <b>{{ url.sane_js_details_to_print[0] }}</b>
+            version <b>{{ url.sane_js_details_to_print[1] }}</b>: <b>{{ url.sane_js_details_to_print[2] }}</b>.
+            {% if url.sane_js_details_to_print[3] > 1%}
+            It is also present in <b>{{ url.sane_js_details_to_print[3] -1 }}</b> other libraries.
+            {%endif%}
+          {%endif%}
+        </div>
+        {% endif %}
+      </li>
+      {% endfor %}
+  </ul>
 {% endblock %}

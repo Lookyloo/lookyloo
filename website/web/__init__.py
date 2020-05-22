@@ -155,8 +155,14 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     for url in hostnode.urls:
         if lookyloo.sanejs.available and hasattr(url, 'body_hash') and url.body_hash in lookups:
             url.add_feature('sane_js_details', lookups[url.body_hash])
-            if lookups[url.body_hash] and isinstance(lookups[url.body_hash], list):
-                url.add_feature('sane_js_details_to_print', f'{" ".join(lookups[url.body_hash][0].split("|"))} and {len(lookups[url.body_hash])-1} other files')
+            if lookups[url.body_hash]:
+                if isinstance(lookups[url.body_hash], list):
+                    libname, version, path = lookups[url.body_hash][0].split("|")
+                    other_files = len(lookups[url.body_hash])
+                    url.add_feature('sane_js_details_to_print', (libname, version, path, other_files))
+                else:
+                    # Predefined generic file
+                    url.add_feature('sane_js_details_to_print', lookups[url.body_hash])
         urls.append(url)
     return render_template('hostname_popup.html',
                            tree_uuid=tree_uuid,
