@@ -6,6 +6,7 @@ from io import BytesIO
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
+import json
 
 from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash
 from flask_bootstrap import Bootstrap  # type: ignore
@@ -44,6 +45,19 @@ user = lookyloo.get_config('cache_clean_user')
 time_delta_on_index = lookyloo.get_config('time_delta_on_index')
 
 logging.basicConfig(level=lookyloo.get_config('loglevel'))
+
+
+# Method to make sizes in bytes human readable
+# Source: https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
+def sizeof_fmt(num, suffix='B'):
+    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
+
+
+app.jinja_env.globals.update(sizeof_fmt=sizeof_fmt)
 
 
 @auth.get_password
@@ -131,7 +145,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     if not capture_dir:
         return
     hostnode = lookyloo.get_hostnode_from_tree(capture_dir, node_uuid)
-    table_keys = {
+    keys_response = {
         'js': "/static/javascript.png",
         'exe': "/static/exe.png",
         'css': "/static/css.png",
@@ -142,10 +156,12 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
         'image': "/static/img.png",
         'unknown_mimetype': "/static/wtf.png",
         'video': "/static/video.png",
-        'request_cookie': "/static/cookie_read.png",
         'response_cookie': "/static/cookie_received.png",
         'redirect': "/static/redirect.png",
         'redirect_to_nothing': "/static/cookie_in_url.png"
+    }
+    keys_request = {
+        'request_cookie': "/static/cookie_read.png",
     }
 
     urls = []
@@ -169,7 +185,31 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
                            hostname_uuid=node_uuid,
                            hostname=hostnode.name,
                            urls=urls,
-                           keys=table_keys)
+                           keys_response=keys_response,
+                           keys_request=keys_request)
+
+
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/posted_data', methods=['GET'])
+def urlnode_post_request(tree_uuid: str, node_uuid: str):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return
+    urlnode = lookyloo.get_urlnode_from_tree(capture_dir, node_uuid)
+    if not urlnode.posted_data:
+        return
+    if isinstance(urlnode.posted_data, (dict, list)):
+        # JSON blob, pretty print.
+        posted = json.dumps(urlnode.posted_data, indent=2)
+    else:
+        posted = urlnode.posted_data
+
+    if isinstance(posted, bytes):
+        to_return = BytesIO(posted)
+    else:
+        to_return = BytesIO(posted.encode())
+    to_return.seek(0)
+    return send_file(to_return, mimetype='text/plain',
+                     as_attachment=True, attachment_filename='posted_data.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>', methods=['GET'])
