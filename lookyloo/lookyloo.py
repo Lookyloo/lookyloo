@@ -159,7 +159,7 @@ class Lookyloo():
             self.redis.hset('lookup_dirs', uuid, str(capture_dir))
             return
 
-        har = HarFile(har_files[0])
+        har = HarFile(har_files[0], uuid)
 
         redirects = har.initial_redirects
         incomplete_redirects = False
