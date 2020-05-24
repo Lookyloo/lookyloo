@@ -342,7 +342,12 @@ class Lookyloo():
                 return False
 
         cookies = load_cookies(cookies_pseudofile)
-        items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=user_agent,
+        if not user_agent:
+            # Catch case where the UA is broken on the UI, and the async submission.
+            ua: str = self.get_config('default_user_agent')  # type: ignore
+        else:
+            ua = user_agent
+        items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
                       log_enabled=True, log_level=self.get_config('splash_loglevel'))
         if not items:
             # broken
