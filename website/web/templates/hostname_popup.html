@@ -1,0 +1,78 @@
+{% extends "main.html" %}
+
+{% block title %}Details for {{ hostname }} {% endblock %}
+
+{% block scripts %}
+  <script>
+      function whereAmI() {
+          window.opener.ProcessChildMessage("{{ hostname_uuid }}");
+      };
+  </script>
+{% endblock %}
+
+{% block content %}
+  <center>
+    <h3>{{ hostname }}</h3>
+    <button type="button" class="btn btn-secondary" onclick="whereAmI()">Locate node on tree</button>
+    <a href="{{ url_for('hostnode_details_text', tree_uuid=tree_uuid, node_uuid=hostname_uuid) }}" class="btn btn-info" role="button">Get URLs as text</a>
+  </center>
+  <p>Click on the URL to get the content of the response</p>
+  <ul class="list-group-flush">
+    {% for url in urls %}
+    <li class="list-group-item">
+      <p class="h3">{{ url.name }}</p>
+      <ul class="list-group">
+        <li class="list-group-item">
+          <p class="h4">Response</p>
+          <div>
+          {% for key, path in keys_response.items() %}
+            {% if url[key] %}
+              <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+            {%endif%}
+          {% endfor %}
+          </div>
+          {% if not url.empty_response %}
+          <div>
+            <a href="{{ url_for('urlnode_details', tree_uuid=tree_uuid, node_uuid=url.uuid) }}">
+              Download response body.
+            </a></br>
+            Body size: {{ sizeof_fmt(url.body.getbuffer().nbytes) }}
+          </div>
+          {% else %}
+            Empty body.
+          {%endif%}
+          {% if url.sane_js_details_to_print %}
+          <div>
+            {% if url.sane_js_details_to_print is string %}
+              {{ url.sane_js_details_to_print }}
+            {% else %}
+              This file is known as part of <b>{{ url.sane_js_details_to_print[0] }}</b>
+              version <b>{{ url.sane_js_details_to_print[1] }}</b>: <b>{{ url.sane_js_details_to_print[2] }}</b>.
+              {% if url.sane_js_details_to_print[3] > 1%}
+              It is also present in <b>{{ url.sane_js_details_to_print[3] -1 }}</b> other libraries.
+              {%endif%}
+            {%endif%}
+          </div>
+          {% endif %}
+        </li>
+        <li class="list-group-item">
+          <p class="h4">Request</p>
+          <div>
+          {% for key, path in keys_request.items() %}
+            {% if url[key] %}
+              <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+            {%endif%}
+          {% endfor %}
+          </div>
+          {% if url.posted_data %}
+          <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url.uuid) }}">
+              Download posted data
+          </a></br>
+          Posted data size: {{ sizeof_fmt(url.posted_data|length) }}
+          {% endif %}
+        </li>
+      </ul>
+    </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

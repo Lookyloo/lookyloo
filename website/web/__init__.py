@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import json
-import pickle
 from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
+import json
 
-from flask import Flask, render_template, request, session, send_file, redirect, url_for, Response, flash
+from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash
 from flask_bootstrap import Bootstrap  # type: ignore
 from flask_httpauth import HTTPDigestAuth  # type: ignore
 
@@ -18,7 +17,7 @@ from lookyloo.lookyloo import Lookyloo
 from lookyloo.exceptions import NoValidHarFile
 from .proxied import ReverseProxied
 
-from typing import Tuple, Optional, Dict, Any
+from typing import Optional, Dict, Any
 
 import logging
 
@@ -46,6 +45,19 @@ user = lookyloo.get_config('cache_clean_user')
 time_delta_on_index = lookyloo.get_config('time_delta_on_index')
 
 logging.basicConfig(level=lookyloo.get_config('loglevel'))
+
+
+# Method to make sizes in bytes human readable
+# Source: https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
+def sizeof_fmt(num, suffix='B'):
+    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
+
+
+app.jinja_env.globals.update(sizeof_fmt=sizeof_fmt)
 
 
 @auth.get_password
@@ -79,14 +91,6 @@ def rebuild_tree(tree_uuid: str):
     return redirect(url_for('index'))
 
 
-# keep
-def load_tree(capture_dir: Path) -> Tuple[str, str, str, str, Dict[str, Any]]:
-    session.clear()
-    temp_file_name, tree_json, tree_time, tree_ua, tree_root_url, meta = lookyloo.load_tree(capture_dir)
-    session["tree"] = temp_file_name
-    return tree_json, tree_time, tree_ua, tree_root_url, meta
-
-
 @app.route('/submit', methods=['POST', 'GET'])
 def submit():
     to_query = request.get_json(force=True)
@@ -116,11 +120,12 @@ def scrape_web():
     return render_template('scrape.html', user_agents=user_agents)
 
 
-@app.route('/tree/hostname/<string:node_uuid>/text', methods=['GET'])
-def hostnode_details_text(node_uuid: str):
-    with open(session["tree"], 'rb') as f:
-        ct = pickle.load(f)
-    hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
+@app.route('/tree/<string:tree_uuid>/hostname/<string:node_uuid>/text', methods=['GET'])
+def hostnode_details_text(tree_uuid: str, node_uuid: str):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return
+    hostnode = lookyloo.get_hostnode_from_tree(capture_dir, node_uuid)
     urls = []
     for url in hostnode.urls:
         urls.append(url.name)
@@ -134,27 +139,85 @@ def hostnode_details_text(node_uuid: str):
                      as_attachment=True, attachment_filename='file.md')
 
 
-@app.route('/tree/hostname/<string:node_uuid>', methods=['GET'])
-def hostnode_details(node_uuid: str):
-    with open(session["tree"], 'rb') as f:
-        ct = pickle.load(f)
-    hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
+@app.route('/tree/<string:tree_uuid>/hostname_popup/<string:node_uuid>', methods=['GET'])
+def hostnode_popup(tree_uuid: str, node_uuid: str):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return
+    hostnode = lookyloo.get_hostnode_from_tree(capture_dir, node_uuid)
+    keys_response = {
+        'js': "/static/javascript.png",
+        'exe': "/static/exe.png",
+        'css': "/static/css.png",
+        'font': "/static/font.png",
+        'html': "/static/html.png",
+        'json': "/static/json.png",
+        'iframe': "/static/ifr.png",
+        'image': "/static/img.png",
+        'unknown_mimetype': "/static/wtf.png",
+        'video': "/static/video.png",
+        'response_cookie': "/static/cookie_received.png",
+        'redirect': "/static/redirect.png",
+        'redirect_to_nothing': "/static/cookie_in_url.png"
+    }
+    keys_request = {
+        'request_cookie': "/static/cookie_read.png",
+    }
+
     urls = []
+    if lookyloo.sanejs.available:
+        to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
+        lookups = lookyloo.sanejs.hashes_lookup(to_lookup)
     for url in hostnode.urls:
-        if hasattr(url, 'body_hash'):
-            sane_js_r = lookyloo.sane_js_query(url.body_hash)
-            if sane_js_r.get('response'):
-                url.add_feature('sane_js_details', sane_js_r['response'])
-                print('######## SANEJS ##### ', url.sane_js_details)
-        urls.append(url.to_json())
-    return json.dumps(urls)
+        if lookyloo.sanejs.available and hasattr(url, 'body_hash') and url.body_hash in lookups:
+            url.add_feature('sane_js_details', lookups[url.body_hash])
+            if lookups[url.body_hash]:
+                if isinstance(lookups[url.body_hash], list):
+                    libname, version, path = lookups[url.body_hash][0].split("|")
+                    other_files = len(lookups[url.body_hash])
+                    url.add_feature('sane_js_details_to_print', (libname, version, path, other_files))
+                else:
+                    # Predefined generic file
+                    url.add_feature('sane_js_details_to_print', lookups[url.body_hash])
+        urls.append(url)
+    return render_template('hostname_popup.html',
+                           tree_uuid=tree_uuid,
+                           hostname_uuid=node_uuid,
+                           hostname=hostnode.name,
+                           urls=urls,
+                           keys_response=keys_response,
+                           keys_request=keys_request)
 
 
-@app.route('/tree/url/<string:node_uuid>', methods=['GET'])
-def urlnode_details(node_uuid: str):
-    with open(session["tree"], 'rb') as f:
-        ct = pickle.load(f)
-    urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/posted_data', methods=['GET'])
+def urlnode_post_request(tree_uuid: str, node_uuid: str):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return
+    urlnode = lookyloo.get_urlnode_from_tree(capture_dir, node_uuid)
+    if not urlnode.posted_data:
+        return
+    if isinstance(urlnode.posted_data, (dict, list)):
+        # JSON blob, pretty print.
+        posted = json.dumps(urlnode.posted_data, indent=2)
+    else:
+        posted = urlnode.posted_data
+
+    if isinstance(posted, bytes):
+        to_return = BytesIO(posted)
+    else:
+        to_return = BytesIO(posted.encode())
+    to_return.seek(0)
+    return send_file(to_return, mimetype='text/plain',
+                     as_attachment=True, attachment_filename='posted_data.txt')
+
+
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>', methods=['GET'])
+def urlnode_details(tree_uuid: str, node_uuid: str):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return
+    urlnode = lookyloo.get_urlnode_from_tree(capture_dir, node_uuid)
     to_return = BytesIO()
     got_content = False
     if hasattr(urlnode, 'body'):
@@ -300,7 +363,7 @@ def tree(tree_uuid: str):
             enable_mail_notification = True
         else:
             enable_mail_notification = False
-        tree_json, start_time, user_agent, root_url, meta = load_tree(capture_dir)
+        tree_json, start_time, user_agent, root_url, meta = lookyloo.load_tree(capture_dir)
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
                                meta=meta, enable_mail_notification=enable_mail_notification)

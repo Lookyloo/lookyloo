@@ -20,3 +20,7 @@ class CreateDirectoryException(LookylooException):
 
 class ConfigError(LookylooException):
     pass
+
+
+class MissingUUID(LookylooException):
+    pass

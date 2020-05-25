@@ -18,14 +18,13 @@ from uuid import uuid4
 from zipfile import ZipFile
 
 from defang import refang  # type: ignore
-from har2tree import CrawledTree, Har2TreeError, HarFile
-from pysanejs import SaneJS
+from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from redis import Redis
 from scrapysplashwrapper import crawl
 
-from .exceptions import NoValidHarFile
+from .exceptions import NoValidHarFile, MissingUUID
 from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template
-from .modules import VirusTotal
+from .modules import VirusTotal, SaneJavaScript
 
 
 class Lookyloo():
@@ -50,16 +49,13 @@ class Lookyloo():
                 self.vt = VirusTotal(self.configs['modules']['VirusTotal'])
                 if not self.vt.available:
                     self.logger.warning('Unable to setup the VirusTotal module')
+            if 'SaneJS' in self.configs['modules']:
+                self.sanejs = SaneJavaScript(self.configs['modules']['SaneJS'])
+                if not self.sanejs.available:
+                    self.logger.warning('Unable to setup the SaneJS module')
 
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
-
-        # Try to reach sanejs
-        self.sanejs = SaneJS()
-        if not self.sanejs.is_up:
-            self.use_sane_js = False
-        else:
-            self.use_sane_js = True
 
     def rebuild_cache(self) -> None:
         self.redis.flushdb()
@@ -87,6 +83,18 @@ class Lookyloo():
         with (get_homedir() / 'config' / 'generic.json.sample').open() as _c:
             sample_config = json.load(_c)
         return sample_config[entry]
+
+    def get_urlnode_from_tree(self, capture_dir: Path, node_uuid: str) -> URLNode:
+        ct = self._load_pickle(capture_dir / 'tree.pickle')
+        if not ct:
+            raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
+        return ct.root_hartree.get_url_node_by_uuid(node_uuid)
+
+    def get_hostnode_from_tree(self, capture_dir: Path, node_uuid: str) -> HostNode:
+        ct = self._load_pickle(capture_dir / 'tree.pickle')
+        if not ct:
+            raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
+        return ct.root_hartree.get_host_node_by_uuid(node_uuid)
 
     def get_statistics(self, capture_dir: Path) -> Dict[str, Any]:
         # We need the pickle
@@ -151,7 +159,7 @@ class Lookyloo():
             self.redis.hset('lookup_dirs', uuid, str(capture_dir))
             return
 
-        har = HarFile(har_files[0])
+        har = HarFile(har_files[0], uuid)
 
         redirects = har.initial_redirects
         incomplete_redirects = False
@@ -268,7 +276,7 @@ class Lookyloo():
         except Exception as e:
             logging.exception(e)
 
-    def load_tree(self, capture_dir: Path) -> Tuple[str, str, str, str, str, Dict[str, str]]:
+    def load_tree(self, capture_dir: Path) -> Tuple[str, str, str, str, Dict[str, str]]:
         har_files = sorted(capture_dir.glob('*.har'))
         pickle_file = capture_dir / 'tree.pickle'
         try:
@@ -284,7 +292,7 @@ class Lookyloo():
                 ct = CrawledTree(har_files, uuid)
                 with pickle_file.open('wb') as _p:
                     pickle.dump(ct, _p)
-            return str(pickle_file), ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
+            return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 
@@ -312,11 +320,6 @@ class Lookyloo():
     def get_capture(self, capture_dir: Path) -> BytesIO:
         return self._get_raw(capture_dir)
 
-    def sane_js_query(self, sha512: str) -> Dict[str, Any]:
-        if self.use_sane_js:
-            return self.sanejs.sha512(sha512)
-        return {'response': []}
-
     def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None,
                depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
                perma_uuid: str=None, os: str=None, browser: str=None) -> Union[bool, str]:
@@ -339,7 +342,12 @@ class Lookyloo():
                 return False
 
         cookies = load_cookies(cookies_pseudofile)
-        items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=user_agent,
+        if not user_agent:
+            # Catch case where the UA is broken on the UI, and the async submission.
+            ua: str = self.get_config('default_user_agent')  # type: ignore
+        else:
+            ua = user_agent
+        items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
                       log_enabled=True, log_level=self.get_config('splash_loglevel'))
         if not items:
             # broken

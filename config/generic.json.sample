@@ -3,10 +3,11 @@
   "splash_loglevel": "WARNING",
   "only_global_lookups": true,
   "splash_url": "http://127.0.0.1:8050",
+  "default_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
   "cache_clean_user": {},
   "time_delta_on_index": {
-    "weeks": 0,
-    "days": 1,
+    "weeks": 1,
+    "days": 0,
     "hours": 0
   },
   "enable_mail_notification": false,
@@ -23,6 +24,7 @@
     "splash_loglevel": "(Splash) INFO is *very* verbose.",
     "only_global_lookups": "Set it to True if your instance is publicly available so users aren't able to scan your internal network",
     "splash_url": "URL to connect to splash",
+    "default_user_agent": "Ultimate fallback if the capture form, or the asynchronous submission, don't provide a UA",
     "cache_clean_user": "Format: {username: password}",
     "time_delta_on_index": "Time interval of the capture displayed on the index",
     "enable_mail_notification": "Enable email notification or not",

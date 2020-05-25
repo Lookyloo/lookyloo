@@ -40,6 +40,7 @@
 {% block content %}
 {{super()}}
 <script>
+  var treeUUID = "{{ tree_uuid }}";
   var treeData = {{ tree_json | safe }};
 </script>
 
