@@ -13,7 +13,7 @@
 {% block content %}
   <center>
     <h3>{{ hostname }}</h3>
-    <button type="button" class="btn btn-secondary" onclick="whereAmI()">Locate node on tree</button>
+    <button type="button" class="btn btn-info" onclick="whereAmI()">Locate node on tree</button>
     <a href="{{ url_for('hostnode_details_text', tree_uuid=tree_uuid, node_uuid=hostname_uuid) }}" class="btn btn-info" role="button">Get URLs as text</a>
   </center>
   <p>Click on the URL to get the content of the response</p>

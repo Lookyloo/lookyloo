@@ -165,11 +165,12 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     }
 
     urls = []
-    if lookyloo.sanejs.available:
+
+    if hasattr(lookyloo, 'sanejs') and lookyloo.sanejs.available:
         to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
         lookups = lookyloo.sanejs.hashes_lookup(to_lookup)
     for url in hostnode.urls:
-        if lookyloo.sanejs.available and hasattr(url, 'body_hash') and url.body_hash in lookups:
+        if hasattr(url, 'body_hash') and url.body_hash in lookups:
             url.add_feature('sane_js_details', lookups[url.body_hash])
             if lookups[url.body_hash]:
                 if isinstance(lookups[url.body_hash], list):
