@@ -17,7 +17,7 @@ from lookyloo.lookyloo import Lookyloo
 from lookyloo.exceptions import NoValidHarFile
 from .proxied import ReverseProxied
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 import logging
 
@@ -165,7 +165,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     }
 
     urls = []
-    sanejs_lookups = []
+    sanejs_lookups: Dict[str, List[str]] = {}
     if hasattr(lookyloo, 'sanejs') and lookyloo.sanejs.available:
         to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
         sanejs_lookups = lookyloo.sanejs.hashes_lookup(to_lookup)
