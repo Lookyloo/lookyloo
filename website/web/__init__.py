@@ -165,21 +165,21 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     }
 
     urls = []
-
+    sanejs_lookups = []
     if hasattr(lookyloo, 'sanejs') and lookyloo.sanejs.available:
         to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
-        lookups = lookyloo.sanejs.hashes_lookup(to_lookup)
+        sanejs_lookups = lookyloo.sanejs.hashes_lookup(to_lookup)
     for url in hostnode.urls:
-        if hasattr(url, 'body_hash') and url.body_hash in lookups:
-            url.add_feature('sane_js_details', lookups[url.body_hash])
-            if lookups[url.body_hash]:
-                if isinstance(lookups[url.body_hash], list):
-                    libname, version, path = lookups[url.body_hash][0].split("|")
-                    other_files = len(lookups[url.body_hash])
+        if hasattr(url, 'body_hash') and url.body_hash in sanejs_lookups:
+            url.add_feature('sane_js_details', sanejs_lookups[url.body_hash])
+            if sanejs_lookups[url.body_hash]:
+                if isinstance(sanejs_lookups[url.body_hash], list):
+                    libname, version, path = sanejs_lookups[url.body_hash][0].split("|")
+                    other_files = len(sanejs_lookups[url.body_hash])
                     url.add_feature('sane_js_details_to_print', (libname, version, path, other_files))
                 else:
                     # Predefined generic file
-                    url.add_feature('sane_js_details_to_print', lookups[url.body_hash])
+                    url.add_feature('sane_js_details_to_print', sanejs_lookups[url.body_hash])
         urls.append(url)
     return render_template('hostname_popup.html',
                            tree_uuid=tree_uuid,
