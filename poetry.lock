@@ -870,7 +870,7 @@ scrapy = "^1.8.0"
 scrapy-splash = "^0.7.2"
 
 [package.source]
-reference = "d0ea9acbd769c73a15c2142633acef2870d70e08"
+reference = "3b56f1d4160383982c3316d4ba9ee479783a57a5"
 type = "git"
 url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
 [[package]]
