@@ -187,15 +187,20 @@ def load_cookies(cookie_pseudofile: Optional[BufferedIOBase]=None) -> List[Dict[
     to_return = []
     try:
         for cookie in cookies:
-            u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]
-            to_add = {'path': cookie['Path raw'],
-                      'name': cookie['Name raw'],
-                      'httpOnly': cookie['HTTP only raw'] == 'true',
-                      'secure': cookie['Send for'] == 'Encrypted connections only',
-                      'expires': (datetime.now() + timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
-                      'domain': u,
-                      'value': cookie['Content raw']
-                      }
+            if 'Host raw' in cookie:
+                # Cookie export format for Cookie Quick Manager
+                u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]
+                to_add = {'path': cookie['Path raw'],
+                          'name': cookie['Name raw'],
+                          'httpOnly': cookie['HTTP only raw'] == 'true',
+                          'secure': cookie['Send for'] == 'Encrypted connections only',
+                          'expires': (datetime.now() + timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
+                          'domain': u,
+                          'value': cookie['Content raw']
+                          }
+            else:
+                # Cookie from lookyloo/splash
+                to_add = cookie
             to_return.append(to_add)
     except Exception as e:
         print(f'Unable to load the cookie file: {e}')

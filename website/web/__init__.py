@@ -190,6 +190,32 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
                            keys_request=keys_request)
 
 
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/request_cookies', methods=['GET'])
+def urlnode_request_cookies(tree_uuid: str, node_uuid: str):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return
+    urlnode = lookyloo.get_urlnode_from_tree(capture_dir, node_uuid)
+    if not urlnode.request_cookie:
+        return
+
+    return send_file(BytesIO(json.dumps(urlnode.request_cookie, indent=2).encode()),
+                     mimetype='text/plain', as_attachment=True, attachment_filename='request_cookies.txt')
+
+
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/response_cookies', methods=['GET'])
+def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return
+    urlnode = lookyloo.get_urlnode_from_tree(capture_dir, node_uuid)
+    if not urlnode.response_cookie:
+        return
+
+    return send_file(BytesIO(json.dumps(urlnode.response_cookie, indent=2).encode()),
+                     mimetype='text/plain', as_attachment=True, attachment_filename='response_cookies.txt')
+
+
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/posted_data', methods=['GET'])
 def urlnode_post_request(tree_uuid: str, node_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
@@ -300,6 +326,16 @@ def html(tree_uuid: str):
                      as_attachment=True, attachment_filename='page.html')
 
 
+@app.route('/tree/<string:tree_uuid>/cookies', methods=['GET'])
+def cookies(tree_uuid: str):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return Response('Not available.', mimetype='text/text')
+    to_return = lookyloo.get_cookies(capture_dir)
+    return send_file(to_return, mimetype='application/json',
+                     as_attachment=True, attachment_filename='cookies.json')
+
+
 @app.route('/tree/<string:tree_uuid>/export', methods=['GET'])
 def export(tree_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
@@ -352,7 +388,7 @@ def tree(tree_uuid: str):
 
     cache = lookyloo.capture_cache(capture_dir)
     if not cache:
-        flash(f'Invalid cache.', 'error')
+        flash('Invalid cache.', 'error')
         return redirect(url_for('index'))
 
     if 'error' in cache:

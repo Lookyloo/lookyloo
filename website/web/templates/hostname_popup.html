@@ -27,7 +27,13 @@
           <div>
           {% for key, path in keys_response.items() %}
             {% if url[key] %}
+              {% if key == "response_cookie" %}
+              <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=url.uuid) }}">
+               <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+              </a>
+              {% else %}
               <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+              {%endif%}
             {%endif%}
           {% endfor %}
           </div>
@@ -60,7 +66,13 @@
           <div>
           {% for key, path in keys_request.items() %}
             {% if url[key] %}
+              {% if key == "request_cookie" %}
+              <a href="{{ url_for('urlnode_request_cookies', tree_uuid=tree_uuid, node_uuid=url.uuid) }}">
+               <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+              </a>
+              {% else %}
               <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+              {%endif%}
             {%endif%}
           {% endfor %}
           </div>

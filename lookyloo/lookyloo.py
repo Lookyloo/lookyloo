@@ -121,7 +121,7 @@ class Lookyloo():
     def get_modules_responses(self, capture_dir: Path) -> Optional[Dict[str, Any]]:
         ct = self._load_pickle(capture_dir / 'tree.pickle')
         if not ct:
-            self.logger.warning('Unable to get the modules responses unless the tree ({capture_dir}) is cached.')
+            self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_dir}) is cached.')
             return None
         to_return: Dict[str, Any] = {}
         if hasattr(self, 'vt') and self.vt.available:
@@ -314,6 +314,9 @@ class Lookyloo():
     def get_html(self, capture_dir: Path, all_html: bool=False) -> BytesIO:
         return self._get_raw(capture_dir, 'html', all_html)
 
+    def get_cookies(self, capture_dir: Path, all_cookies: bool=False) -> BytesIO:
+        return self._get_raw(capture_dir, 'cookies.json', all_cookies)
+
     def get_screenshot(self, capture_dir: Path, all_images: bool=False) -> BytesIO:
         return self._get_raw(capture_dir, 'png', all_images)
 
@@ -334,7 +337,7 @@ class Lookyloo():
                     try:
                         ip = socket.gethostbyname(splitted_url.hostname)
                     except socket.gaierror:
-                        self.logger.info(f'Name or service not known')
+                        self.logger.info('Name or service not known')
                         return False
                     if not ipaddress.ip_address(ip).is_global:
                         return False
