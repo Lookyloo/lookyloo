@@ -257,12 +257,17 @@ class Lookyloo():
             return
 
         redirects = ''
+        initial_url = ''
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if capture_dir:
             cache = self.capture_cache(capture_dir)
             if cache:
-                redirects = "Redirects:\n"
-                redirects += '\n'.join(cache['redirects'])
+                initial_url = cache['url']
+                if 'redirects' in cache and cache['redirects']:
+                    redirects = "Redirects:\n"
+                    redirects += '\n'.join(cache['redirects'])
+                else:
+                    redirects = "No redirects."
 
         email_config = self.get_config('email')
         msg = EmailMessage()
@@ -276,6 +281,7 @@ class Lookyloo():
             recipient=msg['To'].addresses[0].display_name,
             domain=email_config['domain'],
             uuid=capture_uuid,
+            initial_url=initial_url,
             redirects=redirects,
             comment=comment,
             sender=msg['From'].addresses[0].display_name,
