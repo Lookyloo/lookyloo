@@ -252,12 +252,23 @@ class Lookyloo():
                 return pickle.load(_p)
         return None
 
-    def send_mail(self, capture_uuid: str, comment: str='') -> None:
+    def send_mail(self, capture_uuid: str, email: str='', comment: str='') -> None:
         if not self.get_config('enable_mail_notification'):
             return
+
+        redirects = ''
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if capture_dir:
+            cache = self.capture_cache(capture_dir)
+            if cache:
+                redirects = "Redirects:\n"
+                redirects += '\n'.join(cache['redirects'])
+
         email_config = self.get_config('email')
         msg = EmailMessage()
         msg['From'] = email_config['from']
+        if email:
+            msg['Reply-To'] = email
         msg['To'] = email_config['to']
         msg['Subject'] = email_config['subject']
         body = get_email_template()
@@ -265,6 +276,7 @@ class Lookyloo():
             recipient=msg['To'].addresses[0].display_name,
             domain=email_config['domain'],
             uuid=capture_uuid,
+            redirects=redirects,
             comment=comment,
             sender=msg['From'].addresses[0].display_name,
         )
