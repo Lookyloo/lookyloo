@@ -167,7 +167,7 @@ description = "A Python module to bypass Cloudflare's anti-bot page."
 name = "cloudscraper"
 optional = false
 python-versions = "*"
-version = "1.2.38"
+version = "1.2.40"
 
 [package.dependencies]
 pyparsing = ">=2.4.7"
@@ -1202,8 +1202,8 @@ click = [
     {file = "click-7.1.2.tar.gz", hash = "sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a"},
 ]
 cloudscraper = [
-    {file = "cloudscraper-1.2.38-py2.py3-none-any.whl", hash = "sha256:3893be3c281ddb7a39bf35e558da19247a39a408ef48078fdabf5058b7659d6c"},
-    {file = "cloudscraper-1.2.38.tar.gz", hash = "sha256:db295c5ca33f22ae058f317b07c6842a2b16d75c9e11e38d21395363d089692f"},
+    {file = "cloudscraper-1.2.40-py2.py3-none-any.whl", hash = "sha256:30289d0f98413fe3c3b74c9f7547b8e6fff6aca698c23445996cf6bf80a8bad0"},
+    {file = "cloudscraper-1.2.40.tar.gz", hash = "sha256:e711f8a41393d9755178d6290fccbfc84f0b9db20bbdeababcf8cd9232f380cd"},
 ]
 colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
