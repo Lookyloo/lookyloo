@@ -73,6 +73,7 @@
       <ul class="list-group">
         <li class="list-group-item">
           <p class="h4">Response</p>
+
           <div>
           {% for key, path in keys_response.items() %}
             {% if url[key] %}
@@ -86,6 +87,7 @@
             {%endif%}
           {% endfor %}
           </div>
+
           <div>
           {% if not url.empty_response %}
             <a href="{{ url_for('urlnode_details', tree_uuid=tree_uuid, node_uuid=url.uuid) }}">
@@ -96,9 +98,11 @@
             Empty body.
           {%endif%}
           </div>
+
           <div>
             Status Code: {{ url.response['status'] }}
           </div>
+
 
           {% if url.sane_js_details_to_print %}
           <div>
@@ -113,7 +117,13 @@
             {%endif%}
           </div>
           {% endif %}
+
+          {% if url.set_third_party_cookies %}
+          <div>This response contains 3rd party cookies.</div>
+          {% endif %}
+
         </li>
+
         <li class="list-group-item">
           <p class="h4">Request</p>
           <div>
