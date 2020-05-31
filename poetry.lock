@@ -109,7 +109,7 @@ description = "Bootstrap helper for Flask/Jinja2."
 name = "bootstrap-flask"
 optional = false
 python-versions = "*"
-version = "1.3.1"
+version = "1.3.2"
 
 [package.dependencies]
 Flask = "*"
@@ -306,7 +306,7 @@ publicsuffix2 = "^2.20191221"
 six = "^1.14.0"
 
 [package.source]
-reference = "54bde13604f83479cd277f57def709c5f08f7411"
+reference = "888dab5e75b7da56a84c74e7e55c4cf1c79cbf0b"
 type = "git"
 url = "https://github.com/viper-framework/har2tree.git"
 [[package]]
@@ -363,7 +363,7 @@ description = "IPython: Productive Interactive Computing"
 name = "ipython"
 optional = false
 python-versions = ">=3.6"
-version = "7.14.0"
+version = "7.15.0"
 
 [package.dependencies]
 appnope = "*"
@@ -379,7 +379,7 @@ setuptools = ">=18.5"
 traitlets = ">=4.2"
 
 [package.extras]
-all = ["nose (>=0.10.1)", "Sphinx (>=1.3)", "testpath", "nbformat", "ipywidgets", "qtconsole", "numpy (>=1.14)", "notebook", "ipyparallel", "ipykernel", "pygments", "requests", "nbconvert"]
+all = ["Sphinx (>=1.3)", "ipykernel", "ipyparallel", "ipywidgets", "nbconvert", "nbformat", "nose (>=0.10.1)", "notebook", "numpy (>=1.14)", "pygments", "qtconsole", "requests", "testpath"]
 doc = ["Sphinx (>=1.3)"]
 kernel = ["ipykernel"]
 nbconvert = ["nbconvert"]
@@ -990,7 +990,7 @@ description = "The official Python client library for VirusTotal"
 name = "vt-py"
 optional = false
 python-versions = ">=3.6.0"
-version = "0.5.3"
+version = "0.5.4"
 
 [package.dependencies]
 aiohttp = "*"
@@ -1125,8 +1125,8 @@ beautifulsoup4 = [
     {file = "beautifulsoup4-4.9.1.tar.gz", hash = "sha256:73cc4d115b96f79c7d77c1c7f7a0a8d4c57860d1041df407dd1aae7f07a77fd7"},
 ]
 bootstrap-flask = [
-    {file = "Bootstrap-Flask-1.3.1.tar.gz", hash = "sha256:fca79b590de6bcdd2ca555899a49bbd8eb784ecdb358ca1fe2ce5fe13a8621fe"},
-    {file = "Bootstrap_Flask-1.3.1-py2.py3-none-any.whl", hash = "sha256:a8af2da2558d355e9583ef4b2f504df20ec29be2f317b9ebb7005aa5f39629b4"},
+    {file = "Bootstrap-Flask-1.3.2.tar.gz", hash = "sha256:26c61912fff4584e23472ae66f2d98a8d7340bc1c89b48d21e19acb900356b9b"},
+    {file = "Bootstrap_Flask-1.3.2-py2.py3-none-any.whl", hash = "sha256:3df7044dc9075c01e0c198450da2bd2b84e21a72c8e7cf6157ba51edb8a08ad9"},
 ]
 cchardet = [
     {file = "cchardet-2.1.6-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:2aa1b008965c703ad6597361b0f6d427c8971fe94a2c99ec3724c228ae50d6a6"},
@@ -1278,8 +1278,8 @@ incremental = [
     {file = "incremental-17.5.0.tar.gz", hash = "sha256:7b751696aaf36eebfab537e458929e194460051ccad279c72b755a167eebd4b3"},
 ]
 ipython = [
-    {file = "ipython-7.14.0-py3-none-any.whl", hash = "sha256:5b241b84bbf0eb085d43ae9d46adf38a13b45929ca7774a740990c2c242534bb"},
-    {file = "ipython-7.14.0.tar.gz", hash = "sha256:f0126781d0f959da852fb3089e170ed807388e986a8dd4e6ac44855845b0fb1c"},
+    {file = "ipython-7.15.0-py3-none-any.whl", hash = "sha256:1b85d65632211bf5d3e6f1406f3393c8c429a47d7b947b9a87812aa5bce6595c"},
+    {file = "ipython-7.15.0.tar.gz", hash = "sha256:0ef1433879816a960cd3ae1ae1dc82c64732ca75cec8dab5a4e29783fb571d0e"},
 ]
 ipython-genutils = [
     {file = "ipython_genutils-0.2.0-py2.py3-none-any.whl", hash = "sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8"},
@@ -1608,7 +1608,7 @@ urllib3 = [
     {file = "urllib3-1.25.9.tar.gz", hash = "sha256:3018294ebefce6572a474f0604c2021e33b3fd8006ecd11d62107a5d2a963527"},
 ]
 vt-py = [
-    {file = "vt-py-0.5.3.tar.gz", hash = "sha256:0a52d58976ec3baf24ade11d0473773d6c7a8ccf862c86f34bc74216ffbe920f"},
+    {file = "vt-py-0.5.4.tar.gz", hash = "sha256:3a79477910a64ce7a1bbefd06f3ecaf9d5eef3fb752e349235f26bb566917292"},
 ]
 w3lib = [
     {file = "w3lib-1.22.0-py2.py3-none-any.whl", hash = "sha256:0161d55537063e00d95a241663ede3395c4c6d7b777972ba2fd58bbab2001e53"},
