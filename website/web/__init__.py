@@ -17,7 +17,7 @@ from lookyloo.lookyloo import Lookyloo
 from lookyloo.exceptions import NoValidHarFile
 from .proxied import ReverseProxied
 
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any
 
 import logging
 
@@ -144,7 +144,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
     if not capture_dir:
         return
-    hostnode = lookyloo.get_hostnode_from_tree(capture_dir, node_uuid)
+
     keys_response = {
         'js': "/static/javascript.png",
         'exe': "/static/exe.png",
@@ -164,29 +164,8 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
         'request_cookie': "/static/cookie_read.png",
     }
 
-    sanejs_lookups: Dict[str, List[str]] = {}
-    if hasattr(lookyloo, 'sanejs') and lookyloo.sanejs.available:
-        to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
-        sanejs_lookups = lookyloo.sanejs.hashes_lookup(to_lookup)
+    hostnode, urls = lookyloo.get_hostnode_investigator(capture_dir, node_uuid)
 
-    urls: List[Tuple[bool, str, str]] = []
-    for url in hostnode.urls:
-        if hasattr(url, 'body_hash') and url.body_hash in sanejs_lookups:
-            url.add_feature('sane_js_details', sanejs_lookups[url.body_hash])
-            if sanejs_lookups[url.body_hash]:
-                if isinstance(sanejs_lookups[url.body_hash], list):
-                    libname, version, path = sanejs_lookups[url.body_hash][0].split("|")
-                    other_files = len(sanejs_lookups[url.body_hash])
-                    url.add_feature('sane_js_details_to_print', (libname, version, path, other_files))
-                else:
-                    # Predefined generic file
-                    url.add_feature('sane_js_details_to_print', sanejs_lookups[url.body_hash])
-
-        # For the popup, we need:
-        # * https vs http
-        # * everything after the domain
-        # * the full URL
-        urls.append((url.name.startswith('https'), url.name.split('/', 3)[-1], url))
     return render_template('hostname_popup.html',
                            tree_uuid=tree_uuid,
                            hostname_uuid=node_uuid,

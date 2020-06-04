@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import base64
+from collections import defaultdict
+
 from datetime import datetime
 from email.message import EmailMessage
 from io import BufferedIOBase, BytesIO
@@ -12,7 +14,7 @@ from pathlib import Path
 import pickle
 import smtplib
 import socket
-from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping
+from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping, Set
 from urllib.parse import urlsplit
 from uuid import uuid4
 from zipfile import ZipFile
@@ -423,3 +425,61 @@ class Lookyloo():
 
         self._set_capture_cache(dirpath)
         return perma_uuid
+
+    def get_hostnode_investigator(self, capture_dir: Path, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
+        ct = self._load_pickle(capture_dir / 'tree.pickle')
+        if not ct:
+            raise MissingUUID(f'Unable to find {capture_dir}')
+        hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
+        if not hostnode:
+            raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
+
+        sanejs_lookups: Dict[str, List[str]] = {}
+        if hasattr(self, 'sanejs') and self.sanejs.available:
+            to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
+            sanejs_lookups = self.sanejs.hashes_lookup(to_lookup)
+
+        urls: List[Dict[str, Any]] = []
+        for url in hostnode.urls:
+            # For the popup, we need:
+            # * https vs http
+            # * everything after the domain
+            # * the full URL
+            to_append: Dict[str, Any] = {
+                'encrypted': url.name.startswith('https'),
+                'url_path': url.name.split('/', 3)[-1],
+                'url_object': url
+            }
+
+            # Optional: SaneJS information
+            if hasattr(url, 'body_hash') and url.body_hash in sanejs_lookups:
+                if sanejs_lookups[url.body_hash]:
+                    if isinstance(sanejs_lookups[url.body_hash], list):
+                        libname, version, path = sanejs_lookups[url.body_hash][0].split("|")
+                        other_files = len(sanejs_lookups[url.body_hash])
+                        to_append['sane_js'] = (libname, version, path, other_files)
+                    else:
+                        # Predefined generic file
+                        to_append['sane_js'] = sanejs_lookups[url.body_hash]
+
+            # Optional: Cookies sent to server in request -> map to nodes who set the cookie in response
+            if hasattr(url, 'cookies_sent'):
+                to_display: Dict[str, Set[Tuple[str, str]]] = defaultdict(set)
+                for cookie, contexts in url.cookies_sent.items():
+                    if not contexts:
+                        # FIXME Locally created?
+                        continue
+                    for context in contexts:
+                        to_display[cookie].add((context['setter'].hostname, context['setter'].hostnode_uuid))
+                to_append['cookies_sent'] = to_display
+
+            # Optional: Cookies received from server in response -> map to nodes who send the cookie in request
+            if hasattr(url, 'cookies_received'):
+                to_display = defaultdict(set)
+                for domain, c_received, is_3rd_party in url.cookies_received:
+                    for url_node in ct.root_hartree.cookies_sent[c_received]:
+                        to_display[c_received].add((url_node.hostname, url_node.hostnode_uuid))
+                to_append['cookies_received'] = to_display
+
+            urls.append(to_append)
+        return hostnode, urls
