@@ -50,9 +50,9 @@ You can use `pylookyloo` as a standalone script, or as a library, [more details 
 
 # Installation
 
-**IMPORTANT**: Use [pipenv](https://pipenv.readthedocs.io/en/latest/)
+**IMPORTANT**: Use [poetry](https://github.com/python-poetry/poetry/#installation)
 
-**NOTE**: Yes, it requires python3.6+. No, it will never support anything older.
+**NOTE**: Yes, it requires python3.7+. No, it will never support anything older.
 
 **NOTE**: If you want to run a public instance, you should set `only_global_lookups=True`
 in `website/web/__init__.py` and `bin/async_scrape.py` to disallow scraping of private IPs.
@@ -84,14 +84,14 @@ cd ..
 ```bash
 git clone https://github.com/CIRCL/lookyloo.git
 cd lookyloo
-pipenv install
+poetry install
 echo LOOKYLOO_HOME="'`pwd`'" > .env
 ```
 
 # Run the app
 
 ```bash
-pipenv run start.py
+poetry run start.py
 ```
 
 # Run the app in production
