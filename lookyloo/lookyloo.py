@@ -118,7 +118,7 @@ class Lookyloo():
                 for redirect in ct.redirects:
                     self.vt.url_lookup(redirect, force)
             else:
-                self.vt.url_lookup(ct.root_hartree.har.first_url, force)
+                self.vt.url_lookup(ct.root_hartree.har.root_url, force)
 
     def get_modules_responses(self, capture_dir: Path) -> Optional[Dict[str, Any]]:
         ct = self._load_pickle(capture_dir / 'tree.pickle')
@@ -132,7 +132,7 @@ class Lookyloo():
                 for redirect in ct.redirects:
                     to_return['vt'][redirect] = self.vt.get_url_lookup(redirect)
             else:
-                to_return['vt'][ct.root_hartree.har.first_url] = self.vt.get_url_lookup(ct.root_hartree.har.first_url)
+                to_return['vt'][ct.root_hartree.har.root_url] = self.vt.get_url_lookup(ct.root_hartree.har.root_url)
         return to_return
 
     def _set_capture_cache(self, capture_dir: Path, force: bool=False) -> None:
@@ -177,7 +177,7 @@ class Lookyloo():
         cache: Dict[str, Union[str, int]] = {'uuid': uuid,
                                              'title': har.initial_title,
                                              'timestamp': har.initial_start_time,
-                                             'url': har.first_url,
+                                             'url': har.root_url,
                                              'redirects': json.dumps(redirects),
                                              'incomplete_redirects': 1 if incomplete_redirects else 0}
         if (capture_dir / 'no_index').exists():  # If the folders claims anonymity

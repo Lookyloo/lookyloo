@@ -4,7 +4,7 @@ version = "1.0"
 description = "Web interface to track the trackers."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
-repository = "https://github.com/CIRCL/lookyloo"
+repository = "https://github.com/Lookyloo/lookyloo"
 
 readme = "README.md"
 
@@ -30,8 +30,8 @@ stop = "bin/stop.py"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-scrapysplashwrapper = {git = "https://github.com/viper-framework/ScrapySplashWrapper.git"}
-har2tree = {git = "https://github.com/viper-framework/har2tree.git"}
+scrapysplashwrapper = {git = "https://github.com/Lookyloo/ScrapySplashWrapper.git"}
+har2tree = {git = "https://github.com/Lookyloo/har2tree.git"}
 pysanejs = {git = "https://github.com/CIRCL/PySaneJS.git"}
 requests = "^2.22.0"
 flask = "^1.1.1"
