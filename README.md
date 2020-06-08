@@ -46,7 +46,7 @@ Then, you need to restart the webserver and from now on, every cookies you have 
 
 # Python client
 
-You can use `pylookyloo` as a standalone script, or as a library, [more details here](https://github.com/CIRCL/lookyloo/tree/master/client)
+You can use `pylookyloo` as a standalone script, or as a library, [more details here](https://github.com/Lookyloo/lookyloo/tree/master/client)
 
 # Installation
 
@@ -138,7 +138,7 @@ Now, you should configure [TLS (let's encrypt and so on)](https://www.digitaloce
 Aquarium is a haproxy + splash bundle that will allow lookyloo to be used by more than one user at once.
 
 The initial version of the project was created by [TeamHG-Memex](https://github.com/TeamHG-Memex/aquarium) but
-we have a [dedicated repository](https://github.com/circl/aquarium) that fits our needs better.
+we have a [dedicated repository](https://github.com/Lookyloo/aquarium) that fits our needs better.
 
 Follow [the documentation](https://github.com/CIRCL/aquarium/blob/master/README.rst) if you want to use it.
 
