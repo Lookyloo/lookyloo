@@ -306,9 +306,9 @@ publicsuffix2 = "^2.20191221"
 six = "^1.14.0"
 
 [package.source]
-reference = "93d301b19b78b81d690dba5123021cc990b6c961"
+reference = "97588f5045b7a030a32d3054f04daf450217207a"
 type = "git"
-url = "https://github.com/viper-framework/har2tree.git"
+url = "https://github.com/Lookyloo/har2tree.git"
 [[package]]
 category = "main"
 description = "A featureful, immutable, and correct URL for Python."
@@ -872,7 +872,7 @@ scrapy-splash = "^0.7.2"
 [package.source]
 reference = "ae2cc94c77fba5fb40603c9714082fcd3ab9998f"
 type = "git"
-url = "https://github.com/viper-framework/ScrapySplashWrapper.git"
+url = "https://github.com/Lookyloo/ScrapySplashWrapper.git"
 [[package]]
 category = "main"
 description = "Service identity verification for pyOpenSSL & cryptography."
@@ -1071,7 +1071,7 @@ test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
-content-hash = "f113ae874bab24347e3e41fc028113e375a8590673c87f2789f26a34ec52ccae"
+content-hash = "b339ef339a6d6a067fe9d0652ee896aaa3a210dc1762a2172df882632fcdb7b3"
 python-versions = "^3.7"
 
 [metadata.files]
