@@ -82,7 +82,7 @@ cd ..
 ## Installation of Lookyloo
 
 ```bash
-git clone https://github.com/CIRCL/lookyloo.git
+git clone https://github.com/Lookyloo/lookyloo.git
 cd lookyloo
 poetry install
 echo LOOKYLOO_HOME="'`pwd`'" > .env
@@ -140,7 +140,7 @@ Aquarium is a haproxy + splash bundle that will allow lookyloo to be used by mor
 The initial version of the project was created by [TeamHG-Memex](https://github.com/TeamHG-Memex/aquarium) but
 we have a [dedicated repository](https://github.com/Lookyloo/aquarium) that fits our needs better.
 
-Follow [the documentation](https://github.com/CIRCL/aquarium/blob/master/README.rst) if you want to use it.
+Follow [the documentation](https://github.com/Lookyloo/aquarium/blob/master/README.rst) if you want to use it.
 
 
 # Run the app with a simple docker setup
