@@ -9,7 +9,7 @@ setup(
     author='Raphaël Vinot',
     author_email='raphael.vinot@circl.lu',
     maintainer='Raphaël Vinot',
-    url='https://github.com/CIRCL/lookyloo',
+    url='https://github.com/Lookyloo/lookyloo',
     description='Web interface to track the trackers.',
     packages=['lookyloo'],
     scripts=['bin/start_website.py', 'bin/start.py', 'bin/run_backend.py', 'bin/async_scrape.py',

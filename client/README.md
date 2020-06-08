@@ -1,6 +1,6 @@
 # PyLookyloo
 
-This is the client API for [Lookyloo](https://github.com/CIRCL/lookyloo).
+This is the client API for [Lookyloo](https://github.com/Lookyloo/lookyloo).
 
 ## Installation
 
