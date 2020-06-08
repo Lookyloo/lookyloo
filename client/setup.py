@@ -8,7 +8,7 @@ setup(
     author='Raphaël Vinot',
     author_email='raphael.vinot@circl.lu',
     maintainer='Raphaël Vinot',
-    url='https://github.com/CIRCL/lookyloo/client',
+    url='https://github.com/Lookyloo/lookyloo/client',
     description='Python client for Lookyloo',
     packages=['pylookyloo'],
     entry_points={"console_scripts": ["lookyloo = pylookyloo:main"]},
