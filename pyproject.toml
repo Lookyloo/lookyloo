@@ -45,6 +45,7 @@ cloudscraper = "^1.2.20"
 defang = "^0.5.3"
 vt-py = "^0.5.2"
 Flask-HTTPAuth = "^3.3.0"
+pyeupi = "^1.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.761"

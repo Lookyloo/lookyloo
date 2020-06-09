@@ -652,6 +652,17 @@ python-versions = "*"
 version = "2.0.5"
 
 [[package]]
+category = "main"
+description = "Python API for the European Union anti-phishing initiative."
+name = "pyeupi"
+optional = false
+python-versions = ">=3.6,<4.0"
+version = "1.1"
+
+[package.dependencies]
+requests = ">=2.23.0,<3.0.0"
+
+[[package]]
 category = "dev"
 description = "Pygments is a syntax highlighting package written in Python."
 name = "pygments"
@@ -1071,7 +1082,7 @@ test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
-content-hash = "b339ef339a6d6a067fe9d0652ee896aaa3a210dc1762a2172df882632fcdb7b3"
+content-hash = "d42b2b2df27af13f97538c78e96e6bc9d32df61aa16db8c18ff6a67b924151ee"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1479,6 +1490,10 @@ pycparser = [
 pydispatcher = [
     {file = "PyDispatcher-2.0.5.tar.gz", hash = "sha256:5570069e1b1769af1fe481de6dd1d3a388492acddd2cdad7a3bde145615d5caf"},
     {file = "PyDispatcher-2.0.5.zip", hash = "sha256:5be4a8be12805ef7d712dd9a93284fb8bc53f309867e573f653a72e5fd10e433"},
+]
+pyeupi = [
+    {file = "pyeupi-1.1-py3-none-any.whl", hash = "sha256:a0798a4a52601b0840339449a1bbf2aa2bc180d8f82a979022954e05fcb5bfba"},
+    {file = "pyeupi-1.1.tar.gz", hash = "sha256:2309c61ac2ef0eafabd6e9f32a0078069ffbba0e113ebc6b51cffc1869094472"},
 ]
 pygments = [
     {file = "Pygments-2.6.1-py3-none-any.whl", hash = "sha256:ff7a40b4860b727ab48fad6360eb351cc1b33cbf9b15a0f689ca5353e9463324"},

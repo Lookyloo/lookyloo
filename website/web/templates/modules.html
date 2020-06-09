@@ -3,7 +3,7 @@
     <center><h1 class="display-4">Virus Total</h1></center>
     {% for url, entries in vt.items() %}
         <div class="border-top my-3"></div>
-        <center><h3><small class="text-muted">URL</small><br>{{ url }}</h3>
+        <center><h3><small class="text-muted">URL</small><br>{{ url }}</h3></center>
         {% if entries['malicious'] %}
             <center>
             <p class="lead">Detected as malicious by the following vendors</p>
@@ -19,5 +19,13 @@
         {% endif%}
         <h5 class="text-right"><a href="{{ entries['permaurl'] }}">Full report on VirusTotal</a></h5>
     {% endfor %}
+{% endif%}
+{% if pi%}
+  <center><h1 class="display-4">Phishing Initiative</h1></center>
+  {% for url, tag in pi.items() %}
+    <center><h3><small class="text-muted">URL</small><br>{{ url }}</h3>
+      <div>This URL is tagged as <b>{{ tag }}</b> on Phishing Initiative</div>
+    </center>
+  {% endfor %}
 {% endif%}
 </div>

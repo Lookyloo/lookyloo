@@ -26,7 +26,7 @@ from scrapysplashwrapper import crawl
 
 from .exceptions import NoValidHarFile, MissingUUID
 from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template
-from .modules import VirusTotal, SaneJavaScript
+from .modules import VirusTotal, SaneJavaScript, PhishingInitiative
 
 
 class Lookyloo():
@@ -47,6 +47,10 @@ class Lookyloo():
         if 'modules' not in self.configs:
             self.logger.info('No third party components available in the config directory')
         else:
+            if 'PhishingInitiative' in self.configs['modules']:
+                self.pi = PhishingInitiative(self.configs['modules']['PhishingInitiative'])
+                if not self.pi.available:
+                    self.logger.warning('Unable to setup the PhishingInitiative module')
             if 'VirusTotal' in self.configs['modules']:
                 self.vt = VirusTotal(self.configs['modules']['VirusTotal'])
                 if not self.vt.available:
@@ -113,6 +117,13 @@ class Lookyloo():
             self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_dir}) is cached.')
             return
 
+        if hasattr(self, 'pi') and self.pi.available:
+            if ct.redirects:
+                for redirect in ct.redirects:
+                    self.pi.url_lookup(redirect, force)
+            else:
+                self.pi.url_lookup(ct.root_hartree.har.root_url, force)
+
         if hasattr(self, 'vt') and self.vt.available:
             if ct.redirects:
                 for redirect in ct.redirects:
@@ -133,6 +144,13 @@ class Lookyloo():
                     to_return['vt'][redirect] = self.vt.get_url_lookup(redirect)
             else:
                 to_return['vt'][ct.root_hartree.har.root_url] = self.vt.get_url_lookup(ct.root_hartree.har.root_url)
+        if hasattr(self, 'pi') and self.pi.available:
+            to_return['pi'] = {}
+            if ct.redirects:
+                for redirect in ct.redirects:
+                    to_return['pi'][redirect] = self.pi.get_url_lookup(redirect)
+            else:
+                to_return['pi'][ct.root_hartree.har.root_url] = self.pi.get_url_lookup(ct.root_hartree.har.root_url)
         return to_return
 
     def _set_capture_cache(self, capture_dir: Path, force: bool=False) -> None:

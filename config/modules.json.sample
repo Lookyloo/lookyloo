@@ -3,6 +3,10 @@
     "apikey": "KEY",
     "autosubmit": false
   },
+  "PhishingInitiative": {
+    "apikey": "KEY",
+    "autosubmit": false
+  },
   "SaneJS": {
     "enabled": true
   }

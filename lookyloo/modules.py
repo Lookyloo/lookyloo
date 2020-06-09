@@ -14,6 +14,7 @@ from .exceptions import ConfigError
 
 import vt  # type: ignore
 from pysanejs import SaneJS
+from pyeupi import PyEUPI
 
 
 class SaneJavaScript():
@@ -112,6 +113,79 @@ class SaneJavaScript():
                     to_return[h] = json.load(f)
 
         return to_return
+
+
+class PhishingInitiative():
+
+    def __init__(self, config: Dict[str, Any]):
+        if 'apikey' not in config:
+            self.available = False
+            return
+
+        self.available = True
+        self.autosubmit = False
+        self.client = PyEUPI(config['apikey'])
+        if config.get('autosubmit'):
+            self.autosubmit = True
+        self.storage_dir_eupi = get_homedir() / 'eupi'
+        self.storage_dir_eupi.mkdir(parents=True, exist_ok=True)
+
+    def __get_cache_directory(self, url: str) -> Path:
+        m = hashlib.md5()
+        m.update(url.encode())
+        return self.storage_dir_eupi / m.hexdigest()
+
+    def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
+        url_storage_dir = self.__get_cache_directory(url)
+        if not url_storage_dir.exists():
+            return None
+        cached_entries = sorted(url_storage_dir.glob('*'), reverse=True)
+        if not cached_entries:
+            return None
+
+        with cached_entries[0].open() as f:
+            return json.load(f)
+
+    def url_lookup(self, url: str, force: bool=False) -> None:
+        '''Lookup an URL on Phishing Initiative
+        Note: force means 2 things:
+            * (re)scan of the URL
+            * re fetch the object from Phishing Initiative even if we already did it today
+
+        Note: the URL will only be sent for scan if autosubmit is set to true in the config
+        '''
+        if not self.available:
+            raise ConfigError('PhishingInitiative not available, probably no API key')
+
+        url_storage_dir = self.__get_cache_directory(url)
+        url_storage_dir.mkdir(parents=True, exist_ok=True)
+        pi_file = url_storage_dir / date.today().isoformat()
+
+        scan_requested = False
+        if self.autosubmit and force:
+            self.client.post_submission(url, comment='Received on Lookyloo')
+            scan_requested = True
+
+        if not force and pi_file.exists():
+            return
+
+        for i in range(3):
+            url_information = self.client.lookup(url)
+            if not url_information['results']:
+                # No results, that should not happen (?)
+                break
+            if url_information['results'][0]['tag'] == -1:
+                # Not submitted
+                if not self.autosubmit:
+                    break
+                if not scan_requested:
+                    self.client.post_submission(url, comment='Received on Lookyloo')
+                    scan_requested = True
+                time.sleep(1)
+            else:
+                with pi_file.open('w') as _f:
+                    json.dump(url_information, _f)
+                break
 
 
 class VirusTotal():

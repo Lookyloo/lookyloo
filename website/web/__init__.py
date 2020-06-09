@@ -288,7 +288,15 @@ def modules(tree_uuid: str):
                 if result['category'] == 'malicious':
                     vt_short_result[url]['malicious'].append((vendor, result['result']))
 
-    return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result)
+    pi_short_result: Dict[str, str] = {}
+    if 'pi' in modules_responses:
+        pi = modules_responses.pop('pi')
+        for url, full_report in pi.items():
+            if not full_report:
+                continue
+            pi_short_result[url] = full_report['results'][0]['tag_label']
+
+    return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result, pi=pi_short_result)
 
 
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
