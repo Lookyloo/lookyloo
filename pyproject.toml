@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lookyloo"
-version = "1.0"
+version = "1.1"
 description = "Web interface to track the trackers."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
@@ -30,9 +30,6 @@ stop = "bin/stop.py"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-scrapysplashwrapper = {git = "https://github.com/Lookyloo/ScrapySplashWrapper.git"}
-har2tree = {git = "https://github.com/Lookyloo/har2tree.git"}
-pysanejs = {git = "https://github.com/CIRCL/PySaneJS.git"}
 requests = "^2.22.0"
 flask = "^1.1.1"
 gunicorn = {version = "^20.0.4"}
@@ -46,6 +43,9 @@ defang = "^0.5.3"
 vt-py = "^0.5.2"
 Flask-HTTPAuth = "^3.3.0"
 pyeupi = "^1.0"
+har2tree = "^1.1"
+scrapysplashwrapper = "^1.1"
+pysanejs = "^1.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.761"

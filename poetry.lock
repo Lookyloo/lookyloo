@@ -86,7 +86,7 @@ description = "Specifications for callback functions passed in to an API"
 name = "backcall"
 optional = false
 python-versions = "*"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 category = "main"
@@ -292,23 +292,19 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 category = "main"
-description = ""
+description = "HTTP Archive (HAR) to ETE Toolkit generator"
 name = "har2tree"
 optional = false
-python-versions = "^3.6"
-version = "1.0"
+python-versions = ">=3.6,<4.0"
+version = "1.1"
 
 [package.dependencies]
-beautifulsoup4 = "^4.8.2"
-ete3 = "^3.1.1"
-lxml = "^4.4.2"
-publicsuffix2 = "^2.20191221"
-six = "^1.14.0"
+beautifulsoup4 = ">=4.8.2,<5.0.0"
+ete3 = ">=3.1.1,<4.0.0"
+lxml = ">=4.4.2,<5.0.0"
+publicsuffix2 = ">=2.20191221,<3.0"
+six = ">=1.14.0,<2.0.0"
 
-[package.source]
-reference = "97588f5045b7a030a32d3054f04daf450217207a"
-type = "git"
-url = "https://github.com/Lookyloo/har2tree.git"
 [[package]]
 category = "main"
 description = "A featureful, immutable, and correct URL for Python."
@@ -686,7 +682,7 @@ develop = true
 name = "pylookyloo"
 optional = false
 python-versions = "^3.6"
-version = "0.7"
+version = "1.1"
 
 [package.dependencies]
 requests = "^2.22.0"
@@ -731,19 +727,15 @@ version = "2.1.2"
 
 [[package]]
 category = "main"
-description = ""
+description = "Python client for SaneJS"
 name = "pysanejs"
 optional = false
-python-versions = "^3.6"
-version = "1.0"
+python-versions = ">=3.6,<4.0"
+version = "1.2"
 
 [package.dependencies]
-requests = "^2.22.0"
+requests = ">=2.22.0,<3.0.0"
 
-[package.source]
-reference = "3ea143f44d37ab701c70ffb38408528ddb4e2b6e"
-type = "git"
-url = "https://github.com/CIRCL/PySaneJS.git"
 [[package]]
 category = "main"
 description = "pytest: simple powerful testing with Python"
@@ -870,20 +862,16 @@ version = "0.7.2"
 
 [[package]]
 category = "main"
-description = ""
+description = "Scrapy splash wrapper as a standalone library."
 name = "scrapysplashwrapper"
 optional = false
-python-versions = "^3.6"
-version = "1.0"
+python-versions = ">=3.6,<4.0"
+version = "1.1"
 
 [package.dependencies]
-scrapy = "^1.8.0"
-scrapy-splash = "^0.7.2"
+scrapy = ">=1.8.0,<2.0.0"
+scrapy-splash = ">=0.7.2,<0.8.0"
 
-[package.source]
-reference = "ae2cc94c77fba5fb40603c9714082fcd3ab9998f"
-type = "git"
-url = "https://github.com/Lookyloo/ScrapySplashWrapper.git"
 [[package]]
 category = "main"
 description = "Service identity verification for pyOpenSSL & cryptography."
@@ -1082,7 +1070,7 @@ test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
-content-hash = "d42b2b2df27af13f97538c78e96e6bc9d32df61aa16db8c18ff6a67b924151ee"
+content-hash = "c9aa6060104496ed0b551c7cf561573af1f67bad2e5c8eec5c938feda7e578b0"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1127,8 +1115,8 @@ automat = [
     {file = "Automat-20.2.0.tar.gz", hash = "sha256:7979803c74610e11ef0c0d68a2942b152df52da55336e0c9d58daf1831cbdf33"},
 ]
 backcall = [
-    {file = "backcall-0.1.0.tar.gz", hash = "sha256:38ecd85be2c1e78f77fd91700c76e14667dc21e2713b63876c0eb901196e01e4"},
-    {file = "backcall-0.1.0.zip", hash = "sha256:bbbf4b1e5cd2bdb08f915895b51081c041bac22394fdfcfdfbe9f14b77c08bf2"},
+    {file = "backcall-0.2.0-py2.py3-none-any.whl", hash = "sha256:fbbce6a29f263178a1f7915c1940bde0ec2b2a967566fe1c65c1dfb7422bd255"},
+    {file = "backcall-0.2.0.tar.gz", hash = "sha256:5cbdbf27be5e7cfadb448baf0aa95508f91f2bbc6c6437cd9cd06e2a4c215e1e"},
 ]
 beautifulsoup4 = [
     {file = "beautifulsoup4-4.9.1-py2-none-any.whl", hash = "sha256:e718f2342e2e099b640a34ab782407b7b676f47ee272d6739e60b8ea23829f2c"},
@@ -1271,7 +1259,10 @@ gunicorn = [
     {file = "gunicorn-20.0.4-py2.py3-none-any.whl", hash = "sha256:cd4a810dd51bf497552cf3f863b575dabd73d6ad6a91075b65936b151cbf4f9c"},
     {file = "gunicorn-20.0.4.tar.gz", hash = "sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626"},
 ]
-har2tree = []
+har2tree = [
+    {file = "har2tree-1.1-py3-none-any.whl", hash = "sha256:d2e1053ac6fa52fc5e77d1c2b20d6bbdc56f70b02e61462617ac23a3269aaa6d"},
+    {file = "har2tree-1.1.tar.gz", hash = "sha256:802b1f97fb3d80674d3ac8c28e0dac92d5a1da01af20bb93ce45a2584c80af6d"},
+]
 hyperlink = [
     {file = "hyperlink-19.0.0-py2.py3-none-any.whl", hash = "sha256:ab4a308feb039b04f855a020a6eda3b18ca5a68e6d8f8c899cbe9e653721d04f"},
     {file = "hyperlink-19.0.0.tar.gz", hash = "sha256:4288e34705da077fada1111a24a0aa08bb1e76699c9ce49876af722441845654"},
@@ -1515,7 +1506,10 @@ pyparsing = [
 pypydispatcher = [
     {file = "PyPyDispatcher-2.1.2.tar.gz", hash = "sha256:b6bec5dfcff9d2535bca2b23c80eae367b1ac250a645106948d315fcfa9130f2"},
 ]
-pysanejs = []
+pysanejs = [
+    {file = "pysanejs-1.2-py3-none-any.whl", hash = "sha256:2fc14edec435374eed3f699de6a5b5c826e322180d65d724af56ac9353dc4372"},
+    {file = "pysanejs-1.2.tar.gz", hash = "sha256:371ef63fa2463daa34d736dce6a3e3ca0bdfd6c8599dab9ebcd987348550608e"},
+]
 pytest = [
     {file = "pytest-5.4.3-py3-none-any.whl", hash = "sha256:5c0db86b698e8f170ba4582a492248919255fcd4c79b1ee64ace34301fb589a1"},
     {file = "pytest-5.4.3.tar.gz", hash = "sha256:7979331bfcba207414f5e1263b5a0f8f521d0f457318836a7355531ed1a4c7d8"},
@@ -1548,7 +1542,10 @@ scrapy-splash = [
     {file = "scrapy-splash-0.7.2.tar.gz", hash = "sha256:089188b11202813b14b88d3be008641a2b3d36e82fadd4a6c61f0af59b66e7b5"},
     {file = "scrapy_splash-0.7.2-py2.py3-none-any.whl", hash = "sha256:71ac958370f8732fec746a25a8235b03a4d3c4c93a59be51aa8e910a08cfe511"},
 ]
-scrapysplashwrapper = []
+scrapysplashwrapper = [
+    {file = "scrapysplashwrapper-1.1-py3-none-any.whl", hash = "sha256:e2695bcdafde424dc531dddbd6519abe093c5edf70aef36257648b85969eefb5"},
+    {file = "scrapysplashwrapper-1.1.tar.gz", hash = "sha256:8a27adf4efdd2145f525cf046dca3c224aa2dea0b7a43398b5ec9a6af0d698bc"},
+]
 service-identity = [
     {file = "service_identity-18.1.0-py2.py3-none-any.whl", hash = "sha256:001c0707759cb3de7e49c078a7c0c9cd12594161d3bf06b9c254fdcb1a60dc36"},
     {file = "service_identity-18.1.0.tar.gz", hash = "sha256:0858a54aabc5b459d1aafa8a518ed2081a285087f349fe3e55197989232e2e2d"},

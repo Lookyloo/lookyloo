@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pylookyloo"
-version = "0.7"
+version = "1.1"
 description = "Python client for Lookyloo"
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "AGPL-3.0-or-later"
@@ -9,14 +9,14 @@ repository = "https://github.com/CIRCL/lookyloo/client"
 readme = "README.md"
 
 classifiers = [
-    'Development Status :: 4 - Beta',
+    'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
+    'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
     'Operating System :: POSIX :: Linux',
     'Intended Audience :: Science/Research',
     'Intended Audience :: Telecommunications Industry',
     'Intended Audience :: Information Technology',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Topic :: Security',
