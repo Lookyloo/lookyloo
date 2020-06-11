@@ -14,7 +14,7 @@ from pathlib import Path
 import pickle
 import smtplib
 import socket
-from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping, Set
+from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping, Set, Iterable
 from urllib.parse import urlsplit
 from uuid import uuid4
 from zipfile import ZipFile
@@ -488,34 +488,34 @@ class Lookyloo():
 
             # Optional: Cookies sent to server in request -> map to nodes who set the cookie in response
             if hasattr(url, 'cookies_sent'):
-                to_display: Dict[str, Set[Tuple[str, str]]] = defaultdict(set)
+                to_display_sent: Dict[str, Set[Iterable[Optional[str]]]] = defaultdict(set)
                 for cookie, contexts in url.cookies_sent.items():
                     if not contexts:
                         # Locally created?
-                        to_display[cookie].add(('Unknown origin', ))
+                        to_display_sent[cookie].add(('Unknown origin', ))
                         continue
                     for context in contexts:
-                        to_display[cookie].add((context['setter'].hostname, context['setter'].hostnode_uuid))
-                to_append['cookies_sent'] = to_display
+                        to_display_sent[cookie].add((context['setter'].hostname, context['setter'].hostnode_uuid))
+                to_append['cookies_sent'] = to_display_sent
 
             # Optional: Cookies received from server in response -> map to nodes who send the cookie in request
             if hasattr(url, 'cookies_received'):
-                to_display = {'3rd_party': defaultdict(set), 'sent': defaultdict(set), 'not_sent': defaultdict(set)}
+                to_display_received: Dict[str, Dict[str, Set[Iterable[Optional[str]]]]] = {'3rd_party': defaultdict(set), 'sent': defaultdict(set), 'not_sent': defaultdict(set)}
                 for domain, c_received, is_3rd_party in url.cookies_received:
                     if c_received not in ct.root_hartree.cookies_sent:
                         # This cookie is never sent.
                         if is_3rd_party:
-                            to_display['3rd_party'][c_received].add((domain, ))
+                            to_display_received['3rd_party'][c_received].add((domain, ))
                         else:
-                            to_display['not_sent'][c_received].add((domain, ))
+                            to_display_received['not_sent'][c_received].add((domain, ))
                         continue
 
                     for url_node in ct.root_hartree.cookies_sent[c_received]:
                         if is_3rd_party:
-                            to_display['3rd_party'][c_received].add((url_node.hostname, url_node.hostnode_uuid))
+                            to_display_received['3rd_party'][c_received].add((url_node.hostname, url_node.hostnode_uuid))
                         else:
-                            to_display['sent'][c_received].add((url_node.hostname, url_node.hostnode_uuid))
-                to_append['cookies_received'] = to_display
+                            to_display_received['sent'][c_received].add((url_node.hostname, url_node.hostnode_uuid))
+                to_append['cookies_received'] = to_display_received
 
             urls.append(to_append)
         return hostnode, urls
