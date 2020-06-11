@@ -469,6 +469,12 @@ class Lookyloo():
                 'url_object': url
             }
 
+            # If the url path is too long, we want to limit it to 60 chars
+            if len(to_append['url_path']) > 50:
+                to_append['url_path_short'] = to_append['url_path'][:60] + ' [...]'
+            else:
+                to_append['url_path_short'] = to_append['url_path']
+
             # Optional: SaneJS information
             if hasattr(url, 'body_hash') and url.body_hash in sanejs_lookups:
                 if sanejs_lookups[url.body_hash]:
@@ -485,7 +491,8 @@ class Lookyloo():
                 to_display: Dict[str, Set[Tuple[str, str]]] = defaultdict(set)
                 for cookie, contexts in url.cookies_sent.items():
                     if not contexts:
-                        # FIXME Locally created?
+                        # Locally created?
+                        to_display[cookie].add(('Unknown origin', ))
                         continue
                     for context in contexts:
                         to_display[cookie].add((context['setter'].hostname, context['setter'].hostnode_uuid))
@@ -493,10 +500,21 @@ class Lookyloo():
 
             # Optional: Cookies received from server in response -> map to nodes who send the cookie in request
             if hasattr(url, 'cookies_received'):
-                to_display = defaultdict(set)
+                to_display = {'3rd_party': defaultdict(set), 'sent': defaultdict(set), 'not_sent': defaultdict(set)}
                 for domain, c_received, is_3rd_party in url.cookies_received:
+                    if c_received not in ct.root_hartree.cookies_sent:
+                        # This cookie is never sent.
+                        if is_3rd_party:
+                            to_display['3rd_party'][c_received].add((domain, ))
+                        else:
+                            to_display['not_sent'][c_received].add((domain, ))
+                        continue
+
                     for url_node in ct.root_hartree.cookies_sent[c_received]:
-                        to_display[c_received].add((url_node.hostname, url_node.hostnode_uuid))
+                        if is_3rd_party:
+                            to_display['3rd_party'][c_received].add((url_node.hostname, url_node.hostnode_uuid))
+                        else:
+                            to_display['sent'][c_received].add((url_node.hostname, url_node.hostnode_uuid))
                 to_append['cookies_received'] = to_display
 
             urls.append(to_append)
