@@ -314,25 +314,27 @@ class Lookyloo():
         except Exception as e:
             logging.exception(e)
 
-    def load_tree(self, capture_dir: Path) -> Tuple[str, str, str, str, Dict[str, str]]:
-        har_files = sorted(capture_dir.glob('*.har'))
+    def get_crawled_tree(self, capture_dir: Path) -> CrawledTree:
         pickle_file = capture_dir / 'tree.pickle'
-        try:
-            meta = {}
-            if (capture_dir / 'meta').exists():
-                # NOTE: Legacy, the meta file should be present
-                with open((capture_dir / 'meta'), 'r') as f:
-                    meta = json.load(f)
-            ct = self._load_pickle(pickle_file)
-            if not ct:
-                with open((capture_dir / 'uuid'), 'r') as f:
-                    uuid = f.read()
+        ct = self._load_pickle(pickle_file)
+        if not ct:
+            with open((capture_dir / 'uuid'), 'r') as f:
+                uuid = f.read()
+            har_files = sorted(capture_dir.glob('*.har'))
+            try:
                 ct = CrawledTree(har_files, uuid)
-                with pickle_file.open('wb') as _p:
-                    pickle.dump(ct, _p)
-            return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
-        except Har2TreeError as e:
-            raise NoValidHarFile(e.message)
+            except Har2TreeError as e:
+                raise NoValidHarFile(e.message)
+            with pickle_file.open('wb') as _p:
+                pickle.dump(ct, _p)
+        return ct
+
+    def load_tree(self, capture_dir: Path) -> Tuple[str, str, str, str, Dict[str, str]]:
+        meta = {}
+        with open((capture_dir / 'meta'), 'r') as f:
+            meta = json.load(f)
+        ct = self.get_crawled_tree(capture_dir)
+        return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
 
     def _get_raw(self, capture_dir: Path, extension: str='*', all_files: bool=True) -> BytesIO:
         all_paths = sorted(list(capture_dir.glob(f'*.{extension}')))
