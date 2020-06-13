@@ -92,6 +92,7 @@ def is_running() -> Dict[Any, Any]:
 def get_socket_path(name: str) -> str:
     mapping = {
         'cache': Path('cache', 'cache.sock'),
+        'indexing': Path('indexing', 'indexing.sock'),
         'storage': Path('storage', 'storage.sock'),
     }
     return str(get_homedir() / mapping[name])

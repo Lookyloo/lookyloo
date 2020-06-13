@@ -13,7 +13,7 @@ from flask_bootstrap import Bootstrap  # type: ignore
 from flask_httpauth import HTTPDigestAuth  # type: ignore
 
 from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents
-from lookyloo.lookyloo import Lookyloo
+from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 from .proxied import ReverseProxied
 
@@ -419,6 +419,21 @@ def index():
 @auth.login_required
 def index_hidden():
     return index_generic(show_hidden=True)
+
+
+@app.route('/cookies', methods=['GET'])
+def cookies_lookup():
+    i = Indexing()
+    cookies_names = [(name, freq, i.cookies_names_number_domains(name)) for name, freq in i.cookies_names]
+    return render_template('cookies.html', cookies_names=cookies_names)
+
+
+@app.route('/cookies/<string:cookie_name>', methods=['GET'])
+def cookies_name_detail(cookie_name: str):
+    i = Indexing()
+    domains = [(domain, freq, i.cookies_names_domains_values(cookie_name, domain))
+               for domain, freq in i.get_cookie_domains(cookie_name)]
+    return render_template('cookie_name.html', cookie_name=cookie_name, domains=domains)
 
 # Query API
 

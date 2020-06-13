@@ -22,12 +22,26 @@ def shutdown_cache(storage_directory: Path=None):
     Popen(["./shutdown_redis.sh"], cwd=(storage_directory / 'cache'))
 
 
+def launch_indexing(storage_directory: Path=None):
+    if not storage_directory:
+        storage_directory = get_homedir()
+    if not check_running('indexing'):
+        Popen(["./run_redis.sh"], cwd=(storage_directory / 'indexing'))
+
+
+def shutdown_indexing(storage_directory: Path=None):
+    if not storage_directory:
+        storage_directory = get_homedir()
+    Popen(["./shutdown_redis.sh"], cwd=(storage_directory / 'indexing'))
+
+
 def launch_all():
     launch_cache()
+    launch_indexing()
 
 
 def check_all(stop=False):
-    backends = [['cache', False]]
+    backends = [['cache', False], ['indexing', False]]
     while True:
         for b in backends:
             try:
@@ -50,6 +64,7 @@ def check_all(stop=False):
 
 def stop_all():
     shutdown_cache()
+    shutdown_indexing()
 
 
 if __name__ == '__main__':
