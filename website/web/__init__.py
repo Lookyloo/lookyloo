@@ -431,9 +431,10 @@ def cookies_lookup():
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
 def cookies_name_detail(cookie_name: str):
     i = Indexing()
+    captures = [i.get_capture_cache(capture) for capture, url in i.get_cookies_names_captures(cookie_name)]
     domains = [(domain, freq, i.cookies_names_domains_values(cookie_name, domain))
                for domain, freq in i.get_cookie_domains(cookie_name)]
-    return render_template('cookie_name.html', cookie_name=cookie_name, domains=domains)
+    return render_template('cookie_name.html', cookie_name=cookie_name, domains=domains, captures=captures)
 
 # Query API
 

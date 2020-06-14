@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Set, Tuple, List
+from typing import Set, Tuple, List, Optional, Dict, Any
 
 from redis import Redis
 
@@ -28,8 +28,18 @@ class Indexing():
     def get_cookie_domains(self, cookie_name: str) -> List[Tuple[str, float]]:
         return self.redis.zrevrange(f'cn|{cookie_name}', 0, -1, withscores=True)
 
+    def get_capture_cache(self, capture_uuid: str) -> Optional[Dict[str, Any]]:
+        capture_dir = self.lookyloo.lookup_capture_dir(capture_uuid)
+        if capture_dir:
+            return self.lookyloo.capture_cache(capture_dir)
+        return {}
+
+    def get_cookies_names_captures(self, cookie_name: str) -> List[Tuple[str, str]]:
+        return [uuids.split('|')for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]
+
     def index_cookies(self) -> None:
         for capture_dir in self.lookyloo.capture_dirs:
+            print(f'Processing {capture_dir}')
             try:
                 crawled_tree = self.lookyloo.get_crawled_tree(capture_dir)
             except Exception as e:
@@ -47,6 +57,7 @@ class Indexing():
                         already_loaded.add((name, domain))
                         pipeline.zincrby('cookies_names', 1, name)
                         pipeline.zincrby(f'cn|{name}', 1, domain)
+                        pipeline.sadd(f'cn|{name}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
                         pipeline.zincrby(f'cn|{name}|{domain}', 1, value)
 
                         pipeline.sadd('lookyloo_domains', domain)
