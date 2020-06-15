@@ -4,7 +4,7 @@
 import argparse
 import logging
 
-from lookyloo.lookyloo import Lookyloo
+from lookyloo.lookyloo import Lookyloo, Indexing
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO, datefmt='%I:%M:%S')
@@ -19,3 +19,7 @@ if __name__ == '__main__':
         lookyloo.rebuild_all()
     else:
         lookyloo.rebuild_cache()
+
+    indexing = Indexing()
+    indexing.clear_indexes()
+    indexing.index_all()
