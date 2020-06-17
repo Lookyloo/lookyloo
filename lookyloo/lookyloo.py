@@ -102,6 +102,22 @@ class Indexing():
         for capture_dir in self.lookyloo.capture_dirs:
             self.index_cookies_capture(capture_dir)
 
+    def aggregate_domain_cookies(self):
+        psl = publicsuffix2.PublicSuffixList()
+        pipeline = self.redis.pipeline()
+        for cn, cn_freq in self.cookies_names:
+            for domain, d_freq in self.get_cookie_domains(cn):
+                tld = psl.get_tld(domain)
+                main_domain_part = domain.strip(f'.{tld}').split('.')[-1]
+                pipeline.zincrby('aggregate_domains_cn', cn_freq, f'{main_domain_part}|{cn}')
+                pipeline.zincrby('aggregate_cn_domains', d_freq, f'{cn}|{main_domain_part}')
+        pipeline.execute()
+        aggregate_domains_cn = self.redis.zrevrange('aggregate_domains_cn', 0, -1, withscores=True)
+        aggregate_cn_domains = self.redis.zrevrange('aggregate_cn_domains', 0, -1, withscores=True)
+        self.redis.delete('aggregate_domains_cn')
+        self.redis.delete('aggregate_cn_domains')
+        return {'domains': aggregate_domains_cn, 'cookies': aggregate_cn_domains}
+
 
 class Lookyloo():
 
