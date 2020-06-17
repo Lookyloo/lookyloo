@@ -1,5 +1,7 @@
 ![Lookyloo icon](website/web/static/lookyloo.jpeg)
 
+[![Gitter](https://badges.gitter.im/lookylo0/community.svg)](https://gitter.im/lookylo0/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 *Lookyloo* is a web interface allowing to scrape a website and then displays a
 tree of domains calling each other.
 
