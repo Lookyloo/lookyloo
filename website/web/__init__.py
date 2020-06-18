@@ -436,6 +436,14 @@ def cookies_name_detail(cookie_name: str):
                for domain, freq in i.get_cookie_domains(cookie_name)]
     return render_template('cookie_name.html', cookie_name=cookie_name, domains=domains, captures=captures)
 
+
+@app.route('/body_hashes/<string:body_hash>', methods=['GET'])
+def body_hash_details(body_hash: str):
+    i = Indexing()
+    captures = [i.get_capture_cache(capture) for capture, url in i.get_body_hash_captures(body_hash)]
+    domains = i.get_body_hash_domains(body_hash)
+    return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures)
+
 # Query API
 
 

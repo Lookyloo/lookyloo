@@ -38,6 +38,15 @@ class Indexing():
         self.lookyloo = Lookyloo()
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('indexing'), decode_responses=True)
 
+    def clear_indexes(self):
+        self.redis.flushdb()
+
+    def index_all(self):
+        self.index_cookies()
+        self.index_body_hashes()
+
+    # ###### Cookies ######
+
     @property
     def cookies_names(self) -> List[Tuple[str, float]]:
         return self.redis.zrevrange('cookies_names', 0, -1, withscores=True)
@@ -60,14 +69,8 @@ class Indexing():
     def get_cookies_names_captures(self, cookie_name: str) -> List[Tuple[str, str]]:
         return [uuids.split('|')for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]
 
-    def clear_indexes(self):
-        self.redis.flushdb()
-
-    def index_all(self):
-        self.index_cookies()
-
     def index_cookies_capture(self, capture_dir: Path) -> None:
-        print(f'Processing {capture_dir}')
+        print(f'Index cookies {capture_dir}')
         try:
             crawled_tree = self.lookyloo.get_crawled_tree(capture_dir)
         except Exception as e:
@@ -117,6 +120,49 @@ class Indexing():
         self.redis.delete('aggregate_domains_cn')
         self.redis.delete('aggregate_cn_domains')
         return {'domains': aggregate_domains_cn, 'cookies': aggregate_cn_domains}
+
+    # ###### Body hashes ######
+
+    def body_hash_fequency(self, body_hash: str) -> float:
+        return {'hash_freq': self.redis.zscore('body_hashes', body_hash),
+                'hash_domains_freq': self.redis.zcard(f'bh|{body_hash}')}
+
+    def index_body_hashes_capture(self, capture_dir: Path) -> None:
+        print(f'Index body hashes {capture_dir}')
+        try:
+            crawled_tree = self.lookyloo.get_crawled_tree(capture_dir)
+        except Exception as e:
+            print(e)
+            return
+
+        if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
+            # Do not reindex
+            return
+        self.redis.sadd('indexed_body_hashes', crawled_tree.uuid)
+
+        pipeline = self.redis.pipeline()
+        already_loaded: Set[str] = set()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            if not urlnode.empty_response:
+                if urlnode.body_hash in already_loaded:
+                    # Same hash multiple times in the same capture, skip
+                    continue
+                already_loaded.add(urlnode.body_hash)
+                pipeline.zincrby('body_hashes', 1, urlnode.body_hash)
+                pipeline.zincrby(f'bh|{urlnode.body_hash}', 1, urlnode.hostname)
+                pipeline.sadd(f'bh|{urlnode.body_hash}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
+
+        pipeline.execute()
+
+    def index_body_hashes(self) -> None:
+        for capture_dir in self.lookyloo.capture_dirs:
+            self.index_body_hashes_capture(capture_dir)
+
+    def get_body_hash_captures(self, body_hash: str) -> List[Tuple[str, str]]:
+        return [uuids.split('|')for uuids in self.redis.smembers(f'bh|{body_hash}|captures')]
+
+    def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:
+        return self.redis.zrevrange(f'bh|{body_hash}', 0, -1, withscores=True)
 
 
 class Lookyloo():
@@ -691,6 +737,13 @@ class Lookyloo():
                 to_append['url_path_short'] = to_append['url_path']
 
             if not url.empty_response:
+                # Index lookup
+                # NOTE: We probably don't want to leave it there.
+                indexing = Indexing()
+                freq = indexing.body_hash_fequency(url.body_hash)
+                if freq['hash_freq'] > 1:
+                    to_append['body_hash_fequency'] = freq
+
                 # Optional: SaneJS information
                 if url.body_hash in sanejs_lookups:
                     if sanejs_lookups[url.body_hash]:

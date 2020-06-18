@@ -103,6 +103,16 @@
           </div>
 
 
+          {% if url['body_hash_fequency'] %}
+          <div>
+            This file can be found <b>{{ url['body_hash_fequency']['hash_freq'] }}</b> times
+            across all the captures on this lookyloo instance, in <b>{{ url['body_hash_fequency']['hash_domains_freq'] }}</b> unique domains.
+            </br>
+            <a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash) }}">
+              Show details
+            </a>
+          <div>
+          {% endif %}
           {% if url['sane_js'] %}
           <div>
           {% if url['sane_js'] is string %}
