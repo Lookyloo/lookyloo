@@ -123,7 +123,7 @@ class Indexing():
 
     # ###### Body hashes ######
 
-    def body_hash_fequency(self, body_hash: str) -> float:
+    def body_hash_fequency(self, body_hash: str) -> Dict[str, float]:
         return {'hash_freq': self.redis.zscore('body_hashes', body_hash),
                 'hash_domains_freq': self.redis.zcard(f'bh|{body_hash}')}
 
