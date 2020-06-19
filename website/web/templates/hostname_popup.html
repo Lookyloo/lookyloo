@@ -103,11 +103,19 @@
           </div>
 
 
-          {% if url['body_hash_fequency'] %}
+          {% if url['body_hash_details'] %}
           <div>
-            This file can be found <b>{{ url['body_hash_fequency']['hash_freq'] }}</b> times
-            across all the captures on this lookyloo instance, in <b>{{ url['body_hash_fequency']['hash_domains_freq'] }}</b> unique domains.
+            This file can be found <b>{{ url['body_hash_details']['hash_freq'] }}</b> times
+            across all the captures on this lookyloo instance, in <b>{{ url['body_hash_details']['hash_domains_freq'] }}</b> unique domains.
             </br>
+            {% if url['body_hash_details']['other_captures'] %}
+            <p>The same file was seen in these captures:</p>
+            <ul>
+                {% for capture in url['body_hash_details']['other_captures'] %}
+                  <li><a href="{{ url_for('tree', tree_uuid=capture['uuid']) }}">{{ capture['title'] }}</a></li>
+                  {% endfor %}
+            </ul>
+            {% endif %}
             <a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash) }}">
               Show details
             </a>

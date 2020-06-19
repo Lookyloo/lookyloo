@@ -45,6 +45,12 @@ class Indexing():
         self.index_cookies()
         self.index_body_hashes()
 
+    def get_capture_cache(self, capture_uuid: str) -> Optional[Dict[str, Any]]:
+        capture_dir = self.lookyloo.lookup_capture_dir(capture_uuid)
+        if capture_dir:
+            return self.lookyloo.capture_cache(capture_dir)
+        return {}
+
     # ###### Cookies ######
 
     @property
@@ -59,12 +65,6 @@ class Indexing():
 
     def get_cookie_domains(self, cookie_name: str) -> List[Tuple[str, float]]:
         return self.redis.zrevrange(f'cn|{cookie_name}', 0, -1, withscores=True)
-
-    def get_capture_cache(self, capture_uuid: str) -> Optional[Dict[str, Any]]:
-        capture_dir = self.lookyloo.lookup_capture_dir(capture_uuid)
-        if capture_dir:
-            return self.lookyloo.capture_cache(capture_dir)
-        return {}
 
     def get_cookies_names_captures(self, cookie_name: str) -> List[Tuple[str, str]]:
         return [uuids.split('|')for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]
@@ -141,16 +141,14 @@ class Indexing():
         self.redis.sadd('indexed_body_hashes', crawled_tree.uuid)
 
         pipeline = self.redis.pipeline()
-        already_loaded: Set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             if not urlnode.empty_response:
-                if urlnode.body_hash in already_loaded:
-                    # Same hash multiple times in the same capture, skip
-                    continue
-                already_loaded.add(urlnode.body_hash)
                 pipeline.zincrby('body_hashes', 1, urlnode.body_hash)
                 pipeline.zincrby(f'bh|{urlnode.body_hash}', 1, urlnode.hostname)
-                pipeline.sadd(f'bh|{urlnode.body_hash}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
+                # set of all captures with this hash
+                pipeline.sadd(f'bh|{urlnode.body_hash}|captures', crawled_tree.uuid)
+                # ZSet of all urlnode_UUIDs|full_url
+                pipeline.zincrby(f'bh|{urlnode.body_hash}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.name}')
 
         pipeline.execute()
 
@@ -158,8 +156,17 @@ class Indexing():
         for capture_dir in self.lookyloo.capture_dirs:
             self.index_body_hashes_capture(capture_dir)
 
-    def get_body_hash_captures(self, body_hash: str) -> List[Tuple[str, str]]:
-        return [uuids.split('|')for uuids in self.redis.smembers(f'bh|{body_hash}|captures')]
+    def get_body_hash_captures(self, body_hash: str, filter_url: Optional[str]=None) -> List[str]:
+        if not filter_url:
+            return self.redis.smembers(f'bh|{body_hash}|captures')
+        # We only want the captures if the hash match on a different URL
+        to_return = []
+        for capture_uuid in self.redis.smembers(f'bh|{body_hash}|captures'):
+            for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
+                url_uuid, url = entry.split('|', 1)
+                if url != filter_url:
+                    to_return.append(capture_uuid)
+        return to_return
 
     def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:
         return self.redis.zrevrange(f'bh|{body_hash}', 0, -1, withscores=True)
@@ -742,7 +749,9 @@ class Lookyloo():
                 indexing = Indexing()
                 freq = indexing.body_hash_fequency(url.body_hash)
                 if freq['hash_freq'] > 1:
-                    to_append['body_hash_fequency'] = freq
+                    to_append['body_hash_details'] = freq
+                    to_append['body_hash_details']['other_captures'] = [indexing.get_capture_cache(capture)
+                                                                        for capture in indexing.get_body_hash_captures(url.body_hash, url.name)]
 
                 # Optional: SaneJS information
                 if url.body_hash in sanejs_lookups:
