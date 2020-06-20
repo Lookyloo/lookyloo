@@ -35,21 +35,10 @@ from .modules import VirusTotal, SaneJavaScript, PhishingInitiative
 class Indexing():
 
     def __init__(self) -> None:
-        self.lookyloo = Lookyloo()
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('indexing'), decode_responses=True)
 
     def clear_indexes(self):
         self.redis.flushdb()
-
-    def index_all(self):
-        self.index_cookies()
-        self.index_body_hashes()
-
-    def get_capture_cache(self, capture_uuid: str) -> Optional[Dict[str, Any]]:
-        capture_dir = self.lookyloo.lookup_capture_dir(capture_uuid)
-        if capture_dir:
-            return self.lookyloo.capture_cache(capture_dir)
-        return {}
 
     # ###### Cookies ######
 
@@ -72,7 +61,7 @@ class Indexing():
     def index_cookies_capture(self, capture_dir: Path) -> None:
         print(f'Index cookies {capture_dir}')
         try:
-            crawled_tree = self.lookyloo.get_crawled_tree(capture_dir)
+            crawled_tree = Lookyloo.get_crawled_tree(capture_dir)
         except Exception as e:
             print(e)
             return
@@ -101,10 +90,6 @@ class Indexing():
                     pipeline.sadd(domain, name)
         pipeline.execute()
 
-    def index_cookies(self) -> None:
-        for capture_dir in self.lookyloo.capture_dirs:
-            self.index_cookies_capture(capture_dir)
-
     def aggregate_domain_cookies(self):
         psl = publicsuffix2.PublicSuffixList()
         pipeline = self.redis.pipeline()
@@ -130,7 +115,7 @@ class Indexing():
     def index_body_hashes_capture(self, capture_dir: Path) -> None:
         print(f'Index body hashes {capture_dir}')
         try:
-            crawled_tree = self.lookyloo.get_crawled_tree(capture_dir)
+            crawled_tree = Lookyloo.get_crawled_tree(capture_dir)
         except Exception as e:
             print(e)
             return
@@ -152,20 +137,13 @@ class Indexing():
 
         pipeline.execute()
 
-    def index_body_hashes(self) -> None:
-        for capture_dir in self.lookyloo.capture_dirs:
-            self.index_body_hashes_capture(capture_dir)
-
-    def get_body_hash_captures(self, body_hash: str, filter_url: Optional[str]=None) -> List[str]:
-        if not filter_url:
-            return self.redis.smembers(f'bh|{body_hash}|captures')
-        # We only want the captures if the hash match on a different URL
+    def get_body_hash_captures(self, body_hash: str, filter_url: Optional[str]=None) -> List[Tuple[str, str, str]]:
         to_return = []
         for capture_uuid in self.redis.smembers(f'bh|{body_hash}|captures'):
             for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
                 url_uuid, url = entry.split('|', 1)
-                if url != filter_url:
-                    to_return.append(capture_uuid)
+                if filter_url is None or url != filter_url:
+                    to_return.append((capture_uuid, url_uuid, urlsplit(url).hostname))
         return to_return
 
     def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:
@@ -282,12 +260,6 @@ class Lookyloo():
                 meta = json.load(f)
         ct = self.get_crawled_tree(capture_uuid)
         return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
-
-    def remove_pickle(self, capture_uuid: str) -> None:
-        capture_dir = self.lookup_capture_dir(capture_uuid)
-        if not capture_dir:
-            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
-        remove_pickle_tree(capture_dir)
 
     def rebuild_cache(self) -> None:
         self.redis.flushdb()
@@ -708,6 +680,27 @@ class Lookyloo():
         self._set_capture_cache(dirpath)
         return perma_uuid
 
+    def get_body_hash_investigator(self, body_hash: str) -> Tuple[List[Tuple[str, str]], List[Tuple[str, float]]]:
+        indexing = Indexing()
+        captures = []
+        for capture_uuid, url_uuid, url_hostname in indexing.get_body_hash_captures(body_hash):
+            cache = self.get_capture_cache(capture_uuid)
+            if cache:
+                captures.append((capture_uuid, cache['title']))
+        domains = indexing.get_body_hash_domains(body_hash)
+        return captures, domains
+
+    def get_cookie_name_investigator(self, cookie_name: str):
+        indexing = Indexing()
+        captures = []
+        for capture_uuid, url_uuid in indexing.get_cookies_names_captures(cookie_name):
+            cache = self.get_capture_cache(capture_uuid)
+            if cache:
+                captures.append((capture_uuid, cache['title']))
+        domains = [(domain, freq, indexing.cookies_names_domains_values(cookie_name, domain))
+                   for domain, freq in indexing.get_cookie_domains(cookie_name)]
+        return captures, domains
+
     def get_hostnode_investigator(self, capture_uuid: str, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
@@ -750,8 +743,14 @@ class Lookyloo():
                 freq = indexing.body_hash_fequency(url.body_hash)
                 if freq['hash_freq'] > 1:
                     to_append['body_hash_details'] = freq
-                    to_append['body_hash_details']['other_captures'] = [indexing.get_capture_cache(capture)
-                                                                        for capture in indexing.get_body_hash_captures(url.body_hash, url.name)]
+
+                    captures_list: List[Tuple[str, str, str]] = []
+                    for capture_uuid, url_uuid, url_hostname in indexing.get_body_hash_captures(url.body_hash, url.name):
+                        cache = self.get_capture_cache(capture_uuid)
+                        if cache:
+                            captures_list.append((capture_uuid, cache['title'], url_hostname))
+
+                    to_append['body_hash_details']['other_captures'] = captures_list
 
                 # Optional: SaneJS information
                 if url.body_hash in sanejs_lookups:

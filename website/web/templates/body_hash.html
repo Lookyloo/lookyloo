@@ -46,8 +46,8 @@
   </div>
   <p>The same file was seen in these captures:</p>
   <ul>
-  {% for capture in captures %}
-    <li><a href="{{ url_for('tree', tree_uuid=capture['uuid']) }}">{{ capture['title'] }}</a></li>
+  {% for capture_uuid, title in captures %}
+    <li><a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">{{ title }}</a></li>
   {% endfor %}
   </ul>
 {% endblock %}

@@ -22,4 +22,6 @@ if __name__ == '__main__':
 
     indexing = Indexing()
     indexing.clear_indexes()
-    indexing.index_all()
+    for capture_dir in lookyloo.capture_dirs:
+        indexing.index_cookies_capture(capture_dir)
+        indexing.index_body_hashes_capture(capture_dir)
