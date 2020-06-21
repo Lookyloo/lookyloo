@@ -744,7 +744,7 @@ class Lookyloo():
                 if freq['hash_freq'] > 1:
                     to_append['body_hash_details'] = freq
 
-                    captures_list: List[Tuple[str, str, str]] = []
+                    captures_list: List[Tuple[str, str, str, str]] = []
                     for capture_uuid, url_uuid, url_hostname in indexing.get_body_hash_captures(url.body_hash, url.name):
                         cache = self.get_capture_cache(capture_uuid)
                         if cache:
