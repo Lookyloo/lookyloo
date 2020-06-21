@@ -124,7 +124,7 @@
             </br>
             {% if url['body_hash_details']['other_captures'] %}
             <p>
-              The same file was seen in <b>{{ url['body_hash_details']['other_captures']|length }}</b> other captures.
+            The same file was seen in <b>{{ url['body_hash_details']['other_captures']|length }}</b> other captures <b>on a different URL</b>.
               <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#captureslist_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
                 Toggle list.
               </button>
@@ -132,8 +132,8 @@
             <div class="collapse" id="captureslist_{{ url['url_object'].uuid }}">
               <div class="card card-body">
               <ul>
-                {% for capture_uuid, title, hostname in url['body_hash_details']['other_captures'] %}
-                <li><a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">{{ title }}</a> - {{ hostname }} </li>
+                {% for capture_uuid, urlnode_uuid, title, hostname in url['body_hash_details']['other_captures'] %}
+                <li><a href="{{ url_for('tree', tree_uuid=capture_uuid, urlnode_uuid=urlnode_uuid) }}">{{ title }}</a> - {{ hostname }} </li>
                   {% endfor %}
               </ul>
               </div>

@@ -133,7 +133,7 @@ class Indexing():
                 # set of all captures with this hash
                 pipeline.sadd(f'bh|{urlnode.body_hash}|captures', crawled_tree.uuid)
                 # ZSet of all urlnode_UUIDs|full_url
-                pipeline.zincrby(f'bh|{urlnode.body_hash}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.name}')
+                pipeline.zincrby(f'bh|{urlnode.body_hash}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
 
         pipeline.execute()
 
@@ -141,9 +141,9 @@ class Indexing():
         to_return = []
         for capture_uuid in self.redis.smembers(f'bh|{body_hash}|captures'):
             for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
-                url_uuid, url = entry.split('|', 1)
+                url_uuid, hostnode_uuid, url = entry.split('|', 2)
                 if filter_url is None or url != filter_url:
-                    to_return.append((capture_uuid, url_uuid, urlsplit(url).hostname))
+                    to_return.append((capture_uuid, hostnode_uuid, urlsplit(url).hostname))
         return to_return
 
     def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:
@@ -748,7 +748,7 @@ class Lookyloo():
                     for capture_uuid, url_uuid, url_hostname in indexing.get_body_hash_captures(url.body_hash, url.name):
                         cache = self.get_capture_cache(capture_uuid)
                         if cache:
-                            captures_list.append((capture_uuid, cache['title'], url_hostname))
+                            captures_list.append((capture_uuid, url_uuid, cache['title'], url_hostname))
 
                     to_append['body_hash_details']['other_captures'] = captures_list
 
