@@ -373,6 +373,7 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                urlnode_uuid=urlnode_uuid)
+
     except NoValidHarFile as e:
         return render_template('error.html', error_message=e)
 

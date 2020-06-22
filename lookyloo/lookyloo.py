@@ -61,9 +61,12 @@ class Indexing():
     def index_cookies_capture(self, capture_dir: Path) -> None:
         print(f'Index cookies {capture_dir}')
         try:
-            crawled_tree = Lookyloo.get_crawled_tree(capture_dir)
+            crawled_tree = load_pickle_tree(capture_dir)
         except Exception as e:
             print(e)
+            return
+
+        if not crawled_tree:
             return
 
         if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
@@ -115,9 +118,12 @@ class Indexing():
     def index_body_hashes_capture(self, capture_dir: Path) -> None:
         print(f'Index body hashes {capture_dir}')
         try:
-            crawled_tree = Lookyloo.get_crawled_tree(capture_dir)
+            crawled_tree = load_pickle_tree(capture_dir)
         except Exception as e:
             print(e)
+            return
+
+        if not crawled_tree:
             return
 
         if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
@@ -156,6 +162,7 @@ class Lookyloo():
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.configs: Dict[str, Dict[str, Any]] = load_configs()
         self.logger.setLevel(self.get_config('loglevel'))
+        self.indexing = Indexing()
 
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
         self.scrape_dir: Path = get_homedir() / 'scraped'
@@ -260,6 +267,12 @@ class Lookyloo():
                 meta = json.load(f)
         ct = self.get_crawled_tree(capture_uuid)
         return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
+
+    def remove_pickle(self, capture_uuid: str) -> None:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        remove_pickle_tree(capture_dir)
 
     def rebuild_cache(self) -> None:
         self.redis.flushdb()
@@ -681,24 +694,22 @@ class Lookyloo():
         return perma_uuid
 
     def get_body_hash_investigator(self, body_hash: str) -> Tuple[List[Tuple[str, str]], List[Tuple[str, float]]]:
-        indexing = Indexing()
         captures = []
-        for capture_uuid, url_uuid, url_hostname in indexing.get_body_hash_captures(body_hash):
-            cache = self.get_capture_cache(capture_uuid)
+        for capture_uuid, url_uuid, url_hostname in self.indexing.get_body_hash_captures(body_hash):
+            cache = self.capture_cache(capture_uuid)
             if cache:
                 captures.append((capture_uuid, cache['title']))
-        domains = indexing.get_body_hash_domains(body_hash)
+        domains = self.indexing.get_body_hash_domains(body_hash)
         return captures, domains
 
     def get_cookie_name_investigator(self, cookie_name: str):
-        indexing = Indexing()
         captures = []
-        for capture_uuid, url_uuid in indexing.get_cookies_names_captures(cookie_name):
-            cache = self.get_capture_cache(capture_uuid)
+        for capture_uuid, url_uuid in self.indexing.get_cookies_names_captures(cookie_name):
+            cache = self.capture_cache(capture_uuid)
             if cache:
                 captures.append((capture_uuid, cache['title']))
-        domains = [(domain, freq, indexing.cookies_names_domains_values(cookie_name, domain))
-                   for domain, freq in indexing.get_cookie_domains(cookie_name)]
+        domains = [(domain, freq, self.indexing.cookies_names_domains_values(cookie_name, domain))
+                   for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
     def get_hostnode_investigator(self, capture_uuid: str, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
@@ -738,15 +749,13 @@ class Lookyloo():
 
             if not url.empty_response:
                 # Index lookup
-                # NOTE: We probably don't want to leave it there.
-                indexing = Indexing()
-                freq = indexing.body_hash_fequency(url.body_hash)
+                freq = self.indexing.body_hash_fequency(url.body_hash)
                 if freq['hash_freq'] > 1:
                     to_append['body_hash_details'] = freq
 
                     captures_list: List[Tuple[str, str, str, str]] = []
-                    for capture_uuid, url_uuid, url_hostname in indexing.get_body_hash_captures(url.body_hash, url.name):
-                        cache = self.get_capture_cache(capture_uuid)
+                    for capture_uuid, url_uuid, url_hostname in self.indexing.get_body_hash_captures(url.body_hash, url.name):
+                        cache = self.capture_cache(capture_uuid)
                         if cache:
                             captures_list.append((capture_uuid, url_uuid, cache['title'], url_hostname))
 
