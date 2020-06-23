@@ -143,13 +143,15 @@ class Indexing():
 
         pipeline.execute()
 
-    def get_body_hash_captures(self, body_hash: str, filter_url: Optional[str]=None) -> List[Tuple[str, str, str]]:
-        to_return = []
+    def get_body_hash_captures(self, body_hash: str, filter_url: Optional[str]=None) -> List[Tuple[str, str, str, bool]]:
+        to_return: List[Tuple[str, str, str, bool]] = []
         for capture_uuid in self.redis.smembers(f'bh|{body_hash}|captures'):
             for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
                 url_uuid, hostnode_uuid, url = entry.split('|', 2)
-                if filter_url is None or url != filter_url:
-                    to_return.append((capture_uuid, hostnode_uuid, urlsplit(url).hostname))
+                if filter_url:
+                    to_return.append((capture_uuid, hostnode_uuid, urlsplit(url).hostname, url == filter_url))
+                else:
+                    to_return.append((capture_uuid, hostnode_uuid, urlsplit(url).hostname, False))
         return to_return
 
     def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:
@@ -695,7 +697,7 @@ class Lookyloo():
 
     def get_body_hash_investigator(self, body_hash: str) -> Tuple[List[Tuple[str, str]], List[Tuple[str, float]]]:
         captures = []
-        for capture_uuid, url_uuid, url_hostname in self.indexing.get_body_hash_captures(body_hash):
+        for capture_uuid, url_uuid, url_hostname, _ in self.indexing.get_body_hash_captures(body_hash):
             cache = self.capture_cache(capture_uuid)
             if cache:
                 captures.append((capture_uuid, cache['title']))
@@ -753,11 +755,14 @@ class Lookyloo():
                 if freq['hash_freq'] > 1:
                     to_append['body_hash_details'] = freq
 
-                    captures_list: List[Tuple[str, str, str, str]] = []
-                    for capture_uuid, url_uuid, url_hostname in self.indexing.get_body_hash_captures(url.body_hash, url.name):
+                    captures_list: Dict[str, List[Tuple[str, str, str, str]]] = {'same_url': [], 'different_url': []}
+                    for capture_uuid, url_uuid, url_hostname, same_url in self.indexing.get_body_hash_captures(url.body_hash, url.name):
                         cache = self.capture_cache(capture_uuid)
                         if cache:
-                            captures_list.append((capture_uuid, url_uuid, cache['title'], url_hostname))
+                            if same_url:
+                                captures_list['same_url'].append((capture_uuid, url_uuid, cache['title'], url_hostname))
+                            else:
+                                captures_list['different_url'].append((capture_uuid, url_uuid, cache['title'], url_hostname))
 
                     to_append['body_hash_details']['other_captures'] = captures_list
 

@@ -124,18 +124,39 @@
             </br>
             {% if url['body_hash_details']['other_captures'] %}
             <p>
-            The same file was seen in <b>{{ url['body_hash_details']['other_captures']|length }}</b> other captures <b>on a different URL</b>.
+            The same file was seen in <b>{{ url['body_hash_details']['other_captures']|length }}</b> other captures.
               <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#captureslist_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
                 Toggle list.
               </button>
             </p>
             <div class="collapse" id="captureslist_{{ url['url_object'].uuid }}">
               <div class="card card-body">
-              <ul>
-                {% for capture_uuid, urlnode_uuid, title, hostname in url['body_hash_details']['other_captures'] %}
-                <li><a href="{{ url_for('tree', tree_uuid=capture_uuid, urlnode_uuid=urlnode_uuid) }}">{{ title }}</a> - {{ hostname }} </li>
-                  {% endfor %}
-              </ul>
+              {% if url['body_hash_details']['other_captures']['different_url']|length > 0 %}
+              <div>
+                <p>The following captures get the same file from a <b>different URL</b></p>
+                <ul>
+                {% for capture_uuid, urlnode_uuid, title, hostname in url['body_hash_details']['other_captures']['different_url'] %}
+                <li>
+                    <a href="{{ url_for('tree', tree_uuid=capture_uuid, urlnode_uuid=urlnode_uuid) }}">{{ title }}</a> - {{ hostname }}
+                </li>
+                {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
+
+              {% if url['body_hash_details']['other_captures']['same_url']|length > 0 %}
+              </br>
+              <div>
+              <p>The following captures get the same file from the <b>same URL</b></p>
+                <ul>
+                {% for capture_uuid, urlnode_uuid, title, hostname in url['body_hash_details']['other_captures']['same_url'] %}
+                <li>
+                    <a href="{{ url_for('tree', tree_uuid=capture_uuid, urlnode_uuid=urlnode_uuid) }}">{{ title }}</a> - {{ hostname }}
+                </li>
+                {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
               </div>
             </div>
             {% else %}
@@ -171,12 +192,12 @@
                 {% for detail in details %}
                   {% if detail|length == 1 %}
                   <li>
-                      {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name_value[0]) }}">
+                      {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
                           {{ cookie_name_value[0] }}</a>={{ cookie_name_value[1] }}
                   </li>
                   {% else %}
                   <li>
-                      {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name_value[0]) }}">
+                      {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
                         {{ cookie_name_value[0] }}</a>={{ cookie_name_value[1] }} -
                       <button type="button" class="btn btn-info" onclick="whereAmI('{{ detail[1] }}')">Show node sending this cookie</button>
                   </li>
