@@ -331,8 +331,9 @@ class Lookyloo():
 
     def load_tree(self, capture_dir: Path) -> Tuple[str, str, str, str, Dict[str, str]]:
         meta = {}
-        with open((capture_dir / 'meta'), 'r') as f:
-            meta = json.load(f)
+        if (capture_dir / 'meta').exists():
+            with open((capture_dir / 'meta'), 'r') as f:
+                meta = json.load(f)
         ct = self.get_crawled_tree(capture_dir)
         return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
 
