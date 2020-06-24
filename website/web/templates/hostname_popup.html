@@ -122,9 +122,12 @@
             This file can be found <b>{{ url['body_hash_details']['hash_freq'] }}</b> times
             across all the captures on this lookyloo instance, in <b>{{ url['body_hash_details']['hash_domains_freq'] }}</b> unique domains.
             </br>
-            {% if url['body_hash_details']['other_captures'] %}
+
+            {% set total_captures = url['body_hash_details']['other_captures']['different_url']|length + url['body_hash_details']['other_captures']['same_url']|length %}
+
+            {% if total_captures > 0  %}
             <p>
-            The same file was seen in <b>{{ url['body_hash_details']['other_captures']|length }}</b> other captures.
+            The same file was seen in <b>{{ total_captures }}</b> other captures.
               <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#captureslist_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
                 Toggle list.
               </button>

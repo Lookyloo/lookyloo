@@ -756,13 +756,16 @@ class Lookyloo():
                     to_append['body_hash_details'] = freq
 
                     captures_list: Dict[str, List[Tuple[str, str, str, str]]] = {'same_url': [], 'different_url': []}
-                    for capture_uuid, url_uuid, url_hostname, same_url in self.indexing.get_body_hash_captures(url.body_hash, url.name):
-                        cache = self.capture_cache(capture_uuid)
+                    for h_capture_uuid, url_uuid, url_hostname, same_url in self.indexing.get_body_hash_captures(url.body_hash, url.name):
+                        if h_capture_uuid == capture_uuid:
+                            # Skip self.
+                            continue
+                        cache = self.capture_cache(h_capture_uuid)
                         if cache:
                             if same_url:
-                                captures_list['same_url'].append((capture_uuid, url_uuid, cache['title'], url_hostname))
+                                captures_list['same_url'].append((h_capture_uuid, url_uuid, cache['title'], url_hostname))
                             else:
-                                captures_list['different_url'].append((capture_uuid, url_uuid, cache['title'], url_hostname))
+                                captures_list['different_url'].append((h_capture_uuid, url_uuid, cache['title'], url_hostname))
 
                     to_append['body_hash_details']['other_captures'] = captures_list
 
