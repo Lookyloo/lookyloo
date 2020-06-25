@@ -84,6 +84,8 @@ class Lookyloo():
         uas = Counter([entry.split('|', 1)[1] for entry in entries])
         for ua, count in uas.most_common():
             parsed_ua = UserAgent(ua)
+            if not parsed_ua.platform or not parsed_ua.browser:
+                continue
             if parsed_ua.platform not in to_store:
                 to_store[parsed_ua.platform] = {}
             if f'{parsed_ua.browser} {parsed_ua.version}' not in to_store[parsed_ua.platform]:
