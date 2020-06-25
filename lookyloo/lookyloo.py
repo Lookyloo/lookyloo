@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import base64
-from collections import defaultdict
+from collections import defaultdict, Counter
 
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from email.message import EmailMessage
 from io import BufferedIOBase, BytesIO
 import ipaddress
@@ -23,6 +23,8 @@ from defang import refang  # type: ignore
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from redis import Redis
 from scrapysplashwrapper import crawl
+
+from werkzeug.useragents import UserAgent
 
 from .exceptions import NoValidHarFile, MissingUUID
 from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template
@@ -62,6 +64,36 @@ class Lookyloo():
 
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
+
+    def cache_user_agents(self, user_agent: str, remote_ip: str) -> None:
+        today = date.today().isoformat()
+        self.redis.zincrby(f'user_agents|{today}', 1, f'{remote_ip}|{user_agent}')
+
+    def build_ua_file(self) -> None:
+        yesterday = (date.today() - timedelta(days=1))
+        self_generated_ua_file_path = get_homedir() / 'own_user_agents' / str(yesterday.year) / f'{yesterday.month:02}'
+        safe_create_dir(self_generated_ua_file_path)
+        self_generated_ua_file = self_generated_ua_file_path / f'{yesterday.isoformat()}.json'
+        if self_generated_ua_file.exists():
+            return
+        entries = self.redis.zrevrange(f'user_agents|{yesterday.isoformat()}', 0, -1)
+        if not entries:
+            return
+
+        to_store: Dict[str, Any] = {'by_frequency': []}
+        uas = Counter([entry.split('|', 1)[1] for entry in entries])
+        for ua, count in uas.most_common():
+            parsed_ua = UserAgent(ua)
+            if parsed_ua.platform not in to_store:
+                to_store[parsed_ua.platform] = {}
+            if f'{parsed_ua.browser} {parsed_ua.version}' not in to_store[parsed_ua.platform]:
+                to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'] = []
+            to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'].append(parsed_ua.string)
+            to_store['by_frequency'].append({'os': parsed_ua.platform,
+                                             'browser': f'{parsed_ua.browser} {parsed_ua.version}',
+                                             'useragent': parsed_ua.string})
+        with self_generated_ua_file.open('w') as f:
+            json.dump(to_store, f, indent=2)
 
     def rebuild_cache(self) -> None:
         self.redis.flushdb()
@@ -314,6 +346,29 @@ class Lookyloo():
         except Exception as e:
             logging.exception(e)
 
+    def _ensure_meta(self, capture_dir: Path, tree: CrawledTree) -> None:
+        metafile = capture_dir / 'meta'
+        if metafile.exists():
+            return
+        ua = UserAgent(tree.root_hartree.user_agent)
+        to_dump = {}
+        if ua.platform:
+            to_dump['os'] = ua.platform
+        if ua.browser:
+            if ua.version:
+                to_dump['browser'] = f'{ua.browser} {ua.version}'
+            else:
+                to_dump['browser'] = ua.browser
+        if ua.language:
+            to_dump['language'] = ua.language
+
+        if not to_dump:
+            # UA not recognized
+            self.logger.info(f'Unable to recognize the User agent: {ua}')
+        to_dump['user_agent'] = ua.string
+        with metafile.open('w') as f:
+            json.dump(to_dump, f)
+
     def get_crawled_tree(self, capture_dir: Path) -> CrawledTree:
         pickle_file = capture_dir / 'tree.pickle'
         ct = self._load_pickle(pickle_file)
@@ -323,6 +378,7 @@ class Lookyloo():
             har_files = sorted(capture_dir.glob('*.har'))
             try:
                 ct = CrawledTree(har_files, uuid)
+                self._ensure_meta(capture_dir, ct)
             except Har2TreeError as e:
                 raise NoValidHarFile(e.message)
             with pickle_file.open('wb') as _p:

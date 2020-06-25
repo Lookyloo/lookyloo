@@ -143,7 +143,13 @@ def update_user_agents() -> None:
     except Exception:
         traceback.print_exc()
         return
-    soup = BeautifulSoup(r.text, 'html.parser')
+    to_store = ua_parser(r.text)
+    with open(ua_file_name, 'w') as f:
+        json.dump(to_store, f, indent=2)
+
+
+def ua_parser(html_content: str) -> Dict[str, Any]:
+    soup = BeautifulSoup(html_content, 'html.parser')
 
     try:
         uas = soup.find_all('textarea')[1].text
@@ -161,12 +167,11 @@ def update_user_agents() -> None:
             to_store[os][browser] = []
         to_store[os][browser].append(ua['useragent'])
         to_store['by_frequency'].append({'os': os, 'browser': browser, 'useragent': ua['useragent']})
-    with open(ua_file_name, 'w') as f:
-        json.dump(to_store, f, indent=2)
+    return to_store
 
 
-def get_user_agents() -> Dict[str, Any]:
-    ua_files_path = str(get_homedir() / 'user_agents' / '*' / '*' / '*.json')
+def get_user_agents(directory: str='user_agents') -> Dict[str, Any]:
+    ua_files_path = str(get_homedir() / directory / '*' / '*' / '*.json')
     paths = sorted(glob(ua_files_path), reverse=True)
     if not paths:
         update_user_agents()
