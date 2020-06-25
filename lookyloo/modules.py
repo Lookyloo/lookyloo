@@ -86,7 +86,7 @@ class SaneJavaScript():
             with sanejs_unknowns.open() as f:
                 unknown_hashes = [line.strip() for line in f.readlines()]
 
-        to_return = {h: details for h, details in self.skip_lookup.items() if h in sha512}
+        to_return: Dict[str, Union[str, List[str]]] = {h: details for h, details in self.skip_lookup.items() if h in sha512}
 
         to_lookup = [h for h in hashes if h not in self.skip_lookup]
         if not force:

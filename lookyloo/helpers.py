@@ -155,7 +155,7 @@ def ua_parser(html_content: str) -> Dict[str, Any]:
         uas = soup.find_all('textarea')[1].text
     except Exception:
         traceback.print_exc()
-        return
+        return {}
 
     to_store: Dict[str, Any] = {'by_frequency': []}
     for ua in json.loads(uas):

@@ -84,16 +84,16 @@ class Lookyloo():
         uas = Counter([entry.split('|', 1)[1] for entry in entries])
         for ua, count in uas.most_common():
             parsed_ua = UserAgent(ua)
-            if not parsed_ua.platform or not parsed_ua.browser:
+            if not parsed_ua.platform or not parsed_ua.browser:  # type: ignore
                 continue
-            if parsed_ua.platform not in to_store:
-                to_store[parsed_ua.platform] = {}
-            if f'{parsed_ua.browser} {parsed_ua.version}' not in to_store[parsed_ua.platform]:
-                to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'] = []
-            to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'].append(parsed_ua.string)
-            to_store['by_frequency'].append({'os': parsed_ua.platform,
-                                             'browser': f'{parsed_ua.browser} {parsed_ua.version}',
-                                             'useragent': parsed_ua.string})
+            if parsed_ua.platform not in to_store:  # type: ignore
+                to_store[parsed_ua.platform] = {}  # type: ignore
+            if f'{parsed_ua.browser} {parsed_ua.version}' not in to_store[parsed_ua.platform]:  # type: ignore
+                to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'] = []  # type: ignore
+            to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'].append(parsed_ua.string)  # type: ignore
+            to_store['by_frequency'].append({'os': parsed_ua.platform,  # type: ignore
+                                             'browser': f'{parsed_ua.browser} {parsed_ua.version}',  # type: ignore
+                                             'useragent': parsed_ua.string})  # type: ignore
         with self_generated_ua_file.open('w') as f:
             json.dump(to_store, f, indent=2)
 
@@ -354,20 +354,20 @@ class Lookyloo():
             return
         ua = UserAgent(tree.root_hartree.user_agent)
         to_dump = {}
-        if ua.platform:
-            to_dump['os'] = ua.platform
-        if ua.browser:
-            if ua.version:
-                to_dump['browser'] = f'{ua.browser} {ua.version}'
+        if ua.platform:  # type: ignore
+            to_dump['os'] = ua.platform  # type: ignore
+        if ua.browser:  # type: ignore
+            if ua.version:  # type: ignore
+                to_dump['browser'] = f'{ua.browser} {ua.version}'  # type: ignore
             else:
-                to_dump['browser'] = ua.browser
-        if ua.language:
-            to_dump['language'] = ua.language
+                to_dump['browser'] = ua.browser  # type: ignore
+        if ua.language:  # type: ignore
+            to_dump['language'] = ua.language  # type: ignore
 
         if not to_dump:
             # UA not recognized
             self.logger.info(f'Unable to recognize the User agent: {ua}')
-        to_dump['user_agent'] = ua.string
+        to_dump['user_agent'] = ua.string  # type: ignore
         with metafile.open('w') as f:
             json.dump(to_dump, f)
 

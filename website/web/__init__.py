@@ -62,7 +62,9 @@ app.jinja_env.globals.update(sizeof_fmt=sizeof_fmt)
 
 @app.after_request
 def after_request(response):
-    lookyloo.cache_user_agents(request.headers.get('User-Agent'), request.remote_addr)
+    ua = request.headers.get('User-Agent')
+    if ua:
+        lookyloo.cache_user_agents(ua, request.remote_addr)
     return response
 
 
@@ -121,14 +123,12 @@ def scrape_web():
                                          user_agent=request.form.get('user_agent'),
                                          os=request.form.get('os'), browser=request.form.get('browser'))
             return redirect(url_for('tree', tree_uuid=perma_uuid))
+    user_agents: Dict[str, Any] = {}
     if lookyloo.get_config('use_user_agents_users'):
         lookyloo.build_ua_file()
         # NOTE: For now, just generate the file, so we have an idea of the size
         # user_agents = get_user_agents('own_user_agents')
-        user_agents = {}
-        if not user_agents:
-            user_agents = get_user_agents()
-    else:
+    if not user_agents:
         user_agents = get_user_agents()
     user_agents.pop('by_frequency')
     return render_template('scrape.html', user_agents=user_agents)
