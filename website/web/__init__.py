@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import json
 
-from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash
+from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
 from flask_bootstrap import Bootstrap  # type: ignore
 from flask_httpauth import HTTPDigestAuth  # type: ignore
 
@@ -458,3 +458,26 @@ def index():
 @auth.login_required
 def index_hidden():
     return index_generic(show_hidden=True)
+
+
+# Query API
+
+@app.route('/json/<string:tree_uuid>/redirects', methods=['GET'])
+def json_redirects(tree_uuid: str):
+    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
+    if not capture_dir:
+        return {'error': 'Unknown UUID, try again later.'}
+    cache = lookyloo.capture_cache(capture_dir)
+    if not cache:
+        return {'error': 'UUID missing in cache, try again later.'}
+
+    to_return: Dict[str, list] = {'response': {'url': cache['url'], 'redirects': []}}
+    if not cache['redirects']:
+        to_return['response']['info'] = 'No redirects'
+        return to_return
+    if cache['incomplete_redirects']:
+        # Trigger tree build, get all redirects
+        lookyloo.load_tree(capture_dir)
+        cache = lookyloo.capture_cache(capture_dir)
+    to_return['response']['redirects'] = cache['redirects']
+    return jsonify(to_return)
