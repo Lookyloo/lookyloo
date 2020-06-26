@@ -471,7 +471,7 @@ def json_redirects(tree_uuid: str):
     if not cache:
         return {'error': 'UUID missing in cache, try again later.'}
 
-    to_return: Dict[str, list] = {'response': {'url': cache['url'], 'redirects': []}}
+    to_return: Dict[str, Any] = {'response': {'url': cache['url'], 'redirects': []}}
     if not cache['redirects']:
         to_return['response']['info'] = 'No redirects'
         return to_return
@@ -479,5 +479,9 @@ def json_redirects(tree_uuid: str):
         # Trigger tree build, get all redirects
         lookyloo.load_tree(capture_dir)
         cache = lookyloo.capture_cache(capture_dir)
-    to_return['response']['redirects'] = cache['redirects']
+        if cache:
+            to_return['response']['redirects'] = cache['redirects']
+    else:
+        to_return['response']['redirects'] = cache['redirects']
+
     return jsonify(to_return)
