@@ -63,8 +63,12 @@ app.jinja_env.globals.update(sizeof_fmt=sizeof_fmt)
 @app.after_request
 def after_request(response):
     ua = request.headers.get('User-Agent')
+    real_ip = request.headers.get('X-Real-IP')
     if ua:
-        lookyloo.cache_user_agents(ua, request.remote_addr)
+        if real_ip:
+            lookyloo.cache_user_agents(ua, real_ip)
+        else:
+            lookyloo.cache_user_agents(ua, request.remote_addr)
     return response
 
 
