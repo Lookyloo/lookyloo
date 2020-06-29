@@ -486,7 +486,7 @@ class Lookyloo():
         else:
             ua = user_agent
 
-        if depth > int(self.get_config('max_depth')):  # type: ignore
+        if int(depth) > int(self.get_config('max_depth')):  # type: ignore
             self.logger.warning(f'Not allowed to scrape on a depth higher than {self.get_config("max_depth")}: {depth}')
             depth = int(self.get_config('max_depth'))  # type: ignore
         items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
