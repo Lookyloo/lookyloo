@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Optional, Dict, Any
+from io import BytesIO, StringIO
+from typing import Optional, Dict, Any, List
 from urllib.parse import urljoin
 from pathlib import Path
 
@@ -43,3 +44,19 @@ class Lookyloo():
     def get_redirects(self, capture_uuid: str) -> Dict[str, Any]:
         r = self.session.get(urljoin(self.root_url, str(Path('json', capture_uuid, 'redirects'))))
         return r.json()
+
+    def get_screenshot(self, capture_uuid: str) -> BytesIO:
+        r = self.session.get(urljoin(self.root_url, str(Path('tree', capture_uuid, 'image'))))
+        return BytesIO(r.content)
+
+    def get_cookies(self, capture_uuid: str) -> List[Dict[str, str]]:
+        r = self.session.get(urljoin(self.root_url, str(Path('tree', capture_uuid, 'cookies'))))
+        return r.json()
+
+    def get_html(self, capture_uuid: str) -> StringIO:
+        r = self.session.get(urljoin(self.root_url, str(Path('tree', capture_uuid, 'html'))))
+        return StringIO(r.text)
+
+    def get_complete_capture(self, capture_uuid: str) -> BytesIO:
+        r = self.session.get(urljoin(self.root_url, str(Path('tree', capture_uuid, 'export'))))
+        return BytesIO(r.content)
