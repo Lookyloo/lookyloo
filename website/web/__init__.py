@@ -439,8 +439,8 @@ def body_hash_details(body_hash: str):
     captures, domains = lookyloo.get_body_hash_investigator(body_hash)
     return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures)
 
-# Query API
 
+# Query API
 
 @app.route('/json/<string:tree_uuid>/redirects', methods=['GET'])
 def json_redirects(tree_uuid: str):

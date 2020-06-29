@@ -4,6 +4,7 @@
 import argparse
 import logging
 
+from lookyloo.helpers import load_pickle_tree
 from lookyloo.lookyloo import Lookyloo, Indexing
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
@@ -23,5 +24,6 @@ if __name__ == '__main__':
     indexing = Indexing()
     indexing.clear_indexes()
     for capture_dir in lookyloo.capture_dirs:
-        indexing.index_cookies_capture(capture_dir)
-        indexing.index_body_hashes_capture(capture_dir)
+        tree = load_pickle_tree(capture_dir)
+        indexing.index_cookies_capture(tree)
+        indexing.index_body_hashes_capture(tree)

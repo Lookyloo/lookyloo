@@ -58,17 +58,7 @@ class Indexing():
     def get_cookies_names_captures(self, cookie_name: str) -> List[Tuple[str, str]]:
         return [uuids.split('|')for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]
 
-    def index_cookies_capture(self, capture_dir: Path) -> None:
-        print(f'Index cookies {capture_dir}')
-        try:
-            crawled_tree = load_pickle_tree(capture_dir)
-        except Exception as e:
-            print(e)
-            return
-
-        if not crawled_tree:
-            return
-
+    def index_cookies_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
             # Do not reindex
             return
@@ -115,17 +105,7 @@ class Indexing():
         return {'hash_freq': self.redis.zscore('body_hashes', body_hash),
                 'hash_domains_freq': self.redis.zcard(f'bh|{body_hash}')}
 
-    def index_body_hashes_capture(self, capture_dir: Path) -> None:
-        print(f'Index body hashes {capture_dir}')
-        try:
-            crawled_tree = load_pickle_tree(capture_dir)
-        except Exception as e:
-            print(e)
-            return
-
-        if not crawled_tree:
-            return
-
+    def index_body_hashes_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
             # Do not reindex
             return
@@ -239,6 +219,8 @@ class Lookyloo():
         har_files = sorted(capture_dir.glob('*.har'))
         try:
             ct = CrawledTree(har_files, uuid)
+            self.indexing.index_cookies_capture(ct)
+            self.indexing.index_body_hashes_capture(ct)
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 
