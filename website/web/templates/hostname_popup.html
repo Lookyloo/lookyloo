@@ -163,7 +163,7 @@
               </div>
             </div>
             {% else %}
-            <p>All the captures are loading it from the same URL.</p>
+            <p>This file is loaded multiple times in this capture.</p>
             {% endif %}
             <p><a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash) }}">
               Show more information about this response body.
