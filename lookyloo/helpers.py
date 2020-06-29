@@ -13,6 +13,8 @@ from glob import glob
 import json
 import traceback
 from urllib.parse import urlparse
+import pickle
+from har2tree import CrawledTree
 
 from bs4 import BeautifulSoup  # type: ignore
 try:
@@ -210,3 +212,17 @@ def load_cookies(cookie_pseudofile: Optional[BufferedIOBase]=None) -> List[Dict[
     except Exception as e:
         print(f'Unable to load the cookie file: {e}')
     return to_return
+
+
+def load_pickle_tree(capture_dir: Path) -> Optional[CrawledTree]:
+    pickle_file = capture_dir / 'tree.pickle'
+    if pickle_file.exists():
+        with pickle_file.open('rb') as _p:
+            return pickle.load(_p)
+    return None
+
+
+def remove_pickle_tree(capture_dir: Path) -> None:
+    pickle_file = capture_dir / 'tree.pickle'
+    if pickle_file.exists():
+        pickle_file.unlink()

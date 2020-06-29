@@ -13,7 +13,7 @@ setup(
     description='Web interface to track the trackers.',
     packages=['lookyloo'],
     scripts=['bin/start_website.py', 'bin/start.py', 'bin/run_backend.py', 'bin/async_scrape.py',
-             'bin/shutdown.py', 'bin/stop.py'],
+             'bin/shutdown.py', 'bin/stop.py', 'bin/rebuild_caches.py'],
     include_package_data=True,
     classifiers=[
         'License :: OSI Approved :: BSD License',

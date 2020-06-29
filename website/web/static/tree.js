@@ -77,30 +77,15 @@ function urlnode_click(d) {
     });
 };
 
-d3.selection.prototype.moveToFront = function() {
-  return this.each(function() {
-    this.parentNode.appendChild(this);
-  });
-};
-
-d3.selection.prototype.moveToBack = function() {
-    return this.each(function() {
-        var firstChild = this.parentNode.firstChild;
-        if (firstChild) {
-            this.parentNode.insertBefore(this, firstChild);
-        }
-    });
-};
-
 function hostnode_click_popup(d) {
     window.open('/tree/' + treeUUID + '/hostname_popup/' + d.data.uuid, '_blank', 'width=1024,height=768,left=200,top=100');
 };
 
-function ProcessChildMessage(message) {
-    var element = document.getElementById("node_" + message);
+function ProcessChildMessage(urlnode_uuid) {
+    var element = document.getElementById("node_" + urlnode_uuid);
     element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
 
-    var to_blink = d3.select("#node_" + message).select('text');
+    var to_blink = d3.select("#node_" + urlnode_uuid).select('text');
     to_blink
         .transition().duration(500)  //Set transition
         .style('fill', 'red')

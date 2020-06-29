@@ -35,6 +35,14 @@
 	  });
   });
   </script>
+  {% if urlnode_uuid %}
+  <script>
+  history.scrollRestoration = "manual";
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ProcessChildMessage('{{urlnode_uuid}}');
+  });
+  </script>
+  {% endif%}
 {% endblock %}
 
 {% block content %}

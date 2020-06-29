@@ -26,6 +26,7 @@ run_backend = "bin/run_backend.py"
 async_scrape = "bin/async_scrape.py"
 shutdown = "bin/shutdown.py"
 stop = "bin/stop.py"
+rebuild_caches = "bin/rebuild_caches.py"
 
 
 [tool.poetry.dependencies]

@@ -19,6 +19,7 @@ from urllib.parse import urlsplit
 from uuid import uuid4
 from zipfile import ZipFile
 
+import publicsuffix2  # type: ignore
 from defang import refang  # type: ignore
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from redis import Redis
@@ -27,7 +28,7 @@ from scrapysplashwrapper import crawl
 from werkzeug.useragents import UserAgent
 
 from .exceptions import NoValidHarFile, MissingUUID
-from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template
+from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template, load_pickle_tree, remove_pickle_tree
 from .modules import VirusTotal, SaneJavaScript, PhishingInitiative
 
 
@@ -97,17 +98,60 @@ class Lookyloo():
         with self_generated_ua_file.open('w') as f:
             json.dump(to_store, f, indent=2)
 
+    def cache_tree(self, capture_uuid) -> None:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+
+        with open((capture_dir / 'uuid'), 'r') as f:
+            uuid = f.read()
+        har_files = sorted(capture_dir.glob('*.har'))
+        try:
+            ct = CrawledTree(har_files, uuid)
+        except Har2TreeError as e:
+            raise NoValidHarFile(e.message)
+
+        with (capture_dir / 'tree.pickle').open('wb') as _p:
+            pickle.dump(ct, _p)
+
+    def get_crawled_tree(self, capture_uuid: str) -> CrawledTree:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        ct = load_pickle_tree(capture_dir)
+        if not ct:
+            self.cache_tree(capture_uuid)
+            ct = load_pickle_tree(capture_dir)
+
+        if not ct:
+            raise NoValidHarFile(f'Unable to get tree from {capture_dir}')
+
+        return ct
+
+    def load_tree(self, capture_uuid: str) -> Tuple[str, str, str, str, Dict[str, str]]:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        meta = {}
+        if (capture_dir / 'meta').exists():
+            with open((capture_dir / 'meta'), 'r') as f:
+                meta = json.load(f)
+        ct = self.get_crawled_tree(capture_uuid)
+        return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
+
+    def remove_pickle(self, capture_uuid: str) -> None:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        remove_pickle_tree(capture_dir)
+
     def rebuild_cache(self) -> None:
         self.redis.flushdb()
         self._init_existing_dumps()
 
-    def remove_pickle(self, capture_dir: Path) -> None:
-        if (capture_dir / 'tree.pickle').exists():
-            (capture_dir / 'tree.pickle').unlink()
-
     def rebuild_all(self) -> None:
         for capture_dir in self.capture_dirs:
-            self.remove_pickle(capture_dir)
+            remove_pickle_tree(capture_dir)
         self.rebuild_cache()
 
     def get_config(self, entry: str) -> Any:
@@ -124,29 +168,39 @@ class Lookyloo():
             sample_config = json.load(_c)
         return sample_config[entry]
 
-    def get_urlnode_from_tree(self, capture_dir: Path, node_uuid: str) -> URLNode:
-        ct = self._load_pickle(capture_dir / 'tree.pickle')
+    def get_urlnode_from_tree(self, capture_uuid: str, node_uuid: str) -> URLNode:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        ct = load_pickle_tree(capture_dir)
         if not ct:
             raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
         return ct.root_hartree.get_url_node_by_uuid(node_uuid)
 
-    def get_hostnode_from_tree(self, capture_dir: Path, node_uuid: str) -> HostNode:
-        ct = self._load_pickle(capture_dir / 'tree.pickle')
+    def get_hostnode_from_tree(self, capture_uuid: str, node_uuid: str) -> HostNode:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        ct = load_pickle_tree(capture_dir)
         if not ct:
             raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
         return ct.root_hartree.get_host_node_by_uuid(node_uuid)
 
-    def get_statistics(self, capture_dir: Path) -> Dict[str, Any]:
-        # We need the pickle
-        ct = self._load_pickle(capture_dir / 'tree.pickle')
+    def get_statistics(self, capture_uuid: str) -> Dict[str, Any]:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        ct = load_pickle_tree(capture_dir)
         if not ct:
             self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_dir}) is cached.')
             return {}
         return ct.root_hartree.stats
 
-    def trigger_modules(self, capture_dir: Path, force: bool=False) -> None:
-        # We need the pickle
-        ct = self._load_pickle(capture_dir / 'tree.pickle')
+    def trigger_modules(self, capture_uuid: str, force: bool=False) -> None:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        ct = load_pickle_tree(capture_dir)
         if not ct:
             self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_dir}) is cached.')
             return
@@ -165,8 +219,11 @@ class Lookyloo():
             else:
                 self.vt.url_lookup(ct.root_hartree.har.root_url, force)
 
-    def get_modules_responses(self, capture_dir: Path) -> Optional[Dict[str, Any]]:
-        ct = self._load_pickle(capture_dir / 'tree.pickle')
+    def get_modules_responses(self, capture_uuid: str) -> Optional[Dict[str, Any]]:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        ct = load_pickle_tree(capture_dir)
         if not ct:
             self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_dir}) is cached.')
             return None
@@ -219,7 +276,7 @@ class Lookyloo():
         incomplete_redirects = False
         if redirects and har.need_tree_redirects:
             # load tree from disk, get redirects
-            ct = self._load_pickle(capture_dir / 'tree.pickle')
+            ct = load_pickle_tree(capture_dir)
             if ct:
                 redirects = ct.redirects
             else:
@@ -231,6 +288,7 @@ class Lookyloo():
                                              'timestamp': har.initial_start_time,
                                              'url': har.root_url,
                                              'redirects': json.dumps(redirects),
+                                             'capture_dir': str(capture_dir),
                                              'incomplete_redirects': 1 if incomplete_redirects else 0}
         if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
             cache['no_index'] = 1
@@ -238,19 +296,27 @@ class Lookyloo():
         self.redis.hmset(str(capture_dir), cache)
         self.redis.hset('lookup_dirs', uuid, str(capture_dir))
 
-    def capture_cache(self, capture_dir: Path) -> Optional[Dict[str, Any]]:
+    @property
+    def capture_uuids(self):
+        return self.redis.hkeys('lookup_dirs')
+
+    def capture_cache(self, capture_uuid: str) -> Dict[str, Any]:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
         if self.redis.hget(str(capture_dir), 'incomplete_redirects') == '1':
             # try to rebuild the cache
             self._set_capture_cache(capture_dir, force=True)
         cached = self.redis.hgetall(str(capture_dir))
-        if all(key in cached.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects']):
+        if all(key in cached.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir']):
             cached['redirects'] = json.loads(cached['redirects'])
+            cached['capture_dir'] = Path(cached['capture_dir'])
             return cached
         elif 'error' in cached:
             return cached
         else:
             self.logger.warning(f'Cache ({capture_dir}) is invalid: {json.dumps(cached, indent=2)}')
-            return None
+            return {}
 
     def _init_existing_dumps(self) -> None:
         for capture_dir in self.capture_dirs:
@@ -270,8 +336,8 @@ class Lookyloo():
                     f.write(str(uuid4()))
         return sorted(self.scrape_dir.iterdir(), reverse=True)
 
-    def lookup_capture_dir(self, uuid: str) -> Union[Path, None]:
-        capture_dir = self.redis.hget('lookup_dirs', uuid)
+    def lookup_capture_dir(self, capture_uuid: str) -> Union[Path, None]:
+        capture_dir = self.redis.hget('lookup_dirs', capture_uuid)
         if capture_dir:
             return Path(capture_dir)
         return None
@@ -300,28 +366,20 @@ class Lookyloo():
             return True
         return False
 
-    def _load_pickle(self, pickle_file: Path) -> Optional[CrawledTree]:
-        if pickle_file.exists():
-            with pickle_file.open('rb') as _p:
-                return pickle.load(_p)
-        return None
-
     def send_mail(self, capture_uuid: str, email: str='', comment: str='') -> None:
         if not self.get_config('enable_mail_notification'):
             return
 
         redirects = ''
         initial_url = ''
-        capture_dir = self.lookup_capture_dir(capture_uuid)
-        if capture_dir:
-            cache = self.capture_cache(capture_dir)
-            if cache:
-                initial_url = cache['url']
-                if 'redirects' in cache and cache['redirects']:
-                    redirects = "Redirects:\n"
-                    redirects += '\n'.join(cache['redirects'])
-                else:
-                    redirects = "No redirects."
+        cache = self.capture_cache(capture_uuid)
+        if cache:
+            initial_url = cache['url']
+            if 'redirects' in cache and cache['redirects']:
+                redirects = "Redirects:\n"
+                redirects += '\n'.join(cache['redirects'])
+            else:
+                redirects = "No redirects."
 
         email_config = self.get_config('email')
         msg = EmailMessage()
@@ -371,31 +429,10 @@ class Lookyloo():
         with metafile.open('w') as f:
             json.dump(to_dump, f)
 
-    def get_crawled_tree(self, capture_dir: Path) -> CrawledTree:
-        pickle_file = capture_dir / 'tree.pickle'
-        ct = self._load_pickle(pickle_file)
-        if not ct:
-            with open((capture_dir / 'uuid'), 'r') as f:
-                uuid = f.read()
-            har_files = sorted(capture_dir.glob('*.har'))
-            try:
-                ct = CrawledTree(har_files, uuid)
-                self._ensure_meta(capture_dir, ct)
-            except Har2TreeError as e:
-                raise NoValidHarFile(e.message)
-            with pickle_file.open('wb') as _p:
-                pickle.dump(ct, _p)
-        return ct
-
-    def load_tree(self, capture_dir: Path) -> Tuple[str, str, str, str, Dict[str, str]]:
-        meta = {}
-        if (capture_dir / 'meta').exists():
-            with open((capture_dir / 'meta'), 'r') as f:
-                meta = json.load(f)
-        ct = self.get_crawled_tree(capture_dir)
-        return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
-
-    def _get_raw(self, capture_dir: Path, extension: str='*', all_files: bool=True) -> BytesIO:
+    def _get_raw(self, capture_uuid: str, extension: str='*', all_files: bool=True) -> BytesIO:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
         all_paths = sorted(list(capture_dir.glob(f'*.{extension}')))
         if not all_files:
             # Only get the first one in the list
@@ -410,17 +447,17 @@ class Lookyloo():
         to_return.seek(0)
         return to_return
 
-    def get_html(self, capture_dir: Path, all_html: bool=False) -> BytesIO:
-        return self._get_raw(capture_dir, 'html', all_html)
+    def get_html(self, capture_uuid: str, all_html: bool=False) -> BytesIO:
+        return self._get_raw(capture_uuid, 'html', all_html)
 
-    def get_cookies(self, capture_dir: Path, all_cookies: bool=False) -> BytesIO:
-        return self._get_raw(capture_dir, 'cookies.json', all_cookies)
+    def get_cookies(self, capture_uuid: str, all_cookies: bool=False) -> BytesIO:
+        return self._get_raw(capture_uuid, 'cookies.json', all_cookies)
 
-    def get_screenshot(self, capture_dir: Path, all_images: bool=False) -> BytesIO:
-        return self._get_raw(capture_dir, 'png', all_images)
+    def get_screenshot(self, capture_uuid: str, all_images: bool=False) -> BytesIO:
+        return self._get_raw(capture_uuid, 'png', all_images)
 
-    def get_capture(self, capture_dir: Path) -> BytesIO:
-        return self._get_raw(capture_dir)
+    def get_capture(self, capture_uuid: str) -> BytesIO:
+        return self._get_raw(capture_uuid)
 
     def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None,
                depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
@@ -505,8 +542,12 @@ class Lookyloo():
         self._set_capture_cache(dirpath)
         return perma_uuid
 
-    def get_hostnode_investigator(self, capture_dir: Path, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
-        ct = self._load_pickle(capture_dir / 'tree.pickle')
+    def get_hostnode_investigator(self, capture_uuid: str, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find {capture_uuid}')
+
+        ct = load_pickle_tree(capture_dir)
         if not ct:
             raise MissingUUID(f'Unable to find {capture_dir}')
         hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
@@ -536,16 +577,17 @@ class Lookyloo():
             else:
                 to_append['url_path_short'] = to_append['url_path']
 
-            # Optional: SaneJS information
-            if hasattr(url, 'body_hash') and url.body_hash in sanejs_lookups:
-                if sanejs_lookups[url.body_hash]:
-                    if isinstance(sanejs_lookups[url.body_hash], list):
-                        libname, version, path = sanejs_lookups[url.body_hash][0].split("|")
-                        other_files = len(sanejs_lookups[url.body_hash])
-                        to_append['sane_js'] = (libname, version, path, other_files)
-                    else:
-                        # Predefined generic file
-                        to_append['sane_js'] = sanejs_lookups[url.body_hash]
+            if not url.empty_response:
+                # Optional: SaneJS information
+                if url.body_hash in sanejs_lookups:
+                    if sanejs_lookups[url.body_hash]:
+                        if isinstance(sanejs_lookups[url.body_hash], list):
+                            libname, version, path = sanejs_lookups[url.body_hash][0].split("|")
+                            other_files = len(sanejs_lookups[url.body_hash])
+                            to_append['sane_js'] = (libname, version, path, other_files)
+                        else:
+                            # Predefined generic file
+                            to_append['sane_js'] = sanejs_lookups[url.body_hash]
 
             # Optional: Cookies sent to server in request -> map to nodes who set the cookie in response
             if hasattr(url, 'cookies_sent'):

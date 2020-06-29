@@ -14,7 +14,7 @@ from flask_httpauth import HTTPDigestAuth  # type: ignore
 
 from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents
 from lookyloo.lookyloo import Lookyloo
-from lookyloo.exceptions import NoValidHarFile
+from lookyloo.exceptions import NoValidHarFile, MissingUUID
 from .proxied import ReverseProxied
 
 from typing import Optional, Dict, Any
@@ -96,11 +96,11 @@ def rebuild_cache():
 @app.route('/tree/<string:tree_uuid>/rebuild')
 @auth.login_required
 def rebuild_tree(tree_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if capture_dir:
-        lookyloo.remove_pickle(capture_dir)
+    try:
+        lookyloo.remove_pickle(tree_uuid)
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    return redirect(url_for('index'))
+    except Exception:
+        return redirect(url_for('index'))
 
 
 @app.route('/submit', methods=['POST', 'GET'])
@@ -140,10 +140,7 @@ def scrape_web():
 
 @app.route('/tree/<string:tree_uuid>/hostname/<string:node_uuid>/text', methods=['GET'])
 def hostnode_details_text(tree_uuid: str, node_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return
-    hostnode = lookyloo.get_hostnode_from_tree(capture_dir, node_uuid)
+    hostnode = lookyloo.get_hostnode_from_tree(tree_uuid, node_uuid)
     urls = []
     for url in hostnode.urls:
         urls.append(url.name)
@@ -159,10 +156,6 @@ def hostnode_details_text(tree_uuid: str, node_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/hostname_popup/<string:node_uuid>', methods=['GET'])
 def hostnode_popup(tree_uuid: str, node_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return
-
     keys_response = {
         'js': "/static/javascript.png",
         'exe': "/static/exe.png",
@@ -182,7 +175,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
         'request_cookie': "/static/cookie_read.png",
     }
 
-    hostnode, urls = lookyloo.get_hostnode_investigator(capture_dir, node_uuid)
+    hostnode, urls = lookyloo.get_hostnode_investigator(tree_uuid, node_uuid)
 
     return render_template('hostname_popup.html',
                            tree_uuid=tree_uuid,
@@ -195,10 +188,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/request_cookies', methods=['GET'])
 def urlnode_request_cookies(tree_uuid: str, node_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return
-    urlnode = lookyloo.get_urlnode_from_tree(capture_dir, node_uuid)
+    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.request_cookie:
         return
 
@@ -208,10 +198,7 @@ def urlnode_request_cookies(tree_uuid: str, node_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/response_cookies', methods=['GET'])
 def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return
-    urlnode = lookyloo.get_urlnode_from_tree(capture_dir, node_uuid)
+    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.response_cookie:
         return
 
@@ -221,10 +208,7 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/posted_data', methods=['GET'])
 def urlnode_post_request(tree_uuid: str, node_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return
-    urlnode = lookyloo.get_urlnode_from_tree(capture_dir, node_uuid)
+    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.posted_data:
         return
     if isinstance(urlnode.posted_data, (dict, list)):
@@ -244,10 +228,7 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>', methods=['GET'])
 def urlnode_details(tree_uuid: str, node_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return
-    urlnode = lookyloo.get_urlnode_from_tree(capture_dir, node_uuid)
+    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     to_return = BytesIO()
     got_content = False
     if hasattr(urlnode, 'body'):
@@ -267,28 +248,19 @@ def urlnode_details(tree_uuid: str, node_uuid: str):
 @app.route('/tree/<string:tree_uuid>/trigger_modules/', defaults={'force': False})
 @app.route('/tree/<string:tree_uuid>/trigger_modules/<int:force>', methods=['GET'])
 def trigger_modules(tree_uuid: str, force: int):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return Response('Not available.', mimetype='text/text')
-    lookyloo.trigger_modules(capture_dir, True if force else False)
+    lookyloo.trigger_modules(tree_uuid, True if force else False)
     return redirect(url_for('modules', tree_uuid=tree_uuid))
 
 
 @app.route('/tree/<string:tree_uuid>/stats', methods=['GET'])
 def stats(tree_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return Response('Not available.', mimetype='text/text')
-    stats = lookyloo.get_statistics(capture_dir)
+    stats = lookyloo.get_statistics(tree_uuid)
     return render_template('statistics.html', uuid=tree_uuid, stats=stats)
 
 
 @app.route('/tree/<string:tree_uuid>/modules', methods=['GET'])
 def modules(tree_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return Response('Not available.', mimetype='text/text')
-    modules_responses = lookyloo.get_modules_responses(capture_dir)
+    modules_responses = lookyloo.get_modules_responses(tree_uuid)
     if not modules_responses:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
 
@@ -319,50 +291,35 @@ def modules(tree_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
 def image(tree_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return Response('Not available.', mimetype='text/text')
-    to_return = lookyloo.get_screenshot(capture_dir)
+    to_return = lookyloo.get_screenshot(tree_uuid)
     return send_file(to_return, mimetype='image/png',
                      as_attachment=True, attachment_filename='image.png')
 
 
 @app.route('/tree/<string:tree_uuid>/html', methods=['GET'])
 def html(tree_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return Response('Not available.', mimetype='text/text')
-    to_return = lookyloo.get_html(capture_dir)
+    to_return = lookyloo.get_html(tree_uuid)
     return send_file(to_return, mimetype='text/html',
                      as_attachment=True, attachment_filename='page.html')
 
 
 @app.route('/tree/<string:tree_uuid>/cookies', methods=['GET'])
 def cookies(tree_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return Response('Not available.', mimetype='text/text')
-    to_return = lookyloo.get_cookies(capture_dir)
+    to_return = lookyloo.get_cookies(tree_uuid)
     return send_file(to_return, mimetype='application/json',
                      as_attachment=True, attachment_filename='cookies.json')
 
 
 @app.route('/tree/<string:tree_uuid>/export', methods=['GET'])
 def export(tree_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return Response('Not available.', mimetype='text/text')
-    to_return = lookyloo.get_capture(capture_dir)
+    to_return = lookyloo.get_capture(tree_uuid)
     return send_file(to_return, mimetype='application/zip',
                      as_attachment=True, attachment_filename='capture.zip')
 
 
 @app.route('/redirects/<string:tree_uuid>', methods=['GET'])
 def redirects(tree_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return Response('Not available.', mimetype='text/text')
-    cache = lookyloo.capture_cache(capture_dir)
+    cache = lookyloo.capture_cache(tree_uuid)
     if not cache:
         return Response('Not available.', mimetype='text/text')
     if not cache['redirects']:
@@ -374,9 +331,7 @@ def redirects(tree_uuid: str):
 
 @app.route('/cache_tree/<string:tree_uuid>', methods=['GET'])
 def cache_tree(tree_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if capture_dir:
-        lookyloo.load_tree(capture_dir)
+    lookyloo.cache_tree(tree_uuid)
     return redirect(url_for('index'))
 
 
@@ -389,16 +344,17 @@ def send_mail(tree_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>', methods=['GET'])
-def tree(tree_uuid: str):
+@app.route('/tree/<string:tree_uuid>/<string:urlnode_uuid>', methods=['GET'])
+def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
     if tree_uuid == 'False':
         flash("Unable to process your request. The domain may not exist, or splash isn't started", 'error')
         return redirect(url_for('index'))
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
+    try:
+        cache = lookyloo.capture_cache(tree_uuid)
+    except MissingUUID:
         flash(f'Unable to find this UUID ({tree_uuid}). The capture may still be ongoing, try again later.', 'error')
         return redirect(url_for('index'))
 
-    cache = lookyloo.capture_cache(capture_dir)
     if not cache:
         flash('Invalid cache.', 'error')
         return redirect(url_for('index'))
@@ -412,10 +368,12 @@ def tree(tree_uuid: str):
             enable_mail_notification = True
         else:
             enable_mail_notification = False
-        tree_json, start_time, user_agent, root_url, meta = lookyloo.load_tree(capture_dir)
+        tree_json, start_time, user_agent, root_url, meta = lookyloo.load_tree(tree_uuid)
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
-                               meta=meta, enable_mail_notification=enable_mail_notification)
+                               meta=meta, enable_mail_notification=enable_mail_notification,
+                               urlnode_uuid=urlnode_uuid)
+
     except NoValidHarFile as e:
         return render_template('error.html', error_message=e)
 
@@ -427,8 +385,8 @@ def index_generic(show_hidden: bool=False):
         cut_time = datetime.now() - timedelta(**time_delta_on_index)
     else:
         cut_time = None  # type: ignore
-    for capture_dir in lookyloo.capture_dirs:
-        cached = lookyloo.capture_cache(capture_dir)
+    for capture_uuid in lookyloo.capture_uuids:
+        cached = lookyloo.capture_cache(capture_uuid)
         if not cached or 'error' in cached:
             continue
         if show_hidden:
@@ -459,15 +417,12 @@ def index():
 def index_hidden():
     return index_generic(show_hidden=True)
 
-
 # Query API
+
 
 @app.route('/json/<string:tree_uuid>/redirects', methods=['GET'])
 def json_redirects(tree_uuid: str):
-    capture_dir = lookyloo.lookup_capture_dir(tree_uuid)
-    if not capture_dir:
-        return {'error': 'Unknown UUID, try again later.'}
-    cache = lookyloo.capture_cache(capture_dir)
+    cache = lookyloo.capture_cache(tree_uuid)
     if not cache:
         return {'error': 'UUID missing in cache, try again later.'}
 
@@ -477,8 +432,8 @@ def json_redirects(tree_uuid: str):
         return to_return
     if cache['incomplete_redirects']:
         # Trigger tree build, get all redirects
-        lookyloo.load_tree(capture_dir)
-        cache = lookyloo.capture_cache(capture_dir)
+        lookyloo.load_tree(tree_uuid)
+        cache = lookyloo.capture_cache(tree_uuid)
         if cache:
             to_return['response']['redirects'] = cache['redirects']
     else:

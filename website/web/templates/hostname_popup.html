@@ -105,15 +105,15 @@
 
           {% if url['sane_js'] %}
           <div>
-            {% if url['sane_js'] is string %}
-              {{ url['sane_js'] }}
-            {% else %}
-              This file is known as part of <b>{{ url['sane_js'][0] }}</b>
-              version <b>{{ url['sane_js'][1] }}</b>: <b>{{ url['sane_js'][2] }}</b>.
-              {% if url['sane_js'][3] > 1%}
+          {% if url['sane_js'] is string %}
+            <b>{{ url['sane_js'] }} </b>
+          {% else %}
+            This file is known as part of <b>{{ url['sane_js'][0] }}</b>
+            version <b>{{ url['sane_js'][1] }}</b>: <b>{{ url['sane_js'][2] }}</b>.
+            {% if url['sane_js'][3] > 1%}
               It is also present in <b>{{ url['sane_js'][3] -1 }}</b> other libraries.
-              {%endif%}
             {%endif%}
+          {%endif%}
           </div>
           {% endif %}
 
