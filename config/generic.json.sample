@@ -10,6 +10,7 @@
     "days": 0,
     "hours": 0
   },
+  "max_depth": 1,
   "use_user_agents_users": false,
   "enable_mail_notification": false,
   "email": {
@@ -28,6 +29,7 @@
     "default_user_agent": "Ultimate fallback if the capture form, or the asynchronous submission, don't provide a UA",
     "cache_clean_user": "Format: {username: password}",
     "time_delta_on_index": "Time interval of the capture displayed on the index",
+    "max_depth": "Maximum depth for scraping. Anything > 1 will be exponentially bigger.",
     "use_user_agents_users": "Only usable for medium/high use instances: use the user agents of the users of the platform",
     "enable_mail_notification": "Enable email notification or not",
     "email": "Configuration for sending email notifications."

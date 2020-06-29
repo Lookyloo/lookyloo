@@ -19,7 +19,6 @@ from urllib.parse import urlsplit
 from uuid import uuid4
 from zipfile import ZipFile
 
-import publicsuffix2  # type: ignore
 from defang import refang  # type: ignore
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from redis import Redis
@@ -404,7 +403,7 @@ class Lookyloo():
             s.send_message(msg)
             s.quit()
         except Exception as e:
-            logging.exception(e)
+            self.logger.exception(e)
 
     def _ensure_meta(self, capture_dir: Path, tree: CrawledTree) -> None:
         metafile = capture_dir / 'meta'
@@ -486,6 +485,10 @@ class Lookyloo():
             ua: str = self.get_config('default_user_agent')  # type: ignore
         else:
             ua = user_agent
+
+        if depth > self.get_config('max_depth'):  # type: ignore
+            self.logger.warning(f'Not allowed to scrape on a depth higher than {self.get_config("max_depth")}: {depth}')
+            depth = self.get_config('max_depth')  # type: ignore
         items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
                       log_enabled=True, log_level=self.get_config('splash_loglevel'))
         if not items:
