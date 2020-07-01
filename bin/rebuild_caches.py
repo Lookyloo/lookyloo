@@ -24,6 +24,15 @@ if __name__ == '__main__':
     indexing = Indexing()
     indexing.clear_indexes()
     for capture_dir in lookyloo.capture_dirs:
-        tree = load_pickle_tree(capture_dir)
-        indexing.index_cookies_capture(tree)
-        indexing.index_body_hashes_capture(tree)
+        try:
+            tree = load_pickle_tree(capture_dir)
+        except Exception as e:
+            print(capture_dir, e)
+        if tree:
+            indexing.index_cookies_capture(tree)
+            indexing.index_body_hashes_capture(tree)
+        else:
+            try:
+                lookyloo.cache_tree(capture_dir=capture_dir)
+            except Exception as e:
+                print(capture_dir, e)
