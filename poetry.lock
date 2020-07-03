@@ -167,7 +167,7 @@ description = "A Python module to bypass Cloudflare's anti-bot page."
 name = "cloudscraper"
 optional = false
 python-versions = "*"
-version = "1.2.40"
+version = "1.2.42"
 
 [package.dependencies]
 pyparsing = ">=2.4.7"
@@ -682,7 +682,7 @@ develop = true
 name = "pylookyloo"
 optional = false
 python-versions = "^3.6"
-version = "1.1"
+version = "1.1.1"
 
 [package.dependencies]
 requests = "^2.22.0"
@@ -866,7 +866,7 @@ description = "Scrapy splash wrapper as a standalone library."
 name = "scrapysplashwrapper"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.1"
+version = "1.1.1"
 
 [package.dependencies]
 scrapy = ">=1.8.0,<2.0.0"
@@ -1201,8 +1201,8 @@ click = [
     {file = "click-7.1.2.tar.gz", hash = "sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a"},
 ]
 cloudscraper = [
-    {file = "cloudscraper-1.2.40-py2.py3-none-any.whl", hash = "sha256:30289d0f98413fe3c3b74c9f7547b8e6fff6aca698c23445996cf6bf80a8bad0"},
-    {file = "cloudscraper-1.2.40.tar.gz", hash = "sha256:e711f8a41393d9755178d6290fccbfc84f0b9db20bbdeababcf8cd9232f380cd"},
+    {file = "cloudscraper-1.2.42-py2.py3-none-any.whl", hash = "sha256:c8c255aaa84e80d2cb5bf2c1ad1ffa000ce864595ca4cdb75ff7aab6f97befec"},
+    {file = "cloudscraper-1.2.42.tar.gz", hash = "sha256:1d4e158de3be7a4e651083f13a14a25b75853186e989d9d97db1a08056b7a0b6"},
 ]
 colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
@@ -1543,8 +1543,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.7.2-py2.py3-none-any.whl", hash = "sha256:71ac958370f8732fec746a25a8235b03a4d3c4c93a59be51aa8e910a08cfe511"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.1-py3-none-any.whl", hash = "sha256:e2695bcdafde424dc531dddbd6519abe093c5edf70aef36257648b85969eefb5"},
-    {file = "scrapysplashwrapper-1.1.tar.gz", hash = "sha256:8a27adf4efdd2145f525cf046dca3c224aa2dea0b7a43398b5ec9a6af0d698bc"},
+    {file = "scrapysplashwrapper-1.1.1-py3-none-any.whl", hash = "sha256:660275a5a6f899e09abf8b732e0724a280cab6b44cb3405c85a92e25b87dac6b"},
+    {file = "scrapysplashwrapper-1.1.1.tar.gz", hash = "sha256:1ac854f4c4e5a7a594d2e1a39d94330b67359420e16c7f1adc2a016579fcc16c"},
 ]
 service-identity = [
     {file = "service_identity-18.1.0-py2.py3-none-any.whl", hash = "sha256:001c0707759cb3de7e49c078a7c0c9cd12594161d3bf06b9c254fdcb1a60dc36"},

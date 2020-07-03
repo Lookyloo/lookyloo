@@ -259,15 +259,22 @@ class Lookyloo():
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
             with (Path(capture_dir) / 'error.txt').open() as _error:
-                error_cache['error'] = f'Capture in {capture_dir.name} has an error: {_error.read()}, see https://splash.readthedocs.io/en/stable/scripting-ref.html#splash-go and https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum'
-        elif not har_files:
+                content = _error.read()
+                try:
+                    error_to_cache = json.loads(content)['details']
+                except json.decoder.JSONDecodeError:
+                    # old format
+                    error_to_cache = content
+                error_cache['error'] = f'The capture has an error: {error_to_cache}'
+
+        if not har_files:
             error_cache['error'] = f'No har files in {capture_dir}'
+            return
 
         if error_cache:
             self.logger.warning(error_cache['error'])
             self.redis.hmset(str(capture_dir), error_cache)
             self.redis.hset('lookup_dirs', uuid, str(capture_dir))
-            return
 
         har = HarFile(har_files[0], uuid)
 
@@ -512,10 +519,10 @@ class Lookyloo():
                     meta['browser'] = browser
                 with (dirpath / 'meta').open('w') as _meta:
                     json.dump(meta, _meta)
+
             if 'error' in item:
                 with (dirpath / 'error.txt').open('w') as _error:
-                    _error.write(item['error'])
-                continue
+                    json.dump(item['error'], _error)
 
             # The capture went fine
             harfile = item['har']

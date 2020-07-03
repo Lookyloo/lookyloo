@@ -1,5 +1,7 @@
 {% extends "main.html" %}
 
+{% from 'bootstrap/utils.html' import render_messages %}
+
 {% block title %}Tree{% endblock %}
 
 {% block scripts %}
@@ -51,6 +53,8 @@
   var treeUUID = "{{ tree_uuid }}";
   var treeData = {{ tree_json | safe }};
 </script>
+
+{{ render_messages(container=True, dismissible=True) }}
 
 <a id="lookyloo-icon" href="/" ></a>
 <div id=screenshot class="collapse">

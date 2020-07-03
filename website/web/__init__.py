@@ -361,7 +361,6 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
 
     if 'error' in cache:
         flash(cache['error'], 'error')
-        return redirect(url_for('index'))
 
     try:
         if lookyloo.get_config('enable_mail_notification'):
@@ -387,7 +386,7 @@ def index_generic(show_hidden: bool=False):
         cut_time = None  # type: ignore
     for capture_uuid in lookyloo.capture_uuids:
         cached = lookyloo.capture_cache(capture_uuid)
-        if not cached or 'error' in cached:
+        if not cached:
             continue
         if show_hidden:
             if 'no_index' not in cached:
