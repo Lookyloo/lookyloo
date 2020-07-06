@@ -261,7 +261,9 @@ class Lookyloo():
             with (Path(capture_dir) / 'error.txt').open() as _error:
                 content = _error.read()
                 try:
-                    error_to_cache = json.loads(content)['details']
+                    error_to_cache = json.loads(content)
+                    if isinstance(error_to_cache, dict) and error_to_cache.get('details'):
+                        error_to_cache = error_to_cache.get('details')
                 except json.decoder.JSONDecodeError:
                     # old format
                     error_to_cache = content
