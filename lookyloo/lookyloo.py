@@ -210,24 +210,14 @@ class Lookyloo():
         with self_generated_ua_file.open('w') as f:
             json.dump(to_store, f, indent=2)
 
-    def cache_tree(self, capture_uuid: Optional[str]=None, capture_dir: Optional[Union[str, Path]]=None) -> None:
-        c_dir = None
-        if capture_uuid:
-            c_dir = self.lookup_capture_dir(capture_uuid)
-            if not c_dir:
-                raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
-        elif capture_dir:
-            if isinstance(capture_dir, str):
-                c_dir = Path(capture_dir)
-            else:
-                c_dir = capture_dir
+    def cache_tree(self, capture_uuid: str) -> None:
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
 
-        if not c_dir:
-            raise Exception('Need either capture_uuid or capture_dir')
-
-        with open((c_dir / 'uuid'), 'r') as f:
+        with open((capture_dir / 'uuid'), 'r') as f:
             uuid = f.read()
-        har_files = sorted(c_dir.glob('*.har'))
+        har_files = sorted(capture_dir.glob('*.har'))
         try:
             ct = CrawledTree(har_files, uuid)
             self.indexing.index_cookies_capture(ct)
@@ -235,7 +225,7 @@ class Lookyloo():
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 
-        with (c_dir / 'tree.pickle').open('wb') as _p:
+        with (capture_dir / 'tree.pickle').open('wb') as _p:
             pickle.dump(ct, _p)
 
     def get_crawled_tree(self, capture_uuid: str) -> CrawledTree:
