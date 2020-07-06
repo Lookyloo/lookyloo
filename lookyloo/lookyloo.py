@@ -269,16 +269,24 @@ class Lookyloo():
                     error_to_cache = content
                 error_cache['error'] = f'The capture has an error: {error_to_cache}'
 
-        if not har_files:
-            error_cache['error'] = f'No har files in {capture_dir}'
-            return
+        fatal_error = False
+        if har_files:
+            try:
+                har = HarFile(har_files[0], uuid)
+            except Har2TreeError as e:
+                error_cache['error'] = e.message
+                fatal_error = True
+        else:
+            error_cache['error'] = f'No har files in {capture_dir.name}'
+            fatal_error = True
 
         if error_cache:
             self.logger.warning(error_cache['error'])
             self.redis.hmset(str(capture_dir), error_cache)
             self.redis.hset('lookup_dirs', uuid, str(capture_dir))
 
-        har = HarFile(har_files[0], uuid)
+        if fatal_error:
+            return
 
         redirects = har.initial_redirects
         incomplete_redirects = False
