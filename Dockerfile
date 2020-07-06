@@ -1,10 +1,10 @@
-FROM ubuntu:bionic
+FROM ubuntu:focal
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
 RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get -y install wget python3.7-dev git python3.7-venv python3-pip
+RUN apt-get -y install wget python3-dev git python3-venv python3-pip
 RUN pip3 install poetry
 
 WORKDIR lookyloo
