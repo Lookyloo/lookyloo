@@ -394,6 +394,9 @@ def index_generic(show_hidden: bool=False):
                 continue
         elif 'no_index' in cached:
             continue
+        if 'timestamp' not in cached:
+            # this is a buggy capture, skip
+            continue
         if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:  # type: ignore
             continue
         titles.append((cached['uuid'], cached['title'], cached['timestamp'], cached['url'],
