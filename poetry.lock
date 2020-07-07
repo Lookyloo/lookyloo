@@ -866,7 +866,7 @@ description = "Scrapy splash wrapper as a standalone library."
 name = "scrapysplashwrapper"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.1.1"
+version = "1.1.2"
 
 [package.dependencies]
 scrapy = ">=1.8.0,<2.0.0"
@@ -1543,8 +1543,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.7.2-py2.py3-none-any.whl", hash = "sha256:71ac958370f8732fec746a25a8235b03a4d3c4c93a59be51aa8e910a08cfe511"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.1.1-py3-none-any.whl", hash = "sha256:660275a5a6f899e09abf8b732e0724a280cab6b44cb3405c85a92e25b87dac6b"},
-    {file = "scrapysplashwrapper-1.1.1.tar.gz", hash = "sha256:1ac854f4c4e5a7a594d2e1a39d94330b67359420e16c7f1adc2a016579fcc16c"},
+    {file = "scrapysplashwrapper-1.1.2-py3-none-any.whl", hash = "sha256:02460ec8714206045aa64c5586765fb8b5ba57e4aecfb3c08bd36b2c10b6b546"},
+    {file = "scrapysplashwrapper-1.1.2.tar.gz", hash = "sha256:3ecb4455d8949c4fb7e2ba868efd71fcd4ae746be28c5eaa1f8a884312c544ec"},
 ]
 service-identity = [
     {file = "service_identity-18.1.0-py2.py3-none-any.whl", hash = "sha256:001c0707759cb3de7e49c078a7c0c9cd12594161d3bf06b9c254fdcb1a60dc36"},

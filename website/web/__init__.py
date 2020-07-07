@@ -125,6 +125,7 @@ def scrape_web():
             perma_uuid = lookyloo.scrape(url=url, cookies_pseudofile=cookie_file,
                                          depth=depth, listing=listing,
                                          user_agent=request.form.get('user_agent'),
+                                         referer=request.form.get('referer'),
                                          os=request.form.get('os'), browser=request.form.get('browser'))
             return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents: Dict[str, Any] = {}

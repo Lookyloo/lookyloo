@@ -482,7 +482,8 @@ class Lookyloo():
 
     def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None,
                depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
-               perma_uuid: str=None, os: str=None, browser: str=None) -> Union[bool, str]:
+               referer: Optional[str]=None, perma_uuid: str=None, os: str=None,
+               browser: str=None) -> Union[bool, str]:
         url = url.strip()
         url = refang(url)
         if not url.startswith('http'):
@@ -512,7 +513,7 @@ class Lookyloo():
             self.logger.warning(f'Not allowed to scrape on a depth higher than {self.get_config("max_depth")}: {depth}')
             depth = int(self.get_config('max_depth'))  # type: ignore
         items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
-                      log_enabled=True, log_level=self.get_config('splash_loglevel'))
+                      referer=referer, log_enabled=True, log_level=self.get_config('splash_loglevel'))
         if not items:
             # broken
             return False
