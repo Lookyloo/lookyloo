@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 import base64
 from collections import defaultdict, Counter
 
@@ -40,7 +41,11 @@ class Lookyloo():
 
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
         self.scrape_dir: Path = get_homedir() / 'scraped'
-        self.splash_url: str = self.get_config('splash_url')
+        if os.environ.get('SPLASH_URL_DOCKER'):
+            # In order to have a working default for the docker image, it is easier to use an environment variable
+            self.splash_url: str = os.environ['SPLASH_URL_DOCKER']
+        else:
+            self.splash_url = self.get_config('splash_url')
         self.only_global_lookups: bool = self.get_config('only_global_lookups')
 
         safe_create_dir(self.scrape_dir)

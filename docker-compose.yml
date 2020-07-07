@@ -20,7 +20,7 @@ services:
     working_dir: /lookyloo
     tty: true
     environment:
-        - SPLASH_URL=http://splash:8050
+        - SPLASH_URL_DOCKER=http://splash:8050
     command:
         - /bin/sh
         - -c
