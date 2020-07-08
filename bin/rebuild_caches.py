@@ -4,7 +4,6 @@
 import argparse
 import logging
 
-from lookyloo.helpers import load_pickle_tree
 from lookyloo.lookyloo import Lookyloo, Indexing
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
@@ -23,16 +22,12 @@ if __name__ == '__main__':
 
     indexing = Indexing()
     indexing.clear_indexes()
-    for capture_dir in lookyloo.capture_dirs:
+    for capture_uuid in lookyloo.capture_uuids:
         try:
-            tree = load_pickle_tree(capture_dir)
+            tree = lookyloo.get_crawled_tree(capture_uuid)
         except Exception as e:
-            print(capture_dir, e)
-        if tree:
-            indexing.index_cookies_capture(tree)
-            indexing.index_body_hashes_capture(tree)
-        else:
-            try:
-                lookyloo.cache_tree(capture_dir=capture_dir)
-            except Exception as e:
-                print(capture_dir, e)
+            print(capture_uuid, e)
+            continue
+        # NOTE: these two methods do nothing if we just generated the pickle
+        indexing.index_cookies_capture(tree)
+        indexing.index_body_hashes_capture(tree)
