@@ -272,7 +272,7 @@ class Lookyloo():
                 except json.decoder.JSONDecodeError:
                     # old format
                     error_to_cache = content
-                error_cache['error'] = f'The capture has an error: {error_to_cache}'
+                error_cache['error'] = f'The capture {capture_dir.name} has an error: {error_to_cache}'
 
         fatal_error = False
         if har_files:

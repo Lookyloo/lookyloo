@@ -9,7 +9,7 @@ services:
         - ./cache:/cache
 
   splash:
-    image: "scrapinghub/splash"
+    image: "scrapinghub/splash:3.5.0"
     ports:
         - "8050:8050"
         - "5023:5023"
@@ -25,6 +25,7 @@ services:
         - /bin/sh
         - -c
         - |
+            poetry run rebuild_caches.py
             poetry run async_scrape.py &
             poetry run start_website.py
     volumes:
