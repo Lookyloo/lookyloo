@@ -30,7 +30,7 @@
     $(document).ready(function() {
       // Copy to clipboard
       // Grab any text in the attribute 'data-copy' and pass it to the copy function
-        $('.js-copy').tooltip();
+      $('.js-copy').tooltip();
       $('.js-copy').click(function() {
         var text = $(this).attr('data-copy');
         var el = $(this);
@@ -71,6 +71,7 @@
       </div>
       <ul class="list-group">
         <li class="list-group-item">
+          {# Details of the response #}
           <p class="h4">Response</p>
 
           <div>
@@ -169,6 +170,83 @@
               Show more information about this response body.
             </a></p>
           <div>
+          {% endif %}
+
+          {% if url['embedded_ressources'] %}
+          <div><b>This response contains embedded ressources</b></div>
+          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#embedded_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+            Toggle list of embedded resources.
+          </button>
+          <div class="collapse" id="embedded_full_list_{{ url['url_object'].uuid }}">
+            <div class="card card-body">
+              {% for hash, details in url['embedded_ressources'].items() %}
+              {% if details['sane_js'] %}
+              <div>
+              {% if details['sane_js'] is string %}
+                <b>{{ details['sane_js'] }} </b>
+              {% else %}
+                This file is known as part of <b>{{ details['sane_js'][0] }}</b>
+                version <b>{{ details['sane_js'][1] }}</b>: <b>{{ details['sane_js'][2] }}</b>.
+                {% if details['sane_js'][3] > 1%}
+                  It is also present in <b>{{ details['sane_js'][3] -1 }}</b> other libraries.
+                {%endif%}
+              {%endif%}
+              </div>
+              {% endif %}
+              <div>
+                  This file (<b>{{ details['type'] }}</b>) can be found <b>{{ details['hash_freq'] }}</b> times
+                across all the captures on this lookyloo instance, in <b>{{ details['hash_domains_freq'] }}</b> unique domains.
+                </br>
+
+                {% set total_captures = details['other_captures']['different_url']|length + details['other_captures']['same_url']|length %}
+
+                {% if total_captures > 0  %}
+                <p>
+                The same file was seen in <b>{{ total_captures }}</b> other captures.
+                  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#embeddedlist_{{ hash }}" aria-expanded="false" aria-controls="collapseExample">
+                    Toggle list.
+                  </button>
+                </p>
+                <div class="collapse" id="embeddedlist_{{ hash }}">
+                  <div class="card card-body">
+                  {% if details['other_captures']['different_url']|length > 0 %}
+                  <div>
+                    <p>The following captures get the same file from a <b>different URL</b></p>
+                    <ul>
+                    {% for capture_uuid, urlnode_uuid, title, hostname in details['other_captures']['different_url'] %}
+                    <li>
+                        <a href="{{ url_for('tree', tree_uuid=capture_uuid, urlnode_uuid=urlnode_uuid) }}">{{ title }}</a> - {{ hostname }}
+                    </li>
+                    {% endfor %}
+                    </ul>
+                  </div>
+                  {% endif %}
+
+                  {% if details['other_captures']['same_url']|length > 0 %}
+                  </br>
+                  <div>
+                  <p>The following captures get the same file from the <b>same URL</b></p>
+                    <ul>
+                    {% for capture_uuid, urlnode_uuid, title, hostname in details['other_captures']['same_url'] %}
+                    <li>
+                        <a href="{{ url_for('tree', tree_uuid=capture_uuid, urlnode_uuid=urlnode_uuid) }}">{{ title }}</a> - {{ hostname }}
+                    </li>
+                    {% endfor %}
+                    </ul>
+                  </div>
+                  {% endif %}
+                  </div>
+                </div>
+                {% else %}
+                <p>This file is loaded multiple times in this capture.</p>
+                {% endif %}
+                <p><a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash) }}">
+                  Show more information about this embedded content.
+                </a></p>
+              <div>
+              {% endfor %}
+            </div>
+          </div>
           {% endif %}
 
           {% if url['cookies_received'] %}

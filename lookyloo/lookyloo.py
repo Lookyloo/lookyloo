@@ -121,6 +121,14 @@ class Indexing():
                 pipeline.sadd(f'bh|{urlnode.body_hash}|captures', crawled_tree.uuid)
                 # ZSet of all urlnode_UUIDs|full_url
                 pipeline.zincrby(f'bh|{urlnode.body_hash}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
+                if urlnode.embedded_ressources:
+                    for mimetype, blobs in urlnode.embedded_ressources.items():
+                        for h, body in blobs:
+                            pipeline.zincrby('body_hashes', 1, h)
+                            pipeline.zincrby(f'bh|{h}', 1, urlnode.hostname)
+                            pipeline.sadd(f'bh|{h}|captures', crawled_tree.uuid)
+                            pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1,
+                                             f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
 
         pipeline.execute()
 
@@ -697,6 +705,31 @@ class Lookyloo():
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
+    def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> Dict[str, List[Tuple[str, str, str, str]]]:
+        captures_list: Dict[str, List[Tuple[str, str, str, str]]] = {'same_url': [], 'different_url': []}
+        for h_capture_uuid, url_uuid, url_hostname, same_url in self.indexing.get_body_hash_captures(blob_hash, url):
+            if h_capture_uuid == capture_uuid:
+                # Skip self.
+                continue
+            cache = self.capture_cache(h_capture_uuid)
+            if cache:
+                if same_url:
+                    captures_list['same_url'].append((h_capture_uuid, url_uuid, cache['title'], url_hostname))
+                else:
+                    captures_list['different_url'].append((h_capture_uuid, url_uuid, cache['title'], url_hostname))
+        return captures_list
+
+    def _format_sane_js_response(self, lookup_table: Dict, h: str) -> Optional[Union[str, Tuple]]:
+        if lookup_table.get(h):
+            if isinstance(lookup_table[h], list):
+                libname, version, path = lookup_table[h][0].split("|")
+                other_files = len(lookup_table[h])
+                return libname, version, path, other_files
+            else:
+                # Predefined generic file
+                return lookup_table[h]
+        return None
+
     def get_hostnode_investigator(self, capture_uuid: str, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
@@ -734,34 +767,37 @@ class Lookyloo():
 
             if not url.empty_response:
                 # Index lookup
+                # %%% Full body %%%
                 freq = self.indexing.body_hash_fequency(url.body_hash)
+                to_append['body_hash_details'] = freq
                 if freq['hash_freq'] > 1:
-                    to_append['body_hash_details'] = freq
+                    to_append['body_hash_details']['other_captures'] = self.hash_lookup(url.body_hash, url.name, capture_uuid)
 
-                    captures_list: Dict[str, List[Tuple[str, str, str, str]]] = {'same_url': [], 'different_url': []}
-                    for h_capture_uuid, url_uuid, url_hostname, same_url in self.indexing.get_body_hash_captures(url.body_hash, url.name):
-                        if h_capture_uuid == capture_uuid:
-                            # Skip self.
-                            continue
-                        cache = self.capture_cache(h_capture_uuid)
-                        if cache:
-                            if same_url:
-                                captures_list['same_url'].append((h_capture_uuid, url_uuid, cache['title'], url_hostname))
-                            else:
-                                captures_list['different_url'].append((h_capture_uuid, url_uuid, cache['title'], url_hostname))
-
-                    to_append['body_hash_details']['other_captures'] = captures_list
+                # %%% Embedded ressources %%%
+                if url.embedded_ressources:
+                    to_append['embedded_ressources'] = {}
+                    for mimetype, blobs in url.embedded_ressources.items():
+                        for h, blob in blobs:
+                            if h in to_append['embedded_ressources']:
+                                # Skip duplicates
+                                continue
+                            freq = self.indexing.body_hash_fequency(h)
+                            to_append['embedded_ressources'][h] = freq
+                            to_append['embedded_ressources'][h]['type'] = mimetype
+                            if freq['hash_freq'] > 1:
+                                to_append['embedded_ressources'][h]['other_captures'] = self.hash_lookup(h, url.name, capture_uuid)
+                    if hasattr(self, 'sanejs') and self.sanejs.available:
+                        to_lookup = list(to_append['embedded_ressources'].keys())
+                        sanejs_lookups_embedded = self.sanejs.hashes_lookup(to_lookup)
+                        for h in to_append['embedded_ressources'].keys():
+                            sane_js_match = self._format_sane_js_response(sanejs_lookups_embedded, h)
+                            if sane_js_match:
+                                to_append['embedded_ressources'][h]['sane_js'] = sane_js_match
 
                 # Optional: SaneJS information
-                if url.body_hash in sanejs_lookups:
-                    if sanejs_lookups[url.body_hash]:
-                        if isinstance(sanejs_lookups[url.body_hash], list):
-                            libname, version, path = sanejs_lookups[url.body_hash][0].split("|")
-                            other_files = len(sanejs_lookups[url.body_hash])
-                            to_append['sane_js'] = (libname, version, path, other_files)
-                        else:
-                            # Predefined generic file
-                            to_append['sane_js'] = sanejs_lookups[url.body_hash]
+                sane_js_match = self._format_sane_js_response(sanejs_lookups, url.body_hash)
+                if sane_js_match:
+                    to_append['sane_js'] = sane_js_match
 
             # Optional: Cookies sent to server in request -> map to nodes who set the cookie in response
             if hasattr(url, 'cookies_sent'):
