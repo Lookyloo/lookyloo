@@ -1,0 +1,60 @@
+{% macro sanejs_details(details) %}
+<div>
+{% if details is string %}
+  <b>{{ details }} </b>
+{% else %}
+  This file is known as part of <b>{{ details[0] }}</b>
+  version <b>{{ details[1] }}</b>: <b>{{ details[2] }}</b>.
+  {% if details[3] > 1%}
+    It is also present in <b>{{ details[3] -1 }}</b> other libraries.
+  {%endif%}
+{%endif%}
+</div>
+{% endmacro %}
+
+{% macro indexed_hash(details, identifier_for_toggle) %}
+{% set total_captures = details['different_url']|length + details['same_url']|length %}
+{# Only show details if the hits are in an other capture #}
+{% if total_captures > 0  %}
+<p>
+The same file was seen in <b>{{ total_captures }}</b> other captures.
+  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#captureslist_{{ identifier_for_toggle }}" aria-expanded="false" aria-controls="collapseExample">
+    Toggle list.
+  </button>
+</p>
+{# Lists of other captures loading the same content... #}
+<div class="collapse" id="captureslist_{{ identifier_for_toggle }}">
+  <div class="card card-body">
+    {% if details['different_url']|length > 0 %}
+    {# ... on other URLs #}
+    <div>
+      <p>The following captures get the same file from a <b>different URL</b></p>
+      <ul>
+      {% for capture_uuid, urlnode_uuid, title, hostname in details['different_url'] %}
+      <li>
+        <a href="{{ url_for('tree', tree_uuid=capture_uuid, urlnode_uuid=urlnode_uuid) }}">{{ title }}</a> - {{ hostname }}
+      </li>
+      {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    </br>
+    {% if details['same_url']|length > 0 %}
+    {# ... on the same URL #}
+    <div>
+      <p>The following captures get the same file from the <b>same URL</b></p>
+      <ul>
+      {% for capture_uuid, urlnode_uuid, title, hostname in details['same_url'] %}
+      <li>
+        <a href="{{ url_for('tree', tree_uuid=capture_uuid, urlnode_uuid=urlnode_uuid) }}">{{ title }}</a> - {{ hostname }}
+      </li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% else %}
+<p>This file is loaded multiple times in this capture.</p>
+{% endif %}
+{% endmacro %}
