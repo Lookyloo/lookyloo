@@ -781,10 +781,10 @@ class Lookyloo():
                             if h in to_append['embedded_ressources']:
                                 # Skip duplicates
                                 continue
-                            freq = self.indexing.body_hash_fequency(h)
-                            to_append['embedded_ressources'][h] = freq
+                            freq_embedded = self.indexing.body_hash_fequency(h)
+                            to_append['embedded_ressources'][h] = freq_embedded
                             to_append['embedded_ressources'][h]['type'] = mimetype
-                            if freq['hash_freq'] > 1:
+                            if freq_embedded['hash_freq'] > 1:
                                 to_append['embedded_ressources'][h]['other_captures'] = self.hash_lookup(h, url.name, capture_uuid)
                     if hasattr(self, 'sanejs') and self.sanejs.available:
                         to_lookup = list(to_append['embedded_ressources'].keys())

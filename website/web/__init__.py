@@ -227,6 +227,21 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str):
                      as_attachment=True, attachment_filename='posted_data.txt')
 
 
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/embedded_ressource', methods=['POST'])
+def get_embedded_ressource(tree_uuid: str, node_uuid: str):
+    url = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
+    h_request = request.form.get('ressource_hash')
+    for mimetype, blobs in url.embedded_ressources.items():
+        for h, blob in blobs:
+            if h == h_request:
+                to_return = BytesIO()
+                with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
+                    zfile.writestr('file.bin', blob.getvalue())
+                to_return.seek(0)
+                return send_file(to_return, mimetype='application/zip',
+                                 as_attachment=True, attachment_filename='file.zip')
+
+
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>', methods=['GET'])
 def urlnode_details(tree_uuid: str, node_uuid: str):
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)

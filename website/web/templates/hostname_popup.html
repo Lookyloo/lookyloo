@@ -124,6 +124,7 @@
             across all the captures on this lookyloo instance, in <b>{{ url['body_hash_details']['hash_domains_freq'] }}</b> unique domains.
             </br>
 
+            {% if 'other_captures' in url['body_hash_details'] %}
             {% set total_captures = url['body_hash_details']['other_captures']['different_url']|length + url['body_hash_details']['other_captures']['same_url']|length %}
 
             {% if total_captures > 0  %}
@@ -169,6 +170,7 @@
             <p><a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash) }}">
               Show more information about this response body.
             </a></p>
+            {% endif %}
           <div>
           {% endif %}
 
@@ -196,8 +198,12 @@
               <div>
                   This file (<b>{{ details['type'] }}</b>) can be found <b>{{ details['hash_freq'] }}</b> times
                 across all the captures on this lookyloo instance, in <b>{{ details['hash_domains_freq'] }}</b> unique domains.
+                <form method="post" action="{{ url_for('get_embedded_ressource', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
+                  <button class="btn btn-primary" name="ressource_hash" value="{{ hash }}">Download the embedded ressource</button>
+                </form>
                 </br>
 
+                {% if 'other_captures' in details %}
                 {% set total_captures = details['other_captures']['different_url']|length + details['other_captures']['same_url']|length %}
 
                 {% if total_captures > 0  %}
@@ -243,6 +249,7 @@
                 <p><a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash) }}">
                   Show more information about this embedded content.
                 </a></p>
+                {% endif %}
               <div>
               {% endfor %}
             </div>
