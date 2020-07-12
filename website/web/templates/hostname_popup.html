@@ -1,6 +1,7 @@
 {% extends "main.html" %}
 {% from "macros.html" import sanejs_details %}
 {% from "macros.html" import indexed_hash %}
+{% from "macros.html" import indexed_cookies %}
 
 {% block title %}Details for {{ hostname }} {% endblock %}
 
@@ -177,59 +178,9 @@
           {% if url['cookies_received'] %}
           <div>
             <p class="h5">Cookies</p>
-            {% if url['cookies_received']['3rd_party'] %}
-            <div>This response contains 3rd party cookies:</div>
-              <ul>
-              {% for cookie, details in url['cookies_received']['3rd_party'].items() %}
-                {% set cookie_name_value = cookie.split('=', 1) %}
-                {% for detail in details %}
-                  {% if detail|length == 1 %}
-                  <li>
-                      {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
-                          {{ cookie_name_value[0] }}</a>={{ cookie_name_value[1] }}
-                  </li>
-                  {% else %}
-                  <li>
-                      {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
-                        {{ cookie_name_value[0] }}</a>={{ cookie_name_value[1] }} -
-                      <button type="button" class="btn btn-info" onclick="whereAmI('{{ detail[1] }}')">Show node sending this cookie</button>
-                  </li>
-                  {% endif %}
-                {% endfor %}
-              {% endfor %}
-              </ul>
-            {% endif %}
-
-            {% if url['cookies_received']['sent'] %}
-            <div>Other cookies sent somewhere else in the capture</div>
-            <ul>
-              {% for cookie, details in url['cookies_received']['sent'].items() %}
-                {% set cookie_name_value = cookie.split('=', 1) %}
-                {% for detail in details %}
-                <li>
-                  {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
-                    {{ cookie_name_value[0] }}</a>={{ cookie_name_value[1] }}
-                  <button type="button" class="btn btn-info" onclick="whereAmI('{{ detail[1] }}')">Show node sending this cookie</button>
-                </li>
-                {% endfor %}
-              {% endfor %}
-            </ul>
-            {% endif %}
-
-            {% if url['cookies_received']['not_sent'] %}
-            <div>Other cookies, but never sent</div>
-            <ul>
-              {% for cookie, details in url['cookies_received']['not_sent'].items() %}
-                {% set cookie_name_value = cookie.split('=', 1) %}
-                {% for detail in details %}
-                <li>
-                  {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
-                  {{ cookie_name_value[0] }}</a>={{ cookie_name_value[1] }}
-                </li>
-                {% endfor %}
-              {% endfor %}
-            </ul>
-            {% endif %}
+            {{ indexed_cookies("This response contains 3rd party cookies:", "Show node sending this cookie", url['cookies_received']['3rd_party']) }}
+            {{ indexed_cookies("Other cookies sent somewhere else in the capture", "Show node sending this cookie", url['cookies_received']['sent']) }}
+            {{ indexed_cookies("Other cookies, but never sent", "", url['cookies_received']['not_sent']) }}
           <div>
           {% endif %}
         </li>
@@ -259,26 +210,7 @@
           {% if url['cookies_sent'] %}
           <div>
             <p class="h5">Cookies</p>
-            <div>List of cookies sent in the request</div>
-            <ul>
-            {% for cookie, details in url['cookies_sent'].items() %}
-              {% set cookie_name_value = cookie.split('=', 1) %}
-              {% for detail in details %}
-                {% if detail|length == 1 %}
-                <li>
-                  {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
-                    {{ cookie_name_value[0] }}</a>={{ cookie_name_value[1] }}
-                </li>
-                {%else %}
-                <li>
-                  {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
-                    {{ cookie_name_value[0] }}</a>={{ cookie_name_value[1] }}
-                  <button type="button" class="btn btn-info" onclick="whereAmI('{{ detail[1] }}')">Show on tree node setting this cookie</button>
-                </li>
-                {% endif %}
-              {% endfor %}
-            {% endfor %}
-            </ul>
+            {{ indexed_cookies("List of cookies sent in the request", "Show on tree node setting this cookie", url['cookies_sent']) }}
           </div>
           {% endif %}
         </li>
