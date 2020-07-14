@@ -143,7 +143,13 @@
       </center>
     </div>
     <hr/>
-    <b>Root URL</b>: {{ root_url }}<br>
+    <b>Root URL</b>:
+    {% if root_url|length > 150 %}
+      {{ root_url[:150] }} [...]
+    {% else %}
+        {{ root_url}}
+    {% endif %}
+    <br>
     <b>Start time</b>: {{ start_time }}<br>
     <b>User Agent</b>: {{ user_agent }}<br>
     {% if meta %}

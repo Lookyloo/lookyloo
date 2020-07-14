@@ -83,11 +83,11 @@
           {# Details of the response #}
           <p class="h4">Response</p>
 
-          {# Download cookies #}
           <div>
           {% for key, path in keys_response.items() %}
             {% if url['url_object'][key] %}
               {% if key == "response_cookie" %}
+              {# Download cookies #}
               <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
                <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
               </a>
@@ -116,14 +116,13 @@
             Status Code: {{ url['url_object'].response['status'] }}
           </div>
 
-
           {% if url['sane_js'] %}
             {# Result from SaneJS for the response #}
             {{ sanejs_details(url['sane_js']) }}
           {% endif %}
 
           {# Everything we know about the response content #}
-          {% if url['body_hash_details'] %}
+          {% if url['body_hash_details'] and url['body_hash_details']['hash_freq'] %}
           <div>
             This file can be found <b>{{ url['body_hash_details']['hash_freq'] }}</b> times
             across all the captures on this lookyloo instance, in <b>{{ url['body_hash_details']['hash_domains_freq'] }}</b> unique domains.

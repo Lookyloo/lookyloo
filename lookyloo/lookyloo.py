@@ -121,7 +121,7 @@ class Indexing():
                 pipeline.sadd(f'bh|{urlnode.body_hash}|captures', crawled_tree.uuid)
                 # ZSet of all urlnode_UUIDs|full_url
                 pipeline.zincrby(f'bh|{urlnode.body_hash}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
-                if urlnode.embedded_ressources:
+                if hasattr(urlnode, 'embedded_ressources') and urlnode.embedded_ressources:
                     for mimetype, blobs in urlnode.embedded_ressources.items():
                         for h, body in blobs:
                             pipeline.zincrby('body_hashes', 1, h)
@@ -770,11 +770,11 @@ class Lookyloo():
                 # %%% Full body %%%
                 freq = self.indexing.body_hash_fequency(url.body_hash)
                 to_append['body_hash_details'] = freq
-                if freq['hash_freq'] > 1:
+                if freq and 'hash_freq' in freq and freq['hash_freq'] and freq['hash_freq'] > 1:
                     to_append['body_hash_details']['other_captures'] = self.hash_lookup(url.body_hash, url.name, capture_uuid)
 
                 # %%% Embedded ressources %%%
-                if url.embedded_ressources:
+                if hasattr(url, 'embedded_ressources') and url.embedded_ressources:
                     to_append['embedded_ressources'] = {}
                     for mimetype, blobs in url.embedded_ressources.items():
                         for h, blob in blobs:
