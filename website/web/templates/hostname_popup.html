@@ -83,26 +83,14 @@
       <ul class="list-group">
         <li class="list-group-item">
           {# Details of the response #}
-          <p class="h4">Response</p>
+          <p class="h4">Response <small>(Status code: {{ url['url_object'].response['status'] }})</small></p>
           {{ popup_icons(keys_response, url['url_object'], tree_uuid) }}
 
-          {# Response content block #}
-          <div>
-          {% if not url['url_object'].empty_response %}
-            {# Download content #}
-            <a href="{{ url_for('urlnode_details', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-              Download response body.
-            </a></br>
-            Body size: {{ sizeof_fmt(url['url_object'].body.getbuffer().nbytes) }}
+          {% if url['url_object'].empty_response %}
+          Empty body.
           {% else %}
-            Empty body.
+          Body size: {{ sizeof_fmt(url['url_object'].body.getbuffer().nbytes) }}
           {%endif%}
-          </div>
-
-          {# Status code of the response #}
-          <div>
-            Status Code: {{ url['url_object'].response['status'] }}
-          </div>
 
           {% if url['sane_js'] %}
             {# Result from SaneJS for the response #}
@@ -126,7 +114,7 @@
               Show more information about this response body.
               </a>
             </p>
-          <div>
+          </div>
           {% endif %}
 
           {% if url['embedded_ressources'] %}
@@ -156,7 +144,7 @@
                 <p><a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash) }}">
                   Show more information about this embedded content.
                 </a></p>
-              <div>
+              </div>
               {% endfor %}
             </div>
           </div>
@@ -164,11 +152,19 @@
 
           {% if url['cookies_received'] %}
           <div>
-            <p class="h5">Cookies</p>
-            {{ indexed_cookies("This response contains 3rd party cookies:", "Show node sending this cookie", url['cookies_received']['3rd_party']) }}
-            {{ indexed_cookies("Other cookies sent somewhere else in the capture", "Show node sending this cookie", url['cookies_received']['sent']) }}
-            {{ indexed_cookies("Other cookies, but never sent", "", url['cookies_received']['not_sent']) }}
-          <div>
+            <p class="h5">This response contains cookies.
+              <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#response_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+                Show all cookies received.
+              </button>
+            </p>
+            <div class="collapse" id="response_cookies_full_list_{{ url['url_object'].uuid }}">
+              <div class="card card-body">
+              {{ indexed_cookies("This response contains 3rd party cookies:", "Show node sending this cookie", url['cookies_received']['3rd_party']) }}
+              {{ indexed_cookies("Cookies, sent somewhere in the capture", "Show node sending this cookie", url['cookies_received']['sent']) }}
+              {{ indexed_cookies("Cookies, never sent", "", url['cookies_received']['not_sent']) }}
+              </div>
+            </div>
+          </div>
           {% endif %}
         </li>
 
@@ -185,8 +181,16 @@
 
           {% if url['cookies_sent'] %}
           <div>
-            <p class="h5">Cookies</p>
-            {{ indexed_cookies("List of cookies sent in the request", "Show on tree node setting this cookie", url['cookies_sent']) }}
+            <p class="h5">This request contains cookies.
+              <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#request_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+                Show all cookies sent.
+              </button>
+            </p>
+            <div class="collapse" id="request_cookies_full_list_{{ url['url_object'].uuid }}">
+              <div class="card card-body">
+              {{ indexed_cookies("List of cookies sent in the request", "Show on tree node setting this cookie", url['cookies_sent']) }}
+              </div>
+            </div>
           </div>
           {% endif %}
         </li>

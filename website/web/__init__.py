@@ -164,10 +164,14 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
         'font': "/static/font.png",
         'html': "/static/html.png",
         'json': "/static/json.png",
+        'text': "/static/json.png",  # FIXME: Need new icon
         'iframe': "/static/ifr.png",
         'image': "/static/img.png",
+        'unset_mimetype': "/static/wtf.png",
+        'octet-stream': "/static/wtf.png",
         'unknown_mimetype': "/static/wtf.png",
         'video': "/static/video.png",
+        'livestream': "/static/video.png",
         'response_cookie': "/static/cookie_received.png",
         'redirect': "/static/redirect.png",
         'redirect_to_nothing': "/static/cookie_in_url.png"
