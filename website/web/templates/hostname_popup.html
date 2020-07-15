@@ -3,6 +3,7 @@
 {% from "macros.html" import indexed_hash %}
 {% from "macros.html" import indexed_cookies %}
 {% from "macros.html" import popup_icons %}
+{% from "macros.html" import shorten_string %}
 
 {% block title %}Details for {{ hostname }} {% endblock %}
 
@@ -77,7 +78,7 @@
         </svg>
         {%endif%}
         {# URL #}
-        ... /{{ url['url_path_short'] }}
+        ... /{{ shorten_string(url['url_path'], 50)}}
       </div>
       <ul class="list-group">
         <li class="list-group-item">

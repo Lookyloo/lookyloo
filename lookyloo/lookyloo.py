@@ -759,12 +759,6 @@ class Lookyloo():
                 'url_object': url
             }
 
-            # If the url path is too long, we want to limit it to 60 chars
-            if len(to_append['url_path']) > 50:
-                to_append['url_path_short'] = to_append['url_path'][:60] + ' [...]'
-            else:
-                to_append['url_path_short'] = to_append['url_path']
-
             if not url.empty_response:
                 # Index lookup
                 # %%% Full body %%%

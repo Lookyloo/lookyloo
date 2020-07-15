@@ -1,6 +1,7 @@
 {% extends "main.html" %}
 
 {% from 'bootstrap/utils.html' import render_messages %}
+{% from "macros.html" import shorten_string %}
 
 {% block title %}Tree{% endblock %}
 
@@ -143,12 +144,7 @@
       </center>
     </div>
     <hr/>
-    <b>Root URL</b>:
-    {% if root_url|length > 150 %}
-      {{ root_url[:150] }} [...]
-    {% else %}
-        {{ root_url}}
-    {% endif %}
+    <b>Root URL</b>: {{ shorten_string(root_url, 150) }}
     <br>
     <b>Start time</b>: {{ start_time }}<br>
     <b>User Agent</b>: {{ user_agent }}<br>

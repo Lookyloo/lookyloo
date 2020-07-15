@@ -103,3 +103,11 @@ The same file was seen in <b>{{ total_captures }}</b> other captures.
 {% endfor %}
 </div>
 {% endmacro %}
+
+{% macro shorten_string(string, cut_length) %}
+{% if string|length > cut_length %}
+  {{ string[:cut_length] }} [...]
+{% else %}
+  {{ string }}
+{%endif%}
+{% endmacro %}
