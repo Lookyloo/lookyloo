@@ -2,6 +2,7 @@
 {% from "macros.html" import sanejs_details %}
 {% from "macros.html" import indexed_hash %}
 {% from "macros.html" import indexed_cookies %}
+{% from "macros.html" import popup_icons %}
 
 {% block title %}Details for {{ hostname }} {% endblock %}
 
@@ -82,21 +83,7 @@
         <li class="list-group-item">
           {# Details of the response #}
           <p class="h4">Response</p>
-
-          <div>
-          {% for key, path in keys_response.items() %}
-            {% if url['url_object'][key] %}
-              {% if key == "response_cookie" %}
-              {# Download cookies #}
-              <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-               <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
-              </a>
-              {% else %}
-              <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
-              {%endif%}
-            {%endif%}
-          {% endfor %}
-          </div>
+          {{ popup_icons(keys_response, url['url_object'], tree_uuid) }}
 
           {# Response content block #}
           <div>
@@ -186,19 +173,8 @@
 
         <li class="list-group-item">
           <p class="h4">Request</p>
-          <div>
-          {% for key, path in keys_request.items() %}
-            {% if url['url_object'][key] %}
-              {% if key == "request_cookie" %}
-              <a href="{{ url_for('urlnode_request_cookies', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-               <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
-              </a>
-              {% else %}
-              <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
-              {%endif%}
-            {%endif%}
-          {% endfor %}
-          </div>
+          {{ popup_icons(keys_request, url['url_object'], tree_uuid) }}
+
           {% if url['url_object'].posted_data %}
           <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
               Download posted data

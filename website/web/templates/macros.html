@@ -83,3 +83,23 @@ The same file was seen in <b>{{ total_captures }}</b> other captures.
 </ul>
 {% endif %}
 {% endmacro %}
+
+{% macro popup_icons(lookup_dict, urlnode, tree_uuid) %}
+<div>
+{% for key, path in lookup_dict.items() %}
+  {% if urlnode[key] %}
+    {% if key == "request_cookie" %}
+    <a href="{{ url_for('urlnode_request_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}">
+     <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+    </a>
+    {% elif key == "response_cookie"%}
+    <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}">
+      <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+    </a>
+    {% else %}
+    <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+    {%endif%}
+  {%endif%}
+{% endfor %}
+</div>
+{% endmacro %}
