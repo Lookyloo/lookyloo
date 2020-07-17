@@ -50,8 +50,8 @@
   {# Headers #}
   <center>
     <h3>{{ hostname }}</h3>
-    <button type="button" class="btn btn-info" onclick="whereAmI('{{ hostname_uuid }}')">Locate node on tree</button>
-    <a href="{{ url_for('hostnode_details_text', tree_uuid=tree_uuid, node_uuid=hostname_uuid) }}" class="btn btn-info" role="button">Get URLs as text</a>
+    <button type="button" class="btn btn-info" onclick="whereAmI('{{ hostname_uuid }}')">Flag node on tree</button>
+    <a href="{{ url_for('hostnode_details_text', tree_uuid=tree_uuid, node_uuid=hostname_uuid) }}" class="btn btn-info" role="button">Download URLs as text</a>
   </center>
   {# Start list of URLs #}
   <ul class="list-group-flush">
@@ -81,6 +81,35 @@
         ... /{{ shorten_string(url['url_path'], 50)}}
       </div>
       <ul class="list-group">
+
+        <li class="list-group-item">
+          <p class="h4">Request</p>
+          {{ popup_icons(keys_request, url['url_object'], tree_uuid) }}
+
+          {% if url['url_object'].posted_data %}
+          <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
+              Download posted data
+          </a></br>
+          Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
+          {% endif %}
+
+          {% if url['cookies_sent'] %}
+          <div>
+            <p class="h5">This request contains cookies.
+              <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#request_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+                <span class="if-collapsed">Show cookies sent.</span>
+                <span class="if-not-collapsed">Hide cookies sent.</span>
+              </button>
+            </p>
+            <div class="collapse" id="request_cookies_full_list_{{ url['url_object'].uuid }}">
+              <div class="card card-body">
+              {{ indexed_cookies("List of cookies sent in the request", "Flag node setting this cookie", url['cookies_sent']) }}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </li>
+
         <li class="list-group-item">
           {# Details of the response #}
           <p class="h4">Response <small>(Status code: {{ url['url_object'].response['status'] }})</small></p>
@@ -119,10 +148,12 @@
 
           {% if url['embedded_ressources'] %}
           {# Details on embedded resources #}
-          <div><b>This response contains embedded ressources</b></div>
-          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#embedded_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
-            Toggle list of embedded resources.
+          <div><b>This response contains embedded ressources</b>
+          <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#embedded_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+            <span class="if-collapsed">Show embedded resources.</span>
+            <span class="if-not-collapsed">Hide embedded resources.</span>
           </button>
+          </div>
           <div class="collapse" id="embedded_full_list_{{ url['url_object'].uuid }}">
             <div class="card card-body">
               {% for hash, details in url['embedded_ressources'].items() %}
@@ -153,42 +184,16 @@
           {% if url['cookies_received'] %}
           <div>
             <p class="h5">This response contains cookies.
-              <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#response_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
-                Show all cookies received.
+              <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#response_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+                  <span class="if-collapsed">Show cookies received.</span>
+                  <span class="if-not-collapsed">Hide cookies received.</span>
               </button>
             </p>
             <div class="collapse" id="response_cookies_full_list_{{ url['url_object'].uuid }}">
               <div class="card card-body">
-              {{ indexed_cookies("This response contains 3rd party cookies:", "Show node sending this cookie", url['cookies_received']['3rd_party']) }}
-              {{ indexed_cookies("Cookies, sent somewhere in the capture", "Show node sending this cookie", url['cookies_received']['sent']) }}
+              {{ indexed_cookies("This response contains 3rd party cookies:", "Flag node sending this cookie", url['cookies_received']['3rd_party']) }}
+              {{ indexed_cookies("Cookies, sent somewhere in the capture", "Flag node sending this cookie", url['cookies_received']['sent']) }}
               {{ indexed_cookies("Cookies, never sent", "", url['cookies_received']['not_sent']) }}
-              </div>
-            </div>
-          </div>
-          {% endif %}
-        </li>
-
-        <li class="list-group-item">
-          <p class="h4">Request</p>
-          {{ popup_icons(keys_request, url['url_object'], tree_uuid) }}
-
-          {% if url['url_object'].posted_data %}
-          <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-              Download posted data
-          </a></br>
-          Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
-          {% endif %}
-
-          {% if url['cookies_sent'] %}
-          <div>
-            <p class="h5">This request contains cookies.
-              <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#request_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
-                Show all cookies sent.
-              </button>
-            </p>
-            <div class="collapse" id="request_cookies_full_list_{{ url['url_object'].uuid }}">
-              <div class="card card-body">
-              {{ indexed_cookies("List of cookies sent in the request", "Show on tree node setting this cookie", url['cookies_sent']) }}
               </div>
             </div>
           </div>

@@ -18,8 +18,9 @@
 {% if total_captures > 0  %}
 <p>
   The same file was seen in <b>{{ total_captures }}</b> other captures.
-  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#captureslist_{{ identifier_for_toggle }}" aria-expanded="false" aria-controls="collapseExample">
-    Toggle list.
+  <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#captureslist_{{ identifier_for_toggle }}" aria-expanded="false" aria-controls="collapseExample">
+    <span class="if-collapsed">Show other captures</span>
+    <span class="if-not-collapsed">Hide other captures</span>
   </button>
 </p>
 {# Lists of other captures loading the same content... #}
@@ -69,12 +70,12 @@
     {% if detail|length == 1 %}
     <li>
         {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
-            {{ cookie_name_value[0] }}</a>={{ cookie_name_value[1] }}
+            {{ cookie_name_value[0] }}</a>={{ shorten_string(cookie_name_value[1], 200) }}
     </li>
     {% else %}
     <li>
         {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
-          {{ cookie_name_value[0] }}</a>={{ cookie_name_value[1] }} -
+          {{ cookie_name_value[0] }}</a>={{ shorten_string(cookie_name_value[1], 200) }} -
         <button type="button" class="btn btn-info" onclick="whereAmI('{{ detail[1] }}')">{{ button_text }}</button>
     </li>
     {% endif %}

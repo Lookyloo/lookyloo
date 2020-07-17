@@ -42,9 +42,9 @@
       </div>
 
       <div class="form-group row">
-        <label for="referer" class="col-sm-2 col-form-label">Referer:</label>
+        <label for="referer" class="col-sm-2 col-form-label">Referer (Optional):</label>
         <div class="col-sm-10">
-          <input type="text" class="form-control" name="referer" id=referer placeholder="Referer of the URL to capture">
+          <input type="text" class="form-control" name="referer" id=referer placeholder="Pass referer of the URL">
         </div>
       </div>
 
@@ -96,7 +96,9 @@
           {% endfor%}
       {% endfor%}
       <div class="dropdown-divider"></div>
-      <center><button type="submit" class="btn btn-primary">Start looking!</button></center>
+      <center>
+        <button type="submit" class="btn btn-primary" id="btn-looking">Start looking!</button>
+      </center>
   </form>
 </div>
 {% endblock %}

@@ -296,7 +296,7 @@ description = "HTTP Archive (HAR) to ETE Toolkit generator"
 name = "har2tree"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.1.2"
+version = "1.1.3"
 
 [package.dependencies]
 beautifulsoup4 = ">=4.8.2,<5.0.0"
@@ -304,6 +304,7 @@ ete3 = ">=3.1.1,<4.0.0"
 lxml = ">=4.4.2,<5.0.0"
 publicsuffix2 = ">=2.20191221,<3.0"
 six = ">=1.14.0,<2.0.0"
+w3lib = ">=1.22.0,<2.0.0"
 
 [[package]]
 category = "main"
@@ -1070,7 +1071,7 @@ test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
-content-hash = "c9aa6060104496ed0b551c7cf561573af1f67bad2e5c8eec5c938feda7e578b0"
+content-hash = "483b931ed59303511a2b23a8953ceb2486400de4ec5090c5cffdc2780f2d5143"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1260,8 +1261,8 @@ gunicorn = [
     {file = "gunicorn-20.0.4.tar.gz", hash = "sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626"},
 ]
 har2tree = [
-    {file = "har2tree-1.1.2-py3-none-any.whl", hash = "sha256:45fdd0fda073cc454975c64a8f6a4667734c8eb61ba2bc4497866ff7d142e01b"},
-    {file = "har2tree-1.1.2.tar.gz", hash = "sha256:29c95ea4d9f63db977bf6453421ddcf08c2326c6092d9454cde75b9b7c7d918f"},
+    {file = "har2tree-1.1.3-py3-none-any.whl", hash = "sha256:a587375f18f2f3933c6708c122d273d114fe435d946f7bc3297d33ce50c14439"},
+    {file = "har2tree-1.1.3.tar.gz", hash = "sha256:538ce736a6824db538d341b2624fa596ad4df1e850be42b9d7f09ff8c0c55df3"},
 ]
 hyperlink = [
     {file = "hyperlink-19.0.0-py2.py3-none-any.whl", hash = "sha256:ab4a308feb039b04f855a020a6eda3b18ca5a68e6d8f8c899cbe9e653721d04f"},

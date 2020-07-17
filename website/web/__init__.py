@@ -344,7 +344,10 @@ def redirects(tree_uuid: str):
         return Response('Not available.', mimetype='text/text')
     if not cache['redirects']:
         return Response('No redirects.', mimetype='text/text')
-    to_return = BytesIO('\n'.join(cache['redirects']).encode())
+    if cache['url'] == cache['redirects'][0]:
+        to_return = BytesIO('\n'.join(cache['redirects']).encode())
+    else:
+        to_return = BytesIO('\n'.join([cache['url']] + cache['redirects']).encode())
     return send_file(to_return, mimetype='text/text',
                      as_attachment=True, attachment_filename='redirects.txt')
 

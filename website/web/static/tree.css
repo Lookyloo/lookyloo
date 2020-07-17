@@ -121,3 +121,10 @@ table td p {
   text-overflow: ellipsis;
   margin: 0;
 }
+
+[data-toggle="collapse"].collapsed .if-not-collapsed {
+  display: none;
+  }
+[data-toggle="collapse"]:not(.collapsed) .if-collapsed {
+  display: none;
+}

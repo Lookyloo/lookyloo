@@ -1,6 +1,7 @@
 {% extends "main.html" %}
 
 {% from 'bootstrap/utils.html' import render_messages %}
+{% from "macros.html" import shorten_string %}
 
 {% block title %}Lookyloo{% endblock %}
 
@@ -63,7 +64,7 @@ $(document).ready(function () {
       <tr>
         <td>
           <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
-          <p title="{{ url }}">{{ url }}</p>
+          <p title="{{ url }}">{{ shorten_string(url, 150) }}</p>
         </td>
         <td>{{ datetime }}</td>
         <td>
@@ -71,9 +72,9 @@ $(document).ready(function () {
             {% for r in redirects %}
             <p title="{{ r }}">
             {% if loop.previtem %}
-              {{ ("&nbsp;" * (loop.index *2) )|safe }}↪ {{ r }}
+              {{ ("&nbsp;" * (loop.index *2) )|safe }}↪ {{ shorten_string(r, 50) }}
             {%else%}
-              {{ r }}
+              {{ shorten_string(r, 50) }}
             {%endif%}
             </p>
             {% endfor %}
