@@ -609,7 +609,7 @@ class Lookyloo():
 
     def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None,
                depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
-               referer: Optional[str]=None, perma_uuid: str=None, os: str=None,
+               referer: str='', perma_uuid: str=None, os: str=None,
                browser: str=None) -> Union[bool, str]:
         url = url.strip()
         url = refang(url)
