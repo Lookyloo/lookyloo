@@ -296,7 +296,7 @@ description = "HTTP Archive (HAR) to ETE Toolkit generator"
 name = "har2tree"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.1.4"
+version = "1.2"
 
 [package.dependencies]
 beautifulsoup4 = ">=4.8.2,<5.0.0"
@@ -408,7 +408,7 @@ description = "An autocompletion tool for Python that can be used for text edito
 name = "jedi"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-version = "0.17.1"
+version = "0.17.2"
 
 [package.dependencies]
 parso = ">=0.7.0,<0.8.0"
@@ -867,7 +867,7 @@ description = "Scrapy splash wrapper as a standalone library."
 name = "scrapysplashwrapper"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.1.2"
+version = "1.2"
 
 [package.dependencies]
 scrapy = ">=1.8.0,<2.0.0"
@@ -1071,7 +1071,7 @@ test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
-content-hash = "0079fce418f9ec6dc9b8ee639dfc1a15410e61a741e7c48aae006c02e46b786f"
+content-hash = "e274bd7d88d0ae1b2858920fdec1a918f8240120206b960e9f14e6cdfa62d42b"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1261,8 +1261,8 @@ gunicorn = [
     {file = "gunicorn-20.0.4.tar.gz", hash = "sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626"},
 ]
 har2tree = [
-    {file = "har2tree-1.1.4-py3-none-any.whl", hash = "sha256:dbd157b2046fd5083d9c6cdbba9d464081e91bc10cf0657cc1f64b0b89ad56c7"},
-    {file = "har2tree-1.1.4.tar.gz", hash = "sha256:931e2df167c068759197d3b8daaae72ac4908ab5436c4f36c28c787ccc987f78"},
+    {file = "har2tree-1.2-py3-none-any.whl", hash = "sha256:dbc1509bf329dea851bfa541820b38154aebf60e0bd0eb3f3a7f41a26162f5a5"},
+    {file = "har2tree-1.2.tar.gz", hash = "sha256:7f07185df2108c7141ab972756fe6914d50334af4a8fd01425f758be9879b153"},
 ]
 hyperlink = [
     {file = "hyperlink-19.0.0-py2.py3-none-any.whl", hash = "sha256:ab4a308feb039b04f855a020a6eda3b18ca5a68e6d8f8c899cbe9e653721d04f"},
@@ -1293,8 +1293,8 @@ itsdangerous = [
     {file = "itsdangerous-1.1.0.tar.gz", hash = "sha256:321b033d07f2a4136d3ec762eac9f16a10ccd60f53c0c91af90217ace7ba1f19"},
 ]
 jedi = [
-    {file = "jedi-0.17.1-py2.py3-none-any.whl", hash = "sha256:1ddb0ec78059e8e27ec9eb5098360b4ea0a3dd840bedf21415ea820c21b40a22"},
-    {file = "jedi-0.17.1.tar.gz", hash = "sha256:807d5d4f96711a2bcfdd5dfa3b1ae6d09aa53832b182090b222b5efb81f52f63"},
+    {file = "jedi-0.17.2-py2.py3-none-any.whl", hash = "sha256:98cc583fa0f2f8304968199b01b6b4b94f469a1f4a74c1560506ca2a211378b5"},
+    {file = "jedi-0.17.2.tar.gz", hash = "sha256:86ed7d9b750603e4ba582ea8edc678657fb4007894a12bcf6f4bb97892f31d20"},
 ]
 jinja2 = [
     {file = "Jinja2-2.11.2-py2.py3-none-any.whl", hash = "sha256:f0a4641d3cf955324a89c04f3d94663aa4d638abe8f733ecd3582848e1c37035"},
@@ -1544,8 +1544,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.7.2-py2.py3-none-any.whl", hash = "sha256:71ac958370f8732fec746a25a8235b03a4d3c4c93a59be51aa8e910a08cfe511"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.1.2-py3-none-any.whl", hash = "sha256:02460ec8714206045aa64c5586765fb8b5ba57e4aecfb3c08bd36b2c10b6b546"},
-    {file = "scrapysplashwrapper-1.1.2.tar.gz", hash = "sha256:3ecb4455d8949c4fb7e2ba868efd71fcd4ae746be28c5eaa1f8a884312c544ec"},
+    {file = "scrapysplashwrapper-1.2-py3-none-any.whl", hash = "sha256:07a85dfdf4bb08ff295f7e26668f23fc07e456fd160c9dab9711bc9e137a02e6"},
+    {file = "scrapysplashwrapper-1.2.tar.gz", hash = "sha256:ae09a1ba9f1f276dd6f0b478ce99558b0fd1b4dc010e9f546005d12968c09f82"},
 ]
 service-identity = [
     {file = "service_identity-18.1.0-py2.py3-none-any.whl", hash = "sha256:001c0707759cb3de7e49c078a7c0c9cd12594161d3bf06b9c254fdcb1a60dc36"},
