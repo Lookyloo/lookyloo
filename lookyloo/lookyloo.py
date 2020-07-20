@@ -154,6 +154,7 @@ class Lookyloo():
         self.configs: Dict[str, Dict[str, Any]] = load_configs()
         self.logger.setLevel(self.get_config('loglevel'))
         self.indexing = Indexing()
+        self.is_public_instance = self.get_config('public_instance')
 
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
         self.scrape_dir: Path = get_homedir() / 'scraped'
@@ -219,6 +220,7 @@ class Lookyloo():
             json.dump(to_store, f, indent=2)
 
     def cache_tree(self, capture_uuid: str) -> None:
+        '''Generate the pickle, add capture in the indexes'''
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
             raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
@@ -226,10 +228,17 @@ class Lookyloo():
         with open((capture_dir / 'uuid'), 'r') as f:
             uuid = f.read()
         har_files = sorted(capture_dir.glob('*.har'))
+        # NOTE: We only index the public captures
+        index = True
         try:
             ct = CrawledTree(har_files, uuid)
-            self.indexing.index_cookies_capture(ct)
-            self.indexing.index_body_hashes_capture(ct)
+            if self.is_public_instance:
+                cache = self.capture_cache(capture_uuid)
+                if cache.get('no_index') is not None:
+                    index = False
+            if index:
+                self.indexing.index_cookies_capture(ct)
+                self.indexing.index_body_hashes_capture(ct)
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 

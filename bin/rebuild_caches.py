@@ -23,11 +23,19 @@ if __name__ == '__main__':
     indexing = Indexing()
     indexing.clear_indexes()
     for capture_uuid in lookyloo.capture_uuids:
+        index = True
         try:
             tree = lookyloo.get_crawled_tree(capture_uuid)
         except Exception as e:
             print(capture_uuid, e)
             continue
+
+        if lookyloo.is_public_instance:
+            cache = lookyloo.capture_cache(capture_uuid)
+            if cache.get('no_index') is not None:
+                index = False
+
         # NOTE: these two methods do nothing if we just generated the pickle
-        indexing.index_cookies_capture(tree)
-        indexing.index_body_hashes_capture(tree)
+        if index:
+            indexing.index_cookies_capture(tree)
+            indexing.index_body_hashes_capture(tree)

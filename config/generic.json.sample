@@ -2,6 +2,7 @@
   "loglevel": "INFO",
   "splash_loglevel": "WARNING",
   "only_global_lookups": true,
+  "public_instance": false,
   "splash_url": "http://127.0.0.1:8050",
   "default_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
   "cache_clean_user": {},
@@ -24,6 +25,7 @@
   "_notes": {
     "loglevel": "(lookyloo) Can be one of the value listed here: https://docs.python.org/3/library/logging.html#levels",
     "splash_loglevel": "(Splash) INFO is *very* verbose.",
+    "public_instance": "true means disabling features deemed unsafe on a public instance (such as indexing private captures)",
     "only_global_lookups": "Set it to True if your instance is publicly available so users aren't able to scan your internal network",
     "splash_url": "URL to connect to splash",
     "default_user_agent": "Ultimate fallback if the capture form, or the asynchronous submission, don't provide a UA",
