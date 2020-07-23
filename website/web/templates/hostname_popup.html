@@ -11,7 +11,10 @@
   {{ super() }}
   <script>
       function whereAmI(hostname_uuid) {
-          window.opener.ProcessChildMessage(hostname_uuid);
+          window.opener.LocateNode(hostname_uuid);
+      };
+      function flag(hostname_uuid) {
+          window.opener.PermanentNodeHighlight(hostname_uuid);
       };
   </script>
   <script>
@@ -103,7 +106,7 @@
             </p>
             <div class="collapse" id="request_cookies_full_list_{{ url['url_object'].uuid }}">
               <div class="card card-body">
-              {{ indexed_cookies("List of cookies sent in the request", "Flag node setting this cookie", url['cookies_sent']) }}
+              {{ indexed_cookies("List of cookies sent in the request", "Node setting this cookie", url['cookies_sent']) }}
               </div>
             </div>
           </div>
@@ -191,8 +194,8 @@
             </p>
             <div class="collapse" id="response_cookies_full_list_{{ url['url_object'].uuid }}">
               <div class="card card-body">
-              {{ indexed_cookies("This response contains 3rd party cookies:", "Flag node sending this cookie", url['cookies_received']['3rd_party']) }}
-              {{ indexed_cookies("Cookies, sent somewhere in the capture", "Flag node sending this cookie", url['cookies_received']['sent']) }}
+              {{ indexed_cookies("This response contains 3rd party cookies:", "Node sending this cookie", url['cookies_received']['3rd_party']) }}
+              {{ indexed_cookies("Cookies, sent somewhere in the capture", "Node sending this cookie", url['cookies_received']['sent']) }}
               {{ indexed_cookies("Cookies, never sent", "", url['cookies_received']['not_sent']) }}
               </div>
             </div>

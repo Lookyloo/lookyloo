@@ -81,18 +81,28 @@ function hostnode_click_popup(d) {
     window.open('/tree/' + treeUUID + '/hostname_popup/' + d.data.uuid, '_blank', 'width=1024,height=768,left=200,top=100');
 };
 
-function ProcessChildMessage(urlnode_uuid) {
+function LocateNode(urlnode_uuid) {
     var element = document.getElementById("node_" + urlnode_uuid);
     element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
 
     var to_blink = d3.select("#node_" + urlnode_uuid).select('text');
     to_blink
-        .transition().duration(500)  //Set transition
+        .transition().duration(1000)  //Set transition
         .style('fill', 'red')
         .style('font-size', '20px')
-        .transition().duration(500)  //Set transition
+        .transition().duration(1000)  //Set transition
         .style('fill', 'black')
         .style('font-size', '16px');
+};
+
+function PermanentNodeHighlight(urlnode_uuid) {
+    var element = document.getElementById("node_" + urlnode_uuid);
+    element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+
+    var to_bold = d3.select("#node_" + urlnode_uuid).select('text');
+    to_bold
+        .style('fill', 'red')
+        .style('font-weight', 'bold');
 };
 
 function icon(key, icon_path, d, icon_size){

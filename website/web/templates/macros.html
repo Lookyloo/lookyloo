@@ -76,7 +76,10 @@
     <li>
         {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
           {{ cookie_name_value[0] }}</a>={{ shorten_string(cookie_name_value[1], 200) }} -
-        <button type="button" class="btn btn-info" onclick="whereAmI('{{ detail[1] }}')">{{ button_text }}</button>
+        </br>
+        {{ button_text }}
+        <button type="button" class="btn btn-info" onclick="whereAmI('{{ detail[1] }}')">Locate</button>
+        <button type="button" class="btn btn-info" onclick="flag('{{ detail[1] }}')">Flag</button>
     </li>
     {% endif %}
   {% endfor %}
