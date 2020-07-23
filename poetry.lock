@@ -297,7 +297,7 @@ description = "HTTP Archive (HAR) to ETE Toolkit generator"
 name = "har2tree"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.2"
+version = "1.2.1"
 
 [package.dependencies]
 beautifulsoup4 = ">=4.8.2,<5.0.0"
@@ -305,7 +305,6 @@ ete3 = ">=3.1.1,<4.0.0"
 lxml = ">=4.4.2,<5.0.0"
 publicsuffix2 = ">=2.20191221,<3.0"
 six = ">=1.14.0,<2.0.0"
-w3lib = ">=1.22.0,<2.0.0"
 
 [[package]]
 category = "main"
@@ -868,7 +867,7 @@ description = "Scrapy splash wrapper as a standalone library."
 name = "scrapysplashwrapper"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.2.1"
+version = "1.2.2"
 
 [package.dependencies]
 scrapy = ">=1.8.0,<2.0.0"
@@ -978,7 +977,7 @@ description = "HTTP library with thread-safe connection pooling, file post, and 
 name = "urllib3"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
-version = "1.25.9"
+version = "1.25.10"
 
 [package.extras]
 brotli = ["brotlipy (>=0.6.0)"]
@@ -1262,8 +1261,8 @@ gunicorn = [
     {file = "gunicorn-20.0.4.tar.gz", hash = "sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626"},
 ]
 har2tree = [
-    {file = "har2tree-1.2-py3-none-any.whl", hash = "sha256:dbc1509bf329dea851bfa541820b38154aebf60e0bd0eb3f3a7f41a26162f5a5"},
-    {file = "har2tree-1.2.tar.gz", hash = "sha256:7f07185df2108c7141ab972756fe6914d50334af4a8fd01425f758be9879b153"},
+    {file = "har2tree-1.2.1-py3-none-any.whl", hash = "sha256:180d090a455c435f5bd8dd20e8e66239722177e60e99d1e3dc89a21796aad11c"},
+    {file = "har2tree-1.2.1.tar.gz", hash = "sha256:7201a1b9764127b4ef1d0ea7f541eeac3a617eb61c156d26e17878b77395ac2b"},
 ]
 hyperlink = [
     {file = "hyperlink-19.0.0-py2.py3-none-any.whl", hash = "sha256:ab4a308feb039b04f855a020a6eda3b18ca5a68e6d8f8c899cbe9e653721d04f"},
@@ -1545,8 +1544,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.7.2-py2.py3-none-any.whl", hash = "sha256:71ac958370f8732fec746a25a8235b03a4d3c4c93a59be51aa8e910a08cfe511"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.2.1-py3-none-any.whl", hash = "sha256:c233cf89deef54ff62403de8a1157739d9343f1d3de0336d0b4ba36cae859c19"},
-    {file = "scrapysplashwrapper-1.2.1.tar.gz", hash = "sha256:4c5292026fdfa48462dc6ec97e1d5767b2e9cad7a1589ac9e8b7622e375fc4e1"},
+    {file = "scrapysplashwrapper-1.2.2-py3-none-any.whl", hash = "sha256:de03a32f1e8a23daf6525651908f520412c4e1bfa489652306c4f39d374801f5"},
+    {file = "scrapysplashwrapper-1.2.2.tar.gz", hash = "sha256:4085a1f583ecb041edea8663f450d82782d574f46f951cbcc755267a235b08ef"},
 ]
 service-identity = [
     {file = "service_identity-18.1.0-py2.py3-none-any.whl", hash = "sha256:001c0707759cb3de7e49c078a7c0c9cd12594161d3bf06b9c254fdcb1a60dc36"},
@@ -1618,8 +1617,8 @@ typing-extensions = [
     {file = "typing_extensions-3.7.4.2.tar.gz", hash = "sha256:79ee589a3caca649a9bfd2a8de4709837400dfa00b6cc81962a1e6a1815969ae"},
 ]
 urllib3 = [
-    {file = "urllib3-1.25.9-py2.py3-none-any.whl", hash = "sha256:88206b0eb87e6d677d424843ac5209e3fb9d0190d0ee169599165ec25e9d9115"},
-    {file = "urllib3-1.25.9.tar.gz", hash = "sha256:3018294ebefce6572a474f0604c2021e33b3fd8006ecd11d62107a5d2a963527"},
+    {file = "urllib3-1.25.10-py2.py3-none-any.whl", hash = "sha256:e7983572181f5e1522d9c98453462384ee92a0be7fac5f1413a1e35c56cc0461"},
+    {file = "urllib3-1.25.10.tar.gz", hash = "sha256:91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a"},
 ]
 vt-py = [
     {file = "vt-py-0.5.4.tar.gz", hash = "sha256:3a79477910a64ce7a1bbefd06f3ecaf9d5eef3fb752e349235f26bb566917292"},
