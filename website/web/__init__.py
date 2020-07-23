@@ -255,8 +255,15 @@ def urlnode_details(tree_uuid: str, node_uuid: str):
         body_content = urlnode.body.getvalue()
         if body_content:
             got_content = True
+            if hasattr(urlnode, 'json') and urlnode.json:
+                try:
+                    loaded = json.loads(body_content)
+                    body_content = json.dumps(loaded, indent=2).encode()
+                except Exception:
+                    # Not json, but junk
+                    pass
             with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
-                zfile.writestr(urlnode.filename, urlnode.body.getvalue())
+                zfile.writestr(urlnode.filename, body_content)
     if not got_content:
         with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
             zfile.writestr('file.txt', b'Response body empty')
