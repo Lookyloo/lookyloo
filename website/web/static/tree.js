@@ -95,14 +95,39 @@ function LocateNode(urlnode_uuid) {
         .style('font-size', '16px');
 };
 
-function PermanentNodeHighlight(urlnode_uuid) {
-    var element = document.getElementById("node_" + urlnode_uuid);
+function UnflagHostNode(hostnode_uuid) {
+    var to_fill = d3.select("#node_" + hostnode_uuid).select('rect');
+    to_fill
+        .style('fill', 'white');
+
+    var to_fill = d3.select("#node_" + hostnode_uuid).select('text');
+    to_fill
+        .style('fill', 'black');
+
+    d3.select("#node_" + hostnode_uuid).select("#flag")
+        .text("🏁")
+        .on('click', function(d) {
+            PermanentNodeHighlight(hostnode_uuid);
+        });
+};
+
+function PermanentNodeHighlight(hostnode_uuid) {
+    var element = document.getElementById("node_" + hostnode_uuid);
     element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
 
-    var to_bold = d3.select("#node_" + urlnode_uuid).select('text');
-    to_bold
-        .style('fill', 'red')
-        .style('font-weight', 'bold');
+    var to_fill = d3.select("#node_" + hostnode_uuid).select('rect');
+    to_fill
+        .style('fill', 'black');
+
+    var to_fill = d3.select("#node_" + hostnode_uuid).select('text');
+    to_fill
+        .style('fill', 'white');
+
+    d3.select("#node_" + hostnode_uuid).select("#flag")
+        .text('❌')
+        .on('click', function(d) {
+            UnflagHostNode(hostnode_uuid);
+        });
 };
 
 function icon(key, icon_path, d, icon_size){
@@ -190,19 +215,6 @@ function icon_list(relative_x_pos, relative_y_pos, d, url_view=false) {
         };
     })
 
-    // FIXME: that need to move somewhere else, doesn't make sense here.
-    icons.filter(d => {
-        if (d.data.sane_js_details) {
-            d.libinfo = d.data.sane_js_details[0];
-            return d.data.sane_js_details;
-        }
-        return false;
-    }).append('text')
-      .attr('x', icon_size + 4)
-      .attr('y', relative_y_pos + 7)
-      .style("font-size", "15px")
-      .text(d => 'Library information: ' + d.libinfo);
-
     return icons.node();
 }
 
@@ -228,11 +240,10 @@ function text_entry(relative_x_pos, relative_y_pos, onclick_callback, d) {
             }
             return d.data.name
           });
-    if (d.data.name != 'orphan.url'){
-        text_nodes
-            .attr('cursor', 'pointer')
-            .on('click', onclick_callback);
-    };
+
+    text_nodes
+        .attr('cursor', 'pointer')
+        .on('click', onclick_callback);
     return nodeContent.node();
 }
 
@@ -362,6 +373,17 @@ function update(root, computed_node_width=0) {
                 var selected_node_bbox = d3.select(this).node().getBBox();  // Required, as the node width need to include the rectangle
                 node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
 
+                // Set Flag
+                d3.select(this).append("text")
+                    .attr('x', selected_node_bbox.width - 12)
+                    .attr('y', 20)
+                    .style("font-size", "16px")
+                    .attr("id", "flag")
+                    .text("🏁")
+                    .attr('cursor', 'pointer')
+                    .on('click', function(d) {
+                        PermanentNodeHighlight(d.data.uuid);
+                    });
             });
             return node_group;
         },
