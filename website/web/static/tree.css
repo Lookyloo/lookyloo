@@ -14,6 +14,48 @@
   stroke-width: 2px;
 }
 
+#menu_container {
+  position: fixed;
+  top: 5px;
+  left: 5px;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+}
+
+#menu {
+  position: fixed;
+  top: 5px;
+  left: 5px;
+  background: white;
+  border: 2px solid;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+}
+
+#menu_container .menu-header {
+	width: 200px;
+	height: 110px;
+	resize: both;
+}
+
+#menu_container ul.components {
+    padding: 20px 0;
+}
+
+#menu_container ul li a {
+    padding: 10px;
+    font-size: 1.1em;
+    display: block;
+}
+
+#menu_container ul li a:hover {
+    background: #fff;
+}
+
 #screenshot {
   position: fixed;
   top: 5px;
@@ -22,18 +64,6 @@
   border: 2px solid;
   height: 1030px;
   overflow: hidden;
-}
-
-#lookyloo-icon {
-  position: fixed;
-  top: 5px;
-  left: 5px;
-  background-image: url("lookyloo.jpeg");
-  background-size: cover;
-  width: 200px;
-  height: 110px;
-  resize: both;
-  border: 2px solid;
 }
 
 #legend_container {
@@ -59,13 +89,13 @@
 }
 
 #tree-details_container {
-	position: fixed;
-	bottom: 5px;
-	right: 5px;
-	padding-top: 5px;
-	padding-right: 5px;
-	padding-bottom: 5px;
-	padding-left: 5px;
+  position: fixed;
+  bottom: 5px;
+  right: 5px;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
 }
 
 #tree-details {
@@ -88,17 +118,17 @@
     background: lightsteelblue;
     border: 0px;
     border-radius: 8px;
-		z-index: 1;
-		border: 2px solid;
-		padding-top: 5px;
-		padding-right: 5px;
-		padding-bottom: 5px;
-		padding-left: 5px;
+    z-index: 1;
+    border: 2px solid;
+    padding-top: 5px;
+    padding-right: 5px;
+    padding-bottom: 5px;
+    padding-left: 5px;
 }
 
 .tooltip text {
-	font: 15px sans-serif;
-	z-index: 2;
+  font: 15px sans-serif;
+  z-index: 2;
 }
 
 hr {

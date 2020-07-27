@@ -11,17 +11,10 @@
   <script src='{{ url_for('static', filename='FileSaver.js') }}'></script>
   <script src='{{ url_for('static', filename='tree.js') }}'></script>
   <script>
-    $('#screenshot_view_button').click(function(){
-      $(this).text(function(i, old){
-        return old=='View' ?  'Hide' : 'View';
-      });
-    });
-  </script>
-  <script>
   $('#modulesModal').on('show.bs.modal', function(e) {
-	  var button = $(e.relatedTarget);
-	  var modal = $(this);
-	  modal.find('.modal-body').load(button.data("remote"));
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
   });
   </script>
   <script>
@@ -33,9 +26,9 @@
   </script>
   <script>
   $('.modulesForceRefresh').on('click',function(){
-	  $('.modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}",function(){
-		  $('#modulesModal').modal({show:true});
-	  });
+      $('.modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}",function(){
+          $('#modulesModal').modal({show:true});
+      });
   });
   </script>
   {% if urlnode_uuid %}
@@ -50,6 +43,7 @@
 
 {% block content %}
 {{super()}}
+
 <script>
   var treeUUID = "{{ tree_uuid }}";
   var treeData = {{ tree_json | safe }};
@@ -57,15 +51,56 @@
 
 {{ render_messages(container=True, dismissible=True) }}
 
-<a id="lookyloo-icon" href="/" ></a>
-<div id=screenshot class="collapse">
-  <img src="{{ url_for('image', tree_uuid=tree_uuid) }}" class="img-fluid"/>
+<!-- Containers -->
+
+<div id="menu_container" class="container">
+  <div id=menu class="collapse show">
+    <div class="menu_header">
+      <a href="/" >
+        <img src="{{ url_for('static', filename='lookyloo.jpeg') }}" alt="Lookyloo icon" height="110">
+      </a>
+    </div>
+    <center>
+      <div style="display: inline">
+        <b>Menu</b>
+      </div>
+      <div style="display: inline;">
+        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu">
+            <img src="{{ url_for('static', filename='minimize2.jpg') }}" alt="Minimize menu" height="25" width="25">
+        </button>
+      </div>
+    </center>
+    <ul class="list-unstyled components">
+      <li>
+        <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
+         data-toggle="modal" data-target="#modulesModal" role="button">Show third party reports</a>
+      </li>
+      <li>
+        <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
+         data-toggle="modal" data-target="#statsModal" role="button">Show Statistics</a>
+      </li>
+      {% if enable_mail_notification %}
+      <li>
+        <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Notify by mail</a>
+      </li>
+      {%endif%}
+    </ul>
+  </div>
+  <div style="width: 100px">
+    <div style="display: inline;">
+    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu">
+      <img src="{{ url_for('static', filename='maximize2.jpg') }}" alt="Maximize" height="40" width="40">
+    </button>
+    </div>
+    <div style="display: inline">
+      <b>Menu</b>
+    </div>
+  </div>
 </div>
 
 <div id="legend_container" class="container">
   <div id=legend class="collapse show">
-    <div>
-      <center>
+    <center>
       <div style="display: inline">
         <b>Legend</b>
       </div>
@@ -74,179 +109,186 @@
             <img src="{{ url_for('static', filename='minimize2.jpg') }}" alt="Minimize legend" height="25" width="25">
         </button>
       </div>
-      </center>
-    </div>
-    <hr/>
-    <img src="{{ url_for('static', filename='javascript.png') }}"
-         alt="JavaScript" height="20" width="20"> Javascript <br>
+    </center>
+  <hr/>
+  <img src="{{ url_for('static', filename='javascript.png') }}"
+       alt="JavaScript" height="20" width="20"> Javascript <br>
 
-    <img src="{{ url_for('static', filename='cookie_received.png') }}"
-         alt="Cookie received" height="20" width="20"> Cookie received<br>
+  <img src="{{ url_for('static', filename='cookie_received.png') }}"
+       alt="Cookie received" height="20" width="20"> Cookie received<br>
 
-    <img src="{{ url_for('static', filename='cookie_read.png') }}"
-         alt="Cookie read" height="20" width="20"> Cookie read<br>
+  <img src="{{ url_for('static', filename='cookie_read.png') }}"
+       alt="Cookie read" height="20" width="20"> Cookie read<br>
 
-    <img src="{{ url_for('static', filename='redirect.png') }}"
-         alt="Redirect" height="20" width="20"> Redirect<br>
+  <img src="{{ url_for('static', filename='redirect.png') }}"
+       alt="Redirect" height="20" width="20"> Redirect<br>
 
-    <img src="{{ url_for('static', filename='font.png') }}"
-         alt="Font" height="20" width="20"> Font<br>
+  <img src="{{ url_for('static', filename='font.png') }}"
+       alt="Font" height="20" width="20"> Font<br>
 
-    <img src="{{ url_for('static', filename='html.png') }}"
-         alt="HTML" height="20" width="20"> HTML<br>
+  <img src="{{ url_for('static', filename='html.png') }}"
+       alt="HTML" height="20" width="20"> HTML<br>
 
-    <img src="{{ url_for('static', filename='json.png') }}"
-         alt="JSON" height="20" width="20"> JSON<br>
+  <img src="{{ url_for('static', filename='json.png') }}"
+       alt="JSON" height="20" width="20"> JSON<br>
 
-    <img src="{{ url_for('static', filename='css.png') }}"
-         alt="CSS" height="20" width="20"> CSS<br>
+  <img src="{{ url_for('static', filename='css.png') }}"
+       alt="CSS" height="20" width="20"> CSS<br>
 
-    <img src="{{ url_for('static', filename='exe.png') }}"
-        alt="EXE" height="20" width="20"> EXE<br>
+  <img src="{{ url_for('static', filename='exe.png') }}"
+      alt="EXE" height="20" width="20"> EXE<br>
 
-    <img src="{{ url_for('static', filename='img.png') }}"
-        alt="Image" height="20" width="20"> Image<br>
+  <img src="{{ url_for('static', filename='img.png') }}"
+      alt="Image" height="20" width="20"> Image<br>
 
-    <img src="{{ url_for('static', filename='video.png') }}"
-        alt="Video" height="20" width="20"> Video<br>
+  <img src="{{ url_for('static', filename='video.png') }}"
+      alt="Video" height="20" width="20"> Video<br>
 
-    <img src="{{ url_for('static', filename='ifr.png') }}"
-        alt="iFrame" height="20" width="20"> iFrame<br>
+  <img src="{{ url_for('static', filename='ifr.png') }}"
+      alt="iFrame" height="20" width="20"> iFrame<br>
 
-    <img src="{{ url_for('static', filename='wtf.png') }}"
-        alt="Content type not set/unknown" height="20" width="20"> Content type not set/unknown<br>
+  <img src="{{ url_for('static', filename='wtf.png') }}"
+      alt="Content type not set/unknown" height="20" width="20"> Content type not set/unknown<br>
   </div>
   <div style="width: 100px">
-      <div style="display: inline;">
-      <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#legend">
-        <img src="{{ url_for('static', filename='maximize2.jpg') }}" alt="Minimize legend" height="40" width="40">
-      </button>
-      </div>
-      <div style="display: inline">
-        <b>Legend</b>
-      </div>
+    <div style="display: inline;">
+    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#legend">
+      <img src="{{ url_for('static', filename='maximize2.jpg') }}" alt="Maximize legend" height="40" width="40">
+    </button>
+    </div>
+    <div style="display: inline">
+      <b>Legend</b>
+    </div>
   </div>
 </div>
 
 <div id="tree-details_container" class="container">
   <div id=tree-details class="collapse show">
-    <div>
-      <center>
-      <div style="display: inline">
-        <b>Tree details</b>
-      </div>
-      <div style="display: inline;">
-        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
-            <img src="{{ url_for('static', filename='minimize1.jpg') }}"
-                 alt="Minimize tree details" height="25" width="25">
-        </button>
-      </div>
-      </center>
-    </div>
-    <hr/>
-    <b>Root URL</b>: {{ shorten_string(root_url, 150) }}
-    <br>
-    <b>Start time</b>: {{ start_time }}<br>
-    <b>User Agent</b>: {{ user_agent }}<br>
-    {% if meta %}
-      {%for k, v in meta.items()%}
-        <b>{{k.title()}}</b>: {{ v }}<br>
-      {%endfor%}
-    {%endif%}
-    <b>Screenshot</b>:
-    <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" class="btn btn-info" role="button">Download</a>
-    <button id="screenshot_view_button" type="button" class="btn btn-info"
-            data-toggle="collapse" data-target="#screenshot">View</button>
-    <br>
-	<br>
-
-	<a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
-	   data-toggle="modal" data-target="#modulesModal" class="btn btn-info" role="button">Show third party reports</a>
-    <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
-       data-toggle="modal" data-target="#statsModal" class="btn btn-info" role="button">Show Statistics</a>
-    {% if enable_mail_notification %}
-      <a href="#emailModal" data-toggle="modal" data-target="#emailModal" class="btn btn-info" role="button">Notify by mail</a>
-    {%endif%}
-  </div>
-  <div style="width: 100px;float: right;">
-    <div style="display: inline;">
-    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
-      <img src="{{ url_for('static', filename='maximize1.jpg') }}" alt="Minimize tree details" height="40" width="40">
-    </button>
-    </div>
+  <div>
+    <center>
     <div style="display: inline">
       <b>Tree details</b>
     </div>
+    <div style="display: inline;">
+      <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
+          <img src="{{ url_for('static', filename='minimize1.jpg') }}"
+               alt="Minimize tree details" height="25" width="25">
+      </button>
+    </div>
+    </center>
+  </div>
+  <hr/>
+  <b>Root URL</b>: {{ shorten_string(root_url, 150) }}
+  <br>
+  <b>Start time</b>: {{ start_time }}<br>
+  <b>User Agent</b>: {{ user_agent }}<br>
+  {% if meta %}
+    {%for k, v in meta.items()%}
+      <b>{{k.title()}}</b>: {{ v }}<br>
+    {%endfor%}
+  {%endif%}
+  <b>Screenshot</b>:
+  <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" class="btn btn-info" role="button">Download</a>
+  <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" class="btn btn-info" role="button">Show screenshot</a>
+  </div>
+  <div style="width: 100px;float: right;">
+  <div style="display: inline;">
+  <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
+    <img src="{{ url_for('static', filename='maximize1.jpg') }}" alt="Minimize tree details" height="40" width="40">
+  </button>
+  </div>
+  <div style="display: inline">
+    <b>Tree details</b>
+  </div>
   </div>
 </div>
 
+<!-- Modals -->
+
 <div class="modal fade" id="statsModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modulesModalLabel">Statistics</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                ... loading statistics ...
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="modulesModalLabel">Statistics</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              ... loading statistics ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="screenshotModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="modulesModalLabel">Screenshot</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
     </div>
+    <div class="modal-body">
+      <img src="{{ url_for('image', tree_uuid=tree_uuid) }}" class="img-fluid"/>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
+  </div>
+  </div>
 </div>
 
 <div class="modal fade" id="modulesModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modulesModalLabel">Reports from 3rd party services</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                ... loading results from 3rd party modules ...
-            </div>
-            <div class="modal-footer">
-				<button type="button" class="btn btn-success modulesForceRefresh">Re-run all modules</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="modulesModalLabel">Reports from 3rd party services</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              ... loading results from 3rd party modules ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-success modulesForceRefresh">Re-run all modules</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
 </div>
 
 <div class="modal fade" id="emailModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-xl" role="document">
-      <form role="form" action="{{ tree_uuid }}/send_mail" method=post enctype=multipart/form-data>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="emailModalLabel">Notify by email</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                  <label for="email">Email address - used to get back in touch with you if needed (optional)</label>
-                  <input type="email" class="form-control" name="email" id="email" placeholder="Enter email">
-                </div>
-                <div class="form-group">
-                  <label for="comment">Please write a comment (optional)</label>
-                  <textarea class="form-control" name="comment" id=comment rows="3"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-success">Send email</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-      </form>
-    </div>
+  <div class="modal-dialog modal-xl" role="document">
+    <form role="form" action="{{ tree_uuid }}/send_mail" method=post enctype=multipart/form-data>
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="emailModalLabel">Notify by email</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <div class="form-group">
+                <label for="email">Email address - used to get back in touch with you if needed (optional)</label>
+                <input type="email" class="form-control" name="email" id="email" placeholder="Enter email">
+              </div>
+              <div class="form-group">
+                <label for="comment">Please write a comment (optional)</label>
+                <textarea class="form-control" name="comment" id=comment rows="3"></textarea>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="submit" class="btn btn-success">Send email</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+      </div>
+    </form>
+  </div>
 </div>
-
-
 {% endblock content %}
