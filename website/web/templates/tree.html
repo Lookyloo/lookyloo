@@ -66,7 +66,7 @@
       </div>
       <div style="display: inline;">
         <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu">
-            <img src="{{ url_for('static', filename='minimize2.jpg') }}" alt="Minimize menu" height="25" width="25">
+            <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize menu" height="25" width="25">
         </button>
       </div>
     </center>
@@ -79,6 +79,9 @@
         <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
          data-toggle="modal" data-target="#statsModal" role="button">Show Statistics</a>
       </li>
+      <li>
+        <a href="#unflag" role="button" onclick="UnflagAllNodes();">Unflag all nodes</a>
+      </li>
       {% if enable_mail_notification %}
       <li>
         <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Notify by mail</a>
@@ -89,7 +92,7 @@
   <div style="width: 100px">
     <div style="display: inline;">
     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu">
-      <img src="{{ url_for('static', filename='maximize2.jpg') }}" alt="Maximize" height="40" width="40">
+      <img src="{{ url_for('static', filename='down.jpg') }}" alt="Maximize" height="40" width="40">
     </button>
     </div>
     <div style="display: inline">
@@ -106,7 +109,7 @@
       </div>
       <div style="display: inline;">
         <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#legend">
-            <img src="{{ url_for('static', filename='minimize2.jpg') }}" alt="Minimize legend" height="25" width="25">
+            <img src="{{ url_for('static', filename='down.jpg') }}" alt="Minimize legend" height="25" width="25">
         </button>
       </div>
     </center>
@@ -153,7 +156,7 @@
   <div style="width: 100px">
     <div style="display: inline;">
     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#legend">
-      <img src="{{ url_for('static', filename='maximize2.jpg') }}" alt="Maximize legend" height="40" width="40">
+      <img src="{{ url_for('static', filename='up.jpg') }}" alt="Maximize legend" height="40" width="40">
     </button>
     </div>
     <div style="display: inline">
@@ -171,7 +174,7 @@
     </div>
     <div style="display: inline;">
       <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
-          <img src="{{ url_for('static', filename='minimize1.jpg') }}"
+          <img src="{{ url_for('static', filename='down.jpg') }}"
                alt="Minimize tree details" height="25" width="25">
       </button>
     </div>
@@ -194,7 +197,7 @@
   <div style="width: 100px;float: right;">
   <div style="display: inline;">
   <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
-    <img src="{{ url_for('static', filename='maximize1.jpg') }}" alt="Minimize tree details" height="40" width="40">
+    <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize tree details" height="40" width="40">
   </button>
   </div>
   <div style="display: inline">

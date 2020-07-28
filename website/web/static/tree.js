@@ -95,19 +95,23 @@ function LocateNode(urlnode_uuid) {
         .style('font-size', '16px');
 };
 
+function UnflagAllNodes() {
+    d3.selectAll('.node_data').select('rect').style('fill', 'white');
+    d3.selectAll('.node_data').select('text').style('fill', 'black');
+    d3.selectAll('.node_data').select("#flag")
+        .text("🏁")
+        .on('click', function(d) {
+            PermanentNodeHighlight(d.data.uuid);
+        });
+};
+
 function UnflagHostNode(hostnode_uuid) {
-    var to_fill = d3.select("#node_" + hostnode_uuid).select('rect');
-    to_fill
-        .style('fill', 'white');
-
-    var to_fill = d3.select("#node_" + hostnode_uuid).select('text');
-    to_fill
-        .style('fill', 'black');
-
+    d3.select("#node_" + hostnode_uuid).select('rect').style('fill', 'white');
+    d3.select("#node_" + hostnode_uuid).select('text').style('fill', 'black');
     d3.select("#node_" + hostnode_uuid).select("#flag")
         .text("🏁")
         .on('click', function(d) {
-            PermanentNodeHighlight(hostnode_uuid);
+            PermanentNodeHighlight(d.data.uuid);
         });
 };
 
@@ -115,18 +119,12 @@ function PermanentNodeHighlight(hostnode_uuid) {
     var element = document.getElementById("node_" + hostnode_uuid);
     element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
 
-    var to_fill = d3.select("#node_" + hostnode_uuid).select('rect');
-    to_fill
-        .style('fill', 'black');
-
-    var to_fill = d3.select("#node_" + hostnode_uuid).select('text');
-    to_fill
-        .style('fill', 'white');
-
+    d3.select("#node_" + hostnode_uuid).select('rect').style('fill', 'black');
+    d3.select("#node_" + hostnode_uuid).select('text').style('fill', 'white');
     d3.select("#node_" + hostnode_uuid).select("#flag")
         .text('❌')
         .on('click', function(d) {
-            UnflagHostNode(hostnode_uuid);
+            UnflagHostNode(d.data.uuid);
         });
 };
 
