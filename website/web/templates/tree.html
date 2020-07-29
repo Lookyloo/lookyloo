@@ -54,7 +54,7 @@
 <!-- Containers -->
 
 <div id="menu_container" class="container">
-  <div id=menu class="collapse show">
+  <div id=menu>
     <div class="menu_header">
       <a href="/" >
         <img src="{{ url_for('static', filename='lookyloo.jpeg') }}" alt="Lookyloo icon" height="110">
@@ -66,38 +66,37 @@
         <b>Menu</b>
       </div>
       <div style="display: inline;">
-        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu">
-            <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize menu" height="25" width="25">
+        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu_content">
+            <span class="if-collapsed">
+              <img src="{{ url_for('static', filename='down.jpg') }}" alt="Maximize menu" height="25" width="25">
+            </span>
+            <span class="if-not-collapsed">
+              <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize menu" height="25" width="25">
+            </span>
         </button>
       </div>
     </center>
     <hr/>
-    <ul class="list-unstyled components">
-      <li>
-        <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
-         data-toggle="modal" data-target="#modulesModal" role="button">Show third party reports</a>
-      </li>
-      <li>
-        <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
-         data-toggle="modal" data-target="#statsModal" role="button">Show Statistics</a>
-      </li>
-      <li>
-        <a href="#unflag" role="button" onclick="UnflagAllNodes();">Unflag all nodes</a>
-      </li>
-      {% if enable_mail_notification %}
-      <li>
-        <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Notify by mail</a>
-      </li>
-      {%endif%}
-    </ul>
-  </div>
-  <div style="width: 70px">
-    <center>
-    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu">
-      <img src="{{ url_for('static', filename='down.jpg') }}" alt="Maximize" height="40" width="40">
-      <b>Menu</b>
-    </button>
-    </center>
+    <div id=menu_content class="collapse show">
+      <ul class="list-unstyled components">
+        <li>
+          <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
+           data-toggle="modal" data-target="#modulesModal" role="button">Show third party reports</a>
+        </li>
+        <li>
+          <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
+           data-toggle="modal" data-target="#statsModal" role="button">Show Statistics</a>
+        </li>
+        <li>
+          <a href="#unflag" role="button" onclick="UnflagAllNodes();">Unflag all nodes</a>
+        </li>
+        {% if enable_mail_notification %}
+        <li>
+          <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Notify by mail</a>
+        </li>
+        {%endif%}
+      </ul>
+    </div>
   </div>
 </div>
 
