@@ -89,15 +89,13 @@
       {%endif%}
     </ul>
   </div>
-  <div style="width: 100px">
-    <div style="display: inline;">
+  <div style="width: 70px">
+    <center>
     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu">
       <img src="{{ url_for('static', filename='down.jpg') }}" alt="Maximize" height="40" width="40">
-    </button>
-    </div>
-    <div style="display: inline">
       <b>Menu</b>
-    </div>
+    </button>
+    </center>
   </div>
 </div>
 
@@ -153,56 +151,52 @@
   <img src="{{ url_for('static', filename='wtf.png') }}"
       alt="Content type not set/unknown" height="20" width="20"> Content type not set/unknown<br>
   </div>
-  <div style="width: 100px">
-    <div style="display: inline;">
+  <div style="width: 70px;">
+    <center>
     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#legend">
       <img src="{{ url_for('static', filename='up.jpg') }}" alt="Maximize legend" height="40" width="40">
-    </button>
-    </div>
-    <div style="display: inline">
       <b>Legend</b>
-    </div>
+    </button>
+    </center>
   </div>
 </div>
 
 <div id="tree-details_container" class="container">
   <div id=tree-details class="collapse show">
-  <div>
+    <div>
+      <center>
+      <div style="display: inline">
+        <b>Tree details</b>
+      </div>
+      <div style="display: inline;">
+        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
+            <img src="{{ url_for('static', filename='down.jpg') }}"
+                 alt="Minimize tree details" height="25" width="25">
+        </button>
+      </div>
+      </center>
+    </div>
+    <hr/>
+    <b>Root URL</b>: {{ shorten_string(root_url, 150) }}
+    <br>
+    <b>Start time</b>: {{ start_time }}<br>
+    <b>User Agent</b>: {{ user_agent }}<br>
+    {% if meta %}
+      {%for k, v in meta.items()%}
+        <b>{{k.title()}}</b>: {{ v }}<br>
+      {%endfor%}
+    {%endif%}
+    <b>Screenshot</b>:
+    <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" class="btn btn-info" role="button">Download</a>
+    <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" class="btn btn-info" role="button">Show screenshot</a>
+  </div>
+  <div style="width: 70px; float: right;">
     <center>
-    <div style="display: inline">
+    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
+      <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize tree details" height="40" width="40">
       <b>Tree details</b>
-    </div>
-    <div style="display: inline;">
-      <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
-          <img src="{{ url_for('static', filename='down.jpg') }}"
-               alt="Minimize tree details" height="25" width="25">
-      </button>
-    </div>
+    </button>
     </center>
-  </div>
-  <hr/>
-  <b>Root URL</b>: {{ shorten_string(root_url, 150) }}
-  <br>
-  <b>Start time</b>: {{ start_time }}<br>
-  <b>User Agent</b>: {{ user_agent }}<br>
-  {% if meta %}
-    {%for k, v in meta.items()%}
-      <b>{{k.title()}}</b>: {{ v }}<br>
-    {%endfor%}
-  {%endif%}
-  <b>Screenshot</b>:
-  <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" class="btn btn-info" role="button">Download</a>
-  <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" class="btn btn-info" role="button">Show screenshot</a>
-  </div>
-  <div style="width: 100px;float: right;">
-  <div style="display: inline;">
-  <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
-    <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize tree details" height="40" width="40">
-  </button>
-  </div>
-  <div style="display: inline">
-    <b>Tree details</b>
-  </div>
   </div>
 </div>
 
