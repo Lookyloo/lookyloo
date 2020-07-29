@@ -173,6 +173,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
         'video': "/static/video.png",
         'livestream': "/static/video.png",
         'response_cookie': "/static/cookie_received.png",
+        # redirect has to be last
         'redirect': "/static/redirect.png",
         'redirect_to_nothing': "/static/cookie_in_url.png"
     }
