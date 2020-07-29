@@ -105,10 +105,16 @@
         <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
       </a>
     {% elif key == "redirect" %}
-      <a href="{{ url_for('urlnode_details', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}" title="See the node the URL redirects to.">
+      {% for child in urlnode.children if child.name == urlnode.redirect_url %}
+      <a href="" role="button" onclick="whereAmI('{{ child.hostnode_uuid }}')" title="See the node the URL redirects to.">
         <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
       </a>
+      {% else %}
+      <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+      {% endfor %}
+      {% if urlnode.redirect_url %}
       Redirect to: {{ shorten_string(urlnode.redirect_url, 50) }}
+      {%endif%}
     {% else %}
     <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
     {%endif%}
