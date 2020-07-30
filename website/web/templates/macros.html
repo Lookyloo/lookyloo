@@ -113,7 +113,7 @@
       <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
       {% endfor %}
       {% if urlnode.redirect_url %}
-      Redirect to: {{ shorten_string(urlnode.redirect_url, 50) }}
+      <div title='{{ urlnode.redirect_url }}'>Redirect to: {{ shorten_string(urlnode.redirect_url, 50) }}</div>
       {%endif%}
     {% else %}
     <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>

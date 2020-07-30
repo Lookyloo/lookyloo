@@ -69,7 +69,7 @@
 #legend_container {
   position: fixed;
   bottom: 5px;
-  left: 5px;
+  right: 5px;
   padding-top: 5px;
   padding-right: 5px;
   padding-bottom: 5px;
@@ -79,7 +79,7 @@
 #legend {
   position: fixed;
   bottom: 5px;
-  left: 5px;
+  right: 5px;
   background: white;
   border: 2px solid;
   padding-top: 5px;
@@ -90,7 +90,7 @@
 
 #tree-details_container {
   position: fixed;
-  bottom: 5px;
+  top: 5px;
   right: 5px;
   padding-top: 5px;
   padding-right: 5px;
@@ -100,7 +100,7 @@
 
 #tree-details {
   position: fixed;
-  bottom: 5px;
+  top: 5px;
   right: 5px;
   background: white;
   border: 2px solid;
