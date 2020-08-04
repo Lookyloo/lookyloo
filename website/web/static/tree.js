@@ -85,7 +85,7 @@ function hostnode_click_popup(d) {
 
 function LocateNode(urlnode_uuid) {
     var element = document.getElementById("node_" + urlnode_uuid);
-    element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+    element.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 
     var line_arrow = d3.select("#node_" + urlnode_uuid)
                         .append('g')
@@ -316,8 +316,8 @@ function update(root, computed_node_width=0) {
     // Re-compute SVG size depending on the generated tree
     var newWidth = Math.max((max_depth + 1) * computed_node_width, node_width);
     // Update height
-    // node_height is the height of a node, node_height * 10 is the minimum so the root node isn't behind the lookyloo icon
-    var newHeight = Math.max(root.descendants().reverse().length * node_height, 10 * node_height);
+    // node_height is the height of a node, node_height * 25 is the minimum so the root node isn't behind the menu
+    var newHeight = Math.max(root.descendants().reverse().length * node_height, 25 * node_height);
     tree.size([newHeight, newWidth])
 
     // Set background based on the computed width and height
