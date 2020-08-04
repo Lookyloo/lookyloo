@@ -27,9 +27,11 @@ main_svg.append("clipPath")
     .attr('width', max_overlay_width)
     .attr('height', default_max_overlay_height + 100);
 
+// Define stuff
+var defs = main_svg.append("defs");
 
 // Add background pattern
-var pattern = main_svg.append("defs").append('pattern')
+var pattern = defs.append('pattern')
     .attr('id', 'backstripes')
     .attr('x', margin.left)
     .attr("width", node_width * 2)
@@ -85,14 +87,67 @@ function LocateNode(urlnode_uuid) {
     var element = document.getElementById("node_" + urlnode_uuid);
     element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
 
-    var to_blink = d3.select("#node_" + urlnode_uuid).select('text');
-    to_blink
-        .transition().duration(1000)  //Set transition
-        .style('fill', 'red')
-        .style('font-size', '20px')
-        .transition().duration(1000)  //Set transition
-        .style('fill', 'black')
-        .style('font-size', '16px');
+    var line_arrow = d3.select("#node_" + urlnode_uuid)
+                        .append('g')
+                            .attr('cursor', 'pointer')
+                            .on('click', function() {
+                                this.remove();
+                            });
+
+    function lineData(d){
+        var points = [
+            {lx: d.source.x, ly: d.source.y},
+            {lx: d.target.x, ly: d.source.y},
+            {lx: d.target.x, ly: d.target.y}
+        ];
+        return line(points);
+    };
+
+    var line = d3.line()
+                    // Other options: http://bl.ocks.org/d3indepth/raw/b6d4845973089bc1012dec1674d3aff8/
+                    //.curve(d3.curveCardinal)
+                    .curve(d3.curveBundle)
+                    .x( function(point) { return point.lx; })
+                    .y( function(point) { return point.ly; });
+
+    var line_tip = d3.symbol()
+                    .type(d3.symbolTriangle)
+                    .size(200);
+
+
+    var path = line_arrow
+        .append("path")
+        .attr("stroke-width", "3")
+        .attr("stroke", "black")
+        .attr("fill", "none")
+        .data([{source: {x : node_width/2, y : -100}, target: {x : node_width/4, y : -node_height/2}}])
+        .attr("class", "line")
+        .attr("d", lineData);
+
+    var arrow = line_arrow
+        .append("path")
+        .attr("d", line_tip)
+        .attr("stroke", 'black')
+        .style('stroke-width', '3')
+        .attr("fill", 'white')
+        .attr("transform", function(d) { return "translate(" + node_width/4 + "," + -node_height/1.5 + ") rotate(60)"; });;
+
+    function glow() {
+        line_arrow.selectAll('path')
+            .transition().duration(1000)  //Set transition
+            .style('stroke-width', '7')
+            .style('stroke', 'red')
+            .transition().duration(1000)  //Set transition
+            .style('stroke-width', '3')
+            .style('stroke', 'black')
+            .on("end", function() {
+                if (++i > 15) line_arrow.remove();
+                glow();
+            });
+    };
+
+    var i = 0;
+    glow();
 };
 
 function UnflagAllNodes() {
