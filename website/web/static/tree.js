@@ -437,6 +437,26 @@ function update(root, computed_node_width=0) {
                     .on('click', function(d) {
                         PermanentNodeHighlight(d.data.uuid);
                     });
+                // set lock
+                // Source: https://icons.getbootstrap.com/icons/lock/
+                d3.select(this).append("svg")
+                    .attr('x', selected_node_bbox.width - 20)
+                    .attr('y', selected_node_bbox.height - 15)
+                    .attr('width', '3em')
+                    .attr('height', '3em')
+                    .attr('viewBox', '0 0 32 32')
+                    .attr('class', 'bi bi-lock')
+                    .attr('fill', 'currentColor')
+                    .append('path')
+                        .attr('fill-rule', "evenodd")
+                        .attr('d', d => {
+                            if (d.data.http_content) {
+                                // opened lock
+                                return 'M9.655 8H2.333c-.264 0-.398.068-.471.121a.73.73 0 0 0-.224.296 1.626 1.626 0 0 0-.138.59V14c0 .342.076.531.14.635.064.106.151.18.256.237a1.122 1.122 0 0 0 .436.127l.013.001h7.322c.264 0 .398-.068.471-.121a.73.73 0 0 0 .224-.296 1.627 1.627 0 0 0 .138-.59V9c0-.342-.076-.531-.14-.635a.658.658 0 0 0-.255-.237A1.122 1.122 0 0 0 9.655 8zm.012-1H2.333C.5 7 .5 9 .5 9v5c0 2 1.833 2 1.833 2h7.334c1.833 0 1.833-2 1.833-2V9c0-2-1.833-2-1.833-2zM8.5 4a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z';
+                            }
+                            // closed lock
+                            return 'M11.5 8h-7a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1zm-7-1a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7zm0-3a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z';
+                        });
             });
             return node_group;
         },
