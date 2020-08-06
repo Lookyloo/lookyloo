@@ -164,6 +164,17 @@ function UnflagAllNodes() {
         .text("🏁")
         .on('click', function(d) {
             PermanentNodeHighlight(d.data.uuid);
+        })
+        .on('mouseover', d => {
+            d3.select('#tooltip')
+                .style('opacity', 1)
+                .style('left', (d3.event.pageX+10) + 'px')
+                .style('top', (d3.event.pageY+10) + 'px')
+                .text('Flag this node for further analysis');
+        })
+        .on('mouseout', function() {
+            d3.select('#tooltip')
+                .style('opacity', 0);
         });
 };
 
@@ -174,6 +185,17 @@ function UnflagHostNode(hostnode_uuid) {
         .text("🏁")
         .on('click', function(d) {
             PermanentNodeHighlight(d.data.uuid);
+        })
+        .on('mouseover', d => {
+            d3.select('#tooltip')
+                .style('opacity', 1)
+                .style('left', (d3.event.pageX+10) + 'px')
+                .style('top', (d3.event.pageY+10) + 'px')
+                .text('Flag this node for further analysis');
+        })
+        .on('mouseout', function() {
+            d3.select('#tooltip')
+                .style('opacity', 0);
         });
 };
 
@@ -187,6 +209,17 @@ function PermanentNodeHighlight(hostnode_uuid) {
         .text('❌')
         .on('click', function(d) {
             UnflagHostNode(d.data.uuid);
+        })
+        .on('mouseover', d => {
+            d3.select('#tooltip')
+                .style('opacity', 1)
+                .style('left', (d3.event.pageX+10) + 'px')
+                .style('top', (d3.event.pageY+10) + 'px')
+                .text('Remove flag on this node');
+        })
+        .on('mouseout', function() {
+            d3.select('#tooltip')
+                .style('opacity', 0);
         });
 };
 
@@ -303,7 +336,18 @@ function text_entry(relative_x_pos, relative_y_pos, onclick_callback, d) {
 
     text_nodes
         .attr('cursor', 'pointer')
-        .on('click', onclick_callback);
+        .on('click', onclick_callback)
+        .on('mouseover', d => {
+            d3.select('#tooltip')
+                .style('opacity', 1)
+                .style('left', (d3.event.pageX+10) + 'px')
+                .style('top', (d3.event.pageY+10) + 'px')
+                .text('Open investigation pop-up.');
+        })
+        .on('mouseout', function() {
+            d3.select('#tooltip')
+                .style('opacity', 0);
+        });
     return nodeContent.node();
 }
 
@@ -433,6 +477,17 @@ function update(root, computed_node_width=0) {
                     .attr('cursor', 'pointer')
                     .on('click', function(d) {
                         PermanentNodeHighlight(d.data.uuid);
+                    })
+                    .on('mouseover', d => {
+                        d3.select('#tooltip')
+                            .style('opacity', 1)
+                            .style('left', (d3.event.pageX+10) + 'px')
+                            .style('top', (d3.event.pageY+10) + 'px')
+                            .text('Flag this node for further analysis');
+                    })
+                    .on('mouseout', function() {
+                        d3.select('#tooltip')
+                            .style('opacity', 0);
                     });
 
                 var icon_size = 24;
