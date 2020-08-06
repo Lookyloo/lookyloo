@@ -15,6 +15,13 @@ var main_svg = d3.select("body").append("svg")
             .attr("width", width + margin.right + margin.left)
             .attr("height", height + margin.top + margin.bottom)
 
+// dummy container for tooltip
+d3.select('body')
+    .append('div')
+    .attr('id', 'tooltip')
+    .attr('class', 'tooltip')
+    .attr('style', 'position: absolute; opacity: 0;');
+
 main_svg.append("clipPath")
     .attr("id", "textOverlay")
     .append("rect")
@@ -383,19 +390,9 @@ function update(root, computed_node_width=0) {
               .attr('x', 12)
               .attr('y', 0)
               .style("opacity", "0.5")
-              .attr("stroke", d => {
-                  if (d.data.http_content){
-                      return "red";
-                  }
-                  return "black";
-              })
+              .attr("stroke", 'black')
               .attr('stroke-opacity', "0.8")
-              .attr("stroke-width", d => {
-                  if (d.data.http_content){
-                      return "4";
-                  }
-                  return "2";
-              })
+              .attr("stroke-width", "2")
               .attr("stroke-linecap", "round")
               .attr("fill", "white");
 
@@ -437,27 +434,40 @@ function update(root, computed_node_width=0) {
                     .on('click', function(d) {
                         PermanentNodeHighlight(d.data.uuid);
                     });
-                // set lock
-                // Source: https://icons.getbootstrap.com/icons/lock/
-                d3.select(this).append("svg")
-                    .attr('x', selected_node_bbox.width - 20)
-                    .attr('y', selected_node_bbox.height - 15)
-                    .attr('width', '3em')
-                    .attr('height', '3em')
-                    .attr('viewBox', '0 0 32 32')
-                    .attr('class', 'bi bi-lock')
-                    .attr('fill', 'currentColor')
-                    .append('path')
-                        .attr('fill-rule', "evenodd")
-                        .attr('d', d => {
-                            if (d.data.http_content) {
-                                // opened lock
-                                return 'M9.655 8H2.333c-.264 0-.398.068-.471.121a.73.73 0 0 0-.224.296 1.626 1.626 0 0 0-.138.59V14c0 .342.076.531.14.635.064.106.151.18.256.237a1.122 1.122 0 0 0 .436.127l.013.001h7.322c.264 0 .398-.068.471-.121a.73.73 0 0 0 .224-.296 1.627 1.627 0 0 0 .138-.59V9c0-.342-.076-.531-.14-.635a.658.658 0 0 0-.255-.237A1.122 1.122 0 0 0 9.655 8zm.012-1H2.333C.5 7 .5 9 .5 9v5c0 2 1.833 2 1.833 2h7.334c1.833 0 1.833-2 1.833-2V9c0-2-1.833-2-1.833-2zM8.5 4a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z';
-                            }
-                            // closed lock
-                            return 'M11.5 8h-7a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1zm-7-1a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7zm0-3a3.5 3.5 0 1 1 7 0v3h-1V4a2.5 2.5 0 0 0-5 0v3h-1V4z';
+
+                var icon_size = 24;
+                if (p.data.http_content) {
+                    // set lock insecure connection
+                    d3.select(this).append("svg").append('rect')
+                        .attr('x', selected_node_bbox.width - 22)
+                        .attr('y', selected_node_bbox.height - 13)
+                        .attr('width', icon_size)
+                        .attr('height', icon_size)
+                        .attr('fill', 'white')
+                        .attr('stroke', 'black');
+                    // Source: https://icons.getbootstrap.com/icons/lock/
+                    d3.select(this).append('image')
+                        .attr('x', selected_node_bbox.width - 22)
+                        .attr('y', selected_node_bbox.height - 13)
+                        .attr('id', 'insecure_image')
+                        .attr("width", icon_size)
+                        .attr("height", icon_size)
+                        .attr("title", 'This node contents insecure requests')
+                        .attr("xlink:href", '/static/insecure.svg')
+                        .on('mouseover', d => {
+                            d3.select('#tooltip')
+                                .style('opacity', 1)
+                                .style('left', (d3.event.pageX+10) + 'px')
+                                .style('top', (d3.event.pageY+10) + 'px')
+                                .text('This node containts insecure requests');
+                        })
+                        .on('mouseout', function() {
+                            d3.select('#tooltip')
+                                .style('opacity', 0);
                         });
+                };
             });
+
             return node_group;
         },
         update =>  update,
