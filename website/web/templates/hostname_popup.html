@@ -111,7 +111,7 @@
 
         <li class="list-group-item">
           {# Details of the response #}
-          <p class="h4">Response <small>(Status code: {{ url['url_object'].response['status'] }})</small></p>
+          <p class="h4">Response <small>(Status code: <span title={{ http_status_description(url['url_object'].response['status']) }}>{{ url['url_object'].response['status'] }})</span></small></p>
           {{ popup_icons(keys_response, url['url_object'], tree_uuid) }}
 
           {% if url['url_object'].empty_response %}

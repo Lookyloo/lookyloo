@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from datetime import datetime, timedelta
 import json
+import http
 
 from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
 from flask_bootstrap import Bootstrap  # type: ignore
@@ -58,6 +59,13 @@ def sizeof_fmt(num, suffix='B'):
 
 
 app.jinja_env.globals.update(sizeof_fmt=sizeof_fmt)
+
+
+def http_status_description(code: int):
+    return http.client.responses[code]
+
+
+app.jinja_env.globals.update(http_status_description=http_status_description)
 
 
 @app.after_request
