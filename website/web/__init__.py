@@ -62,7 +62,9 @@ app.jinja_env.globals.update(sizeof_fmt=sizeof_fmt)
 
 
 def http_status_description(code: int):
-    return http.client.responses[code]
+    if code in http.client.responses:
+        return http.client.responses[code]
+    return f'Invalid code: {code}'
 
 
 app.jinja_env.globals.update(http_status_description=http_status_description)
