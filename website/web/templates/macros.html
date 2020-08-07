@@ -106,7 +106,7 @@
       </a>
     {% elif key == "redirect" %}
       {% for child in urlnode.children if child.name == urlnode.redirect_url %}
-      <a href="" role="button" onclick="whereAmI('{{ child.hostnode_uuid }}')" title="See the node the URL redirects to.">
+      <a href="#/" role="button" onclick="whereAmI('{{ child.hostnode_uuid }}')" title="See the node the URL redirects to.">
         <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
       </a>
       {% else %}

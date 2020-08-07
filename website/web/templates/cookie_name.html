@@ -23,7 +23,10 @@
 
 
 {% block content %}
-  <center><h2>{{ cookie_name }}</h4></center>
+  <center>
+      <h2>{{ cookie_name }}</h2>
+      <button onclick="window.history.back();" class="btn btn-primary" type="button">Go Back</button>
+  </center>
   <div class="table-responsive">
   <table id="table" class="table" style="width:96%">
     <thead>
