@@ -87,6 +87,11 @@
           <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
            data-toggle="modal" data-target="#statsModal" role="button">Show Statistics</a>
         </li>
+        {% if has_redirects %}
+        <li>
+            <a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">Download redirects</a>
+        </li>
+        {% endif %}
         <li>
           <a href="#unflag" role="button" onclick="UnflagAllNodes();">Unflag all nodes</a>
         </li>
@@ -100,7 +105,7 @@
         <li>
           <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Notify by mail</a>
         </li>
-        {%endif%}
+        {% endif %}
       </ul>
     </div>
   </div>
