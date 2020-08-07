@@ -78,6 +78,12 @@ function collapse(d) {
   }
 };
 
+function openTreeInNewTab(treeUUID) {
+    var win = window.open('/tree/' + treeUUID, '_blank');
+    // FIXME: If win is None, the browser didn't allow opening a new tab, we need to inform the user.
+    win.focus();
+}
+
 function urlnode_click(d) {
     var url = "/tree/url/" + d.data.uuid;
     d3.blob(url, {credentials: 'same-origin'}).then(data => {

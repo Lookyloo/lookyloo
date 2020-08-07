@@ -14,6 +14,12 @@
     });
 </script>
 
+<script type="text/javascript">
+    function openTreeInNewTab(treeUUID) {
+            window.opener.openTreeInNewTab(treeUUID);
+    };
+</script>
+
 {% endblock %}
 
 {% block styles %}
@@ -58,7 +64,7 @@
   <p>A cookie with that name was seen in these captures:</p>
   <ul>
   {% for capture_uuid, title in captures %}
-    <li><a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">{{ title }}</a></li>
+    <li><a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}')">{{ title }}</a></li>
   {% endfor %}
   </ul>
 {% endblock %}
