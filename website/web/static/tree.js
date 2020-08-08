@@ -78,8 +78,12 @@ function collapse(d) {
   }
 };
 
-function openTreeInNewTab(treeUUID) {
-    var win = window.open('/tree/' + treeUUID, '_blank');
+function openTreeInNewTab(capture_uuid, hostnode_uuid=null) {
+    var url = '/tree/' + capture_uuid;
+    if (hostnode_uuid) {
+        url += '/' + hostnode_uuid;
+    };
+    var win = window.open(url, '_blank');
     // FIXME: If win is None, the browser didn't allow opening a new tab, we need to inform the user.
     win.focus();
 }

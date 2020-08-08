@@ -33,7 +33,7 @@
       <ul>
       {% for capture_uuid, urlnode_uuid, title, hostname in details['different_url'] %}
       <li>
-        <a href="{{ url_for('tree', tree_uuid=capture_uuid, urlnode_uuid=urlnode_uuid) }}">{{ title }}</a> - {{ hostname }}
+        <a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}', '{{ urlnode_uuid }}')">{{ title }}</a> - {{ hostname }}
       </li>
       {% endfor %}
       </ul>
@@ -47,7 +47,7 @@
       <ul>
       {% for capture_uuid, urlnode_uuid, title, hostname in details['same_url'] %}
       <li>
-        <a href="{{ url_for('tree', tree_uuid=capture_uuid, urlnode_uuid=urlnode_uuid) }}">{{ title }}</a> - {{ hostname }}
+        <a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}', '{{ urlnode_uuid }}')">{{ title }}</a> - {{ hostname }}
       </li>
       {% endfor %}
       </ul>
