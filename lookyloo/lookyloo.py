@@ -444,6 +444,16 @@ class Lookyloo():
         self.redis.hmset(str(capture_dir), cache)
         self.redis.hset('lookup_dirs', uuid, str(capture_dir))
 
+    def hide_capture(self, capture_uuid: str) -> None:
+        """Add the capture in the hidden pool (not shown on the front page)
+        NOTE: it won't remove the correlations until they are rebuilt.
+        """
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        self.redis.hset(str(capture_dir), 'no_index', 1)
+        (capture_dir / 'no_index').touch()
+
     @property
     def capture_uuids(self):
         return self.redis.hkeys('lookup_dirs')

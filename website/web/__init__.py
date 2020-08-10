@@ -355,6 +355,13 @@ def export(tree_uuid: str):
                      as_attachment=True, attachment_filename='capture.zip')
 
 
+@app.route('/tree/<string:tree_uuid>/hide', methods=['GET'])
+@auth.login_required
+def hide_capture(tree_uuid: str):
+    lookyloo.hide_capture(tree_uuid)
+    return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+
 @app.route('/redirects/<string:tree_uuid>', methods=['GET'])
 def redirects(tree_uuid: str):
     cache = lookyloo.capture_cache(tree_uuid)
