@@ -194,9 +194,9 @@
     <b>Start time</b>: {{ start_time }}<br>
     <b>User Agent</b>: {{ user_agent }}<br>
     {% if meta %}
-      {%for k, v in meta.items()%}
+      {% for k, v in meta.items() if k not in ['user_agent'] %}
         <b>{{k.title()}}</b>: {{ v }}<br>
-      {%endfor%}
+      {% endfor %}
     {%endif%}
   </div>
   <div style="width: 70px; float: right;">
