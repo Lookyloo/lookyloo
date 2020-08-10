@@ -724,7 +724,7 @@ class Lookyloo():
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
-    def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> Dict[str, List[Tuple[str, str, str, str]]]:
+    def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> Dict[str, List[Tuple[str, str, str, str, str]]]:
         captures_list: Dict[str, List[Tuple[str, str, str, str]]] = {'same_url': [], 'different_url': []}
         for h_capture_uuid, url_uuid, url_hostname, same_url in self.indexing.get_body_hash_captures(blob_hash, url):
             if h_capture_uuid == capture_uuid:
@@ -733,9 +733,9 @@ class Lookyloo():
             cache = self.capture_cache(h_capture_uuid)
             if cache:
                 if same_url:
-                    captures_list['same_url'].append((h_capture_uuid, url_uuid, cache['title'], url_hostname))
+                    captures_list['same_url'].append((h_capture_uuid, url_uuid, cache['title'], cache['timestamp'], url_hostname))
                 else:
-                    captures_list['different_url'].append((h_capture_uuid, url_uuid, cache['title'], url_hostname))
+                    captures_list['different_url'].append((h_capture_uuid, url_uuid, cache['title'], cache['timestamp'], url_hostname))
         return captures_list
 
     def _format_sane_js_response(self, lookup_table: Dict, h: str) -> Optional[Union[str, Tuple]]:
