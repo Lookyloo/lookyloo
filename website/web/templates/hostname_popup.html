@@ -4,11 +4,39 @@
 {% from "macros.html" import indexed_cookies %}
 {% from "macros.html" import popup_icons %}
 {% from "macros.html" import shorten_string %}
+{% from "macros.html" import other_captures_table %}
 
 {% block title %}Details for {{ hostname }} {% endblock %}
 
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='datatables.min.css') }}">
+{% endblock %}
+
 {% block scripts %}
   {{ super() }}
+  <script src='{{ url_for('static', filename='datatables.min.js') }}'></script>
+  <script type="text/javascript">
+  $(document).ready(function () {
+    $('#table_other_captures').DataTable( {
+    "order": [[ 1, "desc" ]],
+    "paging": false,
+    "info": false,
+    "columns": [
+        { "orderable": false},
+        { "orderable": false},
+        { "orderable": false}
+    ],
+    "columnDefs": [{
+        "targets": 1,
+        "render": function ( data, type, row, meta ) {
+            let date = new Date(data);
+            return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
+        }
+    }]
+    } );
+  });
+  </script>
   <script>
       function whereAmI(hostname_uuid) {
           window.opener.LocateNode(hostname_uuid);

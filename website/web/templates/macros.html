@@ -30,13 +30,7 @@
     {# ... on other URLs #}
     <div>
       <p>The following captures get the same file from a <b>different URL</b></p>
-      <ul>
-      {% for capture_uuid, urlnode_uuid, title, hostname in details['different_url'] %}
-      <li>
-        <a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}', '{{ urlnode_uuid }}')">{{ title }}</a> - {{ hostname }}
-      </li>
-      {% endfor %}
-      </ul>
+      {{ other_captures_table(details['different_url']) }}
     </div>
     {% endif %}
     </br>
@@ -44,13 +38,7 @@
     {# ... on the same URL #}
     <div>
       <p>The following captures get the same file from the <b>same URL</b></p>
-      <ul>
-      {% for capture_uuid, urlnode_uuid, title, hostname in details['same_url'] %}
-      <li>
-        <a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}', '{{ urlnode_uuid }}')">{{ title }}</a> - {{ hostname }}
-      </li>
-      {% endfor %}
-      </ul>
+      {{ other_captures_table(details['same_url']) }}
     </div>
     {% endif %}
   </div>
@@ -58,6 +46,31 @@
 {% else %}
 <p>This file is loaded multiple times in this capture.</p>
 {% endif %}
+{% endmacro %}
+
+{% macro other_captures_table(entries) %}
+<div class="table-responsive">
+  <table id="table_other_captures" class="table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Timestamp</th>
+      <th>Domain</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for capture_uuid, urlnode_uuid, title, timestamp, hostname in entries %}
+  <tr>
+    <td>
+      <a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}', '{{ urlnode_uuid }}')">{{ title }}</a>
+    </td>
+    <td>{{ timestamp }}</td>
+    <td>{{ hostname }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+  </table>
+</div>
 {% endmacro %}
 
 {% macro indexed_cookies(header_text, button_text, cookies) %}
