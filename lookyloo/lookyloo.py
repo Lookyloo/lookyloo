@@ -725,7 +725,7 @@ class Lookyloo():
         return captures, domains
 
     def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> Dict[str, List[Tuple[str, str, str, str, str]]]:
-        captures_list: Dict[str, List[Tuple[str, str, str, str]]] = {'same_url': [], 'different_url': []}
+        captures_list: Dict[str, List[Tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
         for h_capture_uuid, url_uuid, url_hostname, same_url in self.indexing.get_body_hash_captures(blob_hash, url):
             if h_capture_uuid == capture_uuid:
                 # Skip self.
