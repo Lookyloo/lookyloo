@@ -16,9 +16,10 @@
 {% block scripts %}
   {{ super() }}
   <script src='{{ url_for('static', filename='datatables.min.js') }}'></script>
+  <script src='{{ url_for('static', filename='generic.js') }}'></script>
   <script type="text/javascript">
-  $(document).ready(function () {
-    $('#table_other_captures').DataTable( {
+  $(document).ready(() => {
+    $('table.table').DataTable( {
     "order": [[ 1, "desc" ]],
     "paging": false,
     "info": false,
@@ -29,8 +30,8 @@
     ],
     "columnDefs": [{
         "targets": 1,
-        "render": function ( data, type, row, meta ) {
-            let date = new Date(data);
+        "render": (data) => {
+            const date = new Date(data);
             return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
         }
     }]
@@ -38,44 +39,20 @@
   });
   </script>
   <script>
-      function whereAmI(hostname_uuid) {
-          window.opener.LocateNode(hostname_uuid);
-      };
-      function flag(hostname_uuid) {
-          window.opener.PermanentNodeHighlight(hostname_uuid);
-      };
-      function openTreeInNewTab(capture_uuid, hostnode_uuid=Null) {
-          window.opener.openTreeInNewTab(capture_uuid, hostnode_uuid);
-      }
+      let whereAmI = (hostnode_uuid) => window.opener.LocateNode(hostnode_uuid);
+      let flag = (hostnode_uuid) => window.opener.NodeHighlight(hostnode_uuid);
+      let openTreeInNewTab = (capture_uuid, hostnode_uuid=Null) => window.opener.openTreeInNewTab(capture_uuid, hostnode_uuid);
   </script>
   <script>
-    // Source: https://codepen.io/nathanlong/pen/ZpAmjv
-    function copyToClipboard(text, el) {
-      var elOriginalText = el.attr('data-original-title');
-
-      var copyTextArea = document.createElement("textarea");
-      copyTextArea.value = text;
-      document.body.appendChild(copyTextArea);
-      copyTextArea.select();
-
-      var successful = document.execCommand('copy');
-      var msg = successful ? 'Copied!' : 'Whoops, not copied!';
-      el.attr('data-original-title', msg).tooltip('show');
-
-      document.body.removeChild(copyTextArea);
-      el.attr('data-original-title', elOriginalText);
-    }
-
-    $(document).ready(function() {
-      // Copy to clipboard
-      // Grab any text in the attribute 'data-copy' and pass it to the copy function
-      $('.js-copy').tooltip();
-      $('.js-copy').click(function() {
-        var text = $(this).attr('data-copy');
-        var el = $(this);
-        copyToClipboard(text, el);
-      });
+  $(document).ready(() => {
+    // Grab any text in the attribute 'data-copy' and pass it to the copy function
+    $('.js-copy').tooltip();
+    $('.js-copy').click(function() {
+      const text = $(this).attr('data-copy');
+      const el = $(this);
+      copyToClipboard(text, el);
     });
+  });
   </script>
 
 {% endblock %}
@@ -92,7 +69,7 @@
     {% for url in urls %}
     {# URL Display #}
     <li class="list-group-item">
-      <div class="h3" title={{ url['url_path'] }}>
+      <div class="h3" title={{ url['url_object'].name }}>
         {# HTTPs or not  #}
         {% if url['encrypted'] %}
         <img src="/static/secure.svg" title="Encrypted request" width="21" height="21"/>
