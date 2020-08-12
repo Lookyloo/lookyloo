@@ -218,50 +218,41 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
     // Put all the icone in one sub svg document
     let icons = d3.create("svg")
           .attr('x', relative_x_pos)
-          .attr('y', relative_y_pos);
+          .attr('y', relative_y_pos)
+          .attr('class', 'icons_list');
 
     icon_options.forEach(function(icon_path, key) {
-        icons
-          .datum(d)
-          .filter(d => {
-            let has_icon = false;
-            if (typeof d.data[key] === 'boolean') {
-                has_icon = d.data[key];
-            } else if (typeof d.data[key] === 'number') {
-                has_icon = d.data[key] > 0;
-            } else if (d.data[key] instanceof Array) {
-                has_icon = d.data[key].length > 0;
-            }
-            return has_icon;
-          })
-            .append("svg")
-            .attr('class', 'icon')
-            .attr('id', key)
-            .append('image')
-            .attr("width", icon_size)
-            .attr("height", icon_size)
-            .attr("xlink:href", icon_path);
-    });
-
-    icons.selectAll('.icon')
-            .datum(d)
-            .filter(function(d) {
-                if (typeof d.data[this.id] === 'boolean') {
-                    return false;
-                } else if (typeof d.data[this.id] === 'number') {
-                    d.to_print = d.data[this.id]
-                    return d.data[this.id] > 0;
-                } else if (d.data[this.id] instanceof Array) {
-                    d.to_print = d.data[this.id].length
-                    return d.data[this.id].length > 0;
-                }
-                return false;
-            }).append('text')
-              .attr("dy", 8)
-              .style("font-size", "10px")
-              .attr('x', icon_size + 1)
-              .text(d => d.to_print);
-
+        let has_icon = false;
+        let counter = 0;
+        if (typeof d.data[key] === 'boolean') {
+          has_icon = d.data[key];
+        } else if (typeof d.data[key] === 'number') {
+          has_icon = d.data[key] > 0;
+          counter = d.data[key]
+        } else if (d.data[key] instanceof Array) {
+          has_icon = d.data[key].length > 0;
+          counter = d.data[key].length
+        };
+        if (has_icon) {
+          let icon_group = icons
+                .append("svg")
+                .attr('class', 'icon')
+                .attr("id", `icons_${key}`);
+          icon_group
+              .append('image')
+              .attr("width", icon_size)
+              .attr("height", icon_size)
+              .attr("xlink:href", icon_path);
+          if (counter > 0) {
+            icon_group
+                .append('text')
+                .attr("dy", 8)
+                .style("font-size", "10px")
+                .attr('x', icon_size + 1)
+                .text(counter);
+          };
+        };
+    })
     return icons.node();
 }
 
@@ -485,7 +476,7 @@ function update(root, computed_node_width=0) {
 
             return node_group;
         },
-        update =>  update,
+        update => update,
         exit => exit
             .transition()
               // Remove any exiting nodes
