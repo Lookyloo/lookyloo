@@ -220,7 +220,7 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
           .attr('x', relative_x_pos)
           .attr('y', relative_y_pos);
 
-    icon_options.forEach(function(value, key) {
+    icon_options.forEach(function(icon_path, key) {
         icons
           .datum(d)
           .filter(d => {
@@ -240,7 +240,7 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
             .append('image')
             .attr("width", icon_size)
             .attr("height", icon_size)
-            .attr("xlink:href", value);
+            .attr("xlink:href", icon_path);
     });
 
     icons.selectAll('.icon')
@@ -280,7 +280,16 @@ function text_entry(relative_x_pos, relative_y_pos, onclick_callback, d) {
           .style("font-size", "16px")
           .attr("stroke-width", ".2px")
           .style("opacity", .9)
-          .attr("clip-path", "url(#textOverlay)")
+          .attr('cursor', 'pointer')
+          .on('click', onclick_callback)
+          .on('mouseover', () => {
+              d3.select('#tooltip')
+                  .style('opacity', 1)
+                  .style('left', `${d3.event.pageX + 10}px`)
+                  .style('top', `${d3.event.pageY + 10}px`)
+                  .text('Open investigation pop-up.');
+          })
+          .on('mouseout', () => d3.select('#tooltip').style('opacity', 0))
           .text(d => {
             let to_print;
             if (d.data.name.length > 50) {
@@ -294,18 +303,6 @@ function text_entry(relative_x_pos, relative_y_pos, onclick_callback, d) {
             }
             return to_print;
           });
-
-    text_nodes
-        .attr('cursor', 'pointer')
-        .on('click', onclick_callback)
-        .on('mouseover', d => {
-            d3.select('#tooltip')
-                .style('opacity', 1)
-                .style('left', `${d3.event.pageX + 10}px`)
-                .style('top', `${d3.event.pageY + 10}px`)
-                .text('Open investigation pop-up.');
-        })
-        .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
     return nodeContent.node();
 }
 
@@ -345,9 +342,9 @@ function update(root, computed_node_width=0) {
 
     // Update pattern
     main_svg.selectAll('pattern')
-      .attr('width', computed_node_width * 2)
+      .attr('width', `${computed_node_width * 2}px`)
     pattern.selectAll('rect')
-      .attr('width', computed_node_width)
+      .attr('width', `${computed_node_width}px`)
 
   }
 
@@ -405,6 +402,7 @@ function update(root, computed_node_width=0) {
               .attr("ry", 6)
               .attr('x', 12)
               .attr('y', 0)
+              .attr('width', 0)
               .style("opacity", "0.5")
               .attr("stroke", 'black')
               .attr('stroke-opacity', "0.8")
@@ -428,27 +426,26 @@ function update(root, computed_node_width=0) {
                     cur_icon_list_len += d3.select(this).node().getBBox().width;
                 });
 
-
                 // Rectangle around the domain name & icons
-                let selected_node_bbox_init = d3.select(this).node().getBBox();
+                let selected_node_bbox_init = d3.select(this).select('text').node().getBoundingClientRect();
                 d3.select(this).select('rect')
-                  .attr('height', selected_node_bbox_init.height + 15)
+                  .attr('height', node_height + 5)
                   .attr('width', selected_node_bbox_init.width + 50);
 
                 // Set the width for all the nodes
-                let selected_node_bbox = d3.select(this).node().getBBox();  // Required, as the node width need to include the rectangle
+                let selected_node_bbox = d3.select(this).select('rect').node().getBoundingClientRect();  // Required, as the node width need to include the rectangle
                 node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
 
                 // Set Flag
                 d3.select(this).append("text")
-                    .attr('x', selected_node_bbox.width - 12)
-                    .attr('y', 20)
+                    .attr('x', `${selected_node_bbox.width - 12}px`)
+                    .attr('y', '20px')
                     .style("font-size", "16px")
                     .attr("id", "flag")
                     .text("🏁")
                     .attr('cursor', 'pointer')
                     .on('click', d => NodeHighlight(d.data.uuid))
-                    .on('mouseover', d => {
+                    .on('mouseover', () => {
                         d3.select('#tooltip')
                             .style('opacity', 1)
                             .style('left', `${d3.event.pageX + 10}px`)
@@ -475,7 +472,7 @@ function update(root, computed_node_width=0) {
                         .attr("width", icon_size)
                         .attr("height", icon_size)
                         .attr("xlink:href", '/static/insecure.svg')
-                        .on('mouseover', d => {
+                        .on('mouseover', () => {
                             d3.select('#tooltip')
                                 .style('opacity', 1)
                                 .style('left', `${d3.event.pageX + 10}px`)
@@ -515,8 +512,6 @@ function update(root, computed_node_width=0) {
     d.x0 = d.x;
     d.y0 = d.y;
   });
-
-
 
   // ****************** links section ***************************
 
