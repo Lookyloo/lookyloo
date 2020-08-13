@@ -44,6 +44,7 @@ lookyloo: Lookyloo = Lookyloo()
 
 user = lookyloo.get_config('cache_clean_user')
 time_delta_on_index = lookyloo.get_config('time_delta_on_index')
+blur_screenshot = lookyloo.get_config('enable_default_blur_screenshot')
 
 logging.basicConfig(level=lookyloo.get_config('loglevel'))
 
@@ -419,6 +420,7 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
                                meta=meta, enable_mail_notification=enable_mail_notification,
+                               blur_screenshot=blur_screenshot,
                                urlnode_uuid=urlnode_uuid, has_redirects=True if cache['redirects'] else False)
 
     except NoValidHarFile as e:

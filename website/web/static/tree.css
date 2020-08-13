@@ -56,14 +56,8 @@
     background: #fff;
 }
 
-#screenshot {
-  position: fixed;
-  top: 5px;
-  right: 5px;
-  background: white;
-  border: 2px solid;
-  height: 1030px;
-  overflow: hidden;
+.blur {
+  filter: blur(10px);
 }
 
 #legend_container {

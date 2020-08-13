@@ -240,7 +240,15 @@
         </button>
     </div>
     <div class="modal-body">
-      <img src="{{ url_for('image', tree_uuid=tree_uuid) }}" class="img-fluid"/>
+    <center>
+      {% if blur_screenshot %}
+      <button type="button" class="btn btn-primary" onclick="$('#screenshot').removeClass('blur')"> Unblur screenshot</button>
+      </br>
+      </hr>
+      </br>
+      {% endif %}
+      <img src="{{ url_for('image', tree_uuid=tree_uuid) }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
+    </center>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

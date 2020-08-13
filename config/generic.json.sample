@@ -13,6 +13,7 @@
   },
   "max_depth": 1,
   "use_user_agents_users": false,
+  "enable_default_blur_screenshot": false,
   "enable_mail_notification": false,
   "email": {
       "from": "Lookyloo <lookyloo@myorg.local>",
@@ -33,6 +34,7 @@
     "time_delta_on_index": "Time interval of the capture displayed on the index",
     "max_depth": "Maximum depth for scraping. Anything > 1 will be exponentially bigger.",
     "use_user_agents_users": "Only usable for medium/high use instances: use the user agents of the users of the platform",
+    "enable_default_blur_screenshot": "If true, blur the screenshot by default (useful on public instances)",
     "enable_mail_notification": "Enable email notification or not",
     "email": "Configuration for sending email notifications."
   }
