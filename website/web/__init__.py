@@ -492,6 +492,16 @@ def body_hash_details(body_hash: str):
     return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures)
 
 
+@app.route('/tree/<string:tree_uuid>/mark_as_legitimate', methods=['POST'])
+def mark_as_legitimate(tree_uuid: str):
+    if request.data:
+        legitimate_entries = request.get_json(force=True)
+        lookyloo.add_to_legitimate(tree_uuid, **legitimate_entries)
+    else:
+        lookyloo.add_to_legitimate(tree_uuid)
+    return jsonify({'message': 'Legitimate entry added.'})
+
+
 # Query API
 
 @app.route('/json/<string:tree_uuid>/redirects', methods=['GET'])

@@ -114,21 +114,22 @@ class Indexing():
 
         pipeline = self.redis.pipeline()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if not urlnode.empty_response:
-                pipeline.zincrby('body_hashes', 1, urlnode.body_hash)
-                pipeline.zincrby(f'bh|{urlnode.body_hash}', 1, urlnode.hostname)
-                # set of all captures with this hash
-                pipeline.sadd(f'bh|{urlnode.body_hash}|captures', crawled_tree.uuid)
-                # ZSet of all urlnode_UUIDs|full_url
-                pipeline.zincrby(f'bh|{urlnode.body_hash}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
-                if hasattr(urlnode, 'embedded_ressources') and urlnode.embedded_ressources:
-                    for mimetype, blobs in urlnode.embedded_ressources.items():
-                        for h, body in blobs:
-                            pipeline.zincrby('body_hashes', 1, h)
-                            pipeline.zincrby(f'bh|{h}', 1, urlnode.hostname)
-                            pipeline.sadd(f'bh|{h}|captures', crawled_tree.uuid)
-                            pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1,
-                                             f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
+            if urlnode.empty_response:
+                continue
+            pipeline.zincrby('body_hashes', 1, urlnode.body_hash)
+            pipeline.zincrby(f'bh|{urlnode.body_hash}', 1, urlnode.hostname)
+            # set of all captures with this hash
+            pipeline.sadd(f'bh|{urlnode.body_hash}|captures', crawled_tree.uuid)
+            # ZSet of all urlnode_UUIDs|full_url
+            pipeline.zincrby(f'bh|{urlnode.body_hash}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
+            if hasattr(urlnode, 'embedded_ressources') and urlnode.embedded_ressources:
+                for mimetype, blobs in urlnode.embedded_ressources.items():
+                    for h, body in blobs:
+                        pipeline.zincrby('body_hashes', 1, h)
+                        pipeline.zincrby(f'bh|{h}', 1, urlnode.hostname)
+                        pipeline.sadd(f'bh|{h}|captures', crawled_tree.uuid)
+                        pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1,
+                                         f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
 
         pipeline.execute()
 
@@ -145,6 +146,54 @@ class Indexing():
 
     def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:
         return self.redis.zrevrange(f'bh|{body_hash}', 0, -1, withscores=True)
+
+    def legitimate_capture(self, crawled_tree: CrawledTree) -> None:
+        pipeline = self.redis.pipeline()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            if urlnode.empty_response:
+                continue
+            pipeline.sadd(f'bh|{urlnode.body_hash}|legitimate', urlnode.hostname)
+        pipeline.execute()
+
+    def legitimate_hostnode(self, hostnode: HostNode) -> None:
+        pipeline = self.redis.pipeline()
+        for urlnode in hostnode.urls:
+            if urlnode.empty_response:
+                continue
+            pipeline.sadd(f'bh|{urlnode.body_hash}|legitimate', urlnode.hostname)
+        pipeline.execute()
+
+    def legitimate_urlnode(self, urlnode: URLNode) -> None:
+        if urlnode.empty_response:
+            return
+        self.redis.sadd(f'bh|{urlnode.body_hash}|legitimate', urlnode.hostname)
+
+    def is_legitimate(self, urlnode: URLNode) -> Optional[bool]:
+        hostnames = self.redis.smembers(f'bh|{urlnode.body_hash}|legitimate')
+        if hostnames:
+            if urlnode.hostname in hostnames:
+                return True  # Legitimate
+            return False  # Malicious
+        elif self.redis.sismember('bh|malicious', urlnode.body_hash):
+            return False
+        return None  # Unknown
+
+    def malicious_node(self, urlnode: URLNode) -> None:
+        if urlnode.empty_response:
+            return None
+        self.redis.sadd('bh|malicious', urlnode.body_hash)
+
+    def is_malicious(self, urlnode: URLNode) -> Optional[bool]:
+        if urlnode.empty_response:
+            return None
+        if self.redis.sismember('bh|malicious', urlnode.body_hash):
+            return True
+        legitimate = self.is_legitimate(urlnode)
+        if legitimate is True:
+            return False
+        if legitimate is False:
+            return True
+        return None
 
 
 class Lookyloo():
@@ -259,6 +308,31 @@ class Lookyloo():
 
         return ct
 
+    def add_to_legitimate(self, capture_uuid: str, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None):
+        ct = self.get_crawled_tree(capture_uuid)
+        if not hostnode_uuid and not urlnode_uuid:
+            self.indexing.legitimate_capture(ct)
+            return
+
+        if hostnode_uuid:
+            hostnode = ct.root_hartree.get_host_node_by_uuid(hostnode_uuid)
+            self.indexing.legitimate_hostnode(hostnode)
+        if urlnode_uuid:
+            urlnode = ct.root_hartree.get_url_node_by_uuid(urlnode_uuid)
+            self.indexing.legitimate_urlnode(urlnode)
+
+    def bodies_legitimacy_check(self, tree: CrawledTree) -> CrawledTree:
+        hostnodes_with_malicious_content = set()
+        for urlnode in tree.root_hartree.url_tree.traverse():
+            malicious = self.indexing.is_malicious(urlnode)
+            if malicious is not None:
+                urlnode.add_feature('malicious', malicious)
+                hostnodes_with_malicious_content.add(urlnode.hostnode_uuid)
+        for hostnode_with_malicious_content in hostnodes_with_malicious_content:
+            hostnode = tree.root_hartree.get_host_node_by_uuid(hostnode_with_malicious_content)
+            hostnode.add_feature('malicious', malicious)
+        return tree
+
     def load_tree(self, capture_uuid: str) -> Tuple[str, str, str, str, Dict[str, str]]:
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
@@ -268,6 +342,7 @@ class Lookyloo():
             with open((capture_dir / 'meta'), 'r') as f:
                 meta = json.load(f)
         ct = self.get_crawled_tree(capture_uuid)
+        ct = self.bodies_legitimacy_check(ct)
         return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
 
     def remove_pickle(self, capture_uuid: str) -> None:

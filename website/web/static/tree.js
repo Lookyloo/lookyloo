@@ -161,6 +161,13 @@ function UnflagAllNodes() {
         .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
 };
 
+function MarkAsLegitimate(capture_uuid, hostnode_uuid=null, urlnode_uuid=null) {
+  let data = {};
+  if (hostnode_uuid != null) { data['hostnode_uuid'] = hostnode_uuid; };
+  if (urlnode_uuid != null) { data['urlnode_uuid'] = urlnode_uuid; };
+  $.post(`/tree/${capture_uuid}/mark_as_legitimate`, data);
+};
+
 function UnflagHostNode(hostnode_uuid) {
     d3.select(`#node_${hostnode_uuid}`).select('rect').style('fill', 'white');
     d3.select(`#node_${hostnode_uuid}`).select('text').style('fill', 'black');
@@ -320,15 +327,13 @@ function update(root, computed_node_width=0) {
     // Set background based on the computed width and height
     let background = main_svg.insert('rect', ':first-child')
       .attr('y', 0)
-      // FIXME: + 200 doesn't make much sense...
-      .attr('width', newWidth + margin.right + margin.left + 200)
+      .attr('width', newWidth + (margin.right + margin.left)*2)
       .attr('height', newHeight + margin.top + margin.bottom)
       .style('fill', "url(#backstripes)");
 
     // Update size
-    d3.select("body svg")
-      // FIXME: + 200 doesn't make much sense...
-      .attr("width", newWidth + margin.right + margin.left + 200)
+    main_svg
+      .attr("width", newWidth + (margin.right + margin.left)*2)
       .attr("height", newHeight + margin.top + margin.bottom)
 
     // Update pattern
@@ -445,14 +450,14 @@ function update(root, computed_node_width=0) {
                     })
                     .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
 
+                const http_icon_size = 24;
                 if (d.data.http_content) {
-                    const icon_size = 24;
                     // set lock insecure connection
                     d3.select(this).append("svg").append('rect')
                         .attr('x', selected_node_bbox.width - 22)
                         .attr('y', selected_node_bbox.height - 13)
-                        .attr('width', icon_size)
-                        .attr('height', icon_size)
+                        .attr('width', http_icon_size)
+                        .attr('height', http_icon_size)
                         .attr('fill', 'white')
                         .attr('stroke', 'black');
 
@@ -460,8 +465,8 @@ function update(root, computed_node_width=0) {
                         .attr('x', selected_node_bbox.width - 22)
                         .attr('y', selected_node_bbox.height - 13)
                         .attr('id', 'insecure_image')
-                        .attr("width", icon_size)
-                        .attr("height", icon_size)
+                        .attr("width", http_icon_size)
+                        .attr("height", http_icon_size)
                         .attr("xlink:href", '/static/insecure.svg')
                         .on('mouseover', () => {
                             d3.select('#tooltip')
@@ -469,6 +474,33 @@ function update(root, computed_node_width=0) {
                                 .style('left', `${d3.event.pageX + 10}px`)
                                 .style('top', `${d3.event.pageY + 10}px`)
                                 .text('This node containts insecure requests');
+                        })
+                        .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
+                };
+                const malicious_icon_size = 24;
+                if (d.data.malicious) {
+                    // set lock insecure connection
+                    d3.select(this).append("svg").append('rect')
+                        .attr('x', selected_node_bbox.width - 22 - http_icon_size)
+                        .attr('y', selected_node_bbox.height - 13)
+                        .attr('width', malicious_icon_size)
+                        .attr('height', malicious_icon_size)
+                        .attr('fill', 'white')
+                        .attr('stroke', 'black');
+
+                    d3.select(this).append('image')
+                        .attr('x', selected_node_bbox.width - 22 - http_icon_size)
+                        .attr('y', selected_node_bbox.height - 13)
+                        .attr('id', 'insecure_image')
+                        .attr("width", malicious_icon_size)
+                        .attr("height", malicious_icon_size)
+                        .attr("xlink:href", '/static/bomb.svg')
+                        .on('mouseover', () => {
+                            d3.select('#tooltip')
+                                .style('opacity', 1)
+                                .style('left', `${d3.event.pageX + 10}px`)
+                                .style('top', `${d3.event.pageY + 10}px`)
+                                .text('This node containts known malicious content');
                         })
                         .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
                 };
