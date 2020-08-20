@@ -563,6 +563,7 @@ class Lookyloo():
             s.quit()
         except Exception as e:
             self.logger.exception(e)
+            self.logger.warning(msg.as_string())
 
     def _ensure_meta(self, capture_dir: Path, tree: CrawledTree) -> None:
         metafile = capture_dir / 'meta'
