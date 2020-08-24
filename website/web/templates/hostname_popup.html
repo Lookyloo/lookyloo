@@ -126,11 +126,29 @@
           </p>
           {{ popup_icons(keys_response, url['url_object'], tree_uuid) }}
 
+          <div>
           {% if url['url_object'].empty_response %}
           Empty body.
           {% else %}
-          Body size: {{ sizeof_fmt(url['url_object'].body.getbuffer().nbytes) }}
+            {% if url['legitimacy'] and url['legitimacy'][0] == False %}
+              <img src="/static/bomb.svg" title="Known malicious content in the response." width="21" height="21"/>
+            {%endif%}
+            Body size: {{ sizeof_fmt(url['url_object'].body.getbuffer().nbytes) }}
+            {% if url['legitimacy'] %}
+              {% if url['legitimacy'][0] %}
+                - This file is known <b>legitimate</b>.
+              {% elif url['legitimacy'][0] == False %}
+                {% if url['legitimacy'][1] is iterable %}
+                  </br>
+                  The response sould be considered as <b>phishing</b> unless it is served by <b>the following domain(s)</b>: {{ ', '.join(url['legitimacy'][1]) }}
+                  </br>
+                {% else %}
+                  - The response is known <b>malicious</b>.
+                {%endif%}
+              {%endif%}
+            {%endif%}
           {%endif%}
+          </div>
 
           {% if url['sane_js'] %}
             {# Result from SaneJS for the response #}

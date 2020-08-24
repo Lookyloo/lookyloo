@@ -168,7 +168,16 @@ class Indexing():
             return
         self.redis.sadd(f'bh|{urlnode.body_hash}|legitimate', urlnode.hostname)
 
+    def malicious_node(self, urlnode: URLNode) -> None:
+        if urlnode.empty_response:
+            return
+        self.redis.sadd('bh|malicious', urlnode.body_hash)
+
+    # Query DB
+
     def is_legitimate(self, urlnode: URLNode) -> Optional[bool]:
+        if urlnode.empty_response:
+            return None
         hostnames = self.redis.smembers(f'bh|{urlnode.body_hash}|legitimate')
         if hostnames:
             if urlnode.hostname in hostnames:
@@ -177,11 +186,6 @@ class Indexing():
         elif self.redis.sismember('bh|malicious', urlnode.body_hash):
             return False
         return None  # Unknown
-
-    def malicious_node(self, urlnode: URLNode) -> None:
-        if urlnode.empty_response:
-            return None
-        self.redis.sadd('bh|malicious', urlnode.body_hash)
 
     def is_malicious(self, urlnode: URLNode) -> Optional[bool]:
         if urlnode.empty_response:
@@ -193,6 +197,19 @@ class Indexing():
             return False
         if legitimate is False:
             return True
+        return None
+
+    def legitimacy_details(self, urlnode: URLNode) -> Optional[Tuple[bool, Optional[List[str]]]]:
+        if urlnode.empty_response:
+            return None
+        hostnames = self.redis.smembers(f'bh|{urlnode.body_hash}|legitimate')
+        if hostnames:
+            if urlnode.hostname in hostnames:
+                return (True, hostnames)
+            else:
+                return (False, hostnames)
+        elif self.redis.sismember('bh|malicious', urlnode.body_hash):
+            return False
         return None
 
 
@@ -851,7 +868,8 @@ class Lookyloo():
             to_append: Dict[str, Any] = {
                 'encrypted': url.name.startswith('https'),
                 'url_path': url.name.split('/', 3)[-1],
-                'url_object': url
+                'url_object': url,
+                'legitimacy': self.indexing.legitimacy_details(url)
             }
 
             if not url.empty_response:
