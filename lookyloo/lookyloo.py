@@ -843,13 +843,6 @@ class Lookyloo():
                     captures_list['different_url'].append((h_capture_uuid, url_uuid, cache['title'], cache['timestamp'], url_hostname))
         return captures_list
 
-    def _format_sane_js_response(self, lookup_table: Dict, h: str) -> Optional[Union[str, Tuple]]:
-        if lookup_table.get(h):
-            libname, version, path = lookup_table[h][0].split("|")
-            other_files = len(lookup_table[h])
-            return libname, version, path, other_files
-        return None
-
     def get_hostnode_investigator(self, capture_uuid: str, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
@@ -862,13 +855,21 @@ class Lookyloo():
         if not hostnode:
             raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
 
-        # search in locally defined known content
-        # 1. get from cache all descriptions related to a body hash
-        to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
-        known_content_table = dict(zip(to_lookup, self.redis.hmget('known_content', to_lookup)))
+        # Gather all the ressources in the hostnode.
+        all_ressources_hashes = set()
+        for url in hostnode.urls:
+            if hasattr(url, 'body_hash'):
+                all_ressources_hashes.add(url.body_hash)
+                if hasattr(url, 'embedded_ressources') and url.embedded_ressources:
+                    for mimetype, blobs in url.embedded_ressources.items():
+                        all_ressources_hashes.update([h for h, b in blobs])
 
-        # 2. query sanejs if enabled
+        # Get from local cache of known content all descriptions related to the ressources.
+        known_content_table = dict(zip(all_ressources_hashes,
+                                       self.redis.hmget('known_content', all_ressources_hashes)))
+
         if hasattr(self, 'sanejs') and self.sanejs.available:
+            # Query sanejs on the remaining ones
             to_lookup = [h for h, description in known_content_table.items() if not description]
             for h, entry in self.sanejs.hashes_lookup(to_lookup).items():
                 libname, version, path = entry[0].split("|")
@@ -908,17 +909,12 @@ class Lookyloo():
                             to_append['embedded_ressources'][h]['type'] = mimetype
                             if freq_embedded['hash_freq'] > 1:
                                 to_append['embedded_ressources'][h]['other_captures'] = self.hash_lookup(h, url.name, capture_uuid)
-                    if hasattr(self, 'sanejs') and self.sanejs.available:
-                        to_lookup = list(to_append['embedded_ressources'].keys())
-                        sanejs_lookups_embedded = self.sanejs.hashes_lookup(to_lookup)
-                        for h in to_append['embedded_ressources'].keys():
-                            sane_js_match = self._format_sane_js_response(sanejs_lookups_embedded, h)
-                            if sane_js_match:
-                                to_append['embedded_ressources'][h]['sane_js'] = sane_js_match
+                    for h in to_append['embedded_ressources'].keys():
+                        if h in known_content_table:
+                            to_append['embedded_ressources'][h]['known_content'] = known_content_table[h]
 
-                # Optional: SaneJS information
                 if url.body_hash in known_content_table:
-                    to_append['sane_js'] = known_content_table[url.body_hash]
+                    to_append['known_content'] = known_content_table[url.body_hash]
 
             # Optional: Cookies sent to server in request -> map to nodes who set the cookie in response
             if hasattr(url, 'cookies_sent'):

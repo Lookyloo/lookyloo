@@ -1,5 +1,5 @@
 {% extends "main.html" %}
-{% from "macros.html" import sanejs_details %}
+{% from "macros.html" import known_content_details %}
 {% from "macros.html" import indexed_hash %}
 {% from "macros.html" import indexed_cookies %}
 {% from "macros.html" import popup_icons %}
@@ -150,9 +150,8 @@
           {%endif%}
           </div>
 
-          {% if url['sane_js'] %}
-            {# Result from SaneJS for the response #}
-            {{ sanejs_details(url['sane_js']) }}
+          {% if url['known_content'] %}
+            {{ known_content_details(url['known_content']) }}
           {% endif %}
 
           {# Everything we know about the response content #}
@@ -225,9 +224,8 @@
           <div class="collapse" id="embedded_full_list_{{ url['url_object'].uuid }}">
             <div class="card card-body">
               {% for hash, details in url['embedded_ressources'].items() %}
-              {% if details['sane_js'] %}
-                {# Result from SaneJS for the embedded ressources #}
-                {{ sanejs_details(details['sane_js']) }}
+              {% if details['known_content'] %}
+                {{ known_content_details(details['known_content']) }}
               {% endif %}
               <div>
                   This file (<b>{{ details['type'] }}</b>) can be found <b>{{ details['hash_freq'] }}</b> times
