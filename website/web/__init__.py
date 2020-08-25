@@ -502,6 +502,15 @@ def mark_as_legitimate(tree_uuid: str):
     return jsonify({'message': 'Legitimate entry added.'})
 
 
+@app.route('/tree/<string:tree_uuid>/add_context/<string:urlnode_uuid>', methods=['POST'])
+@auth.login_required
+def add_context(tree_uuid: str, urlnode_uuid: str):
+    context_data = request.form
+    legitimate: bool = context_data.get('legitimate') if context_data.get('legitimate') else False  # type: ignore
+    malicious: bool = context_data.get('malicious') if context_data.get('malicious') else False  # type: ignore
+
+
+
 # Query API
 
 @app.route('/json/<string:tree_uuid>/redirects', methods=['GET'])

@@ -29,7 +29,7 @@ from scrapysplashwrapper import crawl
 from werkzeug.useragents import UserAgent
 
 from .exceptions import NoValidHarFile, MissingUUID
-from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template, load_pickle_tree, remove_pickle_tree
+from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template, load_pickle_tree, remove_pickle_tree, load_known_content
 from .modules import VirusTotal, SaneJavaScript, PhishingInitiative
 
 
@@ -168,6 +168,9 @@ class Indexing():
             return
         self.redis.sadd(f'bh|{urlnode.body_hash}|legitimate', urlnode.hostname)
 
+    def legitimate_body(self, body_hash: str, legitimate_hostname: str) -> None:
+        self.redis.sadd(f'bh|{body_hash}|legitimate', legitimate_hostname)
+
     def malicious_node(self, urlnode: URLNode) -> None:
         if urlnode.empty_response:
             return
@@ -250,8 +253,17 @@ class Lookyloo():
                 if not self.sanejs.available:
                     self.logger.warning('Unable to setup the SaneJS module')
 
+        # TODO: reorganize startup cache.
+        self.cache_known_content()
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
+
+    def cache_known_content(self) -> None:
+        p = self.redis.pipeline()
+        for filename, file_content in load_known_content().items():
+            for k, type_content in file_content.items():
+                p.hmset('known_content', {h: type_content['description'] for h in type_content['entries']})
+        p.execute()
 
     def cache_user_agents(self, user_agent: str, remote_ip: str) -> None:
         today = date.today().isoformat()
@@ -833,13 +845,9 @@ class Lookyloo():
 
     def _format_sane_js_response(self, lookup_table: Dict, h: str) -> Optional[Union[str, Tuple]]:
         if lookup_table.get(h):
-            if isinstance(lookup_table[h], list):
-                libname, version, path = lookup_table[h][0].split("|")
-                other_files = len(lookup_table[h])
-                return libname, version, path, other_files
-            else:
-                # Predefined generic file
-                return lookup_table[h]
+            libname, version, path = lookup_table[h][0].split("|")
+            other_files = len(lookup_table[h])
+            return libname, version, path, other_files
         return None
 
     def get_hostnode_investigator(self, capture_uuid: str, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
@@ -854,10 +862,17 @@ class Lookyloo():
         if not hostnode:
             raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
 
-        sanejs_lookups: Dict[str, List[str]] = {}
+        # search in locally defined known content
+        # 1. get from cache all descriptions related to a body hash
+        to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
+        known_content_table = dict(zip(to_lookup, self.redis.hmget('known_content', to_lookup)))
+
+        # 2. query sanejs if enabled
         if hasattr(self, 'sanejs') and self.sanejs.available:
-            to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
-            sanejs_lookups = self.sanejs.hashes_lookup(to_lookup)
+            to_lookup = [h for h, description in known_content_table.items() if not description]
+            for h, entry in self.sanejs.hashes_lookup(to_lookup).items():
+                libname, version, path = entry[0].split("|")
+                known_content_table[h] = (libname, version, path, len(entry))
 
         urls: List[Dict[str, Any]] = []
         for url in hostnode.urls:
@@ -902,9 +917,8 @@ class Lookyloo():
                                 to_append['embedded_ressources'][h]['sane_js'] = sane_js_match
 
                 # Optional: SaneJS information
-                sane_js_match = self._format_sane_js_response(sanejs_lookups, url.body_hash)
-                if sane_js_match:
-                    to_append['sane_js'] = sane_js_match
+                if url.body_hash in known_content_table:
+                    to_append['sane_js'] = known_content_table[url.body_hash]
 
             # Optional: Cookies sent to server in request -> map to nodes who set the cookie in response
             if hasattr(url, 'cookies_sent'):

@@ -183,6 +183,14 @@ def get_user_agents(directory: str='user_agents') -> Dict[str, Any]:
         return json.load(f)
 
 
+def load_known_content(directory: str='known_content') -> Dict[str, Dict[str, Any]]:
+    to_return: Dict[str, Dict[str, Any]] = {}
+    for known_content_file in (get_homedir() / directory).glob('*.json'):
+        with known_content_file.open() as f:
+            to_return[known_content_file.stem] = json.load(f)
+    return to_return
+
+
 def load_cookies(cookie_pseudofile: Optional[BufferedIOBase]=None) -> List[Dict[str, str]]:
     if cookie_pseudofile:
         cookies = json.load(cookie_pseudofile)
