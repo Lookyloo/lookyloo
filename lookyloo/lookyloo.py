@@ -208,11 +208,11 @@ class Indexing():
         hostnames = self.redis.smembers(f'bh|{urlnode.body_hash}|legitimate')
         if hostnames:
             if urlnode.hostname in hostnames:
-                return (True, hostnames)
+                return True, hostnames
             else:
-                return (False, hostnames)
+                return False, hostnames
         elif self.redis.sismember('bh|malicious', urlnode.body_hash):
-            return False
+            return False, None
         return None
 
 
