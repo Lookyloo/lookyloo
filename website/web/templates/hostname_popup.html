@@ -1,5 +1,6 @@
 {% extends "main.html" %}
 {% from "macros.html" import known_content_details %}
+{% from "macros.html" import ressource_legitimacy_details %}
 {% from "macros.html" import indexed_hash %}
 {% from "macros.html" import indexed_cookies %}
 {% from "macros.html" import popup_icons %}
@@ -130,23 +131,7 @@
           {% if url['url_object'].empty_response %}
           Empty body.
           {% else %}
-            {% if url['legitimacy'] and url['legitimacy'][0] == False %}
-              <img src="/static/bomb.svg" title="Known malicious content in the response." width="21" height="21"/>
-            {%endif%}
-            Body size: {{ sizeof_fmt(url['url_object'].body.getbuffer().nbytes) }}
-            {% if url['legitimacy'] %}
-              {% if url['legitimacy'][0] %}
-                - This file is known <b>legitimate</b>.
-              {% elif url['legitimacy'][0] == False %}
-                {% if url['legitimacy'][1] is iterable %}
-                  </br>
-                  The response sould be considered as <b>phishing</b> unless it is served by <b>the following domain(s)</b>: {{ ', '.join(url['legitimacy'][1]) }}
-                  </br>
-                {% else %}
-                  - The response is known <b>malicious</b>.
-                {%endif%}
-              {%endif%}
-            {%endif%}
+          {{ ressource_legitimacy_details(url['legitimacy'], url['url_object'].body.getbuffer().nbytes) }}
           {%endif%}
           </div>
 
@@ -227,6 +212,7 @@
               {% if details['known_content'] %}
                 {{ known_content_details(details['known_content']) }}
               {% endif %}
+              {{ ressource_legitimacy_details(details['legitimacy'], details['body_size']) }}
               <div>
                   This file (<b>{{ details['type'] }}</b>) can be found <b>{{ details['hash_freq'] }}</b> times
                 across all the captures on this lookyloo instance, in <b>{{ details['hash_domains_freq'] }}</b> unique domains.

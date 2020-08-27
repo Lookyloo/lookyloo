@@ -12,6 +12,26 @@
 </div>
 {% endmacro %}
 
+{% macro ressource_legitimacy_details(details, ressource_size) %}
+{% if details and details[0] == False %}
+  <img src="/static/bomb.svg" title="Known malicious content in the response." width="21" height="21"/>
+{%endif%}
+Body size: {{ sizeof_fmt(ressource_size) }}
+{% if details %}
+  {% if details[0] %}
+    - This file is known <b>legitimate</b>.
+  {% elif details[0] == False %}
+    {% if details[1] is iterable %}
+      </br>
+      The response sould be considered as <b>phishing</b> unless it is served by <b>the following domain(s)</b>: {{ ', '.join(details[1]) }}
+      </br>
+    {% else %}
+      - The response is known <b>malicious</b>.
+    {%endif%}
+  {%endif%}
+{%endif%}
+{% endmacro %}
+
 {% macro indexed_hash(details, identifier_for_toggle) %}
 {% set total_captures = details['different_url']|length + details['same_url']|length %}
 {# Only show details if the hits are in an other capture #}
