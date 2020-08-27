@@ -194,6 +194,8 @@ class Context():
         """Return a dictionary of content resources found in the local known_content database, or in SaneJS (if enabled)"""
         all_ressources_hashes = self._get_resources_hashes(har2tree_container)
         # Get from local cache of known content all descriptions related to the ressources.
+        if not all_ressources_hashes:
+            return {}
         known_content_table = dict(zip(all_ressources_hashes,
                                        self.redis.hmget('known_content', all_ressources_hashes)))
 
