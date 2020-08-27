@@ -33,6 +33,11 @@ from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, s
 from .modules import VirusTotal, SaneJavaScript, PhishingInitiative
 
 
+def dump_to_json(obj: Union[Set]) -> Union[List]:
+    if isinstance(obj, set):
+        return list(obj)
+
+
 class Indexing():
 
     def __init__(self) -> None:
@@ -176,8 +181,13 @@ class Context():
     def _cache_known_content(self) -> None:
         p = self.redis.pipeline()
         for filename, file_content in load_known_content().items():
-            for k, type_content in file_content.items():
-                p.hmset('known_content', {h: type_content['description'] for h in type_content['entries']})
+            if filename == 'generic':
+                for k, type_content in file_content.items():
+                    p.hmset('known_content', {h: type_content['description'] for h in type_content['entries']})
+            else:
+                for mimetype, entry in file_content.items():
+                    for h, details in entry.items():
+                        p.sadd(f'bh|{h}|legitimate', *details['hostnames'])
         p.execute()
 
     def find_known_content(self, har2tree_container: Union[CrawledTree, HostNode, URLNode]) -> Dict[str, Union[str, List[str]]]:
@@ -205,6 +215,36 @@ class Context():
                 if h not in known_hashes:
                     yield urlnode, h
 
+    def store_known_legitimate_tree(self, tree: CrawledTree):
+        known_content = self.find_known_content(tree)
+        urlnodes = tree.root_hartree.url_tree.traverse()
+        root_hostname = urlsplit(tree.root_url).hostname
+        known_content_file: Path = get_homedir() / 'known_content' / f'{root_hostname}.json'
+        if known_content_file.exists():
+            with open(known_content_file) as f:
+                to_store = json.load(f)
+        else:
+            to_store = {}
+        for urlnode, h in self._filter(urlnodes, known_content):
+            if urlnode.mimetype:
+                mimetype = urlnode.mimetype.split(';')[0]
+            if mimetype not in to_store:
+                to_store[mimetype] = {}
+            if h not in to_store[mimetype]:
+                to_store[mimetype][h] = {'filenames': set(), 'description': '', 'hostnames': set()}
+            else:
+                to_store[mimetype][h]['filenames'] = set(to_store[mimetype][h]['filenames'])
+                to_store[mimetype][h]['hostnames'] = set(to_store[mimetype][h]['hostnames'])
+
+            to_store[mimetype][h]['hostnames'].add(urlnode.hostname)
+            if urlnode.url_split.path:
+                filename = Path(urlnode.url_split.path).name
+                if filename:
+                    to_store[mimetype][h]['filenames'].add(filename)
+
+        with open(known_content_file, 'w') as f:
+            json.dump(to_store, f, indent=2, default=dump_to_json)
+
     def mark_as_legitimate(self, tree: CrawledTree, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> None:
         if hostnode_uuid:
             urlnodes = tree.root_hartree.get_host_node_by_uuid(hostnode_uuid).urls
@@ -212,6 +252,7 @@ class Context():
             urlnodes = [tree.root_hartree.get_url_node_by_uuid(urlnode_uuid)]
         else:
             urlnodes = tree.root_hartree.url_tree.traverse()
+            self.store_known_legitimate_tree(tree)
         known_content = self.find_known_content(tree)
         pipeline = self.redis.pipeline()
         for urlnode, h in self._filter(urlnodes, known_content):
