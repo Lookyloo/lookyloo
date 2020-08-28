@@ -187,6 +187,12 @@ class Context():
             elif filename == 'malicious':
                 for h, details in file_content.items():
                     p.sadd('bh|malicious', h)
+            elif filename == 'legitimate':
+                for h, details in file_content.items():
+                    if 'domain' in details:
+                        p.sadd(f'bh|{h}|legitimate', *details['domain'])
+                    elif 'description' in details:
+                        p.hset('known_content', h, details['description'])
             else:
                 for h, details in file_content.items():
                     p.sadd(f'bh|{h}|legitimate', *details['hostnames'])
@@ -322,6 +328,35 @@ class Context():
         if 'type' in details:
             p.sadd(f'{ressource_hash}|tag', details['type'])
         p.execute()
+
+    def store_known_legitimate_ressource(self, ressource_hash: str, details: Dict[str, str]):
+        known_legitimate_ressource_file = get_homedir() / 'known_content' / 'legitimate.json'
+        if known_legitimate_ressource_file.exists():
+            with open(known_legitimate_ressource_file) as f:
+                to_store = json.load(f)
+        else:
+            to_store = {}
+
+        if ressource_hash not in to_store:
+            to_store[ressource_hash] = {'domain': set(), 'description': ''}
+        else:
+            to_store[ressource_hash]['domain'] = set(to_store[ressource_hash]['domain'])
+
+        if 'domain' in details:
+            to_store[ressource_hash]['domain'].add(details['domain'])
+        if 'description' in details:
+            to_store[ressource_hash]['description'] = details['description']
+
+        with open(known_legitimate_ressource_file, 'w') as f:
+            json.dump(to_store, f, indent=2, default=dump_to_json)
+
+    def add_legitimate(self, ressource_hash: str, details: Dict[str, str]):
+        self.store_known_legitimate_ressource(ressource_hash, details)
+        if 'domain' in details:
+            self.redis.sadd(f'bh|{ressource_hash}|legitimate', details['domain'])
+        elif 'description' in details:
+            # Library
+            self.redis.hset('known_content', ressource_hash, details['description'])
 
     # Query DB
 

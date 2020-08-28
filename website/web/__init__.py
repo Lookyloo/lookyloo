@@ -523,7 +523,7 @@ def add_context(tree_uuid: str, urlnode_uuid: str):
         if context_data.get('legitimate_domain'):
             legitimate_details['domain'] = context_data['legitimate_domain']
         if context_data.get('legitimate_description'):
-            legitimate_details['target'] = context_data['legitimate_description']
+            legitimate_details['description'] = context_data['legitimate_description']
         details['legitimate'] = legitimate_details
     lookyloo.add_context(tree_uuid, urlnode_uuid, ressource_hash, legitimate, malicious, details)
     return redirect(url_for('hostnode_popup', tree_uuid=tree_uuid, node_uuid=hostnode_uuid))
