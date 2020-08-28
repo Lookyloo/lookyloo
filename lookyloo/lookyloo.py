@@ -184,10 +184,12 @@ class Context():
             if filename == 'generic':
                 for k, type_content in file_content.items():
                     p.hmset('known_content', {h: type_content['description'] for h in type_content['entries']})
+            elif filename == 'malicious':
+                for h, details in file_content.items():
+                    p.sadd('bh|malicious', h)
             else:
-                for mimetype, entry in file_content.items():
-                    for h, details in entry.items():
-                        p.sadd(f'bh|{h}|legitimate', *details['hostnames'])
+                for h, details in file_content.items():
+                    p.sadd(f'bh|{h}|legitimate', *details['hostnames'])
         p.execute()
 
     def find_known_content(self, har2tree_container: Union[CrawledTree, HostNode, URLNode]) -> Dict[str, Union[str, List[str]]]:
@@ -228,21 +230,31 @@ class Context():
         else:
             to_store = {}
         for urlnode, h in self._filter(urlnodes, known_content):
-            if urlnode.mimetype:
-                mimetype = urlnode.mimetype.split(';')[0]
-            if mimetype not in to_store:
-                to_store[mimetype] = {}
-            if h not in to_store[mimetype]:
-                to_store[mimetype][h] = {'filenames': set(), 'description': '', 'hostnames': set()}
+            mimetype = ''
+            if h != urlnode.body_hash:
+                # this is the hash of an embeded content so it won't have a filename but has a different mimetype
+                # FIXME: this is ugly.
+                for ressource_mimetype, blobs in urlnode.embedded_ressources.items():
+                    for ressource_h, b in blobs:
+                        if ressource_h == h:
+                            mimetype = ressource_mimetype.split(';')[0]
+                            break
+                    if mimetype:
+                        break
             else:
-                to_store[mimetype][h]['filenames'] = set(to_store[mimetype][h]['filenames'])
-                to_store[mimetype][h]['hostnames'] = set(to_store[mimetype][h]['hostnames'])
+                if urlnode.mimetype:
+                    mimetype = urlnode.mimetype.split(';')[0]
+            if h not in to_store:
+                to_store[h] = {'filenames': set(), 'description': '', 'hostnames': set(), 'mimetype': mimetype}
+            else:
+                to_store[h]['filenames'] = set(to_store[h]['filenames'])
+                to_store[h]['hostnames'] = set(to_store[h]['hostnames'])
 
-            to_store[mimetype][h]['hostnames'].add(urlnode.hostname)
+            to_store[h]['hostnames'].add(urlnode.hostname)
             if urlnode.url_split.path:
                 filename = Path(urlnode.url_split.path).name
                 if filename:
-                    to_store[mimetype][h]['filenames'].add(filename)
+                    to_store[h]['filenames'].add(filename)
 
         with open(known_content_file, 'w') as f:
             json.dump(to_store, f, indent=2, default=dump_to_json)
@@ -258,6 +270,8 @@ class Context():
         known_content = self.find_known_content(tree)
         pipeline = self.redis.pipeline()
         for urlnode, h in self._filter(urlnodes, known_content):
+            # Note: we can have multiple hahes on the same urlnode (see embedded resources).
+            # They are expected to be on the same domain as urlnode. This code work as expected.
             pipeline.sadd(f'bh|{h}|legitimate', urlnode.hostname)
         pipeline.execute()
 
@@ -277,9 +291,37 @@ class Context():
     def legitimate_body(self, body_hash: str, legitimate_hostname: str) -> None:
         self.redis.sadd(f'bh|{body_hash}|legitimate', legitimate_hostname)
 
-    def malicious_node(self, urlnode: URLNode, known_hashes: Iterable[str]) -> None:
-        for _, h in self._filter(urlnode, known_hashes):
-            self.redis.sadd('bh|malicious', h)
+    def store_known_malicious_ressource(self, ressource_hash: str, details: Dict[str, str]):
+        known_malicious_ressource_file = get_homedir() / 'known_content' / 'malicious.json'
+        if known_malicious_ressource_file.exists():
+            with open(known_malicious_ressource_file) as f:
+                to_store = json.load(f)
+        else:
+            to_store = {}
+
+        if ressource_hash not in to_store:
+            to_store[ressource_hash] = {'target': set(), 'tag': set()}
+        else:
+            to_store[ressource_hash]['target'] = set(to_store[ressource_hash]['target'])
+            to_store[ressource_hash]['tag'] = set(to_store[ressource_hash]['tag'])
+
+        if 'target' in details:
+            to_store[ressource_hash]['target'].add(details['target'])
+        if 'type' in details:
+            to_store[ressource_hash]['tag'].add(details['type'])
+
+        with open(known_malicious_ressource_file, 'w') as f:
+            json.dump(to_store, f, indent=2, default=dump_to_json)
+
+    def add_malicious(self, ressource_hash: str, details: Dict[str, str]):
+        self.store_known_malicious_ressource(ressource_hash, details)
+        p = self.redis.pipeline()
+        p.sadd('bh|malicious', ressource_hash)
+        if 'target' in details:
+            p.sadd(f'{ressource_hash}|target', details['target'])
+        if 'type' in details:
+            p.sadd(f'{ressource_hash}|tag', details['type'])
+        p.execute()
 
     # Query DB
 
@@ -291,6 +333,11 @@ class Context():
         """
         status: List[Optional[bool]] = []
         for urlnode, h in self._filter(urlnode, known_hashes):
+            # Note: we can have multiple hahes on the same urlnode (see embedded resources).
+            # They are expected to be on the same domain as urlnode. This code work as expected.
+            if self.redis.sismember('bh|malicious', h):
+                # Malicious, no need to go any further
+                return False
             hostnames = self.redis.smembers(f'bh|{h}|legitimate')
             if hostnames:
                 if urlnode.hostname in hostnames:
@@ -298,8 +345,6 @@ class Context():
                     continue
                 else:
                     return False  # Malicious
-            elif self.redis.sismember('bh|malicious', h):
-                return False  # Malicious
             else:
                 # NOTE: we do not return here, because we want to return False if *any* of the contents is malicious
                 status.append(None)  # Unknown
@@ -323,6 +368,8 @@ class Context():
     def legitimacy_details(self, urlnode: URLNode, known_hashes: Iterable[str]) -> Dict[str, Tuple[bool, Optional[List[str]]]]:
         to_return = {}
         for urlnode, h in self._filter(urlnode, known_hashes):
+            # Note: we can have multiple hahes on the same urlnode (see embedded resources).
+            # They are expected to be on the same domain as urlnode. This code work as expected.
             hostnames = self.redis.smembers(f'bh|{h}|legitimate')
             if hostnames:
                 if urlnode.hostname in hostnames:
@@ -450,6 +497,12 @@ class Lookyloo():
             raise NoValidHarFile(f'Unable to get tree from {capture_dir}')
 
         return ct
+
+    def add_context(self, capture_uuid: str, urlnode_uuid: str, ressource_hash: str, legitimate: bool, malicious: bool, details: Dict[str, Dict[str, str]]):
+        if malicious:
+            self.context.add_malicious(ressource_hash, details['malicious'])
+        if legitimate:
+            self.context.add_legitimate(ressource_hash, details['legitimate'])
 
     def add_to_legitimate(self, capture_uuid: str, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None):
         ct = self.get_crawled_tree(capture_uuid)

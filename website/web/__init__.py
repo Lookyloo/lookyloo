@@ -196,7 +196,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
 
     return render_template('hostname_popup.html',
                            tree_uuid=tree_uuid,
-                           hostname_uuid=node_uuid,
+                           hostnode_uuid=node_uuid,
                            hostname=hostnode.name,
                            urls=urls,
                            keys_response=keys_response,
@@ -506,9 +506,27 @@ def mark_as_legitimate(tree_uuid: str):
 @auth.login_required
 def add_context(tree_uuid: str, urlnode_uuid: str):
     context_data = request.form
-    legitimate: bool = context_data.get('legitimate') if context_data.get('legitimate') else False  # type: ignore
-    malicious: bool = context_data.get('malicious') if context_data.get('malicious') else False  # type: ignore
-
+    ressource_hash = context_data.get('hash_to_contextualize')
+    hostnode_uuid = context_data.get('hostnode_uuid')
+    legitimate: bool = True if context_data.get('legitimate') else False
+    malicious: bool = True if context_data.get('malicious') else False
+    details = {'malicious': {}, 'legitimate': {}}
+    if malicious:
+        malicious_details = {}
+        if context_data.get('malicious_type'):
+            malicious_details['type'] = context_data['malicious_type']
+        if context_data.get('malicious_target'):
+            malicious_details['target'] = context_data['malicious_target']
+        details['malicious'] = malicious_details
+    if legitimate:
+        legitimate_details = {}
+        if context_data.get('legitimate_domain'):
+            legitimate_details['domain'] = context_data['legitimate_domain']
+        if context_data.get('legitimate_description'):
+            legitimate_details['target'] = context_data['legitimate_description']
+        details['legitimate'] = legitimate_details
+    lookyloo.add_context(tree_uuid, urlnode_uuid, ressource_hash, legitimate, malicious, details)
+    return redirect(url_for('hostnode_popup', tree_uuid=tree_uuid, node_uuid=hostnode_uuid))
 
 
 # Query API
