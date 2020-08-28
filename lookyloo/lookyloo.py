@@ -189,7 +189,7 @@ class Context():
                     p.sadd('bh|malicious', h)
             elif filename == 'legitimate':
                 for h, details in file_content.items():
-                    if 'domain' in details:
+                    if 'domain' in details and details['domain']:
                         p.sadd(f'bh|{h}|legitimate', *details['domain'])
                     elif 'description' in details:
                         p.hset('known_content', h, details['description'])
@@ -289,9 +289,20 @@ class Context():
             if malicious is True:
                 urlnode.add_feature('malicious', malicious)
                 hostnodes_with_malicious_content.add(urlnode.hostnode_uuid)
+            elif malicious is False:
+                # Marked as legitimate
+                urlnode.add_feature('legitimate', True)
+
         for hostnode_with_malicious_content in hostnodes_with_malicious_content:
             hostnode = tree.root_hartree.get_host_node_by_uuid(hostnode_with_malicious_content)
             hostnode.add_feature('malicious', malicious)
+
+        for hostnode in tree.root_hartree.hostname_tree.traverse():
+            if 'malicious' not in hostnode.features:
+                legit = [urlnode.legitimate for urlnode in hostnode.urls if hasattr(urlnode, 'legitimate')]
+                if legit and all(legit):
+                    hostnode.add_feature('legitimate', True)
+
         return tree
 
     def legitimate_body(self, body_hash: str, legitimate_hostname: str) -> None:
