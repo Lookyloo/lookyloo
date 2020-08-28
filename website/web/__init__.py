@@ -506,11 +506,11 @@ def mark_as_legitimate(tree_uuid: str):
 @auth.login_required
 def add_context(tree_uuid: str, urlnode_uuid: str):
     context_data = request.form
-    ressource_hash = context_data.get('hash_to_contextualize')
-    hostnode_uuid = context_data.get('hostnode_uuid')
+    ressource_hash: str = context_data.get('hash_to_contextualize')  # type: ignore
+    hostnode_uuid: str = context_data.get('hostnode_uuid')  # type: ignore
     legitimate: bool = True if context_data.get('legitimate') else False
     malicious: bool = True if context_data.get('malicious') else False
-    details = {'malicious': {}, 'legitimate': {}}
+    details: Dict[str, Dict] = {'malicious': {}, 'legitimate': {}}
     if malicious:
         malicious_details = {}
         if context_data.get('malicious_type'):
