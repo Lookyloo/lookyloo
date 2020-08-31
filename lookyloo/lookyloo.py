@@ -285,12 +285,17 @@ class Context():
         hostnodes_with_malicious_content = set()
         known_content = self.find_known_content(tree)
         for urlnode in tree.root_hartree.url_tree.traverse():
+            if urlnode.empty_response:
+                continue
+
             malicious = self.is_malicious(urlnode, known_content)
             if malicious is True:
                 urlnode.add_feature('malicious', malicious)
                 hostnodes_with_malicious_content.add(urlnode.hostnode_uuid)
             elif malicious is False:
                 # Marked as legitimate
+                urlnode.add_feature('legitimate', True)
+            elif not urlnode.empty_response and urlnode.body_hash in known_content:
                 urlnode.add_feature('legitimate', True)
 
         for hostnode_with_malicious_content in hostnodes_with_malicious_content:
@@ -299,8 +304,12 @@ class Context():
 
         for hostnode in tree.root_hartree.hostname_tree.traverse():
             if 'malicious' not in hostnode.features:
+                if all(urlnode.empty_response for urlnode in hostnode.urls):
+                    hostnode.add_feature('all_empty', True)
+                    continue
+
                 legit = [urlnode.legitimate for urlnode in hostnode.urls if hasattr(urlnode, 'legitimate')]
-                if legit and all(legit):
+                if len(legit) == len(hostnode.urls) and all(legit):
                     hostnode.add_feature('legitimate', True)
 
         return tree

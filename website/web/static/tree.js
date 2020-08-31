@@ -477,14 +477,14 @@ function update(root, computed_node_width=0) {
                         })
                         .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
                 };
-                const malicious_icon_size = 24;
+                const context_icon_size = 24;
                 if (d.data.malicious) {
                     // set bomb
                     d3.select(this).append("svg").append('rect')
                         .attr('x', selected_node_bbox.width - 22 - http_icon_size)
                         .attr('y', selected_node_bbox.height - 13)
-                        .attr('width', malicious_icon_size)
-                        .attr('height', malicious_icon_size)
+                        .attr('width', context_icon_size)
+                        .attr('height', context_icon_size)
                         .attr('fill', 'white')
                         .attr('stroke', 'black');
 
@@ -492,8 +492,8 @@ function update(root, computed_node_width=0) {
                         .attr('x', selected_node_bbox.width - 22 - http_icon_size)
                         .attr('y', selected_node_bbox.height - 13)
                         .attr('id', 'insecure_image')
-                        .attr("width", malicious_icon_size)
-                        .attr("height", malicious_icon_size)
+                        .attr("width", context_icon_size)
+                        .attr("height", context_icon_size)
                         .attr("xlink:href", '/static/bomb.svg')
                         .on('mouseover', () => {
                             d3.select('#tooltip')
@@ -503,14 +503,13 @@ function update(root, computed_node_width=0) {
                                 .text('This node containts known malicious content');
                         })
                         .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
-                };
-                if (d.data.legitimate) {
+                } else if (d.data.legitimate) {
                     // set checkmark
                     d3.select(this).append("svg").append('rect')
                         .attr('x', selected_node_bbox.width - 22 - http_icon_size)
                         .attr('y', selected_node_bbox.height - 13)
-                        .attr('width', malicious_icon_size)
-                        .attr('height', malicious_icon_size)
+                        .attr('width', context_icon_size)
+                        .attr('height', context_icon_size)
                         .attr('fill', 'white')
                         .attr('stroke', 'black');
 
@@ -518,18 +517,43 @@ function update(root, computed_node_width=0) {
                         .attr('x', selected_node_bbox.width - 22 - http_icon_size)
                         .attr('y', selected_node_bbox.height - 13)
                         .attr('id', 'insecure_image')
-                        .attr("width", malicious_icon_size)
-                        .attr("height", malicious_icon_size)
+                        .attr("width", context_icon_size)
+                        .attr("height", context_icon_size)
                         .attr("xlink:href", '/static/check.svg')
                         .on('mouseover', () => {
                             d3.select('#tooltip')
                                 .style('opacity', 1)
                                 .style('left', `${d3.event.pageX + 10}px`)
                                 .style('top', `${d3.event.pageY + 10}px`)
-                                .text('This node containts only legitimate content');
+                                .text('This node has only legitimate content');
                         })
                         .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
-                }
+              } else if (d.data.all_empty) {
+                // set empty
+                d3.select(this).append("svg").append('rect')
+                    .attr('x', selected_node_bbox.width - 22 - http_icon_size)
+                    .attr('y', selected_node_bbox.height - 13)
+                    .attr('width', context_icon_size)
+                    .attr('height', context_icon_size)
+                    .attr('fill', 'white')
+                    .attr('stroke', 'black');
+
+                d3.select(this).append('image')
+                    .attr('x', selected_node_bbox.width - 22 - http_icon_size)
+                    .attr('y', selected_node_bbox.height - 13)
+                    .attr('id', 'insecure_image')
+                    .attr("width", context_icon_size)
+                    .attr("height", context_icon_size)
+                    .attr("xlink:href", '/static/empty.svg')
+                    .on('mouseover', () => {
+                        d3.select('#tooltip')
+                            .style('opacity', 1)
+                            .style('left', `${d3.event.pageX + 10}px`)
+                            .style('top', `${d3.event.pageY + 10}px`)
+                            .text('This node has only empty content');
+                    })
+                    .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
+              };
             });
 
             return node_group;
