@@ -73,6 +73,8 @@ class SaneJavaScript():
                 with cached_path.open() as f:
                     to_return[h] = json.load(f)
 
+        with sanejs_unknowns.open('w') as f:
+            f.writelines(f'{h}\n' for h in unknown_hashes)
         return to_return
 
 
