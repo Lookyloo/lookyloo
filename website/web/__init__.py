@@ -191,6 +191,10 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     keys_request = {
         'request_cookie': "/static/cookie_read.png",
     }
+    if lookyloo.get_config('enable_context_by_users'):
+        enable_context_by_users = True
+    else:
+        enable_context_by_users = False
 
     hostnode, urls = lookyloo.get_hostnode_investigator(tree_uuid, node_uuid)
 
@@ -200,7 +204,8 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
                            hostname=hostnode.name,
                            urls=urls,
                            keys_response=keys_response,
-                           keys_request=keys_request)
+                           keys_request=keys_request,
+                           enable_context_by_users=enable_context_by_users)
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/request_cookies', methods=['GET'])

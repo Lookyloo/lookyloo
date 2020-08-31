@@ -158,9 +158,10 @@
             </p>
           </div>
           {% endif %}
+          {% if enable_context_by_users%}
           <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#context_response_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseContextForm">
-            <span class="if-collapsed">Add context.</span>
-            <span class="if-not-collapsed">Hide context form.</span>
+            <span class="if-collapsed">Add context</span>
+            <span class="if-not-collapsed">Hide context form</span>
           </button>
           <div class="collapse" id="context_response_{{ url['url_object'].uuid }}">
             <div class="card card-body">
@@ -199,6 +200,7 @@
                 </form>
             </div>
           </div>
+          {% endif %}
 
           {% if url['embedded_ressources'] %}
           {# Details on embedded resources #}
