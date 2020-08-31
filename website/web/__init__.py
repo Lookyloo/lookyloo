@@ -191,16 +191,21 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     keys_request = {
         'request_cookie': "/static/cookie_read.png",
     }
+    if lookyloo.get_config('enable_context_by_users'):
+        enable_context_by_users = True
+    else:
+        enable_context_by_users = False
 
     hostnode, urls = lookyloo.get_hostnode_investigator(tree_uuid, node_uuid)
 
     return render_template('hostname_popup.html',
                            tree_uuid=tree_uuid,
-                           hostname_uuid=node_uuid,
+                           hostnode_uuid=node_uuid,
                            hostname=hostnode.name,
                            urls=urls,
                            keys_response=keys_response,
-                           keys_request=keys_request)
+                           keys_request=keys_request,
+                           enable_context_by_users=enable_context_by_users)
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/request_cookies', methods=['GET'])
@@ -490,6 +495,43 @@ def cookies_name_detail(cookie_name: str):
 def body_hash_details(body_hash: str):
     captures, domains = lookyloo.get_body_hash_investigator(body_hash)
     return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures)
+
+
+@app.route('/tree/<string:tree_uuid>/mark_as_legitimate', methods=['POST'])
+def mark_as_legitimate(tree_uuid: str):
+    if request.data:
+        legitimate_entries = request.get_json(force=True)
+        lookyloo.add_to_legitimate(tree_uuid, **legitimate_entries)
+    else:
+        lookyloo.add_to_legitimate(tree_uuid)
+    return jsonify({'message': 'Legitimate entry added.'})
+
+
+@app.route('/tree/<string:tree_uuid>/add_context/<string:urlnode_uuid>', methods=['POST'])
+@auth.login_required
+def add_context(tree_uuid: str, urlnode_uuid: str):
+    context_data = request.form
+    ressource_hash: str = context_data.get('hash_to_contextualize')  # type: ignore
+    hostnode_uuid: str = context_data.get('hostnode_uuid')  # type: ignore
+    legitimate: bool = True if context_data.get('legitimate') else False
+    malicious: bool = True if context_data.get('malicious') else False
+    details: Dict[str, Dict] = {'malicious': {}, 'legitimate': {}}
+    if malicious:
+        malicious_details = {}
+        if context_data.get('malicious_type'):
+            malicious_details['type'] = context_data['malicious_type']
+        if context_data.get('malicious_target'):
+            malicious_details['target'] = context_data['malicious_target']
+        details['malicious'] = malicious_details
+    if legitimate:
+        legitimate_details = {}
+        if context_data.get('legitimate_domain'):
+            legitimate_details['domain'] = context_data['legitimate_domain']
+        if context_data.get('legitimate_description'):
+            legitimate_details['description'] = context_data['legitimate_description']
+        details['legitimate'] = legitimate_details
+    lookyloo.add_context(tree_uuid, urlnode_uuid, ressource_hash, legitimate, malicious, details)
+    return redirect(url_for('hostnode_popup', tree_uuid=tree_uuid, node_uuid=hostnode_uuid))
 
 
 # Query API

@@ -15,7 +15,7 @@ from pathlib import Path
 import pickle
 import smtplib
 import socket
-from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping, Set, Iterable
+from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping, Set, Iterable, Iterator
 from urllib.parse import urlsplit
 from uuid import uuid4
 from zipfile import ZipFile
@@ -29,8 +29,13 @@ from scrapysplashwrapper import crawl
 from werkzeug.useragents import UserAgent
 
 from .exceptions import NoValidHarFile, MissingUUID
-from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template, load_pickle_tree, remove_pickle_tree
+from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template, load_pickle_tree, remove_pickle_tree, load_known_content
 from .modules import VirusTotal, SaneJavaScript, PhishingInitiative
+
+
+def dump_to_json(obj: Union[Set]) -> Union[List]:
+    if isinstance(obj, set):
+        return list(obj)
 
 
 class Indexing():
@@ -114,21 +119,22 @@ class Indexing():
 
         pipeline = self.redis.pipeline()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if not urlnode.empty_response:
-                pipeline.zincrby('body_hashes', 1, urlnode.body_hash)
-                pipeline.zincrby(f'bh|{urlnode.body_hash}', 1, urlnode.hostname)
-                # set of all captures with this hash
-                pipeline.sadd(f'bh|{urlnode.body_hash}|captures', crawled_tree.uuid)
-                # ZSet of all urlnode_UUIDs|full_url
-                pipeline.zincrby(f'bh|{urlnode.body_hash}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
-                if hasattr(urlnode, 'embedded_ressources') and urlnode.embedded_ressources:
-                    for mimetype, blobs in urlnode.embedded_ressources.items():
-                        for h, body in blobs:
-                            pipeline.zincrby('body_hashes', 1, h)
-                            pipeline.zincrby(f'bh|{h}', 1, urlnode.hostname)
-                            pipeline.sadd(f'bh|{h}|captures', crawled_tree.uuid)
-                            pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1,
-                                             f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
+            if urlnode.empty_response:
+                continue
+            pipeline.zincrby('body_hashes', 1, urlnode.body_hash)
+            pipeline.zincrby(f'bh|{urlnode.body_hash}', 1, urlnode.hostname)
+            # set of all captures with this hash
+            pipeline.sadd(f'bh|{urlnode.body_hash}|captures', crawled_tree.uuid)
+            # ZSet of all urlnode_UUIDs|full_url
+            pipeline.zincrby(f'bh|{urlnode.body_hash}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
+            if hasattr(urlnode, 'embedded_ressources') and urlnode.embedded_ressources:
+                for mimetype, blobs in urlnode.embedded_ressources.items():
+                    for h, body in blobs:
+                        pipeline.zincrby('body_hashes', 1, h)
+                        pipeline.zincrby(f'bh|{h}', 1, urlnode.hostname)
+                        pipeline.sadd(f'bh|{h}|captures', crawled_tree.uuid)
+                        pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1,
+                                         f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
 
         pipeline.execute()
 
@@ -145,6 +151,289 @@ class Indexing():
 
     def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:
         return self.redis.zrevrange(f'bh|{body_hash}', 0, -1, withscores=True)
+
+
+class Context():
+
+    def __init__(self, sanejs: Optional[SaneJavaScript] = None):
+        self.redis: Redis = Redis(unix_socket_path=get_socket_path('indexing'), db=1, decode_responses=True)
+        self.sanejs = sanejs
+        self._cache_known_content()
+
+    def clear_context(self):
+        self.redis.flushdb()
+
+    def _get_resources_hashes(self, har2tree_container: Union[CrawledTree, HostNode, URLNode]) -> Set[str]:
+        if isinstance(har2tree_container, CrawledTree):
+            urlnodes = har2tree_container.root_hartree.url_tree.traverse()
+        elif isinstance(har2tree_container, HostNode):
+            urlnodes = har2tree_container.urls
+        elif isinstance(har2tree_container, URLNode):
+            urlnodes = [har2tree_container]
+        else:
+            raise Exception(f'har2tree_container cannot be {type(har2tree_container)}')
+        all_ressources_hashes: Set[str] = set()
+        for urlnode in urlnodes:
+            if hasattr(urlnode, 'resources_hashes'):
+                all_ressources_hashes.update(urlnode.resources_hashes)
+        return all_ressources_hashes
+
+    def _cache_known_content(self) -> None:
+        p = self.redis.pipeline()
+        for filename, file_content in load_known_content().items():
+            if filename == 'generic':
+                for k, type_content in file_content.items():
+                    p.hmset('known_content', {h: type_content['description'] for h in type_content['entries']})
+            elif filename == 'malicious':
+                for h, details in file_content.items():
+                    p.sadd('bh|malicious', h)
+            elif filename == 'legitimate':
+                for h, details in file_content.items():
+                    if 'domain' in details and details['domain']:
+                        p.sadd(f'bh|{h}|legitimate', *details['domain'])
+                    elif 'description' in details:
+                        p.hset('known_content', h, details['description'])
+            else:
+                for h, details in file_content.items():
+                    p.sadd(f'bh|{h}|legitimate', *details['hostnames'])
+        p.execute()
+
+    def find_known_content(self, har2tree_container: Union[CrawledTree, HostNode, URLNode]) -> Dict[str, Union[str, List[str]]]:
+        """Return a dictionary of content resources found in the local known_content database, or in SaneJS (if enabled)"""
+        all_ressources_hashes = self._get_resources_hashes(har2tree_container)
+        # Get from local cache of known content all descriptions related to the ressources.
+        if not all_ressources_hashes:
+            return {}
+        known_content_table = dict(zip(all_ressources_hashes,
+                                       self.redis.hmget('known_content', all_ressources_hashes)))
+
+        if self.sanejs and self.sanejs.available:
+            # Query sanejs on the remaining ones
+            to_lookup = [h for h, description in known_content_table.items() if not description]
+            for h, entry in self.sanejs.hashes_lookup(to_lookup).items():
+                libname, version, path = entry[0].split("|")
+                known_content_table[h] = (libname, version, path, len(entry))
+        return {h: details for h, details in known_content_table.items() if details}
+
+    def _filter(self, urlnodes: Union[URLNode, List[URLNode]], known_hashes: Iterable[str]) -> Iterator[Tuple[URLNode, str]]:
+        if isinstance(urlnodes, URLNode):
+            _urlnodes = [urlnodes]
+        else:
+            _urlnodes = urlnodes
+        for urlnode in _urlnodes:
+            for h in urlnode.resources_hashes:
+                if h not in known_hashes:
+                    yield urlnode, h
+
+    def store_known_legitimate_tree(self, tree: CrawledTree):
+        known_content = self.find_known_content(tree)
+        urlnodes = tree.root_hartree.url_tree.traverse()
+        root_hostname = urlsplit(tree.root_url).hostname
+        known_content_file: Path = get_homedir() / 'known_content' / f'{root_hostname}.json'
+        if known_content_file.exists():
+            with open(known_content_file) as f:
+                to_store = json.load(f)
+        else:
+            to_store = {}
+        for urlnode, h in self._filter(urlnodes, known_content):
+            mimetype = ''
+            if h != urlnode.body_hash:
+                # this is the hash of an embeded content so it won't have a filename but has a different mimetype
+                # FIXME: this is ugly.
+                for ressource_mimetype, blobs in urlnode.embedded_ressources.items():
+                    for ressource_h, b in blobs:
+                        if ressource_h == h:
+                            mimetype = ressource_mimetype.split(';')[0]
+                            break
+                    if mimetype:
+                        break
+            else:
+                if urlnode.mimetype:
+                    mimetype = urlnode.mimetype.split(';')[0]
+            if h not in to_store:
+                to_store[h] = {'filenames': set(), 'description': '', 'hostnames': set(), 'mimetype': mimetype}
+            else:
+                to_store[h]['filenames'] = set(to_store[h]['filenames'])
+                to_store[h]['hostnames'] = set(to_store[h]['hostnames'])
+
+            to_store[h]['hostnames'].add(urlnode.hostname)
+            if urlnode.url_split.path:
+                filename = Path(urlnode.url_split.path).name
+                if filename:
+                    to_store[h]['filenames'].add(filename)
+
+        with open(known_content_file, 'w') as f:
+            json.dump(to_store, f, indent=2, default=dump_to_json)
+
+    def mark_as_legitimate(self, tree: CrawledTree, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> None:
+        if hostnode_uuid:
+            urlnodes = tree.root_hartree.get_host_node_by_uuid(hostnode_uuid).urls
+        elif urlnode_uuid:
+            urlnodes = [tree.root_hartree.get_url_node_by_uuid(urlnode_uuid)]
+        else:
+            urlnodes = tree.root_hartree.url_tree.traverse()
+            self.store_known_legitimate_tree(tree)
+        known_content = self.find_known_content(tree)
+        pipeline = self.redis.pipeline()
+        for urlnode, h in self._filter(urlnodes, known_content):
+            # Note: we can have multiple hahes on the same urlnode (see embedded resources).
+            # They are expected to be on the same domain as urlnode. This code work as expected.
+            pipeline.sadd(f'bh|{h}|legitimate', urlnode.hostname)
+        pipeline.execute()
+
+    def contextualize_tree(self, tree: CrawledTree) -> CrawledTree:
+        hostnodes_with_malicious_content = set()
+        known_content = self.find_known_content(tree)
+        for urlnode in tree.root_hartree.url_tree.traverse():
+            if urlnode.empty_response:
+                continue
+
+            malicious = self.is_malicious(urlnode, known_content)
+            if malicious is True:
+                urlnode.add_feature('malicious', malicious)
+                hostnodes_with_malicious_content.add(urlnode.hostnode_uuid)
+            elif malicious is False:
+                # Marked as legitimate
+                urlnode.add_feature('legitimate', True)
+            elif not urlnode.empty_response and urlnode.body_hash in known_content:
+                urlnode.add_feature('legitimate', True)
+
+        for hostnode_with_malicious_content in hostnodes_with_malicious_content:
+            hostnode = tree.root_hartree.get_host_node_by_uuid(hostnode_with_malicious_content)
+            hostnode.add_feature('malicious', malicious)
+
+        for hostnode in tree.root_hartree.hostname_tree.traverse():
+            if 'malicious' not in hostnode.features:
+                if all(urlnode.empty_response for urlnode in hostnode.urls):
+                    hostnode.add_feature('all_empty', True)
+                    continue
+
+                legit = [urlnode.legitimate for urlnode in hostnode.urls if hasattr(urlnode, 'legitimate')]
+                if len(legit) == len(hostnode.urls) and all(legit):
+                    hostnode.add_feature('legitimate', True)
+
+        return tree
+
+    def legitimate_body(self, body_hash: str, legitimate_hostname: str) -> None:
+        self.redis.sadd(f'bh|{body_hash}|legitimate', legitimate_hostname)
+
+    def store_known_malicious_ressource(self, ressource_hash: str, details: Dict[str, str]):
+        known_malicious_ressource_file = get_homedir() / 'known_content' / 'malicious.json'
+        if known_malicious_ressource_file.exists():
+            with open(known_malicious_ressource_file) as f:
+                to_store = json.load(f)
+        else:
+            to_store = {}
+
+        if ressource_hash not in to_store:
+            to_store[ressource_hash] = {'target': set(), 'tag': set()}
+        else:
+            to_store[ressource_hash]['target'] = set(to_store[ressource_hash]['target'])
+            to_store[ressource_hash]['tag'] = set(to_store[ressource_hash]['tag'])
+
+        if 'target' in details:
+            to_store[ressource_hash]['target'].add(details['target'])
+        if 'type' in details:
+            to_store[ressource_hash]['tag'].add(details['type'])
+
+        with open(known_malicious_ressource_file, 'w') as f:
+            json.dump(to_store, f, indent=2, default=dump_to_json)
+
+    def add_malicious(self, ressource_hash: str, details: Dict[str, str]):
+        self.store_known_malicious_ressource(ressource_hash, details)
+        p = self.redis.pipeline()
+        p.sadd('bh|malicious', ressource_hash)
+        if 'target' in details:
+            p.sadd(f'{ressource_hash}|target', details['target'])
+        if 'type' in details:
+            p.sadd(f'{ressource_hash}|tag', details['type'])
+        p.execute()
+
+    def store_known_legitimate_ressource(self, ressource_hash: str, details: Dict[str, str]):
+        known_legitimate_ressource_file = get_homedir() / 'known_content' / 'legitimate.json'
+        if known_legitimate_ressource_file.exists():
+            with open(known_legitimate_ressource_file) as f:
+                to_store = json.load(f)
+        else:
+            to_store = {}
+
+        if ressource_hash not in to_store:
+            to_store[ressource_hash] = {'domain': set(), 'description': ''}
+        else:
+            to_store[ressource_hash]['domain'] = set(to_store[ressource_hash]['domain'])
+
+        if 'domain' in details:
+            to_store[ressource_hash]['domain'].add(details['domain'])
+        if 'description' in details:
+            to_store[ressource_hash]['description'] = details['description']
+
+        with open(known_legitimate_ressource_file, 'w') as f:
+            json.dump(to_store, f, indent=2, default=dump_to_json)
+
+    def add_legitimate(self, ressource_hash: str, details: Dict[str, str]):
+        self.store_known_legitimate_ressource(ressource_hash, details)
+        if 'domain' in details:
+            self.redis.sadd(f'bh|{ressource_hash}|legitimate', details['domain'])
+        elif 'description' in details:
+            # Library
+            self.redis.hset('known_content', ressource_hash, details['description'])
+
+    # Query DB
+
+    def is_legitimate(self, urlnode: URLNode, known_hashes: Iterable[str]) -> Optional[bool]:
+        """3 cases:
+            * True if *all* the contents are known legitimate
+            * False if *any* content is malicious
+            * None in all other cases
+        """
+        status: List[Optional[bool]] = []
+        for urlnode, h in self._filter(urlnode, known_hashes):
+            # Note: we can have multiple hahes on the same urlnode (see embedded resources).
+            # They are expected to be on the same domain as urlnode. This code work as expected.
+            if self.redis.sismember('bh|malicious', h):
+                # Malicious, no need to go any further
+                return False
+            hostnames = self.redis.smembers(f'bh|{h}|legitimate')
+            if hostnames:
+                if urlnode.hostname in hostnames:
+                    status.append(True)  # legitimate
+                    continue
+                else:
+                    return False  # Malicious
+            else:
+                # NOTE: we do not return here, because we want to return False if *any* of the contents is malicious
+                status.append(None)  # Unknown
+        if status and all(status):
+            return True  # All the contents are known legitimate
+        return None
+
+    def is_malicious(self, urlnode: URLNode, known_hashes: Iterable[str]) -> Optional[bool]:
+        """3 cases:
+            * True if *any* content is malicious
+            * False if *all* the contents are known legitimate
+            * None in all other cases
+        """
+        legitimate = self.is_legitimate(urlnode, known_hashes)
+        if legitimate:
+            return False
+        elif legitimate is False:
+            return True
+        return None
+
+    def legitimacy_details(self, urlnode: URLNode, known_hashes: Iterable[str]) -> Dict[str, Tuple[bool, Optional[List[str]]]]:
+        to_return = {}
+        for urlnode, h in self._filter(urlnode, known_hashes):
+            # Note: we can have multiple hahes on the same urlnode (see embedded resources).
+            # They are expected to be on the same domain as urlnode. This code work as expected.
+            hostnames = self.redis.smembers(f'bh|{h}|legitimate')
+            if hostnames:
+                if urlnode.hostname in hostnames:
+                    to_return[h] = (True, hostnames)
+                else:
+                    to_return[h] = (False, hostnames)
+            elif self.redis.sismember('bh|malicious', urlnode.body_hash):
+                to_return[h] = (False, None)
+        return to_return
 
 
 class Lookyloo():
@@ -183,6 +472,11 @@ class Lookyloo():
                 self.sanejs = SaneJavaScript(self.configs['modules']['SaneJS'])
                 if not self.sanejs.available:
                     self.logger.warning('Unable to setup the SaneJS module')
+
+        if hasattr(self, 'sanejs') and self.sanejs.available:
+            self.context = Context(self.sanejs)
+        else:
+            self.context = Context()
 
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
@@ -259,6 +553,16 @@ class Lookyloo():
 
         return ct
 
+    def add_context(self, capture_uuid: str, urlnode_uuid: str, ressource_hash: str, legitimate: bool, malicious: bool, details: Dict[str, Dict[str, str]]):
+        if malicious:
+            self.context.add_malicious(ressource_hash, details['malicious'])
+        if legitimate:
+            self.context.add_legitimate(ressource_hash, details['legitimate'])
+
+    def add_to_legitimate(self, capture_uuid: str, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None):
+        ct = self.get_crawled_tree(capture_uuid)
+        self.context.mark_as_legitimate(ct, hostnode_uuid, urlnode_uuid)
+
     def load_tree(self, capture_uuid: str) -> Tuple[str, str, str, str, Dict[str, str]]:
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
@@ -268,6 +572,7 @@ class Lookyloo():
             with open((capture_dir / 'meta'), 'r') as f:
                 meta = json.load(f)
         ct = self.get_crawled_tree(capture_uuid)
+        ct = self.context.contextualize_tree(ct)
         return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
 
     def remove_pickle(self, capture_uuid: str) -> None:
@@ -739,17 +1044,6 @@ class Lookyloo():
                     captures_list['different_url'].append((h_capture_uuid, url_uuid, cache['title'], cache['timestamp'], url_hostname))
         return captures_list
 
-    def _format_sane_js_response(self, lookup_table: Dict, h: str) -> Optional[Union[str, Tuple]]:
-        if lookup_table.get(h):
-            if isinstance(lookup_table[h], list):
-                libname, version, path = lookup_table[h][0].split("|")
-                other_files = len(lookup_table[h])
-                return libname, version, path, other_files
-            else:
-                # Predefined generic file
-                return lookup_table[h]
-        return None
-
     def get_hostnode_investigator(self, capture_uuid: str, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
@@ -762,10 +1056,7 @@ class Lookyloo():
         if not hostnode:
             raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
 
-        sanejs_lookups: Dict[str, List[str]] = {}
-        if hasattr(self, 'sanejs') and self.sanejs.available:
-            to_lookup = [url.body_hash for url in hostnode.urls if hasattr(url, 'body_hash')]
-            sanejs_lookups = self.sanejs.hashes_lookup(to_lookup)
+        known_content = self.context.find_known_content(hostnode)
 
         urls: List[Dict[str, Any]] = []
         for url in hostnode.urls:
@@ -773,10 +1064,11 @@ class Lookyloo():
             # * https vs http
             # * everything after the domain
             # * the full URL
+            legit_details = self.context.legitimacy_details(url, known_content)
             to_append: Dict[str, Any] = {
                 'encrypted': url.name.startswith('https'),
                 'url_path': url.name.split('/', 3)[-1],
-                'url_object': url
+                'url_object': url,
             }
 
             if not url.empty_response:
@@ -797,21 +1089,16 @@ class Lookyloo():
                                 continue
                             freq_embedded = self.indexing.body_hash_fequency(h)
                             to_append['embedded_ressources'][h] = freq_embedded
+                            to_append['embedded_ressources'][h]['body_size'] = blob.getbuffer().nbytes
                             to_append['embedded_ressources'][h]['type'] = mimetype
                             if freq_embedded['hash_freq'] > 1:
                                 to_append['embedded_ressources'][h]['other_captures'] = self.hash_lookup(h, url.name, capture_uuid)
-                    if hasattr(self, 'sanejs') and self.sanejs.available:
-                        to_lookup = list(to_append['embedded_ressources'].keys())
-                        sanejs_lookups_embedded = self.sanejs.hashes_lookup(to_lookup)
-                        for h in to_append['embedded_ressources'].keys():
-                            sane_js_match = self._format_sane_js_response(sanejs_lookups_embedded, h)
-                            if sane_js_match:
-                                to_append['embedded_ressources'][h]['sane_js'] = sane_js_match
+                    for h in to_append['embedded_ressources'].keys():
+                        to_append['embedded_ressources'][h]['known_content'] = known_content.get(h)
+                        to_append['embedded_ressources'][h]['legitimacy'] = legit_details.get(h)
 
-                # Optional: SaneJS information
-                sane_js_match = self._format_sane_js_response(sanejs_lookups, url.body_hash)
-                if sane_js_match:
-                    to_append['sane_js'] = sane_js_match
+                to_append['known_content'] = known_content.get(url.body_hash)
+                to_append['legitimacy'] = legit_details.get(url.body_hash)
 
             # Optional: Cookies sent to server in request -> map to nodes who set the cookie in response
             if hasattr(url, 'cookies_sent'):

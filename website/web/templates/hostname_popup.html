@@ -1,5 +1,6 @@
 {% extends "main.html" %}
-{% from "macros.html" import sanejs_details %}
+{% from "macros.html" import known_content_details %}
+{% from "macros.html" import ressource_legitimacy_details %}
 {% from "macros.html" import indexed_hash %}
 {% from "macros.html" import indexed_cookies %}
 {% from "macros.html" import popup_icons %}
@@ -61,8 +62,8 @@
   {# Headers #}
   <center>
     <h3>{{ hostname }}</h3>
-    <button type="button" class="btn btn-info" onclick="whereAmI('{{ hostname_uuid }}')">Locate in tree</button>
-    <a href="{{ url_for('hostnode_details_text', tree_uuid=tree_uuid, node_uuid=hostname_uuid) }}" class="btn btn-info" role="button">Download URLs as text</a>
+    <button type="button" class="btn btn-info" onclick="whereAmI('{{ hostode_uuid }}')">Locate in tree</button>
+    <a href="{{ url_for('hostnode_details_text', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-info" role="button">Download URLs as text</a>
   </center>
   {# Start list of URLs #}
   <ul class="list-group-flush">
@@ -126,15 +127,16 @@
           </p>
           {{ popup_icons(keys_response, url['url_object'], tree_uuid) }}
 
+          <div>
           {% if url['url_object'].empty_response %}
           Empty body.
           {% else %}
-          Body size: {{ sizeof_fmt(url['url_object'].body.getbuffer().nbytes) }}
+          {{ ressource_legitimacy_details(url['legitimacy'], url['url_object'].body.getbuffer().nbytes) }}
           {%endif%}
+          </div>
 
-          {% if url['sane_js'] %}
-            {# Result from SaneJS for the response #}
-            {{ sanejs_details(url['sane_js']) }}
+          {% if url['known_content'] %}
+            {{ known_content_details(url['known_content']) }}
           {% endif %}
 
           {# Everything we know about the response content #}
@@ -156,6 +158,49 @@
             </p>
           </div>
           {% endif %}
+          {% if enable_context_by_users%}
+          <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#context_response_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseContextForm">
+            <span class="if-collapsed">Add context</span>
+            <span class="if-not-collapsed">Hide context form</span>
+          </button>
+          <div class="collapse" id="context_response_{{ url['url_object'].uuid }}">
+            <div class="card card-body">
+                <form role="form" action="{{ url_for('add_context', tree_uuid=tree_uuid, urlnode_uuid=url['url_object'].uuid) }}" method=post enctype=multipart/form-data>
+                  <div class="form-group">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="legitimate" id="legitimate">
+                      <label for="legitimate" class="form-check-label">Legitimate</label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="legitimate_domain">Domain serving the file when considered legitimate:</label>
+                    <input type="text" class="form-control" name="legitimate_domain" id="legitimate_domain" placeholder="Domain name">
+                  </div>
+                  <div class="form-group">
+                    <label for="legitimate_description">Other context for this content (library name, owner, ...):</label>
+                    <input type="text" class="form-control" name="legitimate_description" id="legitimate_description" placeholder="Description">
+                  </div>
+                  <div class="form-group">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="malicious"></input>
+                      <label for="malicious" class="form-check-label">Malicious</label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="malicious_type">Type of malicious content (phishing, malware, ...):</label>
+                    <input type="text" class="form-control" name="malicious_type" id="malicious_type" placeholder="Type of malicious content">
+                  </div>
+                  <div class="form-group">
+                    <label for="malicious_target">Legitimate target of the malicious content (expecially for phishing):</label>
+                    <input type="text" class="form-control" name="malicious_target" id="malicious_target" placeholder="Target">
+                  </div>
+                  <input type="hidden" id="hash_to_contextualize" name="hash_to_contextualize" value="{{url['url_object'].body_hash}}">
+                  <input type="hidden" id="hostnode_uuid" name="hostnode_uuid" value="{{hostnode_uuid}}">
+                  <button type="submit" class="btn btn-primary" id="btn-looking">Submit context</button>
+                </form>
+            </div>
+          </div>
+          {% endif %}
 
           {% if url['embedded_ressources'] %}
           {# Details on embedded resources #}
@@ -168,10 +213,10 @@
           <div class="collapse" id="embedded_full_list_{{ url['url_object'].uuid }}">
             <div class="card card-body">
               {% for hash, details in url['embedded_ressources'].items() %}
-              {% if details['sane_js'] %}
-                {# Result from SaneJS for the embedded ressources #}
-                {{ sanejs_details(details['sane_js']) }}
+              {% if details['known_content'] %}
+                {{ known_content_details(details['known_content']) }}
               {% endif %}
+              {{ ressource_legitimacy_details(details['legitimacy'], details['body_size']) }}
               <div>
                   This file (<b>{{ details['type'] }}</b>) can be found <b>{{ details['hash_freq'] }}</b> times
                 across all the captures on this lookyloo instance, in <b>{{ details['hash_domains_freq'] }}</b> unique domains.

@@ -93,13 +93,16 @@
         </li>
         {% endif %}
         <li>
-          <a href="#unflag" role="button" onclick="UnflagAllNodes();">Unflag all nodes</a>
+          <a href="#/" role="button" onclick="UnflagAllNodes();">Unflag all nodes</a>
         </li>
         <li>
           <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">Download screenshot</a>
         </li>
         <li>
           <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" role="button">Show screenshot</a>
+        </li>
+        <li>
+          <a href="#/" role="button" onclick="MarkAsLegitimate('{{ tree_uuid }}');">Mark capture as legitimate</a>
         </li>
         {% if enable_mail_notification %}
         <li>
