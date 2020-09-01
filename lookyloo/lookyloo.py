@@ -423,7 +423,7 @@ class Context():
 
     # Query DB
 
-    def is_legitimate(self, urlnode: URLNode, known_hashes: Iterable[str]) -> Optional[bool]:
+    def is_legitimate(self, urlnode: URLNode, known_hashes: Dict[str, Any]) -> Optional[bool]:
         """
         If legitimate if generic, marked as legitimate or known on sanejs, loaded from the right domain
         3 cases:
@@ -451,7 +451,7 @@ class Context():
             return True  # All the contents are known legitimate
         return None
 
-    def is_malicious(self, urlnode: URLNode, known_hashes: Iterable[str]) -> Optional[bool]:
+    def is_malicious(self, urlnode: URLNode, known_hashes: Dict[str, Any]) -> Optional[bool]:
         """3 cases:
             * True if *any* content is malicious
             * False if *all* the contents are known legitimate
@@ -1060,7 +1060,7 @@ class Lookyloo():
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
-    def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> Dict[str, List[Tuple[str, str, str, str, str]]]:
+    def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> Tuple[int, Dict[str, List[Tuple[str, str, str, str, str]]]]:
         captures_list: Dict[str, List[Tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
         total_captures, details = self.indexing.get_body_hash_captures(blob_hash, url)
         for h_capture_uuid, url_uuid, url_hostname, same_url in details:

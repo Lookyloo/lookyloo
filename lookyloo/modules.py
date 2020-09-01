@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Any, Optional, List, Union
+from typing import Dict, Any, Optional, List, Union, Iterable
 from datetime import date
 import hashlib
 import json
@@ -31,9 +31,9 @@ class SaneJavaScript():
         self.storage_dir = get_homedir() / 'sanejs'
         self.storage_dir.mkdir(parents=True, exist_ok=True)
 
-    def hashes_lookup(self, sha512: Union[List[str], str], force: bool=False) -> Dict[str, List[str]]:
+    def hashes_lookup(self, sha512: Union[Iterable[str], str], force: bool=False) -> Dict[str, List[str]]:
         if isinstance(sha512, str):
-            hashes = [sha512]
+            hashes: Iterable[str] = [sha512]
         else:
             hashes = sha512
 
