@@ -191,9 +191,9 @@ class Context():
                 # User defined as malicious
                 for h, details in file_content.items():
                     p.sadd('bh|malicious', h)
-                    if 'target' in details:
+                    if 'target' in details and details['target']:
                         p.sadd(f'{h}|target', *details['target'])
-                    if 'tag' in details:
+                    if 'tag' in details and details['tag']:
                         p.sadd(f'{h}|tag', *details['tag'])
             elif filename == 'legitimate':
                 # User defined as legitimate
