@@ -40,10 +40,10 @@ class SaneJavaScript():
         today_dir = self.storage_dir / date.today().isoformat()
         today_dir.mkdir(parents=True, exist_ok=True)
         sanejs_unknowns = today_dir / 'unknown'
-        unknown_hashes = []
+        unknown_hashes = set()
         if sanejs_unknowns.exists():
             with sanejs_unknowns.open() as f:
-                unknown_hashes = [line.strip() for line in f.readlines()]
+                unknown_hashes = set(line.strip() for line in f.readlines())
 
         to_return: Dict[str, List[str]] = {}
 
@@ -52,6 +52,7 @@ class SaneJavaScript():
         else:
             to_lookup = [h for h in hashes if (h not in unknown_hashes
                                                and not (today_dir / h).exists())]
+        has_new_unknown = False
         for h in to_lookup:
             response = self.client.sha512(h)
             if 'error' in response:
@@ -63,7 +64,8 @@ class SaneJavaScript():
                     json.dump(response['response'], f)
                 to_return[h] = response['response']
             else:
-                unknown_hashes.append(h)
+                has_new_unknown = True
+                unknown_hashes.add(h)
 
         for h in hashes:
             cached_path = today_dir / h
@@ -73,8 +75,10 @@ class SaneJavaScript():
                 with cached_path.open() as f:
                     to_return[h] = json.load(f)
 
-        with sanejs_unknowns.open('w') as f:
-            f.writelines(f'{h}\n' for h in unknown_hashes)
+        if has_new_unknown:
+            with sanejs_unknowns.open('w') as f:
+                f.writelines(f'{h}\n' for h in unknown_hashes)
+
         return to_return
 
 

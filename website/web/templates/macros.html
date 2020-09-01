@@ -19,21 +19,28 @@
 Body size: {{ sizeof_fmt(ressource_size) }}
 {% if details %}
   {% if details[0] %}
-    - This file is known <b>legitimate</b>.
+  - This file is known <b>legitimate</b> on the following domains: {{ ', '.join(details[1]) }}.
   {% elif details[0] == False %}
-    {% if details[1] is iterable %}
-      </br>
-      The response sould be considered as <b>phishing</b> unless it is served by <b>the following domain(s)</b>: {{ ', '.join(details[1]) }}
-      </br>
+    </br>
+    The response sould be considered as
+    {% if details[1] is mapping and details[1].get('tag') %}
+    <b>{{ ', '.join(details[1]['tag']) }}</b>
     {% else %}
-      - The response is known <b>malicious</b>.
+    <b>phishing</b>
     {%endif%}
+    {% if details[1] is mapping and details[1].get('target') %}
+      unless it is served by <b>the following domain(s)</b>: {{ ', '.join(details[1]['target']) }}
+    {% else %}
+      unless it is served by <b>the following domain(s)</b>: {{ ', '.join(details[1]) }}
+    {%endif%}
+    </br>
   {%endif%}
 {%endif%}
 {% endmacro %}
 
 {% macro indexed_hash(details, identifier_for_toggle) %}
-{% set total_captures = details['different_url']|length + details['same_url']|length %}
+{% set total_captures = details[0] %}
+{% set other_captures = details[1] %}
 {# Only show details if the hits are in an other capture #}
 {% if total_captures > 0  %}
 <p>
@@ -46,19 +53,19 @@ Body size: {{ sizeof_fmt(ressource_size) }}
 {# Lists of other captures loading the same content... #}
 <div class="collapse" id="captureslist_{{ identifier_for_toggle }}">
   <div class="card card-body">
-    {% if details['different_url']|length > 0 %}
+    {% if other_captures['different_url']|length > 0 %}
     {# ... on other URLs #}
     <div>
       <p>The following captures get the same file from a <b>different URL</b></p>
-      {{ other_captures_table(details['different_url']) }}
+      {{ other_captures_table(other_captures['different_url']) }}
     </div>
     {% endif %}
     </br>
-    {% if details['same_url']|length > 0 %}
+    {% if other_captures['same_url']|length > 0 %}
     {# ... on the same URL #}
     <div>
       <p>The following captures get the same file from the <b>same URL</b></p>
-      {{ other_captures_table(details['same_url']) }}
+      {{ other_captures_table(other_captures['same_url']) }}
     </div>
     {% endif %}
   </div>
