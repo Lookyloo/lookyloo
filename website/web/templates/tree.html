@@ -101,9 +101,11 @@
         <li>
           <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" role="button">Show screenshot</a>
         </li>
+        {% if enable_context_by_users %}
         <li>
           <a href="#/" role="button" onclick="MarkAsLegitimate('{{ tree_uuid }}');">Mark capture as legitimate</a>
         </li>
+        {% endif %}
         {% if enable_mail_notification %}
         <li>
           <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Notify by mail</a>
