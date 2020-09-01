@@ -424,10 +424,15 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
             enable_mail_notification = True
         else:
             enable_mail_notification = False
+        if lookyloo.get_config('enable_context_by_users'):
+            enable_context_by_users = True
+        else:
+            enable_context_by_users = False
         tree_json, start_time, user_agent, root_url, meta = lookyloo.load_tree(tree_uuid)
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
                                meta=meta, enable_mail_notification=enable_mail_notification,
+                               enable_context_by_users=enable_context_by_users,
                                blur_screenshot=blur_screenshot,
                                urlnode_uuid=urlnode_uuid, has_redirects=True if cache['redirects'] else False)
 
