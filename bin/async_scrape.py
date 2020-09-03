@@ -11,9 +11,6 @@ from lookyloo.lookyloo import Lookyloo
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO, datefmt='%I:%M:%S')
 
-# Set it to True if your instance is publicly available so users aren't able to scan your internal network
-only_global_lookups = False
-
 
 class AsyncScraper(AbstractManager):
 

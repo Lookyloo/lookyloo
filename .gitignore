@@ -118,3 +118,6 @@ dump.rdb
 # Local config files
 config/*.json
 config/*.json.bkp
+
+# user defined known content
+known_content_user/

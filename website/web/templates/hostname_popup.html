@@ -7,6 +7,7 @@
 {% from "macros.html" import shorten_string %}
 {% from "macros.html" import other_captures_table %}
 {% from "macros.html" import get_ressource_button %}
+{% from "macros.html" import context_form %}
 
 {% block title %}Details for {{ hostname }} {% endblock %}
 
@@ -159,48 +160,8 @@
             </p>
           </div>
           {% endif %}
-          {% if enable_context_by_users%}
-          <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#context_response_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseContextForm">
-            <span class="if-collapsed">Add context</span>
-            <span class="if-not-collapsed">Hide context form</span>
-          </button>
-          <div class="collapse" id="context_response_{{ url['url_object'].uuid }}">
-            <div class="card card-body">
-                <form role="form" action="{{ url_for('add_context', tree_uuid=tree_uuid, urlnode_uuid=url['url_object'].uuid) }}" method=post enctype=multipart/form-data>
-                  <div class="form-group">
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox" name="legitimate" id="legitimate">
-                      <label for="legitimate" class="form-check-label">Legitimate</label>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="legitimate_domain">Domain serving the file when considered legitimate:</label>
-                    <input type="text" class="form-control" name="legitimate_domain" id="legitimate_domain" placeholder="Domain name">
-                  </div>
-                  <div class="form-group">
-                    <label for="legitimate_description">Other context for this content (library name, owner, ...):</label>
-                    <input type="text" class="form-control" name="legitimate_description" id="legitimate_description" placeholder="Description">
-                  </div>
-                  <div class="form-group">
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox" name="malicious"></input>
-                      <label for="malicious" class="form-check-label">Malicious</label>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="malicious_type">Type of malicious content (phishing, malware, ...):</label>
-                    <input type="text" class="form-control" name="malicious_type" id="malicious_type" placeholder="Type of malicious content">
-                  </div>
-                  <div class="form-group">
-                    <label for="malicious_target">Legitimate target of the malicious content (expecially for phishing):</label>
-                    <input type="text" class="form-control" name="malicious_target" id="malicious_target" placeholder="Target">
-                  </div>
-                  <input type="hidden" id="hash_to_contextualize" name="hash_to_contextualize" value="{{url['url_object'].body_hash}}">
-                  <input type="hidden" id="hostnode_uuid" name="hostnode_uuid" value="{{hostnode_uuid}}">
-                  <button type="submit" class="btn btn-primary" id="btn-looking">Submit context</button>
-                </form>
-            </div>
-          </div>
+          {% if enable_context_by_users %}
+            {{ context_form(tree_uuid, url['url_object'].uuid, hostnode_uuid, url['url_object'].body_hash, 'hostnode_popup') }}
           {% endif %}
 
           {% if url['embedded_ressources'] %}

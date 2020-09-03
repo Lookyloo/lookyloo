@@ -475,8 +475,8 @@ def ressources():
     for h, freq in i.ressources:
         domain_freq = i.ressources_number_domains(h)
         context = lookyloo.context.find_known_content(h)
-        capture_uuid, url_uuid = i.get_hash_uuids(h)
-        ressources.append((h, freq, domain_freq, context.get(h), capture_uuid, url_uuid))
+        capture_uuid, url_uuid, hostnode_uuid = i.get_hash_uuids(h)
+        ressources.append((h, freq, domain_freq, context.get(h), capture_uuid, url_uuid, hostnode_uuid))
     return render_template('ressources.html', ressources=ressources)
 
 
@@ -508,6 +508,7 @@ def add_context(tree_uuid: str, urlnode_uuid: str):
     context_data = request.form
     ressource_hash: str = context_data.get('hash_to_contextualize')  # type: ignore
     hostnode_uuid: str = context_data.get('hostnode_uuid')  # type: ignore
+    callback_str: str = context_data.get('callback_str')  # type: ignore
     legitimate: bool = True if context_data.get('legitimate') else False
     malicious: bool = True if context_data.get('malicious') else False
     details: Dict[str, Dict] = {'malicious': {}, 'legitimate': {}}
@@ -526,7 +527,10 @@ def add_context(tree_uuid: str, urlnode_uuid: str):
             legitimate_details['description'] = context_data['legitimate_description']
         details['legitimate'] = legitimate_details
     lookyloo.add_context(tree_uuid, urlnode_uuid, ressource_hash, legitimate, malicious, details)
-    return redirect(url_for('hostnode_popup', tree_uuid=tree_uuid, node_uuid=hostnode_uuid))
+    if callback_str == 'hostnode_popup':
+        return redirect(url_for('hostnode_popup', tree_uuid=tree_uuid, node_uuid=hostnode_uuid))
+    elif callback_str == 'ressources':
+        return redirect(url_for('ressources'))
 
 
 # Query API
