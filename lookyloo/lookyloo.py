@@ -107,6 +107,13 @@ class Indexing():
 
     # ###### Body hashes ######
 
+    @property
+    def ressources(self) -> List[Tuple[str, float]]:
+        return self.redis.zrevrange('body_hashes', 0, 200, withscores=True)
+
+    def ressources_number_domains(self, h: str) -> int:
+        return self.redis.zcard(f'bh|{h}')
+
     def body_hash_fequency(self, body_hash: str) -> Dict[str, float]:
         return {'hash_freq': self.redis.zscore('body_hashes', body_hash),
                 'hash_domains_freq': self.redis.zcard(f'bh|{body_hash}')}
@@ -119,24 +126,21 @@ class Indexing():
 
         pipeline = self.redis.pipeline()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if urlnode.empty_response:
-                continue
-            pipeline.zincrby('body_hashes', 1, urlnode.body_hash)
-            pipeline.zincrby(f'bh|{urlnode.body_hash}', 1, urlnode.hostname)
-            # set of all captures with this hash
-            pipeline.sadd(f'bh|{urlnode.body_hash}|captures', crawled_tree.uuid)
-            # ZSet of all urlnode_UUIDs|full_url
-            pipeline.zincrby(f'bh|{urlnode.body_hash}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
-            if hasattr(urlnode, 'embedded_ressources') and urlnode.embedded_ressources:
-                for mimetype, blobs in urlnode.embedded_ressources.items():
-                    for h, body in blobs:
-                        pipeline.zincrby('body_hashes', 1, h)
-                        pipeline.zincrby(f'bh|{h}', 1, urlnode.hostname)
-                        pipeline.sadd(f'bh|{h}|captures', crawled_tree.uuid)
-                        pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1,
-                                         f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
+            for h in urlnode.resources_hashes:
+                pipeline.zincrby('body_hashes', 1, h)
+                pipeline.zincrby(f'bh|{h}', 1, urlnode.hostname)
+                # set of all captures with this hash
+                pipeline.sadd(f'bh|{h}|captures', crawled_tree.uuid)
+                # ZSet of all urlnode_UUIDs|full_url
+                pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
 
         pipeline.execute()
+
+    def get_hash_uuids(self, body_hash: str) -> Tuple[str, str]:
+        capture_uuid = self.redis.srandmember(f'bh|{body_hash}|captures')
+        entry = self.redis.zrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, 1)[0]
+        urlnode_uuid, hostnode_uuid, url = entry.split('|', 2)
+        return capture_uuid, urlnode_uuid
 
     def get_body_hash_captures(self, body_hash: str, filter_url: Optional[str]=None,
                                limit: int=20) -> Tuple[int, List[Tuple[str, str, str, bool]]]:
@@ -208,9 +212,12 @@ class Context():
                     p.sadd(f'bh|{h}|legitimate', *details['hostnames'])
         p.execute()
 
-    def find_known_content(self, har2tree_container: Union[CrawledTree, HostNode, URLNode]) -> Dict[str, Any]:
+    def find_known_content(self, har2tree_container: Union[CrawledTree, HostNode, URLNode, str]) -> Dict[str, Any]:
         """Return a dictionary of content resources found in the local known_content database, or in SaneJS (if enabled)"""
-        to_lookup: Set[str] = self._get_resources_hashes(har2tree_container)
+        if isinstance(har2tree_container, str):
+            to_lookup: Set[str] = {har2tree_container, }
+        else:
+            to_lookup: Set[str] = self._get_resources_hashes(har2tree_container)
         known_content_table: Dict[str, Any] = {}
         if not to_lookup:
             return known_content_table
@@ -1092,6 +1099,22 @@ class Lookyloo():
             legitimate = (False, known_content[h]['details'])
 
         return known, legitimate
+
+    def get_ressource(self, tree_uuid: str, urlnode_uuid: str, h: Optional[str]) -> Optional[Tuple[str, BytesIO]]:
+        url = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
+        if url.empty_response:
+            return None
+        if not h or h == url.body_hash:
+            # we want the body
+            return url.filename if url.filename else 'file.bin', url.body
+
+        # We want an embedded ressource
+        if h not in url.resources_hashes:
+            return None
+        for mimetype, blobs in url.embedded_ressources.items():
+            for ressource_h, blob in blobs:
+                if ressource_h == h:
+                    return 'embedded_ressource.bin', blob
 
     def get_hostnode_investigator(self, capture_uuid: str, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
         capture_dir = self.lookup_capture_dir(capture_uuid)

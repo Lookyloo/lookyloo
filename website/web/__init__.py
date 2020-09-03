@@ -248,42 +248,20 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str):
                      as_attachment=True, attachment_filename='posted_data.txt')
 
 
-@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/embedded_ressource', methods=['POST'])
-def get_embedded_ressource(tree_uuid: str, node_uuid: str):
-    url = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
-    h_request = request.form.get('ressource_hash')
-    for mimetype, blobs in url.embedded_ressources.items():
-        for h, blob in blobs:
-            if h == h_request:
-                to_return = BytesIO()
-                with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
-                    zfile.writestr('file.bin', blob.getvalue())
-                to_return.seek(0)
-                return send_file(to_return, mimetype='application/zip',
-                                 as_attachment=True, attachment_filename='file.zip')
-
-
-@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>', methods=['GET'])
-def urlnode_details(tree_uuid: str, node_uuid: str):
-    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource', methods=['POST', 'GET'])
+def get_ressource(tree_uuid: str, node_uuid: str):
+    if request.method == 'POST':
+        h_request = request.form.get('ressource_hash')
+    else:
+        h_request = None
+    ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_request)
     to_return = BytesIO()
-    got_content = False
-    if hasattr(urlnode, 'body'):
-        body_content = urlnode.body.getvalue()
-        if body_content:
-            got_content = True
-            if hasattr(urlnode, 'json') and urlnode.json:
-                try:
-                    loaded = json.loads(body_content)
-                    body_content = json.dumps(loaded, indent=2).encode()
-                except Exception:
-                    # Not json, but junk
-                    pass
-            with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
-                zfile.writestr(urlnode.filename, body_content)
-    if not got_content:
-        with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
-            zfile.writestr('file.txt', b'Response body empty')
+    with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
+        if ressource:
+            filename, r = ressource
+            zfile.writestr(filename, r.getvalue())
+        else:
+            zfile.writestr('file.txt', b'Unknown Hash')
     to_return.seek(0)
     return send_file(to_return, mimetype='application/zip',
                      as_attachment=True, attachment_filename='file.zip')
@@ -488,6 +466,18 @@ def cookies_lookup():
     i = Indexing()
     cookies_names = [(name, freq, i.cookies_names_number_domains(name)) for name, freq in i.cookies_names]
     return render_template('cookies.html', cookies_names=cookies_names)
+
+
+@app.route('/ressources', methods=['GET'])
+def ressources():
+    i = Indexing()
+    ressources = []
+    for h, freq in i.ressources:
+        domain_freq = i.ressources_number_domains(h)
+        context = lookyloo.context.find_known_content(h)
+        capture_uuid, url_uuid = i.get_hash_uuids(h)
+        ressources.append((h, freq, domain_freq, context.get(h), capture_uuid, url_uuid))
+    return render_template('ressources.html', ressources=ressources)
 
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])

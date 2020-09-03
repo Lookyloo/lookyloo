@@ -6,6 +6,7 @@
 {% from "macros.html" import popup_icons %}
 {% from "macros.html" import shorten_string %}
 {% from "macros.html" import other_captures_table %}
+{% from "macros.html" import get_ressource_button %}
 
 {% block title %}Details for {{ hostname }} {% endblock %}
 
@@ -220,9 +221,7 @@
               <div>
                   This file (<b>{{ details['type'] }}</b>) can be found <b>{{ details['hash_freq'] }}</b> times
                 across all the captures on this lookyloo instance, in <b>{{ details['hash_domains_freq'] }}</b> unique domains.
-                <form method="post" action="{{ url_for('get_embedded_ressource', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-                  <button class="btn btn-primary" name="ressource_hash" value="{{ hash }}">Download the embedded ressource</button>
-                </form>
+                {{ get_ressource_button(tree_uuid, url['url_object'].uuid, hash, 'Download the embedded ressource') }}
                 </br>
 
                 {% if 'other_captures' in details %}
