@@ -1,0 +1,56 @@
+{% extends "main.html" %}
+
+{% from 'bootstrap/utils.html' import render_messages %}
+{% from 'macros.html' import shorten_string %}
+{% from 'macros.html' import get_ressource_button %}
+{% from 'macros.html' import context_form %}
+
+{% block title %}Ressources{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src='{{ url_for('static', filename='datatables.min.js') }}'></script>
+<script type="text/javascript">
+    $('#table').DataTable( {
+        "order": [[ 2, "desc" ]],
+        "pageLength": 500
+    });
+</script>
+
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='datatables.min.css') }}">
+{% endblock %}
+
+
+{% block content %}
+  <div class="table-responsive">
+  <table id="table" class="table" style="width:96%">
+    <thead>
+     <tr>
+       <th>SHA 521</th>
+       <th>Frequency</th>
+       <th>Number unique domains</th>
+       <th>Context</th>
+     </tr>
+    </thead>
+    <tbody>
+      {% for h, freq, number_domains, context, capture_uuid, urlnode_uuid, hostnode_uuid in ressources %}
+      <tr>
+        <td>
+          <a href="{{ url_for('body_hash_details', body_hash=h) }}">{{ shorten_string(h, 20) }}</a></br>
+          {{ get_ressource_button(capture_uuid, urlnode_uuid, h, 'Download sample') }}
+        </td>
+        <td>{{ freq }}</td>
+        <td>{{ number_domains }}</td>
+        <td> {{ context['type'] }} - {{ context['details'] }}</br>
+          {{ context_form(capture_uuid, urlnode_uuid, hostnode_uuid, h, 'ressources') }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% endblock %}

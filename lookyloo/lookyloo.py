@@ -115,8 +115,8 @@ class Indexing():
         return self.redis.zcard(f'bh|{h}')
 
     def body_hash_fequency(self, body_hash: str) -> Dict[str, float]:
-        return {'hash_freq': self.redis.zscore('body_hashes', body_hash),
-                'hash_domains_freq': self.redis.zcard(f'bh|{body_hash}')}
+        return {'hash_freq': int(self.redis.zscore('body_hashes', body_hash)),
+                'hash_domains_freq': int(self.redis.zcard(f'bh|{body_hash}'))}
 
     def index_body_hashes_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
@@ -143,17 +143,23 @@ class Indexing():
         return capture_uuid, urlnode_uuid, hostnode_uuid
 
     def get_body_hash_captures(self, body_hash: str, filter_url: Optional[str]=None,
+                               filter_capture_uuid: Optional[str]=None,
                                limit: int=20) -> Tuple[int, List[Tuple[str, str, str, bool]]]:
         to_return: List[Tuple[str, str, str, bool]] = []
         all_captures = self.redis.smembers(f'bh|{body_hash}|captures')
+        len_captures = len(all_captures)
         for capture_uuid in list(all_captures)[:limit]:
+            if capture_uuid == filter_capture_uuid:
+                # Used to skip hits in current capture
+                len_captures -= 1
+                continue
             for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
                 url_uuid, hostnode_uuid, url = entry.split('|', 2)
                 if filter_url:
                     to_return.append((capture_uuid, hostnode_uuid, urlsplit(url).hostname, url == filter_url))
                 else:
                     to_return.append((capture_uuid, hostnode_uuid, urlsplit(url).hostname, False))
-        return len(all_captures), to_return
+        return len_captures, to_return
 
     def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:
         return self.redis.zrevrange(f'bh|{body_hash}', 0, -1, withscores=True)
@@ -1070,11 +1076,8 @@ class Lookyloo():
 
     def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> Tuple[int, Dict[str, List[Tuple[str, str, str, str, str]]]]:
         captures_list: Dict[str, List[Tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
-        total_captures, details = self.indexing.get_body_hash_captures(blob_hash, url)
+        total_captures, details = self.indexing.get_body_hash_captures(blob_hash, url, filter_capture_uuid=capture_uuid)
         for h_capture_uuid, url_uuid, url_hostname, same_url in details:
-            if h_capture_uuid == capture_uuid:
-                # Skip self.
-                continue
             cache = self.capture_cache(h_capture_uuid)
             if cache:
                 if same_url:

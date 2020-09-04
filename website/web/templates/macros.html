@@ -104,6 +104,9 @@ Body size: {{ sizeof_fmt(ressource_size) }}
 {# Lists of other captures loading the same content... #}
 <div class="collapse" id="captureslist_{{ identifier_for_toggle }}">
   <div class="card card-body">
+    {% if total_captures > 20 %}
+      Note that only 20 captures are displayed here.
+    {% endif %}
     {% if other_captures['different_url']|length > 0 %}
     {# ... on other URLs #}
     <div>
@@ -121,8 +124,6 @@ Body size: {{ sizeof_fmt(ressource_size) }}
     {% endif %}
   </div>
 </div>
-{% else %}
-<p>This file is loaded multiple times in this capture.</p>
 {% endif %}
 {% endmacro %}
 

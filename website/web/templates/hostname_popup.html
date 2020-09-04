@@ -43,7 +43,6 @@
   </script>
   <script>
       let whereAmI = (hostnode_uuid) => window.opener.LocateNode(hostnode_uuid);
-      let flag = (hostnode_uuid) => window.opener.NodeHighlight(hostnode_uuid);
       let openTreeInNewTab = (capture_uuid, hostnode_uuid=Null) => window.opener.openTreeInNewTab(capture_uuid, hostnode_uuid);
   </script>
   <script>
@@ -63,8 +62,8 @@
 {% block content %}
   {# Headers #}
   <center>
-    <h3>{{ hostname }}</h3>
-    <button type="button" class="btn btn-info" onclick="whereAmI('{{ hostode_uuid }}')">Locate in tree</button>
+      <h3>{{ hostname }}</h3>
+    <button type="button" class="btn btn-info" onclick="whereAmI('{{ hostnode_uuid }}')">Locate in tree</button>
     <a href="{{ url_for('hostnode_details_text', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-info" role="button">Download URLs as text</a>
   </center>
   {# Start list of URLs #}
