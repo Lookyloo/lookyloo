@@ -38,5 +38,13 @@
   "c99bf4f1351efb28a74fa2504429875d9a63eb2d6a145a060ed487f83ff3a42b6c85d94165b960edca90aceec58d16a6ed37b25f44452bbacd7f5204c15c23cc": {
     "domain": [],
     "description": "Nginx - 302 - HTML"
+  },
+  "4c0326040e2c7837fa78185cc5a185ea43697dd4f3591757f84bda76bac746badfbe047dac2c1dc677561fd6cc6c5d5b4bebb7d671cb82ab04e070da766fe6af": {
+    "domain": [],
+    "description": "Amazon Ads network"
+  },
+  "7f912f0d46c813133ece2374defed93c215da5d5dc67f36711089fdc6aceccc4bd0487545e9378d034b4816dac458ef1f1f32a8ce0702e52a92cf016e6877973": {
+    "domain": [],
+    "description": "amazon-dtb-javascript-api - apstag - v7.53.01"
   }
 }
