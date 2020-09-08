@@ -36,7 +36,6 @@ flask = "^1.1.1"
 gunicorn = {version = "^20.0.4"}
 cchardet = "^2.1.5"
 redis = "^3.3.11"
-pylookyloo = {path = "client"}
 beautifulsoup4 = "^4.8.2"
 bootstrap-flask = "^1.2.0"
 cloudscraper = "^1.2.20"
@@ -47,6 +46,7 @@ pyeupi = "^1.0"
 scrapysplashwrapper = "^1.2"
 pysanejs = "^1.1"
 har2tree = "^1.2"
+pylookyloo = "^1.2"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.761"
