@@ -41,7 +41,7 @@ bootstrap-flask = "^1.2.0"
 cloudscraper = "^1.2.20"
 defang = "^0.5.3"
 vt-py = "^0.5.2"
-Flask-HTTPAuth = "^3.3.0"
+Flask-HTTPAuth = "^4.1.0"
 pyeupi = "^1.0"
 scrapysplashwrapper = "^1.2"
 pysanejs = "^1.1"
@@ -49,7 +49,7 @@ har2tree = "^1.2"
 pylookyloo = "^1.2"
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.761"
+mypy = "^0.782"
 ipython = "^7.13.0"
 
 [build-system]
