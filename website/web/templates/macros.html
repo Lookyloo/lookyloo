@@ -73,6 +73,7 @@ Body size: {{ sizeof_fmt(ressource_size) }}
   - This file is known <b>legitimate</b> on the following domains: {{ ', '.join(details[1]) }}.
   {% elif details[0] == False %}
     </br>
+    <p>
     The response sould be considered as
     {% if details[1] is mapping and details[1].get('tag') %}
     <b>{{ ', '.join(details[1]['tag']) }}</b>
@@ -84,7 +85,7 @@ Body size: {{ sizeof_fmt(ressource_size) }}
     {% else %}
       unless it is served by <b>the following domain(s)</b>: {{ ', '.join(details[1]) }}
     {%endif%}
-    </br>
+    </p>
   {%endif%}
 {%endif%}
 {% endmacro %}

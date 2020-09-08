@@ -565,10 +565,11 @@ class Lookyloo():
         with open((capture_dir / 'uuid'), 'r') as f:
             uuid = f.read()
         har_files = sorted(capture_dir.glob('*.har'))
+        html_files = sorted(capture_dir.glob('*.html'))
         # NOTE: We only index the public captures
         index = True
         try:
-            ct = CrawledTree(har_files, uuid)
+            ct = CrawledTree(zip(har_files, html_files), uuid)
             if self.is_public_instance:
                 cache = self.capture_cache(capture_uuid)
                 if cache.get('no_index') is not None:

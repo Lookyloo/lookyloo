@@ -179,7 +179,7 @@
               {% endif %}
               {{ ressource_legitimacy_details(details['legitimacy'], details['body_size']) }}
               <div>
-                  This file (<b>{{ details['type'] }}</b>) can be found <b>{{ details['hash_freq'] }}</b> times
+                  This file {% if details['type'] %}(<b>{{ details['type'] }}</b>){% endif %} can be found <b>{{ details['hash_freq'] }}</b> times
                 across all the captures on this lookyloo instance, in <b>{{ details['hash_domains_freq'] }}</b> unique domains.
                 {{ get_ressource_button(tree_uuid, url['url_object'].uuid, hash, 'Download the embedded ressource') }}
                 </br>
