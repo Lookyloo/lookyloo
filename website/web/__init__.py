@@ -228,6 +228,15 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
                      mimetype='text/plain', as_attachment=True, attachment_filename='response_cookies.txt')
 
 
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/rendered_content', methods=['GET'])
+def urlnode_rendered_content(tree_uuid: str, node_uuid: str):
+    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
+    if not urlnode.rendered_html:
+        return
+    return send_file(BytesIO(urlnode.rendered_html.getvalue()), mimetype='text/plain',
+                     as_attachment=True, attachment_filename='rendered_content.txt')
+
+
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/posted_data', methods=['GET'])
 def urlnode_post_request(tree_uuid: str, node_uuid: str):
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)

@@ -128,6 +128,12 @@
           </p>
           {{ popup_icons(keys_response, url['url_object'], tree_uuid) }}
 
+          {% if url['url_object'].rendered_html %}
+          <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
+              Download rendered HTML page
+          </a>
+          {% endif %}
+
           <div>
           {% if url['url_object'].empty_response %}
           Empty body.
