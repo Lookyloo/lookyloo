@@ -62,5 +62,11 @@
     "entries": [
       "f90ddd77e400dfe6a3fcf479b00b1ee29e7015c5bb8cd70f5f15b4886cc339275ff553fc8a053f8ddc7324f45168cffaf81f8c3ac93996f6536eef38e5e40768"
     ]
+  },
+  "single_newline": {
+    "description": "Empty file with a single newline",
+    "entries": [
+      "be688838ca8686e5c90689bf2ab585cef1137c999b48c70b92f67a5c34dc15697b5d11c982ed6d71be1e1e7f7b4e0733884aa97c3f7a339a8ed03577cf74be09"
+    ]
   }
 }

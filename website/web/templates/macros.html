@@ -81,7 +81,7 @@ Body size: {{ sizeof_fmt(ressource_size) }}
     <b>phishing</b>
     {%endif%}
     {% if details[1] is mapping and details[1].get('target') %}
-      unless it is served by <b>the following domain(s)</b>: {{ ', '.join(details[1]['target']) }}
+      and is targeting <b>the following domain(s)</b>: {{ ', '.join(details[1]['target']) }}
     {% else %}
       unless it is served by <b>the following domain(s)</b>: {{ ', '.join(details[1]) }}
     {%endif%}
