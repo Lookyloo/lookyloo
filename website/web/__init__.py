@@ -502,6 +502,7 @@ def body_hash_details(body_hash: str):
 
 
 @app.route('/tree/<string:tree_uuid>/mark_as_legitimate', methods=['POST'])
+@auth.login_required
 def mark_as_legitimate(tree_uuid: str):
     if request.data:
         legitimate_entries = request.get_json(force=True)
