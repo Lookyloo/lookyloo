@@ -54,7 +54,7 @@ def get_email_template() -> str:
 
 def load_configs(path_to_config_files: Optional[Union[str, Path]]=None):
     global configs
-    if configs is not None:
+    if configs:
         return
     if path_to_config_files:
         if isinstance(path_to_config_files, str):
@@ -77,7 +77,7 @@ def load_configs(path_to_config_files: Optional[Union[str, Path]]=None):
 def get_config(config_type: str, entry: str) -> Any:
     """Get an entry from the given config_type file. Automatic fallback to the sample file"""
     global configs
-    if configs is None:
+    if not configs:
         load_configs()
     if config_type in configs:
         if entry in configs[config_type]:
@@ -85,8 +85,8 @@ def get_config(config_type: str, entry: str) -> Any:
         else:
             logger.warning(f'Unable to find {entry} in config file.')
     else:
-        logger.warning('No generic config file available.')
-    logger.warning('Falling back on sample config, please initialize the generic config file.')
+        logger.warning(f'No {config_type} config file available.')
+    logger.warning(f'Falling back on sample config, please initialize the {config_type} config file.')
     with (get_homedir() / 'config' / f'{config_type}.json.sample').open() as _c:
         sample_config = json.load(_c)
     return sample_config[entry]
