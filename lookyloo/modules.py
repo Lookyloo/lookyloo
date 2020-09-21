@@ -85,7 +85,7 @@ class SaneJavaScript():
 class PhishingInitiative():
 
     def __init__(self, config: Dict[str, Any]):
-        if 'apikey' not in config:
+        if 'apikey' not in config or config['apikey'] is None:
             self.available = False
             return
 
@@ -158,7 +158,7 @@ class PhishingInitiative():
 class VirusTotal():
 
     def __init__(self, config: Dict[str, Any]):
-        if 'apikey' not in config:
+        if 'apikey' not in config or config['apikey'] is None:
             self.available = False
             return
 
