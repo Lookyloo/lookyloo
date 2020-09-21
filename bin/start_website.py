@@ -4,7 +4,7 @@
 import time
 import signal
 from subprocess import Popen
-from lookyloo.helpers import get_homedir, shutdown_requested, set_running, unset_running, get_socket_path
+from lookyloo.helpers import get_homedir, shutdown_requested, set_running, unset_running, get_socket_path, get_config
 from redis import StrictRedis
 
 
@@ -13,10 +13,12 @@ if __name__ == '__main__':
     r.delete('cache_loaded')
     website_dir = get_homedir() / 'website'
     Popen([str(website_dir / '3rdparty.sh')], cwd=website_dir)
+    ip = get_config('generic', 'website_listen_ip')
+    port = get_config('generic', 'website_listen_port')
     try:
-        p = Popen(['gunicorn','-w', '10',
+        p = Popen(['gunicorn', '-w', '10',
                    '--graceful-timeout', '2', '--timeout', '300',
-                   '-b', '0.0.0.0:5100',
+                   '-b', f'{ip}:{port}',
                    '--log-level', 'info',
                    'web:app'],
                   cwd=website_dir)

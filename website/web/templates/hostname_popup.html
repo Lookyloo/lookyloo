@@ -189,6 +189,9 @@
                 across all the captures on this lookyloo instance, in <b>{{ details['hash_domains_freq'] }}</b> unique domains.
                 {{ get_ressource_button(tree_uuid, url['url_object'].uuid, hash, 'Download the embedded ressource') }}
                 </br>
+                {% if enable_context_by_users %}
+                  {{ context_form(tree_uuid, url['url_object'].uuid, hostnode_uuid, hash, 'hostnode_popup') }}
+                {% endif %}
 
                 {% if 'other_captures' in details %}
                   {{ indexed_hash(details['other_captures'], hash) }}

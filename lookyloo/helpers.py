@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
+import logging
 from typing import List, Optional, Dict, Union, Any
 from io import BufferedIOBase
 from pathlib import Path
@@ -22,6 +23,9 @@ try:
     HAS_CF = True
 except ImportError:
     HAS_CF = False
+
+configs: Dict[str, Dict[str, Any]] = {}
+logger = logging.getLogger('Lookyloo - Helpers')
 
 
 def get_homedir() -> Path:
@@ -48,7 +52,10 @@ def get_email_template() -> str:
         return f.read()
 
 
-def load_configs(path_to_config_files: Optional[Union[str, Path]]=None) -> Dict[str, Dict[str, Any]]:
+def load_configs(path_to_config_files: Optional[Union[str, Path]]=None):
+    global configs
+    if configs is not None:
+        return
     if path_to_config_files:
         if isinstance(path_to_config_files, str):
             config_path = Path(path_to_config_files)
@@ -61,11 +68,28 @@ def load_configs(path_to_config_files: Optional[Union[str, Path]]=None) -> Dict[
     elif not config_path.is_dir():
         raise ConfigError(f'Configuration directory {config_path} is not a directory.')
 
-    to_return = {}
+    configs = {}
     for path in config_path.glob('*.json'):
         with path.open() as _c:
-            to_return[path.stem] = json.load(_c)
-    return to_return
+            configs[path.stem] = json.load(_c)
+
+
+def get_config(config_type: str, entry: str) -> Any:
+    """Get an entry from the given config_type file. Automatic fallback to the sample file"""
+    global configs
+    if configs is None:
+        load_configs()
+    if config_type in configs:
+        if entry in configs[config_type]:
+            return configs[config_type][entry]
+        else:
+            logger.warning(f'Unable to find {entry} in config file.')
+    else:
+        logger.warning('No generic config file available.')
+    logger.warning('Falling back on sample config, please initialize the generic config file.')
+    with (get_homedir() / 'config' / f'{config_type}.json.sample').open() as _c:
+        sample_config = json.load(_c)
+    return sample_config[entry]
 
 
 def safe_create_dir(to_create: Path) -> None:

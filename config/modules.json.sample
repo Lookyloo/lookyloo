@@ -1,13 +1,17 @@
 {
   "VirusTotal": {
-    "apikey": "KEY",
+    "apikey": null,
     "autosubmit": false
   },
   "PhishingInitiative": {
-    "apikey": "KEY",
+    "apikey": null,
     "autosubmit": false
   },
   "SaneJS": {
     "enabled": true
+  },
+  "_notes": {
+    "apikey": "null disables the module. Pass a string otherwise.",
+    "autosubmit": "Automatically submits the URL to the 3rd party service."
   }
 }

@@ -29,7 +29,7 @@ from scrapysplashwrapper import crawl
 from werkzeug.useragents import UserAgent
 
 from .exceptions import NoValidHarFile, MissingUUID
-from .helpers import get_homedir, get_socket_path, load_cookies, load_configs, safe_create_dir, get_email_template, load_pickle_tree, remove_pickle_tree, load_known_content
+from .helpers import get_homedir, get_socket_path, load_cookies, get_config, safe_create_dir, get_email_template, load_pickle_tree, remove_pickle_tree, load_known_content
 from .modules import VirusTotal, SaneJavaScript, PhishingInitiative
 
 
@@ -483,10 +483,9 @@ class Lookyloo():
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.configs: Dict[str, Dict[str, Any]] = load_configs()
-        self.logger.setLevel(self.get_config('loglevel'))
+        self.logger.setLevel(get_config('generic', 'loglevel'))
         self.indexing = Indexing()
-        self.is_public_instance = self.get_config('public_instance')
+        self.is_public_instance = get_config('generic', 'public_instance')
 
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
         self.scrape_dir: Path = get_homedir() / 'scraped'
@@ -494,27 +493,23 @@ class Lookyloo():
             # In order to have a working default for the docker image, it is easier to use an environment variable
             self.splash_url: str = os.environ['SPLASH_URL_DOCKER']
         else:
-            self.splash_url = self.get_config('splash_url')
-        self.only_global_lookups: bool = self.get_config('only_global_lookups')
+            self.splash_url = get_config('generic', 'splash_url')
+        self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
 
         safe_create_dir(self.scrape_dir)
 
         # Initialize 3rd party components
-        if 'modules' not in self.configs:
-            self.logger.info('No third party components available in the config directory')
-        else:
-            if 'PhishingInitiative' in self.configs['modules']:
-                self.pi = PhishingInitiative(self.configs['modules']['PhishingInitiative'])
-                if not self.pi.available:
-                    self.logger.warning('Unable to setup the PhishingInitiative module')
-            if 'VirusTotal' in self.configs['modules']:
-                self.vt = VirusTotal(self.configs['modules']['VirusTotal'])
-                if not self.vt.available:
-                    self.logger.warning('Unable to setup the VirusTotal module')
-            if 'SaneJS' in self.configs['modules']:
-                self.sanejs = SaneJavaScript(self.configs['modules']['SaneJS'])
-                if not self.sanejs.available:
-                    self.logger.warning('Unable to setup the SaneJS module')
+        self.pi = PhishingInitiative(get_config('modules', 'PhishingInitiative'))
+        if not self.pi.available:
+            self.logger.warning('Unable to setup the PhishingInitiative module')
+
+        self.vt = VirusTotal(get_config('modules', 'VirusTotal'))
+        if not self.vt.available:
+            self.logger.warning('Unable to setup the VirusTotal module')
+
+        self.sanejs = SaneJavaScript(get_config('modules', 'SaneJS'))
+        if not self.sanejs.available:
+            self.logger.warning('Unable to setup the SaneJS module')
 
         if hasattr(self, 'sanejs') and self.sanejs.available:
             self.context = Context(self.sanejs)
@@ -632,20 +627,6 @@ class Lookyloo():
         for capture_dir in self.capture_dirs:
             remove_pickle_tree(capture_dir)
         self.rebuild_cache()
-
-    def get_config(self, entry: str) -> Any:
-        """Get an entry from the generic config file. Automatic fallback to the sample file"""
-        if 'generic' in self.configs:
-            if entry in self.configs['generic']:
-                return self.configs['generic'][entry]
-            else:
-                self.logger.warning(f'Unable to find {entry} in config file.')
-        else:
-            self.logger.warning('No generic config file available.')
-        self.logger.warning('Falling back on sample config, please initialize the generic config file.')
-        with (get_homedir() / 'config' / 'generic.json.sample').open() as _c:
-            sample_config = json.load(_c)
-        return sample_config[entry]
 
     def get_urlnode_from_tree(self, capture_uuid: str, node_uuid: str) -> URLNode:
         capture_dir = self.lookup_capture_dir(capture_uuid)
@@ -873,7 +854,7 @@ class Lookyloo():
         return False
 
     def send_mail(self, capture_uuid: str, email: str='', comment: str='') -> None:
-        if not self.get_config('enable_mail_notification'):
+        if not get_config('generic', 'enable_mail_notification'):
             return
 
         redirects = ''
@@ -887,7 +868,7 @@ class Lookyloo():
             else:
                 redirects = "No redirects."
 
-        email_config = self.get_config('email')
+        email_config = get_config('generic', 'email')
         msg = EmailMessage()
         msg['From'] = email_config['from']
         if email:
@@ -991,15 +972,15 @@ class Lookyloo():
         cookies = load_cookies(cookies_pseudofile)
         if not user_agent:
             # Catch case where the UA is broken on the UI, and the async submission.
-            ua: str = self.get_config('default_user_agent')  # type: ignore
+            ua: str = get_config('generic', 'default_user_agent')  # type: ignore
         else:
             ua = user_agent
 
-        if int(depth) > int(self.get_config('max_depth')):  # type: ignore
-            self.logger.warning(f'Not allowed to scrape on a depth higher than {self.get_config("max_depth")}: {depth}')
-            depth = int(self.get_config('max_depth'))  # type: ignore
+        if int(depth) > int(get_config('generic', 'max_depth')):  # type: ignore
+            self.logger.warning(f'Not allowed to scrape on a depth higher than {get_config("generic", "max_depth")}: {depth}')
+            depth = int(get_config('generic', 'max_depth'))  # type: ignore
         items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
-                      referer=referer, log_enabled=True, log_level=self.get_config('splash_loglevel'))
+                      referer=referer, log_enabled=True, log_level=get_config('generic', 'splash_loglevel'))
         if not items:
             # broken
             return False

@@ -690,7 +690,7 @@ description = "Pygments is a syntax highlighting package written in Python."
 name = "pygments"
 optional = false
 python-versions = ">=3.5"
-version = "2.7.0"
+version = "2.7.1"
 
 [[package]]
 category = "main"
@@ -887,7 +887,7 @@ description = "Scrapy splash wrapper as a standalone library."
 name = "scrapysplashwrapper"
 optional = false
 python-versions = ">=3.7,<4.0"
-version = "1.2.3"
+version = "1.2.4"
 
 [package.dependencies]
 scrapy = ">=1.8.0,<2.0.0"
@@ -1566,8 +1566,8 @@ pyeupi = [
     {file = "pyeupi-1.1.tar.gz", hash = "sha256:2309c61ac2ef0eafabd6e9f32a0078069ffbba0e113ebc6b51cffc1869094472"},
 ]
 pygments = [
-    {file = "Pygments-2.7.0-py3-none-any.whl", hash = "sha256:2df50d16b45b977217e02cba6c8422aaddb859f3d0570a88e09b00eafae89c6e"},
-    {file = "Pygments-2.7.0.tar.gz", hash = "sha256:2594e8fdb06fef91552f86f4fd3a244d148ab24b66042036e64f29a291515048"},
+    {file = "Pygments-2.7.1-py3-none-any.whl", hash = "sha256:307543fe65c0947b126e83dd5a61bd8acbd84abec11f43caebaf5534cbc17998"},
+    {file = "Pygments-2.7.1.tar.gz", hash = "sha256:926c3f319eda178d1bd90851e4317e6d8cdb5e292a3386aac9bd75eca29cf9c7"},
 ]
 pyhamcrest = [
     {file = "PyHamcrest-2.0.2-py3-none-any.whl", hash = "sha256:7ead136e03655af85069b6f47b23eb7c3e5c221aa9f022a4fbb499f5b7308f29"},
@@ -1625,8 +1625,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.7.2-py2.py3-none-any.whl", hash = "sha256:71ac958370f8732fec746a25a8235b03a4d3c4c93a59be51aa8e910a08cfe511"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.2.3-py3-none-any.whl", hash = "sha256:527fa816517ac260b029b7c045101493a5cce10b1664e2fc07d723ba26531d7e"},
-    {file = "scrapysplashwrapper-1.2.3.tar.gz", hash = "sha256:2dc99037a6c72f9d796c6ba57e69abeaebbaca6a13cfca41d9ac79d66ef26c83"},
+    {file = "scrapysplashwrapper-1.2.4-py3-none-any.whl", hash = "sha256:11930ef076d0fdba66caa6045f8c9c142247cb4eb0ba0939e08306a5b4e879bf"},
+    {file = "scrapysplashwrapper-1.2.4.tar.gz", hash = "sha256:d1185c760dde1bcda389223545ea8fe16bd9308e52c9baa52f654fb91c7a787f"},
 ]
 service-identity = [
     {file = "service_identity-18.1.0-py2.py3-none-any.whl", hash = "sha256:001c0707759cb3de7e49c078a7c0c9cd12594161d3bf06b9c254fdcb1a60dc36"},

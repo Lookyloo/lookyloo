@@ -13,7 +13,7 @@ from flask import Flask, render_template, request, send_file, redirect, url_for,
 from flask_bootstrap import Bootstrap  # type: ignore
 from flask_httpauth import HTTPDigestAuth  # type: ignore
 
-from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents
+from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents, get_config
 from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 from .proxied import ReverseProxied
@@ -42,11 +42,11 @@ auth = HTTPDigestAuth()
 
 lookyloo: Lookyloo = Lookyloo()
 
-user = lookyloo.get_config('cache_clean_user')
-time_delta_on_index = lookyloo.get_config('time_delta_on_index')
-blur_screenshot = lookyloo.get_config('enable_default_blur_screenshot')
+user = get_config('generic', 'cache_clean_user')
+time_delta_on_index = get_config('generic', 'time_delta_on_index')
+blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')
 
-logging.basicConfig(level=lookyloo.get_config('loglevel'))
+logging.basicConfig(level=get_config('generic', 'loglevel'))
 
 
 # Method to make sizes in bytes human readable
@@ -140,7 +140,7 @@ def scrape_web():
                                          os=request.form.get('os'), browser=request.form.get('browser'))
             return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents: Dict[str, Any] = {}
-    if lookyloo.get_config('use_user_agents_users'):
+    if get_config('generic', 'use_user_agents_users'):
         lookyloo.build_ua_file()
         # NOTE: For now, just generate the file, so we have an idea of the size
         # user_agents = get_user_agents('own_user_agents')
@@ -191,7 +191,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     keys_request = {
         'request_cookie': "/static/cookie_read.png",
     }
-    if lookyloo.get_config('enable_context_by_users'):
+    if get_config('generic', 'enable_context_by_users'):
         enable_context_by_users = True
     else:
         enable_context_by_users = False
@@ -250,11 +250,18 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str):
 
     if isinstance(posted, bytes):
         to_return = BytesIO(posted)
+        is_blob = True
     else:
         to_return = BytesIO(posted.encode())
+        is_blob = False
     to_return.seek(0)
-    return send_file(to_return, mimetype='text/plain',
-                     as_attachment=True, attachment_filename='posted_data.txt')
+
+    if is_blob:
+        return send_file(to_return, mimetype='application/octet-stream',
+                         as_attachment=True, attachment_filename='posted_data.bin')
+    else:
+        return send_file(to_return, mimetype='text/plain',
+                         as_attachment=True, attachment_filename='posted_data.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource', methods=['POST', 'GET'])
@@ -407,11 +414,11 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
         flash(cache['error'], 'error')
 
     try:
-        if lookyloo.get_config('enable_mail_notification'):
+        if get_config('generic', 'enable_mail_notification'):
             enable_mail_notification = True
         else:
             enable_mail_notification = False
-        if lookyloo.get_config('enable_context_by_users'):
+        if get_config('generic', 'enable_context_by_users'):
             enable_context_by_users = True
         else:
             enable_context_by_users = False
