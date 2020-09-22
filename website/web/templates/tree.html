@@ -8,7 +8,6 @@
 {% block scripts %}
   {{ super() }}
   <script src='{{ url_for('static', filename='d3.v5.min.js') }}'></script>
-  <script src='{{ url_for('static', filename='FileSaver.js') }}'></script>
   <script src='{{ url_for('static', filename='tree.js') }}'></script>
   <script>
   $('#modulesModal').on('show.bs.modal', function(e) {
@@ -137,7 +136,7 @@
 
   <img src="{{ url_for('static', filename='empty.svg') }}"
        alt="JavaScript" height="20" width="20"> Empty response <br>
-    
+
   <img src="{{ url_for('static', filename='javascript.png') }}"
        alt="JavaScript" height="20" width="20"> Javascript <br>
 
