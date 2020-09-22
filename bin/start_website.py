@@ -12,10 +12,10 @@ if __name__ == '__main__':
     r = StrictRedis(unix_socket_path=get_socket_path('cache'))
     r.delete('cache_loaded')
     website_dir = get_homedir() / 'website'
-    Popen([str(website_dir / '3rdparty.sh')], cwd=website_dir)
     ip = get_config('generic', 'website_listen_ip')
     port = get_config('generic', 'website_listen_port')
     try:
+        pid_libs = Popen([str(website_dir / '3rdparty.sh')], cwd=website_dir)
         p = Popen(['gunicorn', '-w', '10',
                    '--graceful-timeout', '2', '--timeout', '300',
                    '-b', f'{ip}:{port}',
@@ -34,7 +34,9 @@ if __name__ == '__main__':
         try:
             # Killing everything if possible.
             p.send_signal(signal.SIGWINCH)
+            pid_libs.send_signal(signal.SIGWINCH)
             p.send_signal(signal.SIGTERM)
+            pid_libs.send_signal(signal.SIGTERM)
         except Exception:
             pass
         unset_running('website')
