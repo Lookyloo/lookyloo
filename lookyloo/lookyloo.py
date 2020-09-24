@@ -20,6 +20,9 @@ from urllib.parse import urlsplit
 from uuid import uuid4
 from zipfile import ZipFile
 
+import dns.resolver
+import dns.rdatatype
+
 import publicsuffix2  # type: ignore
 from defang import refang  # type: ignore
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
@@ -583,6 +586,45 @@ class Lookyloo():
         with (capture_dir / 'tree.pickle').open('wb') as _p:
             pickle.dump(ct, _p)
 
+    def _build_cname_chain(self, known_cnames: Dict[str, Optional[str]], hostname) -> List[str]:
+        cnames: List[str] = []
+        to_search = hostname
+        while True:
+            if known_cnames.get(to_search) is None:
+                break
+            # At this point, known_cnames[to_search] must be a str
+            cnames.append(known_cnames[to_search])  # type: ignore
+            to_search = known_cnames[to_search]
+        return cnames
+
+    def search_cnames(self, ct: CrawledTree):
+        cnames_path = ct.root_hartree.har.path.parent / 'cnames.json'
+        host_cnames: Dict[str, Optional[str]] = {}
+        if cnames_path.exists():
+            with cnames_path.open() as f:
+                host_cnames = json.load(f)
+
+        for node in ct.root_hartree.hostname_tree.traverse():
+            if node.name not in host_cnames:
+                # Resolve and cache
+                try:
+                    response = dns.resolver.resolve(node.name, search=True)
+                    for answer in response.response.answer:
+                        if answer.rdtype == dns.rdatatype.RdataType.CNAME:
+                            host_cnames[str(answer.name).rstrip('.')] = str(answer[0].target).rstrip('.')
+                        else:
+                            host_cnames[str(answer.name).rstrip('.')] = None
+                except Exception:
+                    host_cnames[node.name] = None
+            cnames = self._build_cname_chain(host_cnames, node.name)
+            if cnames:
+                node.add_feature('cname', cnames)
+
+        with cnames_path.open('w') as f:
+            json.dump(host_cnames, f)
+
+        return ct
+
     def get_crawled_tree(self, capture_uuid: str) -> CrawledTree:
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
@@ -617,6 +659,7 @@ class Lookyloo():
                 meta = json.load(f)
         ct = self.get_crawled_tree(capture_uuid)
         ct = self.context.contextualize_tree(ct)
+        ct = self.search_cnames(ct)
         return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
 
     def remove_pickle(self, capture_uuid: str) -> None:
@@ -1119,6 +1162,14 @@ class Lookyloo():
         hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
         if not hostnode:
             raise MissingUUID(f'Unable to find UUID {node_uuid} in {capture_dir}')
+
+        cnames_path = ct.root_hartree.har.path.parent / 'cnames.json'
+        if cnames_path.exists():
+            with cnames_path.open() as f:
+                host_cnames = json.load(f)
+            cnames = self._build_cname_chain(host_cnames, hostnode.name)
+            if cnames:
+                hostnode.add_feature('cname', cnames)
 
         known_content = self.context.find_known_content(hostnode)
 

@@ -9,7 +9,7 @@
 {% from "macros.html" import get_ressource_button %}
 {% from "macros.html" import context_form %}
 
-{% block title %}Details for {{ hostname }} {% endblock %}
+{% block title %}Details for {{ hostnode.name }} {% endblock %}
 
 {% block styles %}
 {{ super() }}
@@ -62,10 +62,20 @@
 {% block content %}
   {# Headers #}
   <center>
-      <h3>{{ hostname }}</h3>
+      <h3>{{ hostnode.name }}</h3>
     <button type="button" class="btn btn-info" onclick="whereAmI('{{ hostnode_uuid }}')">Locate in tree</button>
     <a href="{{ url_for('hostnode_details_text', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-info" role="button">Download URLs as text</a>
   </center>
+  <div>
+  {% if hostnode.cname %}
+    <h4>CNAMEs:</h3>
+    <ul>
+    {% for cname in hostnode.cname %}
+      <li>{{ cname }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  </div>
   {# Start list of URLs #}
   <ul class="list-group-flush">
     {% for url in urls %}

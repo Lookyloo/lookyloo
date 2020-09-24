@@ -201,7 +201,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     return render_template('hostname_popup.html',
                            tree_uuid=tree_uuid,
                            hostnode_uuid=node_uuid,
-                           hostname=hostnode.name,
+                           hostnode=hostnode,
                            urls=urls,
                            keys_response=keys_response,
                            keys_request=keys_request,
