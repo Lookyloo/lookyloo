@@ -168,6 +168,8 @@ class Indexing():
 class Context():
 
     def __init__(self, sanejs: Optional[SaneJavaScript] = None):
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.logger.setLevel(get_config('generic', 'loglevel'))
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('indexing'), db=1, decode_responses=True)
         self.sanejs = sanejs
         self._cache_known_content()
@@ -267,10 +269,14 @@ class Context():
 
         if to_lookup and self.sanejs and self.sanejs.available:
             # Query sanejs on the remaining ones
-            for h, entry in self.sanejs.hashes_lookup(to_lookup).items():
-                libname, version, path = entry[0].split("|")
-                known_content_table[h] = {'type': 'sanejs',
-                                          'details': (libname, version, path, len(entry))}
+            try:
+                for h, entry in self.sanejs.hashes_lookup(to_lookup).items():
+                    libname, version, path = entry[0].split("|")
+                    known_content_table[h] = {'type': 'sanejs',
+                                              'details': (libname, version, path, len(entry))}
+            except json.decoder.JSONDecodeError as e:
+                self.logger.warning(f'Something went wring with sanejs: {e}')
+
         return known_content_table
 
     def store_known_legitimate_tree(self, tree: CrawledTree):
