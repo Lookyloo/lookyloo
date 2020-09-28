@@ -36,7 +36,7 @@ flask = "^1.1.1"
 gunicorn = {version = "^20.0.4"}
 cchardet = "^2.1.5"
 redis = "^3.3.11"
-beautifulsoup4 = "^4.8.2"
+beautifulsoup4 = "^4.9.2"
 bootstrap-flask = "^1.2.0"
 cloudscraper = "^1.2.48"
 defang = "^0.5.3"
