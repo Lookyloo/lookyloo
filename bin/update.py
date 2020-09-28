@@ -24,6 +24,7 @@ def keep_going(ignore=False):
 
 def run_command(command):
     args = shlex.split(command)
+    homedir = get_homedir()
     process = subprocess.run(args, cwd=homedir, capture_output=True)
     print(process.stdout.decode())
     if process.returncode:
@@ -35,8 +36,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pull latest release, update dependencies, update and validate the config files, update 3rd deps for the website.')
     parser.add_argument('--yes', default=False, action='store_true', help='Run all commands without asking.')
     args = parser.parse_args()
-
-    homedir = get_homedir()
 
     print('* Update repository.')
     keep_going(args.yes)
@@ -56,4 +55,4 @@ if __name__ == '__main__':
 
     print('* Update third party dependencies for the website.')
     keep_going(args.yes)
-    run_command('website/3rdparty.sh')
+    run_command('tools/3rdparty.py')
