@@ -68,8 +68,8 @@ function openTreeInNewTab(capture_uuid, hostnode_uuid=null) {
     win.focus();
 }
 
-function open_hostnode_popup(d) {
-    let win = window.open(`/tree/${treeUUID}/hostname_popup/${d.data.uuid}`, '_blank', 'width=1024,height=768,left=200,top=100');
+function open_hostnode_popup(hostnode_uuid) {
+    let win = window.open(`/tree/${treeUUID}/hostname_popup/${hostnode_uuid}`, '_blank', 'width=1024,height=768,left=200,top=100');
     if (win == null) {
         alert("The browser didn't allow Lookyloo to open a pop-up. There should be an icon on the right of your URL bar to allow it.");
     }
@@ -83,9 +83,7 @@ function LocateNode(hostnode_uuid) {
     let line_arrow = d3.select(`#node_${hostnode_uuid}`)
                        .append('g')
                         .attr('cursor', 'pointer')
-                        .on('click', function() {
-                            this.remove();
-                        });
+                        .on('click', (event, d) => { event.currentTarget.remove(); });
 
     let line = d3.line()
                     // Other options: http://bl.ocks.org/d3indepth/raw/b6d4845973089bc1012dec1674d3aff8/
@@ -150,15 +148,15 @@ function UnflagAllNodes() {
     d3.selectAll('.node_data').select('text').style('fill', 'black');
     d3.selectAll('.node_data').select("#flag")
         .text("🏁")
-        .on('click', d => NodeHighlight(d.data.uuid))
-        .on('mouseover',() => {
+        .on('click', (event, d) => NodeHighlight(d.data.uuid))
+        .on('mouseover', (event, d) => {
             d3.select('#tooltip')
                 .style('opacity', 1)
-                .style('left', `${d3.event.pageX + 10}px`)
-                .style('top', `${d3.event.pageY + 10}px`)
+                .style('left', `${event.pageX + 10}px`)
+                .style('top', `${event.pageY + 10}px`)
                 .text('Flag this node');
         })
-        .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
+        .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
 };
 
 function MarkAsLegitimate(capture_uuid, hostnode_uuid=null, urlnode_uuid=null) {
@@ -173,15 +171,15 @@ function UnflagHostNode(hostnode_uuid) {
     d3.select(`#node_${hostnode_uuid}`).select('text').style('fill', 'black');
     d3.select(`#node_${hostnode_uuid}`).select("#flag")
         .text("🏁")
-        .on('click', d => NodeHighlight(d.data.uuid))
-        .on('mouseover', () => {
+        .on('click', (event, d) => NodeHighlight(d.data.uuid))
+        .on('mouseover', (event, d) => {
             d3.select('#tooltip')
                 .style('opacity', 1)
-                .style('left', `${d3.event.pageX + 10}px`)
-                .style('top', `${d3.event.pageY + 10}px`)
+                .style('left', `${event.pageX + 10}px`)
+                .style('top', `${event.pageY + 10}px`)
                 .text('Flag this node');
         })
-        .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
+        .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
 };
 
 function NodeHighlight(hostnode_uuid) {
@@ -192,20 +190,20 @@ function NodeHighlight(hostnode_uuid) {
     d3.select(`#node_${hostnode_uuid}`).select('text').style('fill', 'white');
     d3.select(`#node_${hostnode_uuid}`).select("#flag")
         .text('❌')
-        .on('click', d => UnflagHostNode(d.data.uuid))
-        .on('mouseover', () => {
+        .on('click', (event, d) => UnflagHostNode(d.data.uuid))
+        .on('mouseover', (event, d) => {
             d3.select('#tooltip')
                 .style('opacity', 1)
-                .style('left', `${d3.event.pageX + 10}px`)
-                .style('top', `${d3.event.pageY + 10}px`)
+                .style('left', `${event.pageX + 10}px`)
+                .style('top', `${event.pageY + 10}px`)
                 .text('Remove flag on this node');
         })
-        .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
+        .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
 };
 
 function icon_list(relative_x_pos, relative_y_pos, d) {
     const icon_size = 16;
-    let icon_options = new Map([
+    const icon_options = new Map([
         ['js', "/static/javascript.png"],
         ['exe', "/static/exe.png"],
         ['css', "/static/css.png"],
@@ -263,7 +261,7 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
     return icons.node();
 }
 
-function text_entry(relative_x_pos, relative_y_pos, onclick_callback, d) {
+function text_entry(relative_x_pos, relative_y_pos, d) {
     // Avoid hiding the content after the circle
     let nodeContent = d3.create("svg")  // WARNING: svg is required there, "g" doesn't have getBBox
           .attr('height', node_height)
@@ -279,15 +277,15 @@ function text_entry(relative_x_pos, relative_y_pos, onclick_callback, d) {
           .attr("stroke-width", ".2px")
           .style("opacity", .9)
           .attr('cursor', 'pointer')
-          .on('click', onclick_callback)
-          .on('mouseover', () => {
+          .on('click', (event, d) => open_hostnode_popup(d.data.uuid))
+          .on('mouseover', (event, d) => {
               d3.select('#tooltip')
                   .style('opacity', 1)
-                  .style('left', `${d3.event.pageX + 10}px`)
-                  .style('top', `${d3.event.pageY + 10}px`)
+                  .style('left', `${event.pageX + 10}px`)
+                  .style('top', `${event.pageY + 10}px`)
                   .text('Open investigation pop-up.');
           })
-          .on('mouseout', () => d3.select('#tooltip').style('opacity', 0))
+          .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0))
           .text(d => {
             let to_print;
             if (d.data.name.length > 50) {
@@ -354,7 +352,7 @@ function update(root, computed_node_width=0) {
   // ****************** Nodes section ***************************
 
   // Toggle children on click.
-  let toggle_children_collapse = (d) => {
+  let toggle_children_collapse = (event, d) => {
     if (d.children) {
         d._children = d.children;
         d.children = null;
@@ -385,7 +383,7 @@ function update(root, computed_node_width=0) {
                 .attr('class', 'node')
                 .attr('r', 1e-6)
                 .style("fill", d => d._children ? "lightsteelblue" : "#fff")
-                .on('click', toggle_children_collapse);
+                .on('click', (event, d) => toggle_children_collapse(event, d));
 
             let node_data = node_group
               .append('svg')
@@ -408,7 +406,7 @@ function update(root, computed_node_width=0) {
 
             // Set Hostname text
             node_data
-              .append(d => text_entry(15, 5, open_hostnode_popup, d));  // Popup
+              .append(d => text_entry(15, 5, d));  // Popup
             // Set list of icons
             node_data
               .append(d => icon_list(17, 35, d));
@@ -440,15 +438,15 @@ function update(root, computed_node_width=0) {
                     .attr("id", "flag")
                     .text("🏁")
                     .attr('cursor', 'pointer')
-                    .on('click', d => NodeHighlight(d.data.uuid))
-                    .on('mouseover', () => {
+                    .on('click', (event, d) => NodeHighlight(d.data.uuid))
+                    .on('mouseover', (event, d) => {
                         d3.select('#tooltip')
                             .style('opacity', 1)
-                            .style('left', `${d3.event.pageX + 10}px`)
-                            .style('top', `${d3.event.pageY + 10}px`)
+                            .style('left', `${event.pageX + 10}px`)
+                            .style('top', `${event.pageY + 10}px`)
                             .text('Flag this node');
                     })
-                    .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
+                    .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
 
                 const http_icon_size = 24;
                 if (d.data.http_content) {
@@ -468,14 +466,14 @@ function update(root, computed_node_width=0) {
                         .attr("width", http_icon_size)
                         .attr("height", http_icon_size)
                         .attr("xlink:href", '/static/insecure.svg')
-                        .on('mouseover', () => {
+                        .on('mouseover', (event, d) => {
                             d3.select('#tooltip')
                                 .style('opacity', 1)
-                                .style('left', `${d3.event.pageX + 10}px`)
-                                .style('top', `${d3.event.pageY + 10}px`)
+                                .style('left', `${event.pageX + 10}px`)
+                                .style('top', `${event.pageY + 10}px`)
                                 .text('This node containts insecure requests');
                         })
-                        .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
+                        .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
                 };
                 const context_icon_size = 24;
                 if (d.data.malicious) {
@@ -495,14 +493,14 @@ function update(root, computed_node_width=0) {
                         .attr("width", context_icon_size)
                         .attr("height", context_icon_size)
                         .attr("xlink:href", '/static/bomb.svg')
-                        .on('mouseover', () => {
+                        .on('mouseover', (event, d) => {
                             d3.select('#tooltip')
                                 .style('opacity', 1)
-                                .style('left', `${d3.event.pageX + 10}px`)
-                                .style('top', `${d3.event.pageY + 10}px`)
+                                .style('left', `${event.pageX + 10}px`)
+                                .style('top', `${event.pageY + 10}px`)
                                 .text('This node containts known malicious content');
                         })
-                        .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
+                        .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
                 } else if (d.data.legitimate) {
                     // set checkmark
                     d3.select(this).append("svg").append('rect')
@@ -520,14 +518,14 @@ function update(root, computed_node_width=0) {
                         .attr("width", context_icon_size)
                         .attr("height", context_icon_size)
                         .attr("xlink:href", '/static/check.svg')
-                        .on('mouseover', () => {
+                        .on('mouseover', (event, d) => {
                             d3.select('#tooltip')
                                 .style('opacity', 1)
-                                .style('left', `${d3.event.pageX + 10}px`)
-                                .style('top', `${d3.event.pageY + 10}px`)
+                                .style('left', `${event.pageX + 10}px`)
+                                .style('top', `${event.pageY + 10}px`)
                                 .text('This node has only legitimate content');
                         })
-                        .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
+                        .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
               } else if (d.data.all_empty) {
                 // set empty
                 d3.select(this).append("svg").append('rect')
@@ -545,14 +543,14 @@ function update(root, computed_node_width=0) {
                     .attr("width", context_icon_size)
                     .attr("height", context_icon_size)
                     .attr("xlink:href", '/static/empty.svg')
-                    .on('mouseover', () => {
+                    .on('mouseover', (event, d) => {
                         d3.select('#tooltip')
                             .style('opacity', 1)
-                            .style('left', `${d3.event.pageX + 10}px`)
-                            .style('top', `${d3.event.pageY + 10}px`)
+                            .style('left', `${event.pageX + 10}px`)
+                            .style('top', `${event.pageY + 10}px`)
                             .text('This node has only empty content');
                     })
-                    .on('mouseout', () => d3.select('#tooltip').style('opacity', 0));
+                    .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
               };
             });
 
