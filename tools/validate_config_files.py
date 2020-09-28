@@ -9,7 +9,8 @@ from lookyloo.helpers import get_homedir
 
 
 def validate_generic_config_file():
-    with (get_homedir() / 'config' / 'generic.json').open() as f:
+    user_config = get_homedir() / 'config' / 'generic.json'
+    with user_config.open() as f:
         generic_config = json.load(f)
     with (get_homedir() / 'config' / 'generic.json.sample').open() as f:
         generic_config_sample = json.load(f)
@@ -41,6 +42,8 @@ def validate_generic_config_file():
         if key not in generic_config_sample:
             raise Exception(f'{key} is missing in the sample config file')
 
+    return True
+
 
 def validate_modules_config_file():
     with (get_homedir() / 'config' / 'modules.json').open() as f:
@@ -54,6 +57,8 @@ def validate_modules_config_file():
         if not modules_config.get(key):
             logger.warning(f'Entry missing in user config file: {key}. Will default to: {json.dumps(modules_config_sample[key], indent=2)}')
             continue
+
+    return True
 
 
 def update_user_configs():
@@ -72,11 +77,13 @@ def update_user_configs():
                 continue
             if generic_config.get(key) is None:
                 print(f'{key} was missing in {file_name}, adding it.')
+                print(f"Description: {generic_config_sample['_notes'][key]}")
                 generic_config[key] = generic_config_sample[key]
                 has_new_entry = True
         if has_new_entry:
             with (get_homedir() / 'config' / f'{file_name}.json').open('w') as fw:
                 json.dump(generic_config, fw, indent=2, sort_keys=True)
+    return has_new_entry
 
 
 if __name__ == '__main__':
@@ -87,8 +94,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.check:
-        validate_generic_config_file()
-        validate_modules_config_file()
+        if validate_generic_config_file():
+            print(f"The entries in {get_homedir() / 'config' / 'generic.json'} are valid.")
+        if validate_modules_config_file():
+            print(f"The entries in {get_homedir() / 'config' / 'modules.json'} are valid.")
 
     if args.update:
-        update_user_configs()
+        if not update_user_configs():
+            print(f"No updates needed in {get_homedir() / 'config' / 'generic.json'}.")

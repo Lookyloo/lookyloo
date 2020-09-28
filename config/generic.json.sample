@@ -34,7 +34,7 @@
     "website_listen_ip": "IP Flask will listen on. Defaults to 0.0.0.0, meaning all interfaces.",
     "website_listen_port": "Port Flask will listen on.",
     "splash_url": "URL to connect to splash",
-    "default_user_agent": "Ultimate fallback if the capture form, or the asynchronous submission, don't provide a UA",
+    "default_user_agent": "Ultimate fallback if the capture form, or the asynchronous submission, doesn't provide a user agent.",
     "cache_clean_user": "Format: {username: password}",
     "time_delta_on_index": "Time interval of the capture displayed on the index",
     "max_depth": "Maximum depth for scraping. Anything > 1 will be exponentially bigger.",

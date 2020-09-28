@@ -27,6 +27,7 @@ async_scrape = "bin/async_scrape.py"
 shutdown = "bin/shutdown.py"
 stop = "bin/stop.py"
 rebuild_caches = "bin/rebuild_caches.py"
+update = "bin/update.py"
 
 
 [tool.poetry.dependencies]
