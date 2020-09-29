@@ -321,7 +321,7 @@ description = "HTTP Archive (HAR) to ETE Toolkit generator"
 name = "har2tree"
 optional = false
 python-versions = ">=3.7,<4.0"
-version = "1.2.5"
+version = "1.2.6"
 
 [package.dependencies]
 beautifulsoup4 = ">=4.8.2,<5.0.0"
@@ -1320,8 +1320,8 @@ gunicorn = [
     {file = "gunicorn-20.0.4.tar.gz", hash = "sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626"},
 ]
 har2tree = [
-    {file = "har2tree-1.2.5-py3-none-any.whl", hash = "sha256:8454c489147a50eba309d4699732abc0b0e51494f5552d998b9333c8b3801a3e"},
-    {file = "har2tree-1.2.5.tar.gz", hash = "sha256:9cc97a48db71734aa2ba18da7c40adac51a527fc0ad3316c6ebf5b355e8b93b1"},
+    {file = "har2tree-1.2.6-py3-none-any.whl", hash = "sha256:a2da3c3ab27161e31abcb8d311ab7b34711e3b50c3d1b523ee10a3ba21f33ced"},
+    {file = "har2tree-1.2.6.tar.gz", hash = "sha256:4e7d43d6922445ca9978325306f5fa47180502ec1a3629f77c4c791af2aeee7d"},
 ]
 hyperlink = [
     {file = "hyperlink-20.0.1-py2.py3-none-any.whl", hash = "sha256:c528d405766f15a2c536230de7e160b65a08e20264d8891b3eb03307b0df3c63"},
