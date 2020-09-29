@@ -75,6 +75,14 @@
     {% endfor %}
     </ul>
   {% endif %}
+  {% if hostnode.resolved_ips %}
+    <h4>IPs:</h3>
+    <ul>
+    {% for ip in hostnode.resolved_ips %}
+      <li>{{ ip }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
   </div>
   {# Start list of URLs #}
   <ul class="list-group-flush">

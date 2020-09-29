@@ -573,6 +573,7 @@ class Lookyloo():
         index = True
         try:
             ct = CrawledTree(har_files, uuid)
+            self.resolve_dns(ct)
             if self.is_public_instance:
                 cache = self.capture_cache(capture_uuid)
                 if cache.get('no_index') is not None:
@@ -592,20 +593,26 @@ class Lookyloo():
         while True:
             if known_cnames.get(to_search) is None:
                 break
-            # At this point, known_cnames[to_search] must be a str
+            # At this point, known_cnames[to_search] must exist and be a str
             cnames.append(known_cnames[to_search])  # type: ignore
             to_search = known_cnames[to_search]
         return cnames
 
-    def search_cnames(self, ct: CrawledTree):
+    def resolve_dns(self, ct: CrawledTree):
         cnames_path = ct.root_hartree.har.path.parent / 'cnames.json'
+        ips_path = ct.root_hartree.har.path.parent / 'ips.json'
         host_cnames: Dict[str, Optional[str]] = {}
         if cnames_path.exists():
             with cnames_path.open() as f:
                 host_cnames = json.load(f)
 
+        host_ips: Dict[str, List[str]] = {}
+        if ips_path.exists():
+            with ips_path.open() as f:
+                host_ips = json.load(f)
+
         for node in ct.root_hartree.hostname_tree.traverse():
-            if node.name not in host_cnames:
+            if node.name not in host_cnames or node.name not in host_ips:
                 # Resolve and cache
                 try:
                     response = dns.resolver.resolve(node.name, search=True)
@@ -614,15 +621,24 @@ class Lookyloo():
                             host_cnames[str(answer.name).rstrip('.')] = str(answer[0].target).rstrip('.')
                         else:
                             host_cnames[str(answer.name).rstrip('.')] = None
+
+                        if answer.rdtype in [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]:
+                            host_ips[str(answer.name).rstrip('.')] = list(set(str(b) for b in answer))
                 except Exception:
                     host_cnames[node.name] = None
+                    host_ips[node.name] = []
             cnames = self._build_cname_chain(host_cnames, node.name)
             if cnames:
                 node.add_feature('cname', cnames)
+                if cnames[-1] in host_ips:
+                    node.add_feature('resolved_ips', host_ips[cnames[-1]])
+            elif node.name in host_ips:
+                node.add_feature('resolved_ips', host_ips[node.name])
 
         with cnames_path.open('w') as f:
             json.dump(host_cnames, f)
-
+        with ips_path.open('w') as f:
+            json.dump(host_ips, f)
         return ct
 
     def get_crawled_tree(self, capture_uuid: str) -> CrawledTree:
@@ -659,7 +675,6 @@ class Lookyloo():
                 meta = json.load(f)
         ct = self.get_crawled_tree(capture_uuid)
         ct = self.context.contextualize_tree(ct)
-        ct = self.search_cnames(ct)
         return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
 
     def remove_pickle(self, capture_uuid: str) -> None:
