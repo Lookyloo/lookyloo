@@ -556,7 +556,7 @@ class Lookyloo():
             to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'].append(parsed_ua.string)  # type: ignore
             to_store['by_frequency'].append({'os': parsed_ua.platform,  # type: ignore
                                              'browser': f'{parsed_ua.browser} {parsed_ua.version}',  # type: ignore
-                                             'useragent': parsed_ua.string})  # type: ignore
+                                             'useragent': parsed_ua.string})
         with self_generated_ua_file.open('w') as f:
             json.dump(to_store, f, indent=2)
 
@@ -977,7 +977,7 @@ class Lookyloo():
         if not to_dump:
             # UA not recognized
             self.logger.info(f'Unable to recognize the User agent: {ua}')
-        to_dump['user_agent'] = ua.string  # type: ignore
+        to_dump['user_agent'] = ua.string
         with metafile.open('w') as f:
             json.dump(to_dump, f)
 
@@ -1013,8 +1013,8 @@ class Lookyloo():
 
     def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None,
                depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
-               referer: str='', perma_uuid: str=None, os: str=None,
-               browser: str=None) -> Union[bool, str]:
+               referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
+               browser: Optional[str]=None) -> Union[bool, str]:
         url = url.strip()
         url = refang(url)
         if not url.startswith('http'):
@@ -1036,13 +1036,13 @@ class Lookyloo():
         cookies = load_cookies(cookies_pseudofile)
         if not user_agent:
             # Catch case where the UA is broken on the UI, and the async submission.
-            ua: str = get_config('generic', 'default_user_agent')  # type: ignore
+            ua: str = get_config('generic', 'default_user_agent')
         else:
             ua = user_agent
 
-        if int(depth) > int(get_config('generic', 'max_depth')):  # type: ignore
+        if int(depth) > int(get_config('generic', 'max_depth')):
             self.logger.warning(f'Not allowed to scrape on a depth higher than {get_config("generic", "max_depth")}: {depth}')
-            depth = int(get_config('generic', 'max_depth'))  # type: ignore
+            depth = int(get_config('generic', 'max_depth'))
         items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
                       referer=referer, log_enabled=True, log_level=get_config('generic', 'splash_loglevel'))
         if not items:

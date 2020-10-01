@@ -18,7 +18,7 @@ from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 from .proxied import ReverseProxied
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union
 
 import logging
 
@@ -136,7 +136,7 @@ def scrape_web():
             perma_uuid = lookyloo.scrape(url=url, cookies_pseudofile=cookie_file,
                                          depth=depth, listing=listing,
                                          user_agent=request.form.get('user_agent'),
-                                         referer=request.form.get('referer'),
+                                         referer=request.form.get('referer'),  # type: ignore
                                          os=request.form.get('os'), browser=request.form.get('browser'))
             return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents: Dict[str, Any] = {}
@@ -242,18 +242,19 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str):
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.posted_data:
         return
+    posted: Union[str, bytes]
     if isinstance(urlnode.posted_data, (dict, list)):
         # JSON blob, pretty print.
         posted = json.dumps(urlnode.posted_data, indent=2)
     else:
         posted = urlnode.posted_data
 
-    if isinstance(posted, bytes):
-        to_return = BytesIO(posted)
-        is_blob = True
-    else:
+    if isinstance(posted, str):
         to_return = BytesIO(posted.encode())
         is_blob = False
+    else:
+        to_return = BytesIO(posted)
+        is_blob = True
     to_return.seek(0)
 
     if is_blob:
@@ -454,7 +455,7 @@ def index_generic(show_hidden: bool=False):
         if 'timestamp' not in cached:
             # this is a buggy capture, skip
             continue
-        if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:  # type: ignore
+        if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:
             continue
         titles.append((cached['uuid'], cached['title'], cached['timestamp'], cached['url'],
                        cached['redirects'], True if cached['incomplete_redirects'] == '1' else False))
