@@ -6,11 +6,18 @@ import logging
 import subprocess
 import shlex
 import sys
+import hashlib
 
 from lookyloo.helpers import get_homedir
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO, datefmt='%I:%M:%S')
+
+
+def compute_hash_self():
+    m = hashlib.sha256()
+    with (get_homedir() / 'bin' / 'update.py').open('rb') as f:
+        return m.update(f.read())
 
 
 def keep_going(ignore=False):
@@ -52,11 +59,17 @@ def main():
     parser.add_argument('--yes', default=False, action='store_true', help='Run all commands without asking.')
     args = parser.parse_args()
 
-    check_poetry_version()
+    old_hash = compute_hash_self()
 
     print('* Update repository.')
     keep_going(args.yes)
     run_command('git pull')
+    new_hash = compute_hash_self()
+    if old_hash != new_hash:
+        print('Update script changed, please do "poetry run update"')
+        sys.exit()
+
+    check_poetry_version()
 
     print('* Install/update dependencies.')
     keep_going(args.yes)
