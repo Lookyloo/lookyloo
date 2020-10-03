@@ -8,7 +8,7 @@ from lookyloo.helpers import get_homedir, shutdown_requested, set_running, unset
 from redis import StrictRedis
 
 
-if __name__ == '__main__':
+def main():
     r = StrictRedis(unix_socket_path=get_socket_path('cache'))
     r.delete('cache_loaded')
     website_dir = get_homedir() / 'website'
@@ -37,3 +37,7 @@ if __name__ == '__main__':
         except Exception:
             pass
         unset_running('website')
+
+
+if __name__ == '__main__':
+    main()

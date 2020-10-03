@@ -9,7 +9,8 @@ from lookyloo.lookyloo import Lookyloo, Indexing
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO, datefmt='%I:%M:%S')
 
-if __name__ == '__main__':
+
+def main():
     parser = argparse.ArgumentParser(description='Rebuild the redis cache.')
     parser.add_argument('--rebuild_pickles', default=False, action='store_true', help='Delete and rebuild the pickles. Count 20s/pickle, it can take a very long time.')
     args = parser.parse_args()
@@ -39,3 +40,7 @@ if __name__ == '__main__':
         if index:
             indexing.index_cookies_capture(tree)
             indexing.index_body_hashes_capture(tree)
+
+
+if __name__ == '__main__':
+    main()

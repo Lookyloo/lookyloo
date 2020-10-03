@@ -5,7 +5,8 @@ from lookyloo.helpers import is_running, get_socket_path
 import time
 from redis import StrictRedis
 
-if __name__ == '__main__':
+
+def main():
     r = StrictRedis(unix_socket_path=get_socket_path('cache'), db=1)
     r.set('shutdown', 1)
     time.sleep(5)
@@ -15,3 +16,7 @@ if __name__ == '__main__':
             break
         print(running)
         time.sleep(5)
+
+
+if __name__ == '__main__':
+    main()

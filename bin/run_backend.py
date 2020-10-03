@@ -67,7 +67,7 @@ def stop_all():
     shutdown_indexing()
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description='Manage backend DBs.')
     parser.add_argument("--start", action='store_true', default=False, help="Start all")
     parser.add_argument("--stop", action='store_true', default=False, help="Stop all")
@@ -80,3 +80,7 @@ if __name__ == '__main__':
         stop_all()
     if not args.stop and args.status:
         check_all()
+
+
+if __name__ == '__main__':
+    main()

@@ -88,13 +88,13 @@ git clone https://github.com/Lookyloo/lookyloo.git
 cd lookyloo
 poetry install
 echo LOOKYLOO_HOME="'`pwd`'" > .env
-poetry run update.py
+poetry run update
 ```
 
 # Run the app
 
 ```bash
-poetry run start.py
+poetry run start
 ```
 
 # Run the app in production

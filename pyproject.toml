@@ -20,21 +20,21 @@ classifiers = [
 ]
 
 [tool.poetry.scripts]
-start_website = "bin/start_website.py"
-start = "bin/start.py"
-run_backend = "bin/run_backend.py"
-async_scrape = "bin/async_scrape.py"
-shutdown = "bin/shutdown.py"
-stop = "bin/stop.py"
-rebuild_caches = "bin/rebuild_caches.py"
-update = "bin/update.py"
+start_website = "bin.start_website:main"
+start = "bin.start:main"
+run_backend = "bin.run_backend:main"
+async_scrape = "bin.async_scrape:main"
+shutdown = "bin.shutdown:main"
+stop = "bin.stop:main"
+rebuild_caches = "bin.rebuild_caches:main"
+update = "bin.update:main"
 
 
 [tool.poetry.dependencies]
 python = "^3.7"
 requests = "^2.22.0"
 flask = "^1.1.1"
-gunicorn = {version = "^20.0.4"}
+gunicorn = "^20.0.4"
 cchardet = "^2.1.5"
 redis = "^3.3.11"
 beautifulsoup4 = "^4.9.2"
@@ -55,5 +55,5 @@ mypy = "^0.782"
 ipython = "^7.13.0"
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry_core>=1.1.0"]
+build-backend = "poetry.core.masonry.api"

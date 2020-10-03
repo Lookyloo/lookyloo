@@ -29,6 +29,10 @@ class AsyncScraper(AbstractManager):
         unset_running('async_scrape')
 
 
-if __name__ == '__main__':
+def main():
     m = AsyncScraper()
     m.run(sleep_in_sec=1)
+
+
+if __name__ == '__main__':
+    main()
