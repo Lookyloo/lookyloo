@@ -3,14 +3,13 @@ Description=uWSGI instance to serve lookyloo
 After=network.target
 
 [Service]
-User=www-data
-Group=www-data
+User=<system user used to install lookyloo>
+Group=<group of the user used to install lookyloo>
 Type=forking
-WorkingDirectory=</git/home/directory>
-Environment=LOOKYLOO_HOME=</git/home/directory>
-Environment=PATH=</path/to/virtualenv>/bin:$PATH
-ExecStart=</path/to/virtualenv>/bin/start.py
-ExecStop=</path/to/virtualenv>/bin/stop.py
+WorkingDirectory=<path to the directory where you cloned the repository>
+Environment="PATH=<path to the directory where the poetry executable is>"
+ExecStart=/bin/bash -c "exec poetry run start"
+ExecStop=/bin/bash -c "exec poetry run stop"
 
 
 [Install]
