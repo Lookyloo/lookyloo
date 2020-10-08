@@ -7,7 +7,7 @@ User=<system user used to install lookyloo>
 Group=<group of the user used to install lookyloo>
 Type=forking
 WorkingDirectory=<path to the directory where you cloned the repository>
-Environment="PATH=<path to the directory where the poetry executable is>"
+Environment="PATH=<path to the directory where the poetry executable is>:/usr/bin"
 ExecStart=/bin/bash -c "exec poetry run start"
 ExecStop=/bin/bash -c "exec poetry run stop"
 
