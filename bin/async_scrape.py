@@ -3,6 +3,7 @@
 
 from pathlib import Path
 import logging
+from typing import Optional
 
 from lookyloo.abstractmanager import AbstractManager
 from lookyloo.helpers import get_homedir, set_running, unset_running, shutdown_requested
@@ -14,7 +15,7 @@ logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
 
 class AsyncScraper(AbstractManager):
 
-    def __init__(self, storage_directory: Path=None, loglevel: int=logging.INFO):
+    def __init__(self, storage_directory: Optional[Path]=None, loglevel: int=logging.INFO):
         super().__init__(loglevel)
         if not storage_directory:
             self.storage_directory = get_homedir() / 'scraped'

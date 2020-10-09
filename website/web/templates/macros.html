@@ -19,7 +19,7 @@
 </button>
 <div class="collapse" id="context_response_{{ urlnode_uuid }}">
   <div class="card card-body">
-      <form role="form" action="{{ url_for('add_context', tree_uuid=tree_uuid, urlnode_uuid=urlnode_uuid) }}" method=post enctype=multipart/form-data>
+      <form role="form" action="{{ url_for('add_context', tree_uuid=tree_uuid, node_uuid=urlnode_uuid) }}" method=post enctype=multipart/form-data>
         <div class="form-group">
           <div class="form-check">
             <input class="form-check-input" type="checkbox" name="legitimate" id="legitimate">

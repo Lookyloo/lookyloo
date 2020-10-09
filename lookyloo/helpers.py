@@ -2,21 +2,22 @@
 # -*- coding: utf-8 -*-
 import os
 import logging
-from typing import List, Optional, Dict, Union, Any
-from io import BufferedIOBase
-from pathlib import Path
-from .exceptions import MissingEnv, CreateDirectoryException, ConfigError
-from redis import Redis
-from redis.exceptions import ConnectionError
-from datetime import datetime, timedelta
 import time
-from glob import glob
 import json
 import traceback
-from urllib.parse import urlparse
 import pickle
-from har2tree import CrawledTree
+from typing import List, Optional, Dict, Union, Any, Set
+from io import BufferedIOBase
+from pathlib import Path
+from datetime import datetime, timedelta
+from glob import glob
+from urllib.parse import urlparse
+from functools import lru_cache
 
+from har2tree import CrawledTree, HostNode, URLNode
+from redis import Redis
+from redis.exceptions import ConnectionError
+from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
 from bs4 import BeautifulSoup  # type: ignore
 try:
     import cloudscraper  # type: ignore
@@ -24,10 +25,48 @@ try:
 except ImportError:
     HAS_CF = False
 
+from .exceptions import MissingEnv, CreateDirectoryException, ConfigError
+
+
 configs: Dict[str, Dict[str, Any]] = {}
 logger = logging.getLogger('Lookyloo - Helpers')
 
 
+# This method is used in json.dump or json.dumps calls as the default parameter:
+# json.dumps(..., default=dump_to_json)
+def serialize_to_json(obj: Union[Set]) -> Union[List]:
+    if isinstance(obj, set):
+        return list(obj)
+
+
+def get_resources_hashes(har2tree_container: Union[CrawledTree, HostNode, URLNode]) -> Set[str]:
+    if isinstance(har2tree_container, CrawledTree):
+        urlnodes = har2tree_container.root_hartree.url_tree.traverse()
+    elif isinstance(har2tree_container, HostNode):
+        urlnodes = har2tree_container.urls
+    elif isinstance(har2tree_container, URLNode):
+        urlnodes = [har2tree_container]
+    else:
+        raise Exception(f'har2tree_container cannot be {type(har2tree_container)}')
+    all_ressources_hashes: Set[str] = set()
+    for urlnode in urlnodes:
+        if hasattr(urlnode, 'resources_hashes'):
+            all_ressources_hashes.update(urlnode.resources_hashes)
+    return all_ressources_hashes
+
+
+@lru_cache
+def get_public_suffix_list():
+    """Initialize Public Suffix List"""
+    try:
+        psl_file = fetch()
+        psl = PublicSuffixList(psl_file=psl_file)
+    except Exception:
+        psl = PublicSuffixList()
+    return psl
+
+
+@lru_cache
 def get_homedir() -> Path:
     if not os.environ.get('LOOKYLOO_HOME'):
         # Try to open a .env file in the home directory if it exists.
@@ -47,11 +86,13 @@ Run the following command (assuming you run the code from the clonned repository
     return Path(os.environ['LOOKYLOO_HOME'])
 
 
+@lru_cache
 def get_email_template() -> str:
     with (get_homedir() / 'config' / 'email.tmpl').open() as f:
         return f.read()
 
 
+@lru_cache
 def load_configs(path_to_config_files: Optional[Union[str, Path]]=None):
     global configs
     if configs:
@@ -74,6 +115,7 @@ def load_configs(path_to_config_files: Optional[Union[str, Path]]=None):
             configs[path.stem] = json.load(_c)
 
 
+@lru_cache
 def get_config(config_type: str, entry: str) -> Any:
     """Get an entry from the given config_type file. Automatic fallback to the sample file"""
     global configs

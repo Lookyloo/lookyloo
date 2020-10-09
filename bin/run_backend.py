@@ -5,31 +5,32 @@ from lookyloo.helpers import get_homedir, check_running
 from subprocess import Popen
 import time
 from pathlib import Path
+from typing import Optional, List, Union
 
 import argparse
 
 
-def launch_cache(storage_directory: Path=None):
+def launch_cache(storage_directory: Optional[Path]=None):
     if not storage_directory:
         storage_directory = get_homedir()
     if not check_running('cache'):
         Popen(["./run_redis.sh"], cwd=(storage_directory / 'cache'))
 
 
-def shutdown_cache(storage_directory: Path=None):
+def shutdown_cache(storage_directory: Optional[Path]=None):
     if not storage_directory:
         storage_directory = get_homedir()
     Popen(["./shutdown_redis.sh"], cwd=(storage_directory / 'cache'))
 
 
-def launch_indexing(storage_directory: Path=None):
+def launch_indexing(storage_directory: Optional[Path]=None):
     if not storage_directory:
         storage_directory = get_homedir()
     if not check_running('indexing'):
         Popen(["./run_redis.sh"], cwd=(storage_directory / 'indexing'))
 
 
-def shutdown_indexing(storage_directory: Path=None):
+def shutdown_indexing(storage_directory: Optional[Path]=None):
     if not storage_directory:
         storage_directory = get_homedir()
     Popen(["./shutdown_redis.sh"], cwd=(storage_directory / 'indexing'))
@@ -40,12 +41,12 @@ def launch_all():
     launch_indexing()
 
 
-def check_all(stop=False):
-    backends = [['cache', False], ['indexing', False]]
+def check_all(stop: bool=False):
+    backends: List[List[Union[str, bool]]] = [['cache', False], ['indexing', False]]
     while True:
         for b in backends:
             try:
-                b[1] = check_running(b[0])
+                b[1] = check_running(b[0])  # type: ignore
             except Exception:
                 b[1] = False
         if stop:
