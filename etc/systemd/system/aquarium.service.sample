@@ -1,0 +1,14 @@
+[Unit]
+Description=aquarium service with docker compose
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=forking
+RemainAfterExit=true
+WorkingDirectory=path to the directory where you installed aquarium>
+ExecStart=/usr/bin/docker-compose up -d --remove-orphans
+ExecStop=/usr/bin/docker-compose down
+
+[Install]
+WantedBy=multi-user.target
