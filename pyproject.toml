@@ -51,7 +51,7 @@ pylookyloo = "^1.2"
 dnspython = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.782"
+mypy = "^0.790"
 ipython = "^7.13.0"
 
 [build-system]
