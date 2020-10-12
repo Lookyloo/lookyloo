@@ -95,15 +95,15 @@ class Lookyloo():
         uas = Counter([entry.split('|', 1)[1] for entry in entries])
         for ua, count in uas.most_common():
             parsed_ua = UserAgent(ua)
-            if not parsed_ua.platform or not parsed_ua.browser:  # type: ignore
+            if not parsed_ua.platform or not parsed_ua.browser:
                 continue
-            if parsed_ua.platform not in to_store:  # type: ignore
-                to_store[parsed_ua.platform] = {}  # type: ignore
-            if f'{parsed_ua.browser} {parsed_ua.version}' not in to_store[parsed_ua.platform]:  # type: ignore
-                to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'] = []  # type: ignore
-            to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'].append(parsed_ua.string)  # type: ignore
-            to_store['by_frequency'].append({'os': parsed_ua.platform,  # type: ignore
-                                             'browser': f'{parsed_ua.browser} {parsed_ua.version}',  # type: ignore
+            if parsed_ua.platform not in to_store:
+                to_store[parsed_ua.platform] = {}
+            if f'{parsed_ua.browser} {parsed_ua.version}' not in to_store[parsed_ua.platform]:
+                to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'] = []
+            to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'].append(parsed_ua.string)
+            to_store['by_frequency'].append({'os': parsed_ua.platform,
+                                             'browser': f'{parsed_ua.browser} {parsed_ua.version}',
                                              'useragent': parsed_ua.string})
         with self_generated_ua_file.open('w') as f:
             json.dump(to_store, f, indent=2)
@@ -355,7 +355,7 @@ class Lookyloo():
 
         if error_cache:
             self.logger.warning(error_cache['error'])
-            self.redis.hmset(str(capture_dir), error_cache)
+            self.redis.hmset(str(capture_dir), error_cache)  # type: ignore
             self.redis.hset('lookup_dirs', uuid, str(capture_dir))
 
         if fatal_error:
@@ -382,7 +382,7 @@ class Lookyloo():
         if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
             cache['no_index'] = 1
 
-        self.redis.hmset(str(capture_dir), cache)
+        self.redis.hmset(str(capture_dir), cache)  # type: ignore
         self.redis.hset('lookup_dirs', uuid, str(capture_dir))
 
     def hide_capture(self, capture_uuid: str) -> None:
@@ -399,16 +399,16 @@ class Lookyloo():
     def capture_uuids(self):
         return self.redis.hkeys('lookup_dirs')
 
-    def capture_cache(self, capture_uuid: str) -> Dict[str, Any]:
+    def capture_cache(self, capture_uuid: str) -> Dict[str, Union[str, Path]]:
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
             raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
         if self.redis.hget(str(capture_dir), 'incomplete_redirects') == '1':
             # try to rebuild the cache
             self._set_capture_cache(capture_dir, force=True)
-        cached = self.redis.hgetall(str(capture_dir))
+        cached: Dict[str, Union[str, Path]] = self.redis.hgetall(str(capture_dir))  # type: ignore
         if all(key in cached.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir']):
-            cached['redirects'] = json.loads(cached['redirects'])
+            cached['redirects'] = json.loads(cached['redirects'])  # type: ignore
             cached['capture_dir'] = Path(cached['capture_dir'])
             return cached
         elif 'error' in cached:
@@ -436,7 +436,7 @@ class Lookyloo():
         return sorted(self.scrape_dir.iterdir(), reverse=True)
 
     def lookup_capture_dir(self, capture_uuid: str) -> Union[Path, None]:
-        capture_dir = self.redis.hget('lookup_dirs', capture_uuid)
+        capture_dir: str = self.redis.hget('lookup_dirs', capture_uuid)  # type: ignore
         if capture_dir:
             return Path(capture_dir)
         return None
@@ -457,10 +457,10 @@ class Lookyloo():
         uuid = self.redis.spop('to_scrape')
         if not uuid:
             return None
-        to_scrape = self.redis.hgetall(uuid)
+        to_scrape: Dict[str, Union[str, int, float]] = self.redis.hgetall(uuid)  # type: ignore
         self.redis.delete(uuid)
         to_scrape['perma_uuid'] = uuid
-        if self.scrape(**to_scrape):
+        if self.scrape(**to_scrape):  # type: ignore
             self.logger.info(f'Processed {to_scrape["url"]}')
             return True
         return False
@@ -473,10 +473,10 @@ class Lookyloo():
         initial_url = ''
         cache = self.capture_cache(capture_uuid)
         if cache:
-            initial_url = cache['url']
+            initial_url = cache['url']  # type: ignore
             if 'redirects' in cache and cache['redirects']:
                 redirects = "Redirects:\n"
-                redirects += '\n'.join(cache['redirects'])
+                redirects += '\n'.join(cache['redirects'])  # type: ignore
             else:
                 redirects = "No redirects."
 
@@ -512,15 +512,15 @@ class Lookyloo():
             return
         ua = UserAgent(tree.root_hartree.user_agent)
         to_dump = {}
-        if ua.platform:  # type: ignore
-            to_dump['os'] = ua.platform  # type: ignore
-        if ua.browser:  # type: ignore
-            if ua.version:  # type: ignore
-                to_dump['browser'] = f'{ua.browser} {ua.version}'  # type: ignore
+        if ua.platform:
+            to_dump['os'] = ua.platform
+        if ua.browser:
+            if ua.version:
+                to_dump['browser'] = f'{ua.browser} {ua.version}'
             else:
-                to_dump['browser'] = ua.browser  # type: ignore
-        if ua.language:  # type: ignore
-            to_dump['language'] = ua.language  # type: ignore
+                to_dump['browser'] = ua.browser
+        if ua.language:
+            to_dump['language'] = ua.language
 
         if not to_dump:
             # UA not recognized
@@ -559,7 +559,7 @@ class Lookyloo():
     def get_capture(self, capture_uuid: str) -> BytesIO:
         return self._get_raw(capture_uuid)
 
-    def scrape(self, url: str, cookies_pseudofile: Optional[BufferedIOBase]=None,
+    def scrape(self, url: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
                referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
                browser: Optional[str]=None) -> Union[bool, str]:
@@ -648,12 +648,12 @@ class Lookyloo():
         return perma_uuid
 
     def get_body_hash_investigator(self, body_hash: str) -> Tuple[List[Tuple[str, str]], List[Tuple[str, float]]]:
-        captures = []
+        captures: List[Tuple[str, str]] = []
         total_captures, details = self.indexing.get_body_hash_captures(body_hash, limit=-1)
         for capture_uuid, url_uuid, url_hostname, _ in details:
             cache = self.capture_cache(capture_uuid)
             if cache:
-                captures.append((capture_uuid, cache['title']))
+                captures.append((capture_uuid, cache['title']))  # type: ignore
         domains = self.indexing.get_body_hash_domains(body_hash)
         return captures, domains
 
@@ -674,9 +674,9 @@ class Lookyloo():
             cache = self.capture_cache(h_capture_uuid)
             if cache:
                 if same_url:
-                    captures_list['same_url'].append((h_capture_uuid, url_uuid, cache['title'], cache['timestamp'], url_hostname))
+                    captures_list['same_url'].append((h_capture_uuid, url_uuid, cache['title'], cache['timestamp'], url_hostname))  # type: ignore
                 else:
-                    captures_list['different_url'].append((h_capture_uuid, url_uuid, cache['title'], cache['timestamp'], url_hostname))
+                    captures_list['different_url'].append((h_capture_uuid, url_uuid, cache['title'], cache['timestamp'], url_hostname))  # type: ignore
         return total_captures, captures_list
 
     def _normalize_known_content(self, h: str, known_content: Dict[str, Any], url: URLNode):

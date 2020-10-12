@@ -34,7 +34,7 @@ class Indexing():
         return self.redis.zrevrange(f'cn|{cookie_name}', 0, -1, withscores=True)
 
     def get_cookies_names_captures(self, cookie_name: str) -> List[Tuple[str, str]]:
-        return [uuids.split('|')for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]
+        return [uuids.split('|') for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]  # type: ignore
 
     def index_cookies_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
@@ -118,7 +118,7 @@ class Indexing():
                                filter_capture_uuid: Optional[str]=None,
                                limit: int=20) -> Tuple[int, List[Tuple[str, str, str, bool]]]:
         to_return: List[Tuple[str, str, str, bool]] = []
-        all_captures = self.redis.smembers(f'bh|{body_hash}|captures')
+        all_captures: Set[str] = self.redis.smembers(f'bh|{body_hash}|captures')  # type: ignore
         len_captures = len(all_captures)
         for capture_uuid in list(all_captures)[:limit]:
             if capture_uuid == filter_capture_uuid:
@@ -127,10 +127,11 @@ class Indexing():
                 continue
             for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
                 url_uuid, hostnode_uuid, url = entry.split('|', 2)
+                hostname: str = urlsplit(url).hostname
                 if filter_url:
-                    to_return.append((capture_uuid, hostnode_uuid, urlsplit(url).hostname, url == filter_url))
+                    to_return.append((capture_uuid, hostnode_uuid, hostname, url == filter_url))
                 else:
-                    to_return.append((capture_uuid, hostnode_uuid, urlsplit(url).hostname, False))
+                    to_return.append((capture_uuid, hostnode_uuid, hostname, False))
         return len_captures, to_return
 
     def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:

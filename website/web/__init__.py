@@ -224,10 +224,10 @@ def redirects(tree_uuid: str):
         return Response('Not available.', mimetype='text/text')
     if not cache['redirects']:
         return Response('No redirects.', mimetype='text/text')
-    if cache['url'] == cache['redirects'][0]:
-        to_return = BytesIO('\n'.join(cache['redirects']).encode())
+    if cache['url'] == cache['redirects'][0]:  # type: ignore
+        to_return = BytesIO('\n'.join(cache['redirects']).encode())  # type: ignore
     else:
-        to_return = BytesIO('\n'.join([cache['url']] + cache['redirects']).encode())
+        to_return = BytesIO('\n'.join([cache['url']] + cache['redirects']).encode())  # type: ignore
     return send_file(to_return, mimetype='text/text',
                      as_attachment=True, attachment_filename='redirects.txt')
 
@@ -364,7 +364,7 @@ def index_generic(show_hidden: bool=False):
         if 'timestamp' not in cached:
             # this is a buggy capture, skip
             continue
-        if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:
+        if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:  # type: ignore
             continue
         titles.append((cached['uuid'], cached['title'], cached['timestamp'], cached['url'],
                        cached['redirects'], True if cached['incomplete_redirects'] == '1' else False))

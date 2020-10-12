@@ -257,21 +257,26 @@ def load_known_content(directory: str='known_content') -> Dict[str, Dict[str, An
     return to_return
 
 
-def load_cookies(cookie_pseudofile: Optional[BufferedIOBase]=None) -> List[Dict[str, str]]:
+def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str]]=None) -> List[Dict[str, Union[str, bool]]]:
+    cookies: List[Dict[str, Union[str, bool]]]
     if cookie_pseudofile:
-        cookies = json.load(cookie_pseudofile)
+        if isinstance(cookie_pseudofile, str):
+            cookies = json.loads(cookie_pseudofile)
+        else:
+            cookies = json.load(cookie_pseudofile)
     else:
         if not (get_homedir() / 'cookies.json').exists():
             return []
 
         with (get_homedir() / 'cookies.json').open() as f:
             cookies = json.load(f)
-    to_return = []
+    to_return: List[Dict[str, Union[str, bool]]] = []
     try:
         for cookie in cookies:
+            to_add: Dict[str, Union[str, bool]]
             if 'Host raw' in cookie:
                 # Cookie export format for Cookie Quick Manager
-                u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]
+                u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]  # type: ignore
                 to_add = {'path': cookie['Path raw'],
                           'name': cookie['Name raw'],
                           'httpOnly': cookie['HTTP only raw'] == 'true',
