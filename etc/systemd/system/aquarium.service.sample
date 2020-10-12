@@ -4,6 +4,8 @@ Requires=docker.service
 After=docker.service
 
 [Service]
+User=<system user used to install lookyloo>
+Group=<group of the user used to install lookyloo>
 Type=forking
 RemainAfterExit=true
 WorkingDirectory=path to the directory where you installed aquarium>
