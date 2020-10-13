@@ -17,9 +17,10 @@ logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
 def compute_hash_self():
     m = hashlib.sha256()
     with (get_homedir() / 'bin' / 'update.py').open('rb') as f:
-        return m.update(f.read())
+        m.update(f.read())
+        return m.digest()
 
-
+      
 def keep_going(ignore=False):
     if ignore:
         return
