@@ -20,7 +20,7 @@ def compute_hash_self():
         m.update(f.read())
         return m.digest()
 
-      
+
 def keep_going(ignore=False):
     if ignore:
         return
@@ -87,18 +87,18 @@ def main():
     print('* Update third party dependencies for the website.')
     keep_going(args.yes)
     run_command('tools/3rdparty.py')
-    
+
     print('* Restarting Lookyloo.')
     keep_going(args.yes)
     service = "lookyloo"
-    p =  subprocess.Popen(["systemctl", "is-active",  service], stdout=subprocess.PIPE)
+    p = subprocess.Popen(["systemctl", "is-active", service], stdout=subprocess.PIPE)
     (output, err) = p.communicate()
     if output.decode('utf-8') == "active\n":
-      run_command('sudo service lookyloo restart')
+        run_command('sudo service lookyloo restart')
     else:
-      run_command('poetry run stop')
-      run_command('poetry run start')
-   
+        run_command('poetry run stop')
+        run_command('poetry run start')
+
 
 if __name__ == '__main__':
     main()
