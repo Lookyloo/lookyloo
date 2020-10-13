@@ -55,7 +55,7 @@ def get_resources_hashes(har2tree_container: Union[CrawledTree, HostNode, URLNod
     return all_ressources_hashes
 
 
-@lru_cache
+@lru_cache(64)
 def get_public_suffix_list():
     """Initialize Public Suffix List"""
     try:
@@ -66,7 +66,7 @@ def get_public_suffix_list():
     return psl
 
 
-@lru_cache
+@lru_cache(64)
 def get_homedir() -> Path:
     if not os.environ.get('LOOKYLOO_HOME'):
         # Try to open a .env file in the home directory if it exists.
@@ -86,13 +86,13 @@ Run the following command (assuming you run the code from the clonned repository
     return Path(os.environ['LOOKYLOO_HOME'])
 
 
-@lru_cache
+@lru_cache(64)
 def get_email_template() -> str:
     with (get_homedir() / 'config' / 'email.tmpl').open() as f:
         return f.read()
 
 
-@lru_cache
+@lru_cache(64)
 def load_configs(path_to_config_files: Optional[Union[str, Path]]=None):
     global configs
     if configs:
@@ -115,7 +115,7 @@ def load_configs(path_to_config_files: Optional[Union[str, Path]]=None):
             configs[path.stem] = json.load(_c)
 
 
-@lru_cache
+@lru_cache(64)
 def get_config(config_type: str, entry: str) -> Any:
     """Get an entry from the given config_type file. Automatic fallback to the sample file"""
     global configs
