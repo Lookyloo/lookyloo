@@ -100,23 +100,14 @@ def get_pw(username: str) -> Optional[str]:
 def hashes_hostnode(tree_uuid: str, node_uuid: str):
     hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
     return send_file(BytesIO('\n'.join(hashes).encode()),
-                     mimetype='test/plain', as_attachment=True, attachment_filename='hashes.txt')
+                     mimetype='test/plain', as_attachment=True, attachment_filename=f'hashes.{node_uuid}.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>/text', methods=['GET'])
-def hostnode_details_text(tree_uuid: str, node_uuid: str):
+def urls_hostnode(tree_uuid: str, node_uuid: str):
     hostnode = lookyloo.get_hostnode_from_tree(tree_uuid, node_uuid)
-    urls = []
-    for url in hostnode.urls:
-        urls.append(url.name)
-    content = '''# URLs
-
-{}
-'''.format('\n'.join(urls))
-    to_return = BytesIO(content.encode())
-    to_return.seek(0)
-    return send_file(to_return, mimetype='text/markdown',
-                     as_attachment=True, attachment_filename='file.md')
+    return send_file(BytesIO('\n'.join(url.name for url in hostnode.urls).encode()),
+                     mimetype='test/plain', as_attachment=True, attachment_filename=f'urls.{node_uuid}.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>', methods=['GET'])
