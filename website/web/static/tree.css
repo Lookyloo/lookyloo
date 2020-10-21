@@ -14,11 +14,6 @@
   stroke-width: 2px;
 }
 
-.container {
-  width: 0px;
-  height: 0px;
-}
-
 #menu_container {
   position: fixed;
   top: 5px;
