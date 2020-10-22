@@ -170,10 +170,6 @@ class VirusTotal():
         self.storage_dir_vt = get_homedir() / 'vt_url'
         self.storage_dir_vt.mkdir(parents=True, exist_ok=True)
 
-    def __del__(self) -> None:
-        if hasattr(self, 'client'):
-            self.client.close()
-
     def __get_cache_directory(self, url: str) -> Path:
         url_id = vt.url_id(url)
         m = hashlib.md5()

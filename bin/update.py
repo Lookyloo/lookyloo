@@ -30,12 +30,13 @@ def keep_going(ignore=False):
         sys.exit()
 
 
-def run_command(command):
+def run_command(command, expect_fail: bool=False, capture_output: bool=True):
     args = shlex.split(command)
     homedir = get_homedir()
-    process = subprocess.run(args, cwd=homedir, capture_output=True)
-    print(process.stdout.decode())
-    if process.returncode:
+    process = subprocess.run(args, cwd=homedir, capture_output=capture_output)
+    if capture_output:
+        print(process.stdout.decode())
+    if process.returncode and not expect_fail:
         print(process.stderr.decode())
         sys.exit()
 
@@ -91,13 +92,17 @@ def main():
     print('* Restarting Lookyloo.')
     keep_going(args.yes)
     service = "lookyloo"
-    p = subprocess.Popen(["systemctl", "is-active", service], stdout=subprocess.PIPE)
-    (output, err) = p.communicate()
-    if output.decode('utf-8') == "active\n":
+    p = subprocess.run(["systemctl", "is-active", "--quiet", service])
+    try:
+        p.check_returncode()
+        print('Restarting Lookyloo with systemd...')
         run_command('sudo service lookyloo restart')
-    else:
-        run_command('poetry run stop')
-        run_command('poetry run start')
+        print('done.')
+    except subprocess.CalledProcessError:
+        print('Restarting Lookyloo with poetry...')
+        run_command('poetry run stop', expect_fail=True)
+        run_command('poetry run start', capture_output=False)
+        print('Lookyloo started.')
 
 
 if __name__ == '__main__':
