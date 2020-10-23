@@ -657,6 +657,32 @@ class Lookyloo():
         domains = self.indexing.get_body_hash_domains(body_hash)
         return captures, domains
 
+    def get_body_hash_full(self, body_hash: str) -> Tuple[Dict[str, List[Dict[str, str]]], BytesIO]:
+        details = self.indexing.get_body_hash_urls(body_hash)
+        body_content = BytesIO()
+        # get the body from the first entry in the details list
+        for url, entries in details.items():
+            capture_dir = self.lookup_capture_dir(entries[0]['capture'])
+            if not capture_dir:
+                raise MissingUUID(f"Unable to find {entries[0]['capture']}")
+
+            ct = load_pickle_tree(capture_dir)
+            if not ct:
+                raise MissingUUID(f'Unable to find {capture_dir}')
+            urlnode = ct.root_hartree.get_url_node_by_uuid(entries[0]['urlnode'])
+            if urlnode.body_hash == body_hash:
+                # the hash we're looking for is the whole file
+                body_content = urlnode.body
+            else:
+                # The hash is an embedded resource
+                for mimetype, blobs in urlnode.body_hash.embedded_ressources.items():
+                    for h, b in blobs:
+                        if h == body_hash:
+                            body_content = b
+                            break
+            break
+        return details, body_content
+
     def get_cookie_name_investigator(self, cookie_name: str):
         captures = []
         for capture_uuid, url_uuid in self.indexing.get_cookies_names_captures(cookie_name):

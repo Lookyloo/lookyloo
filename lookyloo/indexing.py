@@ -3,6 +3,7 @@
 
 from urllib.parse import urlsplit
 from typing import List, Tuple, Set, Dict, Optional
+from collections import defaultdict
 
 from redis import Redis
 from har2tree import CrawledTree
@@ -104,8 +105,8 @@ class Indexing():
                 # set of all captures with this hash
                 pipeline.sadd(f'bh|{h}|captures', crawled_tree.uuid)
                 # ZSet of all urlnode_UUIDs|full_url
-                pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1, f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
-
+                pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1,
+                                 f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
         pipeline.execute()
 
     def get_hash_uuids(self, body_hash: str) -> Tuple[str, str, str]:
@@ -136,3 +137,12 @@ class Indexing():
 
     def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:
         return self.redis.zrevrange(f'bh|{body_hash}', 0, -1, withscores=True)
+
+    def get_body_hash_urls(self, body_hash: str) -> Dict[str, List[Dict[str, str]]]:
+        all_captures: Set[str] = self.redis.smembers(f'bh|{body_hash}|captures')  # type: ignore
+        urls = defaultdict(list)
+        for capture_uuid in list(all_captures):
+            for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
+                url_uuid, hostnode_uuid, url = entry.split('|', 2)
+                urls[url].append({'capture': capture_uuid, 'hostnode': hostnode_uuid, 'urlnode': url_uuid})
+        return urls

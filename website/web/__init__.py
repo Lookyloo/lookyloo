@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import base64
 from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 import os
@@ -598,4 +599,14 @@ def json_redirects(tree_uuid: str):
     else:
         to_return['response']['redirects'] = cache['redirects']
 
+    return jsonify(to_return)
+
+
+@app.route('/json/hash_info/<h>', methods=['GET'])
+def json_hash_info(h: str):
+    details, body = lookyloo.get_body_hash_full(h)
+    if not details:
+        return {'error': 'Unknown Hash.'}
+    to_return: Dict[str, Any] = {'response': {'hash': h, 'details': details,
+                                              'body': base64.b64encode(body.getvalue()).decode()}}
     return jsonify(to_return)
