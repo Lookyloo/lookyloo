@@ -49,6 +49,7 @@ pysanejs = "^1.1"
 har2tree = "^1.2.4"
 pylookyloo = "^1.2"
 dnspython = "^2.0.0"
+pytaxonomies = "^1.2"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.790"

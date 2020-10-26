@@ -36,10 +36,11 @@ def main():
             if cache.get('no_index') is not None:
                 index = False
 
-        # NOTE: these two methods do nothing if we just generated the pickle
+        # NOTE: these methods do nothing if we just generated the pickle
         if index:
             indexing.index_cookies_capture(tree)
             indexing.index_body_hashes_capture(tree)
+            indexing.index_url_capture(tree)
 
 
 if __name__ == '__main__':

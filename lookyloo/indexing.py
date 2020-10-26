@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import hashlib
 from urllib.parse import urlsplit
 from typing import List, Tuple, Set, Dict, Optional
 from collections import defaultdict
@@ -146,3 +147,40 @@ class Indexing():
                 url_uuid, hostnode_uuid, url = entry.split('|', 2)
                 urls[url].append({'capture': capture_uuid, 'hostnode': hostnode_uuid, 'urlnode': url_uuid})
         return urls
+
+    # ###### URLs and Domains ######
+
+    @property
+    def urls(self) -> List[Tuple[str, float]]:
+        return self.redis.zrevrange('urls', 0, 200, withscores=True)
+
+    @property
+    def hostnames(self) -> List[Tuple[str, float]]:
+        return self.redis.zrevrange('hostnames', 0, 200, withscores=True)
+
+    def index_url_capture(self, crawled_tree: CrawledTree) -> None:
+        if self.redis.sismember('indexed_urls', crawled_tree.uuid):
+            # Do not reinder
+            return
+        self.redis.sadd('indexed_urls', crawled_tree.uuid)
+        pipeline = self.redis.pipeline()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            if not urlnode.hostname or not urlnode.name:
+                continue
+            pipeline.zincrby('hostnames', 1, urlnode.hostname)
+            pipeline.sadd(f'hostnames|{urlnode.hostname}|captures', crawled_tree.uuid)
+            pipeline.zincrby('urls', 1, urlnode.name)
+            # set of all captures with this URL
+            # We need to make sure the keys in redis aren't too long.
+            m = hashlib.md5()
+            m.update(urlnode.name.encode())
+            pipeline.sadd(f'urls|{m.hexdigest()}|captures', crawled_tree.uuid)
+        pipeline.execute()
+
+    def get_captures_url(self, url: str) -> Set[str]:
+        m = hashlib.md5()
+        m.update(url.encode())
+        return self.redis.smembers(f'urls|{m.hexdigest()}|captures')  # type: ignore
+
+    def get_captures_hostname(self, hostname: str) -> Set[str]:
+        return self.redis.smembers(f'hostnames|{hostname}|captures')  # type: ignore

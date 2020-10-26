@@ -610,3 +610,10 @@ def json_hash_info(h: str):
     to_return: Dict[str, Any] = {'response': {'hash': h, 'details': details,
                                               'body': base64.b64encode(body.getvalue()).decode()}}
     return jsonify(to_return)
+
+
+@app.route('/json/url_info', methods=['POST'])
+def json_url_info():
+    to_query = request.get_json(force=True)
+    occrrences = lookyloo.get_url_occurrences(to_query['url'])
+    return jsonify(occrrences)

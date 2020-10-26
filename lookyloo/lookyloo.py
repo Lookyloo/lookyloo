@@ -129,6 +129,7 @@ class Lookyloo():
             if index:
                 self.indexing.index_cookies_capture(ct)
                 self.indexing.index_body_hashes_capture(ct)
+                self.indexing.index_url_capture(ct)
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 
@@ -682,6 +683,41 @@ class Lookyloo():
                             break
             break
         return details, body_content
+
+    def get_url_occurrences(self, url: str):
+        capture_uuids = self.indexing.get_captures_url(url)
+        to_return: Dict[str, Dict] = {cuuid: {} for cuuid in capture_uuids}
+        for capture_uuid in capture_uuids:
+            capture_dir = self.lookup_capture_dir(capture_uuid)
+            if not capture_dir:
+                raise MissingUUID(f"Unable to find {capture_uuid}")
+
+            ct = load_pickle_tree(capture_dir)
+            if not ct:
+                raise MissingUUID(f'Unable to find {capture_dir}')
+            to_return[capture_uuid]['start_timestamp'] = ct.root_hartree.start_time.isoformat()
+            to_return[capture_uuid]['urlnodes'] = {}
+            for urlnode in ct.root_hartree.url_tree.search_nodes(name=url):
+                to_return[capture_uuid]['urlnodes'][urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
+                                                                     'hostnode_uuid': urlnode.hostnode_uuid}
+                if hasattr(urlnode, 'body_hash'):
+                    to_return[capture_uuid]['urlnodes'][urlnode.uuid]['hash'] = urlnode.body_hash
+        return to_return
+
+    def get_hostname_occurrences(self, hostname: str):
+        capture_uuids = self.indexing.get_captures_hostname(hostname)
+        to_return: Dict[str, Dict] = {cuuid: {} for cuuid in capture_uuids}
+        for capture_uuid in capture_uuids:
+            capture_dir = self.lookup_capture_dir(capture_uuid)
+            if not capture_dir:
+                raise MissingUUID(f"Unable to find {capture_uuid}")
+
+            ct = load_pickle_tree(capture_dir)
+            if not ct:
+                raise MissingUUID(f'Unable to find {capture_dir}')
+            to_return[capture_uuid]['start_timestamp'] = ct.root_hartree.start_time.isoformat()
+            to_return[capture_uuid]['hostnodes'] = [hn.uuid for hn in ct.root_hartree.hostname_tree.search_node(name=hostname)]
+        return to_return
 
     def get_cookie_name_investigator(self, cookie_name: str):
         captures = []
