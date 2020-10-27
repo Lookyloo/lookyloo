@@ -651,7 +651,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pylookyloo"
-version = "1.2.3"
+version = "1.2.4"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
@@ -1494,8 +1494,8 @@ pyhamcrest = [
     {file = "PyHamcrest-2.0.2.tar.gz", hash = "sha256:412e00137858f04bde0729913874a48485665f2d36fe9ee449f26be864af9316"},
 ]
 pylookyloo = [
-    {file = "pylookyloo-1.2.3-py3-none-any.whl", hash = "sha256:a05e83984797f401e115765dec149c896f07136a3e69f2144010d27b067621a9"},
-    {file = "pylookyloo-1.2.3.tar.gz", hash = "sha256:17e46864c296a3ed5b9aac3dc868e322a2d0a0fcd97effed363b337961ac3c81"},
+    {file = "pylookyloo-1.2.4-py3-none-any.whl", hash = "sha256:7573f921c77f6fd3b64a75713b6d48aa441d46a03beb1834cb1513fa40dc0f9f"},
+    {file = "pylookyloo-1.2.4.tar.gz", hash = "sha256:647466d66adaf1b45694982373c3a16fcdb227f7d6900ab72870fbc3f485af62"},
 ]
 pyopenssl = [
     {file = "pyOpenSSL-19.1.0-py2.py3-none-any.whl", hash = "sha256:621880965a720b8ece2f1b2f54ea2071966ab00e2970ad2ce11d596102063504"},
