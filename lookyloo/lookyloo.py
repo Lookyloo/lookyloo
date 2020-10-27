@@ -717,10 +717,11 @@ class Lookyloo():
                 raise MissingUUID(f'Unable to find {capture_dir}')
             to_return[capture_uuid]['start_timestamp'] = ct.root_hartree.start_time.isoformat()
             to_return[capture_uuid]['hostnodes'] = []
+            if with_urls_occurrences:
+                to_return[capture_uuid]['urlnodes'] = {}
             for hostnode in ct.root_hartree.hostname_tree.search_nodes(name=hostname):
                 to_return[capture_uuid]['hostnodes'].append(hostnode.uuid)
                 if with_urls_occurrences:
-                    to_return[capture_uuid]['urlnodes'] = {}
                     for urlnode in hostnode.urls:
                         to_return[capture_uuid]['urlnodes'][urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
                                                                              'url': urlnode.name,
