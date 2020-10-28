@@ -1,3 +1,65 @@
+{% macro taxonomy_table(tree_uuid, categories_info, add_category) %}
+<div class="table-responsive">
+  <table id="table" class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Machinetag</th>
+        {% if add_category %}
+        <th>Click to add category</th>
+        {% else %}
+        <th>Click to remove category</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+    {% for mt, val in categories_info.items() %}
+      <tr>
+        <td><a href="https://www.misp-project.org/taxonomies.html#_{{ val[0].name }}">{{ val[0].name }}</a></td>
+        <td>
+            {% if val|length == 3 %}
+                {% if val[2].description %}
+                    {{ val[2].description }}
+                {% elif val[2].expanded %}
+                    {{ val[2].expanded }}
+                {%endif%}
+            {% elif val[1].description %}
+                {{ val[1].description }}
+            {% else %}
+                {{ val[1].predicate }}
+            {%endif%}
+        </td>
+        <td>{{ mt }}</td>
+        <td>
+          <button type="button" class="btn btn-link {% if add_category %}categorize_capture{% else %}uncategorize_capture{% endif %}" value="{{ mt }}">
+          {% if add_category %}
+          Categorize capture.
+          {% else %}
+          Uncategorize capture.
+          {% endif %}
+          </button>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script>
+  $('.categorize_capture').on('click',function(e){
+    var button = $(this);
+    $.get("{{ url_for('categorize_capture', tree_uuid=tree_uuid) }}" + button.val())
+    $('.modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}")
+  });
+  $('.uncategorize_capture').on('click',function(e){
+    var button = $(this);
+    $.get("{{ url_for('uncategorize_capture', tree_uuid=tree_uuid) }}" + button.val())
+    $('.modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}")
+  });
+</script>
+{% endmacro %}
+
+
 {% macro known_content_details(details) %}
 <div>
 {% if details is string %}

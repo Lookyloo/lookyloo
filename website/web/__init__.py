@@ -14,7 +14,7 @@ from flask import Flask, render_template, request, send_file, redirect, url_for,
 from flask_bootstrap import Bootstrap  # type: ignore
 from flask_httpauth import HTTPDigestAuth  # type: ignore
 
-from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents, get_config
+from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents, get_config, get_taxonomies
 from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 from .proxied import ReverseProxied
@@ -172,6 +172,36 @@ def trigger_modules(tree_uuid: str, force: int):
     return redirect(url_for('modules', tree_uuid=tree_uuid))
 
 
+@app.route('/tree/<string:tree_uuid>/categories_capture/', defaults={'query': ''})
+@app.route('/tree/<string:tree_uuid>/categories_capture/<string:query>', methods=['GET'])
+def categories_capture(tree_uuid: str, query: str):
+    current_categories = lookyloo.categories_capture(tree_uuid)
+    matching_categories = None
+    if query:
+        matching_categories = {}
+        t = get_taxonomies()
+        entries = t.search(query)
+        if entries:
+            matching_categories = {e: t.revert_machinetag(e) for e in entries}
+    return render_template('categories_capture.html', tree_uuid=tree_uuid,
+                           current_categories=current_categories,
+                           matching_categories=matching_categories)
+
+
+@app.route('/tree/<string:tree_uuid>/uncategorize/', defaults={'category': ''})
+@app.route('/tree/<string:tree_uuid>/uncategorize/<string:category>', methods=['GET'])
+def uncategorize_capture(tree_uuid: str, category: str):
+    lookyloo.uncategorize_capture(tree_uuid, category)
+    return jsonify({'response': f'{category} successfully added to {tree_uuid}'})
+
+
+@app.route('/tree/<string:tree_uuid>/categorize/', defaults={'category': ''})
+@app.route('/tree/<string:tree_uuid>/categorize/<string:category>', methods=['GET'])
+def categorize_capture(tree_uuid: str, category: str):
+    lookyloo.categorize_capture(tree_uuid, category)
+    return jsonify({'response': f'{category} successfully removed from {tree_uuid}'})
+
+
 @app.route('/tree/<string:tree_uuid>/stats', methods=['GET'])
 def stats(tree_uuid: str):
     stats = lookyloo.get_statistics(tree_uuid)
@@ -311,11 +341,16 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
             enable_context_by_users = True
         else:
             enable_context_by_users = False
+        if get_config('generic', 'enable_categorization'):
+            enable_categorization = True
+        else:
+            enable_categorization = False
         tree_json, start_time, user_agent, root_url, meta = lookyloo.load_tree(tree_uuid)
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_context_by_users=enable_context_by_users,
+                               enable_categorization=enable_categorization,
                                blur_screenshot=blur_screenshot,
                                urlnode_uuid=urlnode_uuid, has_redirects=True if cache['redirects'] else False)
 

@@ -9,13 +9,35 @@
   {{ super() }}
   <script src='{{ url_for('static', filename='d3.v6.min.js') }}'></script>
   <script src='{{ url_for('static', filename='tree.js') }}'></script>
+
   <script>
   $('#modulesModal').on('show.bs.modal', function(e) {
       var button = $(e.relatedTarget);
       var modal = $(this);
       modal.find('.modal-body').load(button.data("remote"));
   });
+  $('.modulesForceRefresh').on('click',function(){
+      $('.modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}",function(){
+        $('#modulesModal').modal({show:true});
+      });
+  });
   </script>
+
+  <script>
+  $('#categoriesModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  $('#searchCategories').submit(function(event){
+    var query = $("#query").val();
+    $('.modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}" + query, function() {
+      $('#categoriesModal').modal({show:true});
+    });
+    event.preventDefault();
+  });
+  </script>
+
   <script>
   $('#statsModal').on('show.bs.modal', function(e) {
       var button = $(e.relatedTarget);
@@ -23,13 +45,7 @@
       modal.find('.modal-body').load(button.data("remote"));
   });
   </script>
-  <script>
-  $('.modulesForceRefresh').on('click',function(){
-      $('.modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}",function(){
-          $('#modulesModal').modal({show:true});
-      });
-  });
-  </script>
+
   {% if urlnode_uuid %}
   <script>
   history.scrollRestoration = "manual";
@@ -82,6 +98,12 @@
           <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
            data-toggle="modal" data-target="#modulesModal" role="button">Show third party reports</a>
         </li>
+        {% if enable_categorization %}
+        <li>
+          <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
+           data-toggle="modal" data-target="#categoriesModal" role="button">Manage categories of the capture</a>
+        </li>
+        {% endif %}
         <li>
           <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
            data-toggle="modal" data-target="#statsModal" role="button">Show Statistics</a>
@@ -228,7 +250,7 @@
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
           <div class="modal-header">
-              <h5 class="modal-title" id="modulesModalLabel">Statistics</h5>
+              <h5 class="modal-title" id="statsModalLabel">Statistics</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">×</span>
               </button>
@@ -247,7 +269,7 @@
   <div class="modal-dialog modal-xl" role="document">
   <div class="modal-content">
     <div class="modal-header">
-      <h5 class="modal-title" id="modulesModalLabel">Screenshot</h5>
+      <h5 class="modal-title" id="screenshotModalLabel">Screenshot</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">×</span>
         </button>
@@ -284,6 +306,32 @@
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-success modulesForceRefresh">Re-run all modules</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="categoriesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="categoriesModalLabel">Categorize the capture</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              ... loading the categorization options ...
+          </div>
+          <p>
+            <form id=searchCategories>
+            <label for="query">Category to search</label>
+            <input type="text" class="form-control" name="query" id="query" placeholder="Query">
+            <button type="submit" class="btn btn-success">Search</button>
+            </form>
+          </p>
+          <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
       </div>

@@ -30,7 +30,7 @@ from werkzeug.useragents import UserAgent
 from .exceptions import NoValidHarFile, MissingUUID
 from .helpers import (get_homedir, get_socket_path, load_cookies, get_config,
                       safe_create_dir, get_email_template, load_pickle_tree,
-                      remove_pickle_tree, get_resources_hashes)
+                      remove_pickle_tree, get_resources_hashes, get_taxonomies)
 from .modules import VirusTotal, SaneJavaScript, PhishingInitiative
 from .context import Context
 from .indexing import Indexing
@@ -43,6 +43,7 @@ class Lookyloo():
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.indexing = Indexing()
         self.is_public_instance = get_config('generic', 'public_instance')
+        self.taxonomies = get_taxonomies()
 
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
         self.scrape_dir: Path = get_homedir() / 'scraped'
@@ -268,6 +269,53 @@ class Lookyloo():
             self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_dir}) is cached.')
             return {}
         return ct.root_hartree.stats
+
+    def categories_capture(self, capture_uuid: str):
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        # get existing categories if possible
+        if (capture_dir / 'categories').exists():
+            with (capture_dir / 'categories').open() as f:
+                current_categories = [line.strip() for line in f.readlines()]
+        else:
+            current_categories = []
+        return {e: self.taxonomies.revert_machinetag(e) for e in current_categories}
+
+    def categorize_capture(self, capture_uuid: str, category: str):
+        if not get_config('generic', 'enable_categorization'):
+            return
+        # Make sure the category is mappable to a taxonomy.
+        self.taxonomies.revert_machinetag(category)
+
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        # get existing categories if possible
+        if (capture_dir / 'categories').exists():
+            with (capture_dir / 'categories').open() as f:
+                current_categories = set(line.strip() for line in f.readlines())
+        else:
+            current_categories = set()
+        current_categories.add(category)
+        with (capture_dir / 'categories').open('w') as f:
+            f.writelines(f'{t}\n' for t in current_categories)
+
+    def uncategorize_capture(self, capture_uuid: str, category: str):
+        if not get_config('generic', 'enable_categorization'):
+            return
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        # get existing categories if possible
+        if (capture_dir / 'categories').exists():
+            with (capture_dir / 'categories').open() as f:
+                current_categories = set(line.strip() for line in f.readlines())
+        else:
+            current_categories = set()
+        current_categories.remove(category)
+        with (capture_dir / 'categories').open('w') as f:
+            f.writelines(f'{t}\n' for t in current_categories)
 
     def trigger_modules(self, capture_uuid: str, force: bool=False) -> None:
         capture_dir = self.lookup_capture_dir(capture_uuid)

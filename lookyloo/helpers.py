@@ -19,6 +19,8 @@ from redis import Redis
 from redis.exceptions import ConnectionError
 from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
 from bs4 import BeautifulSoup  # type: ignore
+from pytaxonomies import Taxonomies
+
 try:
     import cloudscraper  # type: ignore
     HAS_CF = True
@@ -53,6 +55,11 @@ def get_resources_hashes(har2tree_container: Union[CrawledTree, HostNode, URLNod
         if hasattr(urlnode, 'resources_hashes'):
             all_ressources_hashes.update(urlnode.resources_hashes)
     return all_ressources_hashes
+
+
+@lru_cache(64)
+def get_taxonomies():
+    return Taxonomies()
 
 
 @lru_cache(64)
