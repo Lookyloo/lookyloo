@@ -387,7 +387,7 @@ def index_generic(show_hidden: bool=False):
                 continue
         elif 'no_index' in cached:
             continue
-        if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:  # type: ignore
+        if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:
             continue
         titles.append((cached['uuid'], cached['title'], cached['timestamp'], cached['url'],
                        cached['redirects'], True if cached['incomplete_redirects'] == '1' else False))
