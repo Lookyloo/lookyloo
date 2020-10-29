@@ -124,8 +124,9 @@ class Lookyloo():
         try:
             ct = CrawledTree(har_files, uuid)
             self.resolve_dns(ct)
+            # getting the cache triggers an update of the said cache. We want it there.
+            cache = self.capture_cache(capture_uuid)
             if self.is_public_instance:
-                cache = self.capture_cache(capture_uuid)
                 if cache.get('no_index') is not None:
                     index = False
             if index:
