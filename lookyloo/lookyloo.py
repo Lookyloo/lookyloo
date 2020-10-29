@@ -452,13 +452,25 @@ class Lookyloo():
     @property
     def sorted_cache(self):
         all_cache = []
-        for capture_uuid in self.capture_uuids:
-            try:
-                cache = self.capture_cache(capture_uuid)
-                if cache and 'timestamp' in cache:
-                    all_cache.append(cache)
-            except Exception:
+        p = self.redis.pipeline()
+        for directory in self.redis.hmget('lookup_dirs', *self.capture_uuids):
+            if directory:
+                p.hgetall(directory)
+        all_cache = []
+        for c in p.execute():
+            if not c:
+                continue
+            if all(key in c.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir']):
+                c['redirects'] = json.loads(c['redirects'])
+                c['capture_dir'] = Path(c['capture_dir'])
+                all_cache.append(c)
+            elif 'error' in c:
                 pass
+            else:
+                continue
+            if 'timestamp' not in c:
+                continue
+            all_cache.append(c)
         return sorted(all_cache, key=operator.itemgetter('timestamp'), reverse=True)
 
     def capture_cache(self, capture_uuid: str) -> Dict[str, Union[str, Path]]:
