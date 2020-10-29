@@ -36,7 +36,7 @@ def main():
             if cache.get('no_index') is not None:
                 index = False
 
-        # NOTE: these methods do nothing if we just generated the pickle
+        # NOTE: these methods do nothing if we just generated the pickle when calling lookyloo.get_crawled_tree
         if index:
             indexing.index_cookies_capture(tree)
             indexing.index_body_hashes_capture(tree)

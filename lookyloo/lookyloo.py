@@ -367,7 +367,7 @@ class Lookyloo():
                 to_return['pi'][ct.root_hartree.har.root_url] = self.pi.get_url_lookup(ct.root_hartree.har.root_url)
         return to_return
 
-    def _set_capture_cache(self, capture_dir: Path, force: bool=False) -> None:
+    def _set_capture_cache(self, capture_dir: Path, force: bool=False, redis_pipeline: Optional[Redis]=None) -> None:
         if force or not self.redis.exists(str(capture_dir)):
             # (re)build cache
             pass
@@ -404,37 +404,40 @@ class Lookyloo():
             error_cache['error'] = f'No har files in {capture_dir.name}'
             fatal_error = True
 
+        if not redis_pipeline:
+            p = self.redis.pipeline()
+        else:
+            p = redis_pipeline
+        p.hset('lookup_dirs', uuid, str(capture_dir))
         if error_cache:
             self.logger.warning(error_cache['error'])
-            self.redis.hmset(str(capture_dir), error_cache)  # type: ignore
-            self.redis.hset('lookup_dirs', uuid, str(capture_dir))
+            p.hmset(str(capture_dir), error_cache)
 
-        if fatal_error:
-            return
+        if not fatal_error:
+            redirects = har.initial_redirects
+            incomplete_redirects = False
+            if redirects and har.need_tree_redirects:
+                # load tree from disk, get redirects
+                ct = load_pickle_tree(capture_dir)
+                if ct:
+                    redirects = ct.redirects
+                else:
+                    # Pickle not available
+                    incomplete_redirects = True
 
-        redirects = har.initial_redirects
-        incomplete_redirects = False
-        if redirects and har.need_tree_redirects:
-            # load tree from disk, get redirects
-            ct = load_pickle_tree(capture_dir)
-            if ct:
-                redirects = ct.redirects
-            else:
-                # Pickle not available
-                incomplete_redirects = True
+            cache: Dict[str, Union[str, int]] = {'uuid': uuid,
+                                                 'title': har.initial_title,
+                                                 'timestamp': har.initial_start_time,
+                                                 'url': har.root_url,
+                                                 'redirects': json.dumps(redirects),
+                                                 'capture_dir': str(capture_dir),
+                                                 'incomplete_redirects': 1 if incomplete_redirects else 0}
+            if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
+                cache['no_index'] = 1
 
-        cache: Dict[str, Union[str, int]] = {'uuid': uuid,
-                                             'title': har.initial_title,
-                                             'timestamp': har.initial_start_time,
-                                             'url': har.root_url,
-                                             'redirects': json.dumps(redirects),
-                                             'capture_dir': str(capture_dir),
-                                             'incomplete_redirects': 1 if incomplete_redirects else 0}
-        if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
-            cache['no_index'] = 1
-
-        self.redis.hmset(str(capture_dir), cache)  # type: ignore
-        self.redis.hset('lookup_dirs', uuid, str(capture_dir))
+            p.hmset(str(capture_dir), cache)
+        if not redis_pipeline:
+            p.execute()
 
     def hide_capture(self, capture_uuid: str) -> None:
         """Add the capture in the hidden pool (not shown on the front page)
@@ -493,10 +496,12 @@ class Lookyloo():
             return {}
 
     def _init_existing_dumps(self) -> None:
+        p = self.redis.pipeline()
         for capture_dir in self.capture_dirs:
             if capture_dir.exists():
-                self._set_capture_cache(capture_dir)
-        self.redis.set('cache_loaded', 1)
+                self._set_capture_cache(capture_dir, redis_pipeline=p)
+        p.set('cache_loaded', 1)
+        p.execute()
 
     @property
     def capture_dirs(self) -> List[Path]:
