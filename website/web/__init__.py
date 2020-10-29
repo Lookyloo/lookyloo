@@ -378,8 +378,7 @@ def index_generic(show_hidden: bool=False):
         cut_time = datetime.now() - timedelta(**time_delta_on_index)
     else:
         cut_time = None  # type: ignore
-    for capture_uuid in lookyloo.capture_uuids:
-        cached = lookyloo.capture_cache(capture_uuid)
+    for cached in lookyloo.sorted_cache:
         if not cached:
             continue
         if show_hidden:
@@ -387,9 +386,6 @@ def index_generic(show_hidden: bool=False):
                 # Only display the hidden ones
                 continue
         elif 'no_index' in cached:
-            continue
-        if 'timestamp' not in cached:
-            # this is a buggy capture, skip
             continue
         if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:  # type: ignore
             continue

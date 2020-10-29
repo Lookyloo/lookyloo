@@ -18,6 +18,7 @@ from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping, Set,
 from urllib.parse import urlsplit
 from uuid import uuid4
 from zipfile import ZipFile
+import operator
 
 import dns.resolver
 import dns.rdatatype
@@ -447,6 +448,18 @@ class Lookyloo():
     @property
     def capture_uuids(self):
         return self.redis.hkeys('lookup_dirs')
+
+    @property
+    def sorted_cache(self):
+        all_cache = []
+        for capture_uuid in self.capture_uuids:
+            try:
+                cache = self.capture_cache(capture_uuid)
+                if cache and 'timestamp' in cache:
+                    all_cache.append(cache)
+            except Exception:
+                pass
+        return sorted(all_cache, key=operator.itemgetter('timestamp'), reverse=True)
 
     def capture_cache(self, capture_uuid: str) -> Dict[str, Union[str, Path]]:
         capture_dir = self.lookup_capture_dir(capture_uuid)
