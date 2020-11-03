@@ -467,7 +467,6 @@ class Lookyloo():
             if all(key in c.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir']):
                 c['redirects'] = json.loads(c['redirects'])
                 c['capture_dir'] = Path(c['capture_dir'])
-                all_cache.append(c)
             elif 'error' in c:
                 pass
             else:
