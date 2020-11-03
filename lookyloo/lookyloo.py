@@ -47,7 +47,7 @@ class Lookyloo():
         self.taxonomies = get_taxonomies()
 
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
-        self.scrape_dir: Path = get_homedir() / 'scraped'
+        self.capture_dir: Path = get_homedir() / 'scraped'
         if os.environ.get('SPLASH_URL_DOCKER'):
             # In order to have a working default for the docker image, it is easier to use an environment variable
             self.splash_url: str = os.environ['SPLASH_URL_DOCKER']
@@ -55,7 +55,7 @@ class Lookyloo():
             self.splash_url = get_config('generic', 'splash_url')
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
 
-        safe_create_dir(self.scrape_dir)
+        safe_create_dir(self.capture_dir)
 
         # Initialize 3rd party components
         self.pi = PhishingInitiative(get_config('modules', 'PhishingInitiative'))
@@ -504,15 +504,15 @@ class Lookyloo():
 
     @property
     def capture_dirs(self) -> List[Path]:
-        for capture_dir in self.scrape_dir.iterdir():
+        for capture_dir in self.capture_dir.iterdir():
             if capture_dir.is_dir() and not capture_dir.iterdir():
-                # Cleanup self.scrape_dir of failed runs.
+                # Cleanup self.capture_dir of failed runs.
                 capture_dir.rmdir()
             if not (capture_dir / 'uuid').exists():
                 # Create uuid if missing
                 with (capture_dir / 'uuid').open('w') as f:
                     f.write(str(uuid4()))
-        return sorted(self.scrape_dir.iterdir(), reverse=True)
+        return sorted(self.capture_dir.iterdir(), reverse=True)
 
     def lookup_capture_dir(self, capture_uuid: str) -> Union[Path, None]:
         capture_dir: str = self.redis.hget('lookup_dirs', capture_uuid)  # type: ignore
@@ -520,7 +520,7 @@ class Lookyloo():
             return Path(capture_dir)
         return None
 
-    def enqueue_scrape(self, query: MutableMapping[str, Any]) -> str:
+    def enqueue_capture(self, query: MutableMapping[str, Any]) -> str:
         perma_uuid = str(uuid4())
         p = self.redis.pipeline()
         for key, value in query.items():
@@ -528,19 +528,19 @@ class Lookyloo():
                 # Yes, empty string because that's False.
                 query[key] = 1 if value else ''
         p.hmset(perma_uuid, query)
-        p.sadd('to_scrape', perma_uuid)
+        p.sadd('to_capture', perma_uuid)
         p.execute()
         return perma_uuid
 
-    def process_scrape_queue(self) -> Union[bool, None]:
-        uuid = self.redis.spop('to_scrape')
+    def process_capture_queue(self) -> Union[bool, None]:
+        uuid = self.redis.spop('to_capture')
         if not uuid:
             return None
-        to_scrape: Dict[str, Union[str, int, float]] = self.redis.hgetall(uuid)  # type: ignore
+        to_capture: Dict[str, Union[str, int, float]] = self.redis.hgetall(uuid)  # type: ignore
         self.redis.delete(uuid)
-        to_scrape['perma_uuid'] = uuid
-        if self.scrape(**to_scrape):  # type: ignore
-            self.logger.info(f'Processed {to_scrape["url"]}')
+        to_capture['perma_uuid'] = uuid
+        if self.capture(**to_capture):  # type: ignore
+            self.logger.info(f'Processed {to_capture["url"]}')
             return True
         return False
 
@@ -638,7 +638,7 @@ class Lookyloo():
     def get_capture(self, capture_uuid: str) -> BytesIO:
         return self._get_raw(capture_uuid)
 
-    def scrape(self, url: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
+    def capture(self, url: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
                referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
                browser: Optional[str]=None) -> Union[bool, str]:
@@ -668,7 +668,7 @@ class Lookyloo():
             ua = user_agent
 
         if int(depth) > int(get_config('generic', 'max_depth')):
-            self.logger.warning(f'Not allowed to scrape on a depth higher than {get_config("generic", "max_depth")}: {depth}')
+            self.logger.warning(f'Not allowed to capture on a depth higher than {get_config("generic", "max_depth")}: {depth}')
             depth = int(get_config('generic', 'max_depth'))
         items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
                       referer=referer, log_enabled=True, log_level=get_config('generic', 'splash_loglevel'))
@@ -678,7 +678,7 @@ class Lookyloo():
         if not perma_uuid:
             perma_uuid = str(uuid4())
         width = len(str(len(items)))
-        dirpath = self.scrape_dir / datetime.now().isoformat()
+        dirpath = self.capture_dir / datetime.now().isoformat()
         safe_create_dir(dirpath)
         for i, item in enumerate(items):
             if not listing:  # Write no_index marker

@@ -448,12 +448,12 @@ def rebuild_cache():
 @app.route('/submit', methods=['POST', 'GET'])
 def submit():
     to_query = request.get_json(force=True)
-    perma_uuid = lookyloo.enqueue_scrape(to_query)
+    perma_uuid = lookyloo.enqueue_capture(to_query)
     return Response(perma_uuid, mimetype='text/text')
 
 
-@app.route('/scrape', methods=['GET', 'POST'])
-def scrape_web():
+@app.route('/capture', methods=['GET', 'POST'])
+def capture_web():
     if request.form.get('url'):
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
@@ -464,11 +464,11 @@ def scrape_web():
         if url:
             depth: int = request.form.get('depth') if request.form.get('depth') else 1  # type: ignore
             listing: bool = request.form.get('listing') if request.form.get('listing') else False  # type: ignore
-            perma_uuid = lookyloo.scrape(url=url, cookies_pseudofile=cookie_file,
-                                         depth=depth, listing=listing,
-                                         user_agent=request.form.get('user_agent'),
-                                         referer=request.form.get('referer'),  # type: ignore
-                                         os=request.form.get('os'), browser=request.form.get('browser'))
+            perma_uuid = lookyloo.capture(url=url, cookies_pseudofile=cookie_file,
+                                          depth=depth, listing=listing,
+                                          user_agent=request.form.get('user_agent'),
+                                          referer=request.form.get('referer'),  # type: ignore
+                                          os=request.form.get('os'), browser=request.form.get('browser'))
             return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents: Dict[str, Any] = {}
     if get_config('generic', 'use_user_agents_users'):
@@ -478,7 +478,7 @@ def scrape_web():
     if not user_agents:
         user_agents = get_user_agents()
     user_agents.pop('by_frequency')
-    return render_template('scrape.html', user_agents=user_agents)
+    return render_template('capture.html', user_agents=user_agents)
 
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
