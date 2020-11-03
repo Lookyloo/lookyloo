@@ -4,8 +4,10 @@
 {% block content %}
 <div class="container">
   <center>
-    <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
-         alt="Lookyloo" width="400">
+    <a href="{{ url_for('index') }}" title="Go back to index">
+      <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
+           alt="Lookyloo" width="400">
+    </a>
   </center>
   </br>
   <form role="form" action="{{ url_for('capture_web') }}" method=post enctype=multipart/form-data>
