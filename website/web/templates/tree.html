@@ -71,7 +71,7 @@
 <div id="menu_container" class="tree-panel-container">
   <div id=menu>
     <div class="menu_header">
-      <a href="/" >
+      <a href="{{ url_for('index') }}" title="Go back to index">
         <img src="{{ url_for('static', filename='lookyloo.jpeg') }}" alt="Lookyloo icon" height="110">
       </a>
     </div>
@@ -83,10 +83,10 @@
       <div style="display: inline;">
         <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu_content">
             <span class="if-collapsed">
-              <img src="{{ url_for('static', filename='down.jpg') }}" alt="Maximize menu" height="25" width="25">
+              <img src="{{ url_for('static', filename='down.jpg') }}" alt="Maximize menu" height="25" width="25" title="Expand">
             </span>
             <span class="if-not-collapsed">
-              <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize menu" height="25" width="25">
+              <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize menu" height="25" width="25" title="Collapse">
             </span>
         </button>
       </div>
@@ -94,6 +94,9 @@
     <hr/>
     <div id=menu_content class="collapse show">
       <ul class="list-unstyled components">
+        <li>
+          <a href="{{ url_for('index') }}" role="button">Go back to index</a>
+        </li>
         <li>
           <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
            data-toggle="modal" data-target="#modulesModal" role="button">Show third party reports</a>
@@ -145,7 +148,7 @@
       </div>
       <div style="display: inline;">
         <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#legend">
-            <img src="{{ url_for('static', filename='down.jpg') }}" alt="Minimize legend" height="25" width="25">
+            <img src="{{ url_for('static', filename='down.jpg') }}" alt="Minimize legend" height="25" width="25" title="Collapse">
         </button>
       </div>
     </center>
@@ -201,7 +204,7 @@
   <div style="width: 70px; float: right;">
     <center>
     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#legend">
-      <img src="{{ url_for('static', filename='up.jpg') }}" alt="Maximize legend" height="40" width="40">
+      <img src="{{ url_for('static', filename='up.jpg') }}" alt="Maximize legend" height="40" width="40" title="Expand">
       <b>Legend</b>
     </button>
     </center>
@@ -218,7 +221,7 @@
       <div style="display: inline;">
         <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
             <img src="{{ url_for('static', filename='up.jpg') }}"
-                 alt="Minimize tree details" height="25" width="25">
+                 alt="Minimize tree details" height="25" width="25" title="Collapse">
         </button>
       </div>
       </center>
@@ -237,7 +240,7 @@
   <div style="width: 70px; float: right;">
     <center>
     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
-      <img src="{{ url_for('static', filename='down.jpg') }}" alt="Minimize tree details" height="40" width="40">
+      <img src="{{ url_for('static', filename='down.jpg') }}" alt="Minimize tree details" height="40" width="40" title="Expand">
       <b>Tree details</b>
     </button>
     </center>
