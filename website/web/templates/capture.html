@@ -26,22 +26,18 @@
         </div>
       </div>
 
+      {% if max_depth >= 2 %}
       <div class="form-group row">
         <label for="depth" class="col-sm-2 col-form-label">Link Depth:</label>
         <div class="col-sm-1">
           <select class="form-control" name="depth" id=depth>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
+          {% for depth in range(max_depth) %}
+          <option value="{{ depth + 1 }}">{{ depth + 1 }}</option>
+          {% endfor %}
           </select>
         </div>
       </div>
+      {%endif%}
 
       <div class="form-group row">
         <label for="referer" class="col-sm-2 col-form-label">Referer (Optional):</label>

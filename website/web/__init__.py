@@ -46,6 +46,7 @@ lookyloo: Lookyloo = Lookyloo()
 user = get_config('generic', 'cache_clean_user')
 time_delta_on_index = get_config('generic', 'time_delta_on_index')
 blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')
+max_depth = get_config('generic', 'max_depth')
 
 logging.basicConfig(level=get_config('generic', 'loglevel'))
 
@@ -478,7 +479,7 @@ def capture_web():
     if not user_agents:
         user_agents = get_user_agents()
     user_agents.pop('by_frequency')
-    return render_template('capture.html', user_agents=user_agents)
+    return render_template('capture.html', user_agents=user_agents, max_depth=max_depth)
 
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
