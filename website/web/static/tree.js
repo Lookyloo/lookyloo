@@ -143,10 +143,10 @@ function LocateNode(hostnode_uuid) {
     glow();
 };
 
-function UnflagAllNodes() {
+function UnbookmarkAllNodes() {
     d3.selectAll('.node_data').select('rect').style('fill', 'white');
     d3.selectAll('.node_data').select('text').style('fill', 'black');
-    d3.selectAll('.node_data').select("#flag")
+    d3.selectAll('.node_data').select("#bookmark")
         .text("🏁")
         .on('click', (event, d) => NodeHighlight(d.data.uuid))
         .on('mouseover', (event, d) => {
@@ -154,7 +154,7 @@ function UnflagAllNodes() {
                 .style('opacity', 1)
                 .style('left', `${event.pageX + 10}px`)
                 .style('top', `${event.pageY + 10}px`)
-                .text('Flag this node');
+                .text('Bookmark this node');
         })
         .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
 };
@@ -166,10 +166,10 @@ function MarkAsLegitimate(capture_uuid, hostnode_uuid=null, urlnode_uuid=null) {
   $.post(`/tree/${capture_uuid}/mark_as_legitimate`, data);
 };
 
-function UnflagHostNode(hostnode_uuid) {
+function UnbookmarkHostNode(hostnode_uuid) {
     d3.select(`#node_${hostnode_uuid}`).select('rect').style('fill', 'white');
     d3.select(`#node_${hostnode_uuid}`).select('text').style('fill', 'black');
-    d3.select(`#node_${hostnode_uuid}`).select("#flag")
+    d3.select(`#node_${hostnode_uuid}`).select("#bookmark")
         .text("🏁")
         .on('click', (event, d) => NodeHighlight(d.data.uuid))
         .on('mouseover', (event, d) => {
@@ -177,7 +177,7 @@ function UnflagHostNode(hostnode_uuid) {
                 .style('opacity', 1)
                 .style('left', `${event.pageX + 10}px`)
                 .style('top', `${event.pageY + 10}px`)
-                .text('Flag this node');
+                .text('Bookmark this node');
         })
         .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
 };
@@ -188,15 +188,15 @@ function NodeHighlight(hostnode_uuid) {
 
     d3.select(`#node_${hostnode_uuid}`).select('rect').style('fill', 'black');
     d3.select(`#node_${hostnode_uuid}`).select('text').style('fill', 'white');
-    d3.select(`#node_${hostnode_uuid}`).select("#flag")
+    d3.select(`#node_${hostnode_uuid}`).select("#bookmark")
         .text('❌')
-        .on('click', (event, d) => UnflagHostNode(d.data.uuid))
+        .on('click', (event, d) => UnbookmarkHostNode(d.data.uuid))
         .on('mouseover', (event, d) => {
             d3.select('#tooltip')
                 .style('opacity', 1)
                 .style('left', `${event.pageX + 10}px`)
                 .style('top', `${event.pageY + 10}px`)
-                .text('Remove flag on this node');
+                .text('Remove bookmark on this node');
         })
         .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
 };
@@ -430,12 +430,12 @@ function update(root, computed_node_width=0) {
                 let selected_node_bbox = d3.select(this).select('rect').node().getBoundingClientRect();  // Required, as the node width need to include the rectangle
                 node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
 
-                // Set Flag
+                // Set Bookmark
                 d3.select(this).append("text")
                     .attr('x', `${selected_node_bbox.width - 12}px`)
                     .attr('y', '20px')
                     .style("font-size", "16px")
-                    .attr("id", "flag")
+                    .attr("id", "bookmark")
                     .text("🏁")
                     .attr('cursor', 'pointer')
                     .on('click', (event, d) => NodeHighlight(d.data.uuid))
@@ -444,7 +444,7 @@ function update(root, computed_node_width=0) {
                             .style('opacity', 1)
                             .style('left', `${event.pageX + 10}px`)
                             .style('top', `${event.pageY + 10}px`)
-                            .text('Flag this node');
+                            .text('Bookmark this node');
                     })
                     .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
 
