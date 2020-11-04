@@ -63,9 +63,10 @@ function openTreeInNewTab(capture_uuid, hostnode_uuid=null) {
     }
     let win = window.open(url, '_blank');
     if (win == null) {
-        alert("The browser didn't allow Lookyloo to open a new tab. There should be an icon on the right of your URL bar to allow it.");
+        return false;
     }
     win.focus();
+    return true;
 }
 
 function open_hostnode_popup(hostnode_uuid) {

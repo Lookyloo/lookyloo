@@ -42,8 +42,13 @@
   });
   </script>
   <script>
-      let whereAmI = (hostnode_uuid) => window.opener.LocateNode(hostnode_uuid);
-      let openTreeInNewTab = (capture_uuid, hostnode_uuid=Null) => window.opener.openTreeInNewTab(capture_uuid, hostnode_uuid);
+    let whereAmI = (hostnode_uuid) => window.opener.LocateNode(hostnode_uuid);
+    let openTreeInNewTab = (capture_uuid, hostnode_uuid=Null) => {
+      let success = window.opener.openTreeInNewTab(capture_uuid, hostnode_uuid);
+      if (! success) {
+        alert("The browser didn't allow Lookyloo to open a new tab. There should be an icon on the right of your URL bar *in the main window* to allow it.");
+      }
+    }
   </script>
   <script>
   $(document).ready(() => {
