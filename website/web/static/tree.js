@@ -383,7 +383,28 @@ function update(root, computed_node_width=0) {
                 .attr('class', 'node')
                 .attr('r', 1e-6)
                 .style("fill", d => d._children ? "lightsteelblue" : "#fff")
-                .on('click', (event, d) => toggle_children_collapse(event, d));
+                .on('mouseover', (event, d) => {
+                    if (d.children || d._children) {
+                      d3.select('#tooltip')
+                        .style('opacity', 1)
+                        .style('left', `${event.pageX + 10}px`)
+                        .style('top', `${event.pageY + 10}px`)
+                        .text(d.children ? 'Collapse the childrens of this node.' : 'Expand the childrens of this node.');
+                    };
+                  }
+                )
+                .on('mouseout', (event, d) => {
+                    if (d.children || d._children) {
+                      d3.select('#tooltip').style('opacity', 0)
+                    };
+                  }
+                )
+                .on('click', (event, d) => {
+                    if (d.children || d._children) {
+                      toggle_children_collapse(event, d)
+                    };
+                  }
+                );
 
             let node_data = node_group
               .append('svg')
@@ -574,7 +595,11 @@ function update(root, computed_node_width=0) {
         .select('circle.node')
           .attr('r', 10)
           .style("fill", node => node._children ? "lightsteelblue" : "#fff")
-          .attr('cursor', 'pointer');
+          .attr('cursor', (d) => {
+            if (d.children || d._children) {
+              return 'pointer';
+            }
+          });
 
     });
 
