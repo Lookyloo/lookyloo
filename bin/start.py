@@ -13,7 +13,7 @@ def main():
     p.check_returncode()
     print('done.')
     print('Start asynchronous ingestor...')
-    Popen(['async_scrape'])
+    Popen(['async_capture'])
     print('done.')
     print('Start website...')
     Popen(['start_website'])

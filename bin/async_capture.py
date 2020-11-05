@@ -13,7 +13,7 @@ logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO, datefmt='%I:%M:%S')
 
 
-class AsyncScraper(AbstractManager):
+class AsyncCapture(AbstractManager):
 
     def __init__(self, storage_directory: Optional[Path]=None, loglevel: int=logging.INFO):
         super().__init__(loglevel)
@@ -22,16 +22,16 @@ class AsyncScraper(AbstractManager):
         self.lookyloo = Lookyloo()
 
     def _to_run_forever(self):
-        set_running('async_scrape')
+        set_running('async_capture')
         while True:
-            url = self.lookyloo.process_scrape_queue()
+            url = self.lookyloo.process_capture_queue()
             if url is None or shutdown_requested():
                 break
-        unset_running('async_scrape')
+        unset_running('async_capture')
 
 
 def main():
-    m = AsyncScraper()
+    m = AsyncCapture()
     m.run(sleep_in_sec=1)
 
 
