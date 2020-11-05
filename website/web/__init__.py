@@ -48,6 +48,10 @@ time_delta_on_index = get_config('generic', 'time_delta_on_index')
 blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')
 max_depth = get_config('generic', 'max_depth')
 
+enable_mail_notification = get_config('generic', 'enable_mail_notification')
+enable_context_by_users = get_config('generic', 'enable_context_by_users')
+enable_categorization = get_config('generic', 'enable_categorization')
+
 logging.basicConfig(level=get_config('generic', 'loglevel'))
 
 
@@ -137,10 +141,6 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
     keys_request = {
         'request_cookie': "/static/cookie_read.png",
     }
-    if get_config('generic', 'enable_context_by_users'):
-        enable_context_by_users = True
-    else:
-        enable_context_by_users = False
 
     hostnode, urls = lookyloo.get_hostnode_investigator(tree_uuid, node_uuid)
 
@@ -176,6 +176,8 @@ def trigger_modules(tree_uuid: str, force: int):
 @app.route('/tree/<string:tree_uuid>/categories_capture/', defaults={'query': ''})
 @app.route('/tree/<string:tree_uuid>/categories_capture/<string:query>', methods=['GET'])
 def categories_capture(tree_uuid: str, query: str):
+    if not enable_categorization:
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
     current_categories = lookyloo.categories_capture(tree_uuid)
     matching_categories = None
     if query:
@@ -192,6 +194,8 @@ def categories_capture(tree_uuid: str, query: str):
 @app.route('/tree/<string:tree_uuid>/uncategorize/', defaults={'category': ''})
 @app.route('/tree/<string:tree_uuid>/uncategorize/<string:category>', methods=['GET'])
 def uncategorize_capture(tree_uuid: str, category: str):
+    if not enable_categorization:
+        return jsonify({'response': 'Categorization not enabled.'})
     lookyloo.uncategorize_capture(tree_uuid, category)
     return jsonify({'response': f'{category} successfully added to {tree_uuid}'})
 
@@ -199,6 +203,8 @@ def uncategorize_capture(tree_uuid: str, category: str):
 @app.route('/tree/<string:tree_uuid>/categorize/', defaults={'category': ''})
 @app.route('/tree/<string:tree_uuid>/categorize/<string:category>', methods=['GET'])
 def categorize_capture(tree_uuid: str, category: str):
+    if not enable_categorization:
+        return jsonify({'response': 'Categorization not enabled.'})
     lookyloo.categorize_capture(tree_uuid, category)
     return jsonify({'response': f'{category} successfully removed from {tree_uuid}'})
 
@@ -305,6 +311,8 @@ def cache_tree(tree_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/send_mail', methods=['POST', 'GET'])
 def send_mail(tree_uuid: str):
+    if not enable_mail_notification:
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
     email: str = request.form.get('email') if request.form.get('email') else ''  # type: ignore
     if '@' not in email:
         # skip clearly incorrect emails
@@ -334,18 +342,6 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
         flash(cache['error'], 'error')
 
     try:
-        if get_config('generic', 'enable_mail_notification'):
-            enable_mail_notification = True
-        else:
-            enable_mail_notification = False
-        if get_config('generic', 'enable_context_by_users'):
-            enable_context_by_users = True
-        else:
-            enable_context_by_users = False
-        if get_config('generic', 'enable_categorization'):
-            enable_categorization = True
-        else:
-            enable_categorization = False
         tree_json, start_time, user_agent, root_url, meta = lookyloo.load_tree(tree_uuid)
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
@@ -582,6 +578,9 @@ def hashes_urlnode(tree_uuid: str, node_uuid: str):
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/add_context', methods=['POST'])
 @auth.login_required
 def add_context(tree_uuid: str, node_uuid: str):
+    if not enable_context_by_users:
+        return redirect(url_for('ressources'))
+
     context_data = request.form
     ressource_hash: str = context_data.get('hash_to_contextualize')  # type: ignore
     hostnode_uuid: str = context_data.get('hostnode_uuid')  # type: ignore

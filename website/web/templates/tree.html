@@ -318,6 +318,7 @@
   </div>
 </div>
 
+{% if enable_context_by_users %}
 <div class="modal fade" id="categoriesModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
@@ -343,7 +344,9 @@
       </div>
   </div>
 </div>
+{% endif %}
 
+{% if enable_mail_notification %}
 <div class="modal fade" id="emailModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
     <form role="form" action="{{ tree_uuid }}/send_mail" method=post enctype=multipart/form-data>
@@ -355,14 +358,15 @@
               </button>
           </div>
           <div class="modal-body">
-              <div class="form-group">
-                <label for="email">Email address - used to get back in touch with you if needed (optional)</label>
-                <input type="email" class="form-control" name="email" id="email" placeholder="Enter email">
-              </div>
-              <div class="form-group">
-                <label for="comment">Please write a comment (optional)</label>
-                <textarea class="form-control" name="comment" id=comment rows="3"></textarea>
-              </div>
+            <p>A notification of this capture will be sent to the owners of this Lookyloo instance. They may or may not act on it.</p>
+            <div class="form-group">
+              <label for="email">Email address - used to get back in touch with you if needed (optional)</label>
+              <input type="email" class="form-control" name="email" id="email" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+              <label for="comment">Please write a comment (optional)</label>
+              <textarea class="form-control" name="comment" id=comment rows="3"></textarea>
+            </div>
           </div>
           <div class="modal-footer">
               <button type="submit" class="btn btn-success">Send email</button>
@@ -372,4 +376,5 @@
     </form>
   </div>
 </div>
+{% endif %}
 {% endblock content %}
