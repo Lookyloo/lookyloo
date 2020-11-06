@@ -88,9 +88,17 @@ class Indexing():
     def ressources_number_domains(self, h: str) -> int:
         return self.redis.zcard(f'bh|{h}')
 
-    def body_hash_fequency(self, body_hash: str) -> Dict[str, float]:
-        return {'hash_freq': int(self.redis.zscore('body_hashes', body_hash)),
-                'hash_domains_freq': int(self.redis.zcard(f'bh|{body_hash}'))}
+    def body_hash_fequency(self, body_hash: str) -> Dict[str, int]:
+        pipeline = self.redis.pipeline()
+        pipeline.zscore('body_hashes', body_hash)
+        pipeline.zcard(f'bh|{body_hash}')
+        hash_freq, hash_domains_freq = pipeline.execute()
+        to_return = {'hash_freq': 0, 'hash_domains_freq': 0}
+        if hash_freq:
+            to_return['hash_freq'] = int(hash_freq)
+        if hash_domains_freq:
+            to_return['hash_domains_freq'] = int(hash_domains_freq)
+        return to_return
 
     def index_body_hashes_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
@@ -160,10 +168,10 @@ class Indexing():
 
     def index_url_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_urls', crawled_tree.uuid):
-            # Do not reinder
+            # Do not reindex
             return
-        self.redis.sadd('indexed_urls', crawled_tree.uuid)
         pipeline = self.redis.pipeline()
+        pipeline.sadd('indexed_urls', crawled_tree.uuid)
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             if not urlnode.hostname or not urlnode.name:
                 continue
