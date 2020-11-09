@@ -1,7 +1,7 @@
 ---
 name: Bug 
 about: Report a bug 
-labels: 'bug'
+labels: 'Bug'
 
 ---
 
