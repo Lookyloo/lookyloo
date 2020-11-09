@@ -133,6 +133,8 @@ class Lookyloo():
                 self.indexing.index_cookies_capture(ct)
                 self.indexing.index_body_hashes_capture(ct)
                 self.indexing.index_url_capture(ct)
+                categories = list(self.categories_capture(capture_uuid).keys())
+                self.indexing.index_categories_capture(capture_uuid, categories)
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
 
@@ -272,7 +274,7 @@ class Lookyloo():
             return {}
         return ct.root_hartree.stats
 
-    def categories_capture(self, capture_uuid: str):
+    def categories_capture(self, capture_uuid: str) -> Dict[str, Any]:
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
             raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
@@ -280,11 +282,10 @@ class Lookyloo():
         if (capture_dir / 'categories').exists():
             with (capture_dir / 'categories').open() as f:
                 current_categories = [line.strip() for line in f.readlines()]
-        else:
-            current_categories = []
-        return {e: self.taxonomies.revert_machinetag(e) for e in current_categories}
+            return {e: self.taxonomies.revert_machinetag(e) for e in current_categories}
+        return {}
 
-    def categorize_capture(self, capture_uuid: str, category: str):
+    def categorize_capture(self, capture_uuid: str, category: str) -> None:
         if not get_config('generic', 'enable_categorization'):
             return
         # Make sure the category is mappable to a taxonomy.
@@ -303,7 +304,7 @@ class Lookyloo():
         with (capture_dir / 'categories').open('w') as f:
             f.writelines(f'{t}\n' for t in current_categories)
 
-    def uncategorize_capture(self, capture_uuid: str, category: str):
+    def uncategorize_capture(self, capture_uuid: str, category: str) -> None:
         if not get_config('generic', 'enable_categorization'):
             return
         capture_dir = self.lookup_capture_dir(capture_uuid)
@@ -382,7 +383,7 @@ class Lookyloo():
         error_cache: Dict[str, str] = {}
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
-            with (Path(capture_dir) / 'error.txt').open() as _error:
+            with (capture_dir / 'error.txt').open() as _error:
                 content = _error.read()
                 try:
                     error_to_cache = json.loads(content)
@@ -403,6 +404,12 @@ class Lookyloo():
         else:
             error_cache['error'] = f'No har files in {capture_dir.name}'
             fatal_error = True
+
+        if (capture_dir / 'categories').exists():
+            with (capture_dir / 'categories').open() as _categories:
+                categories = [c.strip() for c in _categories.readlines()]
+        else:
+            categories = []
 
         if not redis_pipeline:
             p = self.redis.pipeline()
@@ -430,6 +437,7 @@ class Lookyloo():
                                                  'timestamp': har.initial_start_time,
                                                  'url': har.root_url,
                                                  'redirects': json.dumps(redirects),
+                                                 'categories': json.dumps(categories),
                                                  'capture_dir': str(capture_dir),
                                                  'incomplete_redirects': 1 if incomplete_redirects else 0}
             if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
@@ -473,6 +481,8 @@ class Lookyloo():
                 continue
             if 'timestamp' not in c:
                 continue
+            if 'categories' in c:
+                c['categories'] = json.loads(c['categories'])
             all_cache.append(c)
         return sorted(all_cache, key=operator.itemgetter('timestamp'), reverse=True)
 
@@ -487,6 +497,8 @@ class Lookyloo():
         if all(key in cached.keys() for key in ['uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir']):
             cached['redirects'] = json.loads(cached['redirects'])  # type: ignore
             cached['capture_dir'] = Path(cached['capture_dir'])
+            if 'categories' in cached:
+                cached['categories'] = json.loads(cached['categories'])  # type: ignore
             return cached
         elif 'error' in cached:
             return cached
@@ -639,9 +651,9 @@ class Lookyloo():
         return self._get_raw(capture_uuid)
 
     def capture(self, url: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
-               depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
-               referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
-               browser: Optional[str]=None) -> Union[bool, str]:
+                depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
+                referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
+                browser: Optional[str]=None) -> Union[bool, str]:
         url = url.strip()
         url = refang(url)
         if not url.startswith('http'):

@@ -41,6 +41,8 @@ def main():
             indexing.index_cookies_capture(tree)
             indexing.index_body_hashes_capture(tree)
             indexing.index_url_capture(tree)
+            categories = list(lookyloo.categories_capture(capture_uuid).keys())
+            indexing.index_categories_capture(capture_uuid, categories)
 
 
 if __name__ == '__main__':

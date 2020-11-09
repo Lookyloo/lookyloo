@@ -1,0 +1,46 @@
+{% extends "main.html" %}
+
+{% from 'bootstrap/utils.html' import render_messages %}
+
+{% block title %}Categories{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src='{{ url_for('static', filename='datatables.min.js') }}'></script>
+<script type="text/javascript">
+    $('#table').DataTable( {
+        "order": [[ 1, "desc" ]],
+        "pageLength": 500
+    });
+</script>
+
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='datatables.min.css') }}">
+{% endblock %}
+
+
+{% block content %}
+  <div class="table-responsive">
+  <table id="table" class="table" style="width:96%">
+    <thead>
+     <tr>
+       <th>Category</th>
+       <th>Frequency</th>
+     </tr>
+    </thead>
+    <tbody>
+      {% for category, freq in categories %}
+      <tr>
+        <td>
+          <a href="{{ url_for('index_category', category=category) }}">{{ category }}</a>
+        </td>
+        <td>{{ freq }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% endblock %}
