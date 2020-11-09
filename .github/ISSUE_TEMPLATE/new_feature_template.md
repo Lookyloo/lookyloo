@@ -14,9 +14,8 @@ labels: 'New Features'
 
 
 ## Context
-Link to associated PRs or issues from other repos here.
+<!-- Link to associated PRs or issues from other repos here. -->
 
-1.
 1.
 1.
 
