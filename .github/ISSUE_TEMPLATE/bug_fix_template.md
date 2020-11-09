@@ -1,9 +1,7 @@
 ---
 name: Bug 
 about: Report a bug 
-title: ''
-labels: kind/bug
-assignees: ''
+labels: 'bug'
 
 ---
 
@@ -17,8 +15,7 @@ assignees: ''
 ## Steps to reproduce the problem
 
 1.
-1.
-1.
+
 
 
 ## Additional information
