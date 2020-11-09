@@ -368,16 +368,20 @@ def mark_as_legitimate(tree_uuid: str):
 
 # ##### helpers #####
 
-def index_generic(show_hidden: bool=False):
+def index_generic(show_hidden: bool=False, category: Optional[str]=None):
     titles = []
     if time_delta_on_index:
         # We want to filter the captures on the index
         cut_time = datetime.now() - timedelta(**time_delta_on_index)
     else:
         cut_time = None  # type: ignore
+
     for cached in lookyloo.sorted_cache:
         if not cached:
             continue
+        if category:
+            if 'categories' not in cached or category not in cached['categories']:
+                continue
         if show_hidden:
             if 'no_index' not in cached:
                 # Only display the hidden ones
@@ -386,6 +390,7 @@ def index_generic(show_hidden: bool=False):
             continue
         if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:
             continue
+
         titles.append((cached['uuid'], cached['title'], cached['timestamp'], cached['url'],
                        cached['redirects'], True if cached['incomplete_redirects'] == '1' else False))
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
@@ -409,6 +414,11 @@ def index_hidden():
     return index_generic(show_hidden=True)
 
 
+@app.route('/category/<string:category>', methods=['GET'])
+def index_category(category: str):
+    return index_generic(category=category)
+
+
 @app.route('/cookies', methods=['GET'])
 def cookies_lookup():
     i = Indexing()
@@ -426,6 +436,13 @@ def ressources():
         capture_uuid, url_uuid, hostnode_uuid = i.get_hash_uuids(h)
         ressources.append((h, freq, domain_freq, context.get(h), capture_uuid, url_uuid, hostnode_uuid))
     return render_template('ressources.html', ressources=ressources)
+
+
+@app.route('/categories', methods=['GET'])
+def categories():
+    i = Indexing()
+    print(i.categories)
+    return render_template('categories.html', categories=i.categories)
 
 
 @app.route('/rebuild_all')

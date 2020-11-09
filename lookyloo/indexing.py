@@ -3,7 +3,7 @@
 
 import hashlib
 from urllib.parse import urlsplit
-from typing import List, Tuple, Set, Dict, Optional
+from typing import List, Tuple, Set, Dict, Optional, Iterable
 from collections import defaultdict
 
 from redis import Redis
@@ -192,3 +192,29 @@ class Indexing():
 
     def get_captures_hostname(self, hostname: str) -> Set[str]:
         return self.redis.smembers(f'hostnames|{hostname}|captures')  # type: ignore
+
+    # ###### Categories ######
+
+    @property
+    def categories(self) -> List[Tuple[str, int]]:
+        return [(c, int(score))
+                for c, score in self.redis.zrevrange('categories', 0, 200, withscores=True)]
+
+    def index_categories_capture(self, capture_uuid: str, categories: Iterable[str]):
+        if not categories:
+            return
+        print(capture_uuid, categories)
+        if self.redis.sismember('indexed_categories', capture_uuid):
+            # do not reindex
+            return
+        self.redis.sadd('indexed_categories', capture_uuid)
+        if not categories:
+            return
+        pipeline = self.redis.pipeline()
+        for category in categories:
+            pipeline.zincrby('categories', 1, category)
+            pipeline.sadd(category, capture_uuid)
+        pipeline.execute()
+
+    def get_captures_category(self, category: str) -> Set[str]:
+        return self.redis.smembers(category)  # type: ignore
