@@ -1,4 +1,4 @@
-Pull requests should be opened against the `main` branch. For more information on contributing to Lookyloo documentation, see the [Contributor Guidelines]().
+Pull requests should be opened against the `main` branch. For more information on contributing to Lookyloo documentation, see the [Contributor Guidelines](https://www.lookyloo.eu/docs/main/contributor-guide.html).
 
 ## Type of change
 
