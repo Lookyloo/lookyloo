@@ -417,7 +417,8 @@ class Lookyloo():
             p = redis_pipeline
         p.hset('lookup_dirs', uuid, str(capture_dir))
         if error_cache:
-            self.logger.warning(error_cache['error'])
+            if 'HTTP Error' not in error_cache['error']:
+                self.logger.warning(error_cache['error'])
             p.hmset(str(capture_dir), error_cache)
 
         if not fatal_error:
