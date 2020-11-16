@@ -24,6 +24,8 @@ Source: [Urban Dictionary](https://www.urbandictionary.com/define.php?term=looky
 
 # No, really, what is Lookyloo?
 
+Lookyloo is a web interface that allows you to capture and map the journey of a website page.
+
 Find all you need to know about Lookyloo on our [documentation website](https://www.lookyloo.eu/docs/main/index.html).
 
 Here's an example of a Lookyloo capture of the site **github.com**
