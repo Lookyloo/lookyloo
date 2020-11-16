@@ -1,17 +1,20 @@
 
 # Number of days of inactivity before an issue becomes stale
 daysUntilStale: 120
+
 # Number of days of inactivity before a stale issue is closed
-daysUntilClose: -1
+daysUntilClose: false
+
 # Issues with these labels will never be considered stale
 exemptLabels:
+
 # Label to use when marking an issue as stale
 staleLabel: stale
+
 # Comment to post when marking an issue as stale. Set to `false` to disable
 markComment: >
   Close call! This issue has been marked as stale because it has not had
   any recent activity. It should be closed if no further activity occurs. Add a comment
   or push a commit to keep this issue stay alive and kicking. Thank you
   for your contribution; it is appreciated.
-# Comment to post when closing a stale issue. Set to `false` to disable
-closeComment:
+
