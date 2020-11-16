@@ -26,6 +26,7 @@ Source: [Urban Dictionary](https://www.urbandictionary.com/define.php?term=looky
 
 Find all you need to know about Lookyloo on our [documentation website](https://www.lookyloo.eu/docs/main/index.html).
 
+Here's an example of a Lookyloo capture of the site **github.com**
 ![Screenshot of Lookyloo capturing Github](https://www.lookyloo.eu/docs/main/_images/sample_github.png)
 
 
