@@ -6,7 +6,7 @@ daysUntilStale: 120
 daysUntilClose: false
 
 # Issues with these labels will never be considered stale
-exemptLabels:
+exemptLabels: []
 
 # Label to use when marking an issue as stale
 staleLabel: stale
