@@ -267,7 +267,7 @@ dotenv = ["python-dotenv"]
 
 [[package]]
 name = "flask-httpauth"
-version = "4.1.0"
+version = "4.2.0"
 description = "Basic and Digest HTTP authentication for Flask routes"
 category = "main"
 optional = false
@@ -990,7 +990,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "6c3c323e7193f1cab1f660f0941b9edcfda027e8ded32ee88d38d3902780e842"
+content-hash = "b65cb0106b43ca9422510337120affce0b04f153e7787a41371ee55a694ffe59"
 
 [metadata.files]
 aiohttp = [
@@ -1201,8 +1201,8 @@ flask = [
     {file = "Flask-1.1.2.tar.gz", hash = "sha256:4efa1ae2d7c9865af48986de8aeb8504bf32c7f3d6fdc9353d34b21f4b127060"},
 ]
 flask-httpauth = [
-    {file = "Flask-HTTPAuth-4.1.0.tar.gz", hash = "sha256:9e028e4375039a49031eb9ecc40be4761f0540476040f6eff329a31dabd4d000"},
-    {file = "Flask_HTTPAuth-4.1.0-py2.py3-none-any.whl", hash = "sha256:29e0288869a213c7387f0323b6bf2c7191584fb1da8aa024d9af118e5cd70de7"},
+    {file = "Flask-HTTPAuth-4.2.0.tar.gz", hash = "sha256:8c7e49e53ce7dc14e66fe39b9334e4b7ceb8d0b99a6ba1c3562bb528ef9da84a"},
+    {file = "Flask_HTTPAuth-4.2.0-py2.py3-none-any.whl", hash = "sha256:3fcedb99a03985915335a38c35bfee6765cbd66d7f46440fa3b42ae94a90fac7"},
 ]
 gunicorn = [
     {file = "gunicorn-20.0.4-py2.py3-none-any.whl", hash = "sha256:cd4a810dd51bf497552cf3f863b575dabd73d6ad6a91075b65936b151cbf4f9c"},
