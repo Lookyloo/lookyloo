@@ -46,7 +46,7 @@
     let openTreeInNewTab = (capture_uuid, hostnode_uuid=Null) => {
       let success = window.opener.openTreeInNewTab(capture_uuid, hostnode_uuid);
       if (! success) {
-        alert("The browser didn't allow Lookyloo to open a new tab. There should be an icon on the right of your URL bar *in the main window* to allow it.");
+          alert("Your browser doesn't allow Lookyloo to open a new tab. There should be an icon on the right side of your URL bar *in the main window* to allow it.");
       }
     }
   </script>
