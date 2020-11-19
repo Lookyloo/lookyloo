@@ -12,6 +12,7 @@ ExecStart=/bin/bash -c "exec poetry run start"
 ExecStop=/bin/bash -c "exec poetry run stop"
 # The "+" means the command is executed as root, "-" means the command is allowed to fail.
 ExecStartPre=+-/bin/mkdir /var/log/lookyloo
+ExecStartPre=+-/bin/chown -R <system user used to install lookyloo>:<group of the user used to install lookyloo>
 StandardOutput=append:/var/log/lookyloo/message.log
 StandardError=append:/var/log/lookyloo/error.log
 
