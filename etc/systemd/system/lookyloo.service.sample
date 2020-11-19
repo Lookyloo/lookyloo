@@ -10,7 +10,8 @@ WorkingDirectory=<path to the directory where you cloned the repository>
 Environment="PATH=<path to the directory where the poetry executable is>:/usr/bin"
 ExecStart=/bin/bash -c "exec poetry run start"
 ExecStop=/bin/bash -c "exec poetry run stop"
-# check that the log folder exists, if not: sudo mkdir /var/log/lookyloo
+# The "+" means the command is executed as root, "-" means the command is allowed to fail.
+ExecStartPre=+-/bin/mkdir /var/log/lookyloo
 StandardOutput=append:/var/log/lookyloo/message.log
 StandardError=append:/var/log/lookyloo/error.log
 
