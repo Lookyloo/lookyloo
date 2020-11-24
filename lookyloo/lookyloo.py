@@ -5,7 +5,6 @@ import os
 import base64
 from collections import defaultdict, Counter
 from datetime import datetime, date, timedelta
-import calendar
 from email.message import EmailMessage
 from io import BufferedIOBase, BytesIO
 import ipaddress
@@ -997,13 +996,13 @@ class Lookyloo():
             urls.append(to_append)
         return hostnode, urls
 
-    def get_stats(self) -> Dict[str, List]:
+    def get_stats(self) -> Dict[str, Union[List, Dict]]:
         stats: Dict[int, Dict[int, Dict[str, Any]]] = {}
         today = date.today()
         calendar_week = today.isocalendar()[1]
         weeks_stats: Dict[int, Dict] = {calendar_week - 1: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()},
                                         calendar_week: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()}}
-        statistics: Dict[str, List] = {'weeks': [], 'years': []}
+        statistics: Dict[str, Union[List, Dict]] = {'weeks': [], 'years': {}}
         for uuid in self.capture_uuids:
             cache = self.capture_cache(uuid)
             if 'timestamp' not in cache:
@@ -1026,6 +1025,7 @@ class Lookyloo():
                 weeks_stats[date_analysis.isocalendar()[1]]['redirects'] += len(cache['redirects'])  # type: ignore
                 weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'].update(cache['redirects'])
                 weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'].add(cache['url'])
+
         for week_number, week_stat in weeks_stats.items():
             week = {}
             week['week'] = week_number
@@ -1034,16 +1034,15 @@ class Lookyloo():
             week['redirects'] = week_stat['redirects']
             week['uniq_urls'] = len(week_stat['uniq_urls'])
             week['uniq_domains'] = len(uniq_domains(week_stat['uniq_urls']))
-            statistics['weeks'].append(week)
+            statistics['weeks'].append(week)  # type: ignore
+
         for year, data in stats.items():
-            years: Dict[str, Union[Dict, int]] = {}
-            years['year'] = year
+            years: Dict[Union[int, str], Union[Dict, int]] = {}
             yearly_analysis = 0
             yearly_redirects = 0
             for month in sorted(data.keys()):
                 _stats = data[month]
                 mstats = {}
-                mstats['month'] = month
                 mstats['analysys'] = _stats['analysis']
                 mstats['analysis_with_redirects'] = _stats['analysis_with_redirects']
                 mstats['redirects'] = _stats['redirects']
@@ -1051,8 +1050,8 @@ class Lookyloo():
                 mstats['uniq_domains'] = len(uniq_domains(_stats['uniq_urls']))
                 yearly_analysis += _stats['analysis']
                 yearly_redirects += _stats['redirects']
-                years[calendar.month_name[month]] = mstats
+                years[month] = mstats
             years['yearly_analysis'] = yearly_analysis
             years['yearly_redirects'] = yearly_redirects
-            statistics['years'].append(years)
+            statistics['years'][year] = years
         return statistics

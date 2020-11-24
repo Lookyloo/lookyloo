@@ -679,4 +679,4 @@ def json_hostname_info():
 @app.route('/json/stats', methods=['GET'])
 def json_stats():
     to_return = lookyloo.get_stats()
-    return jsonify(to_return)
+    return Response(json.dumps(to_return), mimetype='application/json')
