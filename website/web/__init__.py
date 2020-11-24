@@ -6,9 +6,11 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 import os
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import json
 import http
+import calendar
+from urllib.parse import urlparse
 
 from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
 from flask_bootstrap import Bootstrap  # type: ignore
@@ -55,6 +57,12 @@ auto_trigger_modules = get_config('generic', 'auto_trigger_modules')
 
 logging.basicConfig(level=get_config('generic', 'loglevel'))
 
+def uniq_domains(uniq_urls):
+    domains = set()
+    for url in uniq_urls:
+        splitted = urlparse(url)
+        domains.add(splitted.hostname)
+    return domains
 
 # ##### Global methods passed to jinja
 
@@ -674,3 +682,68 @@ def json_hostname_info():
     to_query = request.get_json(force=True)
     occurrences = lookyloo.get_hostname_occurrences(**to_query)
     return jsonify(occurrences)
+
+@app.route('/json/stats', methods=['GET'])
+def json_stats():
+    stats = {}
+    today = date.today()
+    calendar_week = today.isocalendar()[1]
+    weeks_stats = {calendar_week - 1: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()},
+               calendar_week: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()}}
+
+    to_return: Dict[str, Any] = {'response': {'weeks': [],'years':[]}}
+    for uuid in lookyloo.capture_uuids:
+        cache = lookyloo.capture_cache(uuid)
+        if 'timestamp' not in cache:
+            continue
+        date_analysis = datetime.fromisoformat(cache['timestamp'].rstrip('Z'))
+        if date_analysis.year not in stats:
+            stats[date_analysis.year] = {}
+        if date_analysis.month not in stats[date_analysis.year]:
+            stats[date_analysis.year][date_analysis.month] = {'analysis': 0, 'analysis_with_redirects' :0, 'redirects': 0, 'uniq_urls': set()}
+        stats[date_analysis.year][date_analysis.month]['analysis'] += 1
+        if len(cache['redirects']) > 0:
+            stats[date_analysis.year][date_analysis.month]['analysis_with_redirects'] += 1
+        stats[date_analysis.year][date_analysis.month]['redirects'] += len(cache['redirects'])
+        stats[date_analysis.year][date_analysis.month]['uniq_urls'].update(cache['redirects'])
+        stats[date_analysis.year][date_analysis.month]['uniq_urls'].add(cache['url'])
+        if date_analysis.isocalendar()[1] in weeks_stats:
+            weeks_stats[date_analysis.isocalendar()[1]]['analysis'] += 1
+            if len(cache['redirects']) > 0:
+                weeks_stats[date_analysis.isocalendar()[1]]['analysis_with_redirects'] += 1
+            weeks_stats[date_analysis.isocalendar()[1]]['redirects'] += len(cache['redirects'])
+            weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'].update(cache['redirects'])
+            weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'].add(cache['url'])
+
+    for week_number, week_stat in weeks_stats.items():
+        week={}
+        week['week']= week_number
+        week['analysis']= week_stat['analysis']
+        week['analysis_with_redirects']= week_stat['analysis_with_redirects']
+        week['redirects']= week_stat['redirects']
+        week['uniq_urls'] = len(week_stat['uniq_urls'])
+        week['uniq_domains'] =len(uniq_domains(week_stat['uniq_urls']))
+        to_return['response']['weeks'].append(week)
+
+    for year, data in stats.items():
+        years={}
+        years['year']=year
+        yearly_analysis = 0
+        yearly_redirects = 0
+        for month in sorted(data.keys()):
+            stats = data[month]
+            mstats = {}
+            mstats['month'] = month
+            mstats['analysys'] = stats['analysis']
+            mstats['analysis_with_redirects'] = stats['analysis_with_redirects']
+            mstats['redirects'] = stats['redirects']
+            mstats['uniq_url'] = len(stats['uniq_urls'])
+            mstats['uniq_domains'] = len(uniq_domains(stats['uniq_urls']))
+            yearly_analysis += stats['analysis']
+            yearly_redirects += stats['redirects']
+            years[calendar.month_name[month]] = mstats
+        years['yearly_analysis'] = yearly_analysis
+        years['yearly_redirects']  = yearly_redirects
+        to_return['response']['years'].append(years)
+
+    return jsonify(to_return)
