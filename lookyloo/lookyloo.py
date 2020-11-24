@@ -1003,7 +1003,7 @@ class Lookyloo():
         calendar_week = today.isocalendar()[1]
         weeks_stats: Dict[int, Dict] = {calendar_week - 1: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()},
                                         calendar_week: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()}}
-        statistics: Dict[str, List] = {'weeks': [], 'years': []}
+        statistics: Dict[str, List] = {'weeks': [], 'years': {}}
         for uuid in self.capture_uuids:
             cache = self.capture_cache(uuid)
             if 'timestamp' not in cache:
@@ -1037,13 +1037,11 @@ class Lookyloo():
             statistics['weeks'].append(week)
         for year, data in stats.items():
             years: Dict[str, Union[Dict, int]] = {}
-            years['year'] = year
             yearly_analysis = 0
             yearly_redirects = 0
             for month in sorted(data.keys()):
                 _stats = data[month]
                 mstats = {}
-                mstats['month'] = month
                 mstats['analysys'] = _stats['analysis']
                 mstats['analysis_with_redirects'] = _stats['analysis_with_redirects']
                 mstats['redirects'] = _stats['redirects']
@@ -1051,8 +1049,8 @@ class Lookyloo():
                 mstats['uniq_domains'] = len(uniq_domains(_stats['uniq_urls']))
                 yearly_analysis += _stats['analysis']
                 yearly_redirects += _stats['redirects']
-                years[calendar.month_name[month]] = mstats
+                years[str(month)] = mstats
             years['yearly_analysis'] = yearly_analysis
             years['yearly_redirects'] = yearly_redirects
-            statistics['years'].append(years)
+            statistics['years'][str(year)] = years
         return statistics
