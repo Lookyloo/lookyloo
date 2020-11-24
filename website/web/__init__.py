@@ -674,3 +674,9 @@ def json_hostname_info():
     to_query = request.get_json(force=True)
     occurrences = lookyloo.get_hostname_occurrences(**to_query)
     return jsonify(occurrences)
+
+
+@app.route('/json/stats', methods=['GET'])
+def json_stats():
+    to_return = lookyloo.get_stats()
+    return jsonify(to_return)

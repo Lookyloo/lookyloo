@@ -29,7 +29,6 @@ except ImportError:
 
 from .exceptions import MissingEnv, CreateDirectoryException, ConfigError
 
-
 configs: Dict[str, Dict[str, Any]] = {}
 logger = logging.getLogger('Lookyloo - Helpers')
 
@@ -313,3 +312,11 @@ def remove_pickle_tree(capture_dir: Path) -> None:
     pickle_file = capture_dir / 'tree.pickle'
     if pickle_file.exists():
         pickle_file.unlink()
+
+
+def uniq_domains(uniq_urls):
+    domains = set()
+    for url in uniq_urls:
+        splitted = urlparse(url)
+        domains.add(splitted.hostname)
+    return domains
