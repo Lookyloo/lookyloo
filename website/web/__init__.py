@@ -9,6 +9,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import json
 import http
+import calendar
 
 from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
 from flask_bootstrap import Bootstrap  # type: ignore
@@ -78,6 +79,13 @@ def http_status_description(code: int):
 
 
 app.jinja_env.globals.update(http_status_description=http_status_description)
+
+
+def month_name(month: int):
+    return calendar.month_name[month]
+
+
+app.jinja_env.globals.update(month_name=month_name)
 
 
 # ##### Generic/configuration methods #####
@@ -507,6 +515,12 @@ def cookies_name_detail(cookie_name: str):
 def body_hash_details(body_hash: str):
     captures, domains = lookyloo.get_body_hash_investigator(body_hash)
     return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures)
+
+
+@app.route('/stats', methods=['GET'])
+def statsfull():
+    stats = lookyloo.get_stats()
+    return render_template('stats.html', stats=stats)
 
 
 # ##### Methods related to a specific URLNode #####
