@@ -9,6 +9,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import json
 import http
+import calendar
 
 from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
 from flask_bootstrap import Bootstrap  # type: ignore
@@ -78,6 +79,13 @@ def http_status_description(code: int):
 
 
 app.jinja_env.globals.update(http_status_description=http_status_description)
+
+
+def month_name(month: int):
+    return calendar.month_name[month]
+
+
+app.jinja_env.globals.update(month_name=month_name)
 
 
 # ##### Generic/configuration methods #####

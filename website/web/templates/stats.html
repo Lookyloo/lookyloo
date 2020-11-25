@@ -6,8 +6,10 @@
 {% block content %}
 <div>
 {% for weeks in stats['weeks'] %}
-  <h2> Week : {{ weeks['week'] }}</h2>
+  <h2> Week: {{ weeks['week'] }}</h2>
+  <div class="table-responsive">
   <table id="table" class="table" style="width:96%">
+    <thead>
     <tr>
       <th>Submissions</th>
       <th>Submissions with redirects</th>
@@ -15,43 +17,56 @@
       <th>Uniq urls</th>
       <th>Uniq domains</th>
     </tr>
+    </thead>
+    <tbody>
     <tr>
-      <th> {{ weeks['analysis'] }} </th>
-      <th> {{ weeks['analysis_with_redirects'] }} </th>
-      <th> {{ weeks['redirects'] }} </th>
-      <th> {{ weeks['uniq_urls'] }} </th>
-      <th> {{ weeks['uniq_domains'] }} </th>
+      <td> {{ weeks['analysis'] }} </td>
+      <td> {{ weeks['analysis_with_redirects'] }} </td>
+      <td> {{ weeks['redirects'] }} </td>
+      <td> {{ weeks['uniq_urls'] }} </td>
+      <td> {{ weeks['uniq_domains'] }} </td>
     </tr>
-  <table>
-  </br>
+    </tbody>
+  </table>
+  </div>
 {% endfor %}
 </div>
 
 <div>
-{% for name,dict_ in stats['years'].items() %}
-  <h2>Year : {{ name }} - Analysis : {{ dict_['yearly_analysis']}} - Redirects : {{ dict_['yearly_redirects'] }}</h2>
+{% for name, dict_ in stats['years'].items() %}
+  <h2>Year: {{ name }}</h2>
+  <ul>
+      <li><b>Total analysis</b>: {{ dict_['yearly_analysis'] }}</li>
+      <li><b>Total redirects</b>: {{ dict_['yearly_redirects'] }}</li>
+  </ul>
   <div>
-      {% for monthnumber,month in dict_.items() %}
+      {% for monthnumber, month in dict_.items() %}
       {% if monthnumber is number %}
-      <h3>{{ monthnumber }}</h3>
+      <h4>{{ month_name(monthnumber) }}</h4>
+      <div class="table-responsive">
       <table id="table" class="table" style="width:96%">
-      <tr>
-        <th>Submissions</th>
-        <th>Submissions with redirects</th>
-        <th>Redirects</th>
-        <th>Uniq urls</th>
-        <th>Uniq domains</th>
-      </tr>
-      <tr>
-        <th> {{ month['analysis'] }} </th>
-        <th> {{ month['analysis_with_redirects'] }} </th>
-        <th> {{ month['redirects'] }} </th>
-        <th> {{ month['uniq_urls'] }} </th>
-        <th> {{ month['uniq_domains'] }} </th>
-      </tr>
-      <table>
+        <thead>
+        <tr>
+          <th>Submissions</th>
+          <th>Submissions with redirects</th>
+          <th>Redirects</th>
+          <th>Uniq urls</th>
+          <th>Uniq domains</th>
+        </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td> {{ month['analysis'] }} </td>
+            <td> {{ month['analysis_with_redirects'] }} </td>
+            <td> {{ month['redirects'] }} </td>
+            <td> {{ month['uniq_urls'] }} </td>
+            <td> {{ month['uniq_domains'] }} </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
       {% endif %}
-      {% endfor %} 
+      {% endfor %}
   </div>
 {% endfor %}
 </div>
