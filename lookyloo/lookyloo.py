@@ -1043,7 +1043,7 @@ class Lookyloo():
             for month in sorted(data.keys()):
                 _stats = data[month]
                 mstats = {}
-                mstats['analysys'] = _stats['analysis']
+                mstats['analysis'] = _stats['analysis']
                 mstats['analysis_with_redirects'] = _stats['analysis_with_redirects']
                 mstats['redirects'] = _stats['redirects']
                 mstats['uniq_url'] = len(_stats['uniq_urls'])
