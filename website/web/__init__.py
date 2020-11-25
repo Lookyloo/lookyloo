@@ -509,6 +509,12 @@ def body_hash_details(body_hash: str):
     return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures)
 
 
+@app.route('/stats', methods=['GET'])
+def statsfull():
+    stats = lookyloo.get_stats()
+    return render_template('stats.html', stats=stats)
+
+
 # ##### Methods related to a specific URLNode #####
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/request_cookies', methods=['GET'])
