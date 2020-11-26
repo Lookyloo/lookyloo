@@ -12,11 +12,6 @@
     {{ bootstrap.load_css() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='tree.css') }}">
     {% endblock %}
-    {% block scripts %}
-    <!-- Optional JavaScript -->
-    {{ bootstrap.load_js() }}
-    {% endblock %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
     <title>
         {% block title %}{% endblock%}
     </title>
@@ -28,5 +23,9 @@
       {% block content %}{% endblock%}
     </div>
 
+    {% block scripts %}
+    <!-- Optional JavaScript -->
+    {{ bootstrap.load_js() }}
+    {% endblock %}
   </body>
 </html>

@@ -2,9 +2,7 @@
 
 {% block title %}Statistics{% endblock %}
 
-
 {% block content %}
-
 <div>
 {% for weeks in stats['weeks'] %}
   <h2> Week: {{ weeks['week'] }}</h2>
@@ -15,8 +13,8 @@
       <th>Submissions</th>
       <th>Submissions with redirects</th>
       <th>Redirects</th>
-      <th>Uniq urls</th>
-      <th>Uniq domains</th>
+      <th>Unique urls (including redirects)</th>
+      <th>Unique domains (including redirects)</th>
     </tr>
     </thead>
     <tbody>
@@ -51,8 +49,8 @@
           <th>Submissions</th>
           <th>Submissions with redirects</th>
           <th>Redirects</th>
-          <th>Uniq urls</th>
-          <th>Uniq domains</th>
+          <th>Unique urls (including redirects)</th>
+          <th>Unique domains (including redirects)</th>
         </tr>
         </thead>
         <tbody>
@@ -72,69 +70,11 @@
 {% endfor %}
 </div>
 
-<div>
-{% for name, dict_ in stats['years'].items() %}
-    <h5>Total Submissions {{ name }}</h5>       
-    <canvas id="global_submissions{{ name }}" width="800" height="350"></canvas>
-    <script type="text/javascript">
-        $(document).ready(function() {    
-            new Chart(document.getElementById("global_submissions{{ name }}"), {
-                type: 'line',
-                data: {
-                    labels: [
-                        {% for monthnumber, month in dict_.items() %}
-                            {% if monthnumber is number %}
-                                "{{ month_name(monthnumber) }}",
-                            {% endif %}
-                        {% endfor %}  
-                    ],
-                    datasets: [{
-                        label: "{{ name }}",
-                        fill: false,
-                        backgroundColor:"#FE9700",
-                        borderColor:"#FE9700",
-                        data: [
-                            {% for monthnumber, month in dict_.items() %}
-                                {% if monthnumber is number %}
-                                    "{{ month['analysis'] }}",
-                                {% endif %}
-                            {% endfor %} 
-                        ]                    
-                    }]
-                },
-                options: {
-                    legend: {
-                        position: 'bottom'
-                    },
-                    title: {
-                        display: true,
-                        text: "Total Submissions {{ name }}"
-                    },                        
-                    hover: {
-                        animationDuration: 0
-                    },
-                    animation: {
-                        duration: 1,
-                        onComplete: function () {
-                            var chartInstance = this.chart,
-                            ctx = chartInstance.ctx;
-                            ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'bottom';
-                            this.data.datasets.forEach(function (dataset, i) {
-                                var meta = chartInstance.controller.getDatasetMeta(i);
-                                meta.data.forEach(function (bar, index) {
-                                    var data = dataset.data[index];
-                                    ctx.fillText(data, bar._model.x, bar._model.y - 5);
-                                });
-                            });
-                        }
-                    },      
-                }                  
-            }); 
-        });             
-    </script>
-{% endfor %}
-</div>
+<div class='graphs'></div>
+{% endblock %}
 
+{% block scripts %}
+{{ super() }}
+<script src='{{ url_for('static', filename='d3.v6.min.js') }}'></script>
+<script src='{{ url_for('static', filename='stats_graph.js') }}'></script>
 {% endblock %}
