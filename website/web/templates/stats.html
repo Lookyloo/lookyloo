@@ -2,7 +2,6 @@
 
 {% block title %}Statistics{% endblock %}
 
-
 {% block content %}
 <div>
 {% for weeks in stats['weeks'] %}
@@ -14,8 +13,8 @@
       <th>Submissions</th>
       <th>Submissions with redirects</th>
       <th>Redirects</th>
-      <th>Uniq urls</th>
-      <th>Uniq domains</th>
+      <th>Unique urls (including redirects)</th>
+      <th>Unique domains (including redirects)</th>
     </tr>
     </thead>
     <tbody>
@@ -50,8 +49,8 @@
           <th>Submissions</th>
           <th>Submissions with redirects</th>
           <th>Redirects</th>
-          <th>Uniq urls</th>
-          <th>Uniq domains</th>
+          <th>Unique urls (including redirects)</th>
+          <th>Unique domains (including redirects)</th>
         </tr>
         </thead>
         <tbody>
@@ -71,4 +70,11 @@
 {% endfor %}
 </div>
 
+<div class='graphs'></div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src='{{ url_for('static', filename='d3.v6.min.js') }}'></script>
+<script src='{{ url_for('static', filename='stats_graph.js') }}'></script>
 {% endblock %}
