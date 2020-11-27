@@ -996,62 +996,64 @@ class Lookyloo():
             urls.append(to_append)
         return hostnode, urls
 
-    def get_stats(self) -> Dict[str, Union[List, Dict]]:
-        stats: Dict[int, Dict[int, Dict[str, Any]]] = {}
+    def get_stats(self) -> Dict[str, List]:
         today = date.today()
         calendar_week = today.isocalendar()[1]
-        weeks_stats: Dict[int, Dict] = {calendar_week - 1: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()},
-                                        calendar_week: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()}}
-        statistics: Dict[str, Union[List, Dict]] = {'weeks': [], 'years': {}}
+
+        stats_dict = {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0}
+        stats: Dict[int, Dict[int, Dict[str, Any]]] = {}
+        weeks_stats: Dict[int, Dict] = {}
+
         for uuid in self.capture_uuids:
+            # What we get here is in a random order. This look sorts the captures
             cache = self.capture_cache(uuid)
             if 'timestamp' not in cache:
                 continue
             date_analysis: datetime = datetime.fromisoformat(cache['timestamp'].rstrip('Z'))  # type: ignore
+
             if date_analysis.year not in stats:
                 stats[date_analysis.year] = {}
             if date_analysis.month not in stats[date_analysis.year]:
-                stats[date_analysis.year][date_analysis.month] = {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()}
+                stats[date_analysis.year][date_analysis.month] = defaultdict(dict, **stats_dict)
+                stats[date_analysis.year][date_analysis.month]['uniq_urls'] = set()
             stats[date_analysis.year][date_analysis.month]['analysis'] += 1
+            stats[date_analysis.year][date_analysis.month]['uniq_urls'].add(cache['url'])
             if len(cache['redirects']) > 0:  # type: ignore
                 stats[date_analysis.year][date_analysis.month]['analysis_with_redirects'] += 1
-            stats[date_analysis.year][date_analysis.month]['redirects'] += len(cache['redirects'])  # type: ignore
-            stats[date_analysis.year][date_analysis.month]['uniq_urls'].update(cache['redirects'])
-            stats[date_analysis.year][date_analysis.month]['uniq_urls'].add(cache['url'])
-            if date_analysis.isocalendar()[1] in weeks_stats:
+                stats[date_analysis.year][date_analysis.month]['redirects'] += len(cache['redirects'])  # type: ignore
+                stats[date_analysis.year][date_analysis.month]['uniq_urls'].update(cache['redirects'])
+
+            if date_analysis.isocalendar()[1] >= calendar_week - 1:
+                if date_analysis.isocalendar()[1] not in weeks_stats:
+                    weeks_stats[date_analysis.isocalendar()[1]] = defaultdict(dict, **stats_dict)
+                    weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'] = set()
                 weeks_stats[date_analysis.isocalendar()[1]]['analysis'] += 1
+                weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'].add(cache['url'])
                 if len(cache['redirects']) > 0:  # type: ignore
                     weeks_stats[date_analysis.isocalendar()[1]]['analysis_with_redirects'] += 1
-                weeks_stats[date_analysis.isocalendar()[1]]['redirects'] += len(cache['redirects'])  # type: ignore
-                weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'].update(cache['redirects'])
-                weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'].add(cache['url'])
+                    weeks_stats[date_analysis.isocalendar()[1]]['redirects'] += len(cache['redirects'])  # type: ignore
+                    weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'].update(cache['redirects'])
 
-        for week_number, week_stat in weeks_stats.items():
-            week = {}
-            week['week'] = week_number
-            week['analysis'] = week_stat['analysis']
-            week['analysis_with_redirects'] = week_stat['analysis_with_redirects']
-            week['redirects'] = week_stat['redirects']
-            week['uniq_urls'] = len(week_stat['uniq_urls'])
-            week['uniq_domains'] = len(uniq_domains(week_stat['uniq_urls']))
-            statistics['weeks'].append(week)  # type: ignore
+        statistics: Dict[str, List] = {'weeks': [], 'years': []}
+        for week_number in sorted(weeks_stats.keys()):
+            week_stat = weeks_stats[week_number]
+            urls = week_stat.pop('uniq_urls')
+            week_stat['week_number'] = week_number
+            week_stat['uniq_urls'] = len(urls)
+            week_stat['uniq_domains'] = len(uniq_domains(urls))
+            statistics['weeks'].append(week_stat)
 
-        for year, data in stats.items():
-            years: Dict[Union[int, str], Union[Dict, int]] = {}
-            yearly_analysis = 0
-            yearly_redirects = 0
-            for month in sorted(data.keys()):
-                _stats = data[month]
-                mstats = {}
-                mstats['analysis'] = _stats['analysis']
-                mstats['analysis_with_redirects'] = _stats['analysis_with_redirects']
-                mstats['redirects'] = _stats['redirects']
-                mstats['uniq_urls'] = len(_stats['uniq_urls'])
-                mstats['uniq_domains'] = len(uniq_domains(_stats['uniq_urls']))
-                yearly_analysis += _stats['analysis']
-                yearly_redirects += _stats['redirects']
-                years[month] = mstats
-            years['yearly_analysis'] = yearly_analysis
-            years['yearly_redirects'] = yearly_redirects
-            statistics['years'][year] = years
+        for year in sorted(stats.keys()):
+            year_stats: Dict[str, Union[int, List]] = {'year': year, 'months': [], 'yearly_analysis': 0, 'yearly_redirects': 0}
+            for month in sorted(stats[year].keys()):
+                month_stats = stats[year][month]
+                urls = month_stats.pop('uniq_urls')
+                month_stats['month_number'] = month
+                month_stats['uniq_urls'] = len(urls)
+                month_stats['uniq_domains'] = len(uniq_domains(urls))
+                year_stats['months'].append(month_stats)  # type: ignore
+
+                year_stats['yearly_analysis'] += month_stats['analysis']
+                year_stats['yearly_redirects'] += month_stats['redirects']
+            statistics['years'].append(year_stats)
         return statistics

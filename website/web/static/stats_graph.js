@@ -8,15 +8,12 @@ var xScale = d3.scaleLinear()
                .range([0, width]);
 
 d3.json('/json/stats').then(json => {
-    for (var year in json['years']) {
+    json['years'].forEach(year => {
         var dataset = [];
-        for (var month in json['years'][year]) {
-            var i_month = parseInt(month)
-            if (Number.isInteger(i_month)) {
-                dataset.push([month, json['years'][year][month]['analysis']]);
-                height = Math.max(json['years'][year][month]['analysis'] + 50, height);
-            };
-        };
+        year['months'].forEach(month => {
+            dataset.push([month['month_number'], month['analysis']]);
+            height = Math.max(month['analysis'] + 50, height);
+        });
         var yScale = d3.scaleLinear()
                        .domain([0, height])
                        .range([height, 0]);
@@ -37,7 +34,7 @@ d3.json('/json/stats').then(json => {
              .attr("y", 0 - (margin.top / 2))
              .attr("text-anchor", "middle")
              .style("font-size", "20px")
-             .text(year);
+             .text(year['year']);
 
         svg.append("g")
              .attr("class", "x axis")
@@ -60,5 +57,5 @@ d3.json('/json/stats').then(json => {
              .attr("cx", d => { return xScale(d[0]) })
              .attr("cy", d => { return yScale(d[1]) })
              .attr("r", 5);
-    };
+    });
 });

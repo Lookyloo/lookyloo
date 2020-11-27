@@ -4,8 +4,8 @@
 
 {% block content %}
 <div>
-{% for weeks in stats['weeks'] %}
-  <h2> Week: {{ weeks['week'] }}</h2>
+{% for week in stats['weeks'] %}
+  <h2> Week: {{ week['week_number'] }}</h2>
   <div class="table-responsive">
   <table id="table" class="table" style="width:96%">
     <thead>
@@ -19,11 +19,11 @@
     </thead>
     <tbody>
     <tr>
-      <td> {{ weeks['analysis'] }} </td>
-      <td> {{ weeks['analysis_with_redirects'] }} </td>
-      <td> {{ weeks['redirects'] }} </td>
-      <td> {{ weeks['uniq_urls'] }} </td>
-      <td> {{ weeks['uniq_domains'] }} </td>
+      <td> {{ week['analysis'] }} </td>
+      <td> {{ week['analysis_with_redirects'] }} </td>
+      <td> {{ week['redirects'] }} </td>
+      <td> {{ week['uniq_urls'] }} </td>
+      <td> {{ week['uniq_domains'] }} </td>
     </tr>
     </tbody>
   </table>
@@ -32,16 +32,15 @@
 </div>
 
 <div>
-{% for name, dict_ in stats['years'].items() %}
-  <h2>Year: {{ name }}</h2>
+{% for year in stats['years'] %}
+  <h2>Year: {{ year['year'] }}</h2>
   <ul>
-      <li><b>Total analysis</b>: {{ dict_['yearly_analysis'] }}</li>
-      <li><b>Total redirects</b>: {{ dict_['yearly_redirects'] }}</li>
+      <li><b>Total analysis</b>: {{ year['yearly_analysis'] }}</li>
+      <li><b>Total redirects</b>: {{ year['yearly_redirects'] }}</li>
   </ul>
   <div>
-      {% for monthnumber, month in dict_.items() %}
-      {% if monthnumber is number %}
-      <h4>{{ month_name(monthnumber) }}</h4>
+      {% for month in year['months'] %}
+      <h4>{{ month_name(month['month_number']) }}</h4>
       <div class="table-responsive">
       <table id="table" class="table" style="width:96%">
         <thead>
@@ -64,7 +63,6 @@
         </tbody>
       </table>
       </div>
-      {% endif %}
       {% endfor %}
   </div>
 {% endfor %}
