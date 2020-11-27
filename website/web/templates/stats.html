@@ -78,3 +78,8 @@
 <script src='{{ url_for('static', filename='d3.v6.min.js') }}'></script>
 <script src='{{ url_for('static', filename='stats_graph.js') }}'></script>
 {% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='stats.css') }}">
+{% endblock %}
