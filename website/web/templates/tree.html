@@ -134,7 +134,7 @@
         </li>
         {% if enable_context_by_users %}
         <li>
-          <a href="#/" role="button" onclick="MarkAsLegitimate('{{ tree_uuid }}');">Mark capture as legitimate</a>
+          <a href="#/" role="button" onclick="MarkAsKnown('{{ tree_uuid }}');">Mark all the captures' entries as known</a>
         </li>
         {% endif %}
         {% if enable_mail_notification %}
@@ -161,7 +161,7 @@
     </center>
   <hr/>
   <img src="{{ url_for('static', filename='check.svg') }}"
-       alt="Legitimate Node" height="20" width="20"> Legit node<br>
+       alt="Known Node" height="20" width="20"> Known node<br>
 
   <img src="{{ url_for('static', filename='bomb.svg') }}"
        alt="Malicious Node" height="20" width="20"> Malicious node<br>

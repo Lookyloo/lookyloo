@@ -160,7 +160,7 @@ function UnbookmarkAllNodes() {
         .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
 };
 
-function MarkAsLegitimate(capture_uuid, hostnode_uuid=null, urlnode_uuid=null) {
+function MarkAsKnown(capture_uuid, hostnode_uuid=null, urlnode_uuid=null) {
   let data = {};
   if (hostnode_uuid != null) { data['hostnode_uuid'] = hostnode_uuid; };
   if (urlnode_uuid != null) { data['urlnode_uuid'] = urlnode_uuid; };
@@ -545,7 +545,7 @@ function update(root, computed_node_width=0) {
                                 .style('opacity', 1)
                                 .style('left', `${event.pageX + 10}px`)
                                 .style('top', `${event.pageY + 10}px`)
-                                .text('This node has only legitimate content');
+                                .text('This node has only known content');
                         })
                         .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
               } else if (d.data.all_empty) {
