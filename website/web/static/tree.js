@@ -453,22 +453,24 @@ function update(root, computed_node_width=0) {
                 node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
 
                 // Set Bookmark
-                d3.select(this).append("text")
-                    .attr('x', `${selected_node_bbox.width - 12}px`)
-                    .attr('y', '20px')
-                    .style("font-size", "16px")
-                    .attr("id", "bookmark")
-                    .text("🏁")
-                    .attr('cursor', 'pointer')
-                    .on('click', (event, d) => NodeHighlight(d.data.uuid))
-                    .on('mouseover', (event, d) => {
-                        d3.select('#tooltip')
-                            .style('opacity', 1)
-                            .style('left', `${event.pageX + 10}px`)
-                            .style('top', `${event.pageY + 10}px`)
-                            .text('Bookmark this node');
-                    })
-                    .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
+                if (enable_bookmark) {
+                    d3.select(this).append("text")
+                        .attr('x', `${selected_node_bbox.width - 12}px`)
+                        .attr('y', '20px')
+                        .style("font-size", "16px")
+                        .attr("id", "bookmark")
+                        .text("🏁")
+                        .attr('cursor', 'pointer')
+                        .on('click', (event, d) => NodeHighlight(d.data.uuid))
+                        .on('mouseover', (event, d) => {
+                            d3.select('#tooltip')
+                                .style('opacity', 1)
+                                .style('left', `${event.pageX + 10}px`)
+                                .style('top', `${event.pageY + 10}px`)
+                                .text('Bookmark this node');
+                        })
+                        .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
+                };
 
                 const http_icon_size = 24;
                 if (d.data.http_content) {

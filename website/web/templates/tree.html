@@ -68,6 +68,7 @@
 
 <script>
   var treeUUID = "{{ tree_uuid }}";
+  var enable_bookmark = {{ enable_bookmark|tojson }};
   var treeData = {{ tree_json | safe }};
 </script>
 
@@ -123,9 +124,11 @@
             <a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">Download redirects</a>
         </li>
         {% endif %}
+        {% if enable_bookmark %}
         <li>
           <a href="#/" role="button" onclick="UnbookmarkAllNodes();">Unbookmark all nodes</a>
         </li>
+        {% endif %}
         <li>
           <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">Download screenshot</a>
         </li>
