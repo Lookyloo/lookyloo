@@ -133,7 +133,7 @@
           {% if url['cookies_sent'] %}
           <div>
             <p class="h5">This request contains cookies.
-              <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#request_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+              <button class="btn btn-info collapsed" type="button" data-toggle="collapse" data-target="#request_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
                 <span class="if-collapsed">Show cookies sent.</span>
                 <span class="if-not-collapsed">Hide cookies sent.</span>
               </button>
@@ -200,7 +200,7 @@
           {% if url['embedded_ressources'] %}
           {# Details on embedded resources #}
           <div><b>This response contains embedded ressources</b>
-          <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#embedded_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+          <button class="btn btn-info collapsed" type="button" data-toggle="collapse" data-target="#embedded_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
             <span class="if-collapsed">Show embedded resources.</span>
             <span class="if-not-collapsed">Hide embedded resources.</span>
           </button>
@@ -236,7 +236,7 @@
           {% if url['cookies_received'] %}
           <div>
             <p class="h5">This response contains cookies.
-              <button class="btn btn-primary collapsed" type="button" data-toggle="collapse" data-target="#response_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+              <button class="btn btn-info collapsed" type="button" data-toggle="collapse" data-target="#response_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
                   <span class="if-collapsed">Show cookies received.</span>
                   <span class="if-not-collapsed">Hide cookies received.</span>
               </button>
