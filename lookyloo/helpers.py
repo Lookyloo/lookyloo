@@ -304,7 +304,10 @@ def load_pickle_tree(capture_dir: Path) -> Optional[CrawledTree]:
     pickle_file = capture_dir / 'tree.pickle'
     if pickle_file.exists():
         with pickle_file.open('rb') as _p:
-            return pickle.load(_p)
+            try:
+                return pickle.load(_p)
+            except pickle.UnpicklingError:
+                remove_pickle_tree(capture_dir)
     return None
 
 
