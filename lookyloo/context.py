@@ -17,7 +17,7 @@ from .modules import SaneJavaScript
 
 class Context():
 
-    def __init__(self, sanejs: Optional[SaneJavaScript] = None):
+    def __init__(self, sanejs: SaneJavaScript):
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('indexing'), db=1, decode_responses=True)
@@ -102,7 +102,7 @@ class Context():
         if not to_lookup:
             return known_content_table
 
-        if to_lookup and self.sanejs and self.sanejs.available:
+        if to_lookup and self.sanejs.available:
             # Query sanejs on the remaining ones
             try:
                 for h, entry in self.sanejs.hashes_lookup(to_lookup).items():

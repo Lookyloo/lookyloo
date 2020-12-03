@@ -237,6 +237,8 @@ def modules(tree_uuid: str):
         vt = modules_responses.pop('vt')
         # Get malicious entries
         for url, full_report in vt.items():
+            if not full_report:
+                continue
             vt_short_result[url] = {
                 'permaurl': f'https://www.virustotal.com/gui/url/{full_report["id"]}/detection',
                 'malicious': []

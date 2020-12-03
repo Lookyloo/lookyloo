@@ -20,7 +20,7 @@ from pyeupi import PyEUPI
 class SaneJavaScript():
 
     def __init__(self, config: Dict[str, Any]):
-        if not ('enabled' in config or config['enabled']):
+        if not config.get('enabled'):
             self.available = False
             return
         self.client = SaneJS()
@@ -85,7 +85,7 @@ class SaneJavaScript():
 class PhishingInitiative():
 
     def __init__(self, config: Dict[str, Any]):
-        if 'apikey' not in config or config['apikey'] is None:
+        if not config.get('apikey'):
             self.available = False
             return
 
@@ -158,7 +158,7 @@ class PhishingInitiative():
 class VirusTotal():
 
     def __init__(self, config: Dict[str, Any]):
-        if 'apikey' not in config or config['apikey'] is None:
+        if not config.get('apikey'):
             self.available = False
             return
 

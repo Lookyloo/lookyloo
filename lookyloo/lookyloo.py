@@ -70,10 +70,7 @@ class Lookyloo():
         if not self.sanejs.available:
             self.logger.warning('Unable to setup the SaneJS module')
 
-        if hasattr(self, 'sanejs') and self.sanejs.available:
-            self.context = Context(self.sanejs)
-        else:
-            self.context = Context()
+        self.context = Context(self.sanejs)
 
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
@@ -329,14 +326,14 @@ class Lookyloo():
             self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_dir}) is cached.')
             return
 
-        if hasattr(self, 'pi') and self.pi.available:
+        if self.pi.available:
             if ct.redirects:
                 for redirect in ct.redirects:
                     self.pi.url_lookup(redirect, force)
             else:
                 self.pi.url_lookup(ct.root_hartree.har.root_url, force)
 
-        if hasattr(self, 'vt') and self.vt.available:
+        if self.vt.available:
             if ct.redirects:
                 for redirect in ct.redirects:
                     self.vt.url_lookup(redirect, force)
@@ -352,14 +349,14 @@ class Lookyloo():
             self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_dir}) is cached.')
             return None
         to_return: Dict[str, Any] = {}
-        if hasattr(self, 'vt') and self.vt.available:
+        if self.vt.available:
             to_return['vt'] = {}
             if ct.redirects:
                 for redirect in ct.redirects:
                     to_return['vt'][redirect] = self.vt.get_url_lookup(redirect)
             else:
                 to_return['vt'][ct.root_hartree.har.root_url] = self.vt.get_url_lookup(ct.root_hartree.har.root_url)
-        if hasattr(self, 'pi') and self.pi.available:
+        if self.pi.available:
             to_return['pi'] = {}
             if ct.redirects:
                 for redirect in ct.redirects:
