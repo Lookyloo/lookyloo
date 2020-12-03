@@ -10,8 +10,10 @@ let margin = {
 };
 let width = 960 - margin.left - margin.right;
 let height = 1000 - margin.top - margin.bottom;
+let menuHeight = document.getElementById('menu').clientHeight;
 
-let node_width = 0;
+
+let node_width = 10;
 let node_height = 55;
 
 let main_svg = d3.select("body").append("svg")
@@ -33,7 +35,7 @@ let pattern = defs.append('pattern')
     .attr('id', 'backstripes')
     .attr('x', margin.left)
     .attr("width", node_width * 2)
-    .attr("height", 10)
+    .attr("height", height)
     .attr('patternUnits', "userSpaceOnUse" )
 
 pattern.append('rect')
@@ -49,7 +51,7 @@ let node_container = main_svg.append("g")
 
 // Assigns parent, children, height, depth
 let root = d3.hierarchy(treeData);
-root.x0 = height / 2;  // middle of the page
+root.x0 = height / 2;
 root.y0 = 0;
 
 // declares a tree layout
@@ -307,7 +309,7 @@ function text_entry(relative_x_pos, relative_y_pos, d) {
 function update(root, computed_node_width=0) {
 
   // Current height of the tree (cannot use height because it isn't recomputed when we rename children -> _children)
-  let max_depth = 1
+  let max_depth = 0
   root.each(d => {
     if (d.children){
       max_depth = d.depth > max_depth ? d.depth : max_depth;
@@ -319,8 +321,8 @@ function update(root, computed_node_width=0) {
     // Re-compute SVG size depending on the generated tree
     let newWidth = Math.max((max_depth + 1) * computed_node_width, node_width);
     // Update height
-    // node_height is the height of a node, node_height * 25 is the minimum so the root node isn't behind the menu
-    let newHeight = Math.max(root.descendants().reverse().length * node_height, 25 * node_height);
+    // node_height is the height of a node, menuHeight * 3 is the minimum so the root node isn't behind the menu
+    let newHeight = Math.max(root.descendants().reverse().length * node_height, menuHeight * 3);
     tree.size([newHeight, newWidth])
 
     // Set background based on the computed width and height
