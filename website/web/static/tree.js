@@ -3,15 +3,15 @@
 
 // Set the dimensions and margins of the diagram
 let margin = {
-    top: 20,
+    top: document.getElementById('tree-details').clientHeight,
     right: 200,
     bottom: 30,
     left: 90
 };
-let width = 960 - margin.left - margin.right;
-let height = 1000 - margin.top - margin.bottom;
-let menuHeight = document.getElementById('menu').clientHeight;
 
+let menuHeight = document.getElementById('menu').clientHeight;
+let width = 960 - margin.left - margin.right;
+let height = menuHeight * 2;
 
 let node_width = 10;
 let node_height = 55;
@@ -47,7 +47,7 @@ pattern.append('rect')
 // appends a 'group' element to 'svg'
 // moves the 'group' element to the top left margin
 let node_container = main_svg.append("g")
-                             .attr("transform", `translate(${margin.left},${margin.top})`);
+                             .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 // Assigns parent, children, height, depth
 let root = d3.hierarchy(treeData);
