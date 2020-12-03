@@ -7,9 +7,10 @@ import hashlib
 import json
 from pathlib import Path
 import time
+import logging
 
 
-from .helpers import get_homedir
+from .helpers import get_homedir, get_config
 from .exceptions import ConfigError
 
 import vt  # type: ignore
@@ -20,8 +21,11 @@ from pyeupi import PyEUPI
 class SaneJavaScript():
 
     def __init__(self, config: Dict[str, Any]):
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.logger.setLevel(get_config('generic', 'loglevel'))
         if not config.get('enabled'):
             self.available = False
+            self.logger('Module not enabled.')
             return
         self.client = SaneJS()
         if not self.client.is_up:
@@ -54,7 +58,12 @@ class SaneJavaScript():
                                                and not (today_dir / h).exists())]
         has_new_unknown = False
         for h in to_lookup:
-            response = self.client.sha512(h)
+            try:
+                response = self.client.sha512(h)
+            except Exception as e:
+                self.logger.warning(f'Something went wrong. Query: {h} - {e}')
+                continue
+
             if 'error' in response:
                 # Server not ready
                 break

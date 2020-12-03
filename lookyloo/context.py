@@ -110,7 +110,7 @@ class Context():
                     known_content_table[h] = {'type': 'sanejs',
                                               'details': (libname, version, path, len(entry))}
             except json.decoder.JSONDecodeError as e:
-                self.logger.warning(f'Something went wring with sanejs: {e}')
+                self.logger.warning(f'Something went wrong with sanejs: {e}')
 
         return known_content_table
 
