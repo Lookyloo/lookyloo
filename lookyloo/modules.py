@@ -25,7 +25,7 @@ class SaneJavaScript():
         self.logger.setLevel(get_config('generic', 'loglevel'))
         if not config.get('enabled'):
             self.available = False
-            self.logger('Module not enabled.')
+            self.logger.info('Module not enabled.')
             return
         self.client = SaneJS()
         if not self.client.is_up:
