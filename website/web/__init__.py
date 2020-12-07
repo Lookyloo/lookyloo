@@ -673,6 +673,8 @@ def json_redirects(tree_uuid: str):
 @app.route('/json/<string:tree_uuid>/misp_export', methods=['GET'])
 def misp_export(tree_uuid: str):
     event = lookyloo.misp_export(tree_uuid)
+    if isinstance(event, dict):
+        return jsonify(event)
     return Response(event.to_json(indent=2), mimetype='application/json')
 
 

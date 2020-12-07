@@ -880,7 +880,7 @@ class Lookyloo():
                     return 'embedded_ressource.bin', blob
         return None
 
-    def misp_export(self, capture_uuid: str) -> MISPEvent:
+    def misp_export(self, capture_uuid: str) -> Union[MISPEvent, Dict[str, str]]:
         cache = self.capture_cache(capture_uuid)
         if not cache:
             return {'error': 'UUID missing in cache, try again later.'}
@@ -891,8 +891,8 @@ class Lookyloo():
         event = MISPEvent()
         event.info = f'Lookyloo Capture ({cache["url"]})'
         event.add_attribute('link', f'https://{self.public_domain}/tree/{capture_uuid}')
-        initial_url = URLObject(cache["url"])
-        redirects = [URLObject(url) for url in cache['redirects']]
+        initial_url = URLObject(cache["url"])  # type: ignore
+        redirects = [URLObject(url) for url in cache['redirects']]  # type: ignore
         initial_url.add_reference(redirects[0], 'redirects-to')
         prec_object = redirects[0]
         for u_object in redirects[1:]:
