@@ -997,7 +997,7 @@ class Lookyloo():
         today = date.today()
         calendar_week = today.isocalendar()[1]
 
-        stats_dict = {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0}
+        stats_dict = {'submissions': 0, 'submissions_with_redirects': 0, 'redirects': 0}
         stats: Dict[int, Dict[int, Dict[str, Any]]] = {}
         weeks_stats: Dict[int, Dict] = {}
 
@@ -1006,30 +1006,30 @@ class Lookyloo():
             cache = self.capture_cache(uuid)
             if 'timestamp' not in cache:
                 continue
-            date_analysis: datetime = datetime.fromisoformat(cache['timestamp'].rstrip('Z'))  # type: ignore
+            date_submission: datetime = datetime.fromisoformat(cache['timestamp'].rstrip('Z'))  # type: ignore
 
-            if date_analysis.year not in stats:
-                stats[date_analysis.year] = {}
-            if date_analysis.month not in stats[date_analysis.year]:
-                stats[date_analysis.year][date_analysis.month] = defaultdict(dict, **stats_dict)
-                stats[date_analysis.year][date_analysis.month]['uniq_urls'] = set()
-            stats[date_analysis.year][date_analysis.month]['analysis'] += 1
-            stats[date_analysis.year][date_analysis.month]['uniq_urls'].add(cache['url'])
+            if date_submission.year not in stats:
+                stats[date_submission.year] = {}
+            if date_submission.month not in stats[date_submission.year]:
+                stats[date_submission.year][date_submission.month] = defaultdict(dict, **stats_dict)
+                stats[date_submission.year][date_submission.month]['uniq_urls'] = set()
+            stats[date_submission.year][date_submission.month]['submissions'] += 1
+            stats[date_submission.year][date_submission.month]['uniq_urls'].add(cache['url'])
             if len(cache['redirects']) > 0:  # type: ignore
-                stats[date_analysis.year][date_analysis.month]['analysis_with_redirects'] += 1
-                stats[date_analysis.year][date_analysis.month]['redirects'] += len(cache['redirects'])  # type: ignore
-                stats[date_analysis.year][date_analysis.month]['uniq_urls'].update(cache['redirects'])
+                stats[date_submission.year][date_submission.month]['submissions_with_redirects'] += 1
+                stats[date_submission.year][date_submission.month]['redirects'] += len(cache['redirects'])  # type: ignore
+                stats[date_submission.year][date_submission.month]['uniq_urls'].update(cache['redirects'])
 
-            if date_analysis.isocalendar()[1] >= calendar_week - 1:
-                if date_analysis.isocalendar()[1] not in weeks_stats:
-                    weeks_stats[date_analysis.isocalendar()[1]] = defaultdict(dict, **stats_dict)
-                    weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'] = set()
-                weeks_stats[date_analysis.isocalendar()[1]]['analysis'] += 1
-                weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'].add(cache['url'])
+            if date_submission.isocalendar()[1] >= calendar_week - 1:
+                if date_submission.isocalendar()[1] not in weeks_stats:
+                    weeks_stats[date_submission.isocalendar()[1]] = defaultdict(dict, **stats_dict)
+                    weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'] = set()
+                weeks_stats[date_submission.isocalendar()[1]]['submissions'] += 1
+                weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'].add(cache['url'])
                 if len(cache['redirects']) > 0:  # type: ignore
-                    weeks_stats[date_analysis.isocalendar()[1]]['analysis_with_redirects'] += 1
-                    weeks_stats[date_analysis.isocalendar()[1]]['redirects'] += len(cache['redirects'])  # type: ignore
-                    weeks_stats[date_analysis.isocalendar()[1]]['uniq_urls'].update(cache['redirects'])
+                    weeks_stats[date_submission.isocalendar()[1]]['submissions_with_redirects'] += 1
+                    weeks_stats[date_submission.isocalendar()[1]]['redirects'] += len(cache['redirects'])  # type: ignore
+                    weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'].update(cache['redirects'])
 
         statistics: Dict[str, List] = {'weeks': [], 'years': []}
         for week_number in sorted(weeks_stats.keys()):
@@ -1041,7 +1041,7 @@ class Lookyloo():
             statistics['weeks'].append(week_stat)
 
         for year in sorted(stats.keys()):
-            year_stats: Dict[str, Union[int, List]] = {'year': year, 'months': [], 'yearly_analysis': 0, 'yearly_redirects': 0}
+            year_stats: Dict[str, Union[int, List]] = {'year': year, 'months': [], 'yearly_submissions': 0, 'yearly_redirects': 0}
             for month in sorted(stats[year].keys()):
                 month_stats = stats[year][month]
                 urls = month_stats.pop('uniq_urls')
@@ -1050,7 +1050,7 @@ class Lookyloo():
                 month_stats['uniq_domains'] = len(uniq_domains(urls))
                 year_stats['months'].append(month_stats)  # type: ignore
 
-                year_stats['yearly_analysis'] += month_stats['analysis']
+                year_stats['yearly_submissions'] += month_stats['submissions']
                 year_stats['yearly_redirects'] += month_stats['redirects']
             statistics['years'].append(year_stats)
         return statistics

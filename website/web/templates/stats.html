@@ -19,8 +19,8 @@
     </thead>
     <tbody>
     <tr>
-      <td> {{ week['analysis'] }} </td>
-      <td> {{ week['analysis_with_redirects'] }} </td>
+      <td> {{ week['submissions'] }} </td>
+      <td> {{ week['submissions_with_redirects'] }} </td>
       <td> {{ week['redirects'] }} </td>
       <td> {{ week['uniq_urls'] }} </td>
       <td> {{ week['uniq_domains'] }} </td>
@@ -35,7 +35,7 @@
 {% for year in stats['years'] %}
   <h2>Year: {{ year['year'] }}</h2>
   <ul>
-      <li><b>Total analysis</b>: {{ year['yearly_analysis'] }}</li>
+      <li><b>Total submissions</b>: {{ year['yearly_submissions'] }}</li>
       <li><b>Total redirects</b>: {{ year['yearly_redirects'] }}</li>
   </ul>
   <div>
@@ -54,8 +54,8 @@
         </thead>
         <tbody>
           <tr>
-            <td> {{ month['analysis'] }} </td>
-            <td> {{ month['analysis_with_redirects'] }} </td>
+            <td> {{ month['submissions'] }} </td>
+            <td> {{ month['submissions_with_redirects'] }} </td>
             <td> {{ month['redirects'] }} </td>
             <td> {{ month['uniq_urls'] }} </td>
             <td> {{ month['uniq_domains'] }} </td>

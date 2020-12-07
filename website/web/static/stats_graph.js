@@ -7,12 +7,17 @@ var height = 800;
 d3.json('/json/stats').then(json => {
     var datasets = []
     json.years.forEach(year => {
-        var data_year = { label: `Analysis ${year.year}`, x: [], y: [] }
+        var submissions_year = { label: `Submissions ${year.year}`, x: [], y: [] }
+        var unique_urls_year = { label: `Unique URLs ${year.year}`, x: [], y: [] }
         year.months.forEach(month => {
-            data_year.x.push(month.month_number)
-            data_year.y.push(month.analysis)
+            submissions_year.x.push(month.month_number)
+            unique_urls_year.x.push(month.month_number)
+
+            submissions_year.y.push(month.submissions)
+            unique_urls_year.y.push(month.uniq_urls)
         });
-        datasets.push(data_year)
+        datasets.push(submissions_year)
+        datasets.push(unique_urls_year)
     });
 
     var x_scale = d3.scaleLinear()
