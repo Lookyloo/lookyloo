@@ -16,7 +16,7 @@ d3.json('/json/stats').then(json => {
     });
 
     var x_scale = d3.scaleLinear()
-                    .domain([0, 12])
+                    .domain([1, 12])
                     .range([0, width]);
     var y_scale = d3.scaleLinear()
                     .domain([ 0,
