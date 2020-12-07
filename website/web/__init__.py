@@ -660,7 +660,7 @@ def json_redirects(tree_uuid: str):
         return to_return
     if cache['incomplete_redirects']:
         # Trigger tree build, get all redirects
-        lookyloo.load_tree(tree_uuid)
+        lookyloo.cache_tree(tree_uuid)
         cache = lookyloo.capture_cache(tree_uuid)
         if cache:
             to_return['response']['redirects'] = cache['redirects']
@@ -668,6 +668,12 @@ def json_redirects(tree_uuid: str):
         to_return['response']['redirects'] = cache['redirects']
 
     return jsonify(to_return)
+
+
+@app.route('/json/<string:tree_uuid>/misp_export', methods=['GET'])
+def misp_export(tree_uuid: str):
+    event = lookyloo.misp_export(tree_uuid)
+    return Response(event.to_json(indent=2), mimetype='application/json')
 
 
 @app.route('/json/hash_info/<h>', methods=['GET'])

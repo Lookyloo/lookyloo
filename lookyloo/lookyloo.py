@@ -20,10 +20,12 @@ from uuid import uuid4
 from zipfile import ZipFile
 import operator
 
+from defang import refang  # type: ignore
 import dns.resolver
 import dns.rdatatype
-from defang import refang  # type: ignore
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
+from pymisp import MISPEvent
+from pymisp.tools import URLObject
 from redis import Redis
 from scrapysplashwrapper import crawl
 from werkzeug.useragents import UserAgent
@@ -44,6 +46,7 @@ class Lookyloo():
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.indexing = Indexing()
         self.is_public_instance = get_config('generic', 'public_instance')
+        self.public_domain = get_config('generic', 'public_domain')
         self.taxonomies = get_taxonomies()
 
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
@@ -485,6 +488,8 @@ class Lookyloo():
         return sorted(all_cache, key=operator.itemgetter('timestamp'), reverse=True)
 
     def capture_cache(self, capture_uuid: str) -> Dict[str, Union[str, Path, List]]:
+        """Get the cache from redis.
+        NOTE: Doesn't try to build the pickle"""
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
             raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
@@ -579,7 +584,7 @@ class Lookyloo():
         body = get_email_template()
         body = body.format(
             recipient=msg['To'].addresses[0].display_name,
-            domain=email_config['domain'],
+            domain=self.public_domain,
             uuid=capture_uuid,
             initial_url=initial_url,
             redirects=redirects,
@@ -874,6 +879,29 @@ class Lookyloo():
                 if ressource_h == h:
                     return 'embedded_ressource.bin', blob
         return None
+
+    def misp_export(self, capture_uuid: str) -> MISPEvent:
+        cache = self.capture_cache(capture_uuid)
+        if not cache:
+            return {'error': 'UUID missing in cache, try again later.'}
+
+        if cache['incomplete_redirects']:
+            self.cache_tree(capture_uuid)
+            cache = self.capture_cache(capture_uuid)
+        event = MISPEvent()
+        event.info = f'Lookyloo Capture ({cache["url"]})'
+        event.add_attribute('link', f'https://{self.public_domain}/tree/{capture_uuid}')
+        initial_url = URLObject(cache["url"])
+        redirects = [URLObject(url) for url in cache['redirects']]
+        initial_url.add_reference(redirects[0], 'redirects-to')
+        prec_object = redirects[0]
+        for u_object in redirects[1:]:
+            prec_object.add_reference(u_object, 'redirects-to')
+            prec_object = u_object
+        event.add_object(initial_url)
+        for u_object in redirects:
+            event.add_object(u_object)
+        return event
 
     def get_hashes(self, tree_uuid: str, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
         """Return hashes of resources.
