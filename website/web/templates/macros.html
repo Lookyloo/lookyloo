@@ -129,7 +129,7 @@
 {% if details and details[0] == False %}
   <img src="/static/bomb.svg" title="Known malicious content in the response." width="21" height="21"/>
 {%endif%}
-Body size: {{ sizeof_fmt(ressource_size) }}
+<b>Body size</b>: {{ sizeof_fmt(ressource_size) }}
 {% if details %}
   {% if details[0] %}
   - This file is known <b>legitimate</b> on the following domains: {{ ', '.join(details[1]) }}.
@@ -258,22 +258,26 @@ Body size: {{ sizeof_fmt(ressource_size) }}
       <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}" title="Download the content of the response">
         <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
       </a>
-    {% elif key == "redirect" %}
-      {% for child in urlnode.children if child.name == urlnode.redirect_url %}
-      <a href="#/" role="button" onclick="whereAmI('{{ child.hostnode_uuid }}')" title="See the node the URL redirects to.">
-        <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
-      </a>
-      {% else %}
-      <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
-      {% endfor %}
-      {% if urlnode.redirect_url %}
-      <div title='{{ urlnode.redirect_url }}'>Redirect to: {{ shorten_string(urlnode.redirect_url, 50) }}</div>
-      {%endif%}
-    {% else %}
+    {% elif key != "redirect" %}
     <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
     {%endif%}
   {%endif%}
 {% endfor %}
+</div>
+
+<div>
+{% if "redirect" in lookup_dict and urlnode["redirect"] %}
+  {% for child in urlnode.children if child.name == urlnode.redirect_url %}
+  <div title='{{ urlnode.redirect_url }}'>
+    <b>Redirect to</b>: {{ shorten_string(urlnode.redirect_url, 50) }}
+    <a href="#/" role="button" onclick="whereAmI('{{ child.hostnode_uuid }}')" title="See the node the URL redirects to.">
+      <img src="{{ lookup_dict['redirect'] }}" alt="{{ key }}" width="21" height="21"/>
+    </a>
+  </div>
+  {% else %}
+  <img src="{{ lookup_dict['redirect'] }}" alt="redirect" width="21" height="21"/>
+  {% endfor %}
+{%endif%}
 </div>
 {% endmacro %}
 
