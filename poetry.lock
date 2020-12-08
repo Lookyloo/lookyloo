@@ -306,20 +306,20 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.2.10"
+version = "1.2.11"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-beautifulsoup4 = ">=4.8.2,<5.0.0"
-ete3 = ">=3.1.1,<4.0.0"
+beautifulsoup4 = ">=4.9.3,<5.0.0"
+ete3 = ">=3.1.2,<4.0.0"
 filetype = ">=1.0.7,<2.0.0"
-lxml = ">=4.4.2,<5.0.0"
-numpy = ">=1.19.1,<2.0.0"
+lxml = ">=4.6.2,<5.0.0"
+numpy = ">=1.19.4,<2.0.0"
 publicsuffix2 = ">=2.20191221,<3.0"
-six = ">=1.14.0,<2.0.0"
+six = ">=1.15.0,<2.0.0"
 
 [[package]]
 name = "hyperlink"
@@ -1108,7 +1108,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "2d239c1ccb0516874bfa976bbf238f8674167185c7a513df9aa1f35998eda50b"
+content-hash = "fdf041a3e80d5489ff1d4a2c8e8ed8dca5ce986007eaa7494888d8ca934075ff"
 
 [metadata.files]
 aiohttp = [
@@ -1332,8 +1332,8 @@ gunicorn = [
     {file = "gunicorn-20.0.4.tar.gz", hash = "sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626"},
 ]
 har2tree = [
-    {file = "har2tree-1.2.10-py3-none-any.whl", hash = "sha256:6c879c2a351bb1f90d5e3577571f19779e0dc39eca0f29383647ae18d9d1157e"},
-    {file = "har2tree-1.2.10.tar.gz", hash = "sha256:a0f8e6124d266ecde69c949c39afb83cb4f18b3accc3ebd045cae1832b56962c"},
+    {file = "har2tree-1.2.11-py3-none-any.whl", hash = "sha256:49c3ac72e67208be4c8028a81ccfba34c0cfeeace85fdd35bd214fbffdb5f416"},
+    {file = "har2tree-1.2.11.tar.gz", hash = "sha256:450e5ac6e720662fc2b925bdf5126ea285230bed1f231b1aabc272f66f4d1151"},
 ]
 hyperlink = [
     {file = "hyperlink-20.0.1-py2.py3-none-any.whl", hash = "sha256:c528d405766f15a2c536230de7e160b65a08e20264d8891b3eb03307b0df3c63"},

@@ -25,7 +25,7 @@ import dns.resolver
 import dns.rdatatype
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from pymisp import MISPEvent
-from pymisp.tools import URLObject
+from pymisp.tools import URLObject, FileObject
 from redis import Redis
 from scrapysplashwrapper import crawl
 from werkzeug.useragents import UserAgent
@@ -888,19 +888,40 @@ class Lookyloo():
         if cache['incomplete_redirects']:
             self.cache_tree(capture_uuid)
             cache = self.capture_cache(capture_uuid)
+
+        capture_dir = self.lookup_capture_dir(capture_uuid)
+        if not capture_dir:
+            raise MissingUUID(f'Unable to find {capture_uuid}')
+
+        ct = load_pickle_tree(capture_dir)
+        if not ct:
+            raise MissingUUID(f'Unable to find {capture_dir}')
+
         event = MISPEvent()
         event.info = f'Lookyloo Capture ({cache["url"]})'
         event.add_attribute('link', f'https://{self.public_domain}/tree/{capture_uuid}')
+
         initial_url = URLObject(cache["url"])  # type: ignore
         redirects = [URLObject(url) for url in cache['redirects']]  # type: ignore
+
         initial_url.add_reference(redirects[0], 'redirects-to')
         prec_object = redirects[0]
         for u_object in redirects[1:]:
             prec_object.add_reference(u_object, 'redirects-to')
             prec_object = u_object
+
         event.add_object(initial_url)
         for u_object in redirects:
             event.add_object(u_object)
+
+        event.add_attribute('attachment', 'screenshot_landing_page.png', data=self.get_screenshot(capture_uuid))
+        try:
+            fo = FileObject(pseudofile=ct.root_hartree.rendered_node.body, filename='body_response.html')
+            fo.comment = 'Content received for the final redirect (before rendering)'
+            fo.add_reference(event.objects[-1], 'loaded-by', 'URL loading that content')
+            event.add_object(fo)
+        except Har2TreeError:
+            pass
         return event
 
     def get_hashes(self, tree_uuid: str, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
