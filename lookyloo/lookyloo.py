@@ -24,6 +24,7 @@ from defang import refang  # type: ignore
 import dns.resolver
 import dns.rdatatype
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
+from PIL import Image
 from pymisp import MISPEvent
 from pymisp.tools import URLObject, FileObject
 from redis import Redis
@@ -649,6 +650,18 @@ class Lookyloo():
 
     def get_screenshot(self, capture_uuid: str, all_images: bool=False) -> BytesIO:
         return self._get_raw(capture_uuid, 'png', all_images)
+
+    def get_screenshot_thumbnail(self, capture_uuid: str, all_images: bool=False, for_datauri=False) -> Union[str, BytesIO]:
+        size = 64, 64
+        screenshot = Image.open(self._get_raw(capture_uuid, 'png', False))
+        c_screenshot = screenshot.crop((0, 0, screenshot.width, screenshot.width))
+        c_screenshot.thumbnail(size)
+        to_return = BytesIO()
+        c_screenshot.save(to_return, 'png')
+        if for_datauri:
+            return base64.b64encode(to_return.getvalue()).decode()
+        else:
+            return to_return
 
     def get_capture(self, capture_uuid: str) -> BytesIO:
         return self._get_raw(capture_uuid)

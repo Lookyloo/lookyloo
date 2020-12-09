@@ -380,35 +380,6 @@ function update(root, computed_node_width=0) {
                 .attr("id", d => `node_${d.data.uuid}`)
                 .attr("transform", `translate(${root.y0}, ${root.x0})`);
 
-            node_group
-                // Add Circle for the nodes
-                .append('circle')
-                .attr('class', 'node')
-                .attr('r', 1e-6)
-                .style("fill", d => d._children ? "lightsteelblue" : "#fff")
-                .on('mouseover', (event, d) => {
-                    if (d.children || d._children) {
-                      d3.select('#tooltip')
-                        .style('opacity', 1)
-                        .style('left', `${event.pageX + 10}px`)
-                        .style('top', `${event.pageY + 10}px`)
-                        .text(d.children ? 'Collapse the childrens of this node.' : 'Expand the childrens of this node.');
-                    };
-                  }
-                )
-                .on('mouseout', (event, d) => {
-                    if (d.children || d._children) {
-                      d3.select('#tooltip').style('opacity', 0)
-                    };
-                  }
-                )
-                .on('click', (event, d) => {
-                    if (d.children || d._children) {
-                      toggle_children_collapse(event, d)
-                    };
-                  }
-                );
-
             let node_data = node_group
               .append('svg')
               .attr('class', 'node_data')
@@ -418,7 +389,7 @@ function update(root, computed_node_width=0) {
             node_data.append('rect')
               .attr("rx", 6)
               .attr("ry", 6)
-              .attr('x', 12)
+              .attr('x', 0)
               .attr('y', 0)
               .attr('width', 0)
               .style("opacity", "0.5")
@@ -426,15 +397,14 @@ function update(root, computed_node_width=0) {
               .attr('stroke-opacity', "0.8")
               .attr("stroke-width", "2")
               .attr("stroke-linecap", "round")
-              .attr("fill", "white");
+              .attr("fill", "white")
 
             // Set Hostname text
             node_data
-              .append(d => text_entry(15, 5, d));  // Popup
+              .append(d => text_entry(10, 5, d));  // Popup
             // Set list of icons
             node_data
-              .append(d => icon_list(17, 35, d));
-
+              .append(d => icon_list(12, 35, d));
 
             node_group.select('.node_data').each(function(d){
                 // set position of icons based of their length
@@ -450,8 +420,10 @@ function update(root, computed_node_width=0) {
                   .attr('height', node_height + 5)
                   .attr('width', selected_node_bbox_init.width + 50);
 
+
                 // Set the width for all the nodes
                 let selected_node_bbox = d3.select(this).select('rect').node().getBoundingClientRect();  // Required, as the node width need to include the rectangle
+                d.node_width = selected_node_bbox.width;
                 node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
 
                 // Set Bookmark
@@ -501,6 +473,39 @@ function update(root, computed_node_width=0) {
                         })
                         .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
                 };
+                var thumbnail_size = 64;
+                if (d.data.contains_rendered_urlnode) {
+                  d3.select(this).append("svg").append('rect')
+                      .attr('x', selected_node_bbox.width/3)
+                      .attr('y', node_height - 10)
+                      .attr('width', thumbnail_size)
+                      .attr('height', thumbnail_size)
+                      .attr('fill', 'white')
+                      .attr('stroke', 'black');
+
+                  d3.select(this).append('image')
+                      .attr('x', selected_node_bbox.width/3)
+                      .attr('y', node_height - 10)
+                      .attr('id', 'screenshot_thumbnail')
+                      .attr("width", thumbnail_size)
+                      .attr("height", thumbnail_size)
+                      .attr("xlink:href", `data:image/png;base64,${screenshot_thumbnail}`)
+                      .attr('cursor', 'pointer')
+                      .on('mouseover', (event, d) => {
+                          d3.select('#tooltip')
+                            .style('opacity', 1)
+                            .style('left', `${event.pageX + 10}px`)
+                            .style('top', `${event.pageY + 10}px`)
+                            .text('Contains the URL rendered in the browser.');
+                      })
+                      .on('click', (event, d) => {
+                          $("#screenshotModal").modal('toggle');
+                      })
+                      .on('mouseout', (event, d) => {
+                          d3.select('#tooltip').style('opacity', 0)
+                      });
+                };
+
                 const context_icon_size = 24;
                 if (d.data.malicious) {
                     // set bomb
@@ -515,7 +520,7 @@ function update(root, computed_node_width=0) {
                     d3.select(this).append('image')
                         .attr('x', selected_node_bbox.width - 22 - http_icon_size)
                         .attr('y', selected_node_bbox.height - 13)
-                        .attr('id', 'insecure_image')
+                        .attr('id', 'malicious_image')
                         .attr("width", context_icon_size)
                         .attr("height", context_icon_size)
                         .attr("xlink:href", '/static/bomb.svg')
@@ -540,7 +545,7 @@ function update(root, computed_node_width=0) {
                     d3.select(this).append('image')
                         .attr('x', selected_node_bbox.width - 22 - http_icon_size)
                         .attr('y', selected_node_bbox.height - 13)
-                        .attr('id', 'insecure_image')
+                        .attr('id', 'known_image')
                         .attr("width", context_icon_size)
                         .attr("height", context_icon_size)
                         .attr("xlink:href", '/static/check.svg')
@@ -565,7 +570,7 @@ function update(root, computed_node_width=0) {
                 d3.select(this).append('image')
                     .attr('x', selected_node_bbox.width - 22 - http_icon_size)
                     .attr('y', selected_node_bbox.height - 13)
-                    .attr('id', 'insecure_image')
+                    .attr('id', 'empty_image')
                     .attr("width", context_icon_size)
                     .attr("height", context_icon_size)
                     .attr("xlink:href", '/static/empty.svg')
@@ -577,6 +582,38 @@ function update(root, computed_node_width=0) {
                             .text('This node has only empty content');
                     })
                     .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
+              };
+              if (d.children || d._children) {
+                d3.select(this)
+                  // Add Circle for the nodes
+                  .append('circle')
+                  .attr('class', 'node')
+                  .attr('r', 1e-6)
+                  .attr('cx', d => d.node_width)
+                  .attr('cy', d => node_height/2)
+                  .style("fill", d => d._children ? "lightsteelblue" : "#fff")
+                  .on('mouseover', (event, d) => {
+                      if (d.children || d._children) {
+                        d3.select('#tooltip')
+                          .style('opacity', 1)
+                          .style('left', `${event.pageX + 10}px`)
+                          .style('top', `${event.pageY + 10}px`)
+                          .text(d.children ? 'Collapse the childrens of this node.' : 'Expand the childrens of this node.');
+                      };
+                    }
+                  )
+                  .on('mouseout', (event, d) => {
+                      if (d.children || d._children) {
+                        d3.select('#tooltip').style('opacity', 0)
+                      };
+                    }
+                  )
+                  .on('click', (event, d) => {
+                      if (d.children || d._children) {
+                        toggle_children_collapse(event, d)
+                      };
+                    }
+                  );
               };
             });
 
@@ -620,40 +657,19 @@ function update(root, computed_node_width=0) {
   const link = node_container.selectAll('path.link').data(links, d => d.id);
 
   // Creates a curved (diagonal) path from parent to the child nodes
-  let diagonal = (s, d) => {
-    return `M ${s.y} ${s.x}
-            C ${(s.y + d.y) / 2} ${s.x},
-              ${(s.y + d.y) / 2} ${d.x},
-              ${d.y} ${d.x}`
-  };
+  let diagonal = d3.linkHorizontal()
+                        .source(d => {return [d.y, d.x]})
+                        .target(d => {return [d.parent.y + d.parent.node_width, d.parent.x]});
 
   link.join(
     enter => enter
         // Enter any new links at the parent's previous position.
         .insert('path', "g")
         .attr("class", "link")
-        .attr('d', d => {
-          let o = {
-              x: d.x0,
-              y: d.y0
-          };
-          return diagonal(o, o)
-        }),
+        .attr('d', diagonal),
     update => update,
-    exit => exit
-      .call(exit => exit
-                .attr('d', d => {
-                    let o = {
-                        x: d.x0,
-                        y: d.y0
-                    };
-                    return diagonal(o, o)
-                })
-      .remove()
-      )
-  ).call(link => link
-    .attr('d', d => diagonal(d, d.parent))
-  );
+    exit => exit.call(exit => exit.attr('d', diagonal).remove())
+  ).call(link => link.attr('d', diagonal));
 
   if (computed_node_width === 0) {
     update(root, node_width)

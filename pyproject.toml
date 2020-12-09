@@ -54,6 +54,7 @@ pymisp = {version = "^2.4.135", extras = ["url"]}
 python-magic = {version = "^0.4.18", optional = true}
 # pydeep requires libfuzzy-dev, and is only used in the MISP export module
 pydeep = {version = "^0.4", optional = true}
+Pillow = "^8.0.1"
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep']
