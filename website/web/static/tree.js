@@ -415,7 +415,7 @@ function update(root, computed_node_width=0) {
                 });
 
                 // Rectangle around the domain name & icons
-                let selected_node_bbox_init = d3.select(this).select('text').node().getBoundingClientRect();
+                let selected_node_bbox_init = d3.select(this).node().getBoundingClientRect();
                 d3.select(this).select('rect')
                   .attr('height', node_height + 5)
                   .attr('width', selected_node_bbox_init.width + 50);
@@ -477,7 +477,7 @@ function update(root, computed_node_width=0) {
                 if (d.data.contains_rendered_urlnode) {
                   d3.select(this).append("svg").append('rect')
                       .attr('x', selected_node_bbox.width/3)
-                      .attr('y', node_height - 10)
+                      .attr('y', node_height - 3)
                       .attr('width', thumbnail_size)
                       .attr('height', thumbnail_size)
                       .attr('fill', 'white')
@@ -485,7 +485,7 @@ function update(root, computed_node_width=0) {
 
                   d3.select(this).append('image')
                       .attr('x', selected_node_bbox.width/3)
-                      .attr('y', node_height - 10)
+                      .attr('y', node_height - 3)
                       .attr('id', 'screenshot_thumbnail')
                       .attr("width", thumbnail_size)
                       .attr("height", thumbnail_size)

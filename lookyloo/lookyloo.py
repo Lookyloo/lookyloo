@@ -24,7 +24,7 @@ from defang import refang  # type: ignore
 import dns.resolver
 import dns.rdatatype
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
-from PIL import Image
+from PIL import Image  # type: ignore
 from pymisp import MISPEvent
 from pymisp.tools import URLObject, FileObject
 from redis import Redis
