@@ -5,7 +5,7 @@
 let margin = {
     top: document.getElementById('tree-details').clientHeight,
     right: 200,
-    bottom: 30,
+    bottom: 10,
     left: 90
 };
 
@@ -322,13 +322,13 @@ function update(root, computed_node_width=0) {
     let newWidth = Math.max((max_depth + 1) * computed_node_width, node_width);
     // Update height
     // node_height is the height of a node, menuHeight * 3 is the minimum so the root node isn't behind the menu
-    let newHeight = Math.max(root.descendants().reverse().length * node_height, menuHeight * 3);
+    let newHeight = Math.max(root.descendants().reverse().length * node_height, menuHeight * 2.5);
     tree.size([newHeight, newWidth])
 
     // Set background based on the computed width and height
     let background = main_svg.insert('rect', ':first-child')
       .attr('y', 0)
-      .attr('width', newWidth + (margin.right + margin.left)*2)
+      .attr('width', newWidth + (margin.right + margin.left))
       .attr('height', newHeight + margin.top + margin.bottom)
       .style('fill', "url(#backstripes)");
 
@@ -391,7 +391,7 @@ function update(root, computed_node_width=0) {
               .attr("ry", 6)
               .attr('x', 0)
               .attr('y', 0)
-              .attr('width', 0)
+              .attr('width', 10)
               .style("opacity", "0.5")
               .attr("stroke", 'black')
               .attr('stroke-opacity', "0.8")
@@ -415,14 +415,14 @@ function update(root, computed_node_width=0) {
                 });
 
                 // Rectangle around the domain name & icons
-                let selected_node_bbox_init = d3.select(this).node().getBoundingClientRect();
+                let selected_node_bbox_init = d3.select(this).node().getBBox();
                 d3.select(this).select('rect')
                   .attr('height', node_height + 5)
                   .attr('width', selected_node_bbox_init.width + 50);
 
 
                 // Set the width for all the nodes
-                let selected_node_bbox = d3.select(this).select('rect').node().getBoundingClientRect();  // Required, as the node width need to include the rectangle
+                let selected_node_bbox = d3.select(this).select('rect').node().getBBox();  // Required, as the node width need to include the rectangle
                 d.node_width = selected_node_bbox.width;
                 node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
 
@@ -446,34 +446,7 @@ function update(root, computed_node_width=0) {
                         .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
                 };
 
-                const http_icon_size = 24;
-                if (d.data.http_content) {
-                    // set lock insecure connection
-                    d3.select(this).append("svg").append('rect')
-                        .attr('x', selected_node_bbox.width - 22)
-                        .attr('y', selected_node_bbox.height - 13)
-                        .attr('width', http_icon_size)
-                        .attr('height', http_icon_size)
-                        .attr('fill', 'white')
-                        .attr('stroke', 'black');
-
-                    d3.select(this).append('image')
-                        .attr('x', selected_node_bbox.width - 22)
-                        .attr('y', selected_node_bbox.height - 13)
-                        .attr('id', 'insecure_image')
-                        .attr("width", http_icon_size)
-                        .attr("height", http_icon_size)
-                        .attr("xlink:href", '/static/insecure.svg')
-                        .on('mouseover', (event, d) => {
-                            d3.select('#tooltip')
-                                .style('opacity', 1)
-                                .style('left', `${event.pageX + 10}px`)
-                                .style('top', `${event.pageY + 10}px`)
-                                .text('This node containts insecure requests');
-                        })
-                        .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
-                };
-                var thumbnail_size = 64;
+                const thumbnail_size = 64;
                 if (d.data.contains_rendered_urlnode) {
                   d3.select(this).append("svg").append('rect')
                       .attr('x', selected_node_bbox.width/3)
@@ -506,6 +479,33 @@ function update(root, computed_node_width=0) {
                       });
                 };
 
+                const http_icon_size = 24;
+                if (d.data.http_content) {
+                    // set lock insecure connection
+                    d3.select(this).append("svg").append('rect')
+                        .attr('x', selected_node_bbox.width - 22)
+                        .attr('y', selected_node_bbox.height - 13)
+                        .attr('width', http_icon_size)
+                        .attr('height', http_icon_size)
+                        .attr('fill', 'white')
+                        .attr('stroke', 'black');
+
+                    d3.select(this).append('image')
+                        .attr('x', selected_node_bbox.width - 22)
+                        .attr('y', selected_node_bbox.height - 13)
+                        .attr('id', 'insecure_image')
+                        .attr("width", http_icon_size)
+                        .attr("height", http_icon_size)
+                        .attr("xlink:href", '/static/insecure.svg')
+                        .on('mouseover', (event, d) => {
+                            d3.select('#tooltip')
+                                .style('opacity', 1)
+                                .style('left', `${event.pageX + 10}px`)
+                                .style('top', `${event.pageY + 10}px`)
+                                .text('This node containts insecure requests');
+                        })
+                        .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
+                };
                 const context_icon_size = 24;
                 if (d.data.malicious) {
                     // set bomb
