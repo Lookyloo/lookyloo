@@ -64,7 +64,7 @@ $(document).ready(function () {
       <tr>
         <td>
           <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
-          <p title="{{ url }}">{{ shorten_string(url, 150) }}</p>
+          {{ shorten_string(url, 50, with_title=True) }}
         </td>
         <td>{{ datetime }}</td>
         <td>

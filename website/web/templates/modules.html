@@ -1,9 +1,15 @@
+{% from "macros.html" import shorten_string %}
+
 <div>
 {% if vt %}
     <center><h1 class="display-4">Virus Total</h1></center>
     {% for url, entries in vt.items() %}
         <div class="border-top my-3"></div>
-        <center><h3><small class="text-muted">URL</small><br>{{ url }}</h3></center>
+        <center>
+          <h3><small class="text-muted">URL</small>
+            {{ shorten_string(url, 50, with_title=True) }}
+          </h3>
+        </center>
         {% if entries['malicious'] %}
             <center>
             <p class="lead">Detected as malicious by the following vendors</p>
@@ -23,7 +29,10 @@
 {% if pi%}
   <center><h1 class="display-4">Phishing Initiative</h1></center>
   {% for url, tag in pi.items() %}
-    <center><h3><small class="text-muted">URL</small><br>{{ url }}</h3>
+    <center>
+      <h3><small class="text-muted">URL</small>
+        {{ shorten_string(url, 50, with_title=True) }}
+      </h3>
       <div>This URL is tagged as <b>{{ tag }}</b> on Phishing Initiative</div>
     </center>
   {% endfor %}
