@@ -71,6 +71,11 @@
   var screenshot_thumbnail = "{{ screenshot_thumbnail }}";
   var enable_bookmark = {{ enable_bookmark|tojson }};
   var treeData = {{ tree_json | safe }};
+  var capture_starttime = new Date(Date.parse("{{ start_time }}"));
+  window.addEventListener('DOMContentLoaded', (event) => {
+      document.getElementById("start_time").innerHTML =
+          `<b>Capture time</b>: ${capture_starttime.getFullYear()}-${("0" + (capture_starttime.getMonth() + 1)).slice(-2)}-${("0" + capture_starttime.getDate()).slice(-2)} ${capture_starttime.toLocaleTimeString()}`;
+  });
 </script>
 
 {{ render_messages(container=True, dismissible=True) }}
@@ -230,7 +235,7 @@
     <div>
       <center>
       <div style="display: inline">
-        <b>Tree details</b>
+        <b>Details of the capture at the time it happened</b>
       </div>
       <div style="display: inline;">
         <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
@@ -241,13 +246,12 @@
       </center>
     </div>
     <hr/>
-    <b>Root URL</b>: {{ shorten_string(root_url, 150) }}
-    <br>
-    <b>Start time</b>: {{ start_time }}<br>
-    <b>User Agent</b>: {{ user_agent }}<br>
+    <p title={{root_url}}><b>URL captured</b>: {{ shorten_string(root_url, 150) }}</p>
+    <p id="start_time"></p>
+    <p><b>User Agent</b>: {{ user_agent }}</p>
     {% if meta %}
       {% for k, v in meta.items() if k not in ['user_agent'] %}
-        <b>{{k.title()}}</b>: {{ v }}<br>
+        <p><b>{{k.title()}}</b>: {{ v }}</p>
       {% endfor %}
     {%endif%}
   </div>

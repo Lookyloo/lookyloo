@@ -104,6 +104,11 @@
   padding-left: 5px;
 }
 
+#tree-details p {
+  margin-top: 0em;
+  margin-bottom: 0em;
+}
+
 .tooltip {
     position: absolute;
     text-align: left;
