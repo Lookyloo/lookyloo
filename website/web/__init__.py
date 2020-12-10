@@ -491,12 +491,16 @@ def capture_web():
         else:
             cookie_file = None
         url = request.form.get('url')
+        if request.form.get('personal_ua') and request.headers.get('User-Agent'):
+            user_agent = request.headers.get('User-Agent')
+        else:
+            user_agent = request.form.get('user_agent')
         if url:
             depth: int = request.form.get('depth') if request.form.get('depth') else 1  # type: ignore
             listing: bool = request.form.get('listing') if request.form.get('listing') else False  # type: ignore
             perma_uuid = lookyloo.capture(url=url, cookies_pseudofile=cookie_file,
                                           depth=depth, listing=listing,
-                                          user_agent=request.form.get('user_agent'),
+                                          user_agent=user_agent,
                                           referer=request.form.get('referer'),  # type: ignore
                                           os=request.form.get('os'), browser=request.form.get('browser'))
             return redirect(url_for('tree', tree_uuid=perma_uuid))
@@ -508,7 +512,8 @@ def capture_web():
     if not user_agents:
         user_agents = get_user_agents()
     user_agents.pop('by_frequency')
-    return render_template('capture.html', user_agents=user_agents, max_depth=max_depth)
+    return render_template('capture.html', user_agents=user_agents,
+                           max_depth=max_depth, personal_ua=request.headers.get('User-Agent'))
 
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
