@@ -328,7 +328,9 @@ function update(root, computed_node_width=0) {
     // Set background based on the computed width and height
     let background = main_svg.insert('rect', ':first-child')
       .attr('y', 0)
-      .attr('width', newWidth + (margin.right + margin.left))
+      // Note: We want the background width with an extra computed_node_width
+      // in order to make sure the last node is completely covered
+      .attr('width', newWidth + (margin.right + margin.left + computed_node_width))
       .attr('height', newHeight + margin.top + margin.bottom)
       .style('fill', "url(#backstripes)");
 
