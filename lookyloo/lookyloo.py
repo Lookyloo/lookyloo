@@ -467,7 +467,11 @@ class Lookyloo():
     def sorted_cache(self):
         all_cache: List[Dict[str, Union[str, Path]]] = []
         p = self.redis.pipeline()
-        for directory in self.redis.hmget('lookup_dirs', *self.capture_uuids):
+        capture_uuids = self.capture_uuids
+        if not capture_uuids:
+            # No cached captures at all
+            return all_cache
+        for directory in self.redis.hmget('lookup_dirs', *capture_uuids):
             if directory:
                 p.hgetall(directory)
         all_cache = []
