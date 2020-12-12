@@ -1,12 +1,19 @@
 version: '3'
 services:
 
-  redis:
+  redis-cache:
     image: redis
     working_dir: /cache
     command: ./cache.conf --daemonize no
     volumes:
         - ./cache:/cache
+
+  redis-indexing:
+    image: redis
+    working_dir: /indexing
+    command: ./indexing.conf --daemonize no
+    volumes:
+        - ./indexing:/indexing
 
   splash:
     image: "scrapinghub/splash:3.5.0"
@@ -25,16 +32,17 @@ services:
         - /bin/sh
         - -c
         - |
-            poetry run rebuild_caches.py
-            poetry run async_scrape.py &
-            poetry run start_website.py
+            poetry run start
+            tail -F ./LICENSE
     volumes:
         - ./cache:/lookyloo/cache
+        - ./indexing:/lookyloo/indexing
         - ./scraped:/lookyloo/scraped
         - ./user_agents:/lookyloo/user_agents
         - ./config:/lookyloo/config
     ports:
         - "5100:5100"
     links:
-        - "redis"
+        - "redis-cache"
+        - "redis-indexing"
         - "splash"
