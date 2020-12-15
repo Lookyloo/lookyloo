@@ -17,7 +17,7 @@
       modal.find('.modal-body').load(button.data("remote"));
   });
   $('.modulesForceRefresh').on('click',function(){
-      $('.modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}",function(){
+      $('#modulesModal .modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}", function(){
         $('#modulesModal').modal({show:true});
       });
   });
