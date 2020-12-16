@@ -600,7 +600,7 @@ function update(root, computed_node_width=0) {
                           .style('opacity', 1)
                           .style('left', `${event.pageX + 10}px`)
                           .style('top', `${event.pageY + 10}px`)
-                          .text(d.children ? 'Collapse the childrens of this node.' : 'Expand the childrens of this node.');
+                          .text(d.children ? 'Collapse the URLs loaded by this node.' : 'Expand the URLs loaded by this node.');
                       };
                     }
                   )
