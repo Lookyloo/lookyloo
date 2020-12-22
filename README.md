@@ -1,10 +1,11 @@
 [![Lookyloo icon](website/web/static/lookyloo.jpeg)](https://www.lookyloo.eu/docs/main/index.html)
+
 [![Gitter](https://badges.gitter.im/lookyloo-app/community.svg)](https://gitter.im/lookyloo-app/community)
+
 *[Lookyloo](https://lookyloo.circl.lu/scrape)* is a web interface that captures a webpage and then displays a tree of the domains, that call each other. 
 
 
-
-* [What is Lookyloo?](##what-is-that-name?!)
+* [What is Lookyloo?](#whats-in-a-name)
 * [Install Lookyloo](#installation)
 * [Lookyloo Client](#python-client)
 * [Contributing to Lookyloo](link)
