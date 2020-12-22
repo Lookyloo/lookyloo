@@ -60,7 +60,7 @@ To learn more about contributing to Lookyloo, see our [contributor guide](https:
 
 ## Code of Conduct
 
-Our Code of Conduct applies to all community our spaces, and also applies when an individual is officially representing our community in public spaces. At Lookyloo, we pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community. You can access our Code of Conduct [here]( or on the [Lookyloo docs site]().
+Our Code of Conduct applies to all community our spaces, and also applies when an individual is officially representing our community in public spaces. At Lookyloo, we pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community. You can access our Code of Conduct [here](https://github.com/Lookyloo/lookyloo/blob/main/code_of_conduct.md) or on the [Lookyloo docs site](https://www.lookyloo.eu/docs/main/code-conduct.html).
 
 
 # Support
