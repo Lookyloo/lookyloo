@@ -1,12 +1,17 @@
 [![Lookyloo icon](website/web/static/lookyloo.jpeg)](https://www.lookyloo.eu/docs/main/index.html)
-
 [![Gitter](https://badges.gitter.im/lookyloo-app/community.svg)](https://gitter.im/lookyloo-app/community)
-
 *[Lookyloo](https://lookyloo.circl.lu/scrape)* is a web interface that captures a webpage and then displays a tree of the domains, that call each other. 
 
-Thank you very much [Tech Blog @ willshouse.com](https://techblog.willshouse.com/2012/01/03/most-common-user-agents/) for the up-to-date list of UserAgents.
 
-# What is that name?!
+
+* [What is Lookyloo?](##what-is-that-name?!)
+* [Install Lookyloo](#installation)
+* [Lookyloo Client](#python-client)
+* [Contributing to Lookyloo](link)
+
+
+
+## What's in a name?!
 
 ```
 Lookyloo ... 
@@ -22,7 +27,7 @@ In L.A., usually the lookyloos cause more accidents by not paying full attention
 Source: [Urban Dictionary](https://www.urbandictionary.com/define.php?term=lookyloo)
 
 
-# No, really, what is Lookyloo?
+## No, really, what is Lookyloo?
 
 Lookyloo is a web interface that allows you to capture and map the journey of a website page.
 
@@ -48,3 +53,31 @@ pip install pylookyloo
 ```
 
 For more details on `pylookyloo`, read our [docs](https://www.lookyloo.eu/docs/main/pylookyloo-overview.html) or see the client [GitHub repo](https://github.com/Lookyloo/PyLookyloo).  
+
+# Contributing to Lookyloo
+
+To learn more about contributing to Lookyloo, see our [contributor guide](https://www.lookyloo.eu/docs/main/contributing.html).
+
+## Code of Conduct
+
+Our Code of Conduct applies to all community our spaces, and also applies when an individual is officially representing our community in public spaces. At Lookyloo, we pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community. You can access our Code of Conduct [here]( or on the [Lookyloo docs site]().
+
+
+# Support
+To engage with the Lookyloo community contact us using [Gitter](https://gitter.im/lookyloo-app/community).
+
+## Security
+
+
+# Credits
+
+Thank you very much [Tech Blog @ willshouse.com](https://techblog.willshouse.com/2012/01/03/most-common-user-agents/) for the up-to-date list of UserAgents.
+
+
+# License
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. See our [LICENSE](lookyloo/LICENSE)
+
