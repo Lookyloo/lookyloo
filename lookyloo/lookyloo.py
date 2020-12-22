@@ -124,6 +124,7 @@ class Lookyloo():
         index = True
         try:
             ct = CrawledTree(har_files, uuid)
+            self._ensure_meta(capture_dir, ct)
             self.resolve_dns(ct)
             # getting the cache triggers an update of the said cache. We want it there.
             cache = self.capture_cache(capture_uuid)
@@ -224,12 +225,12 @@ class Lookyloo():
         capture_dir = self.lookup_capture_dir(capture_uuid)
         if not capture_dir:
             raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        ct = self.get_crawled_tree(capture_uuid)
+        ct = self.context.contextualize_tree(ct)
         meta = {}
         if (capture_dir / 'meta').exists():
             with open((capture_dir / 'meta'), 'r') as f:
                 meta = json.load(f)
-        ct = self.get_crawled_tree(capture_uuid)
-        ct = self.context.contextualize_tree(ct)
         return ct.to_json(), ct.start_time.isoformat(), ct.user_agent, ct.root_url, meta
 
     def remove_pickle(self, capture_uuid: str) -> None:
@@ -712,19 +713,21 @@ class Lookyloo():
         width = len(str(len(items)))
         dirpath = self.capture_dir / datetime.now().isoformat()
         safe_create_dir(dirpath)
+
+        if os or browser:
+            meta = {}
+            if os:
+                meta['os'] = os
+            if browser:
+                meta['browser'] = browser
+            with (dirpath / 'meta').open('w') as _meta:
+                json.dump(meta, _meta)
+
         for i, item in enumerate(items):
             if not listing:  # Write no_index marker
                 (dirpath / 'no_index').touch()
             with (dirpath / 'uuid').open('w') as _uuid:
                 _uuid.write(perma_uuid)
-            if os or browser:
-                meta = {}
-                if os:
-                    meta['os'] = os
-                if browser:
-                    meta['browser'] = browser
-                with (dirpath / 'meta').open('w') as _meta:
-                    json.dump(meta, _meta)
 
             if 'error' in item:
                 with (dirpath / 'error.txt').open('w') as _error:

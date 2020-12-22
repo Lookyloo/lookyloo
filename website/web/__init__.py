@@ -493,8 +493,12 @@ def capture_web():
         url = request.form.get('url')
         if request.form.get('personal_ua') and request.headers.get('User-Agent'):
             user_agent = request.headers.get('User-Agent')
+            os = None
+            browser = None
         else:
             user_agent = request.form.get('user_agent')
+            os = request.form.get('os')
+            browser = request.form.get('browser')
         if url:
             depth: int = request.form.get('depth') if request.form.get('depth') else 1  # type: ignore
             listing: bool = request.form.get('listing') if request.form.get('listing') else False  # type: ignore
@@ -502,7 +506,7 @@ def capture_web():
                                           depth=depth, listing=listing,
                                           user_agent=user_agent,
                                           referer=request.form.get('referer'),  # type: ignore
-                                          os=request.form.get('os'), browser=request.form.get('browser'))
+                                          os=os, browser=browser)
             return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents: Dict[str, Any] = {}
     if get_config('generic', 'use_user_agents_users'):
