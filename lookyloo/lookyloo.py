@@ -880,13 +880,13 @@ class Lookyloo():
 
         return known, legitimate
 
-    def get_ressource(self, tree_uuid: str, urlnode_uuid: str, h: Optional[str]) -> Optional[Tuple[str, BytesIO]]:
+    def get_ressource(self, tree_uuid: str, urlnode_uuid: str, h: Optional[str]) -> Optional[Tuple[str, BytesIO, str]]:
         url = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
         if url.empty_response:
             return None
         if not h or h == url.body_hash:
             # we want the body
-            return url.filename if url.filename else 'file.bin', url.body
+            return url.filename if url.filename else 'file.bin', url.body, url.mimetype
 
         # We want an embedded ressource
         if h not in url.resources_hashes:
@@ -894,7 +894,7 @@ class Lookyloo():
         for mimetype, blobs in url.embedded_ressources.items():
             for ressource_h, blob in blobs:
                 if ressource_h == h:
-                    return 'embedded_ressource.bin', blob
+                    return 'embedded_ressource.bin', blob, mimetype
         return None
 
     def misp_export(self, capture_uuid: str) -> Union[MISPEvent, Dict[str, str]]:

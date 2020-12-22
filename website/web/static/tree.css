@@ -130,6 +130,14 @@
   z-index: 2;
 }
 
+.tooltip img {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  width: 150px;
+}
+
 hr {
   display: block;
   margin-top: 0.1em;

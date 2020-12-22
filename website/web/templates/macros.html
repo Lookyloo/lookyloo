@@ -255,8 +255,12 @@
       <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
     </a>
     {% elif key in ["js", "exe", "css", "font", "html", "json", "image", "video", "unknown_mimetype", "text", "unset_mimetype", "octet-stream", "livestream"] and not urlnode.empty_response %}
-      <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}" title="Download the content of the response">
-        <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+      <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}">
+        <img src="{{ path }}" alt="{{ key }}" width="21" height="21"
+        {% if key == "image" %}
+        data-toggle="tooltip" data-placement="bottom" data-html="true" title='<img src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> </br>Click to download the content of the response in a zip file'
+        {% endif %}
+        />
       </a>
     {% elif key != "redirect" %}
     <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>

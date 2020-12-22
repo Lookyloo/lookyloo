@@ -603,13 +603,29 @@ def get_ressource(tree_uuid: str, node_uuid: str):
     to_return = BytesIO()
     with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
         if ressource:
-            filename, r = ressource
+            filename, r, mimetype = ressource
             zfile.writestr(filename, r.getvalue())
         else:
             zfile.writestr('file.txt', b'Unknown Hash')
     to_return.seek(0)
     return send_file(to_return, mimetype='application/zip',
                      as_attachment=True, attachment_filename='file.zip')
+
+
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource_preview', methods=['POST', 'GET'])
+def get_ressource_preview(tree_uuid: str, node_uuid: str):
+    if request.method == 'POST':
+        h_request = request.form.get('ressource_hash')
+    else:
+        h_request = None
+    ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_request)
+    if not ressource:
+        return None
+    filename, r, mimetype = ressource
+    if mimetype.startswith('image'):
+        return send_file(r, mimetype=mimetype,
+                         as_attachment=True, attachment_filename=filename)
+    return None
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/hashes', methods=['GET'])
