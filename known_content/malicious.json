@@ -6,5 +6,13 @@
     "tag": [
       "phishing"
     ]
+  },
+  "1d41f09e041b4405e4dbab4f7158d5b373c700e3fb77a18b1446390fb665a2dfdb0efdda89e04e7431b0ad4bb11bdfbd94f4d40ef750f6d904551053108e4bf1": {
+    "target": [
+      "3dsecure.lu"
+    ],
+    "tag": [
+      "phishing"
+    ]
   }
 }
