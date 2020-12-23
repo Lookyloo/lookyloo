@@ -10,11 +10,12 @@
 * [Install Lookyloo](#installation)
 * [Lookyloo Client](#python-client)
 * [Contributing to Lookyloo](#contributing-to-lookyloo)
-** [Code of Conduct](##code-of-conduct)
+  * [Code of Conduct](###code-of-conduct)
 * [Support](#support)
-* [Credits](#credits)
-* [License](#license)
-
+  * [Security](###security)
+  * [Credits](###credits) 
+  * [License](###license)
+ 
 
 
 ## What's in a name?!
@@ -63,19 +64,19 @@ For more details on `pylookyloo`, read our [docs](https://www.lookyloo.eu/docs/m
 # Contributing to Lookyloo
 To learn more about contributing to Lookyloo, see our [contributor guide](https://www.lookyloo.eu/docs/main/contributing.html).
 
-## Code of Conduct
+### Code of Conduct
 Our Code of Conduct applies to all community our spaces, and also applies when an individual is officially representing our community in public spaces. At Lookyloo, we pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community. You can access our Code of Conduct [here](https://github.com/Lookyloo/lookyloo/blob/main/code_of_conduct.md) or on the [Lookyloo docs site](https://www.lookyloo.eu/docs/main/code-conduct.html).
 
 
 # Support
 To engage with the Lookyloo community contact us on [Gitter](https://gitter.im/lookyloo-app/community).
 
-## Security
-To report vulnerabilities, see our [Security Policy](lookyloo/SECURITY.md)
+### Security
+To report vulnerabilities, see our [Security Policy](lookyloo/SECURITY.md).
 
-# Credits
+### Credits
 Thank you very much [Tech Blog @ willshouse.com](https://techblog.willshouse.com/2012/01/03/most-common-user-agents/) for the up-to-date list of UserAgents.
 
-# License
-See our [LICENSE](lookyloo/LICENSE)
+### License
+See our [LICENSE](lookyloo/LICENSE).
 
