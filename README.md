@@ -1,14 +1,19 @@
 [![Lookyloo icon](website/web/static/lookyloo.jpeg)](https://www.lookyloo.eu/docs/main/index.html)
 
-[![Gitter](https://badges.gitter.im/lookyloo-app/community.svg)](https://gitter.im/lookyloo-app/community)
-
 *[Lookyloo](https://lookyloo.circl.lu/scrape)* is a web interface that captures a webpage and then displays a tree of the domains, that call each other. 
+
+
+[![Gitter](https://badges.gitter.im/lookyloo-app/community.svg)](https://gitter.im/lookyloo-app/community)
 
 
 * [What is Lookyloo?](#whats-in-a-name)
 * [Install Lookyloo](#installation)
 * [Lookyloo Client](#python-client)
-* [Contributing to Lookyloo](link)
+* [Contributing to Lookyloo](#contributing-to-lookyloo)
+** [Code of Conduct](##code-of-conduct)
+* [Support](#support)
+* [Credits](#credits)
+* [License](#license)
 
 
 
@@ -56,29 +61,21 @@ pip install pylookyloo
 For more details on `pylookyloo`, read our [docs](https://www.lookyloo.eu/docs/main/pylookyloo-overview.html) or see the client [GitHub repo](https://github.com/Lookyloo/PyLookyloo).  
 
 # Contributing to Lookyloo
-
 To learn more about contributing to Lookyloo, see our [contributor guide](https://www.lookyloo.eu/docs/main/contributing.html).
 
 ## Code of Conduct
-
 Our Code of Conduct applies to all community our spaces, and also applies when an individual is officially representing our community in public spaces. At Lookyloo, we pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community. You can access our Code of Conduct [here](https://github.com/Lookyloo/lookyloo/blob/main/code_of_conduct.md) or on the [Lookyloo docs site](https://www.lookyloo.eu/docs/main/code-conduct.html).
 
 
 # Support
-To engage with the Lookyloo community contact us using [Gitter](https://gitter.im/lookyloo-app/community).
+To engage with the Lookyloo community contact us on [Gitter](https://gitter.im/lookyloo-app/community).
 
 ## Security
-
+To report vulnerabilities, see our [Security Policy](lookyloo/SECURITY.md)
 
 # Credits
-
 Thank you very much [Tech Blog @ willshouse.com](https://techblog.willshouse.com/2012/01/03/most-common-user-agents/) for the up-to-date list of UserAgents.
 
-
 # License
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. See our [LICENSE](lookyloo/LICENSE)
+See our [LICENSE](lookyloo/LICENSE)
 
