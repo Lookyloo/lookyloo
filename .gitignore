@@ -121,3 +121,5 @@ config/*.json.bkp
 
 # user defined known content
 known_content_user/
+
+user_agents/
