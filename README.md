@@ -69,7 +69,9 @@ Our Code of Conduct applies to all community our spaces, and also applies when a
 
 
 # Support
-To engage with the Lookyloo community contact us on [Gitter](https://gitter.im/lookyloo-app/community).
+ * To engage with the Lookyloo community contact us on [Gitter](https://gitter.im/lookyloo-app/community).
+ * Let us know how we can improve Lookyloo by opening an [issue](https://github.com/Lookyloo/issues/new/choose). 
+ * Follow us on [Twitter](https://twitter.com/lookyloo_app).
 
 ### Security
 To report vulnerabilities, see our [Security Policy](lookyloo/SECURITY.md).
