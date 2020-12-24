@@ -924,11 +924,12 @@ class Lookyloo():
         initial_url = URLObject(cache["url"])  # type: ignore
         redirects = [URLObject(url) for url in cache['redirects']]  # type: ignore
 
-        initial_url.add_reference(redirects[0], 'redirects-to')
-        prec_object = redirects[0]
-        for u_object in redirects[1:]:
-            prec_object.add_reference(u_object, 'redirects-to')
-            prec_object = u_object
+        if redirects:
+            initial_url.add_reference(redirects[0], 'redirects-to')
+            prec_object = redirects[0]
+            for u_object in redirects[1:]:
+                prec_object.add_reference(u_object, 'redirects-to')
+                prec_object = u_object
 
         event.add_object(initial_url)
         for u_object in redirects:
