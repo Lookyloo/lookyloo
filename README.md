@@ -3,7 +3,7 @@
 *[Lookyloo](https://lookyloo.circl.lu/scrape)* is a web interface that captures a webpage and then displays a tree of the domains, that call each other. 
 
 
-[![Gitter](https://badges.gitter.im/lookyloo-app/community.svg)](https://gitter.im/lookyloo-app/community)
+[![Gitter](https://badges.gitter.im/Lookyloo/community.svg)](https://gitter.im/Lookyloo/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
 * [What is Lookyloo?](#whats-in-a-name)
