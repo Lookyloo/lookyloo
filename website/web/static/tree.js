@@ -414,14 +414,12 @@ function update(root, computed_node_width=0) {
                 });
 
                 // Rectangle around the domain name & icons
-                let selected_node_bbox_init = d3.select(this).node().getBBox();
                 d3.select(this).select('rect')
                   .attr('height', node_height + 5)
-                  .attr('width', selected_node_bbox_init.width + 50);
-
+                  .attr('width', d3.select(this).node().getBBox().width + 60);
 
                 // Set the width for all the nodes
-                let selected_node_bbox = d3.select(this).select('rect').node().getBBox();  // Required, as the node width need to include the rectangle
+                let selected_node_bbox = d3.select(this).node().getBBox();  // Required, as the node width need to include the rectangle
                 d.node_width = selected_node_bbox.width;
                 node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
 
