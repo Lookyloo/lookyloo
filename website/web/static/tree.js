@@ -273,7 +273,7 @@ function text_entry(relative_x_pos, relative_y_pos, d) {
           .datum(d);
 
     // Add labels for the nodes
-    let text_nodes = nodeContent.append("text")
+    nodeContent.append("text")
           .attr('dy', '.9em')
           .attr("stroke", "white")
           .style("font-size", "16px")
@@ -296,12 +296,9 @@ function text_entry(relative_x_pos, relative_y_pos, d) {
             } else {
                 to_print = d.data.name
             };
-
-            if (d.data.urls_count > 1) {
-              return `${to_print} (${d.data.urls_count})`;
-            }
             return to_print;
           });
+
     return nodeContent.node();
 }
 
@@ -427,6 +424,29 @@ function update(root, computed_node_width=0) {
                 let selected_node_bbox = d3.select(this).select('rect').node().getBBox();  // Required, as the node width need to include the rectangle
                 d.node_width = selected_node_bbox.width;
                 node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
+
+                // Set number of URLs after the hostname
+                if (d.data.urls_count > 1) {
+                    d3.select(this).append("text")
+                        .attr('x', d => d3.select(this).select('text').node().getBBox().width + 13)
+                        .attr('y', 5)
+                        .attr('dy', '.9em')
+                        .attr("stroke", "white")
+                        .style("font-size", "16px")
+                        .attr("stroke-width", ".2px")
+                        .style("opacity", .9)
+                        .on('mouseover', (event, d) => {
+                            d3.select('#tooltip')
+                                .style('opacity', 1)
+                                .style('left', `${event.pageX + 10}px`)
+                                .style('top', `${event.pageY + 10}px`)
+                                .text(`This node contains ${d.data.urls_count} URLs.`);
+                        })
+                        .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0))
+                        .text(d => {
+                            return `(${d.data.urls_count})`;
+                        });
+                };
 
                 // Set Bookmark
                 if (enable_bookmark) {
