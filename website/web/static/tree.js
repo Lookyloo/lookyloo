@@ -207,20 +207,20 @@ function NodeHighlight(hostnode_uuid) {
 function icon_list(relative_x_pos, relative_y_pos, d) {
     const icon_size = 16;
     const icon_options = new Map([
-        ['js', "/static/javascript.png"],
-        ['exe', "/static/exe.png"],
-        ['css', "/static/css.png"],
-        ['font', "/static/font.png"],
-        ['html', "/static/html.png"],
-        ['json', "/static/json.png"],
-        ['iframe', "/static/ifr.png"],
-        ['image', "/static/img.png"],
-        ['unknown_mimetype', "/static/wtf.png"],
-        ['video', "/static/video.png"],
-        ['request_cookie', "/static/cookie_read.png"],
-        ['response_cookie', "/static/cookie_received.png"],
-        ['redirect', "/static/redirect.png"],
-        ['redirect_to_nothing', "/static/cookie_in_url.png"]
+        ['js', {path: "/static/javascript.png", tooltip: "URL(s) loading Javascript"}],
+        ['exe', {path: "/static/exe.png", tooltip: "URL(s) loading executables"}],
+        ['css', {path: "/static/css.png", tooltip: "URL(s) loading CSS"}],
+        ['font', {path: "/static/font.png", tooltip: "URL(s) loading fonts"}],
+        ['html', {path: "/static/html.png", tooltip: "URL(s) loading HTML"}],
+        ['json', {path: "/static/json.png", tooltip: "URL(s) loading Json"}],
+        ['iframe', {path: "/static/ifr.png", tooltip: "URL(s) loaded from an Iframe"}],
+        ['image', {path: "/static/img.png", tooltip: "URL(s) loading images"}],
+        ['unknown_mimetype', {path: "/static/wtf.png", tooltip: "URL(s) loading contents of an unknown type"}],
+        ['video', {path: "/static/video.png", tooltip: "URL(s) loading videos"}],
+        ['request_cookie', {path: "/static/cookie_read.png", tooltip: "cookie(s) sent to the server in the request"}],
+        ['response_cookie', {path: "/static/cookie_received.png", tooltip: "cookie(s) received in the response"}],
+        ['redirect', {path: "/static/redirect.png", tooltip: "redirect(s)"}],
+        ['redirect_to_nothing', {path: "/static/cookie_in_url.png", tooltip: "redirect(s) to URL(s) missing in the capture"}]
     ]);
 
     // Put all the icone in one sub svg document
@@ -229,17 +229,17 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
           .attr('y', relative_y_pos)
           .attr('class', 'icons_list');
 
-    icon_options.forEach(function(icon_path, key) {
+    icon_options.forEach(function(icon_details, key) {
         let has_icon = false;
         let counter = 0;
         if (typeof d.data[key] === 'boolean') {
           has_icon = d.data[key];
         } else if (typeof d.data[key] === 'number') {
           has_icon = d.data[key] > 0;
-          counter = d.data[key]
+          counter = d.data[key];
         } else if (d.data[key] instanceof Array) {
           has_icon = d.data[key].length > 0;
-          counter = d.data[key].length
+          counter = d.data[key].length;
         };
         if (has_icon) {
           let icon_group = icons
@@ -250,7 +250,15 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
               .append('image')
               .attr("width", icon_size)
               .attr("height", icon_size)
-              .attr("xlink:href", icon_path);
+              .attr("xlink:href", icon_details.path)
+              .on('mouseover', (event, d) => {
+                  d3.select('#tooltip')
+                      .style('opacity', 1)
+                      .style('left', `${event.pageX + 10}px`)
+                      .style('top', `${event.pageY + 10}px`)
+                      .text(`${counter} ${icon_details.tooltip}`);
+              })
+              .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
           if (counter > 0) {
             icon_group
                 .append('text')
