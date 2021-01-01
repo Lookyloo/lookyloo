@@ -67,7 +67,7 @@ def sizeof_fmt(num, suffix='B'):
         if abs(num) < 1024.0:
             return "%3.1f%s%s" % (num, unit, suffix)
         num /= 1024.0
-    return "%.1f%s%s" % (num, 'Yi', suffix)
+    return ("%.1f%s%s" % (num, 'Yi', suffix)).strip()
 
 
 app.jinja_env.globals.update(sizeof_fmt=sizeof_fmt)
@@ -129,27 +129,27 @@ def urls_hostnode(tree_uuid: str, node_uuid: str):
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>', methods=['GET'])
 def hostnode_popup(tree_uuid: str, node_uuid: str):
     keys_response = {
-        'js': "/static/javascript.png",
-        'exe': "/static/exe.png",
-        'css': "/static/css.png",
-        'font': "/static/font.png",
-        'html': "/static/html.png",
-        'json': "/static/json.png",
-        'text': "/static/json.png",  # FIXME: Need new icon
-        'iframe': "/static/ifr.png",
-        'image': "/static/img.png",
-        'unset_mimetype': "/static/wtf.png",
-        'octet-stream': "/static/wtf.png",
-        'unknown_mimetype': "/static/wtf.png",
-        'video': "/static/video.png",
-        'livestream': "/static/video.png",
-        'response_cookie': "/static/cookie_received.png",
+        'js': {'icon': "javascript.png", 'tooltip': 'The content of the response is a javascript'},
+        'exe': {'icon': "exe.png", 'tooltip': 'The content of the response is an executable'},
+        'css': {'icon': "css.png", 'tooltip': 'The content of the response is a CSS'},
+        'font': {'icon': "font.png", 'tooltip': 'The content of the response is a font'},
+        'html': {'icon': "html.png", 'tooltip': 'The content of the response is a HTML document'},
+        'json': {'icon': "json.png", 'tooltip': 'The content of the response is a Json'},
+        'text': {'icon': "json.png", 'tooltip': 'The content of the response is a text'},  # FIXME: Need new icon
+        'iframe': {'icon': "ifr.png", 'tooltip': 'This content is loaded from an Iframe'},
+        'image': {'icon': "img.png", 'tooltip': 'The content of the response is an image'},
+        'unset_mimetype': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is not set'},
+        'octet-stream': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is a binary blob'},
+        'unknown_mimetype': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is of an unknown type'},
+        'video': {'icon': "video.png", 'tooltip': 'The content of the response is a video'},
+        'livestream': {'icon': "video.png", 'tooltip': 'The content of the response is a livestream'},
+        'response_cookie': {'icon': "cookie_received.png", 'tooltip': 'There are cookies in the response'},
         # redirect has to be last
-        'redirect': "/static/redirect.png",
-        'redirect_to_nothing': "/static/cookie_in_url.png"
+        'redirect': {'icon': "redirect.png", 'tooltip': 'The request is redirected'},
+        'redirect_to_nothing': {'icon': "cookie_in_url.png", 'tooltip': 'The request is redirected to an URL we do not have in the capture'}
     }
     keys_request = {
-        'request_cookie': "/static/cookie_read.png",
+        'request_cookie': {'icon': "cookie_read.png", 'tooltip': 'There are cookies in the request'}
     }
 
     hostnode, urls = lookyloo.get_hostnode_investigator(tree_uuid, node_uuid)

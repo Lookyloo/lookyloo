@@ -244,26 +244,36 @@
 
 {% macro popup_icons(lookup_dict, urlnode, tree_uuid) %}
 <div>
-{% for key, path in lookup_dict.items() %}
+{% for key, icon_info in lookup_dict.items() %}
   {% if urlnode[key] %}
     {% if key == "request_cookie" %}
-    <a href="{{ url_for('urlnode_request_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}" title="Download all the cookies in the request to the server">
-     <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+    <a href="{{ url_for('urlnode_request_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"
+       title="Download all the cookies in the request to the server">
+     <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
+          width="21" height="21"/>
     </a>
     {% elif key == "response_cookie"%}
-    <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}" title="Download all the cookies in the response from the server">
-      <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+    <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"
+       title="Download all the cookies in the response from the server">
+      <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
+           width="21" height="21"/>
     </a>
-    {% elif key in ["js", "exe", "css", "font", "html", "json", "image", "video", "unknown_mimetype", "text", "unset_mimetype", "octet-stream", "livestream"] and not urlnode.empty_response %}
+    {% elif key in ["js", "exe", "css", "font", "html", "json", "image", "video",
+                    "unknown_mimetype", "text", "unset_mimetype", "octet-stream", "livestream"]
+                    and not urlnode.empty_response %}
       <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}">
-        <img src="{{ path }}" alt="{{ key }}" width="21" height="21"
+        <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
+             width="21" height="21"
         {% if key == "image" %}
-        data-toggle="tooltip" data-placement="bottom" data-html="true" title='<img src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> </br>Click to download the content of the response in a zip file'
+             data-toggle="tooltip" data-placement="bottom" data-html="true" title='<img src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> </br>Click to download the content of the response in a zip file'
+        {% else %}
+                                                                                        data-toggle="tooltip" data-placement="bottom" data-html="true" title="{{icon_info['tooltip']}} <br/>Click to download."
         {% endif %}
         />
       </a>
     {% elif key != "redirect" %}
-    <img src="{{ path }}" alt="{{ key }}" width="21" height="21"/>
+    <img src="{{ url_for('static', filename=icon_info['icon']) }}"
+         alt="{{ icon_info['tooltip'] }}" title="{{ icon_info['tooltip'] }}" width="21" height="21"/>
     {%endif%}
   {%endif%}
 {% endfor %}
@@ -275,11 +285,13 @@
   <div title='{{ urlnode.redirect_url }}'>
     <b>Redirect to</b>: {{ shorten_string(urlnode.redirect_url, 50) }}
     <a href="#/" role="button" onclick="whereAmI('{{ child.hostnode_uuid }}')" title="See the node the URL redirects to.">
-      <img src="{{ lookup_dict['redirect'] }}" alt="{{ key }}" width="21" height="21"/>
+      <img src="{{ url_for('static', filename=lookup_dict['redirect']['icon']) }}" alt="{{ lookup_dict['redirect']['tooltip'] }}" width="21" height="21"/>
     </a>
   </div>
   {% else %}
-  <img src="{{ lookup_dict['redirect'] }}" alt="redirect" width="21" height="21"/>
+  <img src="{{ url_for('static', filename=lookup_dict['redirect']['icon']) }}"
+       alt="{{ lookup_dict['redirect']['tooltip'] }}" title="{{ lookup_dict['redirect']['tooltip'] }}"
+       width="21" height="21"/>
   {% endfor %}
 {%endif%}
 </div>
