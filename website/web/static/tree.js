@@ -427,7 +427,9 @@ function update(root, computed_node_width=0) {
                   .attr('width', d3.select(this).node().getBBox().width + 60);
 
                 // Set the width for all the nodes
-                let selected_node_bbox = d3.select(this).node().getBBox();  // Required, as the node width need to include the rectangle
+                // Required, as the node width need to include the rectangle
+                // Note: removing .select('rect') breaks rendering on firefox but not on chrome.
+                let selected_node_bbox = d3.select(this).select('rect').node().getBBox();
                 d.node_width = selected_node_bbox.width;
                 node_width = node_width > selected_node_bbox.width ? node_width : selected_node_bbox.width;
 
