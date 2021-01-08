@@ -306,7 +306,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.3.1"
+version = "1.3.2"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -320,6 +320,7 @@ lxml = ">=4.6.2,<5.0.0"
 numpy = ">=1.19.4,<2.0.0"
 publicsuffix2 = ">=2.20191221,<3.0"
 six = ">=1.15.0,<2.0.0"
+w3lib = ">=1.22.0,<2.0.0"
 
 [[package]]
 name = "hyperlink"
@@ -1137,7 +1138,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "665ef9a6ecd7428c31e0746b0b694c6be52398dd2fc300f90de53e82f660c765"
+content-hash = "248b11db9a3c79b0feaed19f3ff4dc5647c94b812a58f2cdbfc7dfb497d4f28b"
 
 [metadata.files]
 aiohttp = [
@@ -1353,8 +1354,8 @@ gunicorn = [
     {file = "gunicorn-20.0.4.tar.gz", hash = "sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626"},
 ]
 har2tree = [
-    {file = "har2tree-1.3.1-py3-none-any.whl", hash = "sha256:eec098745a87eaf517c6d9fd60a93c6381a440d91c9b1fe80e0f148b81bc0124"},
-    {file = "har2tree-1.3.1.tar.gz", hash = "sha256:8c0fdc9c0f2711f5c0e3919dc305a580d3ba9390bbbd1b0f1657e394bf7f5a99"},
+    {file = "har2tree-1.3.2-py3-none-any.whl", hash = "sha256:33e34c572c7579f9a61f706edd76d4f76647c3985728c9f2b99434844398e398"},
+    {file = "har2tree-1.3.2.tar.gz", hash = "sha256:e4a8c08a136acee206c52c6be889d9467ec5292b67de6ca5e54d1a6cb41f020f"},
 ]
 hyperlink = [
     {file = "hyperlink-21.0.0-py2.py3-none-any.whl", hash = "sha256:e6b14c37ecb73e89c77d78cdb4c2cc8f3fb59a885c5b3f819ff4ed80f25af1b4"},
