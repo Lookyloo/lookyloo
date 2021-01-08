@@ -358,7 +358,7 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
         b64_thumbnail = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=True)
         return render_template('tree.html', tree_json=tree_json, start_time=start_time,
                                user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
-                               screenshot_thumbnail=b64_thumbnail,
+                               screenshot_thumbnail=b64_thumbnail, page_title=cache['title'],
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
