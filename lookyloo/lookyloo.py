@@ -658,7 +658,7 @@ class Lookyloo():
 
     def get_screenshot_thumbnail(self, capture_uuid: str, all_images: bool=False, for_datauri=False) -> Union[str, BytesIO]:
         size = 64, 64
-        screenshot = Image.open(self._get_raw(capture_uuid, 'png', False))
+        screenshot = Image.open(self._get_raw(capture_uuid, 'png', all_images))
         c_screenshot = screenshot.crop((0, 0, screenshot.width, screenshot.width))
         c_screenshot.thumbnail(size)
         to_return = BytesIO()

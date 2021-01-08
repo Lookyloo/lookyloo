@@ -3,7 +3,7 @@
 
 import base64
 from zipfile import ZipFile, ZIP_DEFLATED
-from io import BytesIO
+from io import BytesIO, StringIO
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -558,6 +558,17 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
 
     return send_file(BytesIO(json.dumps(urlnode.response_cookie, indent=2).encode()),
                      mimetype='text/plain', as_attachment=True, attachment_filename='response_cookies.txt')
+
+
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/urls_in_rendered_content', methods=['GET'])
+def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str):
+    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
+    if not urlnode.rendered_html:
+        return
+    to_return = StringIO()
+    to_return.writelines([f'{u}\n' for u in urlnode.urls_in_rendered_page])
+    return send_file(BytesIO(to_return.getvalue().encode()), mimetype='text/plain',
+                     as_attachment=True, attachment_filename='urls_in_rendered_content.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/rendered_content', methods=['GET'])
