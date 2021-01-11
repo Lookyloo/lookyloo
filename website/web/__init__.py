@@ -562,11 +562,15 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/urls_in_rendered_content', methods=['GET'])
 def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str):
-    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
+    ct = lookyloo.get_crawled_tree(tree_uuid)
+    urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
     if not urlnode.rendered_html:
         return
+
+    not_loaded_urls = sorted(set(urlnode.urls_in_rendered_page)
+                             - set(ct.root_hartree.all_url_requests.keys()))
     to_return = StringIO()
-    to_return.writelines([f'{u}\n' for u in urlnode.urls_in_rendered_page])
+    to_return.writelines([f'{u}\n' for u in not_loaded_urls])
     return send_file(BytesIO(to_return.getvalue().encode()), mimetype='text/plain',
                      as_attachment=True, attachment_filename='urls_in_rendered_content.txt')
 
