@@ -53,12 +53,20 @@ d3.json('/json/stats').then(json => {
     var data_lines = svg.selectAll(".d3_xy_chart_line")
                         .data(datasets.map(d => {return d3.zip(d.x, d.y);}))
                         .enter().append("g")
-                        .attr("class", "d3_xy_chart_line") ;
+                        .attr("class", "d3_xy_chart_line");
 
     data_lines.append("path")
               .attr("class", "line")
               .attr("d", line)
               .attr("stroke", (_, i) => {return d3.schemeCategory10[i];});
+
+    data_lines.selectAll(".dot")
+        .data(datasets.map(d => {return d3.zip(d.x, d.y);}).flat())
+          .enter().append("circle") // Uses the enter().append() method
+            .attr("class", "dot") // Assign a class for styling
+            .attr("cx", function(d) { return x_scale(d[0]) })
+            .attr("cy", function(d) { return y_scale(d[1]) })
+            .attr("r", 3);
 
     data_lines.append("text")
                .datum((d, i) => { return {name: datasets[i].label, final: d[d.length-1]}; })
