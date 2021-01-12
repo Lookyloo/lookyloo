@@ -6,7 +6,7 @@ import requests
 from lookyloo.helpers import get_homedir
 
 d3js_version = '6'
-datatables_version = "1.10.22"
+datatables_version = "1.10.23"
 
 
 if __name__ == '__main__':
