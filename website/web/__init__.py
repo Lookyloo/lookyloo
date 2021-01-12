@@ -317,7 +317,7 @@ def hide_capture(tree_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/cache', methods=['GET'])
 def cache_tree(tree_uuid: str):
-    lookyloo.cache_tree(tree_uuid)
+    lookyloo.get_crawled_tree(tree_uuid)
     return redirect(url_for('index'))
 
 
@@ -354,10 +354,14 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
         flash(cache['error'], 'error')
 
     try:
-        tree_json, start_time, user_agent, root_url, meta = lookyloo.load_tree(tree_uuid)
+        ct = lookyloo.get_crawled_tree(tree_uuid)
+        ct = lookyloo.context.contextualize_tree(ct)
         b64_thumbnail = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=True)
-        return render_template('tree.html', tree_json=tree_json, start_time=start_time,
-                               user_agent=user_agent, root_url=root_url, tree_uuid=tree_uuid,
+        meta = lookyloo.get_meta(tree_uuid)
+        return render_template('tree.html', tree_json=ct.to_json(),
+                               start_time=ct.start_time.isoformat(),
+                               user_agent=ct.user_agent, root_url=ct.root_url,
+                               tree_uuid=tree_uuid,
                                screenshot_thumbnail=b64_thumbnail, page_title=cache['title'],
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_context_by_users=enable_context_by_users,
@@ -702,7 +706,7 @@ def json_redirects(tree_uuid: str):
         return to_return
     if cache['incomplete_redirects']:
         # Trigger tree build, get all redirects
-        lookyloo.cache_tree(tree_uuid)
+        lookyloo.get_crawled_tree(tree_uuid)
         cache = lookyloo.capture_cache(tree_uuid)
         if cache:
             to_return['response']['redirects'] = cache['redirects']
