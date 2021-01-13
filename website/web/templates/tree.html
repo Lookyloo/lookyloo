@@ -301,13 +301,17 @@
     </div>
     <div class="modal-body">
     <center>
-      {% if blur_screenshot %}
-      <button type="button" class="btn btn-info" onclick="$('#screenshot').removeClass('blur')"> Unblur screenshot</button>
-      </br>
-      </hr>
-      </br>
+      {% if not b64_thumbnail %}
+      Image too big to display in the browser, <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">click here to download it</a>.
+      {% else %}
+        {% if blur_screenshot %}
+        <button type="button" class="btn btn-info" onclick="$('#screenshot').removeClass('blur')"> Unblur screenshot</button>
+        </br>
+        </hr>
+        </br>
+        {% endif %}
+        <img src="{{ url_for('image', tree_uuid=tree_uuid) }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
       {% endif %}
-      <img src="{{ url_for('image', tree_uuid=tree_uuid) }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
     </center>
     </div>
     <div class="modal-footer">

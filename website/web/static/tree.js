@@ -492,7 +492,7 @@ function update(root, computed_node_width=0) {
                       .attr('id', 'screenshot_thumbnail')
                       .attr("width", thumbnail_size)
                       .attr("height", thumbnail_size)
-                      .attr("xlink:href", `data:image/png;base64,${screenshot_thumbnail}`)
+                      .attr("xlink:href", screenshot_thumbnail ? `data:image/png;base64,${screenshot_thumbnail}` : '/static/error_screenshot.png')
                       .attr('cursor', 'pointer')
                       .on('mouseover', (event, d) => {
                           d3.select('#tooltip')

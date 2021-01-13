@@ -113,7 +113,7 @@ class Lookyloo():
         with self_generated_ua_file.open('w') as f:
             json.dump(to_store, f, indent=2)
 
-    def _cache_capture(self, capture_uuid: str) -> None:
+    def _cache_capture(self, capture_uuid: str) -> CrawledTree:
         '''Generate the pickle, add capture in the indexes'''
         capture_dir = self.lookup_capture_dir(capture_uuid)
 
@@ -142,6 +142,7 @@ class Lookyloo():
 
         with (capture_dir / 'tree.pickle').open('wb') as _p:
             pickle.dump(ct, _p)
+        return ct
 
     def _build_cname_chain(self, known_cnames: Dict[str, Optional[str]], hostname) -> List[str]:
         '''Returns a list of CNAMEs starting from one hostname.
@@ -211,8 +212,7 @@ class Lookyloo():
         capture_dir = self.lookup_capture_dir(capture_uuid)
         ct = load_pickle_tree(capture_dir)
         if not ct:
-            self._cache_capture(capture_uuid)
-            ct = load_pickle_tree(capture_dir)
+            ct = self._cache_capture(capture_uuid)
         if not ct:
             raise NoValidHarFile(f'Unable to get tree from {capture_dir}')
         return ct
@@ -650,18 +650,25 @@ class Lookyloo():
         '''Get the cookie(s)'''
         return self._get_raw(capture_uuid, 'cookies.json', all_cookies)
 
-    def get_screenshot(self, capture_uuid: str, all_images: bool=False) -> BytesIO:
+    def get_screenshot(self, capture_uuid: str) -> BytesIO:
         '''Get the screenshot(s) of the rendered page'''
-        return self._get_raw(capture_uuid, 'png', all_images)
+        return self._get_raw(capture_uuid, 'png', all_files=False)
 
-    def get_screenshot_thumbnail(self, capture_uuid: str, all_images: bool=False, for_datauri=False) -> Union[str, BytesIO]:
+    def get_screenshot_thumbnail(self, capture_uuid: str, for_datauri=False) -> Union[str, BytesIO]:
         '''Get the thumbnail of the rendered page'''
-        size = 64, 64
-        screenshot = Image.open(self._get_raw(capture_uuid, 'png', all_images))
-        c_screenshot = screenshot.crop((0, 0, screenshot.width, screenshot.width))
-        c_screenshot.thumbnail(size)
         to_return = BytesIO()
-        c_screenshot.save(to_return, 'png')
+        size = 64, 64
+        try:
+            screenshot = self.get_screenshot(capture_uuid)
+            with Image.open(screenshot) as screenshot:
+                c_screenshot = screenshot.crop((0, 0, screenshot.width, screenshot.width))
+            c_screenshot.thumbnail(size)
+            c_screenshot.save(to_return, 'png')
+        except Image.DecompressionBombError as e:
+            # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
+            self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: image too big ({e}).')
+            # TODO: Default image
+
         if for_datauri:
             return base64.b64encode(to_return.getvalue()).decode()
         else:
