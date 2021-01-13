@@ -317,7 +317,7 @@ def hide_capture(tree_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/cache', methods=['GET'])
 def cache_tree(tree_uuid: str):
-    lookyloo.get_crawled_tree(tree_uuid)
+    lookyloo.capture_cache(tree_uuid)
     return redirect(url_for('index'))
 
 
