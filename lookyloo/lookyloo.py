@@ -659,8 +659,8 @@ class Lookyloo():
         to_return = BytesIO()
         size = 64, 64
         try:
-            screenshot = self.get_screenshot(capture_uuid)
-            with Image.open(screenshot) as screenshot:
+            s = self.get_screenshot(capture_uuid)
+            with Image.open(s) as screenshot:
                 c_screenshot = screenshot.crop((0, 0, screenshot.width, screenshot.width))
             c_screenshot.thumbnail(size)
             c_screenshot.save(to_return, 'png')
