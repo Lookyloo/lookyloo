@@ -301,7 +301,7 @@
     </div>
     <div class="modal-body">
     <center>
-      {% if not b64_thumbnail %}
+      {% if screenshot_thumbnail == '' %}
       Image too big to display in the browser, <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">click here to download it</a>.
       {% else %}
         {% if blur_screenshot %}
