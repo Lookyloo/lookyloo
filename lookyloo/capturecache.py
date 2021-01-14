@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from .exceptions import LookylooException
+
 
 @dataclass
 class CaptureCache():
@@ -23,8 +25,10 @@ class CaptureCache():
             self.capture_dir: Path = cache_entry['capture_dir']
         elif not cache_entry.get('error'):
             missing = set(self.__default_cache_keys) - set(cache_entry.keys())
-            raise Exception(f'Missing keys ({missing}), no error message. It should not happen.')
+            raise LookylooException(f'Missing keys ({missing}), no error message. It should not happen.')
 
+        # Error without all the keys in __default_cache_keys was fatal.
+        # if the keys in __default_cache_keys are present, it was an HTTP error
         self.error: Optional[str] = cache_entry.get('error')
         self.incomplete_redirects: bool = True if cache_entry.get('incomplete_redirects') == 1 else False
         self.no_index: bool = True if cache_entry.get('no_index') == 1 else False

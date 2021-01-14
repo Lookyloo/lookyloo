@@ -453,12 +453,12 @@ class Lookyloo():
         (capture_dir / 'no_index').touch()
 
     @property
-    def capture_uuids(self):
+    def capture_uuids(self) -> List[str]:
         '''All the capture UUIDs present in the cache.'''
-        return self.redis.hkeys('lookup_dirs')
+        return self.redis.hkeys('lookup_dirs')  # type: ignore
 
     @property
-    def sorted_cache(self):
+    def sorted_cache(self) -> List[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).'''
         all_cache: List[CaptureCache] = []
         p = self.redis.pipeline()
@@ -490,7 +490,7 @@ class Lookyloo():
             return None
         try:
             return CaptureCache(cached)
-        except Exception as e:
+        except LookylooException as e:
             self.logger.warning(f'Cache ({capture_dir}) is invalid ({e}): {json.dumps(cached, indent=2)}')
             return None
 
