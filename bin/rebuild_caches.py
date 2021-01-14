@@ -33,7 +33,9 @@ def main():
 
         if lookyloo.is_public_instance:
             cache = lookyloo.capture_cache(capture_uuid)
-            if cache.get('no_index') is not None:
+            if not cache:
+                continue
+            if cache.no_index is not None:
                 index = False
 
         # NOTE: these methods do nothing if we just generated the pickle when calling lookyloo.get_crawled_tree

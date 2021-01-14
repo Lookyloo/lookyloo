@@ -6,7 +6,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO, StringIO
 import os
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 import http
 import calendar
@@ -263,12 +263,12 @@ def redirects(tree_uuid: str):
     cache = lookyloo.capture_cache(tree_uuid)
     if not cache:
         return Response('Not available.', mimetype='text/text')
-    if not cache['redirects']:
+    if not cache.redirects:
         return Response('No redirects.', mimetype='text/text')
-    if cache['url'] == cache['redirects'][0]:  # type: ignore
-        to_return = BytesIO('\n'.join(cache['redirects']).encode())  # type: ignore
+    if cache.url == cache.redirects[0]:
+        to_return = BytesIO('\n'.join(cache.redirects).encode())
     else:
-        to_return = BytesIO('\n'.join([cache['url']] + cache['redirects']).encode())  # type: ignore
+        to_return = BytesIO('\n'.join([cache.url] + cache.redirects).encode())
     return send_file(to_return, mimetype='text/text',
                      as_attachment=True, attachment_filename='redirects.txt')
 
@@ -350,8 +350,8 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
         flash('Invalid cache.', 'error')
         return redirect(url_for('index'))
 
-    if 'error' in cache:
-        flash(cache['error'], 'error')
+    if cache.error:
+        flash(cache.error, 'error')
 
     try:
         ct = lookyloo.get_crawled_tree(tree_uuid)
@@ -362,14 +362,14 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
                                start_time=ct.start_time.isoformat(),
                                user_agent=ct.user_agent, root_url=ct.root_url,
                                tree_uuid=tree_uuid,
-                               screenshot_thumbnail=b64_thumbnail, page_title=cache['title'],
+                               screenshot_thumbnail=b64_thumbnail, page_title=cache.title,
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,
                                blur_screenshot=blur_screenshot, urlnode_uuid=urlnode_uuid,
                                auto_trigger_modules=auto_trigger_modules,
-                               has_redirects=True if cache['redirects'] else False)
+                               has_redirects=True if cache.redirects else False)
 
     except NoValidHarFile as e:
         return render_template('error.html', error_message=e)
@@ -392,7 +392,7 @@ def index_generic(show_hidden: bool=False, category: Optional[str]=None):
     titles = []
     if time_delta_on_index:
         # We want to filter the captures on the index
-        cut_time = datetime.now() - timedelta(**time_delta_on_index)
+        cut_time = (datetime.now() - timedelta(**time_delta_on_index)).replace(tzinfo=timezone.utc)
     else:
         cut_time = None  # type: ignore
 
@@ -400,19 +400,19 @@ def index_generic(show_hidden: bool=False, category: Optional[str]=None):
         if not cached:
             continue
         if category:
-            if 'categories' not in cached or category not in cached['categories']:
+            if not cached.categories or category not in cached.categories:
                 continue
         if show_hidden:
-            if 'no_index' not in cached:
+            if not cached.no_index:
                 # Only display the hidden ones
                 continue
-        elif 'no_index' in cached:
+        elif cached.no_index:
             continue
-        if cut_time and datetime.fromisoformat(cached['timestamp'][:-1]) < cut_time:
+        if cut_time and cached.timestamp < cut_time:
             continue
 
-        titles.append((cached['uuid'], cached['title'], cached['timestamp'], cached['url'],
-                       cached['redirects'], True if cached['incomplete_redirects'] == '1' else False))
+        titles.append((cached.uuid, cached.title, cached.timestamp.isoformat(), cached.url,
+                       cached.redirects, cached.incomplete_redirects))
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
     return render_template('index.html', titles=titles)
 
@@ -700,18 +700,18 @@ def json_redirects(tree_uuid: str):
     if not cache:
         return {'error': 'UUID missing in cache, try again later.'}
 
-    to_return: Dict[str, Any] = {'response': {'url': cache['url'], 'redirects': []}}
-    if not cache['redirects']:
+    to_return: Dict[str, Any] = {'response': {'url': cache.url, 'redirects': []}}
+    if not cache.redirects:
         to_return['response']['info'] = 'No redirects'
         return to_return
-    if cache['incomplete_redirects']:
+    if cache.incomplete_redirects:
         # Trigger tree build, get all redirects
         lookyloo.get_crawled_tree(tree_uuid)
         cache = lookyloo.capture_cache(tree_uuid)
         if cache:
-            to_return['response']['redirects'] = cache['redirects']
+            to_return['response']['redirects'] = cache.redirects
     else:
-        to_return['response']['redirects'] = cache['redirects']
+        to_return['response']['redirects'] = cache.redirects
 
     return jsonify(to_return)
 
