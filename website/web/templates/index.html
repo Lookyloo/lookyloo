@@ -6,18 +6,18 @@
 {% block title %}Lookyloo{% endblock %}
 
 {% block card %}
-<meta name="og:title" content="Lookyloo" />
-<meta name="og:type" content="website"/>
+<meta property="og:title" content="Lookyloo" />
+<meta property="og:type" content="website"/>
 <meta
-  name="og:description"
+  property="og:description"
   content="Lookyloo captures websites and let you investigate them."
 />
 <meta
-  name="og:image"
+  property="og:image"
   content="//{{public_domain}}{{ url_for('static', filename='favicon.ico') }}"
 />
 <meta
-  name="og:url"
+  property="og:url"
   content="//{{public_domain}}"
 />
 {% endblock %}

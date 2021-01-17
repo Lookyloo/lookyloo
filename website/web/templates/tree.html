@@ -6,18 +6,18 @@
 {% block title %}Capture of {{root_url}}{% endblock %}
 
 {% block card %}
-<meta name="og:title" content="Lookyloo capture" />
-<meta name="og:type" content="website"/>
+<meta property="og:title" content="Lookyloo capture" />
+<meta property="og:type" content="website"/>
 <meta
-  name="og:description"
+  property="og:description"
   content="URL captured: {{root_url}}"
 />
 <meta
-  name="og:image"
+  property="og:image"
   content="//{{public_domain}}{{ url_for('image', tree_uuid=tree_uuid) }}"
 />
 <meta
-  name="og:url"
+  property="og:url"
   content="//{{public_domain}}{{ url_for('tree', tree_uuid=tree_uuid) }}"
 />
 {% endblock %}
