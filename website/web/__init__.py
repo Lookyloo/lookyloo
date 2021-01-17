@@ -414,7 +414,7 @@ def index_generic(show_hidden: bool=False, category: Optional[str]=None):
         titles.append((cached.uuid, cached.title, cached.timestamp.isoformat(), cached.url,
                        cached.redirects, cached.incomplete_redirects))
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
-    return render_template('index.html', titles=titles)
+    return render_template('index.html', titles=titles, public_domain=lookyloo.public_domain)
 
 
 # ##### Index level methods #####
