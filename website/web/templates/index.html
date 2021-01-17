@@ -5,6 +5,23 @@
 
 {% block title %}Lookyloo{% endblock %}
 
+{% block card %}
+<meta name="og:title" content="Lookyloo" />
+<meta name="og:type" content="website"/>
+<meta
+  name="og:description"
+  content="Lookyloo captures websites and let you investigate them."
+/>
+<meta
+  name="og:image"
+  content="//{{public_domain}}{{ url_for('static', filename='favicon.ico') }}"
+/>
+<meta
+  name="og:url"
+  content="//{{public_domain}}"
+/>
+{% endblock %}
+
 {% block scripts %}
 {{ super() }}
 <script src='{{ url_for('static', filename='datatables.min.js') }}'></script>
