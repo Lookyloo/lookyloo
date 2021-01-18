@@ -30,6 +30,6 @@ class CaptureCache():
         # Error without all the keys in __default_cache_keys was fatal.
         # if the keys in __default_cache_keys are present, it was an HTTP error
         self.error: Optional[str] = cache_entry.get('error')
-        self.incomplete_redirects: bool = True if cache_entry.get('incomplete_redirects') == 1 else False
-        self.no_index: bool = True if cache_entry.get('no_index') == 1 else False
+        self.incomplete_redirects: bool = True if cache_entry.get('incomplete_redirects') in [1, '1'] else False
+        self.no_index: bool = True if cache_entry.get('no_index') in [1, '1'] else False
         self.categories: List[str] = json.loads(cache_entry['categories']) if cache_entry.get('categories') else []

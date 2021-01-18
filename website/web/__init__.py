@@ -406,6 +406,8 @@ def index_generic(show_hidden: bool=False, category: Optional[str]=None):
     for cached in lookyloo.sorted_cache:
         if not cached:
             continue
+        if cut_time and cached.timestamp < cut_time:
+            continue
         if category:
             if not cached.categories or category not in cached.categories:
                 continue
@@ -414,8 +416,6 @@ def index_generic(show_hidden: bool=False, category: Optional[str]=None):
                 # Only display the hidden ones
                 continue
         elif cached.no_index:
-            continue
-        if cut_time and cached.timestamp < cut_time:
             continue
 
         titles.append((cached.uuid, cached.title, cached.timestamp.isoformat(), cached.url,
