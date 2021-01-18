@@ -644,21 +644,24 @@ class Lookyloo():
         '''Get the screenshot(s) of the rendered page'''
         return self._get_raw(capture_uuid, 'png', all_files=False)
 
-    def get_screenshot_thumbnail(self, capture_uuid: str, for_datauri=False) -> Union[str, BytesIO]:
-        '''Get the thumbnail of the rendered page'''
+    def get_screenshot_thumbnail(self, capture_uuid: str, for_datauri: bool=False, width: int=64) -> Union[str, BytesIO]:
+        '''Get the thumbnail of the rendered page. Always crop to a square.'''
         to_return = BytesIO()
-        size = 64, 64
+        size = width, width
         try:
             s = self.get_screenshot(capture_uuid)
-            with Image.open(s) as screenshot:
-                c_screenshot = screenshot.crop((0, 0, screenshot.width, screenshot.width))
-            c_screenshot.thumbnail(size)
-            c_screenshot.save(to_return, 'png')
+            orig_screenshot = Image.open(s)
+            to_thumbnail = orig_screenshot.crop((0, 0, orig_screenshot.width, orig_screenshot.width))
         except Image.DecompressionBombError as e:
             # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
             self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: image too big ({e}).')
-            # TODO: Default image
+            error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
+            to_thumbnail = Image.open(error_img)
 
+        to_thumbnail.thumbnail(size)
+        to_thumbnail.save(to_return, 'png')
+
+        to_return.seek(0)
         if for_datauri:
             return base64.b64encode(to_return.getvalue()).decode()
         else:

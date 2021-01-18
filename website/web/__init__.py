@@ -280,6 +280,13 @@ def image(tree_uuid: str):
                      as_attachment=True, attachment_filename='image.png')
 
 
+@app.route('/tree/<string:tree_uuid>/thumbnail/', defaults={'width': 64}, methods=['GET'])
+@app.route('/tree/<string:tree_uuid>/thumbnail/<int:width>', methods=['GET'])
+def thumbnail(tree_uuid: str, width: int):
+    to_return = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=False, width=width)
+    return send_file(to_return, mimetype='image/png')
+
+
 @app.route('/tree/<string:tree_uuid>/html', methods=['GET'])
 def html(tree_uuid: str):
     to_return = lookyloo.get_html(tree_uuid)
