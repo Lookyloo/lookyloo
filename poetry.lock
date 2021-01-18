@@ -217,7 +217,7 @@ python-versions = "*"
 
 [[package]]
 name = "deprecated"
-version = "1.2.10"
+version = "1.2.11"
 description = "Python @deprecated decorator to deprecate old python classes, functions or methods."
 category = "main"
 optional = false
@@ -227,7 +227,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 wrapt = ">=1.10,<2"
 
 [package.extras]
-dev = ["tox", "bumpversion (<1)", "sphinx (<2)", "PyTest (<5)", "PyTest-Cov (<2.6)", "pytest", "pytest-cov"]
+dev = ["tox", "bump2version (<1)", "sphinx (<2)", "importlib-metadata (<3)", "importlib-resources (<4)", "configparser (<5)", "sphinxcontrib-websupport (<2)", "zipp (<2)", "PyTest (<5)", "PyTest-Cov (<2.6)", "pytest", "pytest-cov"]
 
 [[package]]
 name = "dnspython"
@@ -834,7 +834,7 @@ six = ">=1.5"
 
 [[package]]
 name = "python-magic"
-version = "0.4.18"
+version = "0.4.20"
 description = "File type identification using libmagic"
 category = "main"
 optional = true
@@ -1327,8 +1327,8 @@ defang = [
     {file = "defang-0.5.3.tar.gz", hash = "sha256:86aeff658d7cd4c3b61d16089872e1c1f0a1b7b3c64d4ca9525c017caeb284d7"},
 ]
 deprecated = [
-    {file = "Deprecated-1.2.10-py2.py3-none-any.whl", hash = "sha256:a766c1dccb30c5f6eb2b203f87edd1d8588847709c78589e1521d769addc8218"},
-    {file = "Deprecated-1.2.10.tar.gz", hash = "sha256:525ba66fb5f90b07169fdd48b6373c18f1ee12728ca277ca44567a367d9d7f74"},
+    {file = "Deprecated-1.2.11-py2.py3-none-any.whl", hash = "sha256:924b6921f822b64ec54f49be6700a126bab0640cfafca78f22c9d429ed590560"},
+    {file = "Deprecated-1.2.11.tar.gz", hash = "sha256:471ec32b2755172046e28102cd46c481f21c6036a0ec027521eba8521aa4ef35"},
 ]
 dnspython = [
     {file = "dnspython-2.1.0-py3-none-any.whl", hash = "sha256:95d12f6ef0317118d2a1a6fc49aac65ffec7eb8087474158f42f26a639135216"},
@@ -1726,8 +1726,8 @@ python-dateutil = [
     {file = "python_dateutil-2.8.1-py2.py3-none-any.whl", hash = "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"},
 ]
 python-magic = [
-    {file = "python-magic-0.4.18.tar.gz", hash = "sha256:b757db2a5289ea3f1ced9e60f072965243ea43a2221430048fd8cacab17be0ce"},
-    {file = "python_magic-0.4.18-py2.py3-none-any.whl", hash = "sha256:356efa93c8899047d1eb7d3eb91e871ba2f5b1376edbaf4cc305e3c872207355"},
+    {file = "python-magic-0.4.20.tar.gz", hash = "sha256:0cc52ccad086c377b9194014e3dbf98d94b194344630172510a6a3e716b47801"},
+    {file = "python_magic-0.4.20-py2.py3-none-any.whl", hash = "sha256:33ce94d9395aa269a9c5fac10ae124a5fb328ebe248f36efc5a43922edee662e"},
 ]
 queuelib = [
     {file = "queuelib-1.5.0-py2.py3-none-any.whl", hash = "sha256:ff43b5b74b9266f8df4232a8f768dc4d67281a271905e2ed4a3689d4d304cd02"},
