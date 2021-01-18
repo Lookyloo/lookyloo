@@ -321,8 +321,8 @@
     </div>
     <div class="modal-body">
     <center>
-      {% if screenshot_thumbnail == '' %}
-      Image too big to display in the browser, <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">click here to download it</a>.
+      {% if screenshot_size > 10 * 1024 * 1024 %}
+        Image too big ({{ sizeof_fmt(screenshot_size) }}) to display in the browser, <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">click here to download it</a>.
       {% else %}
         {% if blur_screenshot %}
         <button type="button" class="btn btn-info" onclick="$('#screenshot').removeClass('blur')"> Unblur screenshot</button>

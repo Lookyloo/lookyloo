@@ -364,12 +364,14 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
         ct = lookyloo.get_crawled_tree(tree_uuid)
         ct = lookyloo.context.contextualize_tree(ct)
         b64_thumbnail = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=True)
+        screenshot_size = lookyloo.get_screenshot(tree_uuid).getbuffer().nbytes
         meta = lookyloo.get_meta(tree_uuid)
         return render_template('tree.html', tree_json=ct.to_json(),
                                start_time=ct.start_time.isoformat(),
                                user_agent=ct.user_agent, root_url=ct.root_url,
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
                                screenshot_thumbnail=b64_thumbnail, page_title=cache.title,
+                               screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
