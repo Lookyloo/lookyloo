@@ -94,33 +94,37 @@
         <div class="col-sm-10">
           <select class="form-control" name="os" id="os">
             {% for os in user_agents.keys() %}
-              <option value="{{ os }}">{{ os }}</option>
+            <!-- Select the default os -->
+            <option value="{{ os }}" {% if os==default['os'] %}selected{% endif %}>{{ os }}</option>
             {% endfor%}
           </select>
         </div>
       </div>
 
       {% for os, browsers in user_agents.items() %}
-      <div id="{{os.replace(' ', '_')}}" class="style-sub-1 form-group row" {% if not loop.first %}style="display: none;"{%endif%}>
+      <!-- Hide the browsers that aren't part of the default os -->
+      <div id="{{os.replace(' ', '_')}}" class="style-sub-1 form-group row" {% if not os==default['os'] %}style="display: none;"{%endif%}>
         <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
         <div class="col-sm-10">
-          <!-- Disable all the selects, unless it is the first one in the OS list-->
-          <select class="form-control" name="browser" {% if not loop.first %}disabled{%endif%}>
+          <!-- Disable all the selects not related to the default os -->
+          <select class="form-control" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
           {% for browser in browsers.keys()%}
-            <option value="{{ browser }}">{{ browser }}</option>
+          <!-- Select the default browser -->
+          <option value="{{ browser }}" {% if browser==default['browser'] %}selected{% endif %}>{{ browser }}</option>
           {% endfor%}
           </select>
         </div>
       </div>
-          {% set outer_loop = loop %}
           {% for browser, user_agents in browsers.items()%}
-      <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 form-group row" {% if not loop.first or not outer_loop.first %} style="display: none;"{%endif%}>
+      <!-- Hide the user agents that aren't part of the default OS and browsers that aren't part of the default os -->
+      <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 form-group row" {% if not os==default['os'] or not browser==default['browser']%} style="display: none;"{%endif%}>
         <label for="user_agent" class="col-sm-2 col-form-label">User Agent:</label>
         <div class="col-sm-10">
-          <!-- Disable all the selects, unless it is the first one in the OS list and in the browser list-->
-          <select class="form-control" name="user_agent" {% if not outer_loop.first or not loop.first %}disabled{%endif%}>
+          <!-- Disable all the selects, unless it is in default os and browser -->
+          <select class="form-control" name="user_agent" {% if not os==default['os'] or not browser==default['browser']  %}disabled{%endif%}>
             {% for user_agent in user_agents %}
-              <option value="{{ user_agent }}">{{ user_agent }}</option>
+            <!-- Select the default ua -->
+            <option value="{{ user_agent }}" {% if user_agent==default['useragent'] %}selected{% endif %}>{{ user_agent }}</option>
             {% endfor%}
           </select>
         </div>

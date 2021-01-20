@@ -49,6 +49,7 @@ time_delta_on_index = get_config('generic', 'time_delta_on_index')
 blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')
 max_depth = get_config('generic', 'max_depth')
 
+use_own_ua = get_config('generic', 'use_user_agents_users')
 enable_mail_notification = get_config('generic', 'enable_mail_notification')
 enable_context_by_users = get_config('generic', 'enable_context_by_users')
 enable_categorization = get_config('generic', 'enable_categorization')
@@ -449,7 +450,10 @@ def index():
     if request.method == 'HEAD':
         # Just returns ack if the webserver is running
         return 'Ack'
-    update_user_agents()
+    if use_own_ua:
+        lookyloo.build_ua_file()
+    else:
+        update_user_agents()
     return index_generic()
 
 
@@ -538,14 +542,16 @@ def capture_web():
                                           os=os, browser=browser)
             return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents: Dict[str, Any] = {}
-    if get_config('generic', 'use_user_agents_users'):
-        lookyloo.build_ua_file()
-        # NOTE: For now, just generate the file, so we have an idea of the size
-        # user_agents = get_user_agents('own_user_agents')
+    if use_own_ua:
+        user_agents = get_user_agents('own_user_agents')
     if not user_agents:
         user_agents = get_user_agents()
-    user_agents.pop('by_frequency')
-    return render_template('capture.html', user_agents=user_agents,
+    # get most frequest UA that isn't a bot (yes, it is dirty.)
+    for ua in user_agents.pop('by_frequency'):
+        if 'bot' not in ua['useragent'].lower():
+            default_ua = ua
+            break
+    return render_template('capture.html', user_agents=user_agents, default=default_ua,
                            max_depth=max_depth, personal_ua=request.headers.get('User-Agent'))
 
 
