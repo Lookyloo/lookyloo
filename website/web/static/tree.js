@@ -15,6 +15,7 @@ let height = menuHeight * 2;
 
 let node_width = 10;
 let node_height = 55;
+let center_node = null;
 
 let main_svg = d3.select("body").append("svg")
             .attr("width", width + margin.right + margin.left)
@@ -478,6 +479,7 @@ function update(root, computed_node_width=0) {
 
                 const thumbnail_size = 64;
                 if (d.data.contains_rendered_urlnode) {
+                  center_node = d.data.uuid;
                   d3.select(this).append("svg").append('rect')
                       .attr('x', selected_node_bbox.width/3)
                       .attr('y', node_height - 3)

@@ -66,14 +66,19 @@
   });
   </script>
 
-  {% if urlnode_uuid %}
   <script>
+  {% if urlnode_uuid %}
   history.scrollRestoration = "manual";
   window.addEventListener('DOMContentLoaded', (event) => {
-    PermanentNodeHighlight('{{urlnode_uuid}}');
+    LocateNode('{{urlnode_uuid}}');
   });
-  </script>
+  {% else %}
+  window.addEventListener('DOMContentLoaded', (event) => {
+      let element = document.getElementById(`node_${center_node}`);
+      element.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+  });
   {% endif%}
+  </script>
 
   {% if auto_trigger_modules %}
   <script>

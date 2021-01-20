@@ -342,8 +342,8 @@ def send_mail(tree_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>', methods=['GET'])
-@app.route('/tree/<string:tree_uuid>/<string:urlnode_uuid>', methods=['GET'])
-def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
+@app.route('/tree/<string:tree_uuid>/<string:node_uuid>', methods=['GET'])
+def tree(tree_uuid: str, node_uuid: Optional[str]=None):
     if tree_uuid == 'False':
         flash("Unable to process your request. The domain may not exist, or splash isn't started", 'error')
         return redirect(url_for('index'))
@@ -366,6 +366,22 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
         b64_thumbnail = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=True)
         screenshot_size = lookyloo.get_screenshot(tree_uuid).getbuffer().nbytes
         meta = lookyloo.get_meta(tree_uuid)
+        hostnode_to_highlight = None
+        if node_uuid:
+            try:
+                urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
+                if urlnode:
+                    hostnode_to_highlight = urlnode.hostnode_uuid
+            except IndexError:
+                # node_uuid is not a urlnode, trying a hostnode
+                try:
+                    hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
+                    if hostnode:
+                        hostnode_to_highlight = hostnode.uuid
+                except IndexError as e:
+                    print(e)
+                    pass
+
         return render_template('tree.html', tree_json=ct.to_json(),
                                start_time=ct.start_time.isoformat(),
                                user_agent=ct.user_agent, root_url=ct.root_url,
@@ -376,7 +392,7 @@ def tree(tree_uuid: str, urlnode_uuid: Optional[str]=None):
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,
-                               blur_screenshot=blur_screenshot, urlnode_uuid=urlnode_uuid,
+                               blur_screenshot=blur_screenshot, urlnode_uuid=hostnode_to_highlight,
                                auto_trigger_modules=auto_trigger_modules,
                                has_redirects=True if cache.redirects else False)
 
