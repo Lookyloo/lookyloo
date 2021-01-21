@@ -609,7 +609,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.10"
+version = "3.0.11"
 description = "Library for building powerful interactive command lines in Python"
 category = "dev"
 optional = false
@@ -736,26 +736,26 @@ requests = ">=2.22.0,<3.0.0"
 
 [[package]]
 name = "pymisp"
-version = "2.4.135.3"
+version = "2.4.137"
 description = "Python API for MISP."
 category = "main"
 optional = false
 python-versions = ">=3.6,<4.0"
 
 [package.dependencies]
-deprecated = ">=1.2.7,<2.0.0"
+deprecated = ">=1.2.10,<2.0.0"
 jsonschema = ">=3.2.0,<4.0.0"
 pyfaup = {version = ">=1.2,<2.0", optional = true, markers = "extra == \"url\""}
 python-dateutil = ">=2.8.1,<3.0.0"
-requests = ">=2.22.0,<3.0.0"
+requests = ">=2.25.0,<3.0.0"
 
 [package.extras]
-email = ["mail-parser (>=3.12.0,<4.0.0)"]
-fileobjects = ["python-magic (>=0.4.15,<0.5.0)", "pydeep (>=0.4,<0.5)", "lief (>=0.10.1,<0.11.0)"]
-openioc = ["beautifulsoup4 (>=4.8.2,<5.0.0)"]
-virustotal = ["validators (>=0.14.2,<0.15.0)"]
-docs = ["sphinx-autodoc-typehints (>=1.10.3,<2.0.0)", "recommonmark (>=0.6.0,<0.7.0)"]
-pdfexport = ["reportlab (>=3.5.34,<4.0.0)"]
+email = ["extract_msg (>=0.28.0,<0.29.0)", "RTFDE (>=0.0.2,<0.0.3)", "oletools (>=0.56,<0.57)"]
+fileobjects = ["python-magic (>=0.4.18,<0.5.0)", "pydeep (>=0.4,<0.5)", "lief (>=0.11.0,<0.12.0)"]
+openioc = ["beautifulsoup4 (>=4.9.3,<5.0.0)"]
+virustotal = ["validators (>=0.18.1,<0.19.0)"]
+docs = ["sphinx-autodoc-typehints (>=1.11.1,<2.0.0)", "recommonmark (>=0.7.1,<0.8.0)"]
+pdfexport = ["reportlab (>=3.5.55,<4.0.0)"]
 url = ["pyfaup (>=1.2,<2.0)"]
 
 [[package]]
@@ -1620,8 +1620,8 @@ pillow = [
     {file = "Pillow-8.1.0.tar.gz", hash = "sha256:887668e792b7edbfb1d3c9d8b5d8c859269a0f0eba4dda562adb95500f60dbba"},
 ]
 prompt-toolkit = [
-    {file = "prompt_toolkit-3.0.10-py3-none-any.whl", hash = "sha256:ac329c69bd8564cb491940511957312c7b8959bb5b3cf3582b406068a51d5bb7"},
-    {file = "prompt_toolkit-3.0.10.tar.gz", hash = "sha256:b8b3d0bde65da350290c46a8f54f336b3cbf5464a4ac11239668d986852e79d5"},
+    {file = "prompt_toolkit-3.0.11-py3-none-any.whl", hash = "sha256:0bdd2585e5afd00c5f91dd28eb2090ea67e94c385878921939bb4ccfa3904723"},
+    {file = "prompt_toolkit-3.0.11.tar.gz", hash = "sha256:dc83e6368b0edd9ceabe17a055f2e22f6ed95b9aa39dbd59d0b4f3585bdfe9ed"},
 ]
 protego = [
     {file = "Protego-0.1.16.tar.gz", hash = "sha256:a682771bc7b51b2ff41466460896c1a5a653f9a1e71639ef365a72e66d8734b4"},
@@ -1696,8 +1696,8 @@ pylookyloo = [
     {file = "pylookyloo-1.3.tar.gz", hash = "sha256:3996798b68203c1ebfdb4744d029a2c741e3a7d4e5d98541afd0c9b4a20eee86"},
 ]
 pymisp = [
-    {file = "pymisp-2.4.135.3-py3-none-any.whl", hash = "sha256:b7bdf04442f46ddcbbcc55866a7ad90f79aa7330c70b1446448dbed2ccdbda80"},
-    {file = "pymisp-2.4.135.3.tar.gz", hash = "sha256:f0bbdd77358223ba75c9cc40f192c7a2a7a5838bdd08b28381f71d220151ea8a"},
+    {file = "pymisp-2.4.137-py3-none-any.whl", hash = "sha256:ccbef2673f992a558a11cfde8dd042c67aadbe71683911a6001da0f9f8242906"},
+    {file = "pymisp-2.4.137.tar.gz", hash = "sha256:fcd4245c5fb17f835dbe98d842cdc50fa8aa6e610ee64f666ad5390f77a82737"},
 ]
 pyopenssl = [
     {file = "pyOpenSSL-20.0.1-py2.py3-none-any.whl", hash = "sha256:818ae18e06922c066f777a33f1fca45786d85edfe71cd043de6379337a7f274b"},
