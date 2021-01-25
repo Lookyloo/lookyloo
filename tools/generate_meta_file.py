@@ -5,9 +5,8 @@ from lookyloo.lookyloo import Lookyloo
 
 lookyloo = Lookyloo()
 
-for capture_dir in lookyloo.capture_dirs:
+for capture_uuid in lookyloo.capture_uuids:
     try:
-        ct = lookyloo.get_crawled_tree(capture_dir)
+        ct = lookyloo.get_crawled_tree(capture_uuid)
     except Exception:
         continue
-    lookyloo._ensure_meta(capture_dir, ct)

@@ -410,12 +410,12 @@ class Lookyloo():
         if not redis_pipeline:
             p = self.redis.pipeline()
         else:
-            p = redis_pipeline
+            p = redis_pipeline  # type: ignore
         p.hset('lookup_dirs', uuid, str(capture_dir))
         if error_cache:
             if 'HTTP Error' not in error_cache['error']:
                 self.logger.warning(error_cache['error'])
-            p.hmset(str(capture_dir), error_cache)
+            p.hmset(str(capture_dir), error_cache)  # type: ignore
 
         if not fatal_error:
             redirects = har.initial_redirects
@@ -440,7 +440,7 @@ class Lookyloo():
             if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
                 cache['no_index'] = 1
 
-            p.hmset(str(capture_dir), cache)
+            p.hmset(str(capture_dir), cache)  # type: ignore
         if not redis_pipeline:
             p.execute()
 
@@ -455,7 +455,7 @@ class Lookyloo():
     @property
     def capture_uuids(self) -> List[str]:
         '''All the capture UUIDs present in the cache.'''
-        return self.redis.hkeys('lookup_dirs')  # type: ignore
+        return self.redis.hkeys('lookup_dirs')
 
     @property
     def sorted_cache(self) -> List[CaptureCache]:
@@ -484,7 +484,7 @@ class Lookyloo():
         if self.redis.hget(str(capture_dir), 'incomplete_redirects') == '1':
             # try to rebuild the cache
             self._set_capture_cache(capture_dir, force=True)
-        cached: Dict[str, Any] = self.redis.hgetall(str(capture_dir))  # type: ignore
+        cached: Dict[str, Any] = self.redis.hgetall(str(capture_dir))
         if not cached:
             self.logger.warning(f'No cache available for {capture_dir}.')
             return None
@@ -531,7 +531,7 @@ class Lookyloo():
             if isinstance(value, bool):
                 # Yes, empty string because that's False.
                 query[key] = 1 if value else ''
-        p.hmset(perma_uuid, query)
+        p.hmset(perma_uuid, query)  # type: ignore
         p.sadd('to_capture', perma_uuid)
         p.execute()
         return perma_uuid
@@ -541,7 +541,7 @@ class Lookyloo():
         uuid = self.redis.spop('to_capture')
         if not uuid:
             return None
-        to_capture: Dict[str, Union[str, int, float]] = self.redis.hgetall(uuid)  # type: ignore
+        to_capture: Dict[str, Union[str, int, float]] = self.redis.hgetall(uuid)
         self.redis.delete(uuid)
         to_capture['perma_uuid'] = uuid
         if self.capture(**to_capture):  # type: ignore
