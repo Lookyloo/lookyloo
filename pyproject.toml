@@ -60,7 +60,7 @@ Pillow = "^8.1.0"
 misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.790"
+mypy = "^0.800"
 ipython = "^7.19.0"
 
 [build-system]
