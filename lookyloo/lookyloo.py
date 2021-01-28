@@ -25,7 +25,7 @@ import dns.resolver
 import dns.rdatatype
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from PIL import Image  # type: ignore
-from pymisp import MISPEvent
+from pymisp import MISPEvent, MISPAttribute
 from pymisp.tools import URLObject, FileObject
 from redis import Redis
 from scrapysplashwrapper import crawl
@@ -916,7 +916,7 @@ class Lookyloo():
 
         event = MISPEvent()
         event.info = f'Lookyloo Capture ({cache.url})'
-        lookyloo_link = event.add_attribute('link', f'https://{self.public_domain}/tree/{capture_uuid}')
+        lookyloo_link: MISPAttribute = event.add_attribute('link', f'https://{self.public_domain}/tree/{capture_uuid}')  # type: ignore
 
         initial_url = URLObject(cache.url)
         redirects = [URLObject(url) for url in cache.redirects if url != cache.url]
@@ -933,7 +933,7 @@ class Lookyloo():
         for u_object in redirects:
             event.add_object(u_object)
 
-        screenshot = event.add_attribute('attachment', 'screenshot_landing_page.png', data=self.get_screenshot(capture_uuid), disable_correlation=True)
+        screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png', data=self.get_screenshot(capture_uuid), disable_correlation=True)  # type: ignore
         try:
             fo = FileObject(pseudofile=ct.root_hartree.rendered_node.body, filename='body_response.html')
             fo.comment = 'Content received for the final redirect (before rendering)'

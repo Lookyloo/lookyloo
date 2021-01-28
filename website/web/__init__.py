@@ -781,7 +781,7 @@ def misp_export(tree_uuid: str):
 @app.route('/json/<string:tree_uuid>/misp_push', methods=['GET'])
 @auth.login_required
 def misp_push(tree_uuid: str):
-    to_return = {}
+    to_return: Dict = {}
     if not lookyloo.misp.available:
         to_return['error'] = 'MISP module not available.'
     elif not lookyloo.misp.enable_push:
@@ -793,13 +793,11 @@ def misp_push(tree_uuid: str):
         else:
             event = lookyloo.misp.push(event)
             if isinstance(event, MISPEvent):
-                to_return = event.to_json(indent=2)
+                return Response(event.to_json(indent=2), mimetype='application/json')
             else:
                 to_return['error'] = event
 
-    if isinstance(to_return, dict):
-        to_return = json.dumps(to_return, indent=2)
-    return Response(to_return, mimetype='application/json')
+    return jsonify(to_return)
 
 
 @app.route('/json/hash_info/<h>', methods=['GET'])
