@@ -10,8 +10,18 @@
   "SaneJS": {
     "enabled": true
   },
+  "MISP": {
+    "apikey": null,
+    "url": "https://misp.url",
+    "enable_lookup": false,
+    "enable_push": false
+  },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
-    "autosubmit": "Automatically submits the URL to the 3rd party service."
+    "autosubmit": "Automatically submits the URL to the 3rd party service.",
+    "VirusTotal": "Module to query Virustotal: https://www.virustotal.com/",
+    "PhishingInitiative": "Module to query phishing initiative: https://phishing-initiative.fr/contrib/",
+    "SaneJS": "Module to query SaneJS: https://github.com/Lookyloo/sanejs",
+    "MISP": "Module to query MISP: https://www.misp-project.org/"
   }
 }
