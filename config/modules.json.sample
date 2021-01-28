@@ -13,6 +13,7 @@
   "MISP": {
     "apikey": null,
     "url": "https://misp.url",
+    "verify_tls_cert": true,
     "enable_lookup": false,
     "enable_push": false
   },

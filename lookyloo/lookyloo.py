@@ -35,7 +35,7 @@ from .exceptions import NoValidHarFile, MissingUUID, LookylooException
 from .helpers import (get_homedir, get_socket_path, load_cookies, get_config,
                       safe_create_dir, get_email_template, load_pickle_tree,
                       remove_pickle_tree, get_resources_hashes, get_taxonomies, uniq_domains)
-from .modules import VirusTotal, SaneJavaScript, PhishingInitiative
+from .modules import VirusTotal, SaneJavaScript, PhishingInitiative, MISP
 from .capturecache import CaptureCache
 from .context import Context
 from .indexing import Indexing
@@ -74,6 +74,10 @@ class Lookyloo():
         self.sanejs = SaneJavaScript(get_config('modules', 'SaneJS'))
         if not self.sanejs.available:
             self.logger.warning('Unable to setup the SaneJS module')
+
+        self.misp = MISP(get_config('modules', 'MISP'))
+        if not self.misp.available:
+            self.logger.warning('Unable to setup the MISP module')
 
         self.context = Context(self.sanejs)
 
@@ -912,27 +916,29 @@ class Lookyloo():
 
         event = MISPEvent()
         event.info = f'Lookyloo Capture ({cache.url})'
-        event.add_attribute('link', f'https://{self.public_domain}/tree/{capture_uuid}')
+        lookyloo_link = event.add_attribute('link', f'https://{self.public_domain}/tree/{capture_uuid}')
 
         initial_url = URLObject(cache.url)
-        redirects = [URLObject(url) for url in cache.redirects]
+        redirects = [URLObject(url) for url in cache.redirects if url != cache.url]
 
         if redirects:
-            initial_url.add_reference(redirects[0], 'redirects-to')
-            prec_object = redirects[0]
-            for u_object in redirects[1:]:
+            prec_object = initial_url
+            for u_object in redirects:
                 prec_object.add_reference(u_object, 'redirects-to')
                 prec_object = u_object
 
-        event.add_object(initial_url)
+        initial_obj = event.add_object(initial_url)
+        initial_obj.add_reference(lookyloo_link, 'captured-by', 'Capture on lookyloo')
+
         for u_object in redirects:
             event.add_object(u_object)
 
-        event.add_attribute('attachment', 'screenshot_landing_page.png', data=self.get_screenshot(capture_uuid))
+        screenshot = event.add_attribute('attachment', 'screenshot_landing_page.png', data=self.get_screenshot(capture_uuid), disable_correlation=True)
         try:
             fo = FileObject(pseudofile=ct.root_hartree.rendered_node.body, filename='body_response.html')
             fo.comment = 'Content received for the final redirect (before rendering)'
             fo.add_reference(event.objects[-1], 'loaded-by', 'URL loading that content')
+            fo.add_reference(screenshot, 'rendered-as', 'Screenshot of the page')
             event.add_object(fo)
         except Har2TreeError:
             pass

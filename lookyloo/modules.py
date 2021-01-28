@@ -16,6 +16,32 @@ from .exceptions import ConfigError
 import vt  # type: ignore
 from pysanejs import SaneJS
 from pyeupi import PyEUPI
+from pymisp import PyMISP, MISPEvent
+
+
+class MISP():
+
+    def __init__(self, config: Dict[str, Any]):
+        if not config.get('apikey'):
+            self.available = False
+            return
+
+        self.available = True
+        self.enable_lookup = False
+        self.enable_push = False
+        self.client = PyMISP(url=config['url'], key=config['apikey'], ssl=config['verify_tls_cert'])
+        if config.get('enable_lookup'):
+            self.enable_lookup = True
+        if config.get('enable_push'):
+            self.enable_push = True
+        self.storage_dir_misp = get_homedir() / 'misp'
+        self.storage_dir_misp.mkdir(parents=True, exist_ok=True)
+
+    def push(self, event: MISPEvent) -> Union[MISPEvent, Dict]:
+        if self.available and self.enable_push:
+            return self.client.add_event(event, pythonify=True)
+        else:
+            return {'error': 'Module not available or push not enabled.'}
 
 
 class SaneJavaScript():

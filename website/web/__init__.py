@@ -15,6 +15,8 @@ from flask import Flask, render_template, request, send_file, redirect, url_for,
 from flask_bootstrap import Bootstrap  # type: ignore
 from flask_httpauth import HTTPDigestAuth  # type: ignore
 
+from pymisp import MISPEvent
+
 from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents, get_config, get_taxonomies
 from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
@@ -723,6 +725,27 @@ def add_context(tree_uuid: str, node_uuid: str):
         return redirect(url_for('ressources'))
 
 
+@app.route('/tree/<string:tree_uuid>/misp_push', methods=['GET'])
+@auth.login_required
+def web_misp_push(tree_uuid: str):
+    if not lookyloo.misp.available:
+        flash('MISP module not available.', 'error')
+    elif not lookyloo.misp.enable_push:
+        flash('Push not enabled in MISP module.', 'error')
+    else:
+        event = lookyloo.misp_export(tree_uuid)
+        if isinstance(event, dict):
+            flash(f'Unable to generate the MISP export: {event}', 'error')
+        else:
+            event = lookyloo.misp.push(event)
+            if isinstance(event, MISPEvent):
+                flash(f'MISP event {event.id} created on {lookyloo.misp.client.root_url}', 'success')
+            else:
+                flash(f'Unable to create event: {event}', 'error')
+
+    return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+
 # Query API
 
 @app.route('/json/<string:tree_uuid>/redirects', methods=['GET'])
@@ -753,6 +776,30 @@ def misp_export(tree_uuid: str):
     if isinstance(event, dict):
         return jsonify(event)
     return Response(event.to_json(indent=2), mimetype='application/json')
+
+
+@app.route('/json/<string:tree_uuid>/misp_push', methods=['GET'])
+@auth.login_required
+def misp_push(tree_uuid: str):
+    to_return = {}
+    if not lookyloo.misp.available:
+        to_return['error'] = 'MISP module not available.'
+    elif not lookyloo.misp.enable_push:
+        to_return['error'] = 'Push not enabled in MISP module.'
+    else:
+        event = lookyloo.misp_export(tree_uuid)
+        if isinstance(event, dict):
+            to_return['error'] = event
+        else:
+            event = lookyloo.misp.push(event)
+            if isinstance(event, MISPEvent):
+                to_return = event.to_json(indent=2)
+            else:
+                to_return['error'] = event
+
+    if isinstance(to_return, dict):
+        to_return = json.dumps(to_return, indent=2)
+    return Response(to_return, mimetype='application/json')
 
 
 @app.route('/json/hash_info/<h>', methods=['GET'])
