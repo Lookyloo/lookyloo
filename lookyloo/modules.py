@@ -22,14 +22,23 @@ from pymisp import PyMISP, MISPEvent
 class MISP():
 
     def __init__(self, config: Dict[str, Any]):
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.logger.setLevel(get_config('generic', 'loglevel'))
         if not config.get('apikey'):
             self.available = False
+            self.logger.info('Module not enabled.')
             return
 
         self.available = True
         self.enable_lookup = False
         self.enable_push = False
-        self.client = PyMISP(url=config['url'], key=config['apikey'], ssl=config['verify_tls_cert'])
+        try:
+            self.client = PyMISP(url=config['url'], key=config['apikey'], ssl=config['verify_tls_cert'])
+        except Exception as e:
+            self.available = False
+            self.logger.warning(f'Unable to connect to MISP: {e}')
+            return
+
         if config.get('enable_lookup'):
             self.enable_lookup = True
         if config.get('enable_push'):
