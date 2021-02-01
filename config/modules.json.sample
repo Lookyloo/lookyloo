@@ -16,7 +16,9 @@
     "verify_tls_cert": true,
     "timeout": 10,
     "enable_lookup": false,
-    "enable_push": false
+    "enable_push": false,
+    "default_tags": [],
+    "auto_publish": false
   },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",

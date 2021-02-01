@@ -899,6 +899,13 @@ class Lookyloo():
                     return 'embedded_ressource.bin', blob, mimetype
         return None
 
+    def __misp_add_ips_to_URLObject(self, obj: URLObject, hostname_tree: HostNode) -> None:
+        hosts = obj.get_attributes_by_relation('host')
+        if hosts:
+            hostnodes = hostname_tree.search_nodes(name=hosts[0].value)
+            if hostnodes and hasattr(hostnodes[0], 'resolved_ips'):
+                obj.add_attributes('ip', *hostnodes[0].resolved_ips)
+
     def misp_export(self, capture_uuid: str) -> Union[MISPEvent, Dict[str, str]]:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''
@@ -921,7 +928,14 @@ class Lookyloo():
             lookyloo_link.distribution = 0
 
         initial_url = URLObject(cache.url)
-        redirects = [URLObject(url) for url in cache.redirects if url != cache.url]
+        self.__misp_add_ips_to_URLObject(initial_url, ct.root_hartree.hostname_tree)
+        redirects: List[URLObject] = []
+        for url in cache.redirects:
+            if url == cache.url:
+                continue
+            obj = URLObject(url)
+            self.__misp_add_ips_to_URLObject(obj, ct.root_hartree.hostname_tree)
+            redirects.append(obj)
 
         if redirects:
             prec_object = initial_url
