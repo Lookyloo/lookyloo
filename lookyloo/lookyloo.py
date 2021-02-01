@@ -917,6 +917,8 @@ class Lookyloo():
         event = MISPEvent()
         event.info = f'Lookyloo Capture ({cache.url})'
         lookyloo_link: MISPAttribute = event.add_attribute('link', f'https://{self.public_domain}/tree/{capture_uuid}')  # type: ignore
+        if not self.is_public_instance:
+            lookyloo_link.distribution = 0
 
         initial_url = URLObject(cache.url)
         redirects = [URLObject(url) for url in cache.redirects if url != cache.url]
