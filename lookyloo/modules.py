@@ -33,7 +33,8 @@ class MISP():
         self.enable_lookup = False
         self.enable_push = False
         try:
-            self.client = PyMISP(url=config['url'], key=config['apikey'], ssl=config['verify_tls_cert'])
+            self.client = PyMISP(url=config['url'], key=config['apikey'],
+                                 ssl=config['verify_tls_cert'], timeout=config['timeout'])
         except Exception as e:
             self.available = False
             self.logger.warning(f'Unable to connect to MISP: {e}')
