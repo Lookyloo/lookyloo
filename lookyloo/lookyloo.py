@@ -1104,7 +1104,7 @@ class Lookyloo():
                 stats[date_submission.year][date_submission.month]['redirects'] += len(cache.redirects)
                 stats[date_submission.year][date_submission.month]['uniq_urls'].update(cache.redirects)
 
-            if ((date_submission.year == today.year and date_submission.isocalendar()[1] >= calendar_week - 1)
+            if ((date_submission.year == today.year and calendar_week - 1 <= date_submission.isocalendar()[1] <= calendar_week)
                     or (calendar_week == 1 and date_submission.year == today.year - 1 and date_submission.isocalendar()[1] in [52, 53])):
                 if date_submission.isocalendar()[1] not in weeks_stats:
                     weeks_stats[date_submission.isocalendar()[1]] = defaultdict(dict, **stats_dict)
