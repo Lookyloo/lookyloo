@@ -10,10 +10,14 @@ from datetime import datetime, timedelta, timezone
 import json
 import http
 import calendar
+from typing import Optional, Dict, Any, Union
+import logging
+import hashlib
 
 from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
 from flask_bootstrap import Bootstrap  # type: ignore
-from flask_httpauth import HTTPDigestAuth  # type: ignore
+from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth  # type: ignore
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from pymisp import MISPEvent
 
@@ -21,10 +25,6 @@ from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents, g
 from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 from .proxied import ReverseProxied
-
-from typing import Optional, Dict, Any, Union
-
-import logging
 
 app: Flask = Flask(__name__)
 app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore
@@ -42,11 +42,60 @@ Bootstrap(app)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.debug = False
-auth = HTTPDigestAuth()
+
+# Auth stuff
+basic_auth = HTTPBasicAuth()
+token_auth = HTTPTokenAuth('LookylooToken')
+auth = MultiAuth(basic_auth, token_auth)
+if get_config('generic', 'cache_clean_user'):
+    # Use legacy user mgmt
+    users = get_config('generic', 'cache_clean_user')
+else:
+    users = get_config('generic', 'users')
+
+users_table: Dict[str, Dict[str, str]] = {}
+for username, authstuff in users.items():
+    if isinstance(authstuff, str):
+        # just a password, make a key
+        users_table[username] = {}
+        users_table[username]['password'] = generate_password_hash(authstuff)
+        users_table[username]['authkey'] = hashlib.pbkdf2_hmac('sha256',
+                                                               app.config['SECRET_KEY'],
+                                                               authstuff.encode(),
+                                                               100000).hex()
+
+    elif isinstance(authstuff, list) and len(authstuff) == 2:
+        if isinstance(authstuff[0], str) and isinstance(authstuff[1], str) and len(authstuff[1]) == 64:
+            users_table[username] = {}
+            users_table[username]['password'] = generate_password_hash(authstuff[0])
+            users_table[username]['authkey'] = authstuff[1]
+
+    if username not in users_table:
+        raise Exception('User setup invalid. Must be "username": "password" or "username": ["password", "token 64 chars (sha256)"]')
+
+keys_table = {}
+for username, authstuff in users_table.items():
+    if 'authkey' in authstuff:
+        keys_table[authstuff['authkey']] = username
+
+
+@basic_auth.verify_password
+def verify_password(username, password):
+    if users_table.get(username):
+        if check_password_hash(users_table['username']['password'], password):
+            return username
+
+
+@token_auth.verify_token
+def verify_token(token):
+    if token in keys_table:
+        return keys_table[token]
+
+
+# Config
 
 lookyloo: Lookyloo = Lookyloo()
 
-user = get_config('generic', 'cache_clean_user')
 time_delta_on_index = get_config('generic', 'time_delta_on_index')
 blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')
 max_depth = get_config('generic', 'max_depth')
@@ -104,13 +153,6 @@ def after_request(response):
         else:
             lookyloo.cache_user_agents(ua, request.remote_addr)
     return response
-
-
-@auth.get_password
-def get_pw(username: str) -> Optional[str]:
-    if username in user:
-        return user.get(username)
-    return None
 
 
 # ##### Hostnode level methods #####
@@ -492,7 +534,6 @@ def ressources():
 @app.route('/categories', methods=['GET'])
 def categories():
     i = Indexing()
-    print(i.categories)
     return render_template('categories.html', categories=i.categories)
 
 
@@ -747,6 +788,16 @@ def web_misp_push(tree_uuid: str):
 
 
 # Query API
+
+@app.route('/json/get_token', methods=['POST'])
+def json_get_token():
+    auth = request.get_json(force=True)
+    if 'username' in auth and 'password' in auth:  # Expected keys in json
+        username = verify_password(auth['username'], auth['password'])
+        if username == auth['username']:
+            return jsonify({'authkey': users_table[username]['authkey']})
+    return jsonify({'error': 'User/Password invalid.'})
+
 
 @app.route('/json/<string:tree_uuid>/redirects', methods=['GET'])
 def json_redirects(tree_uuid: str):
