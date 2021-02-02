@@ -25,7 +25,7 @@ import dns.resolver
 import dns.rdatatype
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from PIL import Image  # type: ignore
-from pymisp import MISPEvent, MISPAttribute
+from pymisp import MISPEvent, MISPAttribute, MISPObject
 from pymisp.tools import URLObject, FileObject
 from redis import Redis
 from scrapysplashwrapper import crawl
@@ -906,6 +906,20 @@ class Lookyloo():
             if hostnodes and hasattr(hostnodes[0], 'resolved_ips'):
                 obj.add_attributes('ip', *hostnodes[0].resolved_ips)
 
+    def __misp_add_vt_to_URLObject(self, obj: MISPObject) -> Optional[MISPObject]:
+        urls = obj.get_attributes_by_relation('url')
+        url = urls[0]
+        self.vt.url_lookup(url.value)
+        report = self.vt.get_url_lookup(url.value)
+        if not report:
+            return None
+        vt_obj = MISPObject('virustotal-report', standalone=False)
+        vt_obj.add_attribute('first-submission', value=datetime.fromtimestamp(report['attributes']['first_submission_date']), disable_correlation=True)
+        vt_obj.add_attribute('last-submission', value=datetime.fromtimestamp(report['attributes']['last_submission_date']), disable_correlation=True)
+        vt_obj.add_attribute('permalink', value=f"https://www.virustotal.com/gui/url/{report['id']}/detection", disable_correlation=True)
+        obj.add_reference(vt_obj, 'analysed-with')
+        return vt_obj
+
     def misp_export(self, capture_uuid: str) -> Union[MISPEvent, Dict[str, str]]:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''
@@ -952,6 +966,14 @@ class Lookyloo():
 
         for u_object in redirects:
             event.add_object(u_object)
+
+        if self.vt.available:
+            for e_obj in event.objects:
+                if e_obj.name != 'url':
+                    continue
+                vt_obj = self.__misp_add_vt_to_URLObject(e_obj)
+                if vt_obj:
+                    event.add_object(vt_obj)
 
         screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png', data=self.get_screenshot(capture_uuid), disable_correlation=True)  # type: ignore
         try:
