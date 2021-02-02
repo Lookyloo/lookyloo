@@ -928,14 +928,18 @@ class Lookyloo():
             lookyloo_link.distribution = 0
 
         initial_url = URLObject(cache.url)
+        initial_url.comment = 'Submitted URL'
         self.__misp_add_ips_to_URLObject(initial_url, ct.root_hartree.hostname_tree)
+
         redirects: List[URLObject] = []
-        for url in cache.redirects:
+        for nb, url in enumerate(cache.redirects):
             if url == cache.url:
                 continue
             obj = URLObject(url)
+            obj.comment = f'Redirect {nb}'
             self.__misp_add_ips_to_URLObject(obj, ct.root_hartree.hostname_tree)
             redirects.append(obj)
+        obj.comment = f'Last redirect ({nb})'
 
         if redirects:
             prec_object = initial_url
