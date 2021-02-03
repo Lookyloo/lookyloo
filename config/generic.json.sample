@@ -39,7 +39,7 @@
     "website_listen_port": "Port Flask will listen on.",
     "splash_url": "URL to connect to splash",
     "default_user_agent": "Ultimate fallback if the capture form, or the asynchronous submission, doesn't provide a user agent.",
-    "cache_clean_user": "Intially: allow a user to clear the cache for a capture. Now: that, and accessing the hidden captures. It is some kind of an admin account. Format: {username: password}",
+    "users": "It is some kind of an admin accounts. Format: {username: password}",
     "time_delta_on_index": "Time interval of the capture displayed on the index",
     "max_depth": "Maximum depth for scraping. Anything > 1 will be exponentially bigger.",
     "use_user_agents_users": "Only usable for medium/high use instances: use the user agents of the users of the platform",
