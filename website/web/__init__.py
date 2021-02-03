@@ -47,10 +47,10 @@ app.debug = False
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth('LookylooToken')
 auth = MultiAuth(basic_auth, token_auth)
-if get_config('generic', 'cache_clean_user'):
+try:
     # Use legacy user mgmt
     users = get_config('generic', 'cache_clean_user')
-else:
+except Exception:
     users = get_config('generic', 'users')
 
 users_table: Dict[str, Dict[str, str]] = {}
