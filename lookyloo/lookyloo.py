@@ -953,7 +953,8 @@ class Lookyloo():
             obj.comment = f'Redirect {nb}'
             self.__misp_add_ips_to_URLObject(obj, ct.root_hartree.hostname_tree)
             redirects.append(obj)
-        obj.comment = f'Last redirect ({nb})'
+        if redirects:
+            redirects[-1].comment = f'Last redirect ({nb})'
 
         if redirects:
             prec_object = initial_url
@@ -977,7 +978,7 @@ class Lookyloo():
 
         screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png', data=self.get_screenshot(capture_uuid), disable_correlation=True)  # type: ignore
         try:
-            fo = FileObject(pseudofile=ct.root_hartree.rendered_node.body, filename='body_response.html')
+            fo = FileObject(pseudofile=ct.root_hartree.rendered_node.body, filename=ct.root_hartree.rendered_node.filename)
             fo.comment = 'Content received for the final redirect (before rendering)'
             fo.add_reference(event.objects[-1], 'loaded-by', 'URL loading that content')
             fo.add_reference(screenshot, 'rendered-as', 'Screenshot of the page')

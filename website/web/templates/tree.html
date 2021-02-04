@@ -65,6 +65,13 @@
       modal.find('.modal-body').load(button.data("remote"));
   });
   </script>
+  <script>
+  $('#mispPushModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
 
   <script>
   {% if urlnode_uuid %}
@@ -144,6 +151,12 @@
         <li>
           <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
            data-toggle="modal" data-target="#categoriesModal" role="button">Manage categories</a>
+        </li>
+        {% endif %}
+        {% if current_user.is_authenticated and misp_push%}
+        <li>
+          <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
+           data-toggle="modal" data-target="#mispPushModal" role="button">Prepare push to MISP</a>
         </li>
         {% endif %}
         <li>
@@ -304,6 +317,25 @@
           </div>
           <div class="modal-body">
               ... loading statistics ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="mispPushModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="mispPushModalLabel">MISP Push</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              ... loading MISP Push view ...
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

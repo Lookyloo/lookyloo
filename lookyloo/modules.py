@@ -44,10 +44,13 @@ class MISP():
             self.enable_lookup = True
         if config.get('enable_push'):
             self.enable_push = True
-        self.default_tags: List[str] = config.get('default_tags') # type: ignore
+        self.default_tags: List[str] = config.get('default_tags')  # type: ignore
         self.auto_publish = config.get('auto_publish')
         self.storage_dir_misp = get_homedir() / 'misp'
         self.storage_dir_misp.mkdir(parents=True, exist_ok=True)
+
+    def get_fav_tags(self):
+        return self.client.tags(pythonify=True, favouritesOnly=1)
 
     def push(self, event: MISPEvent) -> Union[MISPEvent, Dict]:
         if self.available and self.enable_push:

@@ -14,6 +14,12 @@
   stroke-width: 2px;
 }
 
+.flashed-messages {
+  position: fixed;
+  top: 5px;
+  text-align: center;
+}
+
 #menu_container {
   position: fixed;
   top: 5px;

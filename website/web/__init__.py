@@ -16,7 +16,7 @@ import hashlib
 
 from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
 from flask_bootstrap import Bootstrap  # type: ignore
-from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth  # type: ignore
+import flask_login  # type: ignore
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from pymisp import MISPEvent
@@ -44,9 +44,8 @@ app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.debug = False
 
 # Auth stuff
-basic_auth = HTTPBasicAuth()
-token_auth = HTTPTokenAuth('LookylooToken')
-auth = MultiAuth(basic_auth, token_auth)
+login_manager = flask_login.LoginManager()
+login_manager.init_app(app)
 try:
     # Use legacy user mgmt
     users = get_config('generic', 'cache_clean_user')
@@ -79,17 +78,61 @@ for username, authstuff in users_table.items():
         keys_table[authstuff['authkey']] = username
 
 
-@basic_auth.verify_password
-def verify_password(username, password):
-    if users_table.get(username):
-        if check_password_hash(users_table['username']['password'], password):
-            return username
+class User(flask_login.UserMixin):
+    pass
 
 
-@token_auth.verify_token
-def verify_token(token):
-    if token in keys_table:
-        return keys_table[token]
+@login_manager.user_loader
+def user_loader(username):
+    if username not in users_table:
+        return None
+    user = User()
+    user.id = username
+    return user
+
+
+@login_manager.request_loader
+def load_user_from_request(request):
+    api_key = request.headers.get('Authorization')
+    if not api_key:
+        return None
+    user = User()
+    api_key = api_key.strip()
+    if api_key in keys_table:
+        user.id = keys_table[api_key]
+        return user
+    return None
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return '''
+               <form action='login' method='POST'>
+                <input type='text' name='username' id='username' placeholder='username'/>
+                <input type='password' name='password' id='password' placeholder='password'/>
+                <input type='submit' name='submit'/>
+               </form>
+               '''
+
+    username = request.form['username']
+    if username in users_table and check_password_hash(users_table[username]['password'], request.form['password']):
+        user = User()
+        user.id = username
+        flask_login.login_user(user)
+        flash(f'Logged in as: {flask_login.current_user.id}', 'success')
+    else:
+        flash(f'Unable to login as: {username}', 'error')
+
+    return redirect(url_for('index'))
+
+
+@app.route('/logout')
+@flask_login.login_required
+def logout():
+    flask_login.logout_user()
+    flash('Successfully logged out.', 'success')
+    return redirect(url_for('index'))
 
 
 # Config
@@ -212,7 +255,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
 # ##### Tree level Methods #####
 
 @app.route('/tree/<string:tree_uuid>/rebuild')
-@auth.login_required
+@flask_login.login_required
 def rebuild_tree(tree_uuid: str):
     try:
         lookyloo.remove_pickle(tree_uuid)
@@ -361,7 +404,7 @@ def export(tree_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/hide', methods=['GET'])
-@auth.login_required
+@flask_login.login_required
 def hide_capture(tree_uuid: str):
     lookyloo.hide_capture(tree_uuid)
     return redirect(url_for('tree', tree_uuid=tree_uuid))
@@ -383,6 +426,7 @@ def send_mail(tree_uuid: str):
         email = ''
     comment: str = request.form.get('comment') if request.form.get('comment') else ''  # type: ignore
     lookyloo.send_mail(tree_uuid, email, comment)
+    flash("Email notification sent", 'success')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
@@ -426,7 +470,6 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                 except IndexError as e:
                     print(e)
                     pass
-
         return render_template('tree.html', tree_json=ct.to_json(),
                                start_time=ct.start_time.isoformat(),
                                user_agent=ct.user_agent, root_url=ct.root_url,
@@ -437,6 +480,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,
+                               misp_push=lookyloo.misp.enable_push,
                                blur_screenshot=blur_screenshot, urlnode_uuid=hostnode_to_highlight,
                                auto_trigger_modules=auto_trigger_modules,
                                has_redirects=True if cache.redirects else False)
@@ -446,7 +490,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
 
 
 @app.route('/tree/<string:tree_uuid>/mark_as_legitimate', methods=['POST'])
-@auth.login_required
+@flask_login.login_required
 def mark_as_legitimate(tree_uuid: str):
     if request.data:
         legitimate_entries = request.get_json(force=True)
@@ -502,7 +546,7 @@ def index():
 
 
 @app.route('/hidden', methods=['GET'])
-@auth.login_required
+@flask_login.login_required
 def index_hidden():
     return index_generic(show_hidden=True)
 
@@ -538,14 +582,14 @@ def categories():
 
 
 @app.route('/rebuild_all')
-@auth.login_required
+@flask_login.login_required
 def rebuild_all():
     lookyloo.rebuild_all()
     return redirect(url_for('index'))
 
 
 @app.route('/rebuild_cache')
-@auth.login_required
+@flask_login.login_required
 def rebuild_cache():
     lookyloo.rebuild_cache()
     return redirect(url_for('index'))
@@ -733,7 +777,7 @@ def hashes_urlnode(tree_uuid: str, node_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/add_context', methods=['POST'])
-@auth.login_required
+@flask_login.login_required
 def add_context(tree_uuid: str, node_uuid: str):
     if not enable_context_by_users:
         return redirect(url_for('ressources'))
@@ -766,25 +810,43 @@ def add_context(tree_uuid: str, node_uuid: str):
         return redirect(url_for('ressources'))
 
 
-@app.route('/tree/<string:tree_uuid>/misp_push', methods=['GET'])
-@auth.login_required
-def web_misp_push(tree_uuid: str):
+@app.route('/tree/<string:tree_uuid>/misp_push', methods=['GET', 'POST'])
+@flask_login.login_required
+def web_misp_push_view(tree_uuid: str):
+    error = False
     if not lookyloo.misp.available:
         flash('MISP module not available.', 'error')
+        error = True
     elif not lookyloo.misp.enable_push:
         flash('Push not enabled in MISP module.', 'error')
+        error = True
     else:
         event = lookyloo.misp_export(tree_uuid)
         if isinstance(event, dict):
             flash(f'Unable to generate the MISP export: {event}', 'error')
-        else:
-            event = lookyloo.misp.push(event)
-            if isinstance(event, MISPEvent):
-                flash(f'MISP event {event.id} created on {lookyloo.misp.client.root_url}', 'success')
-            else:
-                flash(f'Unable to create event: {event}', 'error')
+            error = True
+    if error:
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
 
-    return redirect(url_for('tree', tree_uuid=tree_uuid))
+    if request.method == 'POST':
+        # event is a MISPEvent at this point
+        # Submit the event
+        tags = request.form.getlist('tags')
+        for tag in tags:
+            event.add_tag(tag)  # type: ignore
+        event = lookyloo.misp.push(event)  # type: ignore
+        if isinstance(event, MISPEvent):
+            flash(f'MISP event {event.id} created on {lookyloo.misp.client.root_url}', 'success')
+        else:
+            flash(f'Unable to create event: {event}', 'error')
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+    fav_tags = lookyloo.misp.get_fav_tags()
+
+    return render_template('misp_push_view.html', tree_uuid=tree_uuid,
+                           event=event, fav_tags=fav_tags,
+                           auto_publish=lookyloo.misp.auto_publish,
+                           default_tags=lookyloo.misp.default_tags)
 
 
 # Query API
@@ -793,9 +855,9 @@ def web_misp_push(tree_uuid: str):
 def json_get_token():
     auth = request.get_json(force=True)
     if 'username' in auth and 'password' in auth:  # Expected keys in json
-        username = verify_password(auth['username'], auth['password'])
-        if username == auth['username']:
-            return jsonify({'authkey': users_table[username]['authkey']})
+        if (auth['username'] in users_table
+                and check_password_hash(users_table[auth['username']]['password'], auth['password'])):
+            return jsonify({'authkey': users_table[auth['username']]['authkey']})
     return jsonify({'error': 'User/Password invalid.'})
 
 
@@ -830,7 +892,7 @@ def misp_export(tree_uuid: str):
 
 
 @app.route('/json/<string:tree_uuid>/misp_push', methods=['GET'])
-@auth.login_required
+@flask_login.login_required
 def misp_push(tree_uuid: str):
     to_return: Dict = {}
     if not lookyloo.misp.available:

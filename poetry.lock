@@ -280,9 +280,9 @@ docs = ["sphinx", "pallets-sphinx-themes", "sphinxcontrib-log-cabinet", "sphinx-
 dotenv = ["python-dotenv"]
 
 [[package]]
-name = "flask-httpauth"
-version = "4.2.0"
-description = "Basic and Digest HTTP authentication for Flask routes"
+name = "flask-login"
+version = "0.5.0"
+description = "User session management for Flask"
 category = "main"
 optional = false
 python-versions = "*"
@@ -744,7 +744,7 @@ requests = ">=2.22.0,<3.0.0"
 
 [[package]]
 name = "pymisp"
-version = "2.4.137.3"
+version = "2.4.137.4"
 description = "Python API for MISP."
 category = "main"
 optional = false
@@ -1147,7 +1147,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "b3e7ae942355125f62268270e7888093f64b33035d04d574d49ad39189c48f40"
+content-hash = "51d0bb7529658d3b5323d7c87d7676c1126d88c2b927af77a91c426f842a9249"
 
 [metadata.files]
 aiohttp = [
@@ -1354,9 +1354,9 @@ flask = [
     {file = "Flask-1.1.2-py2.py3-none-any.whl", hash = "sha256:8a4fdd8936eba2512e9c85df320a37e694c93945b33ef33c89946a340a238557"},
     {file = "Flask-1.1.2.tar.gz", hash = "sha256:4efa1ae2d7c9865af48986de8aeb8504bf32c7f3d6fdc9353d34b21f4b127060"},
 ]
-flask-httpauth = [
-    {file = "Flask-HTTPAuth-4.2.0.tar.gz", hash = "sha256:8c7e49e53ce7dc14e66fe39b9334e4b7ceb8d0b99a6ba1c3562bb528ef9da84a"},
-    {file = "Flask_HTTPAuth-4.2.0-py2.py3-none-any.whl", hash = "sha256:3fcedb99a03985915335a38c35bfee6765cbd66d7f46440fa3b42ae94a90fac7"},
+flask-login = [
+    {file = "Flask-Login-0.5.0.tar.gz", hash = "sha256:6d33aef15b5bcead780acc339464aae8a6e28f13c90d8b1cf9de8b549d1c0b4b"},
+    {file = "Flask_Login-0.5.0-py2.py3-none-any.whl", hash = "sha256:7451b5001e17837ba58945aead261ba425fdf7b4f0448777e597ddab39f4fba0"},
 ]
 gunicorn = [
     {file = "gunicorn-20.0.4-py2.py3-none-any.whl", hash = "sha256:cd4a810dd51bf497552cf3f863b575dabd73d6ad6a91075b65936b151cbf4f9c"},
@@ -1724,8 +1724,8 @@ pylookyloo = [
     {file = "pylookyloo-1.3.tar.gz", hash = "sha256:3996798b68203c1ebfdb4744d029a2c741e3a7d4e5d98541afd0c9b4a20eee86"},
 ]
 pymisp = [
-    {file = "pymisp-2.4.137.3-py3-none-any.whl", hash = "sha256:433a58cd5d6ec8bee9394c43bb679dc0422bec68450f7642f7fd51b870e97118"},
-    {file = "pymisp-2.4.137.3.tar.gz", hash = "sha256:d3a8074e3276a698d25bcd56f4ce3913d375b05a04fb36f4c8cfe732f4aaefd9"},
+    {file = "pymisp-2.4.137.4-py3-none-any.whl", hash = "sha256:814c3e5cd3218ba885edab7b8808f45dbe16bbfccb3cd9d19bf062b1ced70fc0"},
+    {file = "pymisp-2.4.137.4.tar.gz", hash = "sha256:ea029360d7e76646403571b479c8208a678c8b51b9e683d51b0ce95d6ebe3274"},
 ]
 pyopenssl = [
     {file = "pyOpenSSL-20.0.1-py2.py3-none-any.whl", hash = "sha256:818ae18e06922c066f777a33f1fca45786d85edfe71cd043de6379337a7f274b"},

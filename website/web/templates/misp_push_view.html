@@ -1,0 +1,18 @@
+<div>
+  <p>Event to push: {{event.info}}</p>
+  <p>Auto Publish: {{auto_publish}}</p>
+  <p>Default tags: {{', '.join(default_tags)}}</p>
+  <form role="form" action="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}" method=post enctype=multipart/form-data>
+    <div class="form-group row">
+      <label for="tags" class="col-sm-2 col-form-label">Available tags:</label>
+      <div class="col-sm-10">
+        <select class="form-control" name="tags" id="tags" multiple>
+          {% for tag in fav_tags %}
+          <option value="{{ tag.name }}">{{ tag.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-info" id="btn-misp-push">Push to MISP</button>
+  </form>
+</div>
