@@ -161,9 +161,6 @@
         </li>
         {% endif %}
         <li>
-          <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">Download screenshot</a>
-        </li>
-        <li>
           <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" role="button">Show screenshot</a>
         </li>
         {% if enable_context_by_users %}
@@ -329,12 +326,13 @@
       {% if screenshot_size > 10 * 1024 * 1024 %}
         Image too big ({{ sizeof_fmt(screenshot_size) }}) to display in the browser, <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">click here to download it</a>.
       {% else %}
+        <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button" class="btn btn-info">Download screenshot</a>
         {% if blur_screenshot %}
         <button type="button" class="btn btn-info" onclick="$('#screenshot').removeClass('blur')"> Unblur screenshot</button>
+        {% endif %}
         </br>
         </hr>
         </br>
-        {% endif %}
         <img src="{{ url_for('image', tree_uuid=tree_uuid) }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
       {% endif %}
     </center>
