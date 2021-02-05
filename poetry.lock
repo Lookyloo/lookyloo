@@ -293,7 +293,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.3.2"
+version = "1.3.3"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -1327,8 +1327,8 @@ gunicorn = [
     {file = "gunicorn-20.0.4.tar.gz", hash = "sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626"},
 ]
 har2tree = [
-    {file = "har2tree-1.3.2-py3-none-any.whl", hash = "sha256:33e34c572c7579f9a61f706edd76d4f76647c3985728c9f2b99434844398e398"},
-    {file = "har2tree-1.3.2.tar.gz", hash = "sha256:e4a8c08a136acee206c52c6be889d9467ec5292b67de6ca5e54d1a6cb41f020f"},
+    {file = "har2tree-1.3.3-py3-none-any.whl", hash = "sha256:6575548305a85128733f2b2d7c559e35367c404c549d4ed5c3d1f5cb84b9f58c"},
+    {file = "har2tree-1.3.3.tar.gz", hash = "sha256:8662c581e491ea7315ca86475993aa18b4cc6fb2ac8408f2401bf78ec4c64568"},
 ]
 hyperlink = [
     {file = "hyperlink-21.0.0-py2.py3-none-any.whl", hash = "sha256:e6b14c37ecb73e89c77d78cdb4c2cc8f3fb59a885c5b3f819ff4ed80f25af1b4"},
