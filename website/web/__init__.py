@@ -47,8 +47,8 @@ app.debug = False
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 try:
-    # Use legacy user mgmt
-    users = get_config('generic', 'cache_clean_user')
+    # Use legacy user mgmt, no need to print a warning, and it will fail on new install.
+    users = get_config('generic', 'cache_clean_user', quiet=True)
 except Exception:
     users = get_config('generic', 'users')
 

@@ -122,7 +122,7 @@ def load_configs(path_to_config_files: Optional[Union[str, Path]]=None):
 
 
 @lru_cache(64)
-def get_config(config_type: str, entry: str) -> Any:
+def get_config(config_type: str, entry: str, quiet: bool=False) -> Any:
     """Get an entry from the given config_type file. Automatic fallback to the sample file"""
     global configs
     if not configs:
@@ -131,10 +131,13 @@ def get_config(config_type: str, entry: str) -> Any:
         if entry in configs[config_type]:
             return configs[config_type][entry]
         else:
-            logger.warning(f'Unable to find {entry} in config file.')
+            if not quiet:
+                logger.warning(f'Unable to find {entry} in config file.')
     else:
-        logger.warning(f'No {config_type} config file available.')
-    logger.warning(f'Falling back on sample config, please initialize the {config_type} config file.')
+        if not quiet:
+            logger.warning(f'No {config_type} config file available.')
+    if not quiet:
+        logger.warning(f'Falling back on sample config, please initialize the {config_type} config file.')
     with (get_homedir() / 'config' / f'{config_type}.json.sample').open() as _c:
         sample_config = json.load(_c)
     return sample_config[entry]
