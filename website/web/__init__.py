@@ -753,20 +753,17 @@ def get_ressource(tree_uuid: str, node_uuid: str):
                      as_attachment=True, attachment_filename='file.zip')
 
 
-@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource_preview', methods=['POST', 'GET'])
-def get_ressource_preview(tree_uuid: str, node_uuid: str):
-    if request.method == 'POST':
-        h_request = request.form.get('ressource_hash')
-    else:
-        h_request = None
-    ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_request)
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource_preview', methods=['GET'])
+@app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource_preview/<string:h_ressource>', methods=['GET'])
+def get_ressource_preview(tree_uuid: str, node_uuid: str, h_ressource: Optional[str]=None):
+    ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_ressource)
     if not ressource:
-        return None
+        return Response('No preview available.', mimetype='text/text')
     filename, r, mimetype = ressource
     if mimetype.startswith('image'):
         return send_file(r, mimetype=mimetype,
                          as_attachment=True, attachment_filename=filename)
-    return None
+    return Response('No preview available.', mimetype='text/text')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/hashes', methods=['GET'])

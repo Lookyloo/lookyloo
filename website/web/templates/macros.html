@@ -119,9 +119,14 @@
 </div>
 {% endmacro %}
 
-{% macro get_ressource_button(capture_uuid, urlnode_uuid, hash, text) %}
+{% macro get_ressource_button(capture_uuid, urlnode_uuid, hash, text, can_preview=False) %}
 <form method="post" action="{{ url_for('get_ressource', tree_uuid=capture_uuid, node_uuid=urlnode_uuid) }}">
-  <button class="btn btn-info" name="ressource_hash" value="{{ hash }}">{{ text }}</button>
+  <button class="btn btn-info" name="ressource_hash" value="{{ hash }}"
+    {% if can_preview %}
+    data-toggle="tooltip" data-placement="bottom" data-html="true"
+    title='<img src="{{ url_for('get_ressource_preview', tree_uuid=capture_uuid, node_uuid=urlnode_uuid, h_ressource=hash) }}"/>'
+    {% endif %}
+  >{{ text }}</button>
 </form>
 {% endmacro %}
 
