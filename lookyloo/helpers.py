@@ -236,7 +236,7 @@ def ua_parser(html_content: str) -> Dict[str, Any]:
         return {}
 
     to_store: Dict[str, Any] = {'by_frequency': []}
-    for ua in json.loads(uas):
+    for ua in json.loads(uas.replace('\n', '')):
         os = ua['system'].split(' ')[-1]
         if os not in to_store:
             to_store[os] = {}
