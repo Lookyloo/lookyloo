@@ -720,11 +720,11 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pylookyloo"
-version = "1.3"
+version = "1.4.0"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 requests = ">=2.22.0,<3.0.0"
@@ -1115,7 +1115,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "a0371cfb6ec540451b8a22d5113ead485f4c3c4088000a0e7f74875f1c6531b1"
+content-hash = "37de2ec5219350e68a9488e3fcbbf5ddca284747633d40f874a7a5f3df577186"
 
 [metadata.files]
 aiohttp = [
@@ -1710,8 +1710,8 @@ pyhamcrest = [
     {file = "PyHamcrest-2.0.2.tar.gz", hash = "sha256:412e00137858f04bde0729913874a48485665f2d36fe9ee449f26be864af9316"},
 ]
 pylookyloo = [
-    {file = "pylookyloo-1.3-py3-none-any.whl", hash = "sha256:d950123364374206decabaa74b27e8872c48d5ce7d1a4ca46e4936d975f65cb9"},
-    {file = "pylookyloo-1.3.tar.gz", hash = "sha256:3996798b68203c1ebfdb4744d029a2c741e3a7d4e5d98541afd0c9b4a20eee86"},
+    {file = "pylookyloo-1.4.0-py3-none-any.whl", hash = "sha256:f47ba55dab8be8f7220b94b91d541e1fdaa9e3334f615909629e0e7427eef4c3"},
+    {file = "pylookyloo-1.4.0.tar.gz", hash = "sha256:7c9ad6a97eace44d808389f08989f4e26fd02d5a423a19383c102aa40527dd6b"},
 ]
 pymisp = [
     {file = "pymisp-2.4.138-py3-none-any.whl", hash = "sha256:6a1529f2f7353dc3e625180cc5b799e9c698fbebf9e654d5e12fb42faf51bfb8"},
