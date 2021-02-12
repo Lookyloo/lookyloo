@@ -480,7 +480,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,
-                               misp_push=lookyloo.misp.enable_push,
+                               misp_push=lookyloo.misp.available and lookyloo.misp.enable_push,
                                blur_screenshot=blur_screenshot, urlnode_uuid=hostnode_to_highlight,
                                auto_trigger_modules=auto_trigger_modules,
                                has_redirects=True if cache.redirects else False)
