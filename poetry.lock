@@ -822,7 +822,7 @@ six = ">=1.5"
 
 [[package]]
 name = "python-magic"
-version = "0.4.20"
+version = "0.4.21"
 description = "File type identification using libmagic"
 category = "main"
 optional = true
@@ -1115,7 +1115,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "37de2ec5219350e68a9488e3fcbbf5ddca284747633d40f874a7a5f3df577186"
+content-hash = "e74a5e385f901a17698144d92f8055b14d1bb61a1973a0b930cc35c8180ba548"
 
 [metadata.files]
 aiohttp = [
@@ -1740,8 +1740,8 @@ python-dateutil = [
     {file = "python_dateutil-2.8.1-py2.py3-none-any.whl", hash = "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"},
 ]
 python-magic = [
-    {file = "python-magic-0.4.20.tar.gz", hash = "sha256:0cc52ccad086c377b9194014e3dbf98d94b194344630172510a6a3e716b47801"},
-    {file = "python_magic-0.4.20-py2.py3-none-any.whl", hash = "sha256:33ce94d9395aa269a9c5fac10ae124a5fb328ebe248f36efc5a43922edee662e"},
+    {file = "python-magic-0.4.21.tar.gz", hash = "sha256:2fe26b15ed59118ac117caba4e64d10966298d3dca15a4802fdfc3da4c25184a"},
+    {file = "python_magic-0.4.21-py2.py3-none-any.whl", hash = "sha256:ea911853708f3085e905a5db0941fb256d620534970c5f8e733d81f37c360ddc"},
 ]
 queuelib = [
     {file = "queuelib-1.5.0-py2.py3-none-any.whl", hash = "sha256:ff43b5b74b9266f8df4232a8f768dc4d67281a271905e2ed4a3689d4d304cd02"},
