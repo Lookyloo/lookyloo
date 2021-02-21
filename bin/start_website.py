@@ -23,7 +23,11 @@ def main():
                   cwd=website_dir)
         set_running('website')
         while True:
-            if shutdown_requested() or p.poll() is not None:
+            if p.poll() is not None:
+                print('gunicorn stopped itself.')
+                break
+            if shutdown_requested():
+                print('"shutdown" key present in the cache database.')
                 break
             time.sleep(1)
     except KeyboardInterrupt:
