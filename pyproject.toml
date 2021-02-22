@@ -60,7 +60,7 @@ Flask-Login = "^0.5.0"
 misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.800"
+mypy = "^0.812"
 ipython = "^7.20.0"
 
 [build-system]
