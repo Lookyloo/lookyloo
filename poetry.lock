@@ -731,7 +731,7 @@ requests = ">=2.22.0,<3.0.0"
 
 [[package]]
 name = "pymisp"
-version = "2.4.138"
+version = "2.4.140"
 description = "Python API for MISP."
 category = "main"
 optional = false
@@ -746,7 +746,7 @@ requests = ">=2.25.0,<3.0.0"
 
 [package.extras]
 email = ["extract_msg (>=0.28.0,<0.29.0)", "RTFDE (>=0.0.2,<0.0.3)", "oletools (>=0.56,<0.57)"]
-fileobjects = ["python-magic (>=0.4.18,<0.5.0)", "pydeep (>=0.4,<0.5)", "lief (>=0.11.0,<0.12.0)"]
+fileobjects = ["python-magic (>=0.4.18,<0.5.0)", "pydeep (>=0.4,<0.5)", "lief (>=0.11.2,<0.12.0)"]
 openioc = ["beautifulsoup4 (>=4.9.3,<5.0.0)"]
 virustotal = ["validators (>=0.18.1,<0.19.0)"]
 docs = ["sphinx-autodoc-typehints (>=1.11.1,<2.0.0)", "recommonmark (>=0.7.1,<0.8.0)"]
@@ -1115,7 +1115,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "641fbd6c799c0cb1544c21dceeadd0c88bdd007978b339c7bd06ecd1f25fb3a6"
+content-hash = "b9344d7ed87291d1534dbf126e1f58320dc2322f80f8c361ce5b3683c0e57471"
 
 [metadata.files]
 aiohttp = [
@@ -1720,8 +1720,8 @@ pylookyloo = [
     {file = "pylookyloo-1.4.0.tar.gz", hash = "sha256:7c9ad6a97eace44d808389f08989f4e26fd02d5a423a19383c102aa40527dd6b"},
 ]
 pymisp = [
-    {file = "pymisp-2.4.138-py3-none-any.whl", hash = "sha256:6a1529f2f7353dc3e625180cc5b799e9c698fbebf9e654d5e12fb42faf51bfb8"},
-    {file = "pymisp-2.4.138.tar.gz", hash = "sha256:678eebeae03ae92d6c275d5be92e3a29e1e194bec3e8c292ed1147b166813018"},
+    {file = "pymisp-2.4.140-py3-none-any.whl", hash = "sha256:d6a804e9caef8e4383a8f2a720addf8063b0a78d924fab55020a84270f4e48c7"},
+    {file = "pymisp-2.4.140.tar.gz", hash = "sha256:44f373f0ef0850f75520dcf8decd2119ef73a9feb5d8dea1711375074ddf7c3e"},
 ]
 pyopenssl = [
     {file = "pyOpenSSL-20.0.1-py2.py3-none-any.whl", hash = "sha256:818ae18e06922c066f777a33f1fca45786d85edfe71cd043de6379337a7f274b"},
