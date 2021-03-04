@@ -573,9 +573,12 @@ def ressources():
         capture_uuid, url_uuid, hostnode_uuid = i.get_hash_uuids(h)
         try:
             ressource = lookyloo.get_ressource(capture_uuid, url_uuid, h)
-        except lookyloo.exceptions.MissingUUID:
-            ressource = ['unknown', '', 'unknown']
-        ressources.append((h, freq, domain_freq, context.get(h), capture_uuid, url_uuid, hostnode_uuid, ressource[0], ressource[2]))
+        except MissingUUID:
+            pass
+        if ressource:
+            ressources.append((h, freq, domain_freq, context.get(h), capture_uuid, url_uuid, hostnode_uuid, ressource[0], ressource[2]))
+        else:
+            ressources.append((h, freq, domain_freq, context.get(h), capture_uuid, url_uuid, hostnode_uuid, 'unknown', 'unknown'))
     return render_template('ressources.html', ressources=ressources)
 
 
