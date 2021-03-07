@@ -621,7 +621,10 @@ class Lookyloo():
 
     def _get_raw(self, capture_uuid: str, extension: str='*', all_files: bool=True) -> BytesIO:
         '''Get file(s) from the capture directory'''
-        capture_dir = self.lookup_capture_dir(capture_uuid)
+        try:
+            capture_dir = self.lookup_capture_dir(capture_uuid)
+        except MissingUUID:
+            return BytesIO(f'Capture {capture_uuid} not unavailable, try again later.'.encode())
         all_paths = sorted(list(capture_dir.glob(f'*.{extension}')))
         if not all_files:
             # Only get the first one in the list
