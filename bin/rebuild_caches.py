@@ -35,7 +35,7 @@ def main():
             cache = lookyloo.capture_cache(capture_uuid)
             if not cache:
                 continue
-            if cache.no_index is not None:
+            if cache.no_index:
                 index = False
 
         # NOTE: these methods do nothing if we just generated the pickle when calling lookyloo.get_crawled_tree
