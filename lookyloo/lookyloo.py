@@ -711,8 +711,12 @@ class Lookyloo():
         if int(depth) > int(get_config('generic', 'max_depth')):
             self.logger.warning(f'Not allowed to capture on a depth higher than {get_config("generic", "max_depth")}: {depth}')
             depth = int(get_config('generic', 'max_depth'))
-        items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
-                      referer=referer, log_enabled=True, log_level=get_config('generic', 'splash_loglevel'))
+        try:
+            items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
+                          referer=referer, log_enabled=True, log_level=get_config('generic', 'splash_loglevel'))
+        except Exception as e:
+            self.logger.critical(f'Something went terribly wrong when capturing {url}.')
+            raise e
         if not items:
             # broken
             return False
