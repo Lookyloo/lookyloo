@@ -14,6 +14,7 @@ from .helpers import get_homedir, get_config
 from .exceptions import ConfigError
 
 import vt  # type: ignore
+from vt.error import APIError
 from pysanejs import SaneJS
 from pyeupi import PyEUPI
 from pymisp import PyMISP, MISPEvent
@@ -271,7 +272,7 @@ class VirusTotal():
                 with vt_file.open('w') as _f:
                     json.dump(url_information.to_dict(), _f)
                 break
-            except vt.APIError as e:
+            except APIError as e:
                 if not self.autosubmit:
                     break
                 if not scan_requested and e.code == 'NotFoundError':
