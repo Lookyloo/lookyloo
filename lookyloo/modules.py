@@ -14,7 +14,7 @@ from .helpers import get_homedir, get_config
 from .exceptions import ConfigError
 
 import vt  # type: ignore
-from vt.error import APIError
+from vt.error import APIError  # type: ignore
 from pysanejs import SaneJS
 from pyeupi import PyEUPI
 from pymisp import PyMISP, MISPEvent
