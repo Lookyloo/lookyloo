@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
 import logging
-from typing import Optional
 
 from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import get_homedir, set_running, unset_running, shutdown_requested
+from lookyloo.helpers import set_running, unset_running, shutdown_requested
 from lookyloo.lookyloo import Lookyloo
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
@@ -15,10 +13,8 @@ logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
 
 class AsyncCapture(AbstractManager):
 
-    def __init__(self, storage_directory: Optional[Path]=None, loglevel: int=logging.INFO):
+    def __init__(self, loglevel: int=logging.INFO):
         super().__init__(loglevel)
-        if not storage_directory:
-            self.storage_directory = get_homedir() / 'scraped'
         self.lookyloo = Lookyloo()
 
     def _to_run_forever(self):
