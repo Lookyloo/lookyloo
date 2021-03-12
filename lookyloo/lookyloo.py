@@ -121,14 +121,11 @@ class Lookyloo():
     def _cache_capture(self, capture_uuid: str) -> CrawledTree:
         '''Generate the pickle, add capture in the indexes'''
         capture_dir = self.lookup_capture_dir(capture_uuid)
-
-        with open((capture_dir / 'uuid'), 'r') as f:
-            uuid = f.read()
         har_files = sorted(capture_dir.glob('*.har'))
         # NOTE: We only index the public captures
         index = True
         try:
-            ct = CrawledTree(har_files, uuid)
+            ct = CrawledTree(har_files, capture_uuid)
             self._ensure_meta(capture_dir, ct)
             self._resolve_dns(ct)
             # getting the cache triggers an update of the said cache. We want it there.
@@ -525,7 +522,13 @@ class Lookyloo():
         capture_dir: str = self.redis.hget('lookup_dirs', capture_uuid)  # type: ignore
         if not capture_dir:
             raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
-        return Path(capture_dir)
+        to_return = Path(capture_dir)
+        if not to_return.exists():
+            # The capture was removed, remove the UUID
+            self.redis.hdel('lookup_dirs', capture_uuid)
+            self.logger.warning(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
+            raise NoValidHarFile(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
+        return to_return
 
     def enqueue_capture(self, query: MutableMapping[str, Any]) -> str:
         '''Enqueue a query in the capture queue (used by the API for asynchronous processing)'''
@@ -625,6 +628,8 @@ class Lookyloo():
             capture_dir = self.lookup_capture_dir(capture_uuid)
         except MissingUUID:
             return BytesIO(f'Capture {capture_uuid} not unavailable, try again later.'.encode())
+        except NoValidHarFile:
+            return BytesIO(f'No capture {capture_uuid} on the system.'.encode())
         all_paths = sorted(list(capture_dir.glob(f'*.{extension}')))
         if not all_files:
             # Only get the first one in the list
