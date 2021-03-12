@@ -143,6 +143,8 @@ class Lookyloo():
                 self.indexing.index_categories_capture(capture_uuid, categories)
         except Har2TreeError as e:
             raise NoValidHarFile(e.message)
+        except RecursionError as e:
+            raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
 
         with (capture_dir / 'tree.pickle').open('wb') as _p:
             pickle.dump(ct, _p)
