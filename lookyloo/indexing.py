@@ -170,8 +170,8 @@ class Indexing():
         if self.redis.sismember('indexed_urls', crawled_tree.uuid):
             # Do not reindex
             return
+        self.redis.sadd('indexed_urls', crawled_tree.uuid)
         pipeline = self.redis.pipeline()
-        pipeline.sadd('indexed_urls', crawled_tree.uuid)
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             if not urlnode.hostname or not urlnode.name:
                 continue
@@ -203,7 +203,6 @@ class Indexing():
     def index_categories_capture(self, capture_uuid: str, categories: Iterable[str]):
         if not categories:
             return
-        print(capture_uuid, categories)
         if self.redis.sismember('indexed_categories', capture_uuid):
             # do not reindex
             return
