@@ -14,6 +14,7 @@ from pathlib import Path
 import pickle
 import smtplib
 import socket
+import sys
 from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping, Set, Iterable
 from urllib.parse import urlsplit
 from uuid import uuid4
@@ -147,7 +148,13 @@ class Lookyloo():
             raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
 
         with (capture_dir / 'tree.pickle').open('wb') as _p:
+            # Some pickles require a pretty high recursion limit, this kindof fixes it.
+            # If the capture is really broken (generally a refresh to self), the capture
+            # is discarded in the RecursionError above.
+            default_recursion_limit = sys.getrecursionlimit()
+            sys.setrecursionlimit(int(default_recursion_limit * 1.1))
             pickle.dump(ct, _p)
+            sys.setrecursionlimit(default_recursion_limit)
         return ct
 
     def _build_cname_chain(self, known_cnames: Dict[str, Optional[str]], hostname) -> List[str]:
