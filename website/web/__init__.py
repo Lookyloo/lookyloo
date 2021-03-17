@@ -613,7 +613,8 @@ def submit():
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     if request.form.get('url'):
-        return redirect(url_for('url_details', url=quote_plus(request.form.get('url'))))
+        quoted_url: str = quote_plus(request.form.get('url'))  # type: ignore
+        return redirect(url_for('url_details', url=quoted_url))
     if request.form.get('hostname'):
         return redirect(url_for('hostname_details', hostname=request.form.get('hostname')))
     if request.form.get('ressource'):
