@@ -837,7 +837,8 @@ class Lookyloo():
         for capture in captures[:limit]:
             ct = self.get_crawled_tree(capture.uuid)
             to_append: Dict[str, Union[str, Dict]] = {'capture_uuid': capture.uuid,
-                                                      'start_timestamp': capture.timestamp.isoformat()}
+                                                      'start_timestamp': capture.timestamp.isoformat(),
+                                                      'title': capture.title}
             urlnodes: Dict[str, Dict[str, str]] = {}
             for urlnode in ct.root_hartree.url_tree.search_nodes(name=url):
                 urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
@@ -863,7 +864,8 @@ class Lookyloo():
         for capture in captures[:limit]:
             ct = self.get_crawled_tree(capture.uuid)
             to_append: Dict[str, Union[str, List, Dict]] = {'capture_uuid': capture.uuid,
-                                                            'start_timestamp': capture.timestamp.isoformat()}
+                                                            'start_timestamp': capture.timestamp.isoformat(),
+                                                            'title': capture.title}
             hostnodes: List[str] = []
             if with_urls_occurrences:
                 urlnodes: Dict[str, Dict[str, str]] = {}

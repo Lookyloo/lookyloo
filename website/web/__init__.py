@@ -13,6 +13,7 @@ import calendar
 from typing import Optional, Dict, Any, Union
 import logging
 import hashlib
+from urllib.parse import quote_plus, unquote_plus
 
 from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
 from flask_bootstrap import Bootstrap  # type: ignore
@@ -609,6 +610,19 @@ def submit():
     return Response(perma_uuid, mimetype='text/text')
 
 
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    if request.form.get('url'):
+        return redirect(url_for('url_details', url=quote_plus(request.form.get('url'))))
+    if request.form.get('hostname'):
+        return redirect(url_for('hostname_details', hostname=request.form.get('hostname')))
+    if request.form.get('ressource'):
+        return redirect(url_for('body_hash_details', body_hash=request.form.get('ressource')))
+    if request.form.get('cookie'):
+        return redirect(url_for('cookies_name_detail', cookie_name=request.form.get('cookie')))
+    return render_template('search.html')
+
+
 @app.route('/capture', methods=['GET', 'POST'])
 def capture_web():
     if request.form.get('url'):
@@ -651,14 +665,27 @@ def capture_web():
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
 def cookies_name_detail(cookie_name: str):
-    captures, domains = lookyloo.get_cookie_name_investigator(cookie_name)
+    captures, domains = lookyloo.get_cookie_name_investigator(cookie_name.strip())
     return render_template('cookie_name.html', cookie_name=cookie_name, domains=domains, captures=captures)
 
 
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])
 def body_hash_details(body_hash: str):
-    captures, domains = lookyloo.get_body_hash_investigator(body_hash)
+    captures, domains = lookyloo.get_body_hash_investigator(body_hash.strip())
     return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures)
+
+
+@app.route('/urls/<string:url>', methods=['GET'])
+def url_details(url: str):
+    url = unquote_plus(url).strip()
+    hits = lookyloo.get_url_occurrences(url=url, limit=50)
+    return render_template('url.html', url=url, hits=hits)
+
+
+@app.route('/hostnames/<string:hostname>', methods=['GET'])
+def hostname_details(hostname: str):
+    hits = lookyloo.get_hostname_occurrences(hostname=hostname.strip(), with_urls_occurrences=True, limit=50)
+    return render_template('hostname.html', hostname=hostname, hits=hits)
 
 
 @app.route('/stats', methods=['GET'])
