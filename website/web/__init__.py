@@ -511,7 +511,7 @@ def index_generic(show_hidden: bool=False, category: Optional[str]=None):
     else:
         cut_time = None  # type: ignore
 
-    for cached in lookyloo.sorted_cache():
+    for cached in lookyloo.sorted_capture_cache():
         if cut_time and cached.timestamp < cut_time:
             continue
         if category:
