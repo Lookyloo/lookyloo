@@ -129,6 +129,8 @@ class Lookyloo():
             ct = CrawledTree(har_files, capture_uuid)
             self._ensure_meta(capture_dir, ct)
             self._resolve_dns(ct)
+            # Force update cache of the capture (takes care of the incomplete redirect key)
+            self._set_capture_cache(capture_dir, force=True)
             # getting the cache triggers an update of the said cache. We want it there.
             cache = self.capture_cache(capture_uuid)
             if not cache:
@@ -467,14 +469,15 @@ class Lookyloo():
         '''All the capture UUIDs present in the cache.'''
         return self.redis.hkeys('lookup_dirs')
 
-    @property
-    def sorted_cache(self) -> List[CaptureCache]:
+    def sorted_cache(self, capture_uuids: Iterable[str]=[]) -> List[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).'''
         all_cache: List[CaptureCache] = []
         p = self.redis.pipeline()
-        capture_uuids = self.capture_uuids
         if not capture_uuids:
-            # No cached captures at all
+            # Sort all captures
+            capture_uuids = self.capture_uuids
+        if not capture_uuids:
+            # No captures at all on the instance
             return all_cache
         for directory in self.redis.hmget('lookup_dirs', *capture_uuids):
             if directory:
@@ -485,15 +488,13 @@ class Lookyloo():
             c = CaptureCache(c)
             if hasattr(c, 'timestamp'):
                 all_cache.append(c)
-        return sorted(all_cache, key=operator.attrgetter('timestamp'), reverse=True)
+        all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
+        return all_cache
 
     def capture_cache(self, capture_uuid: str) -> Optional[CaptureCache]:
         """Get the cache from redis.
         NOTE: Doesn't try to build the pickle"""
         capture_dir = self.lookup_capture_dir(capture_uuid)
-        if self.redis.hget(str(capture_dir), 'incomplete_redirects') == '1':
-            # try to rebuild the cache
-            self._set_capture_cache(capture_dir, force=True)
         cached: Dict[str, Any] = self.redis.hgetall(str(capture_dir))
         if not cached:
             self.logger.warning(f'No cache available for {capture_dir}.')
@@ -793,10 +794,8 @@ class Lookyloo():
         '''Returns all the captures related to a hash (sha512), used in the web interface.'''
         captures: List[Tuple[str, str]] = []
         total_captures, details = self.indexing.get_body_hash_captures(body_hash, limit=-1)
-        for capture_uuid, url_uuid, url_hostname, _ in details:
-            cache = self.capture_cache(capture_uuid)
-            if cache:
-                captures.append((capture_uuid, cache.title))
+        cached_captures = self.sorted_cache([d[0] for d in details])
+        captures = [(cache.uuid, cache.title) for cache in cached_captures]
         domains = self.indexing.get_body_hash_domains(body_hash)
         return captures, domains
 
@@ -824,14 +823,7 @@ class Lookyloo():
 
     def get_url_occurrences(self, url: str, limit: int=20) -> List[Dict]:
         '''Get the most recent captures and URL nodes where the URL has been seen.'''
-        captures: List[CaptureCache] = []
-        for uuid in self.indexing.get_captures_url(url):
-            c = self.capture_cache(uuid)
-            if not c:
-                continue
-            if hasattr(c, 'timestamp'):
-                captures.append(c)
-        captures.sort(key=operator.attrgetter('timestamp'), reverse=True)
+        captures = self.sorted_cache(self.indexing.get_captures_url(url))
 
         to_return: List[Dict] = []
         for capture in captures[:limit]:
@@ -851,14 +843,7 @@ class Lookyloo():
 
     def get_hostname_occurrences(self, hostname: str, with_urls_occurrences: bool=False, limit: int=20) -> List[Dict]:
         '''Get the most recent captures and URL nodes where the hostname has been seen.'''
-        captures: List[CaptureCache] = []
-        for uuid in self.indexing.get_captures_hostname(hostname):
-            c = self.capture_cache(uuid)
-            if not c:
-                continue
-            if hasattr(c, 'timestamp'):
-                captures.append(c)
-        captures.sort(key=operator.attrgetter('timestamp'), reverse=True)
+        captures = self.sorted_cache(self.indexing.get_captures_hostname(hostname))
 
         to_return: List[Dict] = []
         for capture in captures[:limit]:
@@ -886,11 +871,8 @@ class Lookyloo():
 
     def get_cookie_name_investigator(self, cookie_name: str):
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''
-        captures = []
-        for capture_uuid, url_uuid in self.indexing.get_cookies_names_captures(cookie_name):
-            cache = self.capture_cache(capture_uuid)
-            if cache:
-                captures.append((capture_uuid, cache.title))
+        cached_captures = self.sorted_cache([entry[0] for entry in self.indexing.get_cookies_names_captures(cookie_name)])
+        captures = [(cache.uuid, cache.title) for cache in cached_captures]
         domains = [(domain, freq, self.indexing.cookies_names_domains_values(cookie_name, domain))
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
@@ -1158,14 +1140,7 @@ class Lookyloo():
         stats: Dict[int, Dict[int, Dict[str, Any]]] = {}
         weeks_stats: Dict[int, Dict] = {}
 
-        for uuid in self.capture_uuids:
-            # What we get here is in a random order. This look sorts the captures
-            cache = self.capture_cache(uuid)
-            if not cache:
-                # That shouldn't happen, a warning went in the logs.
-                continue
-            if not hasattr(cache, 'timestamp'):
-                continue
+        for cache in self.sorted_cache():
             date_submission: datetime = cache.timestamp
 
             if date_submission.year not in stats:
