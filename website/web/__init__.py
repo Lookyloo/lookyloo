@@ -22,7 +22,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from pymisp import MISPEvent
 
-from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents, get_config, get_taxonomies
+from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents, get_config, get_taxonomies, load_cookies
 from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 from .proxied import ReverseProxied
@@ -404,6 +404,30 @@ def export(tree_uuid: str):
                      as_attachment=True, attachment_filename='capture.zip')
 
 
+@app.route('/tree/<string:tree_uuid>/urls_rendered_page', methods=['GET'])
+def urls_rendered_page(tree_uuid: str):
+    urls = lookyloo.get_urls_rendered_page(tree_uuid)
+    return render_template('urls_rendered.html', base_tree_uuid=tree_uuid, urls=urls)
+
+
+@app.route('/bulk_captures/<string:base_tree_uuid>', methods=['POST'])
+def bulk_captures(base_tree_uuid: str):
+    selected_urls = request.form.getlist('url')
+    urls = lookyloo.get_urls_rendered_page(base_tree_uuid)
+    ct = lookyloo.get_crawled_tree(base_tree_uuid)
+    bulk_captures = []
+    for url in [urls[int(selected_id) - 1] for selected_id in selected_urls]:
+        cookies = load_cookies(lookyloo.get_cookies(base_tree_uuid))
+        capture = {'url': url,
+                   'cookies': cookies,
+                   'referer': ct.root_url
+                   }
+        new_capture_uuid = lookyloo.enqueue_capture(capture)
+        bulk_captures.append((new_capture_uuid, url))
+
+    return render_template('bulk_captures.html', uuid=base_tree_uuid, bulk_captures=bulk_captures)
+
+
 @app.route('/tree/<string:tree_uuid>/hide', methods=['GET'])
 @flask_login.login_required
 def hide_capture(tree_uuid: str):
@@ -717,6 +741,8 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/urls_in_rendered_content', methods=['GET'])
 def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str):
+    # Note: we could simplify it with lookyloo.get_urls_rendered_page, but if at somepoint,
+    # we have multiple page rendered on one tree, it will be a problem.
     ct = lookyloo.get_crawled_tree(tree_uuid)
     urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
     if not urlnode.rendered_html:

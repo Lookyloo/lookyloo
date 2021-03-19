@@ -1,0 +1,12 @@
+<div>
+  <h4>Select below the URLs you want to capture.</h4>
+  <form role="form" action="{{ url_for('bulk_captures', base_tree_uuid=base_tree_uuid) }}" method=post enctype=multipart/form-data>
+    {% for url in urls %}
+    <div class="form-check form-check">
+      <input class="form-check-input" type="checkbox" name="url" id="url_{{loop.index}}" value="{{loop.index}}">
+      <label class="form-check-label" for="url_{{loop.index}}">{{url}}</label>
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-info" id="btn-capture-urls">Capture selected URLs</button>
+  </form>
+</div>

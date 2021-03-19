@@ -547,6 +547,8 @@ class Lookyloo():
             if isinstance(value, bool):
                 # Yes, empty string because that's False.
                 query[key] = 1 if value else ''
+            if isinstance(value, list):
+                query[key] = json.dumps(value)
         p.hmset(perma_uuid, query)  # type: ignore
         p.sadd('to_capture', perma_uuid)
         p.execute()
@@ -560,6 +562,8 @@ class Lookyloo():
         to_capture: Dict[str, Union[str, int, float]] = self.redis.hgetall(uuid)
         self.redis.delete(uuid)
         to_capture['perma_uuid'] = uuid
+        if 'cookies' in to_capture:
+            to_capture['cookies_pseudofile'] = to_capture.pop('cookies')
         if self.capture(**to_capture):  # type: ignore
             self.logger.info(f'Processed {to_capture["url"]}')
             return True
@@ -692,6 +696,11 @@ class Lookyloo():
         '''Get all the files related to this capture.'''
         return self._get_raw(capture_uuid)
 
+    def get_urls_rendered_page(self, capture_uuid: str):
+        ct = self.get_crawled_tree(capture_uuid)
+        return sorted(set(ct.root_hartree.rendered_node.urls_in_rendered_page)
+                      - set(ct.root_hartree.all_url_requests.keys()))
+
     def capture(self, url: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                 depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
                 referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
@@ -818,6 +827,13 @@ class Lookyloo():
                             break
             break
         return details, body_content
+
+    def get_latest_url_capture(self, url: str) -> Optional[CaptureCache]:
+        '''Get the most recent capture with this URL'''
+        captures = self.sorted_capture_cache(self.indexing.get_captures_url(url))
+        if captures:
+            return captures[0]
+        return None
 
     def get_url_occurrences(self, url: str, limit: int=20) -> List[Dict]:
         '''Get the most recent captures and URL nodes where the URL has been seen.'''
