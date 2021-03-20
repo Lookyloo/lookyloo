@@ -36,6 +36,7 @@ class BackgroundIndexer(AbstractManager):
             try:
                 self.logger.info(f'Build pickle for {uuid}: {uuid_path.parent.name}')
                 self.lookyloo.get_crawled_tree(uuid)
+                self.logger.info(f'Pickle for {uuid} build.')
             except NoValidHarFile:
                 self.logger.warning(f'Unable to build pickle for {uuid}: {uuid_path.parent.name}')
                 # The capture is not working, moving it away.
@@ -44,10 +45,6 @@ class BackgroundIndexer(AbstractManager):
 
     def _check_indexes(self):
         for cache in self.lookyloo.sorted_capture_cache():
-            if cache.incomplete_redirects:
-                # FIXME: this is dirty and needs to be moved.
-                self.lookyloo._set_capture_cache(cache.capture_dir, force=True)
-                cache = self.lookyloo.capture_cache(cache.uuid)  # type: ignore
             if self.lookyloo.is_public_instance and cache.no_index:
                 # Capture unindexed
                 continue

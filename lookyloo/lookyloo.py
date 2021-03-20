@@ -485,6 +485,9 @@ class Lookyloo():
             if not c:
                 continue
             c = CaptureCache(c)
+            if c.incomplete_redirects:
+                self._set_capture_cache(c.capture_dir, force=True)
+                c = self.capture_cache(c.uuid)
             if hasattr(c, 'timestamp'):
                 all_cache.append(c)
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
