@@ -43,36 +43,36 @@ class BackgroundIndexer(AbstractManager):
                 uuid_path.parent.rename(self.discarded_captures_dir / uuid_path.parent.name)
 
     def _check_indexes(self):
-        for uuid in self.lookyloo.capture_uuids:
-            cache = self.lookyloo.capture_cache(uuid)
-            if not cache:
-                # Shouldn't happen, but ignore in this process
-                continue
+        for cache in self.lookyloo.sorted_capture_cache():
+            if cache.incomplete_redirects:
+                # FIXME: this is dirty and needs to be moved.
+                self.lookyloo._set_capture_cache(cache.capture_dir, force=True)
+                cache = self.lookyloo.capture_cache(cache.uuid)  # type: ignore
             if self.lookyloo.is_public_instance and cache.no_index:
                 # Capture unindexed
                 continue
             p = self.lookyloo.indexing.redis.pipeline()
-            p.sismember('indexed_urls', uuid)
-            p.sismember('indexed_body_hashes', uuid)
-            p.sismember('indexed_cookies', uuid)
+            p.sismember('indexed_urls', cache.uuid)
+            p.sismember('indexed_body_hashes', cache.uuid)
+            p.sismember('indexed_cookies', cache.uuid)
             indexed = p.execute()
             if all(indexed):
                 continue
             try:
-                ct = self.lookyloo.get_crawled_tree(uuid)
+                ct = self.lookyloo.get_crawled_tree(cache.uuid)
             except NoValidHarFile:
-                self.logger.warning(f'Broken pickle for {uuid}')
-                self.lookyloo.remove_pickle(uuid)
+                self.logger.warning(f'Broken pickle for {cache.uuid}')
+                self.lookyloo.remove_pickle(cache.uuid)
                 continue
 
             if not indexed[0]:
-                self.logger.info(f'Indexing urls for {uuid}')
+                self.logger.info(f'Indexing urls for {cache.uuid}')
                 self.lookyloo.indexing.index_url_capture(ct)
             if not indexed[1]:
-                self.logger.info(f'Indexing resources for {uuid}')
+                self.logger.info(f'Indexing resources for {cache.uuid}')
                 self.lookyloo.indexing.index_body_hashes_capture(ct)
             if not indexed[2]:
-                self.logger.info(f'Indexing cookies for {uuid}')
+                self.logger.info(f'Indexing cookies for {cache.uuid}')
                 self.lookyloo.indexing.index_cookies_capture(ct)
 
 
