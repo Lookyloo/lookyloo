@@ -22,7 +22,7 @@ class CaptureCache():
             self.timestamp: datetime = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')
             self.url: str = cache_entry['url']
             self.redirects: List[str] = json.loads(cache_entry['redirects'])
-            self.capture_dir: Path = cache_entry['capture_dir']
+            self.capture_dir: Path = Path(cache_entry['capture_dir'])
         elif not cache_entry.get('error'):
             missing = set(self.__default_cache_keys) - set(cache_entry.keys())
             raise LookylooException(f'Missing keys ({missing}), no error message. It should not happen.')
