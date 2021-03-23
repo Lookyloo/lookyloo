@@ -587,7 +587,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.17"
+version = "3.0.18"
 description = "Library for building powerful interactive command lines in Python"
 category = "dev"
 optional = false
@@ -695,7 +695,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pylookyloo"
-version = "1.4.0"
+version = "1.4.1"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
@@ -703,6 +703,9 @@ python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 requests = ">=2.22.0,<3.0.0"
+
+[package.extras]
+docs = ["Sphinx (>=3.5.3,<4.0.0)", "myst-parser (>=0.13.5,<0.14.0)"]
 
 [[package]]
 name = "pymisp"
@@ -1578,8 +1581,8 @@ pillow = [
     {file = "Pillow-8.1.2.tar.gz", hash = "sha256:b07c660e014852d98a00a91adfbe25033898a9d90a8f39beb2437d22a203fc44"},
 ]
 prompt-toolkit = [
-    {file = "prompt_toolkit-3.0.17-py3-none-any.whl", hash = "sha256:4cea7d09e46723885cb8bc54678175453e5071e9449821dce6f017b1d1fbfc1a"},
-    {file = "prompt_toolkit-3.0.17.tar.gz", hash = "sha256:9397a7162cf45449147ad6042fa37983a081b8a73363a5253dd4072666333137"},
+    {file = "prompt_toolkit-3.0.18-py3-none-any.whl", hash = "sha256:bf00f22079f5fadc949f42ae8ff7f05702826a97059ffcc6281036ad40ac6f04"},
+    {file = "prompt_toolkit-3.0.18.tar.gz", hash = "sha256:e1b4f11b9336a28fa11810bc623c357420f69dfdb6d2dac41ca2c21a55c033bc"},
 ]
 protego = [
     {file = "Protego-0.1.16.tar.gz", hash = "sha256:a682771bc7b51b2ff41466460896c1a5a653f9a1e71639ef365a72e66d8734b4"},
@@ -1646,8 +1649,8 @@ pygments = [
     {file = "Pygments-2.8.1.tar.gz", hash = "sha256:2656e1a6edcdabf4275f9a3640db59fd5de107d88e8663c5d4e9a0fa62f77f94"},
 ]
 pylookyloo = [
-    {file = "pylookyloo-1.4.0-py3-none-any.whl", hash = "sha256:f47ba55dab8be8f7220b94b91d541e1fdaa9e3334f615909629e0e7427eef4c3"},
-    {file = "pylookyloo-1.4.0.tar.gz", hash = "sha256:7c9ad6a97eace44d808389f08989f4e26fd02d5a423a19383c102aa40527dd6b"},
+    {file = "pylookyloo-1.4.1-py3-none-any.whl", hash = "sha256:64dd129748921a8d4f015802eb85083c67c9ffa0cb26be476b398da1018b1279"},
+    {file = "pylookyloo-1.4.1.tar.gz", hash = "sha256:e8bde3817928839ea165730cfcbb27a6165c7ce2578418a1ad84eea1e315b5f7"},
 ]
 pymisp = [
     {file = "pymisp-2.4.140-py3-none-any.whl", hash = "sha256:d6a804e9caef8e4383a8f2a720addf8063b0a78d924fab55020a84270f4e48c7"},
