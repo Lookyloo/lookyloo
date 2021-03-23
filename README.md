@@ -1,6 +1,6 @@
 [![Lookyloo icon](website/web/static/lookyloo.jpeg)](https://www.lookyloo.eu/docs/main/index.html)
 
-*[Lookyloo](https://lookyloo.circl.lu/)* is a web interface that captures a webpage and then displays a tree of the domains, that call each other. 
+*[Lookyloo](https://lookyloo.circl.lu/)* is a web interface that captures a webpage and then displays a tree of the domains, that call each other.
 
 
 [![Gitter](https://badges.gitter.im/Lookyloo/community.svg)](https://gitter.im/Lookyloo/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -13,15 +13,15 @@
   * [Code of Conduct](###code-of-conduct)
 * [Support](#support)
   * [Security](###security)
-  * [Credits](###credits) 
+  * [Credits](###credits)
   * [License](###license)
- 
+
 
 
 ## What's in a name?!
 
 ```
-Lookyloo ... 
+Lookyloo ...
 
 Same as Looky Lou; often spelled as Looky-loo (hyphen) or lookylou
 
@@ -59,7 +59,7 @@ It is avaliable on PyPi, so you can install it using the following command:
 pip install pylookyloo
 ```
 
-For more details on `pylookyloo`, read our [docs](https://www.lookyloo.eu/docs/main/pylookyloo-overview.html) or see the client [GitHub repo](https://github.com/Lookyloo/PyLookyloo).  
+For more details on `pylookyloo`, read the overview [docs](https://www.lookyloo.eu/docs/main/pylookyloo-overview.html), the [documentation](https://pylookyloo.readthedocs.io/en/latest/) of the module itself, or the code in this [GitHub repository](https://github.com/Lookyloo/PyLookyloo).
 
 # Contributing to Lookyloo
 To learn more about contributing to Lookyloo, see our [contributor guide](https://www.lookyloo.eu/docs/main/contributing.html).
@@ -70,7 +70,7 @@ At Lookyloo, we pledge to act and interact in ways that contribute to an open, w
 
 # Support
  * To engage with the Lookyloo community contact us on [Gitter](https://gitter.im/lookyloo-app/community).
- * Let us know how we can improve Lookyloo by opening an [issue](https://github.com/Lookyloo/lookyloo/issues/new/choose). 
+ * Let us know how we can improve Lookyloo by opening an [issue](https://github.com/Lookyloo/lookyloo/issues/new/choose).
  * Follow us on [Twitter](https://twitter.com/lookyloo_app).
 
 ### Security
