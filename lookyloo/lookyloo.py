@@ -272,7 +272,11 @@ class Lookyloo():
     def get_statistics(self, capture_uuid: str) -> Dict[str, Any]:
         '''Get the statistics of a capture.'''
         ct = self.get_crawled_tree(capture_uuid)
-        return ct.root_hartree.stats
+        stats = ct.root_hartree.stats
+        node, distance = ct.root_hartree.hostname_tree.get_farthest_leaf()
+        stats['tree_depth'] = int(distance) + 1
+        stats['total_redirects'] = len(ct.redirects)
+        return stats
 
     def get_meta(self, capture_uuid: str) -> Dict[str, str]:
         '''Get the meta informations from a capture (mostly, details about the User Agent used.)'''

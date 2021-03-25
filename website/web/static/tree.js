@@ -3,7 +3,7 @@
 
 // Set the dimensions and margins of the diagram
 let margin = {
-    top: document.getElementById('tree-details').clientHeight,
+    top: 20,
     right: 200,
     bottom: 10,
     left: 90

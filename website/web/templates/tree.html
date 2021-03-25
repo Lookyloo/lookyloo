@@ -88,8 +88,8 @@
   });
   {% else %}
   window.addEventListener('DOMContentLoaded', (event) => {
-      let element = document.getElementById(`node_${center_node}`);
-      element.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+      let thumbnail = document.getElementById('screenshot_thumbnail');
+      thumbnail.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
   });
   {% endif%}
   </script>
@@ -113,7 +113,7 @@
   var capture_starttime = new Date(Date.parse("{{ start_time }}"));
   window.addEventListener('DOMContentLoaded', (event) => {
       document.getElementById("start_time").innerHTML =
-          `<b>Capture time</b>: ${capture_starttime.getFullYear()}-${("0" + (capture_starttime.getMonth() + 1)).slice(-2)}-${("0" + capture_starttime.getDate()).slice(-2)} ${capture_starttime.toLocaleTimeString()}`;
+          `${capture_starttime.getFullYear()}-${("0" + (capture_starttime.getMonth() + 1)).slice(-2)}-${("0" + capture_starttime.getDate()).slice(-2)} ${capture_starttime.toLocaleTimeString()}`;
   });
 </script>
 
@@ -148,11 +148,32 @@
     <div id=menu_content class="collapse show">
       <ul class="list-unstyled components">
         <li>
-          <a href="{{ url_for('index') }}" role="button">Go back to index</a>
+          <a href="#detailsModal" data-toggle="modal" data-target="#detailsModal" role="button">Capture Details</a>
+        </li>
+        <li>
+          <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" role="button">Page Screenshot</a>
+        </li>
+        <li>
+          <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
+           data-toggle="modal" data-target="#statsModal" role="button">Tree Statistics</a>
         </li>
         <li>
           <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
-           data-toggle="modal" data-target="#modulesModal" role="button">Show third party reports</a>
+           data-toggle="modal" data-target="#modulesModal" role="button">Third Party Reports</a>
+        </li>
+        {% if has_redirects %}
+        <li>
+            <a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">Download Redirects list</a>
+        </li>
+        {% endif %}
+        {% if enable_mail_notification %}
+        <li>
+          <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Contact Local Administrator</a>
+        </li>
+        {% endif %}
+        <li>
+          <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
+             data-toggle="modal" data-target="#urlsInPageModal" role="button">Run Subsequent Captures</a>
         </li>
         {% if enable_categorization %}
         <li>
@@ -166,39 +187,21 @@
            data-toggle="modal" data-target="#mispPushModal" role="button">Prepare push to MISP</a>
         </li>
         {% endif %}
-        <li>
-          <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
-           data-toggle="modal" data-target="#statsModal" role="button">Show Statistics</a>
-        </li>
-        {% if has_redirects %}
-        <li>
-            <a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">Download redirects</a>
-        </li>
-        {% endif %}
         {% if enable_bookmark %}
         <li>
           <a href="#/" role="button" onclick="UnbookmarkAllNodes();">Unbookmark all nodes</a>
         </li>
         {% endif %}
-        <li>
-          <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" role="button">Show screenshot</a>
-        </li>
         {% if enable_context_by_users %}
         <li>
           <a href="#/" role="button" onclick="MarkAsKnown('{{ tree_uuid }}');">Mark all the captures' entries as known</a>
         </li>
         {% endif %}
-        {% if enable_mail_notification %}
         <li>
-          <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Notify by mail</a>
-        </li>
-        {% endif %}
-        <li>
-          <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
-             data-toggle="modal" data-target="#urlsInPageModal" role="button">View URLs in rendered page</a>
+          <a href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button">Lookyloo Manual</a>
         </li>
         <li>
-          <a href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button">Documentation and usage</a>
+          <a href="{{ url_for('index') }}" role="button">Homepage</a>
         </li>
       </ul>
     </div>
@@ -279,43 +282,44 @@
   </div>
 </div>
 
-<div id="tree-details_container" class="tree-panel-container">
-  <div id=tree-details class="collapse show">
-    <div>
-      <center>
-      <div style="display: inline">
-        <b>Details of the capture at the time it happened</b>
-      </div>
-      <div style="display: inline;">
-        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
-            <img src="{{ url_for('static', filename='up.jpg') }}"
-                 alt="Minimize tree details" height="25" width="25" title="Collapse">
+<!-- Modals -->
+
+<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="screenshotModalLabel">Details of the capture at the time it happened</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
         </button>
-      </div>
-      </center>
     </div>
-    <hr/>
-    <p title={{root_url}}><b>URL captured</b>: {{ shorten_string(root_url, 150) }}</p>
-    <p><b>Page title</b>: {{ page_title }}</p>
-    <p id="start_time"></p>
-    <p><b>User Agent</b>: {{ user_agent }}</p>
-    {% if meta %}
-      {% for k, v in meta.items() if k not in ['user_agent'] %}
-        <p><b>{{k.title()}}</b>: {{ v }}</p>
-      {% endfor %}
-    {%endif%}
+    <div class="modal-body">
+      <dl class="row">
+        <dt class="col-sm-2">URL captured</dt>
+        <dd class="col-sm-10">{{ shorten_string(root_url, 1000) }}</dd>
+
+        <dt class="col-sm-2">Page title</dt>
+        <dd class="col-sm-10">{{ page_title }}</dd>
+
+        <dt class="col-sm-2">Capture time</dt>
+        <dd class="col-sm-10" id="start_time"></dd>
+
+        <dt class="col-sm-2">User Agent</dt>
+        <dd class="col-sm-10">{{ user_agent }}</dd>
+
+        {% if meta %}
+          {% for k, v in meta.items() if k not in ['user_agent'] %}
+            <dt class="col-sm-2">{{k.title()}}</dt>
+            <dd class="col-sm-10">{{ v }}</dd>
+          {% endfor %}
+        {%endif%}
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
   </div>
-  <div style="width: 70px; float: right;">
-    <center>
-    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#tree-details">
-      <img src="{{ url_for('static', filename='down.jpg') }}" alt="Minimize tree details" height="40" width="40" title="Expand">
-      <b>Tree details</b>
-    </button>
-    </center>
   </div>
 </div>
-
-<!-- Modals -->
 
 <div class="modal fade" id="statsModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">

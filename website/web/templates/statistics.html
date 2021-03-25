@@ -1,10 +1,24 @@
 <div>
-{% if stats %}
-  {% for key, value in stats.items() %}
-    <dl class="row">
-      <dt class="col-sm-3">{{ key }}</dt>
-      <dd class="col-sm-3">{{ value }}</dd>
-    </dl>
-  {% endfor %}
-{% endif%}
+  <dl class="row">
+    <dt class="col-sm-2">Hostnames</dt>
+    <dd class="col-sm-10">{{ stats['total_hostnames'] }}</dd>
+
+    <dt class="col-sm-2">Unique URLs</dt>
+    <dd class="col-sm-10">{{ stats['total_urls'] }}</dd>
+
+    <dt class="col-sm-2">Cookies Received</dt>
+    <dd class="col-sm-10">{{ stats['total_cookies_received'] }}</dd>
+
+    <dt class="col-sm-2">Cookies Sent</dt>
+    <dd class="col-sm-10">{{ stats['total_cookies_sent'] }}</dd>
+
+    <dt class="col-sm-2">Node Depth</dt>
+    <dd class="col-sm-10">{{ stats['tree_depth'] }}</dd>
+
+    <dt class="col-sm-2">Total Nodes</dt>
+    <dd class="col-sm-10">{{ stats['total_hostnames'] }}</dd>
+
+    <dt class="col-sm-2">Redirects</dt>
+    <dd class="col-sm-10">{{ stats['total_redirects'] }}</dd>
+  </dl>
 </div>
