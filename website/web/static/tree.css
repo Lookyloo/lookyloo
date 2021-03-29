@@ -171,3 +171,7 @@ table td p {
 [data-toggle="collapse"]:not(.collapsed) .if-collapsed {
   display: none;
 }
+
+#screenshot_thumbnail {
+  scroll-margin: 50px;
+}
