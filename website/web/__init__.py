@@ -42,6 +42,7 @@ with secret_file_path.open('rb') as f:
 Bootstrap(app)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
+app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.debug = False
 
 # Auth stuff
