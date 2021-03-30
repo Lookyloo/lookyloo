@@ -1037,6 +1037,9 @@ class Lookyloo():
             event.add_object(fo)
         except Har2TreeError:
             pass
+        except AttributeError:
+            # No `body` in rendered node
+            pass
         return event
 
     def get_hashes(self, tree_uuid: str, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
