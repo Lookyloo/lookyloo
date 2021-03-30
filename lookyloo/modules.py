@@ -63,6 +63,13 @@ class MISP():
         else:
             return {'error': 'Module not available or push not enabled.'}
 
+    def get_existing_event(self, permaurl: str) -> Optional[str]:
+        attributes = self.client.search('attributes', value=permaurl, limit=1, page=1, pythonify=True)
+        if not attributes:
+            return None
+        url = f'{self.client.root_url}/events/{attributes[0].event_id}'
+        return url
+
 
 class SaneJavaScript():
 

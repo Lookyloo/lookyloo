@@ -1,4 +1,7 @@
 <div>
+  {% if existing_event %}
+  <p>There is already an <a href="{{existing_event}}">event</a> on your MISP instance with this lookyloo capture.</p>
+  {% endif %}
   <p>Event to push: {{event.info}}</p>
   <p>Auto Publish: {{auto_publish}}</p>
   <p>Default tags: {{', '.join(default_tags)}}</p>

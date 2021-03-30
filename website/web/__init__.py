@@ -898,11 +898,15 @@ def web_misp_push_view(tree_uuid: str):
         else:
             flash(f'Unable to create event: {event}', 'error')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
+    else:
+        # the 1st attribute in the event is the link to lookyloo
+        existing_misp_url = lookyloo.misp.get_existing_event(event.attributes[0].value)
 
     fav_tags = lookyloo.misp.get_fav_tags()
 
     return render_template('misp_push_view.html', tree_uuid=tree_uuid,
                            event=event, fav_tags=fav_tags,
+                           existing_event=existing_misp_url,
                            auto_publish=lookyloo.misp.auto_publish,
                            default_tags=lookyloo.misp.default_tags)
 
