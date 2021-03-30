@@ -886,6 +886,8 @@ def web_misp_push_view(tree_uuid: str):
     if error:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
 
+    # After this point, event is a MISPEvent
+
     if request.method == 'POST':
         # event is a MISPEvent at this point
         # Submit the event
@@ -900,7 +902,7 @@ def web_misp_push_view(tree_uuid: str):
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     else:
         # the 1st attribute in the event is the link to lookyloo
-        existing_misp_url = lookyloo.misp.get_existing_event(event.attributes[0].value)
+        existing_misp_url = lookyloo.misp.get_existing_event(event.attributes[0].value)  # type: ignore
 
     fav_tags = lookyloo.misp.get_fav_tags()
 

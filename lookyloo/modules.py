@@ -17,7 +17,7 @@ import vt  # type: ignore
 from vt.error import APIError  # type: ignore
 from pysanejs import SaneJS
 from pyeupi import PyEUPI
-from pymisp import PyMISP, MISPEvent
+from pymisp import PyMISP, MISPEvent, MISPAttribute
 
 
 class MISP():
@@ -65,7 +65,7 @@ class MISP():
 
     def get_existing_event(self, permaurl: str) -> Optional[str]:
         attributes = self.client.search('attributes', value=permaurl, limit=1, page=1, pythonify=True)
-        if not attributes:
+        if not attributes or not isinstance(attributes[0], MISPAttribute):
             return None
         url = f'{self.client.root_url}/events/{attributes[0].event_id}'
         return url
