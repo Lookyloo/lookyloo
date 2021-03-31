@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from glob import glob
 from urllib.parse import urlparse
 from functools import lru_cache
+from enum import IntEnum, unique
 
 from har2tree import CrawledTree, HostNode, URLNode
 from redis import Redis
@@ -31,6 +32,14 @@ from .exceptions import MissingEnv, CreateDirectoryException, ConfigError
 
 configs: Dict[str, Dict[str, Any]] = {}
 logger = logging.getLogger('Lookyloo - Helpers')
+
+
+@unique
+class CaptureStatus(IntEnum):
+    UNKNOWN = -1
+    QUEUED = 0
+    DONE = 1
+    ONGOING = 2
 
 
 # This method is used in json.dump or json.dumps calls as the default parameter:

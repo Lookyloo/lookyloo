@@ -925,6 +925,11 @@ def json_get_token():
     return jsonify({'error': 'User/Password invalid.'})
 
 
+@app.route('/json/<string:tree_uuid>/status', methods=['GET'])
+def get_capture_status(tree_uuid: str):
+    return jsonify({'status_code': lookyloo.get_capture_status(tree_uuid)})
+
+
 @app.route('/json/<string:tree_uuid>/redirects', methods=['GET'])
 def json_redirects(tree_uuid: str):
     cache = lookyloo.capture_cache(tree_uuid)

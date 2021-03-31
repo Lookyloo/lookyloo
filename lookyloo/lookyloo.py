@@ -35,7 +35,8 @@ from werkzeug.useragents import UserAgent
 from .exceptions import NoValidHarFile, MissingUUID, LookylooException
 from .helpers import (get_homedir, get_socket_path, load_cookies, get_config,
                       safe_create_dir, get_email_template, load_pickle_tree,
-                      remove_pickle_tree, get_resources_hashes, get_taxonomies, uniq_domains)
+                      remove_pickle_tree, get_resources_hashes, get_taxonomies, uniq_domains,
+                      CaptureStatus)
 from .modules import VirusTotal, SaneJavaScript, PhishingInitiative, MISP
 from .capturecache import CaptureCache
 from .context import Context
@@ -546,6 +547,15 @@ class Lookyloo():
             raise NoValidHarFile(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
         return to_return
 
+    def get_capture_status(self, capture_uuid: str) -> CaptureStatus:
+        if self.redis.sismember('to_capture', capture_uuid):
+            return CaptureStatus.QUEUED
+        elif self.redis.hexists('lookup_dirs', capture_uuid):
+            return CaptureStatus.DONE
+        elif self.redis.sismember('ongoing', capture_uuid):
+            return CaptureStatus.ONGOING
+        return CaptureStatus.UNKNOWN
+
     def enqueue_capture(self, query: MutableMapping[str, Any]) -> str:
         '''Enqueue a query in the capture queue (used by the API for asynchronous processing)'''
         perma_uuid = str(uuid4())
@@ -566,14 +576,20 @@ class Lookyloo():
         uuid = self.redis.spop('to_capture')
         if not uuid:
             return None
+        self.redis.sadd('ongoing', uuid)
+
         to_capture: Dict[str, Union[str, int, float]] = self.redis.hgetall(uuid)
-        self.redis.delete(uuid)
         to_capture['perma_uuid'] = uuid
         if 'cookies' in to_capture:
             to_capture['cookies_pseudofile'] = to_capture.pop('cookies')
-        if self.capture(**to_capture):  # type: ignore
+
+        status = self.capture(**to_capture)  # type: ignore
+        self.redis.srem('ongoing', uuid)
+        self.redis.delete(uuid)
+        if status:
             self.logger.info(f'Processed {to_capture["url"]}')
             return True
+        self.logger.warning(f'Unable to capture {to_capture["url"]}')
         return False
 
     def send_mail(self, capture_uuid: str, email: str='', comment: str='') -> None:
