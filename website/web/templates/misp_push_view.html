@@ -1,7 +1,4 @@
 <div>
-  {% if existing_event %}
-  <p>There is already an <a href="{{existing_event}}">event</a> on your MISP instance with this lookyloo capture.</p>
-  {% endif %}
   <p>Event to push: {{event.info}}</p>
   <p>Auto Publish: {{auto_publish}}</p>
   <p>Default tags: {{', '.join(default_tags)}}</p>
@@ -16,6 +13,13 @@
         </select>
       </div>
     </div>
-    <button type="submit" class="btn btn-info" id="btn-misp-push">Push to MISP</button>
+    {% if existing_event %}
+    <p>There is already an <a href="{{existing_event}}">event on your MISP instance</a> with this lookyloo capture.</p>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="force_push" onchange="document.getElementById('btn-misp-push').disabled = !this.checked;"></input>
+      <label for="force_push" class="form-check-label">Tick this box if you want to push anyway</label>
+    </div>
+    {% endif %}
+    <button type="submit" class="btn btn-info" id="btn-misp-push" {% if existing_event %}disabled=true{% endif %}>Push to MISP</button>
   </form>
 </div>
