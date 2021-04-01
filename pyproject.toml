@@ -5,6 +5,8 @@ description = "Web interface to track the trackers."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
 repository = "https://github.com/Lookyloo/lookyloo"
+homepage = "https://www.lookyloo.eu"
+documentation = "https://www.lookyloo.eu/docs/main/"
 
 readme = "README.md"
 
