@@ -1,0 +1,23 @@
+{% extends "main.html" %}
+{% block title %}Ongoing capture...{% endblock %}
+
+{% block content %}
+<div class="container">
+  </br>
+  </br>
+  </br>
+  </br>
+  </br>
+  </br>
+  <center>
+  <b>{{ message }}
+    </br>
+    Please wait...
+  </b>
+
+  </center>
+
+
+</div>
+<meta http-equiv="refresh" content="10;url={{url_for('tree', tree_uuid=tree_uuid)}}" />
+{% endblock %}

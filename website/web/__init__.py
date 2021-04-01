@@ -22,7 +22,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from pymisp import MISPEvent
 
-from lookyloo.helpers import get_homedir, update_user_agents, get_user_agents, get_config, get_taxonomies, load_cookies
+from lookyloo.helpers import (get_homedir, update_user_agents, get_user_agents, get_config,
+                              get_taxonomies, load_cookies, CaptureStatus)
 from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 from .proxied import ReverseProxied
@@ -466,8 +467,15 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
     try:
         cache = lookyloo.capture_cache(tree_uuid)
     except MissingUUID:
-        flash(f'Unable to find this UUID ({tree_uuid}). The capture may still be ongoing, try again later.', 'error')
-        return redirect(url_for('index'))
+        status = lookyloo.get_capture_status(tree_uuid)
+        if status == CaptureStatus.UNKNOWN:
+            flash(f'Unable to find this UUID ({tree_uuid}).', 'error')
+            return redirect(url_for('index'))
+        elif status == CaptureStatus.QUEUED:
+            message = "The capture it queued, but didn't start yet."
+        elif status == CaptureStatus.ONGOING:
+            message = "The capture it ongoing."
+        return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid)
 
     if not cache:
         flash('Invalid cache.', 'error')
