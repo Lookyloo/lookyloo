@@ -712,7 +712,7 @@ docs = ["Sphinx (>=3.5.3,<4.0.0)", "myst-parser (>=0.13.5,<0.14.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.141"
+version = "2.4.141.1"
 description = "Python API for MISP."
 category = "main"
 optional = false
@@ -1663,8 +1663,8 @@ pylookyloo = [
     {file = "pylookyloo-1.5.0.tar.gz", hash = "sha256:2f616e1f05206d84f4695b517b5c851775af69ac9df2e4f6fa880b6a2c6b6ec8"},
 ]
 pymisp = [
-    {file = "pymisp-2.4.141-py3-none-any.whl", hash = "sha256:4256dbbdb6bb83b42a161b643226e30c8600a6cf6b9aac4679e246ed1e203d11"},
-    {file = "pymisp-2.4.141.tar.gz", hash = "sha256:56588fd949ce246eb1332c3049373a769b3e2fee5ea303d89750ab231b8e83d7"},
+    {file = "pymisp-2.4.141.1-py3-none-any.whl", hash = "sha256:7ab159ba589f54d105c59cb990722369c57d8f587b5df215a79ed4059cb57b8a"},
+    {file = "pymisp-2.4.141.1.tar.gz", hash = "sha256:c6496a6884fe3a671e9dd3c314564b4e94b8827845f5ea0004ab3649373e9db2"},
 ]
 pyopenssl = [
     {file = "pyOpenSSL-20.0.1-py2.py3-none-any.whl", hash = "sha256:818ae18e06922c066f777a33f1fca45786d85edfe71cd043de6379337a7f274b"},
