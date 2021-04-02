@@ -698,11 +698,11 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pylookyloo"
-version = "1.4.1"
+version = "1.5.0"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
 requests = ">=2.22.0,<3.0.0"
@@ -1659,8 +1659,8 @@ pygments = [
     {file = "Pygments-2.8.1.tar.gz", hash = "sha256:2656e1a6edcdabf4275f9a3640db59fd5de107d88e8663c5d4e9a0fa62f77f94"},
 ]
 pylookyloo = [
-    {file = "pylookyloo-1.4.1-py3-none-any.whl", hash = "sha256:64dd129748921a8d4f015802eb85083c67c9ffa0cb26be476b398da1018b1279"},
-    {file = "pylookyloo-1.4.1.tar.gz", hash = "sha256:e8bde3817928839ea165730cfcbb27a6165c7ce2578418a1ad84eea1e315b5f7"},
+    {file = "pylookyloo-1.5.0-py3-none-any.whl", hash = "sha256:1fcd32ace502e0d2d8600859f7f15aef085bf68a7d1c612dfd147787b0e2d372"},
+    {file = "pylookyloo-1.5.0.tar.gz", hash = "sha256:2f616e1f05206d84f4695b517b5c851775af69ac9df2e4f6fa880b6a2c6b6ec8"},
 ]
 pymisp = [
     {file = "pymisp-2.4.141-py3-none-any.whl", hash = "sha256:4256dbbdb6bb83b42a161b643226e30c8600a6cf6b9aac4679e246ed1e203d11"},
