@@ -511,9 +511,9 @@ class Lookyloo():
     def capture_cache(self, capture_uuid: str) -> Optional[CaptureCache]:
         """Get the cache from redis.
         NOTE: Doesn't try to build the pickle"""
+        if capture_uuid in self._captures_index:
+            return self._captures_index[capture_uuid]
         capture_dir = self._get_capture_dir(capture_uuid)
-        if capture_dir in self._captures_index:
-            return self._captures_index[capture_dir]
         cached: Dict[str, Any] = self.redis.hgetall(str(capture_dir))
         if not cached:
             self.logger.warning(f'No cache available for {capture_dir}.')
