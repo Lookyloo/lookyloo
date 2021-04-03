@@ -86,6 +86,8 @@ class Lookyloo():
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
 
+        self._captures_index: Dict[str, CaptureCache] = {}
+
     def cache_user_agents(self, user_agent: str, remote_ip: str) -> None:
         '''Cache the useragents of the visitors'''
         today = date.today().isoformat()
@@ -459,6 +461,8 @@ class Lookyloo():
             p.hmset(str(capture_dir), cache)  # type: ignore
         if not redis_pipeline:
             p.execute()
+        # If the cache is re-created for some reason, pop from the local cache.
+        self._captures_index.pop(uuid, None)
 
     def hide_capture(self, capture_uuid: str) -> None:
         """Add the capture in the hidden pool (not shown on the front page)
@@ -475,26 +479,32 @@ class Lookyloo():
 
     def sorted_capture_cache(self, capture_uuids: Iterable[str]=[]) -> List[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).'''
-        all_cache: List[CaptureCache] = []
-        p = self.redis.pipeline()
         if not capture_uuids:
             # Sort all captures
             capture_uuids = self.capture_uuids
         if not capture_uuids:
             # No captures at all on the instance
-            return all_cache
-        for directory in self.redis.hmget('lookup_dirs', *capture_uuids):
-            if directory:
+            return []
+
+        all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids if uuid in self._captures_index]
+
+        captures_to_get = set(capture_uuids) - set(self._captures_index.keys())
+        if captures_to_get:
+            p = self.redis.pipeline()
+            for directory in self.redis.hmget('lookup_dirs', *captures_to_get):
+                if not directory:
+                    continue
                 p.hgetall(directory)
-        for c in p.execute():
-            if not c:
-                continue
-            c = CaptureCache(c)
-            if c.incomplete_redirects:
-                self._set_capture_cache(c.capture_dir, force=True)
-                c = self.capture_cache(c.uuid)
-            if hasattr(c, 'timestamp'):
-                all_cache.append(c)
+            for c in p.execute():
+                if not c:
+                    continue
+                c = CaptureCache(c)
+                if c.incomplete_redirects:
+                    self._set_capture_cache(c.capture_dir, force=True)
+                    c = self.capture_cache(c.uuid)
+                if hasattr(c, 'timestamp'):
+                    all_cache.append(c)
+                    self._captures_index[c.uuid] = c
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 
@@ -502,6 +512,8 @@ class Lookyloo():
         """Get the cache from redis.
         NOTE: Doesn't try to build the pickle"""
         capture_dir = self._get_capture_dir(capture_uuid)
+        if capture_dir in self._captures_index:
+            return self._captures_index[capture_dir]
         cached: Dict[str, Any] = self.redis.hgetall(str(capture_dir))
         if not cached:
             self.logger.warning(f'No cache available for {capture_dir}.')
