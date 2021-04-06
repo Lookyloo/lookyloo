@@ -7,6 +7,8 @@ import subprocess
 import shlex
 import sys
 import hashlib
+import platform
+from pathlib import Path
 
 from lookyloo.helpers import get_homedir
 
@@ -79,30 +81,36 @@ def main():
 
     print('* Validate configuration files.')
     keep_going(args.yes)
-    run_command('tools/validate_config_files.py --check')
+    run_command(f'poetry run {str(Path("tools") / "validate_config_files.py")} --check')
 
     print('* Update configuration files.')
     keep_going(args.yes)
-    run_command('tools/validate_config_files.py --update')
+    run_command(f'poetry run {str(Path("tools") / "validate_config_files.py")} --update')
 
     print('* Update third party dependencies for the website.')
     keep_going(args.yes)
-    run_command('tools/3rdparty.py')
+    run_command(f'poetry run {str(Path("tools") / "3rdparty.py")}')
 
     print('* Restarting Lookyloo.')
     keep_going(args.yes)
-    service = "lookyloo"
-    p = subprocess.run(["systemctl", "is-active", "--quiet", service])
-    try:
-        p.check_returncode()
-        print('Restarting Lookyloo with systemd...')
-        run_command('sudo service lookyloo restart')
-        print('done.')
-    except subprocess.CalledProcessError:
+    if platform.system() == 'Windows':
         print('Restarting Lookyloo with poetry...')
         run_command('poetry run stop', expect_fail=True)
         run_command('poetry run start', capture_output=False)
         print('Lookyloo started.')
+    else:
+        service = "lookyloo"
+        p = subprocess.run(["systemctl", "is-active", "--quiet", service])
+        try:
+            p.check_returncode()
+            print('Restarting Lookyloo with systemd...')
+            run_command('sudo service lookyloo restart')
+            print('done.')
+        except subprocess.CalledProcessError:
+            print('Restarting Lookyloo with poetry...')
+            run_command('poetry run stop', expect_fail=True)
+            run_command('poetry run start', capture_output=False)
+            print('Lookyloo started.')
 
 
 if __name__ == '__main__':
