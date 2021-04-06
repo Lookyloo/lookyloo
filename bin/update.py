@@ -81,15 +81,15 @@ def main():
 
     print('* Validate configuration files.')
     keep_going(args.yes)
-    run_command(f'poetry run {str(Path("tools") / "validate_config_files.py")} --check')
+    run_command(f'poetry run {(Path("tools") / "validate_config_files.py").as_posix()} --check')
 
     print('* Update configuration files.')
     keep_going(args.yes)
-    run_command(f'poetry run {str(Path("tools") / "validate_config_files.py")} --update')
+    run_command(f'poetry run {(Path("tools") / "validate_config_files.py").as_posix()} --update')
 
     print('* Update third party dependencies for the website.')
     keep_going(args.yes)
-    run_command(f'poetry run {str(Path("tools") / "3rdparty.py")}')
+    run_command(f'poetry run {(Path("tools") / "3rdparty.py").as_posix()}')
 
     print('* Restarting Lookyloo.')
     keep_going(args.yes)
