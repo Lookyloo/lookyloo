@@ -76,10 +76,10 @@
       <h3>{{ hostnode.name }}</h3>
     <button type="button" class="btn btn-info" onclick="whereAmI('{{ hostnode_uuid }}')">Locate in tree</button>
     <a href="{{ url_for('urls_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-info" role="button">
-        Download URLs as text
+        Download all URLs as text
     </a>
     <a href="{{ url_for('hashes_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-info" role="button">
-        Download Hashes as text
+        Download all Hashes as text
     </a>
   </center>
   <div>

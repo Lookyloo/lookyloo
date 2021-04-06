@@ -70,7 +70,9 @@ $(document).ready(function () {
     </a>
   </center>
   <center>
-    <h2><a href="{{ url_for('capture_web') }}">Start a new capture</a></h2>
+    <h4>Web forensics tool</h4>
+    </br>
+    <a href="{{ url_for('capture_web') }}" class="new-capture-button" > Start a new capture </a>
     <br><br>
     {{ render_messages(container=True, dismissible=True) }}
   </center>

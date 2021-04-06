@@ -20,17 +20,9 @@
   text-align: center;
 }
 
-#menu_container {
-  position: fixed;
-  top: 5px;
-  left: 5px;
-  padding-top: 5px;
-  padding-right: 5px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-}
+/* menu vertical */
 
-#menu {
+#menu_vertical {
   position: fixed;
   top: 5px;
   left: 5px;
@@ -42,29 +34,77 @@
   padding-left: 5px;
 }
 
-#menu_container .menu-header {
-	width: 200px;
-	height: 110px;
-	resize: both;
+#menu_container_vertical {
+  position: fixed;
+  top: 5px;
+  left: 5px;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  padding-left: 5px;
 }
 
-#menu_container ul.components {
-    padding: 20px 0;
+#menu_container_vertical .menu-header {
+  width: 200px;
+  height: 110px;
+  resize: both;
 }
 
-#menu_container ul li a {
-    padding: 10px;
+#menu_container_vertical ul.components {
+    padding: 10px 0;
+}
+
+#menu_container_vertical ul li a {
+    padding: 5px;
     font-size: 1.1em;
     display: block;
 }
 
-#menu_container ul li a:hover {
+#menu_container_vertical ul li a:hover {
     background: #fff;
 }
 
-.blur {
-  filter: blur(10px);
+/* menu horizontal */
+
+#menu_horizontal {
+  position: fixed;
+  top: 5px;
+  left: 222px;
+  background: white;
+  border: 2px solid;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-left: 5px;
 }
+
+#menu_container_horizontal {
+  position: fixed;
+  top: 5px;
+  left: 5px;
+  padding-top: 5px;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+#menu_container_horizontal .container {
+  width: 800px;
+}
+
+#menu_container_horizontal ul.components {
+    padding: 5px;
+}
+
+#menu_container_horizontal ul li a {
+    padding: 1px;
+    font-size: 1.1em;
+    display: block;
+}
+
+#menu_container_horizontal ul li a:hover {
+    background: #fff;
+}
+
+/* legend */
 
 #legend_container {
   position: fixed;
@@ -155,6 +195,18 @@ hr {
   border-width: 1px;
 }
 
+hr.vertical {
+  display: block;
+  margin-top: 0.1em;
+  margin-bottom: 0.5em;
+  margin-left: auto;
+  margin-right: auto;
+  border-color: black;
+  border-style: inset;
+  border-width: 1px;
+  height: 100px;
+}
+
 table {
   table-layout: fixed;
 }
@@ -174,4 +226,47 @@ table td p {
 
 #screenshot_thumbnail {
   scroll-margin: 50px;
+}
+
+.blur {
+  filter: blur(10px);
+}
+
+.arrow-down {
+  transform: rotate(180deg);
+}
+
+.arrow-right {
+  transform: rotate(90deg);
+}
+
+.arrow-left {
+  transform: rotate(270deg);
+}
+
+a.new-capture-button {
+  width: 160px;
+  height: 60px;
+  font-size: 25px;
+  letter-spacing: 2.5px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #0000ff;
+  border: 10px;
+  border-radius: 50px;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+  outline: none;
+  padding-right: 15px;
+	padding-left: 15px;
+	padding-bottom: 15px;
+	padding-top: 15px;
+}
+
+a.new-capture-button:hover {
+  background-color: #007070;
+  box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.1);
+  color: #fff;
+  transform: translateY(-7px);
 }

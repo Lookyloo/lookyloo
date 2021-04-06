@@ -121,22 +121,20 @@
 
 <!-- Containers -->
 
-<div id="menu_container" class="tree-panel-container">
-  <div id=menu>
-    <div class="menu_header">
+<div id="menu_container_vertical" class="tree-panel-container">
+  <div id=menu_vertical>
+    <div class="menu_vertical_header">
       <a href="{{ url_for('index') }}" title="Back to captures">
-        <img src="{{ url_for('static', filename='lookyloo.jpeg') }}" alt="Lookyloo icon" height="110">
+        <img src="{{ url_for('static', filename='lookyloo.jpeg') }}" alt="Lookyloo icon"
+             height="110">
       </a>
     </div>
     <hr/>
     <center>
-      <div style="display: inline">
-        <b>Menu</b>
-      </div>
-      <div style="display: inline;">
-        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu_content">
+      <div>
+        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu_vertical_content">
             <span class="if-collapsed">
-              <img src="{{ url_for('static', filename='down.jpg') }}" alt="Maximize menu" height="25" width="25" title="Expand">
+              <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-down" alt="Maximize menu" height="25" width="25" title="Expand">
             </span>
             <span class="if-not-collapsed">
               <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize menu" height="25" width="25" title="Collapse">
@@ -145,58 +143,11 @@
       </div>
     </center>
     <hr/>
-    <div id=menu_content class="collapse show">
+    <div id=menu_vertical_content class="collapse show">
       <ul class="list-unstyled components">
         <li>
           <a href="#detailsModal" data-toggle="modal" data-target="#detailsModal" role="button">Capture Details</a>
         </li>
-        <li>
-          <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" role="button">Page Screenshot</a>
-        </li>
-        <li>
-          <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
-           data-toggle="modal" data-target="#statsModal" role="button">Tree Statistics</a>
-        </li>
-        <li>
-          <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
-           data-toggle="modal" data-target="#modulesModal" role="button">Third Party Reports</a>
-        </li>
-        {% if has_redirects %}
-        <li>
-            <a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">Download Redirects list</a>
-        </li>
-        {% endif %}
-        {% if enable_mail_notification %}
-        <li>
-          <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Contact Local Administrator</a>
-        </li>
-        {% endif %}
-        <li>
-          <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
-             data-toggle="modal" data-target="#urlsInPageModal" role="button">Run Subsequent Captures</a>
-        </li>
-        {% if enable_categorization %}
-        <li>
-          <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
-           data-toggle="modal" data-target="#categoriesModal" role="button">Manage categories</a>
-        </li>
-        {% endif %}
-        {% if current_user.is_authenticated and misp_push%}
-        <li>
-          <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
-           data-toggle="modal" data-target="#mispPushModal" role="button">Prepare push to MISP</a>
-        </li>
-        {% endif %}
-        {% if enable_bookmark %}
-        <li>
-          <a href="#/" role="button" onclick="UnbookmarkAllNodes();">Unbookmark all nodes</a>
-        </li>
-        {% endif %}
-        {% if enable_context_by_users %}
-        <li>
-          <a href="#/" role="button" onclick="MarkAsKnown('{{ tree_uuid }}');">Mark all the captures' entries as known</a>
-        </li>
-        {% endif %}
         <li>
           <a href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button">Lookyloo Manual</a>
         </li>
@@ -204,6 +155,87 @@
           <a href="{{ url_for('index') }}" role="button">Homepage</a>
         </li>
       </ul>
+    </div>
+  </div>
+</div>
+
+<div id="menu_container_horizontal" class="tree-panel-container">
+  <div id=menu_horizontal class="media">
+    <button type="button" class="btn btn-link mr-3 align-self-center" data-toggle="collapse" data-target="#menu_horizontal_content">
+        <span class="if-collapsed">
+          <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-right" alt="Maximize menu" height="25" width="25" title="Expand">
+        </span>
+        <span class="if-not-collapsed">
+          <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-left" alt="Minimize menu" height="25" width="25" title="Collapse">
+        </span>
+    </button>
+    <div id="menu_horizontal_content" class="collapse show media-body mt-0 container">
+      <div class="row">
+        <hr class="vertical">
+        <div class="col-sm">
+          <ul class="list-unstyled components">
+            <li>
+              <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" role="button">Page Screenshot</a>
+            </li>
+            <li>
+              <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
+                 data-toggle="modal" data-target="#statsModal" role="button">Tree Statistics</a>
+            </li>
+            <li>
+              <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
+                 data-toggle="modal" data-target="#modulesModal" role="button">Third Party Reports</a>
+            </li>
+          </ul>
+        </div>
+        <hr class="vertical">
+        <div class="col-sm">
+          <ul class="list-unstyled components">
+            <li>
+              <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
+                 data-toggle="modal" data-target="#urlsInPageModal" role="button">Run Subsequent Captures</a>
+            </li>
+            {% if has_redirects %}
+            <li>
+              <a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">Download Redirects list</a>
+            </li>
+            {% endif %}
+            {% if enable_mail_notification %}
+            <li>
+              <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Contact Local Administrator</a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+        {%if enable_categorization or (current_user.is_authenticated and misp_push) or enable_bookmark or enable_context_by_users %}
+        <hr class="vertical">
+        <div class="col-sm">
+          <ul class="list-unstyled components">
+            {% if enable_categorization %}
+            <li>
+              <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
+                 data-toggle="modal" data-target="#categoriesModal" role="button">Manage categories</a>
+            </li>
+            {% endif %}
+            {% if current_user.is_authenticated and misp_push%}
+            <li>
+              <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
+                 data-toggle="modal" data-target="#mispPushModal" role="button">Prepare push to MISP</a>
+            </li>
+            {% endif %}
+            {% if enable_bookmark %}
+            <li>
+              <a href="#/" role="button" onclick="UnbookmarkAllNodes();">Unbookmark all nodes</a>
+            </li>
+            {% endif %}
+            {% if enable_context_by_users %}
+            <li>
+              <a href="#/" role="button" onclick="MarkAsKnown('{{ tree_uuid }}');">Mark all the captures' entries as known</a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
     </div>
   </div>
 </div>

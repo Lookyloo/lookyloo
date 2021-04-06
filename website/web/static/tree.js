@@ -3,13 +3,13 @@
 
 // Set the dimensions and margins of the diagram
 let margin = {
-    top: 20,
+    top: 110,
     right: 200,
     bottom: 10,
     left: 90
 };
 
-let menuHeight = document.getElementById('menu').clientHeight;
+let menuHeight = document.getElementById('menu_vertical').clientHeight;
 let width = 960 - margin.left - margin.right;
 let height = menuHeight * 2;
 
