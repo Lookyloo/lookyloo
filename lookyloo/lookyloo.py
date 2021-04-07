@@ -82,11 +82,10 @@ class Lookyloo():
             self.logger.warning('Unable to setup the MISP module')
 
         self.context = Context(self.sanejs)
+        self._captures_index: Dict[str, CaptureCache] = {}
 
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
-
-        self._captures_index: Dict[str, CaptureCache] = {}
 
     def cache_user_agents(self, user_agent: str, remote_ip: str) -> None:
         '''Cache the useragents of the visitors'''
@@ -1091,14 +1090,6 @@ class Lookyloo():
         hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
         if not hostnode:
             raise MissingUUID(f'Unable to find UUID {node_uuid} in {node_uuid}')
-
-        cnames_path = ct.root_hartree.har.path.parent / 'cnames.json'
-        if cnames_path.exists():
-            with cnames_path.open() as f:
-                host_cnames = json.load(f)
-            cnames = self._build_cname_chain(host_cnames, hostnode.name)
-            if cnames:
-                hostnode.add_feature('cname', cnames)
 
         known_content = self.context.find_known_content(hostnode)
 

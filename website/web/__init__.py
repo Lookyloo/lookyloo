@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import base64
-from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO, StringIO
 import os
 from pathlib import Path
@@ -810,16 +809,17 @@ def get_ressource(tree_uuid: str, node_uuid: str):
     else:
         h_request = None
     ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_request)
-    to_return = BytesIO()
-    with ZipFile(to_return, 'w', ZIP_DEFLATED) as zfile:
-        if ressource:
-            filename, r, mimetype = ressource
-            zfile.writestr(filename, r.getvalue())
-        else:
-            zfile.writestr('file.txt', b'Unknown Hash')
+    if ressource:
+        filename, to_return, mimetype = ressource
+        if not mimetype.startswith('image'):
+            # Force a .txt extension
+            filename += '.txt'
+    else:
+        to_return = BytesIO(b'Unknown Hash')
+        filename = 'file.txt'
+        mimetype = 'text/text'
     to_return.seek(0)
-    return send_file(to_return, mimetype='application/zip',
-                     as_attachment=True, attachment_filename='file.zip')
+    return send_file(to_return, mimetype=mimetype, as_attachment=True, attachment_filename=filename)
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource_preview', methods=['GET'])
