@@ -1,4 +1,5 @@
 {% extends "main.html" %}
+{% from 'bootstrap/utils.html' import render_messages %}
 {% block title %}Capture{% endblock %}
 
 {% block card %}
@@ -27,6 +28,8 @@
            alt="Lookyloo" width="400">
     </a>
   </center>
+  </br>
+  {{ render_messages(container=True, dismissible=True) }}
   </br>
   <form role="form" action="{{ url_for('capture_web') }}" method=post enctype=multipart/form-data>
     <div class="form-group row">

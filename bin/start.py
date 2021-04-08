@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from subprocess import run, Popen
-from lookyloo.helpers import get_homedir
+from lookyloo.helpers import get_homedir, get_config
 
 
 def main():
@@ -13,7 +13,8 @@ def main():
     p.check_returncode()
     print('done.')
     print('Start asynchronous ingestor...')
-    Popen(['async_capture'])
+    for i in range(get_config('generic', 'async_capture_processes')):
+        Popen(['async_capture'])
     print('done.')
     print('Start background indexer...')
     Popen(['background_indexer'])

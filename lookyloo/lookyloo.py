@@ -16,7 +16,7 @@ import smtplib
 import socket
 import sys
 from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping, Set, Iterable
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urljoin
 from uuid import uuid4
 from zipfile import ZipFile
 import operator
@@ -28,6 +28,8 @@ from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from PIL import Image  # type: ignore
 from pymisp import MISPEvent, MISPAttribute, MISPObject
 from pymisp.tools import URLObject, FileObject
+import requests
+from requests.exceptions import HTTPError
 from redis import Redis
 from scrapysplashwrapper import crawl
 from werkzeug.useragents import UserAgent
@@ -584,6 +586,14 @@ class Lookyloo():
 
     def process_capture_queue(self) -> Union[bool, None]:
         '''Process a query from the capture queue'''
+        if not self.redis.exists('to_capture'):
+            return None
+
+        status, message = self.splash_status()
+        if not status:
+            self.logger.critical(f'Splash is not running, unable to process the capture queue: {message}')
+            return None
+
         uuid = self.redis.spop('to_capture')
         if not uuid:
             return None
@@ -735,6 +745,20 @@ class Lookyloo():
         return sorted(set(ct.root_hartree.rendered_node.urls_in_rendered_page)
                       - set(ct.root_hartree.all_url_requests.keys()))
 
+    def splash_status(self) -> Tuple[bool, str]:
+        try:
+            splash_status = requests.get(urljoin(self.splash_url, '_ping'))
+            splash_status.raise_for_status()
+            json_status = splash_status.json()
+            if json_status['status'] == 'ok':
+                return True, 'Splash is up'
+            else:
+                return False, str(json_status)
+        except HTTPError as http_err:
+            return False, f'HTTP error occurred: {http_err}'
+        except Exception as err:
+            return False, f'Other error occurred: {err}'
+
     def capture(self, url: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                 depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
                 referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
@@ -768,6 +792,8 @@ class Lookyloo():
         if int(depth) > int(get_config('generic', 'max_depth')):
             self.logger.warning(f'Not allowed to capture on a depth higher than {get_config("generic", "max_depth")}: {depth}')
             depth = int(get_config('generic', 'max_depth'))
+        if not perma_uuid:
+            perma_uuid = str(uuid4())
         self.logger.info(f'Capturing {url}')
         try:
             items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
@@ -779,8 +805,6 @@ class Lookyloo():
             # broken
             self.logger.critical(f'Something went terribly wrong when capturing {url}.')
             return False
-        if not perma_uuid:
-            perma_uuid = str(uuid4())
         width = len(str(len(items)))
         dirpath = self.capture_dir / datetime.now().isoformat()
         safe_create_dir(dirpath)

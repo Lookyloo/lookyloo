@@ -13,6 +13,7 @@ from typing import Optional, Dict, Any, Union
 import logging
 import hashlib
 from urllib.parse import quote_plus, unquote_plus
+import time
 
 from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
 from flask_bootstrap import Bootstrap  # type: ignore
@@ -658,29 +659,34 @@ def search():
 @app.route('/capture', methods=['GET', 'POST'])
 def capture_web():
     if request.form.get('url'):
+        capture_query = {'url': request.form.get('url')}
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
-            cookie_file = request.files['cookies'].stream
-        else:
-            cookie_file = None
-        url = request.form.get('url')
+            capture_query['cookies'] = request.files['cookies'].stream.read()
+
         if request.form.get('personal_ua') and request.headers.get('User-Agent'):
-            user_agent = request.headers.get('User-Agent')
-            os = None
-            browser = None
+            capture_query['user_agent'] = request.headers.get('User-Agent')
         else:
-            user_agent = request.form.get('user_agent')
-            os = request.form.get('os')
-            browser = request.form.get('browser')
-        if url:
-            depth: int = request.form.get('depth') if request.form.get('depth') else 1  # type: ignore
-            listing: bool = request.form.get('listing') if request.form.get('listing') else False  # type: ignore
-            perma_uuid = lookyloo.capture(url=url, cookies_pseudofile=cookie_file,
-                                          depth=depth, listing=listing,
-                                          user_agent=user_agent,
-                                          referer=request.form.get('referer'),  # type: ignore
-                                          os=os, browser=browser)
-            return redirect(url_for('tree', tree_uuid=perma_uuid))
+            capture_query['user_agent'] = request.form.get('user_agent')
+            capture_query['os'] = request.form.get('os')
+            capture_query['browser'] = request.form.get('browser')
+
+        if request.form.get('depth'):
+            capture_query['depth'] = request.form.get('depth')
+        else:
+            capture_query['depth'] = 1
+
+        if request.form.get('listing'):
+            capture_query['listing'] = True
+        else:
+            capture_query['listing'] = False
+
+        if request.form.get('referer'):
+            capture_query['referer'] = request.form.get('referer')
+
+        perma_uuid = lookyloo.enqueue_capture(capture_query)
+        time.sleep(30)
+        return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents: Dict[str, Any] = {}
     if use_own_ua:
         user_agents = get_user_agents('own_user_agents')
@@ -691,6 +697,10 @@ def capture_web():
         if 'bot' not in ua['useragent'].lower():
             default_ua = ua
             break
+    splash_up, message = lookyloo.splash_status()
+    if not splash_up:
+        flash(f'The capture module is not reachable ({message}).', 'error')
+        flash('The request will be enqueued, but capturing may take a while and require the administrator to wake up.', 'error')
     return render_template('capture.html', user_agents=user_agents, default=default_ua,
                            max_depth=max_depth, personal_ua=request.headers.get('User-Agent'))
 
