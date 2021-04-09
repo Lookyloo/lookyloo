@@ -9,6 +9,8 @@ from .helpers import long_sleep, shutdown_requested, set_running, unset_running
 
 class AbstractManager(ABC):
 
+    script_name: str
+
     def __init__(self, loglevel: int=logging.DEBUG):
         self.loglevel = loglevel
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
