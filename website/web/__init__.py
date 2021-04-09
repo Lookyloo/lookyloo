@@ -472,9 +472,9 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
             flash(f'Unable to find this UUID ({tree_uuid}).', 'error')
             return redirect(url_for('index'))
         elif status == CaptureStatus.QUEUED:
-            message = "The capture it queued, but didn't start yet."
+            message = "The capture is queued, but didn't start yet."
         elif status == CaptureStatus.ONGOING:
-            message = "The capture it ongoing."
+            message = "The capture is ongoing."
         return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid)
 
     if not cache:
