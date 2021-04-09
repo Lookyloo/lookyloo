@@ -4,7 +4,6 @@
 import logging
 
 from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import set_running, unset_running
 from lookyloo.lookyloo import Lookyloo
 from lookyloo.exceptions import NoValidHarFile
 
@@ -17,15 +16,14 @@ class BackgroundIndexer(AbstractManager):
     def __init__(self, loglevel: int=logging.INFO):
         super().__init__(loglevel)
         self.lookyloo = Lookyloo()
+        self.script_name = 'background_indexer'
         # make sure discarded captures dir exists
         self.discarded_captures_dir = self.lookyloo.capture_dir.parent / 'discarded_captures'
         self.discarded_captures_dir.mkdir(parents=True, exist_ok=True)
 
     def _to_run_forever(self):
-        set_running('background_indexer')
         self._build_missing_pickles()
         self._check_indexes()
-        unset_running('background_indexer')
 
     def _build_missing_pickles(self):
         for uuid_path in self.lookyloo.capture_dir.glob('*/uuid'):
