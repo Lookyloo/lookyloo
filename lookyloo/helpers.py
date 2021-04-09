@@ -322,6 +322,9 @@ def load_pickle_tree(capture_dir: Path) -> Optional[CrawledTree]:
                 remove_pickle_tree(capture_dir)
             except EOFError:
                 remove_pickle_tree(capture_dir)
+            except Exception:
+                remove_pickle_tree(capture_dir)
+
     return None
 
 
