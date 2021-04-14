@@ -472,6 +472,8 @@ class Lookyloo():
         capture_dir = self._get_capture_dir(capture_uuid)
         self.redis.hset(str(capture_dir), 'no_index', 1)
         (capture_dir / 'no_index').touch()
+        if capture_uuid in self._captures_index:
+            self._captures_index[capture_uuid].no_index = True
 
     @property
     def capture_uuids(self) -> List[str]:
