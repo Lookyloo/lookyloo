@@ -198,6 +198,8 @@ def after_request(response):
             lookyloo.cache_user_agents(ua, real_ip)
         else:
             lookyloo.cache_user_agents(ua, request.remote_addr)
+    # Opt out of FLoC
+    response.headers.set('Permissions-Policy', 'interest-cohort=()')
     return response
 
 
