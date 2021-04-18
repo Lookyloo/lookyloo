@@ -123,6 +123,9 @@ class Lookyloo():
         with self_generated_ua_file.open('w') as f:
             json.dump(to_store, f, indent=2)
 
+        # Remove the UA / IP mapping.
+        self.redis.delete(f'user_agents|{yesterday.isoformat()}')
+
     def _cache_capture(self, capture_uuid: str) -> CrawledTree:
         '''Generate the pickle, set the cache, add capture in the indexes'''
         capture_dir = self._get_capture_dir(capture_uuid)

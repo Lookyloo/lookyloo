@@ -191,6 +191,14 @@ app.jinja_env.globals.update(month_name=month_name)
 
 @app.after_request
 def after_request(response):
+    # We keep a list user agents in order to build a list to use in the capture
+    # interface: this is the easiest way to have something up to date.
+    # The reason we also get the IP address of the client is because we
+    # count the frequency of each user agents and use it to sort them on the
+    # capture page, and we want to avoid counting the same user (same IP)
+    # multiple times in a day.
+    # The cache of IPs is deleted after the UA file is generated (see lookyloo.build_ua_file),
+    # once a day.
     ua = request.headers.get('User-Agent')
     real_ip = request.headers.get('X-Real-IP')
     if ua:
