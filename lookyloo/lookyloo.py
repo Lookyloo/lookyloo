@@ -991,7 +991,11 @@ class Lookyloo():
 
     def get_ressource(self, tree_uuid: str, urlnode_uuid: str, h: Optional[str]) -> Optional[Tuple[str, BytesIO, str]]:
         '''Get a specific resource from a URL node. If a hash s also given, we want an embeded resource'''
-        url = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
+        try:
+            url = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
+        except IndexError:
+            # unable to find the uuid, the cache is probably in a weird state.
+            return None
         if url.empty_response:
             return None
         if not h or h == url.body_hash:

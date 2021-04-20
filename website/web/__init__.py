@@ -723,8 +723,9 @@ def cookies_name_detail(cookie_name: str):
 
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])
 def body_hash_details(body_hash: str):
+    from_popup = request.args.get('from_popup')
     captures, domains = lookyloo.get_body_hash_investigator(body_hash.strip())
-    return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures)
+    return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures, from_popup=from_popup)
 
 
 @app.route('/urls/<string:url>', methods=['GET'])

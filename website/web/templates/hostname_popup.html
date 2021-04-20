@@ -197,7 +197,7 @@
             {% endif %}
             {# Link to list of captures with the same hash #}
             <p>
-              <a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash) }}">
+              <a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash, from_popup=True) }}">
               Show more information about this response body.
               </a>
             </p>
@@ -238,7 +238,7 @@
                 {% if 'other_captures' in details %}
                   {{ indexed_hash(details['other_captures'], hash) }}
                 {% endif %}
-                <p><a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash) }}">
+                <p><a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash, from_popup=True) }}">
                   Show more information about this embedded content.
                 </a></p>
               </div>
