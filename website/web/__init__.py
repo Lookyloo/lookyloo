@@ -262,7 +262,8 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
                            urls=urls,
                            keys_response=keys_response,
                            keys_request=keys_request,
-                           enable_context_by_users=enable_context_by_users)
+                           enable_context_by_users=enable_context_by_users,
+                           uwhois_available=lookyloo.uwhois.available)
 
 
 # ##### Tree level Methods #####
@@ -1039,3 +1040,10 @@ def json_hostname_info():
 def json_stats():
     to_return = lookyloo.get_stats()
     return Response(json.dumps(to_return), mimetype='application/json')
+
+
+@app.route('/whois/<string:query>', methods=['GET'])
+def whois(query: str):
+    to_return = lookyloo.uwhois.whois(query)
+    return send_file(BytesIO(to_return.encode()),
+                     mimetype='test/plain', as_attachment=True, attachment_filename=f'whois.{query}.txt')

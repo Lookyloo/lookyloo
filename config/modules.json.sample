@@ -20,12 +20,18 @@
     "default_tags": [],
     "auto_publish": false
   },
+  "UniversalWhois": {
+    "enabled": false,
+    "ipaddress": "127.0.0.1",
+    "port": 4243
+  },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
     "autosubmit": "Automatically submits the URL to the 3rd party service.",
     "VirusTotal": "Module to query Virustotal: https://www.virustotal.com/",
     "PhishingInitiative": "Module to query phishing initiative: https://phishing-initiative.fr/contrib/",
     "SaneJS": "Module to query SaneJS: https://github.com/Lookyloo/sanejs",
-    "MISP": "Module to query MISP: https://www.misp-project.org/"
+    "MISP": "Module to query MISP: https://www.misp-project.org/",
+    "UniversalWhois": "Module to query a local instance of uWhoisd: https://github.com/Lookyloo/uwhoisd"
   }
 }

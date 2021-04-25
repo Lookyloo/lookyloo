@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 import time
 import logging
-
+import socket
 
 from .helpers import get_homedir, get_config
 from .exceptions import ConfigError
@@ -69,6 +69,40 @@ class MISP():
             return None
         url = f'{self.client.root_url}/events/{attributes[0].event_id}'
         return url
+
+
+class UniversalWhois():
+
+    def __init__(self, config: Dict[str, Any]):
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.logger.setLevel(get_config('generic', 'loglevel'))
+        if not config.get('enabled'):
+            self.available = False
+            self.logger.info('Module not enabled.')
+            return
+        self.server = config.get('ipaddress')
+        self.port = config.get('port')
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect((self.server, self.port))
+        except Exception as e:
+            self.available = False
+            self.logger.warning(f'Unable to connect to uwhois ({self.server}:{self.port}): {e}')
+            return
+        self.available = True
+
+    def whois(self, query: str) -> str:
+        bytes_whois = b''
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect((self.server, self.port))
+            sock.sendall('{}\n'.format(query).encode())
+            while True:
+                data = sock.recv(2048)
+                if not data:
+                    break
+                bytes_whois += data
+        to_return = bytes_whois.decode()
+        return to_return
 
 
 class SaneJavaScript():

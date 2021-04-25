@@ -75,6 +75,11 @@
   <center>
       <h3>{{ hostnode.name }}</h3>
     <button type="button" class="btn btn-info" onclick="whereAmI('{{ hostnode_uuid }}')">Locate in tree</button>
+    {% if uwhois_available %}
+    <a href="{{ url_for('whois', query=hostnode.name) }}" class="btn btn-info" role="button">
+        Download whois entry
+    </a>
+    {% endif %}
     <a href="{{ url_for('urls_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-info" role="button">
         Download all URLs as text
     </a>
@@ -87,7 +92,7 @@
     <h4>CNAMEs:</h3>
     <ul>
     {% for cname in hostnode.cname %}
-      <li>{{ cname }}</li>
+      <li>{{ cname }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=cname)}}">whois</a>){% endif %}</li>
     {% endfor %}
     </ul>
   {% endif %}
@@ -95,7 +100,7 @@
     <h4>IPs:</h3>
     <ul>
     {% for ip in hostnode.resolved_ips %}
-      <li>{{ ip }}</li>
+      <li>{{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}</li>
     {% endfor %}
     </ul>
   {% endif %}

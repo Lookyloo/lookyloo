@@ -39,7 +39,7 @@ from .helpers import (get_homedir, get_socket_path, load_cookies, get_config,
                       safe_create_dir, get_email_template, load_pickle_tree,
                       remove_pickle_tree, get_resources_hashes, get_taxonomies, uniq_domains,
                       CaptureStatus)
-from .modules import VirusTotal, SaneJavaScript, PhishingInitiative, MISP
+from .modules import VirusTotal, SaneJavaScript, PhishingInitiative, MISP, UniversalWhois
 from .capturecache import CaptureCache
 from .context import Context
 from .indexing import Indexing
@@ -82,6 +82,10 @@ class Lookyloo():
         self.misp = MISP(get_config('modules', 'MISP'))
         if not self.misp.available:
             self.logger.warning('Unable to setup the MISP module')
+
+        self.uwhois = UniversalWhois(get_config('modules', 'UniversalWhois'))
+        if not self.uwhois.available:
+            self.logger.warning('Unable to setup the UniversalWhois module')
 
         self.context = Context(self.sanejs)
         self._captures_index: Dict[str, CaptureCache] = {}
