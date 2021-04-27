@@ -1,10 +1,21 @@
 <div>
   <dl class="row">
-    <dt class="col-sm-2">Hostnames</dt>
-    <dd class="col-sm-10">{{ stats['total_hostnames'] }}</dd>
 
+    {% if 'total_unique_hostnames' in stats %}
+    <dt class="col-sm-2">Unique hostnames</dt>
+    <dd class="col-sm-10">{{ stats['total_unique_hostnames'] }}</dd>
+    {% else %}
+    <dt class="col-sm-2">Total hostnames nodes</dt>
+    <dd class="col-sm-10">{{ stats['total_hostnames'] }}</dd>
+    {% endif %}
+
+    {% if 'total_unique_urls' in stats %}
     <dt class="col-sm-2">Unique URLs</dt>
+    <dd class="col-sm-10">{{ stats['total_unique_urls'] }}</dd>
+    {% else %}
+    <dt class="col-sm-2">Total URLs nodes</dt>
     <dd class="col-sm-10">{{ stats['total_urls'] }}</dd>
+    {% endif %}
 
     <dt class="col-sm-2">Cookies Received</dt>
     <dd class="col-sm-10">{{ stats['total_cookies_received'] }}</dd>
