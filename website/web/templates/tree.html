@@ -314,7 +314,7 @@
   <div class="modal-dialog modal-xl" role="document">
   <div class="modal-content">
     <div class="modal-header">
-      <h5 class="modal-title" id="screenshotModalLabel">Details of the capture at the time it happened</h5>
+      <h5 class="modal-title" id="detailsModalLabel">Details of the capture at the time it happened</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">×</span>
         </button>
@@ -396,18 +396,19 @@
     </div>
     <div class="modal-body">
     <center>
-      {% if screenshot_size > 10 * 1024 * 1024 %}
-        Image too big ({{ sizeof_fmt(screenshot_size) }}) to display in the browser, <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">click here to download it</a>.
-      {% else %}
-        <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button" class="btn btn-info">Download screenshot</a>
-        {% if blur_screenshot %}
-        <button type="button" class="btn btn-info" onclick="$('#screenshot').removeClass('blur')"> Unblur screenshot</button>
-        {% endif %}
+      {% set screenshot_too_big = screenshot_size > 10 * 1024 * 1024 %}
+      {% if screenshot_too_big %}
+        Image too big ({{ sizeof_fmt(screenshot_size) }}) to display in the browser, the screenshot below is cropped.
         </br>
-        </hr>
-        </br>
-        <img src="{{ url_for('image', tree_uuid=tree_uuid) }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
       {% endif %}
+      {% if blur_screenshot %}
+      <button type="button" class="btn btn-info" onclick="$('#screenshot').removeClass('blur')">Unblur</button>
+      {% endif %}
+      <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button" class="btn btn-info">Download</a>
+      </br>
+      </br>
+      <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '') }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
+      </br>
     </center>
     </div>
     <div class="modal-footer">

@@ -377,7 +377,11 @@ def redirects(tree_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
 def image(tree_uuid: str):
-    to_return = lookyloo.get_screenshot(tree_uuid)
+    max_width = request.args.get('width')
+    if max_width:
+        to_return = lookyloo.get_screenshot_thumbnail(tree_uuid, width=int(max_width))
+    else:
+        to_return = lookyloo.get_screenshot(tree_uuid)
     return send_file(to_return, mimetype='image/png',
                      as_attachment=True, attachment_filename='image.png')
 
