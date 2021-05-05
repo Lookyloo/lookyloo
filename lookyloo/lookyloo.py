@@ -777,13 +777,14 @@ class Lookyloo():
             splitted_url = urlsplit(url)
             if splitted_url.netloc:
                 if splitted_url.hostname:
-                    try:
-                        ip = socket.gethostbyname(splitted_url.hostname)
-                    except socket.gaierror:
-                        self.logger.info('Name or service not known')
-                        return False
-                    if not ipaddress.ip_address(ip).is_global:
-                        return False
+                    if splitted_url.hostname.split('.')[-1] != 'onion':
+                        try:
+                            ip = socket.gethostbyname(splitted_url.hostname)
+                        except socket.gaierror:
+                            self.logger.info('Name or service not known')
+                            return False
+                        if not ipaddress.ip_address(ip).is_global:
+                            return False
             else:
                 return False
 
