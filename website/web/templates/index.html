@@ -89,7 +89,7 @@ $(document).ready(function () {
     <tbody>
       {% for uuid, page_title, datetime, url, redirects, incomplete_redirects in titles %}
       <tr>
-        <td>
+        <td data-search="{{ page_title }} {{ url }}">
           <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
           {{ shorten_string(url, 50, with_title=True) }}
         </td>
