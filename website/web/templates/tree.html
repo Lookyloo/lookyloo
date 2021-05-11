@@ -99,8 +99,14 @@
     $.get("{{ url_for('trigger_modules', tree_uuid=tree_uuid) }}")
   </script>
   {% endif%}
-
 {% endblock %}
+
+
+{% block styles %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='tree.css') }}">
+{% endblock %}
+
 
 {% block content %}
 {{super()}}

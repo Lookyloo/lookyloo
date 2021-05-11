@@ -16,7 +16,7 @@
 
 .flashed-messages {
   position: fixed;
-  top: 150px;
+  bottom: 5px;
   text-align: center;
 }
 
@@ -242,31 +242,4 @@ table td p {
 
 .arrow-left {
   transform: rotate(270deg);
-}
-
-.new-capture-button {
-  width: 300px;
-  height: 60px;
-  font-size: 25px;
-  letter-spacing: 2.5px;
-  font-weight: 500;
-  color: #ffffff;
-  background-color: #0000ff;
-  border: 10px;
-  border-radius: 50px;
-  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-  transition: all 0.3s ease 0s;
-  cursor: pointer;
-  outline: none;
-  padding-right: 15px;
-	padding-left: 15px;
-	padding-bottom: 20px;
-	padding-top: 15px;
-}
-
-.new-capture-button:hover {
-  background-color: #007070;
-  box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.1);
-  color: #fff;
-  transform: translateY(-7px);
 }
