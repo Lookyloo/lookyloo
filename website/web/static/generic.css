@@ -1,5 +1,4 @@
 /* Capture button */
-
 .new-capture-button {
   width: 300px;
   height: 60px;
@@ -44,4 +43,45 @@ img.ressource_preview{
   max-height:150px;
   min-width:10px;
   min-height:10px;
+}
+
+/* Tables */
+table {
+  table-layout: fixed;
+}
+
+table td p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+/* Tooltips */
+.tooltip {
+    position: absolute;
+    text-align: left;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    z-index: 1;
+    border: 2px solid;
+    padding-top: 5px;
+    padding-right: 5px;
+    padding-bottom: 5px;
+    padding-left: 5px;
+}
+
+.tooltip text {
+  font: 15px sans-serif;
+  z-index: 2;
+}
+
+.tooltip img {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  width: 150px;
 }
