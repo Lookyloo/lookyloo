@@ -205,7 +205,11 @@ def after_request(response):
         if real_ip:
             lookyloo.cache_user_agents(ua, real_ip)
         else:
-            lookyloo.cache_user_agents(ua, request.remote_addr)
+            if request.remote_addr:
+                lookyloo.cache_user_agents(ua, request.remote_addr)
+            else:
+                # FIXME: That shouldn't happen, I guess, but mypy requires it.
+                pass
     # Opt out of FLoC
     response.headers.set('Permissions-Policy', 'interest-cohort=()')
     return response
@@ -463,11 +467,11 @@ def cache_tree(tree_uuid: str):
 def send_mail(tree_uuid: str):
     if not enable_mail_notification:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    email: str = request.form.get('email') if request.form.get('email') else ''  # type: ignore
+    email: str = request.form.get('email') if request.form.get('email') else ''
     if '@' not in email:
         # skip clearly incorrect emails
         email = ''
-    comment: str = request.form.get('comment') if request.form.get('comment') else ''  # type: ignore
+    comment: str = request.form.get('comment') if request.form.get('comment') else ''
     lookyloo.send_mail(tree_uuid, email, comment)
     flash("Email notification sent", 'success')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
@@ -543,7 +547,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
 @flask_login.login_required
 def mark_as_legitimate(tree_uuid: str):
     if request.data:
-        legitimate_entries = request.get_json(force=True)
+        legitimate_entries: Dict = request.get_json(force=True)  # type: ignore
         lookyloo.add_to_legitimate(tree_uuid, **legitimate_entries)
     else:
         lookyloo.add_to_legitimate(tree_uuid)
@@ -652,7 +656,7 @@ def rebuild_cache():
 
 @app.route('/submit', methods=['POST', 'GET'])
 def submit():
-    to_query = request.get_json(force=True)
+    to_query: Dict = request.get_json(force=True)  # type: ignore
     perma_uuid = lookyloo.enqueue_capture(to_query)
     return Response(perma_uuid, mimetype='text/text')
 
@@ -660,7 +664,7 @@ def submit():
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     if request.form.get('url'):
-        quoted_url: str = quote_plus(request.form.get('url'))  # type: ignore
+        quoted_url: str = quote_plus(request.form.get('url'))
         return redirect(url_for('url_details', url=quoted_url))
     if request.form.get('hostname'):
         return redirect(url_for('hostname_details', hostname=request.form.get('hostname')))
@@ -875,9 +879,9 @@ def add_context(tree_uuid: str, node_uuid: str):
         return redirect(url_for('ressources'))
 
     context_data = request.form
-    ressource_hash: str = context_data.get('hash_to_contextualize')  # type: ignore
-    hostnode_uuid: str = context_data.get('hostnode_uuid')  # type: ignore
-    callback_str: str = context_data.get('callback_str')  # type: ignore
+    ressource_hash: str = context_data.get('hash_to_contextualize')
+    hostnode_uuid: str = context_data.get('hostnode_uuid')
+    callback_str: str = context_data.get('callback_str')
     legitimate: bool = True if context_data.get('legitimate') else False
     malicious: bool = True if context_data.get('malicious') else False
     details: Dict[str, Dict] = {'malicious': {}, 'legitimate': {}}
@@ -951,7 +955,7 @@ def web_misp_push_view(tree_uuid: str):
 
 @app.route('/json/get_token', methods=['POST'])
 def json_get_token():
-    auth = request.get_json(force=True)
+    auth: Dict = request.get_json(force=True)  # type: ignore
     if 'username' in auth and 'password' in auth:  # Expected keys in json
         if (auth['username'] in users_table
                 and check_password_hash(users_table[auth['username']]['password'], auth['password'])):
@@ -1028,14 +1032,14 @@ def json_hash_info(h: str):
 
 @app.route('/json/url_info', methods=['POST'])
 def json_url_info():
-    to_query = request.get_json(force=True)
+    to_query: Dict = request.get_json(force=True)  # type: ignore
     occurrences = lookyloo.get_url_occurrences(**to_query)
     return jsonify(occurrences)
 
 
 @app.route('/json/hostname_info', methods=['POST'])
 def json_hostname_info():
-    to_query = request.get_json(force=True)
+    to_query: Dict = request.get_json(force=True)  # type: ignore
     occurrences = lookyloo.get_hostname_occurrences(**to_query)
     return jsonify(occurrences)
 
