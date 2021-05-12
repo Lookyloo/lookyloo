@@ -124,7 +124,7 @@
   <button class="btn btn-info" name="ressource_hash" value="{{ hash }}"
     {% if can_preview %}
     data-toggle="tooltip" data-placement="bottom" data-html="true"
-    title='<img src="{{ url_for('get_ressource_preview', tree_uuid=capture_uuid, node_uuid=urlnode_uuid, h_ressource=hash) }}"/>'
+    title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=capture_uuid, node_uuid=urlnode_uuid, h_ressource=hash) }}"/>'
     {% endif %}
   >{{ text }}</button>
 </form>
@@ -164,6 +164,7 @@
 {% if total_captures > 0  %}
 <p>
   The same file was seen in <b>{{ total_captures }}</b> other captures.
+  </br>
   <button class="btn btn-info collapsed" type="button" data-toggle="collapse" data-target="#captureslist_{{ identifier_for_toggle }}" aria-expanded="false" aria-controls="collapseExample">
     <span class="if-collapsed">Show other captures</span>
     <span class="if-not-collapsed">Hide other captures</span>
@@ -270,9 +271,9 @@
         <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
              width="21" height="21"
         {% if key == "image" %}
-             data-toggle="tooltip" data-placement="bottom" data-html="true" title='<img src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> </br>Click to download the content of the response in a zip file'
+             data-toggle="tooltip" data-placement="bottom" data-html="true" title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> </br>Click to download.'
         {% else %}
-                                                                                        data-toggle="tooltip" data-placement="bottom" data-html="true" title="{{icon_info['tooltip']}} <br/>Click to download."
+             data-toggle="tooltip" data-placement="bottom" data-html="true" title="{{icon_info['tooltip']}} <br/>Click to download."
         {% endif %}
         />
       </a>

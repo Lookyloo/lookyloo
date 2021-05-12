@@ -26,3 +26,22 @@
   color: #fff;
   transform: translateY(-7px);
 }
+
+/* CSS collapse thing */
+[data-toggle="collapse"].collapsed .if-not-collapsed {
+  display: none;
+}
+
+[data-toggle="collapse"]:not(.collapsed) .if-collapsed {
+  display: none;
+}
+
+/* Ressource preview */
+img.ressource_preview{
+  width:100%;
+  height:100%;
+  max-width:150px;
+  max-height:150px;
+  min-width:10px;
+  min-height:10px;
+}
