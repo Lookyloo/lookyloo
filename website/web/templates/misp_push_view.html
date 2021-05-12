@@ -20,6 +20,12 @@
       <label for="force_push" class="form-check-label">Tick this box if you want to push anyway</label>
     </div>
     {% endif %}
+    {% if has_parent %}
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="with_parents"></input>
+      <label for="with_parents" class="form-check-label">Also push the parents</label>
+    </div>
+    {% endif %}
     <button type="submit" class="btn btn-info" id="btn-misp-push" {% if existing_event %}disabled=true{% endif %}>Push to MISP</button>
   </form>
 </div>

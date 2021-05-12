@@ -462,6 +462,10 @@ class Lookyloo():
             if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
                 cache['no_index'] = 1
 
+            if (capture_dir / 'parent').exists():  # The capture was initiated from an other one
+                with (capture_dir / 'parent').open() as f:
+                    cache['parent'] = f.read().strip()
+
             p.hmset(str(capture_dir), cache)  # type: ignore
         if not redis_pipeline:
             p.execute()
@@ -575,7 +579,7 @@ class Lookyloo():
         return CaptureStatus.UNKNOWN
 
     def enqueue_capture(self, query: MutableMapping[str, Any]) -> str:
-        '''Enqueue a query in the capture queue (used by the API for asynchronous processing)'''
+        '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
         perma_uuid = str(uuid4())
         p = self.redis.pipeline()
         for key, value in query.items():
@@ -609,7 +613,7 @@ class Lookyloo():
         if 'cookies' in to_capture:
             to_capture['cookies_pseudofile'] = to_capture.pop('cookies')
 
-        status = self.capture(**to_capture)  # type: ignore
+        status = self._capture(**to_capture)  # type: ignore
         self.redis.srem('ongoing', uuid)
         self.redis.delete(uuid)
         if status:
@@ -764,10 +768,10 @@ class Lookyloo():
         except Exception as err:
             return False, f'Other error occurred: {err}'
 
-    def capture(self, url: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
-                depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
-                referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
-                browser: Optional[str]=None) -> Union[bool, str]:
+    def _capture(self, url: str, *, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
+                 depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
+                 referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
+                 browser: Optional[str]=None, parent: Optional[str]=None) -> Union[bool, str]:
         '''Launch a capture'''
         url = url.strip()
         url = refang(url)
@@ -824,12 +828,20 @@ class Lookyloo():
             with (dirpath / 'meta').open('w') as _meta:
                 json.dump(meta, _meta)
 
-        for i, item in enumerate(items):
-            if not listing:  # Write no_index marker
-                (dirpath / 'no_index').touch()
-            with (dirpath / 'uuid').open('w') as _uuid:
-                _uuid.write(perma_uuid)
+        # Write UUID
+        with (dirpath / 'uuid').open('w') as _uuid:
+            _uuid.write(perma_uuid)
 
+        # Write no_index marker (optional)
+        if not listing:
+            (dirpath / 'no_index').touch()
+
+        # Write parent UUID (optional)
+        if parent:
+            with (dirpath / 'parent').open('w') as _parent:
+                _parent.write(parent)
+
+        for i, item in enumerate(items):
             if 'error' in item:
                 with (dirpath / 'error.txt').open('w') as _error:
                     json.dump(item['error'], _error)
@@ -1033,7 +1045,7 @@ class Lookyloo():
         obj.add_reference(vt_obj, 'analysed-with')
         return vt_obj
 
-    def misp_export(self, capture_uuid: str) -> Union[MISPEvent, Dict[str, str]]:
+    def misp_export(self, capture_uuid: str, with_parent: bool=False) -> Union[List[MISPEvent], MISPEvent, Dict[str, str]]:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''
         cache = self.capture_cache(capture_uuid)
@@ -1101,6 +1113,21 @@ class Lookyloo():
         except AttributeError:
             # No `body` in rendered node
             pass
+
+        if with_parent and cache.parent:
+            parent = self.misp_export(cache.parent, with_parent)
+            if isinstance(parent, dict):
+                # Something bad happened
+                return parent
+            if isinstance(parent, list):
+                # The parent has a parent
+                event.extends_uuid = parent[-1].uuid
+                parent.append(event)
+                return parent
+            else:
+                event.extends_uuid = parent.uuid
+                return [parent, event]
+
         return event
 
     def get_hashes(self, tree_uuid: str, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:

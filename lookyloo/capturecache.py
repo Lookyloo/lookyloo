@@ -33,3 +33,4 @@ class CaptureCache():
         self.incomplete_redirects: bool = True if cache_entry.get('incomplete_redirects') in [1, '1'] else False
         self.no_index: bool = True if cache_entry.get('no_index') in [1, '1'] else False
         self.categories: List[str] = json.loads(cache_entry['categories']) if cache_entry.get('categories') else []
+        self.parent: Optional[str] = cache_entry.get('parent')

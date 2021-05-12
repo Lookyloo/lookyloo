@@ -442,7 +442,8 @@ def bulk_captures(base_tree_uuid: str):
         capture = {'url': url,
                    'cookies': cookies,
                    'referer': ct.root_url,
-                   'user_agent': ct.user_agent
+                   'user_agent': ct.user_agent,
+                   'parent': base_tree_uuid
                    }
         new_capture_uuid = lookyloo.enqueue_capture(capture)
         bulk_captures.append((new_capture_uuid, url))
@@ -932,22 +933,43 @@ def web_misp_push_view(tree_uuid: str):
         tags = request.form.getlist('tags')
         for tag in tags:
             event.add_tag(tag)  # type: ignore
-        event = lookyloo.misp.push(event)  # type: ignore
-        if isinstance(event, MISPEvent):
-            flash(f'MISP event {event.id} created on {lookyloo.misp.client.root_url}', 'success')
+
+        error = False
+        with_parents = request.form.get('with_parents')
+        if with_parents:
+            exports = lookyloo.misp_export(tree_uuid, True)
+            if isinstance(exports, dict):
+                flash(f'Unable to create event: {exports}', 'error')
+                error = True
+            elif isinstance(exports, MISPEvent):
+                events = [exports]
+            else:
+                events = exports
         else:
-            flash(f'Unable to create event: {event}', 'error')
+            events = [event]  # type: ignore
+
+        if error:
+            return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+        for event in events:
+            event = lookyloo.misp.push(event)  # type: ignore
+            if isinstance(event, MISPEvent):
+                flash(f'MISP event {event.id} created on {lookyloo.misp.client.root_url}', 'success')
+            else:
+                flash(f'Unable to create event: {event}', 'error')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     else:
         # the 1st attribute in the event is the link to lookyloo
         existing_misp_url = lookyloo.misp.get_existing_event(event.attributes[0].value)  # type: ignore
 
     fav_tags = lookyloo.misp.get_fav_tags()
+    cache = lookyloo.capture_cache(tree_uuid)
 
     return render_template('misp_push_view.html', tree_uuid=tree_uuid,
                            event=event, fav_tags=fav_tags,
                            existing_event=existing_misp_url,
                            auto_publish=lookyloo.misp.auto_publish,
+                           has_parent=True if cache and cache.parent else False,
                            default_tags=lookyloo.misp.default_tags)
 
 
@@ -992,10 +1014,17 @@ def json_redirects(tree_uuid: str):
 
 @app.route('/json/<string:tree_uuid>/misp_export', methods=['GET'])
 def misp_export(tree_uuid: str):
-    event = lookyloo.misp_export(tree_uuid)
+    with_parents = request.args.get('with_parents')
+    event = lookyloo.misp_export(tree_uuid, True if with_parents else False)
     if isinstance(event, dict):
         return jsonify(event)
-    return Response(event.to_json(indent=2), mimetype='application/json')
+    elif isinstance(event, list):
+        to_return = []
+        for e in event:
+            to_return.append(e.to_json(indent=2))
+        return jsonify(to_return)
+    else:
+        return Response(event.to_json(indent=2), mimetype='application/json')
 
 
 @app.route('/json/<string:tree_uuid>/misp_push', methods=['GET'])
@@ -1010,12 +1039,22 @@ def misp_push(tree_uuid: str):
         event = lookyloo.misp_export(tree_uuid)
         if isinstance(event, dict):
             to_return['error'] = event
-        else:
+        elif isinstance(event, MISPEvent):
             event = lookyloo.misp.push(event)
             if isinstance(event, MISPEvent):
                 return Response(event.to_json(indent=2), mimetype='application/json')
             else:
                 to_return['error'] = event
+        else:
+            events_to_return = []
+            for e in event:
+                me = lookyloo.misp.push(e)
+                if isinstance(me, MISPEvent):
+                    events_to_return.append(me.to_json(indent=2))
+                else:
+                    to_return['error'] = me
+                    break
+            jsonify(events_to_return)
 
     return jsonify(to_return)
 
