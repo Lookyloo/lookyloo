@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 import json
 import http
 import calendar
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any, Union, List
 import logging
 import hashlib
 from urllib.parse import quote_plus, unquote_plus
@@ -913,54 +913,50 @@ def web_misp_push_view(tree_uuid: str):
     error = False
     if not lookyloo.misp.available:
         flash('MISP module not available.', 'error')
-        error = True
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
     elif not lookyloo.misp.enable_push:
         flash('Push not enabled in MISP module.', 'error')
-        error = True
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
     else:
         event = lookyloo.misp_export(tree_uuid)
         if isinstance(event, dict):
             flash(f'Unable to generate the MISP export: {event}', 'error')
-            error = True
-    if error:
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
-
-    # After this point, event is a MISPEvent
+            return redirect(url_for('tree', tree_uuid=tree_uuid))
 
     if request.method == 'POST':
         # event is a MISPEvent at this point
         # Submit the event
         tags = request.form.getlist('tags')
-        for tag in tags:
-            event.add_tag(tag)  # type: ignore
-
         error = False
+        events: List[MISPEvent] = []
         with_parents = request.form.get('with_parents')
         if with_parents:
             exports = lookyloo.misp_export(tree_uuid, True)
             if isinstance(exports, dict):
                 flash(f'Unable to create event: {exports}', 'error')
                 error = True
-            elif isinstance(exports, MISPEvent):
-                events = [exports]
             else:
                 events = exports
         else:
-            events = [event]  # type: ignore
+            events = event
 
         if error:
             return redirect(url_for('tree', tree_uuid=tree_uuid))
 
-        for event in events:
-            event = lookyloo.misp.push(event)  # type: ignore
-            if isinstance(event, MISPEvent):
-                flash(f'MISP event {event.id} created on {lookyloo.misp.client.root_url}', 'success')
-            else:
-                flash(f'Unable to create event: {event}', 'error')
+        for e in events:
+            for tag in tags:
+                e.add_tag(tag)
+
+        new_events = lookyloo.misp.push(events)
+        if isinstance(new_events, dict):
+            flash(f'Unable to create event(s): {new_events}', 'error')
+        else:
+            for e in new_events:
+                flash(f'MISP event {e.id} created on {lookyloo.misp.client.root_url}', 'success')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     else:
         # the 1st attribute in the event is the link to lookyloo
-        existing_misp_url = lookyloo.misp.get_existing_event(event.attributes[0].value)  # type: ignore
+        existing_misp_url = lookyloo.misp.get_existing_event_url(event[-1].attributes[0].value)
 
     fav_tags = lookyloo.misp.get_fav_tags()
     cache = lookyloo.capture_cache(tree_uuid)
@@ -1018,43 +1014,41 @@ def misp_export(tree_uuid: str):
     event = lookyloo.misp_export(tree_uuid, True if with_parents else False)
     if isinstance(event, dict):
         return jsonify(event)
-    elif isinstance(event, list):
-        to_return = []
-        for e in event:
-            to_return.append(e.to_json(indent=2))
-        return jsonify(to_return)
-    else:
-        return Response(event.to_json(indent=2), mimetype='application/json')
+
+    to_return = []
+    for e in event:
+        to_return.append(e.to_json(indent=2))
+    return jsonify(to_return)
 
 
-@app.route('/json/<string:tree_uuid>/misp_push', methods=['GET'])
+@app.route('/json/<string:tree_uuid>/misp_push', methods=['GET', 'POST'])
 @flask_login.login_required
 def misp_push(tree_uuid: str):
+    if request.method == 'POST':
+        parameters: Dict = request.get_json(force=True)  # type: ignore
+        with_parents = True if 'with_parents' in parameters else False
+        allow_duplicates = True if 'allow_duplicates' in parameters else False
+    else:
+        with_parents = False
+        allow_duplicates = False
     to_return: Dict = {}
     if not lookyloo.misp.available:
         to_return['error'] = 'MISP module not available.'
     elif not lookyloo.misp.enable_push:
         to_return['error'] = 'Push not enabled in MISP module.'
     else:
-        event = lookyloo.misp_export(tree_uuid)
+        event = lookyloo.misp_export(tree_uuid, with_parents)
         if isinstance(event, dict):
             to_return['error'] = event
-        elif isinstance(event, MISPEvent):
-            event = lookyloo.misp.push(event)
-            if isinstance(event, MISPEvent):
-                return Response(event.to_json(indent=2), mimetype='application/json')
-            else:
-                to_return['error'] = event
         else:
-            events_to_return = []
-            for e in event:
-                me = lookyloo.misp.push(e)
-                if isinstance(me, MISPEvent):
-                    events_to_return.append(me.to_json(indent=2))
-                else:
-                    to_return['error'] = me
-                    break
-            jsonify(events_to_return)
+            new_events = lookyloo.misp.push(event, allow_duplicates)
+            if isinstance(new_events, dict):
+                to_return['error'] = new_events
+            else:
+                events_to_return = []
+                for e in new_events:
+                    events_to_return.append(e.to_json(indent=2))
+                jsonify(events_to_return)
 
     return jsonify(to_return)
 

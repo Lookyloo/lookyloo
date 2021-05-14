@@ -307,7 +307,7 @@ hyperframe = ">=5.2.0,<6"
 
 [[package]]
 name = "har2tree"
-version = "1.5.5"
+version = "1.5.6"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -762,7 +762,7 @@ docs = ["Sphinx (>=3.5.3,<4.0.0)", "myst-parser (>=0.13.5,<0.14.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.142"
+version = "2.4.143"
 description = "Python API for MISP."
 category = "main"
 optional = false
@@ -1365,8 +1365,8 @@ h2 = [
     {file = "h2-3.2.0.tar.gz", hash = "sha256:875f41ebd6f2c44781259005b157faed1a5031df3ae5aa7bcb4628a6c0782f14"},
 ]
 har2tree = [
-    {file = "har2tree-1.5.5-py3-none-any.whl", hash = "sha256:df666eb01228e112f6fb88622a7bb7dcd31713a727a63ea357b1e0c1466aa31a"},
-    {file = "har2tree-1.5.5.tar.gz", hash = "sha256:3c49d6e487d7e3d0683de9318cae66bf2ad4389508514bebda1d131cc673c06c"},
+    {file = "har2tree-1.5.6-py3-none-any.whl", hash = "sha256:94dcb58890d1e76a595e965cda8e3dd841b169a69f6d4fc84b7f1d869e65b11a"},
+    {file = "har2tree-1.5.6.tar.gz", hash = "sha256:a1c578552669688c3899d85ca3ac96c0b8e68860c161e49b99ac797a8e054bb2"},
 ]
 hpack = [
     {file = "hpack-3.0.0-py2.py3-none-any.whl", hash = "sha256:0edd79eda27a53ba5be2dfabf3b15780928a0dff6eb0c60a3d6767720e970c89"},
@@ -1742,8 +1742,8 @@ pylookyloo = [
     {file = "pylookyloo-1.5.0.tar.gz", hash = "sha256:2f616e1f05206d84f4695b517b5c851775af69ac9df2e4f6fa880b6a2c6b6ec8"},
 ]
 pymisp = [
-    {file = "pymisp-2.4.142-py3-none-any.whl", hash = "sha256:677046cdb7b8f89b2cccd925377c136d6dfce63c8c44e6ca4ff6b342babe28a4"},
-    {file = "pymisp-2.4.142.tar.gz", hash = "sha256:172c7bfa1bc907c37682bce7054c2147f132781a0019f082e71871f46186b23f"},
+    {file = "pymisp-2.4.143-py3-none-any.whl", hash = "sha256:ceb6029045cfd2ab803902dc82e761909ca5337c2f6df484aef4e067e2f08d82"},
+    {file = "pymisp-2.4.143.tar.gz", hash = "sha256:a51cddc4f274ec8daf7ccd0dd1fd599ee755ed77d168e72dfad01a41823877e3"},
 ]
 pyopenssl = [
     {file = "pyOpenSSL-20.0.1-py2.py3-none-any.whl", hash = "sha256:818ae18e06922c066f777a33f1fca45786d85edfe71cd043de6379337a7f274b"},

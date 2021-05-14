@@ -1045,7 +1045,7 @@ class Lookyloo():
         obj.add_reference(vt_obj, 'analysed-with')
         return vt_obj
 
-    def misp_export(self, capture_uuid: str, with_parent: bool=False) -> Union[List[MISPEvent], MISPEvent, Dict[str, str]]:
+    def misp_export(self, capture_uuid: str, with_parent: bool=False) -> Union[List[MISPEvent], Dict[str, str]]:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''
         cache = self.capture_cache(capture_uuid)
@@ -1092,6 +1092,20 @@ class Lookyloo():
 
         for u_object in redirects:
             event.add_object(u_object)
+        final_redirect = event.objects[-1]
+
+        screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png', data=self.get_screenshot(capture_uuid), disable_correlation=True)  # type: ignore
+        try:
+            fo = FileObject(pseudofile=ct.root_hartree.rendered_node.body, filename=ct.root_hartree.rendered_node.filename)
+            fo.comment = 'Content received for the final redirect (before rendering)'
+            fo.add_reference(final_redirect, 'loaded-by', 'URL loading that content')
+            fo.add_reference(screenshot, 'rendered-as', 'Screenshot of the page')
+            event.add_object(fo)
+        except Har2TreeError:
+            pass
+        except AttributeError:
+            # No `body` in rendered node
+            pass
 
         if self.vt.available:
             for e_obj in event.objects:
@@ -1101,34 +1115,17 @@ class Lookyloo():
                 if vt_obj:
                     event.add_object(vt_obj)
 
-        screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png', data=self.get_screenshot(capture_uuid), disable_correlation=True)  # type: ignore
-        try:
-            fo = FileObject(pseudofile=ct.root_hartree.rendered_node.body, filename=ct.root_hartree.rendered_node.filename)
-            fo.comment = 'Content received for the final redirect (before rendering)'
-            fo.add_reference(event.objects[-1], 'loaded-by', 'URL loading that content')
-            fo.add_reference(screenshot, 'rendered-as', 'Screenshot of the page')
-            event.add_object(fo)
-        except Har2TreeError:
-            pass
-        except AttributeError:
-            # No `body` in rendered node
-            pass
-
         if with_parent and cache.parent:
             parent = self.misp_export(cache.parent, with_parent)
             if isinstance(parent, dict):
                 # Something bad happened
                 return parent
-            if isinstance(parent, list):
-                # The parent has a parent
-                event.extends_uuid = parent[-1].uuid
-                parent.append(event)
-                return parent
-            else:
-                event.extends_uuid = parent.uuid
-                return [parent, event]
 
-        return event
+            event.extends_uuid = parent[-1].uuid
+            parent.append(event)
+            return parent
+
+        return [event]
 
     def get_hashes(self, tree_uuid: str, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
         """Return hashes of resources.

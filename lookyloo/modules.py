@@ -53,22 +53,66 @@ class MISP():
     def get_fav_tags(self):
         return self.client.tags(pythonify=True, favouritesOnly=1)
 
-    def push(self, event: MISPEvent) -> Union[MISPEvent, Dict]:
-        if self.available and self.enable_push:
+    def _prepare_push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False) -> Union[List[MISPEvent], MISPEvent, Dict]:
+        '''Adds the pre-configured information as required by the instance.
+        If duplicates aren't allowed, they will be automatically skiped and the
+        extends_uuid key in the next element in the list updated'''
+        if isinstance(to_push, MISPEvent):
+            events = [to_push]
+        else:
+            events = to_push
+        events_to_push = []
+        existing_uuid_to_extend = None
+        for event in events:
+            if not allow_duplicates:
+                existing_event = self.get_existing_event(event.attributes[0].value)
+                if existing_event:
+                    existing_uuid_to_extend = existing_event.uuid
+                    continue
+            if existing_uuid_to_extend:
+                event.extends_uuid = existing_uuid_to_extend
+                existing_uuid_to_extend = None
+
             for tag in self.default_tags:
                 event.add_tag(tag)
             if self.auto_publish:
                 event.publish()
-            return self.client.add_event(event, pythonify=True)
+            events_to_push.append(event)
+        return events_to_push
+
+    def push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False) -> Union[List[MISPEvent], Dict]:
+        if self.available and self.enable_push:
+            events = self._prepare_push(to_push, allow_duplicates)
+            if not events:
+                return {'error': 'All the events are already on the MISP instance.'}
+            if isinstance(events, Dict):
+                return {'error': events}
+            to_return = []
+            for event in events:
+                new_event = self.client.add_event(event, pythonify=True)
+                if isinstance(new_event, MISPEvent):
+                    to_return.append(new_event)
+                else:
+                    return {'error': new_event}
+            return to_return
         else:
             return {'error': 'Module not available or push not enabled.'}
 
-    def get_existing_event(self, permaurl: str) -> Optional[str]:
+    def get_existing_event_url(self, permaurl: str) -> Optional[str]:
         attributes = self.client.search('attributes', value=permaurl, limit=1, page=1, pythonify=True)
         if not attributes or not isinstance(attributes[0], MISPAttribute):
             return None
         url = f'{self.client.root_url}/events/{attributes[0].event_id}'
         return url
+
+    def get_existing_event(self, permaurl: str) -> Optional[MISPEvent]:
+        attributes = self.client.search('attributes', value=permaurl, limit=1, page=1, pythonify=True)
+        if not attributes or not isinstance(attributes[0], MISPAttribute):
+            return None
+        event = self.client.get_event(attributes[0].event_id, pythonify=True)
+        if isinstance(event, MISPEvent):
+            return event
+        return None
 
 
 class UniversalWhois():
