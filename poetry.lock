@@ -307,7 +307,7 @@ hyperframe = ">=5.2.0,<6"
 
 [[package]]
 name = "har2tree"
-version = "1.5.6"
+version = "1.5.7"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -1365,8 +1365,8 @@ h2 = [
     {file = "h2-3.2.0.tar.gz", hash = "sha256:875f41ebd6f2c44781259005b157faed1a5031df3ae5aa7bcb4628a6c0782f14"},
 ]
 har2tree = [
-    {file = "har2tree-1.5.6-py3-none-any.whl", hash = "sha256:94dcb58890d1e76a595e965cda8e3dd841b169a69f6d4fc84b7f1d869e65b11a"},
-    {file = "har2tree-1.5.6.tar.gz", hash = "sha256:a1c578552669688c3899d85ca3ac96c0b8e68860c161e49b99ac797a8e054bb2"},
+    {file = "har2tree-1.5.7-py3-none-any.whl", hash = "sha256:a7451fd56c83fefdb6dec25fe4627ef0ee1d50f7414854e6e18f2a70a42e2eba"},
+    {file = "har2tree-1.5.7.tar.gz", hash = "sha256:449f21e6881aa11d34691ce1555cc6878dbe0e783ad34745f085ded1a071641f"},
 ]
 hpack = [
     {file = "hpack-3.0.0-py2.py3-none-any.whl", hash = "sha256:0edd79eda27a53ba5be2dfabf3b15780928a0dff6eb0c60a3d6767720e970c89"},
