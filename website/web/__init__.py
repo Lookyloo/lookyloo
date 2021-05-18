@@ -741,13 +741,13 @@ def body_hash_details(body_hash: str):
 @app.route('/urls/<string:url>', methods=['GET'])
 def url_details(url: str):
     url = unquote_plus(url).strip()
-    hits = lookyloo.get_url_occurrences(url=url, limit=50)
+    hits = lookyloo.get_url_occurrences(url, limit=50)
     return render_template('url.html', url=url, hits=hits)
 
 
 @app.route('/hostnames/<string:hostname>', methods=['GET'])
 def hostname_details(hostname: str):
-    hits = lookyloo.get_hostname_occurrences(hostname=hostname.strip(), with_urls_occurrences=True, limit=50)
+    hits = lookyloo.get_hostname_occurrences(hostname.strip(), with_urls_occurrences=True, limit=50)
     return render_template('hostname.html', hostname=hostname, hits=hits)
 
 
@@ -900,7 +900,8 @@ def add_context(tree_uuid: str, node_uuid: str):
         if context_data.get('legitimate_description'):
             legitimate_details['description'] = context_data['legitimate_description']
         details['legitimate'] = legitimate_details
-    lookyloo.add_context(tree_uuid, node_uuid, ressource_hash, legitimate, malicious, details)
+    lookyloo.add_context(tree_uuid, urlnode_uuid=node_uuid, ressource_hash=ressource_hash,
+                         legitimate=legitimate, malicious=malicious, details=details)
     if callback_str == 'hostnode_popup':
         return redirect(url_for('hostnode_popup', tree_uuid=tree_uuid, node_uuid=hostnode_uuid))
     elif callback_str == 'ressources':
@@ -1066,14 +1067,14 @@ def json_hash_info(h: str):
 @app.route('/json/url_info', methods=['POST'])
 def json_url_info():
     to_query: Dict = request.get_json(force=True)  # type: ignore
-    occurrences = lookyloo.get_url_occurrences(**to_query)
+    occurrences = lookyloo.get_url_occurrences(to_query.pop('url'), **to_query)
     return jsonify(occurrences)
 
 
 @app.route('/json/hostname_info', methods=['POST'])
 def json_hostname_info():
     to_query: Dict = request.get_json(force=True)  # type: ignore
-    occurrences = lookyloo.get_hostname_occurrences(**to_query)
+    occurrences = lookyloo.get_hostname_occurrences(to_query.pop('hostname'), **to_query)
     return jsonify(occurrences)
 
 
