@@ -586,7 +586,7 @@ class Lookyloo():
         return to_return
 
     def get_capture_status(self, capture_uuid: str, /) -> CaptureStatus:
-        if self.redis.sismember('to_capture', capture_uuid):
+        if self.redis.zrank('to_capture', capture_uuid) is not None:
             return CaptureStatus.QUEUED
         elif self.redis.hexists('lookup_dirs', capture_uuid):
             return CaptureStatus.DONE
