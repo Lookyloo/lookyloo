@@ -24,11 +24,22 @@
   "auto_trigger_modules": false,
   "enable_mail_notification": false,
   "email": {
-      "from": "Lookyloo <lookyloo@myorg.local>",
-      "to": "Investigation Team <investigation_unit@myorg.local>",
-      "subject": "Capture from Lookyloo to review",
-      "smtp_host": "localhost",
-      "smtp_port": "25"
+    "from": "Lookyloo <lookyloo@myorg.local>",
+    "to": "Investigation Team <investigation_unit@myorg.local>",
+    "subject": "Capture from Lookyloo to review",
+    "smtp_host": "localhost",
+    "smtp_port": "25"
+  },
+  "priority": {
+    "sources": {
+      "web": 10,
+      "api": 0
+    },
+    "users": {
+      "_default_auth": 5,
+      "_default_anon": 0,
+      "admin": 10
+    }
   },
   "_notes": {
     "loglevel": "(lookyloo) Can be one of the value listed here: https://docs.python.org/3/library/logging.html#levels",
@@ -51,6 +62,7 @@
     "enable_bookmark": "Allow to bookmark nodes on tree",
     "auto_trigger_modules": "Automatically trigger the modules when the tree is loaded",
     "enable_mail_notification": "Enable email notification or not",
-    "email": "Configuration for sending email notifications."
+    "email": "Configuration for sending email notifications.",
+    "priority": "Define the priority of a new capture. A capture from the web interface has priority over a capture from the API, same for authenticated user vs. anonymous."
   }
 }

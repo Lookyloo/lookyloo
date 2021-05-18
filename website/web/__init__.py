@@ -189,6 +189,14 @@ app.jinja_env.globals.update(month_name=month_name)
 
 # ##### Generic/configuration methods #####
 
+def src_request_ip(request) -> str:
+    # NOTE: X-Real-IP is the IP passed by the reverse proxy in the headers.
+    real_ip = request.headers.get('X-Real-IP')
+    if not real_ip:
+        real_ip = request.remote_addr
+    return real_ip
+
+
 @app.after_request
 def after_request(response):
     # We keep a list user agents in order to build a list to use in the capture
@@ -200,16 +208,9 @@ def after_request(response):
     # The cache of IPs is deleted after the UA file is generated (see lookyloo.build_ua_file),
     # once a day.
     ua = request.headers.get('User-Agent')
-    real_ip = request.headers.get('X-Real-IP')
+    real_ip = src_request_ip(request)
     if ua:
-        if real_ip:
-            lookyloo.cache_user_agents(ua, real_ip)
-        else:
-            if request.remote_addr:
-                lookyloo.cache_user_agents(ua, request.remote_addr)
-            else:
-                # FIXME: That shouldn't happen, I guess, but mypy requires it.
-                pass
+        lookyloo.cache_user_agents(ua, real_ip)
     # Opt out of FLoC
     response.headers.set('Permissions-Policy', 'interest-cohort=()')
     return response
@@ -433,6 +434,10 @@ def urls_rendered_page(tree_uuid: str):
 
 @app.route('/bulk_captures/<string:base_tree_uuid>', methods=['POST'])
 def bulk_captures(base_tree_uuid: str):
+    if flask_login.current_user.is_authenticated:
+        user = flask_login.current_user.get_id()
+    else:
+        user = src_request_ip(request)
     selected_urls = request.form.getlist('url')
     urls = lookyloo.get_urls_rendered_page(base_tree_uuid)
     ct = lookyloo.get_crawled_tree(base_tree_uuid)
@@ -445,7 +450,7 @@ def bulk_captures(base_tree_uuid: str):
                    'user_agent': ct.user_agent,
                    'parent': base_tree_uuid
                    }
-        new_capture_uuid = lookyloo.enqueue_capture(capture)
+        new_capture_uuid = lookyloo.enqueue_capture(capture, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         bulk_captures.append((new_capture_uuid, url))
 
     return render_template('bulk_captures.html', uuid=base_tree_uuid, bulk_captures=bulk_captures)
@@ -655,10 +660,14 @@ def rebuild_cache():
     return redirect(url_for('index'))
 
 
-@app.route('/submit', methods=['POST', 'GET'])
+@app.route('/submit', methods=['POST'])
 def submit():
+    if flask_login.current_user.is_authenticated:
+        user = flask_login.current_user.get_id()
+    else:
+        user = src_request_ip(request)
     to_query: Dict = request.get_json(force=True)  # type: ignore
-    perma_uuid = lookyloo.enqueue_capture(to_query)
+    perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
     return Response(perma_uuid, mimetype='text/text')
 
 
@@ -679,6 +688,10 @@ def search():
 @app.route('/capture', methods=['GET', 'POST'])
 def capture_web():
     if request.form.get('url'):
+        if flask_login.current_user.is_authenticated:
+            user = flask_login.current_user.get_id()
+        else:
+            user = src_request_ip(request)
         capture_query: Dict[str, Union[str, bytes, int, bool]] = {'url': request.form['url']}
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
@@ -698,7 +711,7 @@ def capture_web():
         if request.form.get('referer'):
             capture_query['referer'] = request.form['referer']
 
-        perma_uuid = lookyloo.enqueue_capture(capture_query)
+        perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         time.sleep(30)
         return redirect(url_for('tree', tree_uuid=perma_uuid))
     user_agents: Dict[str, Any] = {}

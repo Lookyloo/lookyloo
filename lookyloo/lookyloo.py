@@ -64,6 +64,8 @@ class Lookyloo():
             self.splash_url = get_config('generic', 'splash_url')
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
 
+        self._priority = get_config('generic', 'priority')
+
         safe_create_dir(self.capture_dir)
 
         # Initialize 3rd party components
@@ -92,6 +94,19 @@ class Lookyloo():
 
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
+
+    def _get_priority(self, source: str, user: str, authenticated: bool) -> int:
+        src_prio: int = self._priority['sources'][source] if source in self._priority['sources'] else -1
+        if not authenticated:
+            usr_prio = self._priority['users']['_default_anon']
+            # reduce priority for anonymous users making lots of captures
+            queue_size = self.redis.zscore('queues', f'{source}|{authenticated}|{user}')
+            if queue_size is None:
+                queue_size = 0
+            usr_prio -= int(queue_size / 10)
+        else:
+            usr_prio = self._priority['users'][user] if self._priority['users'].get(user) else self._priority['users']['_default_auth']
+        return src_prio + usr_prio
 
     def cache_user_agents(self, user_agent: str, remote_ip: str) -> None:
         '''Cache the useragents of the visitors'''
@@ -579,7 +594,7 @@ class Lookyloo():
             return CaptureStatus.ONGOING
         return CaptureStatus.UNKNOWN
 
-    def enqueue_capture(self, query: MutableMapping[str, Any]) -> str:
+    def enqueue_capture(self, query: MutableMapping[str, Any], source: str, user: str, authenticated: bool) -> str:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
         perma_uuid = str(uuid4())
         p = self.redis.pipeline()
@@ -590,7 +605,10 @@ class Lookyloo():
             if isinstance(value, list):
                 query[key] = json.dumps(value)
         p.hmset(perma_uuid, query)  # type: ignore
-        p.sadd('to_capture', perma_uuid)
+        priority = self._get_priority(source, user, authenticated)
+        p.zadd('to_capture', {perma_uuid: priority})
+        p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
+        p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
         p.execute()
         return perma_uuid
 
@@ -604,10 +622,16 @@ class Lookyloo():
             self.logger.critical(f'Splash is not running, unable to process the capture queue: {message}')
             return None
 
-        uuid = self.redis.spop('to_capture')
-        if not uuid:
+        value = self.redis.zpopmax('to_capture')
+        if not value or not value[0]:
             return None
+        uuid, score = value[0]
+        queue = self.redis.get(f'{uuid}_mgmt')
         self.redis.sadd('ongoing', uuid)
+
+        lazy_cleanup = self.redis.pipeline()
+        lazy_cleanup.delete(f'{uuid}_mgmt')
+        lazy_cleanup.zincrby('queues', -1, queue)
 
         to_capture: Dict[str, Union[str, int, float]] = self.redis.hgetall(uuid)
         to_capture['perma_uuid'] = uuid
@@ -615,8 +639,11 @@ class Lookyloo():
             to_capture['cookies_pseudofile'] = to_capture.pop('cookies')
 
         status = self._capture(**to_capture)  # type: ignore
-        self.redis.srem('ongoing', uuid)
-        self.redis.delete(uuid)
+        lazy_cleanup.srem('ongoing', uuid)
+        lazy_cleanup.delete(uuid)
+        # make sure to expire the key if nothing was process for a while (= queues empty)
+        lazy_cleanup.expire('queues', 600)
+        lazy_cleanup.execute()
         if status:
             self.logger.info(f'Processed {to_capture["url"]}')
             return True
