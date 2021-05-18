@@ -468,11 +468,11 @@ def cache_tree(tree_uuid: str):
 def send_mail(tree_uuid: str):
     if not enable_mail_notification:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    email: str = request.form.get('email') if request.form.get('email') else ''
+    email: str = request.form['email'] if request.form.get('email') else ''
     if '@' not in email:
         # skip clearly incorrect emails
         email = ''
-    comment: str = request.form.get('comment') if request.form.get('comment') else ''
+    comment: str = request.form['comment'] if request.form.get('comment') else ''
     lookyloo.send_mail(tree_uuid, email, comment)
     flash("Email notification sent", 'success')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
@@ -665,7 +665,7 @@ def submit():
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     if request.form.get('url'):
-        quoted_url: str = quote_plus(request.form.get('url'))
+        quoted_url: str = quote_plus(request.form['url'])
         return redirect(url_for('url_details', url=quoted_url))
     if request.form.get('hostname'):
         return redirect(url_for('hostname_details', hostname=request.form.get('hostname')))
@@ -679,30 +679,24 @@ def search():
 @app.route('/capture', methods=['GET', 'POST'])
 def capture_web():
     if request.form.get('url'):
-        capture_query = {'url': request.form.get('url')}
+        capture_query: Dict[str, Union[str, bytes, int, bool]] = {'url': request.form['url']}
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
             capture_query['cookies'] = request.files['cookies'].stream.read()
 
         if request.form.get('personal_ua') and request.headers.get('User-Agent'):
-            capture_query['user_agent'] = request.headers.get('User-Agent')
+            capture_query['user_agent'] = request.headers['User-Agent']
         else:
-            capture_query['user_agent'] = request.form.get('user_agent')
-            capture_query['os'] = request.form.get('os')
-            capture_query['browser'] = request.form.get('browser')
+            capture_query['user_agent'] = request.form['user_agent']
+            capture_query['os'] = request.form['os']
+            capture_query['browser'] = request.form['browser']
 
-        if request.form.get('depth'):
-            capture_query['depth'] = request.form.get('depth')
-        else:
-            capture_query['depth'] = 1
+        capture_query['depth'] = request.form['depth'] if request.form.get('depth') else 1
 
-        if request.form.get('listing'):
-            capture_query['listing'] = True
-        else:
-            capture_query['listing'] = False
+        capture_query['listing'] = True if request.form.get('listing') else False
 
         if request.form.get('referer'):
-            capture_query['referer'] = request.form.get('referer')
+            capture_query['referer'] = request.form['referer']
 
         perma_uuid = lookyloo.enqueue_capture(capture_query)
         time.sleep(30)
@@ -880,9 +874,9 @@ def add_context(tree_uuid: str, node_uuid: str):
         return redirect(url_for('ressources'))
 
     context_data = request.form
-    ressource_hash: str = context_data.get('hash_to_contextualize')
-    hostnode_uuid: str = context_data.get('hostnode_uuid')
-    callback_str: str = context_data.get('callback_str')
+    ressource_hash: str = context_data['hash_to_contextualize']
+    hostnode_uuid: str = context_data['hostnode_uuid']
+    callback_str: str = context_data['callback_str']
     legitimate: bool = True if context_data.get('legitimate') else False
     malicious: bool = True if context_data.get('malicious') else False
     details: Dict[str, Dict] = {'malicious': {}, 'legitimate': {}}
