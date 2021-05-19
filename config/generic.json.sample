@@ -41,6 +41,7 @@
       "admin": 10
     }
   },
+  "hide_captures_with_error": false,
   "_notes": {
     "loglevel": "(lookyloo) Can be one of the value listed here: https://docs.python.org/3/library/logging.html#levels",
     "splash_loglevel": "(Splash) INFO is *very* verbose.",
@@ -63,6 +64,7 @@
     "auto_trigger_modules": "Automatically trigger the modules when the tree is loaded",
     "enable_mail_notification": "Enable email notification or not",
     "email": "Configuration for sending email notifications.",
-    "priority": "Define the priority of a new capture. A capture from the web interface has priority over a capture from the API, same for authenticated user vs. anonymous."
+    "priority": "Define the priority of a new capture. A capture from the web interface has priority over a capture from the API, same for authenticated user vs. anonymous.",
+    "hide_captures_with_error": "Capturing an URL may result in an error (domain non-existent, HTTP error, ...). They may be useful to see, but if you have a public instance, they will clutter the index."
   }
 }

@@ -152,6 +152,7 @@ enable_context_by_users = get_config('generic', 'enable_context_by_users')
 enable_categorization = get_config('generic', 'enable_categorization')
 enable_bookmark = get_config('generic', 'enable_bookmark')
 auto_trigger_modules = get_config('generic', 'auto_trigger_modules')
+hide_captures_with_error = get_config('generic', 'hide_captures_with_error')
 
 logging.basicConfig(level=get_config('generic', 'loglevel'))
 
@@ -562,31 +563,46 @@ def mark_as_legitimate(tree_uuid: str):
 
 # ##### helpers #####
 
-def index_generic(show_hidden: bool=False, category: Optional[str]=None):
+def index_generic(show_hidden: bool=False, show_error: bool=True, category: Optional[str]=None):
     titles = []
+    cut_time: Optional[datetime] = None
     if time_delta_on_index:
         # We want to filter the captures on the index
         cut_time = (datetime.now() - timedelta(**time_delta_on_index)).replace(tzinfo=timezone.utc)
-    else:
-        cut_time = None  # type: ignore
 
     for cached in lookyloo.sorted_capture_cache():
         if cut_time and cached.timestamp < cut_time:
             continue
+
         if category:
             if not cached.categories or category not in cached.categories:
                 continue
+
         if show_hidden:
+            # Only display the hidden ones
             if not cached.no_index:
-                # Only display the hidden ones
                 continue
         elif cached.no_index:
+            continue
+
+        if not show_error and cached.error:
             continue
 
         titles.append((cached.uuid, cached.title, cached.timestamp.isoformat(), cached.url,
                        cached.redirects, cached.incomplete_redirects))
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
     return render_template('index.html', titles=titles, public_domain=lookyloo.public_domain)
+
+
+def get_index_params(request):
+    show_error: bool = True
+    category: str = ''
+    if hide_captures_with_error:
+        show_error = True if request.args.get('show_error') else False
+
+    if enable_categorization:
+        category = request.args['category'] if request.args.get('category') else ''
+    return show_error, category
 
 
 # ##### Index level methods #####
@@ -600,18 +616,15 @@ def index():
         lookyloo.build_ua_file()
     else:
         update_user_agents()
-    return index_generic()
+    show_error, category = get_index_params(request)
+    return index_generic(show_error=show_error)
 
 
 @app.route('/hidden', methods=['GET'])
 @flask_login.login_required
 def index_hidden():
-    return index_generic(show_hidden=True)
-
-
-@app.route('/category/<string:category>', methods=['GET'])
-def index_category(category: str):
-    return index_generic(category=category)
+    show_error, category = get_index_params(request)
+    return index_generic(show_hidden=True, show_error=show_error, category=category)
 
 
 @app.route('/cookies', methods=['GET'])
