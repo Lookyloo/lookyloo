@@ -96,7 +96,7 @@
 
   {% if auto_trigger_modules %}
   <script>
-    $.get("{{ url_for('trigger_modules', tree_uuid=tree_uuid) }}")
+    $.get("{{ url_for('trigger_modules', tree_uuid=tree_uuid, auto_trigger=True) }}")
   </script>
   {% endif%}
 {% endblock %}

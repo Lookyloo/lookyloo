@@ -155,6 +155,7 @@ class Lookyloo():
             ct = CrawledTree(har_files, capture_uuid)
             self._ensure_meta(capture_dir, ct)
             self._resolve_dns(ct)
+            self.context.contextualize_tree(ct)
             # Force update cache of the capture (takes care of the incomplete redirect key)
             self._set_capture_cache(capture_dir, force=True)
             cache = self.capture_cache(capture_uuid)
@@ -353,7 +354,7 @@ class Lookyloo():
         with (capture_dir / 'categories').open('w') as f:
             f.writelines(f'{t}\n' for t in current_categories)
 
-    def trigger_modules(self, capture_uuid: str, /, force: bool=False) -> None:
+    def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False) -> None:
         '''Launch the 3rd party modules on a capture.
         It uses the cached result *if* the module was triggered the same day.
         The `force` flag re-triggers the module regardless of the cache.'''
@@ -363,19 +364,9 @@ class Lookyloo():
             self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_uuid}) is cached.')
             return
 
-        if self.pi.available:
-            if ct.redirects:
-                for redirect in ct.redirects:
-                    self.pi.url_lookup(redirect, force)
-            else:
-                self.pi.url_lookup(ct.root_hartree.har.root_url, force)
-
-        if self.vt.available:
-            if ct.redirects:
-                for redirect in ct.redirects:
-                    self.vt.url_lookup(redirect, force)
-            else:
-                self.vt.url_lookup(ct.root_hartree.har.root_url, force)
+        self.pi.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
+        self.vt.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
+        self.uwhois.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
 
     def get_modules_responses(self, capture_uuid: str, /) -> Optional[Dict[str, Any]]:
         '''Get the responses of the modules from the cached responses on the disk'''
@@ -1178,6 +1169,7 @@ class Lookyloo():
             raise MissingUUID(f'Unable to find UUID {node_uuid} in {node_uuid}')
 
         known_content = self.context.find_known_content(hostnode)
+        self.uwhois.query_whois_hostnode(hostnode)
 
         urls: List[Dict[str, Any]] = []
         for url in hostnode.urls:

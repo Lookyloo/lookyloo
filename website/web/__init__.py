@@ -284,10 +284,11 @@ def rebuild_tree(tree_uuid: str):
         return redirect(url_for('index'))
 
 
-@app.route('/tree/<string:tree_uuid>/trigger_modules/', defaults={'force': False})
-@app.route('/tree/<string:tree_uuid>/trigger_modules/<int:force>', methods=['GET'])
-def trigger_modules(tree_uuid: str, force: int):
-    lookyloo.trigger_modules(tree_uuid, True if force else False)
+@app.route('/tree/<string:tree_uuid>/trigger_modules', methods=['GET'])
+def trigger_modules(tree_uuid: str):
+    force = True if request.args.get('force') else False
+    auto_trigger = True if request.args.get('auto_trigger') else False
+    lookyloo.trigger_modules(tree_uuid, force=force, auto_trigger=auto_trigger)
     return redirect(url_for('modules', tree_uuid=tree_uuid))
 
 
@@ -512,7 +513,6 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
 
     try:
         ct = lookyloo.get_crawled_tree(tree_uuid)
-        ct = lookyloo.context.contextualize_tree(ct)
         b64_thumbnail = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=True)
         screenshot_size = lookyloo.get_screenshot(tree_uuid).getbuffer().nbytes
         meta = lookyloo.get_meta(tree_uuid)

@@ -19,6 +19,8 @@ from pysanejs import SaneJS
 from pyeupi import PyEUPI
 from pymisp import PyMISP, MISPEvent, MISPAttribute
 
+from har2tree import CrawledTree, HostNode
+
 
 class MISP():
 
@@ -33,6 +35,7 @@ class MISP():
         self.available = True
         self.enable_lookup = False
         self.enable_push = False
+        self.allow_auto_trigger = False
         try:
             self.client = PyMISP(url=config['url'], key=config['apikey'],
                                  ssl=config['verify_tls_cert'], timeout=config['timeout'])
@@ -45,6 +48,8 @@ class MISP():
             self.enable_lookup = True
         if config.get('enable_push'):
             self.enable_push = True
+        if config.get('allow_auto_trigger'):
+            self.allow_auto_trigger = True
         self.default_tags: List[str] = config.get('default_tags')  # type: ignore
         self.auto_publish = config.get('auto_publish')
         self.storage_dir_misp = get_homedir() / 'misp'
@@ -126,6 +131,10 @@ class UniversalWhois():
             return
         self.server = config.get('ipaddress')
         self.port = config.get('port')
+        self.allow_auto_trigger = False
+        if config.get('allow_auto_trigger'):
+            self.allow_auto_trigger = True
+
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.connect((self.server, self.port))
@@ -134,6 +143,27 @@ class UniversalWhois():
             self.logger.warning(f'Unable to connect to uwhois ({self.server}:{self.port}): {e}')
             return
         self.available = True
+
+    def query_whois_hostnode(self, hostnode: HostNode) -> None:
+        if hasattr(hostnode, 'resolved_ips'):
+            for ip in hostnode.resolved_ips:
+                self.whois(ip)
+        if hasattr(hostnode, 'cnames'):
+            for cname in hostnode.cnames:
+                self.whois(cname)
+        self.whois(hostnode.name)
+
+    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, force: bool=False, auto_trigger: bool=False) -> None:
+        '''Run the module on all the nodes up to the final redirect'''
+        if not self.available:
+            return None
+        if auto_trigger and not self.allow_auto_trigger:
+            return None
+
+        hostnode = crawled_tree.root_hartree.get_host_node_by_uuid(crawled_tree.root_hartree.rendered_node.hostnode_uuid)
+        self.query_whois_hostnode(hostnode)
+        for n in hostnode.get_ancestors():
+            self.query_whois_hostnode(n)
 
     def whois(self, query: str) -> str:
         bytes_whois = b''
@@ -163,6 +193,9 @@ class SaneJavaScript():
             self.available = False
             return
         self.available = True
+        self.allow_auto_trigger = False
+        if config.get('allow_auto_trigger'):
+            self.allow_auto_trigger = True
         self.storage_dir = get_homedir() / 'sanejs'
         self.storage_dir.mkdir(parents=True, exist_ok=True)
 
@@ -231,9 +264,15 @@ class PhishingInitiative():
 
         self.available = True
         self.autosubmit = False
+        self.allow_auto_trigger = False
         self.client = PyEUPI(config['apikey'])
+
+        if config.get('allow_auto_trigger'):
+            self.allow_auto_trigger = True
+
         if config.get('autosubmit'):
             self.autosubmit = True
+
         self.storage_dir_eupi = get_homedir() / 'eupi'
         self.storage_dir_eupi.mkdir(parents=True, exist_ok=True)
 
@@ -252,6 +291,19 @@ class PhishingInitiative():
 
         with cached_entries[0].open() as f:
             return json.load(f)
+
+    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, force: bool=False, auto_trigger: bool=False) -> None:
+        '''Run the module on all the nodes up to the final redirect'''
+        if not self.available:
+            return None
+        if auto_trigger and not self.allow_auto_trigger:
+            return None
+
+        if crawled_tree.redirects:
+            for redirect in crawled_tree.redirects:
+                self.url_lookup(redirect, force)
+        else:
+            self.url_lookup(crawled_tree.root_hartree.har.root_url, force)
 
     def url_lookup(self, url: str, force: bool=False) -> None:
         '''Lookup an URL on Phishing Initiative
@@ -304,9 +356,15 @@ class VirusTotal():
 
         self.available = True
         self.autosubmit = False
+        self.allow_auto_trigger = False
         self.client = vt.Client(config['apikey'])
+
+        if config.get('allow_auto_trigger'):
+            self.allow_auto_trigger = True
+
         if config.get('autosubmit'):
             self.autosubmit = True
+
         self.storage_dir_vt = get_homedir() / 'vt_url'
         self.storage_dir_vt.mkdir(parents=True, exist_ok=True)
 
@@ -326,6 +384,19 @@ class VirusTotal():
 
         with cached_entries[0].open() as f:
             return json.load(f)
+
+    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, force: bool=False, auto_trigger: bool=False) -> None:
+        '''Run the module on all the nodes up to the final redirect'''
+        if not self.available:
+            return None
+        if auto_trigger and not self.allow_auto_trigger:
+            return None
+
+        if crawled_tree.redirects:
+            for redirect in crawled_tree.redirects:
+                self.url_lookup(redirect, force)
+        else:
+            self.url_lookup(crawled_tree.root_hartree.har.root_url, force)
 
     def url_lookup(self, url: str, force: bool=False) -> None:
         '''Lookup an URL on VT

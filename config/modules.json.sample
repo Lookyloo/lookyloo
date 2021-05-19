@@ -1,14 +1,17 @@
 {
   "VirusTotal": {
     "apikey": null,
-    "autosubmit": false
+    "autosubmit": false,
+    "allow_auto_trigger": false
   },
   "PhishingInitiative": {
     "apikey": null,
-    "autosubmit": false
+    "autosubmit": false,
+    "allow_auto_trigger": false
   },
   "SaneJS": {
-    "enabled": true
+    "enabled": true,
+    "allow_auto_trigger": true
   },
   "MISP": {
     "apikey": null,
@@ -18,16 +21,19 @@
     "enable_lookup": false,
     "enable_push": false,
     "default_tags": [],
-    "auto_publish": false
+    "auto_publish": false,
+    "allow_auto_trigger": false
   },
   "UniversalWhois": {
     "enabled": false,
     "ipaddress": "127.0.0.1",
-    "port": 4243
+    "port": 4243,
+    "allow_auto_trigger": true
   },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
     "autosubmit": "Automatically submits the URL to the 3rd party service.",
+    "allow_auto_trigger": "Allow auto trigger per module: some (i.e. VT) can be very expensive",
     "VirusTotal": "Module to query Virustotal: https://www.virustotal.com/",
     "PhishingInitiative": "Module to query phishing initiative: https://phishing-initiative.fr/contrib/",
     "SaneJS": "Module to query SaneJS: https://github.com/Lookyloo/sanejs",
