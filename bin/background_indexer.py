@@ -34,6 +34,7 @@ class BackgroundIndexer(AbstractManager):
             try:
                 self.logger.info(f'Build pickle for {uuid}: {uuid_path.parent.name}')
                 self.lookyloo.get_crawled_tree(uuid)
+                self.lookyloo.trigger_modules(uuid, auto_trigger=True)
                 self.logger.info(f'Pickle for {uuid} build.')
             except NoValidHarFile:
                 self.logger.warning(f'Unable to build pickle for {uuid}: {uuid_path.parent.name}')
