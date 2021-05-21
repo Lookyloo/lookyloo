@@ -9,8 +9,6 @@ on:
 jobs:
   splash-container:
      runs-on: ubuntu-latest
-     container: 
-       image: scrapinghub:splash
      services:
        splash:
          image: scrapinghub/splash
