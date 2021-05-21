@@ -252,7 +252,7 @@ python-versions = "*"
 
 [[package]]
 name = "flask"
-version = "2.0.0"
+version = "2.0.1"
 description = "A simple framework for building complex web applications."
 category = "main"
 optional = false
@@ -307,7 +307,7 @@ hyperframe = ">=5.2.0,<6"
 
 [[package]]
 name = "har2tree"
-version = "1.5.9"
+version = "1.6.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -315,6 +315,7 @@ python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
 beautifulsoup4 = ">=4.9.3,<5.0.0"
+cchardet = ">=2.1.7,<3.0.0"
 ete3 = ">=3.1.2,<4.0.0"
 filetype = ">=1.0.7,<2.0.0"
 lxml = ">=4.6.3,<5.0.0"
@@ -748,17 +749,17 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pylookyloo"
-version = "1.5.0"
+version = "1.6.0"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
-requests = ">=2.22.0,<3.0.0"
+requests = ">=2.25.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=3.5.3,<4.0.0)", "myst-parser (>=0.13.5,<0.14.0)"]
+docs = ["Sphinx (>=3.5.4,<4.0.0)", "myst-parser (>=0.14.0,<0.15.0)"]
 
 [[package]]
 name = "pymisp"
@@ -935,7 +936,7 @@ python-versions = "*"
 
 [[package]]
 name = "scrapysplashwrapper"
-version = "1.5.1"
+version = "1.6.0"
 description = "Scrapy splash wrapper as a standalone library."
 category = "main"
 optional = false
@@ -1071,7 +1072,7 @@ brotli = ["brotlipy (>=0.6.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.6.2"
+version = "0.6.3"
 description = "The official Python client library for VirusTotal"
 category = "main"
 optional = false
@@ -1149,7 +1150,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "1bd649b86815b04f61da700d5b1b34b9e61fbdf9f38f02020a291719e488a82a"
+content-hash = "f34e831afe0cbf89d79c5f69d1292b2ec36929d7b752f5887ecd48d1212fb7a5"
 
 [metadata.files]
 aiohttp = [
@@ -1350,8 +1351,8 @@ filetype = [
     {file = "filetype-1.0.7.tar.gz", hash = "sha256:da393ece8d98b47edf2dd5a85a2c8733e44b769e32c71af4cd96ed8d38d96aa7"},
 ]
 flask = [
-    {file = "Flask-2.0.0-py3-none-any.whl", hash = "sha256:1833a4b36ace08dfa1510d86f1bb6fc595d990ec1b838e03ac8dd80ac0705954"},
-    {file = "Flask-2.0.0.tar.gz", hash = "sha256:168e8507792cb8a3aa06afbe5d4d431d3e07c6318bc3893ceecb81aff09f848d"},
+    {file = "Flask-2.0.1-py3-none-any.whl", hash = "sha256:a6209ca15eb63fc9385f38e452704113d679511d9574d09b2cf9183ae7d20dc9"},
+    {file = "Flask-2.0.1.tar.gz", hash = "sha256:1c4c257b1892aec1398784c63791cbaa43062f1f7aeb555c4da961b20ee68f55"},
 ]
 flask-login = [
     {file = "Flask-Login-0.5.0.tar.gz", hash = "sha256:6d33aef15b5bcead780acc339464aae8a6e28f13c90d8b1cf9de8b549d1c0b4b"},
@@ -1365,8 +1366,8 @@ h2 = [
     {file = "h2-3.2.0.tar.gz", hash = "sha256:875f41ebd6f2c44781259005b157faed1a5031df3ae5aa7bcb4628a6c0782f14"},
 ]
 har2tree = [
-    {file = "har2tree-1.5.9-py3-none-any.whl", hash = "sha256:d47d793d6f81ddc039a76305c739a7b5b295935a03a187ac1b0a9aa178466c53"},
-    {file = "har2tree-1.5.9.tar.gz", hash = "sha256:5f38a8aa1f2b669150875af54357fe1b6be0780450ff9a4d71a28ccf72dc9902"},
+    {file = "har2tree-1.6.0-py3-none-any.whl", hash = "sha256:8d4469ddea36da12ec7b25fc098740cfd66e2e565b8a013415261784eaa82cf4"},
+    {file = "har2tree-1.6.0.tar.gz", hash = "sha256:572b85b5470fd544152c2b1bb41cf1257f4256e2a7a1936bcd6fb06a8f7784f2"},
 ]
 hpack = [
     {file = "hpack-3.0.0-py2.py3-none-any.whl", hash = "sha256:0edd79eda27a53ba5be2dfabf3b15780928a0dff6eb0c60a3d6767720e970c89"},
@@ -1738,8 +1739,8 @@ pygments = [
     {file = "Pygments-2.9.0.tar.gz", hash = "sha256:a18f47b506a429f6f4b9df81bb02beab9ca21d0a5fee38ed15aef65f0545519f"},
 ]
 pylookyloo = [
-    {file = "pylookyloo-1.5.0-py3-none-any.whl", hash = "sha256:1fcd32ace502e0d2d8600859f7f15aef085bf68a7d1c612dfd147787b0e2d372"},
-    {file = "pylookyloo-1.5.0.tar.gz", hash = "sha256:2f616e1f05206d84f4695b517b5c851775af69ac9df2e4f6fa880b6a2c6b6ec8"},
+    {file = "pylookyloo-1.6.0-py3-none-any.whl", hash = "sha256:abb23880b289292cbc153b5e7f556b598e0972968c30bb9fa1dc5cdbc5e34361"},
+    {file = "pylookyloo-1.6.0.tar.gz", hash = "sha256:3daa751f3400c6365a9c145bebc58f56b2f0605ee8eaf28a6ed6042bcc3800ed"},
 ]
 pymisp = [
     {file = "pymisp-2.4.143-py3-none-any.whl", hash = "sha256:ceb6029045cfd2ab803902dc82e761909ca5337c2f6df484aef4e067e2f08d82"},
@@ -1792,8 +1793,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.7.2-py2.py3-none-any.whl", hash = "sha256:71ac958370f8732fec746a25a8235b03a4d3c4c93a59be51aa8e910a08cfe511"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.5.1-py3-none-any.whl", hash = "sha256:1d4e0216e3e1f6e15c721d0cf3eaa673fb54396550ece36cb9495fc384a27662"},
-    {file = "scrapysplashwrapper-1.5.1.tar.gz", hash = "sha256:5892cb842e1ad789943edf7d79d43795b3c20946b2292a6e91ed4dff6df709b8"},
+    {file = "scrapysplashwrapper-1.6.0-py3-none-any.whl", hash = "sha256:f1ac81d4d78b9cb00149dbe230bdb4b36d2bc55c4958d8c8e966164d6fe62808"},
+    {file = "scrapysplashwrapper-1.6.0.tar.gz", hash = "sha256:d5e5b52efe61a6685be6e7e817829f81156ec1f8982fdb463b80891220d918ce"},
 ]
 service-identity = [
     {file = "service-identity-21.1.0.tar.gz", hash = "sha256:6e6c6086ca271dc11b033d17c3a8bea9f24ebff920c587da090afc9519419d34"},
@@ -1875,7 +1876,7 @@ urllib3 = [
     {file = "urllib3-1.26.4.tar.gz", hash = "sha256:e7b021f7241115872f92f43c6508082facffbd1c048e3c6e2bb9c2a157e28937"},
 ]
 vt-py = [
-    {file = "vt-py-0.6.2.tar.gz", hash = "sha256:58cf407a0e645b00452f3709732a92e9c4ede14e5bdcdcafe476b4f5d1cae39d"},
+    {file = "vt-py-0.6.3.tar.gz", hash = "sha256:172916d07b54927271e62dd3ead03142189d7431e9ec0fdbb75fe09f68efa888"},
 ]
 w3lib = [
     {file = "w3lib-1.22.0-py2.py3-none-any.whl", hash = "sha256:0161d55537063e00d95a241663ede3395c4c6d7b777972ba2fd58bbab2001e53"},
