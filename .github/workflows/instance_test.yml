@@ -7,23 +7,19 @@ on:
     branches: [ main ]
 
 jobs:
-
   splash-container:
-     image: scrapinghub:splash
-     options: --disable-browser-caches
-     ports:
-       - 8050:8050
-       - 5023:5023
+     runs-on: ubuntu-latest
+     container: 
+       image: scrapinghub:splash
+     services:
+       splash:
+         image: scrapinghub:splash
+         options: --disable-browser-caches
+         ports:
+           - 8050:8050
+           - 5023:5023
 
-  lookyloo-container:
-    build:
-
-      runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          python-version: [3.8, 3.9]
-
-      steps:
+     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{matrix.python-version}}
         uses: actions/setup-python@v2
