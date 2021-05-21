@@ -1,0 +1,62 @@
+name: Run local instance of lookyloo to test that current repo
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  splash-container:
+     runs-on: ubuntu-latest
+     services:
+       splash:
+         image: scrapinghub/splash
+         ports:
+           - 8050:8050
+           - 5023:5023
+
+     strategy:
+       matrix:
+         python-version: [3.8, 3.9]
+
+     steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{matrix.python-version}}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{matrix.python-version}}
+
+      - name: Install and setup redis
+        run: |
+          pushd ..
+          git clone https://github.com/antirez/redis.git
+          pushd redis
+          git checkout 6.0
+          make
+          popd
+          popd
+
+      - name: Install system deps
+        run: |
+          sudo apt install libfuzzy-dev
+          python -m pip install --upgrade pip poetry
+
+      - name: Install & run lookyloo
+        run: |
+          echo LOOKYLOO_HOME="'`pwd`'" > .env
+          cp config/generic.json.sample config/generic.json
+          cp config/modules.json.sample config/modules.json
+          poetry install
+          poetry run tools/validate_config_files.py --check
+          poetry run tools/validate_config_files.py --update
+          poetry run tools/3rdparty.py
+          poetry run start
+
+      - name: Install pylookyloo and run test
+        run: |
+          git clone https://github.com/Lookyloo/PyLookyloo.git
+          pushd PyLookyloo
+          poetry install
+          popd
