@@ -33,16 +33,14 @@ jobs:
 
       - name: Install & run lookyloo
         run: |
-          git clone https://github.com/Lookyloo/lookyloo.git
-          cd lookyloo
           poetry install
           echo LOOKYLOO_HOME="'`pwd`'" > .env
           cp config/generic.json.sample config/generic.json
           cp config/modules.json.sample config/modules.json
           poetry run update --yes
-          cd ..
 
       - name: Install pylookyloo and run test
         run: |
           git clone https://github.com/Lookyloo/PyLookyloo.git
-          python PyLookyloo/pylookyloo/testing_github.py
+          cd PyLookyloo
+          poetry install
