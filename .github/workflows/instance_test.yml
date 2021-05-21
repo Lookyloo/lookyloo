@@ -22,8 +22,6 @@ jobs:
 
      steps:
       - uses: actions/checkout@v2
-        with: 
-          fetch-depth: 0
       
       - name: Set up Python ${{matrix.python-version}}
         uses: actions/setup-python@v2
@@ -32,11 +30,13 @@ jobs:
 
       - name: Install and setup redis
         run: |
+          pushd ..
           git clone https://github.com/antirez/redis.git
-          cd redis
+          pushd redis
           git checkout 6.0
           make
-          cd ..
+          popd 
+          popd
 
       - name: Install system deps
         run: | 
@@ -57,5 +57,6 @@ jobs:
       - name: Install pylookyloo and run test
         run: |
           git clone https://github.com/Lookyloo/PyLookyloo.git
-          cd PyLookyloo
+          pushd PyLookyloo
           poetry install
+          popd
