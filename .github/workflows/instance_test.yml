@@ -1,0 +1,52 @@
+name: Run local instance of lookyloo to test that current repo 
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{matrix.python-version}}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{matrix.python-version}}
+
+    - name: Install & run splash
+      run: |
+        sudo apt install docker.io
+        sudo docker pull spcrapinghub/splash
+        sudo docker run -p 8050:8050 -p 5023:5023 scrapinghub/splash --disable-browser-caches
+        
+    - name: Install and setup redis
+      run: |
+        git clone https://github.com/antirez/redis.git
+        cd redis
+        git checkout 6.0
+        make
+        cd ..
+    
+    - name: Install & run lookyloo
+      run: |
+        git clone https://github.com/Lookyloo/lookyloo.git
+        cd lookyloo
+        poetry install
+        echo LOOKYLOO_HOME="'`pwd`'" > .env
+        cp config/generic.json.sample config/generic.json
+        cp config/modules.json.sample config/modules.json
+        poetry run update --yes
+        cd ..
+    
+    - name: Install pylookyloo and run test
+      run: |
+        git clone https://github.com/Lookyloo/PyLookyloo.git
+        python PyLookyloo/pylookyloo/testing_github.py
