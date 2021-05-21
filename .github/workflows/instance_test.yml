@@ -40,6 +40,7 @@ jobs:
 
       - name: Install system deps
         run: | 
+          git checkout ${GITHUB_REF##*/}
           sudo apt install libfuzzy-dev             
           python -m pip install --upgrade pip poetry
 
