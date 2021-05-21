@@ -13,7 +13,7 @@ jobs:
        image: scrapinghub:splash
      services:
        splash:
-         image: scrapinghub:splash
+         image: scrapinghub/splash
          options: --disable-browser-caches
          ports:
            - 8050:8050
