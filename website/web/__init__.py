@@ -475,6 +475,10 @@ def cache_tree(tree_uuid: str):
 def send_mail(tree_uuid: str):
     if not enable_mail_notification:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
+    if request.form.get('name'):
+        # got a bot.
+        logging.info(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
+        return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
     email: str = request.form['email'] if request.form.get('email') else ''
     if '@' not in email:
         # skip clearly incorrect emails
