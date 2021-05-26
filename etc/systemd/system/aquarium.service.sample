@@ -11,6 +11,8 @@ RemainAfterExit=true
 WorkingDirectory=<path to the directory where you installed aquarium>
 ExecStart=/usr/bin/docker-compose up -d --remove-orphans
 ExecStop=/usr/bin/docker-compose down
+StandardOutput=append:/var/log/aquarium_message.log
+StandardError=append:/var/log/aquarium_error.log
 
 [Install]
 WantedBy=multi-user.target
