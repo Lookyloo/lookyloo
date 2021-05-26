@@ -28,7 +28,8 @@
     "to": "Investigation Team <investigation_unit@myorg.local>",
     "subject": "Capture from Lookyloo to review",
     "smtp_host": "localhost",
-    "smtp_port": "25"
+    "smtp_port": "25",
+    "confirm_message": "Message the users need to confirm before they submit a notification."
   },
   "priority": {
     "sources": {

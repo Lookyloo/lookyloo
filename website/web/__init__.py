@@ -148,6 +148,10 @@ max_depth = get_config('generic', 'max_depth')
 
 use_own_ua = get_config('generic', 'use_user_agents_users')
 enable_mail_notification = get_config('generic', 'enable_mail_notification')
+if enable_mail_notification:
+    confirm_message = get_config('generic', 'email').get('confirm_message')
+else:
+    confirm_message = ''
 enable_context_by_users = get_config('generic', 'enable_context_by_users')
 enable_categorization = get_config('generic', 'enable_categorization')
 enable_bookmark = get_config('generic', 'enable_bookmark')
@@ -475,10 +479,11 @@ def cache_tree(tree_uuid: str):
 def send_mail(tree_uuid: str):
     if not enable_mail_notification:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    if request.form.get('name'):
+    if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
         logging.info(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
+
     email: str = request.form['email'] if request.form.get('email') else ''
     if '@' not in email:
         # skip clearly incorrect emails
@@ -548,6 +553,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                misp_push=lookyloo.misp.available and lookyloo.misp.enable_push,
                                blur_screenshot=blur_screenshot, urlnode_uuid=hostnode_to_highlight,
                                auto_trigger_modules=auto_trigger_modules,
+                               confirm_message=confirm_message if confirm_message else 'Tick to confirm.',
                                has_redirects=True if cache.redirects else False)
 
     except NoValidHarFile as e:
