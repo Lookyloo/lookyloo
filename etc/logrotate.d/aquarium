@@ -1,4 +1,4 @@
-/var/log/aquarium.log {
+/var/log/aquarium*.log {
 	daily
 	missingok
 	rotate 14
