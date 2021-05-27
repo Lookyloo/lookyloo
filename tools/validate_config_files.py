@@ -34,6 +34,8 @@ def validate_generic_config_file():
         if isinstance(generic_config[key], dict):
             # Check entries
             for sub_key in generic_config_sample[key].keys():
+                if sub_key not in generic_config[key]:
+                    raise Exception(f'{sub_key} is missing in generic_config[key]. Default from sample file: {generic_config_sample[key][sub_key]}')
                 if not isinstance(generic_config[key][sub_key], type(generic_config_sample[key][sub_key])):
                     raise Exception(f'Invalid type for {sub_key} in {key}. Got: {type(generic_config[key][sub_key])} ({generic_config[key][sub_key]}), expected: {type(generic_config_sample[key][sub_key])} ({generic_config_sample[key][sub_key]})')
 
@@ -80,6 +82,12 @@ def update_user_configs():
                 print(f"Description: {generic_config_sample['_notes'][key]}")
                 generic_config[key] = generic_config_sample[key]
                 has_new_entry = True
+            elif isinstance(generic_config[key], dict):
+                for sub_key in generic_config_sample[key].keys():
+                    if sub_key not in generic_config[key]:
+                        print(f'{sub_key} was missing in {key} from {file_name}, adding it.')
+                        generic_config[key][sub_key] = generic_config_sample[key][sub_key]
+                        has_new_entry = True
         if has_new_entry:
             with (get_homedir() / 'config' / f'{file_name}.json').open('w') as fw:
                 json.dump(generic_config, fw, indent=2, sort_keys=True)
