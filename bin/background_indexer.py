@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from datetime import datetime, timedelta
 
 from lookyloo.abstractmanager import AbstractManager
 from lookyloo.lookyloo import Lookyloo
@@ -29,6 +30,19 @@ class BackgroundIndexer(AbstractManager):
         for uuid_path in self.lookyloo.capture_dir.glob('*/uuid'):
             if (uuid_path.parent / 'tree.pickle').exists():
                 continue
+            lock_file = uuid_path.parent / 'lock'
+            if lock_file.exists():
+                try:
+                    with lock_file.open('r') as f:
+                        lock_ts = datetime.fromisoformat(f.read())
+                    if lock_ts < datetime.now() - timedelta(minutes=5):
+                        # Clear old locks. They shouldn't be there, but it's gonna happen.
+                        self.logger.info(f'Old lock found {lock_file}, removing it.')
+                        lock_file.unlink(missing_ok=True)
+                except Exception as e:
+                    self.logger.info(f'Error while reading lock {lock_file}: {e}')
+                continue
+
             with uuid_path.open() as f:
                 uuid = f.read()
             try:

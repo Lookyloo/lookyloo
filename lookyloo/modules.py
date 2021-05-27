@@ -166,6 +166,8 @@ class UniversalWhois():
             self.query_whois_hostnode(n)
 
     def whois(self, query: str) -> str:
+        if not self.available:
+            return ''
         bytes_whois = b''
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect((self.server, self.port))

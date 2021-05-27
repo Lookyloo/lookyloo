@@ -340,3 +340,11 @@ def uniq_domains(uniq_urls):
         splitted = urlparse(url)
         domains.add(splitted.hostname)
     return domains
+
+
+def try_make_file(filename: Path):
+    try:
+        filename.touch(exist_ok=False)
+        return True
+    except FileExistsError:
+        return False

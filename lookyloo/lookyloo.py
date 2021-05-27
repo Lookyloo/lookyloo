@@ -20,6 +20,7 @@ from urllib.parse import urlsplit, urljoin
 from uuid import uuid4
 from zipfile import ZipFile
 import operator
+import time
 
 from defang import refang  # type: ignore
 import dns.resolver
@@ -38,7 +39,7 @@ from .exceptions import NoValidHarFile, MissingUUID, LookylooException
 from .helpers import (get_homedir, get_socket_path, load_cookies, get_config,
                       safe_create_dir, get_email_template, load_pickle_tree,
                       remove_pickle_tree, get_resources_hashes, get_taxonomies, uniq_domains,
-                      CaptureStatus)
+                      CaptureStatus, try_make_file)
 from .modules import VirusTotal, SaneJavaScript, PhishingInitiative, MISP, UniversalWhois
 from .capturecache import CaptureCache
 from .context import Context
@@ -149,6 +150,25 @@ class Lookyloo():
         '''Generate the pickle, set the cache, add capture in the indexes'''
         capture_dir = self._get_capture_dir(capture_uuid)
         har_files = sorted(capture_dir.glob('*.har'))
+        lock_file = capture_dir / 'lock'
+        pickle_file = capture_dir / 'tree.pickle'
+
+        if try_make_file(lock_file):
+            # Lock created, we can process
+            with lock_file.open('w') as f:
+                f.write(datetime.now().isoformat())
+        else:
+            # The pickle is being created somewhere else, wait until it's done.
+            while lock_file.exists():
+                time.sleep(5)
+            keep_going = 5
+            while (ct := load_pickle_tree(capture_dir)) is None:
+                keep_going -= 1
+                if not keep_going:
+                    raise LookylooException(f'Unable to get tree for {capture_uuid}')
+                time.sleep(5)
+            return ct
+
         # NOTE: We only index the public captures
         index = True
         try:
@@ -175,7 +195,7 @@ class Lookyloo():
         except RecursionError as e:
             raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
 
-        with (capture_dir / 'tree.pickle').open('wb') as _p:
+        with pickle_file.open('wb') as _p:
             # Some pickles require a pretty high recursion limit, this kindof fixes it.
             # If the capture is really broken (generally a refresh to self), the capture
             # is discarded in the RecursionError above.
@@ -183,6 +203,7 @@ class Lookyloo():
             sys.setrecursionlimit(int(default_recursion_limit * 1.1))
             pickle.dump(ct, _p)
             sys.setrecursionlimit(default_recursion_limit)
+        lock_file.unlink(missing_ok=True)
         return ct
 
     def _build_cname_chain(self, known_cnames: Dict[str, Optional[str]], hostname) -> List[str]:

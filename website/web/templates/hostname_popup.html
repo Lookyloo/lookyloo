@@ -110,7 +110,7 @@
     {% for url in urls %}
     {# URL Display #}
     <li class="list-group-item">
-      <div class="h3" title={{ url['url_object'].name }}>
+      <div class="h3" title="{{ url['url_object'].name }}">
         {# HTTPs or not  #}
         {% if url['encrypted'] %}
         <img src="/static/secure.svg" title="Encrypted request" width="21" height="21"/>
@@ -162,7 +162,11 @@
           {# Details of the response #}
           <p class="h4">Response
             <small>(Status code:
-                <span title="{{ http_status_description(url['url_object'].response['status']) }}">{{ url['url_object'].response['status'] }})</span>
+                <span title="{{ http_status_description(url['url_object'].response['status']) }}">
+                    {{ url['url_object'].response['status'] }})
+                </span>
+                -
+                <span>Load time: {{ url['url_object'].time.total_seconds() }}s</span>
             </small>
           </p>
           {{ popup_icons(keys_response, url['url_object'], tree_uuid) }}
