@@ -60,12 +60,14 @@ let tree = d3.tree();
 update(root);
 
 if (parent_uuid != null) {
-    node_container.append('rect')
+
+    let parent_box_y = root.y - 70;
+    let parent_box_x = root.x - 150;
+
+    let parent_rect = node_container.append('rect')
       .attr("rx", 6)
       .attr("ry", 6)
-      .attr("transform", `translate(${root.y - 70}, ${root.x - 150})`)
-      .attr('width', 150)
-      .attr('height', 65)
+      .attr("transform", `translate(${parent_box_y}, ${parent_box_x})`)
       .style("opacity", "0.5")
       .attr("stroke", 'black')
       .attr('stroke-opacity', "0.8")
@@ -83,9 +85,10 @@ if (parent_uuid != null) {
             }
         ])
         .append('text')
-        .attr("dy", "0em")
+        .attr("dy", 0)
         .style("font-size", "12px")
-        .attr("transform", `translate(${root.y - 67}, ${root.x - 135})`);
+        .style('text-align', 'center')
+        .attr("transform", `translate(${parent_box_y + 3}, ${parent_box_x + 15})`);
 
     text
         .append('tspan')
@@ -106,10 +109,13 @@ if (parent_uuid != null) {
         .attr('cursor', 'pointer')
         .on('click', (event, d) => { openTreeInNewTab(d.parent_uuid) } );
 
+    parent_rect
+        .attr('width', text.node().getBBox().width + 6)
+        .attr('height', text.node().getBBox().height + 10)
+
     let line_arrow = node_container
-                       .append('g')
-                       .attr('cursor', 'pointer')
-                       .attr("transform", `translate(${root.y}, ${root.x})`);
+                       .append('g');
+                       //.attr("transform", `translate(${root.y}, ${root.x})`);
 
     let line = d3.line()
                     // Other options: http://bl.ocks.org/d3indepth/raw/b6d4845973089bc1012dec1674d3aff8/
@@ -129,8 +135,8 @@ if (parent_uuid != null) {
         .attr("stroke", "black")
         .attr("fill", "none")
         .data([{
-            source: {x: 0, y: -85},
-            target: {x: 50, y: -node_height/1.12}
+            source: {x: 0, y: parent_box_x + parent_rect.node().getBBox().height},
+            target: {x: 50, y: parent_box_x + parent_rect.node().getBBox().height + 42}
         }])
         .attr("class", "line")
         .attr("d", d => line(
@@ -147,7 +153,7 @@ if (parent_uuid != null) {
         .attr('stroke-opacity', "0.8")
         .style('stroke-width', '1.5')
         .attr("fill-opacity", '0')
-        .attr("transform", `translate(50, -${node_height/1.3}) rotate(60)`);
+        .attr("transform", `translate(50, ${parent_box_x + parent_rect.node().getBBox().height + 48}) rotate(60)`);
 };
 
 
