@@ -554,6 +554,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                blur_screenshot=blur_screenshot, urlnode_uuid=hostnode_to_highlight,
                                auto_trigger_modules=auto_trigger_modules,
                                confirm_message=confirm_message if confirm_message else 'Tick to confirm.',
+                               parent_uuid=cache.parent,
                                has_redirects=True if cache.redirects else False)
 
     except NoValidHarFile as e:

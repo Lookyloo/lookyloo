@@ -59,6 +59,98 @@ root.y0 = 0;
 let tree = d3.tree();
 update(root);
 
+if (parent_uuid != null) {
+    node_container.append('rect')
+      .attr("rx", 6)
+      .attr("ry", 6)
+      .attr("transform", `translate(${root.y - 70}, ${root.x - 150})`)
+      .attr('width', 150)
+      .attr('height', 65)
+      .style("opacity", "0.5")
+      .attr("stroke", 'black')
+      .attr('stroke-opacity', "0.8")
+      .attr("stroke-width", "2")
+      .attr("stroke-linecap", "round")
+      .attr("fill", "white")
+
+    let text = node_container
+        .data([
+            {
+                "line1": 'This capture was triggered',
+                "line2": 'from a previous capture.',
+                "line3": 'See the parent',
+                "parent_uuid": parent_uuid
+            }
+        ])
+        .append('text')
+        .attr("dy", "0em")
+        .style("font-size", "12px")
+        .attr("transform", `translate(${root.y - 67}, ${root.x - 135})`);
+
+    text
+        .append('tspan')
+        .text(d => d.line1);
+
+    text
+        .append('tspan')
+        .attr("x", 8)
+        .attr("dy", 18)
+        .text(d => d.line2);
+
+    text
+        .append('tspan')
+        .attr("x", 30)
+        .attr("dy", 20)
+        .text(d => d.line3)
+        .style('fill', '#0000EE')
+        .attr('cursor', 'pointer')
+        .on('click', (event, d) => { openTreeInNewTab(d.parent_uuid) } );
+
+    let line_arrow = node_container
+                       .append('g')
+                       .attr('cursor', 'pointer')
+                       .attr("transform", `translate(${root.y}, ${root.x})`);
+
+    let line = d3.line()
+                    // Other options: http://bl.ocks.org/d3indepth/raw/b6d4845973089bc1012dec1674d3aff8/
+                    //.curve(d3.curveCardinal)
+                    .curve(d3.curveBundle)
+                    .x(point => point.lx)
+                    .y(point => point.ly);
+
+    let line_tip = d3.symbol()
+                    .type(d3.symbolTriangle)
+                    .size(200);
+
+    line_arrow
+        .append("path")
+        .attr('stroke-opacity', "0.7")
+        .attr("stroke-width", "2")
+        .attr("stroke", "black")
+        .attr("fill", "none")
+        .data([{
+            source: {x: 0, y: -85},
+            target: {x: 50, y: -node_height/1.12}
+        }])
+        .attr("class", "line")
+        .attr("d", d => line(
+            [{lx: d.source.x, ly: d.source.y},
+             {lx: d.target.x, ly: d.source.y},
+             {lx: d.target.x, ly: d.target.y}
+            ])
+        );
+
+    line_arrow
+        .append("path")
+        .attr("d", line_tip)
+        .attr("stroke", 'black')
+        .attr('stroke-opacity', "0.8")
+        .style('stroke-width', '1.5')
+        .attr("fill-opacity", '0')
+        .attr("transform", `translate(50, -${node_height/1.3}) rotate(60)`);
+};
+
+
 function openTreeInNewTab(capture_uuid, hostnode_uuid=null) {
     let url = `/tree/${capture_uuid}`;
     if (hostnode_uuid != null) {

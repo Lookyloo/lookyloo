@@ -116,6 +116,7 @@
   var screenshot_thumbnail = "{{ screenshot_thumbnail }}";
   var enable_bookmark = {{ enable_bookmark|tojson }};
   var treeData = {{ tree_json | safe }};
+  var parent_uuid = {{ parent_uuid|tojson }};
   var capture_starttime = new Date(Date.parse("{{ start_time }}"));
   window.addEventListener('DOMContentLoaded', (event) => {
       document.getElementById("start_time").innerHTML =
