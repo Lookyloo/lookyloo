@@ -194,16 +194,17 @@ class Lookyloo():
             raise NoValidHarFile(e.message)
         except RecursionError as e:
             raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
-
-        with pickle_file.open('wb') as _p:
-            # Some pickles require a pretty high recursion limit, this kindof fixes it.
-            # If the capture is really broken (generally a refresh to self), the capture
-            # is discarded in the RecursionError above.
-            default_recursion_limit = sys.getrecursionlimit()
-            sys.setrecursionlimit(int(default_recursion_limit * 1.1))
-            pickle.dump(ct, _p)
-            sys.setrecursionlimit(default_recursion_limit)
-        lock_file.unlink(missing_ok=True)
+        else:
+            with pickle_file.open('wb') as _p:
+                # Some pickles require a pretty high recursion limit, this kindof fixes it.
+                # If the capture is really broken (generally a refresh to self), the capture
+                # is discarded in the RecursionError above.
+                default_recursion_limit = sys.getrecursionlimit()
+                sys.setrecursionlimit(int(default_recursion_limit * 1.1))
+                pickle.dump(ct, _p)
+                sys.setrecursionlimit(default_recursion_limit)
+        finally:
+            lock_file.unlink(missing_ok=True)
         return ct
 
     def _build_cname_chain(self, known_cnames: Dict[str, Optional[str]], hostname) -> List[str]:
