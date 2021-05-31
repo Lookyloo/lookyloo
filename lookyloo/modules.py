@@ -58,7 +58,7 @@ class MISP():
     def get_fav_tags(self):
         return self.client.tags(pythonify=True, favouritesOnly=1)
 
-    def _prepare_push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False) -> Union[List[MISPEvent], MISPEvent, Dict]:
+    def _prepare_push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False, auto_publish: bool=False) -> Union[List[MISPEvent], Dict]:
         '''Adds the pre-configured information as required by the instance.
         If duplicates aren't allowed, they will be automatically skiped and the
         extends_uuid key in the next element in the list updated'''
@@ -80,14 +80,16 @@ class MISP():
 
             for tag in self.default_tags:
                 event.add_tag(tag)
-            if self.auto_publish:
+            if auto_publish:
                 event.publish()
             events_to_push.append(event)
         return events_to_push
 
-    def push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False) -> Union[List[MISPEvent], Dict]:
+    def push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False, auto_publish: Optional[bool]=None) -> Union[List[MISPEvent], Dict]:
+        if auto_publish is None:
+            auto_publish = self.auto_publish
         if self.available and self.enable_push:
-            events = self._prepare_push(to_push, allow_duplicates)
+            events = self._prepare_push(to_push, allow_duplicates, auto_publish)
             if not events:
                 return {'error': 'All the events are already on the MISP instance.'}
             if isinstance(events, Dict):

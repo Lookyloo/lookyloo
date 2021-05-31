@@ -1,8 +1,13 @@
 <div>
-  <p>Event to push: {{event.info}}</p>
-  <p>Auto Publish: {{auto_publish}}</p>
   <p>Default tags: {{', '.join(default_tags)}}</p>
   <form role="form" action="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}" method=post enctype=multipart/form-data>
+    <div class="form-group row">
+      <label for="url" class="col-sm-2 col-form-label">Event info:</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" name="event_info" value="{{event.info}}">
+      </div>
+    </div>
+
     <div class="form-group row">
       <label for="tags" class="col-sm-2 col-form-label">Available tags:</label>
       <div class="col-sm-10">
@@ -12,6 +17,10 @@
           {% endfor %}
         </select>
       </div>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="auto_publish" {%if auto_publish %} checked {% endif %}></input>
+      <label for="auto_publish" class="form-check-label">Publish the event automatically</label>
     </div>
     {% if existing_event %}
     <p>There is already an <a href="{{existing_event}}">event on your MISP instance</a> with this lookyloo capture.</p>

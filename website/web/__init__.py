@@ -20,7 +20,7 @@ from flask_bootstrap import Bootstrap  # type: ignore
 import flask_login  # type: ignore
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from pymisp import MISPEvent
+from pymisp import MISPEvent, MISPServerError
 
 from lookyloo.helpers import (get_homedir, update_user_agents, get_user_agents, get_config,
                               get_taxonomies, load_cookies, CaptureStatus)
@@ -979,12 +979,20 @@ def web_misp_push_view(tree_uuid: str):
             for tag in tags:
                 e.add_tag(tag)
 
-        new_events = lookyloo.misp.push(events)
-        if isinstance(new_events, dict):
-            flash(f'Unable to create event(s): {new_events}', 'error')
+        # Change the event info field of the last event in the chain
+        events[-1].info = request.form.get('event_info')
+
+        try:
+            new_events = lookyloo.misp.push(events, True if request.form.get('force_push') else False,
+                                            True if request.form.get('auto_publish') else False)
+        except MISPServerError:
+            flash(f'MISP returned an error, the event(s) might still have been created on {lookyloo.misp.client.root_url}', 'error')
         else:
-            for e in new_events:
-                flash(f'MISP event {e.id} created on {lookyloo.misp.client.root_url}', 'success')
+            if isinstance(new_events, dict):
+                flash(f'Unable to create event(s): {new_events}', 'error')
+            else:
+                for e in new_events:
+                    flash(f'MISP event {e.id} created on {lookyloo.misp.client.root_url}', 'success')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     else:
         # the 1st attribute in the event is the link to lookyloo
@@ -994,7 +1002,7 @@ def web_misp_push_view(tree_uuid: str):
     cache = lookyloo.capture_cache(tree_uuid)
 
     return render_template('misp_push_view.html', tree_uuid=tree_uuid,
-                           event=event, fav_tags=fav_tags,
+                           event=event[0], fav_tags=fav_tags,
                            existing_event=existing_misp_url,
                            auto_publish=lookyloo.misp.auto_publish,
                            has_parent=True if cache and cache.parent else False,
