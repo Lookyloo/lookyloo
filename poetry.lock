@@ -87,7 +87,7 @@ lxml = ["lxml"]
 
 [[package]]
 name = "bootstrap-flask"
-version = "1.5.3"
+version = "1.6.0"
 description = "Bootstrap helper for Flask/Jinja2."
 category = "main"
 optional = false
@@ -110,7 +110,7 @@ python-versions = "*"
 
 [[package]]
 name = "certifi"
-version = "2020.12.5"
+version = "2021.5.30"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
@@ -1218,8 +1218,8 @@ beautifulsoup4 = [
     {file = "beautifulsoup4-4.9.3.tar.gz", hash = "sha256:84729e322ad1d5b4d25f805bfa05b902dd96450f43842c4e99067d5e1369eb25"},
 ]
 bootstrap-flask = [
-    {file = "Bootstrap-Flask-1.5.3.tar.gz", hash = "sha256:b9a78d4399157f9a1fefb8ab18b159a6d83df4a3e07da72c4858164619badcf7"},
-    {file = "Bootstrap_Flask-1.5.3-py2.py3-none-any.whl", hash = "sha256:64c544d6fb1bec568c135bdd21d42d2b0ccd3ec84a96b81dd1f6ab55243f1dd7"},
+    {file = "Bootstrap-Flask-1.6.0.tar.gz", hash = "sha256:30c0d21952000b3bb4f51da9550737870ff040d3b4436515e54e1a1e2782dbd6"},
+    {file = "Bootstrap_Flask-1.6.0-py2.py3-none-any.whl", hash = "sha256:7959838820db59ca94b5ae47bea7f4acd848e8d86107e4de01f16fc2b04691d6"},
 ]
 cchardet = [
     {file = "cchardet-2.1.7-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:58005cd94e4bbb25fb4cee3ad75a0fe121384cb2b99ac5619aa45aecedf43c7b"},
@@ -1253,8 +1253,8 @@ cchardet = [
     {file = "cchardet-2.1.7.tar.gz", hash = "sha256:c428b6336545053c2589f6caf24ea32276c6664cb86db817e03a94c60afa0eaf"},
 ]
 certifi = [
-    {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},
-    {file = "certifi-2020.12.5.tar.gz", hash = "sha256:1a4995114262bffbc2413b159f2a1a480c969de6e6eb13ee966d470af86af59c"},
+    {file = "certifi-2021.5.30-py2.py3-none-any.whl", hash = "sha256:50b1e4f8446b06f41be7dd6338db18e0990601dce795c2b1686458aa7e8fa7d8"},
+    {file = "certifi-2021.5.30.tar.gz", hash = "sha256:2bbf76fd432960138b3ef6dda3dde0544f27cbf8546c458e60baf371917ba9ee"},
 ]
 cffi = [
     {file = "cffi-1.14.5-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:bb89f306e5da99f4d922728ddcd6f7fcebb3241fc40edebcb7284d7514741991"},
