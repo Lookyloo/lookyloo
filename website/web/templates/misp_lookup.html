@@ -1,0 +1,23 @@
+{% from "macros.html" import shorten_string %}
+
+<div>
+  <center><h1 class="display-4">MISP hits</h1></center>
+{% if hits %}
+  {% for value, entries in hits.items() %}
+    {% if entries %}
+    <h3>{{value}}</h3>
+    <hr>
+      {% if entries is mapping %}
+      {{ entries }}
+      {% elif entries is sequence %}
+        <ul>
+        {% for entry in entries %}
+          <li>{{misp_root_url}}/events/{{entry}}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% else %}
+  No hits
+{% endif %}
