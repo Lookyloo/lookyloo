@@ -58,7 +58,7 @@ class MISP():
     def get_fav_tags(self):
         return self.client.tags(pythonify=True, favouritesOnly=1)
 
-    def _prepare_push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False, auto_publish: bool=False) -> Union[List[MISPEvent], Dict]:
+    def _prepare_push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False, auto_publish: Optional[bool]=False) -> Union[List[MISPEvent], Dict]:
         '''Adds the pre-configured information as required by the instance.
         If duplicates aren't allowed, they will be automatically skiped and the
         extends_uuid key in the next element in the list updated'''
@@ -128,9 +128,11 @@ class MISP():
                 to_lookup += hostnode.cnames
             if attributes := self.client.search(controller='attributes', value=to_lookup, pythonify=True):
                 if isinstance(attributes, list):
-                    return list(set(attribute.event_id for attribute in attributes))
+                    # NOTE: We have MISPAttributes in that list
+                    return list(set(attribute.event_id for attribute in attributes))  # type: ignore
                 else:
-                    return attributes
+                    # The request returned an error
+                    return attributes  # type: ignore
             return []
         else:
             return {'error': 'Module not available or lookup not enabled.'}

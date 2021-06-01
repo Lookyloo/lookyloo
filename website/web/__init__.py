@@ -345,7 +345,7 @@ def web_misp_lookup_view(tree_uuid: str):
     if hits:
         misp_root_url = lookyloo.misp.client.root_url
     else:
-        misp_root_url = None
+        misp_root_url = ''
     return render_template('misp_lookup.html', uuid=tree_uuid, hits=hits, misp_root_url=misp_root_url)
 
 
