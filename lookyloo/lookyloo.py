@@ -422,7 +422,7 @@ class Lookyloo():
         except LookylooException:
             self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_uuid}) is cached.')
             return None
-        nodes_to_lookup = ct.root_hartree.rendered_node.get_ancestors()
+        nodes_to_lookup = ct.root_hartree.rendered_node.get_ancestors() + [ct.root_hartree.rendered_node]
         events = {}
         for node in nodes_to_lookup:
             events[node.name] = self.misp.lookup(node, ct.root_hartree.get_host_node_by_uuid(node.hostnode_uuid))
