@@ -854,7 +854,7 @@ six = ">=1.5"
 
 [[package]]
 name = "python-magic"
-version = "0.4.22"
+version = "0.4.23"
 description = "File type identification using libmagic"
 category = "main"
 optional = true
@@ -1775,8 +1775,8 @@ python-dateutil = [
     {file = "python_dateutil-2.8.1-py2.py3-none-any.whl", hash = "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"},
 ]
 python-magic = [
-    {file = "python-magic-0.4.22.tar.gz", hash = "sha256:ca884349f2c92ce830e3f498c5b7c7051fe2942c3ee4332f65213b8ebff15a62"},
-    {file = "python_magic-0.4.22-py2.py3-none-any.whl", hash = "sha256:8551e804c09a3398790bd9e392acb26554ae2609f29c72abb0b9dee9a5571eae"},
+    {file = "python-magic-0.4.23.tar.gz", hash = "sha256:88f71d04fde4318da32fa03930362f1c6127caa833614563fd53a0fd3438cc3e"},
+    {file = "python_magic-0.4.23-py2.py3-none-any.whl", hash = "sha256:3790dc06e5abf9d618d288adf831f159ca9a3872aac7bcb8b7008b4a08d9809c"},
 ]
 queuelib = [
     {file = "queuelib-1.6.1-py2.py3-none-any.whl", hash = "sha256:90ee30ebb0b57112606358b63c09a681bbb9a7dd1120af09c836b475504cea85"},
