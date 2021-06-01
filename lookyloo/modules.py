@@ -19,7 +19,7 @@ from pysanejs import SaneJS
 from pyeupi import PyEUPI
 from pymisp import PyMISP, MISPEvent, MISPAttribute
 
-from har2tree import CrawledTree, HostNode
+from har2tree import CrawledTree, HostNode, URLNode
 
 
 class MISP():
@@ -120,6 +120,20 @@ class MISP():
         if isinstance(event, MISPEvent):
             return event
         return None
+
+    def lookup(self, node: URLNode, hostnode: HostNode) -> Union[List[str], Dict]:
+        if self.available and self.enable_lookup:
+            to_lookup = [node.name, node.hostname] + hostnode.resolved_ips
+            if hasattr(hostnode, 'cnames'):
+                to_lookup += hostnode.cnames
+            if attributes := self.client.search(controller='attributes', value=to_lookup, pythonify=True):
+                if isinstance(attributes, list):
+                    return list(set(attribute.event_id for attribute in attributes))
+                else:
+                    return attributes
+            return []
+        else:
+            return {'error': 'Module not available or lookup not enabled.'}
 
 
 class UniversalWhois():

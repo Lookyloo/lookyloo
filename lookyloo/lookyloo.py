@@ -414,6 +414,20 @@ class Lookyloo():
                 to_return['pi'][ct.root_hartree.har.root_url] = self.pi.get_url_lookup(ct.root_hartree.har.root_url)
         return to_return
 
+    def get_misp_occurrences(self, capture_uuid: str, /) -> Optional[Dict[str, Any]]:
+        if not self.misp.available:
+            return None
+        try:
+            ct = self.get_crawled_tree(capture_uuid)
+        except LookylooException:
+            self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_uuid}) is cached.')
+            return None
+        nodes_to_lookup = ct.root_hartree.rendered_node.get_ancestors()
+        events = {}
+        for node in nodes_to_lookup:
+            events[node.name] = self.misp.lookup(node, ct.root_hartree.get_host_node_by_uuid(node.hostnode_uuid))
+        return events
+
     def _set_capture_cache(self, capture_dir: Path, force: bool=False, redis_pipeline: Optional[Redis]=None) -> None:
         '''Populate the redis cache for a capture. Mostly used on the index page.'''
         if force or not self.redis.exists(str(capture_dir)):

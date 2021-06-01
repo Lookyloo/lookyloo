@@ -338,6 +338,17 @@ def stats(tree_uuid: str):
     return render_template('statistics.html', uuid=tree_uuid, stats=stats)
 
 
+@app.route('/tree/<string:tree_uuid>/misp_lookup', methods=['GET'])
+@flask_login.login_required
+def web_misp_lookup_view(tree_uuid: str):
+    hits = lookyloo.get_misp_occurrences(tree_uuid)
+    if hits:
+        misp_root_url = lookyloo.misp.client.root_url
+    else:
+        misp_root_url = None
+    return render_template('misp_lookup.html', uuid=tree_uuid, hits=hits, misp_root_url=misp_root_url)
+
+
 @app.route('/tree/<string:tree_uuid>/modules', methods=['GET'])
 def modules(tree_uuid: str):
     modules_responses = lookyloo.get_modules_responses(tree_uuid)
@@ -551,6 +562,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,
                                misp_push=lookyloo.misp.available and lookyloo.misp.enable_push,
+                               misp_lookup=lookyloo.misp.available and lookyloo.misp.enable_lookup,
                                blur_screenshot=blur_screenshot, urlnode_uuid=hostnode_to_highlight,
                                auto_trigger_modules=auto_trigger_modules,
                                confirm_message=confirm_message if confirm_message else 'Tick to confirm.',
