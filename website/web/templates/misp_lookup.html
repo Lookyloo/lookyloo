@@ -1,23 +1,23 @@
 {% from "macros.html" import shorten_string %}
 
 <div>
-  <center><h1 class="display-4">MISP hits</h1></center>
+  <center>
+    <h1 class="display-4">MISP hits</h1>
+    <h6>Searching on URL, domain, IPs, and CNAMEs for all the nodes up to the rendered page.</h6>
+    <h6>Skips the entries in warnings lists enabled on your MISP instance.</h6>
+  </center>
 {% if hits %}
-  {% for value, entries in hits.items() %}
-    {% if entries %}
-    <h3>{{value}}</h3>
-    <hr>
-      {% if entries is mapping %}
-      {{ entries }}
-      {% elif entries is sequence %}
-        <ul>
-        {% for entry in entries %}
-          <li>{{misp_root_url}}/events/{{entry}}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
-    {% endif %}
+  <ul>
+  {% for event_id, values in hits.items() %}
+  <li><a href="{{misp_root_url}}/events/{{event_id}}">Event {{event_id}}</a>:
+    <ul>
+    {% for v in values|sort %}
+      <li>{{ v }}</li>
+    {% endfor %}
+    </ul>
+  </li>
   {% endfor %}
+  </ul>
 {% else %}
   No hits
 {% endif %}

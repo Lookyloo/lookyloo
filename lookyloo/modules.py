@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Any, Optional, List, Union, Iterable
+from typing import Dict, Any, Optional, List, Union, Iterable, Set
 from datetime import date
+from collections import defaultdict
 import hashlib
 import json
 from pathlib import Path
@@ -121,19 +122,23 @@ class MISP():
             return event
         return None
 
-    def lookup(self, node: URLNode, hostnode: HostNode) -> Union[List[str], Dict]:
+    def lookup(self, node: URLNode, hostnode: HostNode) -> Union[Dict[str, Set[str]], Dict[str, Any]]:
         if self.available and self.enable_lookup:
             to_lookup = [node.name, node.hostname] + hostnode.resolved_ips
             if hasattr(hostnode, 'cnames'):
                 to_lookup += hostnode.cnames
-            if attributes := self.client.search(controller='attributes', value=to_lookup, pythonify=True):
+            if attributes := self.client.search(controller='attributes', value=to_lookup,
+                                                enforce_warninglist=True, pythonify=True):
                 if isinstance(attributes, list):
-                    # NOTE: We have MISPAttributes in that list
-                    return list(set(attribute.event_id for attribute in attributes))  # type: ignore
+                    to_return: Dict[str, Set[str]] = defaultdict(set)
+                    # NOTE: We have MISPAttribute in that list
+                    for a in attributes:
+                        to_return[a.event_id].add(a.value)  # type: ignore
+                    return to_return
                 else:
                     # The request returned an error
                     return attributes  # type: ignore
-            return []
+            return {'info': 'No hits.'}
         else:
             return {'error': 'Module not available or lookup not enabled.'}
 
