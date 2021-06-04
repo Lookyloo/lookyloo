@@ -5,6 +5,7 @@ import hashlib
 from urllib.parse import urlsplit
 from typing import List, Tuple, Set, Dict, Optional, Iterable
 from collections import defaultdict
+import re
 
 from redis import Redis
 from har2tree import CrawledTree
@@ -69,7 +70,7 @@ class Indexing():
         for cn, cn_freq in self.cookies_names:
             for domain, d_freq in self.get_cookie_domains(cn):
                 tld = psl.get_tld(domain)
-                main_domain_part = domain.strip(f'.{tld}').split('.')[-1]
+                main_domain_part = re.sub(f'.{tld}$', '', domain).split('.')[-1]
                 pipeline.zincrby('aggregate_domains_cn', cn_freq, f'{main_domain_part}|{cn}')
                 pipeline.zincrby('aggregate_cn_domains', d_freq, f'{cn}|{main_domain_part}')
         pipeline.execute()

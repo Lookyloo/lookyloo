@@ -10,8 +10,9 @@ from pathlib import Path
 import time
 import logging
 import socket
+import re
 
-from .helpers import get_homedir, get_config
+from .helpers import get_homedir, get_config, get_public_suffix_list
 from .exceptions import ConfigError
 
 import vt  # type: ignore
@@ -55,6 +56,7 @@ class MISP():
         self.auto_publish = config.get('auto_publish')
         self.storage_dir_misp = get_homedir() / 'misp'
         self.storage_dir_misp.mkdir(parents=True, exist_ok=True)
+        self.psl = get_public_suffix_list()
 
     def get_fav_tags(self):
         return self.client.tags(pythonify=True, favouritesOnly=1)
@@ -124,9 +126,13 @@ class MISP():
 
     def lookup(self, node: URLNode, hostnode: HostNode) -> Union[Dict[str, Set[str]], Dict[str, Any]]:
         if self.available and self.enable_lookup:
-            to_lookup = [node.name, node.hostname] + hostnode.resolved_ips
+            tld = self.psl.get_tld(hostnode.name)
+            domain = re.sub(f'.{tld}$', '', hostnode.name).split('.')[-1]
+            to_lookup = [node.name, hostnode.name, f'{domain}.{tld}'] + hostnode.resolved_ips
             if hasattr(hostnode, 'cnames'):
                 to_lookup += hostnode.cnames
+            if not node.empty_response:
+                to_lookup.append(node.body_hash)
             if attributes := self.client.search(controller='attributes', value=to_lookup,
                                                 enforce_warninglist=True, pythonify=True):
                 if isinstance(attributes, list):
