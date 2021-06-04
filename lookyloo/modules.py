@@ -21,7 +21,7 @@ from pysanejs import SaneJS
 from pyeupi import PyEUPI
 from pymisp import PyMISP, MISPEvent, MISPAttribute
 
-from har2tree import CrawledTree, HostNode, URLNode
+from har2tree import CrawledTree, HostNode, URLNode, Har2TreeError
 
 
 class MISP():
@@ -189,10 +189,14 @@ class UniversalWhois():
         if auto_trigger and not self.allow_auto_trigger:
             return None
 
-        hostnode = crawled_tree.root_hartree.get_host_node_by_uuid(crawled_tree.root_hartree.rendered_node.hostnode_uuid)
-        self.query_whois_hostnode(hostnode)
-        for n in hostnode.get_ancestors():
-            self.query_whois_hostnode(n)
+        try:
+            hostnode = crawled_tree.root_hartree.get_host_node_by_uuid(crawled_tree.root_hartree.rendered_node.hostnode_uuid)
+        except Har2TreeError as e:
+            self.logger.warning(e)
+        else:
+            self.query_whois_hostnode(hostnode)
+            for n in hostnode.get_ancestors():
+                self.query_whois_hostnode(n)
 
     def whois(self, query: str) -> str:
         if not self.available:
