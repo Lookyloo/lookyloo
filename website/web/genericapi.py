@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import json
 import base64
 from typing import Dict, Any
 
-from flask import request, Response
+from flask import request, send_file
 import flask_login  # type: ignore
 from flask_restx import Namespace, Resource, fields, abort  # type: ignore
 from werkzeug.security import check_password_hash
@@ -56,20 +57,20 @@ class AuthToken(Resource):
         return {'error': 'User/Password invalid.'}
 
 
-@api.route('/json/<string:tree_uuid>/status')
+@api.route('/json/<string:capture_uuid>/status')
 @api.doc(description='Get the status of a capture',
-         params={'tree_uuid': 'The UUID of the capture'})
+         params={'capture_uuid': 'The UUID of the capture'})
 class CaptureStatusQuery(Resource):
-    def get(self, tree_uuid: str):
-        return {'status_code': lookyloo.get_capture_status(tree_uuid)}
+    def get(self, capture_uuid: str):
+        return {'status_code': lookyloo.get_capture_status(capture_uuid)}
 
 
-@api.route('/json/<string:tree_uuid>/redirects')
+@api.route('/json/<string:capture_uuid>/redirects')
 @api.doc(description='Get all the redirects of a capture',
-         params={'tree_uuid': 'The UUID of the capture'})
+         params={'capture_uuid': 'The UUID of the capture'})
 class CaptureRedirects(Resource):
-    def get(self, tree_uuid: str):
-        cache = lookyloo.capture_cache(tree_uuid)
+    def get(self, capture_uuid: str):
+        cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
             return {'error': 'UUID missing in cache, try again later.'}
 
@@ -79,8 +80,8 @@ class CaptureRedirects(Resource):
             return to_return
         if cache.incomplete_redirects:
             # Trigger tree build, get all redirects
-            lookyloo.get_crawled_tree(tree_uuid)
-            cache = lookyloo.capture_cache(tree_uuid)
+            lookyloo.get_crawled_tree(capture_uuid)
+            cache = lookyloo.capture_cache(capture_uuid)
             if cache:
                 to_return['response']['redirects'] = cache.redirects
         else:
@@ -89,13 +90,13 @@ class CaptureRedirects(Resource):
         return to_return
 
 
-@api.route('/json/<string:tree_uuid>/misp_export')
+@api.route('/json/<string:capture_uuid>/misp_export')
 @api.doc(description='Get an export of the capture in MISP format',
-         params={'tree_uuid': 'The UUID of the capture'})
+         params={'capture_uuid': 'The UUID of the capture'})
 class MISPExport(Resource):
-    def get(self, tree_uuid: str):
+    def get(self, capture_uuid: str):
         with_parents = request.args.get('with_parents')
-        event = lookyloo.misp_export(tree_uuid, True if with_parents else False)
+        event = lookyloo.misp_export(capture_uuid, True if with_parents else False)
         if isinstance(event, dict):
             return event
 
@@ -113,16 +114,16 @@ misp_push_fields = api.model('MISPPushFields', {
 })
 
 
-@api.route('/json/<string:tree_uuid>/misp_push')
+@api.route('/json/<string:capture_uuid>/misp_push')
 @api.doc(description='Push an event to a pre-configured MISP instance',
-         params={'tree_uuid': 'The UUID of the capture'},
+         params={'capture_uuid': 'The UUID of the capture'},
          security='apikey')
 class MISPPush(Resource):
     method_decorators = [api_auth_check]
 
     @api.param('with_parents', 'Also push the parents of the capture (if any)')
     @api.param('allow_duplicates', 'Push the event even if it is already present on the MISP instance')
-    def get(self, tree_uuid: str):
+    def get(self, capture_uuid: str):
         with_parents = True if request.args.get('with_parents') else False
         allow_duplicates = True if request.args.get('allow_duplicates') else False
         to_return: Dict = {}
@@ -131,7 +132,7 @@ class MISPPush(Resource):
         elif not lookyloo.misp.enable_push:
             to_return['error'] = 'Push not enabled in MISP module.'
         else:
-            event = lookyloo.misp_export(tree_uuid, with_parents)
+            event = lookyloo.misp_export(capture_uuid, with_parents)
             if isinstance(event, dict):
                 to_return['error'] = event
             else:
@@ -147,7 +148,7 @@ class MISPPush(Resource):
         return to_return
 
     @api.doc(body=misp_push_fields)
-    def post(self, tree_uuid: str):
+    def post(self, capture_uuid: str):
         parameters: Dict = request.get_json(force=True)
         with_parents = True if parameters.get('with_parents') else False
         allow_duplicates = True if parameters.get('allow_duplicates') else False
@@ -158,7 +159,7 @@ class MISPPush(Resource):
         elif not lookyloo.misp.enable_push:
             to_return['error'] = 'Push not enabled in MISP module.'
         else:
-            event = lookyloo.misp_export(tree_uuid, with_parents)
+            event = lookyloo.misp_export(capture_uuid, with_parents)
             if isinstance(event, dict):
                 to_return['error'] = event
             else:
@@ -237,10 +238,29 @@ submit_fields = api.model('SubmitFields', {
 })
 
 
+@api.route('/json/<string:capture_uuid>/stats')
+@api.doc(description='Get the statistics of the capture.',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureStats(Resource):
+    def get(self, capture_uuid: str):
+        return lookyloo.get_statistics(capture_uuid)
+
+
+@api.route('/json/<string:capture_uuid>/cookies')
+@api.doc(description='Get the complete cookie jar created during the capture.',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureCookies(Resource):
+    def get(self, capture_uuid: str):
+        return json.loads(lookyloo.get_cookies(capture_uuid).read())
+
+
+# Just text
+
 @api.route('/submit')
 class SubmitCapture(Resource):
 
     @api.doc(body=submit_fields)
+    @api.produces(['text/text'])
     def post(self):
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
@@ -248,11 +268,91 @@ class SubmitCapture(Resource):
             user = src_request_ip(request)
         to_query: Dict = request.get_json(force=True)
         perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
-        return Response(perma_uuid, mimetype='text/text')
+        return perma_uuid
 
 
-@api.route('/json/<string:tree_uuid>/stats')
-@api.doc(description='Get the statistics of the capture.')
-class CaptureStats(Resource):
-    def get(self, tree_uuid: str):
-        return lookyloo.get_statistics(tree_uuid)
+# Binary stuff
+
+@api.route('/bin/<string:capture_uuid>/screenshot')
+@api.doc(description='Get the screenshot associated to the capture.',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureScreenshot(Resource):
+
+    @api.produces(['image/png'])
+    def get(self, capture_uuid: str):
+        return send_file(lookyloo.get_screenshot(capture_uuid), mimetype='image/png')
+
+
+@api.route('/bin/<string:capture_uuid>/export')
+@api.doc(description='Get all the files generated by the capture, except the pickle.',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureExport(Resource):
+
+    @api.produces(['application/zip'])
+    def get(self, capture_uuid: str):
+        return send_file(lookyloo.get_capture(capture_uuid), mimetype='application/zip')
+
+
+# Admin stuff
+
+@api.route('/admin/rebuild_all')
+@api.doc(description='Rebuild all the trees. WARNING: IT IS GOING TO TAKE A VERY LONG TIME.',
+         security='apikey')
+class RebuildAll(Resource):
+    method_decorators = [api_auth_check]
+
+    def post(self):
+        try:
+            lookyloo.rebuild_all()
+        except Exception as e:
+            return {'error': f'Unable to rebuild all captures: {e}.'}
+        else:
+            return {'info': 'Captures successfully rebuilt.'}
+
+
+@api.route('/admin/rebuild_all_cache')
+@api.doc(description='Rebuild all the caches. It will take a while, but less that rebuild all.',
+         security='apikey')
+class RebuildAllCache(Resource):
+    method_decorators = [api_auth_check]
+
+    def post(self):
+        try:
+            lookyloo.rebuild_cache()
+        except Exception as e:
+            return {'error': f'Unable to rebuild all the caches: {e}.'}
+        else:
+            return {'info': 'All caches successfully rebuilt.'}
+
+
+@api.route('/admin/<string:capture_uuid>/rebuild')
+@api.doc(description='Rebuild the tree.',
+         params={'capture_uuid': 'The UUID of the capture'},
+         security='apikey')
+class CaptureRebuildTree(Resource):
+    method_decorators = [api_auth_check]
+
+    def post(self, capture_uuid):
+        try:
+            lookyloo.remove_pickle(capture_uuid)
+            lookyloo.get_crawled_tree(capture_uuid)
+        except Exception as e:
+            return {'error': f'Unable to rebuild tree: {e}.'}
+        else:
+            return {'info': f'Tree {capture_uuid} successfully rebuilt.'}
+
+
+@api.route('/admin/<string:capture_uuid>/hide')
+@api.doc(description='Hide the capture from the index.',
+         params={'capture_uuid': 'The UUID of the capture'},
+         security='apikey')
+class CaptureHide(Resource):
+    method_decorators = [api_auth_check]
+
+    def post(self, capture_uuid):
+        try:
+            lookyloo.hide_capture(capture_uuid)
+        except Exception as e:
+            return {'error': f'Unable to hide the tree: {e}.'}
+        else:
+            return {'info': f'Capture {capture_uuid} successfully hidden.'}

@@ -223,16 +223,6 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
 
 # ##### Tree level Methods #####
 
-@app.route('/tree/<string:tree_uuid>/rebuild')
-@flask_login.login_required
-def rebuild_tree(tree_uuid: str):
-    try:
-        lookyloo.remove_pickle(tree_uuid)
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
-    except Exception:
-        return redirect(url_for('index'))
-
-
 @app.route('/tree/<string:tree_uuid>/trigger_modules', methods=['GET'])
 def trigger_modules(tree_uuid: str):
     force = True if request.args.get('force') else False
@@ -493,6 +483,16 @@ def bulk_captures(base_tree_uuid: str):
 def hide_capture(tree_uuid: str):
     lookyloo.hide_capture(tree_uuid)
     return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+
+@app.route('/tree/<string:tree_uuid>/rebuild')
+@flask_login.login_required
+def rebuild_tree(tree_uuid: str):
+    try:
+        lookyloo.remove_pickle(tree_uuid)
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
+    except Exception:
+        return redirect(url_for('index'))
 
 
 @app.route('/tree/<string:tree_uuid>/cache', methods=['GET'])
