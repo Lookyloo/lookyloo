@@ -657,7 +657,7 @@ class Lookyloo():
         if not value or not value[0]:
             return None
         uuid, score = value[0]
-        queue = self.redis.get(f'{uuid}_mgmt')
+        queue: str = self.redis.get(f'{uuid}_mgmt')  # type: ignore
         self.redis.sadd('ongoing', uuid)
 
         lazy_cleanup = self.redis.pipeline()
