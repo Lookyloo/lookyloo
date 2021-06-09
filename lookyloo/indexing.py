@@ -37,7 +37,7 @@ class Indexing():
         return self.redis.zrevrange(f'cn|{cookie_name}', 0, -1, withscores=True)
 
     def get_cookies_names_captures(self, cookie_name: str) -> List[Tuple[str, str]]:
-        return [uuids.split('|') for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]  # type: ignore
+        return [uuids.split('|') for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]
 
     def index_cookies_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
@@ -74,8 +74,8 @@ class Indexing():
                 pipeline.zincrby('aggregate_domains_cn', cn_freq, f'{main_domain_part}|{cn}')
                 pipeline.zincrby('aggregate_cn_domains', d_freq, f'{cn}|{main_domain_part}')
         pipeline.execute()
-        aggregate_domains_cn = self.redis.zrevrange('aggregate_domains_cn', 0, -1, withscores=True)
-        aggregate_cn_domains = self.redis.zrevrange('aggregate_cn_domains', 0, -1, withscores=True)
+        aggregate_domains_cn: List[Tuple[str, float]] = self.redis.zrevrange('aggregate_domains_cn', 0, -1, withscores=True)
+        aggregate_cn_domains: List[Tuple[str, float]] = self.redis.zrevrange('aggregate_cn_domains', 0, -1, withscores=True)
         self.redis.delete('aggregate_domains_cn')
         self.redis.delete('aggregate_cn_domains')
         return {'domains': aggregate_domains_cn, 'cookies': aggregate_cn_domains}
@@ -129,7 +129,7 @@ class Indexing():
                                filter_capture_uuid: Optional[str]=None,
                                limit: int=20) -> Tuple[int, List[Tuple[str, str, str, bool]]]:
         to_return: List[Tuple[str, str, str, bool]] = []
-        all_captures: Set[str] = self.redis.smembers(f'bh|{body_hash}|captures')  # type: ignore
+        all_captures: Set[str] = self.redis.smembers(f'bh|{body_hash}|captures')
         len_captures = len(all_captures)
         for capture_uuid in list(all_captures)[:limit]:
             if capture_uuid == filter_capture_uuid:
@@ -149,7 +149,7 @@ class Indexing():
         return self.redis.zrevrange(f'bh|{body_hash}', 0, -1, withscores=True)
 
     def get_body_hash_urls(self, body_hash: str) -> Dict[str, List[Dict[str, str]]]:
-        all_captures: Set[str] = self.redis.smembers(f'bh|{body_hash}|captures')  # type: ignore
+        all_captures: Set[str] = self.redis.smembers(f'bh|{body_hash}|captures')
         urls = defaultdict(list)
         for capture_uuid in list(all_captures):
             for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
@@ -189,16 +189,16 @@ class Indexing():
     def get_captures_url(self, url: str) -> Set[str]:
         m = hashlib.md5()
         m.update(url.encode())
-        return self.redis.smembers(f'urls|{m.hexdigest()}|captures')  # type: ignore
+        return self.redis.smembers(f'urls|{m.hexdigest()}|captures')
 
     def get_captures_hostname(self, hostname: str) -> Set[str]:
-        return self.redis.smembers(f'hostnames|{hostname}|captures')  # type: ignore
+        return self.redis.smembers(f'hostnames|{hostname}|captures')
 
     # ###### Categories ######
 
     @property
     def categories(self) -> List[Tuple[str, int]]:
-        return [(c, int(score))
+        return [(c, int(score))  # type: ignore
                 for c, score in self.redis.zrevrange('categories', 0, 200, withscores=True)]
 
     def index_categories_capture(self, capture_uuid: str, categories: Iterable[str]):
@@ -217,4 +217,4 @@ class Indexing():
         pipeline.execute()
 
     def get_captures_category(self, category: str) -> Set[str]:
-        return self.redis.smembers(category)  # type: ignore
+        return self.redis.smembers(category)
