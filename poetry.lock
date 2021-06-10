@@ -87,7 +87,7 @@ lxml = ["lxml"]
 
 [[package]]
 name = "bootstrap-flask"
-version = "1.6.0"
+version = "1.7.0"
 description = "Bootstrap helper for Flask/Jinja2."
 category = "main"
 optional = false
@@ -1167,7 +1167,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "ef232e611576180ce041f9cb99ad5e0589c4a0ae0451f2e220439b4ab0a1abe9"
+content-hash = "290193694a31a16e53614566dce6f9b3467eb1393ac69776445c298d53c7f7cb"
 
 [metadata.files]
 aiohttp = [
@@ -1235,8 +1235,8 @@ beautifulsoup4 = [
     {file = "beautifulsoup4-4.9.3.tar.gz", hash = "sha256:84729e322ad1d5b4d25f805bfa05b902dd96450f43842c4e99067d5e1369eb25"},
 ]
 bootstrap-flask = [
-    {file = "Bootstrap-Flask-1.6.0.tar.gz", hash = "sha256:30c0d21952000b3bb4f51da9550737870ff040d3b4436515e54e1a1e2782dbd6"},
-    {file = "Bootstrap_Flask-1.6.0-py2.py3-none-any.whl", hash = "sha256:7959838820db59ca94b5ae47bea7f4acd848e8d86107e4de01f16fc2b04691d6"},
+    {file = "Bootstrap-Flask-1.7.0.tar.gz", hash = "sha256:dfb2a892e0dad47eb4160008e93eb65b16c988b8702f1b9d8d791043f7c0d023"},
+    {file = "Bootstrap_Flask-1.7.0-py2.py3-none-any.whl", hash = "sha256:38452d68405d9d2d2f8e4ae3432411bf36043cbab017963d6b4cf1524875afe9"},
 ]
 cchardet = [
     {file = "cchardet-2.1.7-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:58005cd94e4bbb25fb4cee3ad75a0fe121384cb2b99ac5619aa45aecedf43c7b"},
