@@ -3,14 +3,14 @@
 {% from 'bootstrap/utils.html' import render_messages %}
 {% from "macros.html" import shorten_string %}
 
-{% block title %}Capture of {{root_url}}{% endblock %}
+{% block title %}Capture of {{info['url']}}{% endblock %}
 
 {% block card %}
 <meta property="og:title" content="Lookyloo capture" />
 <meta property="og:type" content="website"/>
 <meta
   property="og:description"
-  content="URL captured: {{root_url}}"
+  content="URL captured: {{info['url']}}"
 />
 <meta
   property="og:image"
@@ -124,7 +124,7 @@
   var enable_bookmark = {{ enable_bookmark|tojson }};
   var treeData = {{ tree_json | safe }};
   var parent_uuid = {{ parent_uuid|tojson }};
-  var capture_starttime = new Date(Date.parse("{{ start_time }}"));
+  var capture_starttime = new Date(Date.parse("{{ info['capture_time'] }}"));
   window.addEventListener('DOMContentLoaded', (event) => {
       document.getElementById("start_time").innerHTML =
           `${capture_starttime.getFullYear()}-${("0" + (capture_starttime.getMonth() + 1)).slice(-2)}-${("0" + capture_starttime.getDate()).slice(-2)} ${capture_starttime.toLocaleTimeString()}`;
@@ -342,16 +342,16 @@
     <div class="modal-body">
       <dl class="row">
         <dt class="col-sm-2">URL captured</dt>
-        <dd class="col-sm-10">{{ shorten_string(root_url, 1000) }}</dd>
+        <dd class="col-sm-10">{{ shorten_string(info['url'], 1000) }}</dd>
 
         <dt class="col-sm-2">Page title</dt>
-        <dd class="col-sm-10">{{ page_title }}</dd>
+        <dd class="col-sm-10">{{ info['title'] }}</dd>
 
         <dt class="col-sm-2">Capture time</dt>
         <dd class="col-sm-10" id="start_time"></dd>
 
         <dt class="col-sm-2">User Agent</dt>
-        <dd class="col-sm-10">{{ user_agent }}</dd>
+        <dd class="col-sm-10">{{ info['user_agent'] }}</dd>
 
         {% if meta %}
           {% for k, v in meta.items() if k not in ['user_agent'] %}

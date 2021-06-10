@@ -246,6 +246,14 @@ class CaptureStats(Resource):
         return lookyloo.get_statistics(capture_uuid)
 
 
+@api.route('/json/<string:capture_uuid>/info')
+@api.doc(description='Get basic information about the capture.',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureInfo(Resource):
+    def get(self, capture_uuid: str):
+        return lookyloo.get_info(capture_uuid)
+
+
 @api.route('/json/<string:capture_uuid>/cookies')
 @api.doc(description='Get the complete cookie jar created during the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
