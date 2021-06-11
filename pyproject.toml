@@ -63,7 +63,7 @@ Flask-Login = "^0.5.0"
 misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.901"
+mypy = "^0.902"
 ipython = "^7.23.1"
 types-redis = "^3.5.0"
 types-requests = "^0.1.8"
@@ -71,3 +71,18 @@ types-requests = "^0.1.8"
 [build-system]
 requires = ["poetry_core>=1.0", "setuptools"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = 3.8
+check_untyped_defs = true
+ignore_errors = false
+ignore_missing_imports = false
+strict_optional = true
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unreachable = true
+
+show_error_context = true
+pretty = true

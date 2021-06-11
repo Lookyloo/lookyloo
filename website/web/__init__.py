@@ -577,7 +577,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
 @flask_login.login_required
 def mark_as_legitimate(tree_uuid: str):
     if request.data:
-        legitimate_entries: Dict = request.get_json(force=True)  # type: ignore
+        legitimate_entries: Dict = request.get_json(force=True)
         lookyloo.add_to_legitimate(tree_uuid, **legitimate_entries)
     else:
         lookyloo.add_to_legitimate(tree_uuid)
@@ -702,7 +702,7 @@ def submit():
         user = flask_login.current_user.get_id()
     else:
         user = src_request_ip(request)
-    to_query: Dict = request.get_json(force=True)  # type: ignore
+    to_query: Dict = request.get_json(force=True)
     perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
     return Response(perma_uuid, mimetype='text/text')
 
@@ -1025,7 +1025,7 @@ def web_misp_push_view(tree_uuid: str):
 
 @app.route('/json/get_token', methods=['POST'])
 def json_get_token():
-    auth: Dict = request.get_json(force=True)  # type: ignore
+    auth: Dict = request.get_json(force=True)
     if 'username' in auth and 'password' in auth:  # Expected keys in json
         if (auth['username'] in users_table
                 and check_password_hash(users_table[auth['username']]['password'], auth['password'])):
@@ -1077,7 +1077,7 @@ def misp_export(tree_uuid: str):
 @flask_login.login_required
 def misp_push(tree_uuid: str):
     if request.method == 'POST':
-        parameters: Dict = request.get_json(force=True)  # type: ignore
+        parameters: Dict = request.get_json(force=True)
         with_parents = True if 'with_parents' in parameters else False
         allow_duplicates = True if 'allow_duplicates' in parameters else False
     else:
@@ -1117,14 +1117,14 @@ def json_hash_info(h: str):
 
 @app.route('/json/url_info', methods=['POST'])
 def json_url_info():
-    to_query: Dict = request.get_json(force=True)  # type: ignore
+    to_query: Dict = request.get_json(force=True)
     occurrences = lookyloo.get_url_occurrences(to_query.pop('url'), **to_query)
     return jsonify(occurrences)
 
 
 @app.route('/json/hostname_info', methods=['POST'])
 def json_hostname_info():
-    to_query: Dict = request.get_json(force=True)  # type: ignore
+    to_query: Dict = request.get_json(force=True)
     occurrences = lookyloo.get_hostname_occurrences(to_query.pop('hostname'), **to_query)
     return jsonify(occurrences)
 
