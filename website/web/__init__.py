@@ -710,7 +710,7 @@ def rebuild_cache():
     lookyloo.rebuild_cache()
     return redirect(url_for('index'))
 
-
+  
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     if request.form.get('url'):
@@ -963,7 +963,6 @@ def add_context(tree_uuid: str, node_uuid: str):
 
 
 # Query API
-
 authorizations = {
     'apikey': {
         'type': 'apiKey',
@@ -971,6 +970,7 @@ authorizations = {
         'name': 'Authorization'
     }
 }
+
 
 api = Api(app, title='Lookyloo API',
           description='API to submit captures and query a lookyloo instance.',

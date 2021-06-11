@@ -72,3 +72,18 @@ types-Flask = "^1.1.0"
 [build-system]
 requires = ["poetry_core>=1.0", "setuptools"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = 3.8
+check_untyped_defs = true
+ignore_errors = false
+ignore_missing_imports = false
+strict_optional = true
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unreachable = true
+
+show_error_context = true
+pretty = true
