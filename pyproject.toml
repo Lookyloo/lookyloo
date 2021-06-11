@@ -68,6 +68,7 @@ ipython = "^7.23.1"
 types-redis = "^3.5.0"
 types-requests = "^0.1.10"
 types-Flask = "^1.1.0"
+types-pkg-resources = "^0.1.2"
 
 [build-system]
 requires = ["poetry_core>=1.0", "setuptools"]

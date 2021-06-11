@@ -1129,6 +1129,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "types-pkg-resources"
+version = "0.1.2"
+description = "Typing stubs for pkg_resources"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "types-redis"
 version = "3.5.0"
 description = "Typing stubs for redis"
@@ -1254,7 +1262,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "e1bf704e07b3d70cb89f7ff6b67ca045da7b6c1dc59983f6c116e7812787575d"
+content-hash = "993ff285e6d4726ce390cc9e90ec43422e277981f9c00cd5843352852c287b15"
 
 [metadata.files]
 aiohttp = [
@@ -1972,6 +1980,9 @@ types-jinja2 = [
 ]
 types-markupsafe = [
     {file = "types_MarkupSafe-1.1.0-py2.py3-none-any.whl", hash = "sha256:9b7a9142ff5e97af10235fe504b823a4462b71cbd8189d6dde585aacf4cc9331"},
+]
+types-pkg-resources = [
+    {file = "types_pkg_resources-0.1.2-py2.py3-none-any.whl", hash = "sha256:42d640500de564f1ccc21f918117afadf78039e4fa7f513c647ccf742d609aeb"},
 ]
 types-redis = [
     {file = "types_redis-3.5.0-py2.py3-none-any.whl", hash = "sha256:cf29f55ccc3b44c78259cc22e4c0030f77b7a47ec5656211402be0fcf1a98536"},
