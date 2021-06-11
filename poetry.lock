@@ -1089,6 +1089,46 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "types-click"
+version = "7.1.0"
+description = "Typing stubs for click"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "types-flask"
+version = "1.1.0"
+description = "Typing stubs for Flask"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+types-click = "*"
+types-Jinja2 = "*"
+types-Werkzeug = "*"
+
+[[package]]
+name = "types-jinja2"
+version = "2.11.0"
+description = "Typing stubs for Jinja2"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+types-MarkupSafe = "*"
+
+[[package]]
+name = "types-markupsafe"
+version = "1.1.0"
+description = "Typing stubs for MarkupSafe"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "types-redis"
 version = "3.5.0"
 description = "Typing stubs for redis"
@@ -1100,6 +1140,14 @@ python-versions = "*"
 name = "types-requests"
 version = "0.1.10"
 description = "Typing stubs for requests"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "types-werkzeug"
+version = "1.0.0"
+description = "Typing stubs for Werkzeug"
 category = "dev"
 optional = false
 python-versions = "*"
@@ -1206,7 +1254,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "73b9e35eb289bc39d626f4ed32b4b4a6c496a00eea350401e0f49a8d521a08c3"
+content-hash = "e1bf704e07b3d70cb89f7ff6b67ca045da7b6c1dc59983f6c116e7812787575d"
 
 [metadata.files]
 aiohttp = [
@@ -1913,11 +1961,26 @@ twisted-iocpsupport = [
     {file = "twisted_iocpsupport-1.0.1-pp36-pypy36_pp73-win32.whl", hash = "sha256:ed8cb959d7dce287419e766267a280139fedf14217d85695d7b6384d8ccd3353"},
     {file = "twisted_iocpsupport-1.0.1-pp37-pypy37_pp73-win32.whl", hash = "sha256:1535e537b6d60d0cfd2b4785f1c7a021beb62d8df6bac3dc6c45bb866ce648e4"},
 ]
+types-click = [
+    {file = "types_click-7.1.0-py2.py3-none-any.whl", hash = "sha256:1b37e9e63ec1f4e67bb8016afac882ec94bcb98a09b92bebde8f1e0f0484e6ed"},
+]
+types-flask = [
+    {file = "types_Flask-1.1.0-py2.py3-none-any.whl", hash = "sha256:0d16fbd554b274d003761b10bb06e86aa535b122cd98b0a8e45082750c54e35b"},
+]
+types-jinja2 = [
+    {file = "types_Jinja2-2.11.0-py2.py3-none-any.whl", hash = "sha256:f9d182ec241bdbeb8759c65693c5f95b638a0dfd9e3d91606b3d48e58b0b5caf"},
+]
+types-markupsafe = [
+    {file = "types_MarkupSafe-1.1.0-py2.py3-none-any.whl", hash = "sha256:9b7a9142ff5e97af10235fe504b823a4462b71cbd8189d6dde585aacf4cc9331"},
+]
 types-redis = [
     {file = "types_redis-3.5.0-py2.py3-none-any.whl", hash = "sha256:cf29f55ccc3b44c78259cc22e4c0030f77b7a47ec5656211402be0fcf1a98536"},
 ]
 types-requests = [
     {file = "types_requests-0.1.10-py2.py3-none-any.whl", hash = "sha256:5b1864f1564adb810123c563b4de86236c14058978ec1294b07a988c532cb079"},
+]
+types-werkzeug = [
+    {file = "types_Werkzeug-1.0.0-py2.py3-none-any.whl", hash = "sha256:4beb9df90a2ab27fc473b64a17b49b3088dc8ce761d8708b5fe2bb317d779189"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.10.0.0-py2-none-any.whl", hash = "sha256:0ac0f89795dd19de6b97debb0c6af1c70987fd80a2d62d1958f7e56fcc31b497"},
