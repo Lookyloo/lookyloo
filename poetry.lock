@@ -1052,7 +1052,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-click"
-version = "7.1.0"
+version = "7.1.1"
 description = "Typing stubs for click"
 category = "dev"
 optional = false
@@ -1073,7 +1073,7 @@ types-Werkzeug = "*"
 
 [[package]]
 name = "types-jinja2"
-version = "2.11.0"
+version = "2.11.1"
 description = "Typing stubs for Jinja2"
 category = "dev"
 optional = false
@@ -1084,7 +1084,7 @@ types-MarkupSafe = "*"
 
 [[package]]
 name = "types-markupsafe"
-version = "1.1.0"
+version = "1.1.1"
 description = "Typing stubs for MarkupSafe"
 category = "dev"
 optional = false
@@ -1092,7 +1092,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "3.5.0"
+version = "3.5.1"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1100,7 +1100,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "0.1.10"
+version = "0.1.11"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1108,7 +1108,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-werkzeug"
-version = "1.0.0"
+version = "1.0.1"
 description = "Typing stubs for Werkzeug"
 category = "dev"
 optional = false
@@ -1215,7 +1215,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "af1007e1817ff24b9914127224df85c8544490dcc6eac6696ba56917207552a4"
+content-hash = "61405876ad815a8f14ac965b5925b75c024c6953a9686de9852b5a280b39b55f"
 
 [metadata.files]
 aiohttp = [
@@ -1911,25 +1911,25 @@ twisted-iocpsupport = [
     {file = "twisted_iocpsupport-1.0.1-pp37-pypy37_pp73-win32.whl", hash = "sha256:1535e537b6d60d0cfd2b4785f1c7a021beb62d8df6bac3dc6c45bb866ce648e4"},
 ]
 types-click = [
-    {file = "types_click-7.1.0-py2.py3-none-any.whl", hash = "sha256:1b37e9e63ec1f4e67bb8016afac882ec94bcb98a09b92bebde8f1e0f0484e6ed"},
+    {file = "types_click-7.1.1-py2.py3-none-any.whl", hash = "sha256:b1db0fb31a6d4a31c4282c231827cbdab628b0d504b016937822d943cd5e40a5"},
 ]
 types-flask = [
     {file = "types_Flask-1.1.0-py2.py3-none-any.whl", hash = "sha256:0d16fbd554b274d003761b10bb06e86aa535b122cd98b0a8e45082750c54e35b"},
 ]
 types-jinja2 = [
-    {file = "types_Jinja2-2.11.0-py2.py3-none-any.whl", hash = "sha256:f9d182ec241bdbeb8759c65693c5f95b638a0dfd9e3d91606b3d48e58b0b5caf"},
+    {file = "types_Jinja2-2.11.1-py2.py3-none-any.whl", hash = "sha256:84f66a2612376ff3c1656198b10a04c7711b6d917d4f5f7f2c2f7ecec0afa040"},
 ]
 types-markupsafe = [
-    {file = "types_MarkupSafe-1.1.0-py2.py3-none-any.whl", hash = "sha256:9b7a9142ff5e97af10235fe504b823a4462b71cbd8189d6dde585aacf4cc9331"},
+    {file = "types_MarkupSafe-1.1.1-py2.py3-none-any.whl", hash = "sha256:a2c32269a26b4a7205f6f1581bd37cfbcd390297352b828a9643978392239516"},
 ]
 types-redis = [
-    {file = "types_redis-3.5.0-py2.py3-none-any.whl", hash = "sha256:cf29f55ccc3b44c78259cc22e4c0030f77b7a47ec5656211402be0fcf1a98536"},
+    {file = "types_redis-3.5.1-py2.py3-none-any.whl", hash = "sha256:b27d7f4b8e8858b1549cba14527d3c4d953089ea1538f37698d0da8eb968fab9"},
 ]
 types-requests = [
-    {file = "types_requests-0.1.10-py2.py3-none-any.whl", hash = "sha256:5b1864f1564adb810123c563b4de86236c14058978ec1294b07a988c532cb079"},
+    {file = "types_requests-0.1.11-py2.py3-none-any.whl", hash = "sha256:e79c09e5866c6520cdf23dc260573a0a190444f36b112116fadc5542656c8309"},
 ]
 types-werkzeug = [
-    {file = "types_Werkzeug-1.0.0-py2.py3-none-any.whl", hash = "sha256:4beb9df90a2ab27fc473b64a17b49b3088dc8ce761d8708b5fe2bb317d779189"},
+    {file = "types_Werkzeug-1.0.1-py2.py3-none-any.whl", hash = "sha256:51dca6aa5be250e5b2e3150c8ab40e531408e4684db7054d02b5b8dcd2a193cd"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.10.0.0-py2-none-any.whl", hash = "sha256:0ac0f89795dd19de6b97debb0c6af1c70987fd80a2d62d1958f7e56fcc31b497"},
