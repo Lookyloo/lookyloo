@@ -1084,7 +1084,7 @@ types-MarkupSafe = "*"
 
 [[package]]
 name = "types-markupsafe"
-version = "1.1.1"
+version = "1.1.2"
 description = "Typing stubs for MarkupSafe"
 category = "dev"
 optional = false
@@ -1920,7 +1920,7 @@ types-jinja2 = [
     {file = "types_Jinja2-2.11.1-py2.py3-none-any.whl", hash = "sha256:84f66a2612376ff3c1656198b10a04c7711b6d917d4f5f7f2c2f7ecec0afa040"},
 ]
 types-markupsafe = [
-    {file = "types_MarkupSafe-1.1.1-py2.py3-none-any.whl", hash = "sha256:a2c32269a26b4a7205f6f1581bd37cfbcd390297352b828a9643978392239516"},
+    {file = "types_MarkupSafe-1.1.2-py2.py3-none-any.whl", hash = "sha256:b5e311cb6aad7f6da0bb1455494305e2bb7941b04c3c8cf9ed7bbd33cf8ba374"},
 ]
 types-redis = [
     {file = "types_redis-3.5.1-py2.py3-none-any.whl", hash = "sha256:b27d7f4b8e8858b1549cba14527d3c4d953089ea1538f37698d0da8eb968fab9"},
