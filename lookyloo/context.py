@@ -33,7 +33,7 @@ class Context():
                 p = self.redis.pipeline()
                 if filename == 'generic':
                     # 1px images, files with spaces, empty => non-relevant stuff
-                    for k, type_content in file_content.items():
+                    for _, type_content in file_content.items():
                         p.hmset('known_content', {h: type_content['description'] for h in type_content['entries']})
                 elif filename == 'malicious':
                     # User defined as malicious
@@ -133,7 +133,7 @@ class Context():
                     # this is the hash of an embeded content so it won't have a filename but has a different mimetype
                     # FIXME: this is ugly.
                     for ressource_mimetype, blobs in urlnode.embedded_ressources.items():
-                        for ressource_h, b in blobs:
+                        for ressource_h, _ in blobs:
                             if ressource_h == h:
                                 mimetype = ressource_mimetype.split(';')[0]
                                 break
