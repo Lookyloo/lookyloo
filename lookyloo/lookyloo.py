@@ -128,7 +128,7 @@ class Lookyloo():
 
         to_store: Dict[str, Any] = {'by_frequency': []}
         uas = Counter([entry.split('|', 1)[1] for entry in entries])
-        for ua, count in uas.most_common():
+        for ua, _ in uas.most_common():
             parsed_ua = UserAgent(ua)
             if not parsed_ua.platform or not parsed_ua.browser:
                 continue
@@ -191,7 +191,7 @@ class Lookyloo():
                 categories = list(self.categories_capture(capture_uuid).keys())
                 self.indexing.index_categories_capture(capture_uuid, categories)
         except Har2TreeError as e:
-            raise NoValidHarFile(e.message)
+            raise NoValidHarFile(e)
         except RecursionError as e:
             raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
         else:
@@ -471,7 +471,7 @@ class Lookyloo():
             try:
                 har = HarFile(har_files[0], uuid)
             except Har2TreeError as e:
-                error_cache['error'] = e.message
+                error_cache['error'] = str(e)
                 fatal_error = True
         else:
             error_cache['error'] = f'No har files in {capture_dir.name}'
@@ -541,7 +541,7 @@ class Lookyloo():
         '''All the capture UUIDs present in the cache.'''
         return self.redis.hkeys('lookup_dirs')
 
-    def sorted_capture_cache(self, capture_uuids: Iterable[str]=[]) -> List[CaptureCache]:
+    def sorted_capture_cache(self, capture_uuids: Optional[Iterable[str]]=None) -> List[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).'''
         if not capture_uuids:
             # Sort all captures
@@ -550,7 +550,7 @@ class Lookyloo():
             # No captures at all on the instance
             return []
 
-        all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids if uuid in self._captures_index]
+        all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids if uuid in self._captures_index and not self._captures_index[uuid].incomplete_redirects]
 
         captures_to_get = set(capture_uuids) - set(self._captures_index.keys())
         if captures_to_get:
@@ -954,7 +954,7 @@ class Lookyloo():
         details = self.indexing.get_body_hash_urls(body_hash)
         body_content = BytesIO()
         # get the body from the first entry in the details list
-        for url, entries in details.items():
+        for _, entries in details.items():
             ct = self.get_crawled_tree(entries[0]['capture'])
             urlnode = ct.root_hartree.get_url_node_by_uuid(entries[0]['urlnode'])
             if urlnode.body_hash == body_hash:
@@ -962,7 +962,7 @@ class Lookyloo():
                 body_content = urlnode.body
             else:
                 # The hash is an embedded resource
-                for mimetype, blobs in urlnode.body_hash.embedded_ressources.items():
+                for _, blobs in urlnode.body_hash.embedded_ressources.items():
                     for h, b in blobs:
                         if h == body_hash:
                             body_content = b

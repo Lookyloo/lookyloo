@@ -363,7 +363,7 @@ class PhishingInitiative():
         if not force and pi_file.exists():
             return
 
-        for i in range(3):
+        for _ in range(3):
             url_information = self.client.lookup(url)
             if not url_information['results']:
                 # No results, that should not happen (?)
@@ -457,7 +457,7 @@ class VirusTotal():
         if not force and vt_file.exists():
             return
 
-        for i in range(3):
+        for _ in range(3):
             try:
                 url_information = self.client.get_object(f"/urls/{url_id}")
                 with vt_file.open('w') as _f:
