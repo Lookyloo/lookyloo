@@ -65,6 +65,30 @@ class CaptureStatusQuery(Resource):
         return {'status_code': lookyloo.get_capture_status(capture_uuid)}
 
 
+@api.route('/json/<string:capture_uuid>/hostnames')
+@api.doc(description='Get all the hostnames of all the resources of a capture',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureHostnames(Resource):
+    def get(self, capture_uuid: str):
+        cache = lookyloo.capture_cache(capture_uuid)
+        if not cache:
+            return {'error': 'UUID missing in cache, try again later.'}
+        to_return: Dict[str, Any] = {'response': {'hostnames': list(lookyloo.get_hostnames(capture_uuid))}}
+        return to_return
+
+
+@api.route('/json/<string:capture_uuid>/urls')
+@api.doc(description='Get all the URLs of all the resources of a capture',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureURLs(Resource):
+    def get(self, capture_uuid: str):
+        cache = lookyloo.capture_cache(capture_uuid)
+        if not cache:
+            return {'error': 'UUID missing in cache, try again later.'}
+        to_return: Dict[str, Any] = {'response': {'urls': list(lookyloo.get_urls(capture_uuid))}}
+        return to_return
+
+
 @api.route('/json/<string:capture_uuid>/hashes')
 @api.doc(description='Get all the hashes of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
