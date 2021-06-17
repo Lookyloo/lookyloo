@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
+import json
 import os
 
 from functools import lru_cache
@@ -89,3 +90,9 @@ def get_secret_key() -> bytes:
                 f.write(os.urandom(64))
     with secret_file_path.open('rb') as f:
         return f.read()
+
+
+@lru_cache(64)
+def sri_load() -> Dict[str, Dict[str, str]]:
+    with (get_homedir() / 'website' / 'web' / 'sri.txt').open() as f:
+        return json.load(f)

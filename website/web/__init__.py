@@ -27,7 +27,7 @@ from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 
 from .proxied import ReverseProxied
-from .helpers import src_request_ip, User, load_user_from_request, build_users_table, get_secret_key
+from .helpers import src_request_ip, User, load_user_from_request, build_users_table, get_secret_key, sri_load
 
 app: Flask = Flask(__name__)
 app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore
@@ -143,6 +143,14 @@ def month_name(month: int):
 
 
 app.jinja_env.globals.update(month_name=month_name)
+
+
+def get_sri(directory: str, filename: str) -> str:
+    sha512 = sri_load()[directory][filename]
+    return f'sha512-{sha512}'
+
+
+app.jinja_env.globals.update(get_sri=get_sri)
 
 
 # ##### Generic/configuration methods #####
@@ -710,7 +718,7 @@ def rebuild_cache():
     lookyloo.rebuild_cache()
     return redirect(url_for('index'))
 
-  
+
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     if request.form.get('url'):

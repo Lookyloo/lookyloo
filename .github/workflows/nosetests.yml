@@ -26,7 +26,16 @@ jobs:
         sudo apt install libfuzzy-dev
         python -m pip install --upgrade pip poetry
         poetry install
+        echo LOOKYLOO_HOME="`pwd`" >> .env
+        poetry run tools/3rdparty.py
+
+    - name: Make sure SRIs are up-to-date
+      run: |
+        poetry run tools/generate_sri.py
+        git diff website/web/sri.txt
+        git diff --quiet website/web/sri.txt
 
     - name: Test with nosetests
       run: |
         poetry run mypy .
+

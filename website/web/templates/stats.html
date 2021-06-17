@@ -79,5 +79,7 @@
 
 {% block styles %}
 {{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='stats.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='stats.css') }}"
+      integrity="{{get_sri('static', 'stats.css')}}"
+      crossorigin="anonymous">
 {% endblock %}

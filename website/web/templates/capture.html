@@ -150,5 +150,7 @@
 
 {% block scripts %}
   {{ super() }}
-  <script src='{{ url_for('static', filename='capture.js') }}'></script>
+  <script src='{{ url_for('static', filename='capture.js') }}'
+          integrity="{{get_sri('static', 'capture.js')}}"
+          crossorigin="anonymous"></script>
 {% endblock %}

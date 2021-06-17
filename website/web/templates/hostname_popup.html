@@ -11,15 +11,11 @@
 
 {% block title %}Details for {{ hostnode.name }} {% endblock %}
 
-{% block styles %}
-{{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='datatables.min.css') }}">
-{% endblock %}
-
 {% block scripts %}
   {{ super() }}
-  <script src='{{ url_for('static', filename='datatables.min.js') }}'></script>
-  <script src='{{ url_for('static', filename='generic.js') }}'></script>
+  <script src='{{ url_for('static', filename='generic.js') }}'
+          integrity="{{get_sri('static', 'generic.js')}}"
+          crossorigin="anonymous"></script>
   <script type="text/javascript">
   $(document).ready(() => {
     $('table.table').DataTable( {
