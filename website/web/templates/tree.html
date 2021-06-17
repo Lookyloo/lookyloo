@@ -27,8 +27,12 @@
 
 {% block scripts %}
   {{ super() }}
-  <script src='{{ url_for('static', filename='d3.v6.min.js') }}'></script>
-  <script src='{{ url_for('static', filename='tree.js') }}'></script>
+  <script src='{{ url_for('static', filename='d3.v6.min.js') }}'
+          integrity="{{get_sri('static', 'd3.v6.min.js')}}"
+          crossorigin="anonymous"></script>
+  <script src='{{ url_for('static', filename='tree.js') }}'
+          integrity="{{get_sri('static', 'tree.js')}}"
+          crossorigin="anonymous"></script>
 
   <script>
   $('#modulesModal').on('show.bs.modal', function(e) {

@@ -6,7 +6,6 @@
 
 {% block scripts %}
 {{ super() }}
-<script src='{{ url_for('static', filename='datatables.min.js') }}'></script>
 <script type="text/javascript">
     $('#table').DataTable( {
         "order": [[ 0, "desc" ]],
@@ -15,11 +14,6 @@
         "paging": false
     });
 </script>
-{% endblock %}
-
-{% block styles %}
-{{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='datatables.min.css') }}">
 {% endblock %}
 
 
