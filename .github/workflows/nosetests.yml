@@ -21,6 +21,14 @@ jobs:
       with:
         python-version: ${{matrix.python-version}}
 
+    - name: Make sure SRIs are up-to-date
+      run: |
+        poetry run tools/generate_sri.py
+        if $?; then
+          echo "SRIs not up-to-date, you must run tools/generate_sri.py"
+          exit 1
+        fi
+
     - name: Install dependencies
       run: |
         sudo apt install libfuzzy-dev
@@ -31,10 +39,3 @@ jobs:
       run: |
         poetry run mypy .
 
-    - name: Make sure SRIs are up-to-date
-      run: |
-        poetry run tools/generate_sri.py
-        if $?; then
-          echo "SRIs not up-to-date, you must run tools/generate_sri.py"
-          exit 1
-        fi
