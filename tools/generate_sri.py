@@ -19,4 +19,4 @@ if __name__ == '__main__':
             to_save['static'][resource.name] = base64.b64encode(hashlib.sha512(f.read()).digest()).decode('utf-8')
 
     with (dest_dir / 'sri.txt').open('w') as fw:
-        json.dump(to_save, fw, indent=2)
+        json.dump(to_save, fw, indent=2, sort_keys=True)
