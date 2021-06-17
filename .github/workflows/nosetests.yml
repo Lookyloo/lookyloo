@@ -26,6 +26,7 @@ jobs:
         sudo apt install libfuzzy-dev
         python -m pip install --upgrade pip poetry
         poetry install
+        echo LOOKYLOO_HOME="`pwd`" >> .env
         
     - name: Make sure SRIs are up-to-date
       run: |
