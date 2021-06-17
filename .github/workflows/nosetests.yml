@@ -31,7 +31,8 @@ jobs:
     - name: Make sure SRIs are up-to-date
       run: |
         poetry run tools/generate_sri.py
-        if $?; then
+        git diff --quiet website/web/sri.txt
+        if ! [ $? == 0 ] ; then
           echo "SRIs not up-to-date, you must run tools/generate_sri.py"
           exit 1
         fi
