@@ -27,7 +27,8 @@ jobs:
         python -m pip install --upgrade pip poetry
         poetry install
         echo LOOKYLOO_HOME="`pwd`" >> .env
-        
+        poetry run tools/3rdparty.py
+
     - name: Make sure SRIs are up-to-date
       run: |
         poetry run tools/generate_sri.py

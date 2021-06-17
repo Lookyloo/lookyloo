@@ -1,14 +1,12 @@
 {
   "static": {
     "bomb.svg": "Tro3+kCLzfBNBve2gPnsmXsl+tHUQVrFz77zfrWwnAuTraehZaoAfVJgGOYdG8zceXdGLEKzXVi3GdtEXw0sYQ==",
-    "bomb.xcf": "hDMWxjEZyOB+3SnXYiY03qhce8zu91XRKsbJptq/vsr5MLmNUtYvAdCuVcx8hxtMsyf6M061eDGggIJEZSeYkQ==",
     "capture.js": "XhWkFmPwm29Iyf034SS/OXZo+ulN2xo6S6AzdHh+hCBnmygO8dUzX1gsrW91utgxgsmHKjTzXPJCXsylNLw4uQ==",
     "check.svg": "CRqUAM/yXxgJwpfg3TeoKD+CIqQj62lxqS3zeCmdPaV3dKftk4jk5Mqc1TGxL7i61X1sgV0/f+KJLEOKTw01ww==",
     "cookie_in_url.png": "hs/oNPnrR2DkDX9Yp6Daug/QqpWJHemJE6lXpxNafjgOYooezp3DpbqKqADT7QcfcTxxUfe1iPDZJlHOrNMAcw==",
     "cookie_read.png": "mdXCeuNFPvshSwIXAJLoR1xFjXb+K2Mgu47Q1fnUAO8j1N2c/uJuE8sGuBHHbS8HOyr/CbOC6Uf3zsm9KvAs8Q==",
     "cookie_received.png": "EqL5fRFwjjXkSp242nacVFy7N8f1QAGJv4OIVDKQkDJQvq2MphwUnfLZUQvN3NMayHS/VTGQbgdQVjcOSQ2blA==",
     "css.png": "XDfV8fW5XRQlHT20rZn3d6LdIp2Dzk+mnZlicBv61iJGFMENLSM4SDgRcGb+x927AlI3lb6qv2C6tJAR2nDl5g==",
-    "d3.v5.min.js": "FHsFVKQ/T1KWJDGSbrUhTJyS1ph3eRrxI228ND0EGaEp6v4a/vGwPWd3Dtd/+9cI7ccofZvl/wulICEurHN1pg==",
     "d3.v6.min.js": "0XfwGD1nxplHpehcSVI7lY+m/5L37PNHDt+DOc7aLFckwPXjnjeA1oeNbru7YeI4VLs9i+ADnnHEhP69C9CqTA==",
     "datatables.min.css": "d5IZxd9tksyYd6/G+5l9twTq5Mfu3mpQBG1Pdp0092vmClzUiGB00yI3Vqz4o3ib3lHpXlu0MgJts5QBo52PVA==",
     "datatables.min.js": "xlRU11IaDXTzgBMqyvSzQB3dqBbHatQaSVOUoPkxxNbc39qGxldo4nuAoK+Q5eO7Ldo/3XzuUTqhY9DudM3H6g==",
@@ -34,7 +32,6 @@
     "secure.svg": "H8ni7t0d60nCJDVGuZpuxC+RBy/ipAjWT627D12HlZGg6LUmjSwPTQTUekm3UJupEP7TUkhXyq6WHc5gy7QBjg==",
     "stats.css": "/kY943FwWBTne4IIyf7iBROSfbGd82TeBicEXqKkRwawMVRIvM/Pk5MRa7okUyGIxaDjFQGmV/U1vy+PhN6Jbw==",
     "stats_graph.js": "0OEouA6NAxLG2wMd7D2vtGoMrXKna7My98Euc6ecyfdO4/6mIJS87vzISOS4zSZ8u4ehpa+p7E0nWhsXXE7H/Q==",
-    "suspicious.svg": "hUHBJBoQFgMkxgQDdQxRNIuBxKoT7Pllsm6KanBxy0ejZPpr1EAtyLn1zZuWKUY6EMpsHIiKMJmuN6OXgYgh6g==",
     "tree.css": "ma+WfBfjVZpKH9KDg+LayyBac2r95VgqG4jll75Xc1e0zwBXe2/ZxI6Y9AeGCNK5YvtcFNd6oH3c+2KxV8iT0A==",
     "tree.js": "JeCMrFdQDrSYAXaJZE/tCOnfusbQI68rzFhyo0ojBCHt2FAs/DDBdYwCpkFNZ7J+n05NpfbegrrKVqd06PCNXA==",
     "up.jpg": "d1ljZJ9f5JekyM6RLFFH2Ua44j6neiQBdUIXOenRTjGppQr3JaeglpQIH6BjPCJL177+TH52U3UIRNS5YAyKIg==",
