@@ -25,6 +25,7 @@ jobs:
       run: |
         sudo apt install libfuzzy-dev
         python -m pip install --upgrade pip poetry
+        poetry install
         
     - name: Make sure SRIs are up-to-date
       run: |
@@ -36,6 +37,5 @@ jobs:
 
     - name: Test with nosetests
       run: |
-        poetry install
         poetry run mypy .
 
