@@ -21,6 +21,11 @@ jobs:
       with:
         python-version: ${{matrix.python-version}}
 
+    - name: Install dependencies
+      run: |
+        sudo apt install libfuzzy-dev
+        python -m pip install --upgrade pip poetry
+        
     - name: Make sure SRIs are up-to-date
       run: |
         poetry run tools/generate_sri.py
@@ -29,13 +34,8 @@ jobs:
           exit 1
         fi
 
-    - name: Install dependencies
-      run: |
-        sudo apt install libfuzzy-dev
-        python -m pip install --upgrade pip poetry
-        poetry install
-
     - name: Test with nosetests
       run: |
+        poetry install
         poetry run mypy .
 
