@@ -642,7 +642,7 @@ python-versions = "*"
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.18"
+version = "3.0.19"
 description = "Library for building powerful interactive command lines in Python"
 category = "dev"
 optional = false
@@ -1092,7 +1092,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "3.5.2"
+version = "3.5.4"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1100,7 +1100,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "0.1.12"
+version = "0.1.13"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1215,7 +1215,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "61405876ad815a8f14ac965b5925b75c024c6953a9686de9852b5a280b39b55f"
+content-hash = "ccad2d81fdfcc43851c2483c26873e8fcaddd91218c32e77c7e9ed349ec2e177"
 
 [metadata.files]
 aiohttp = [
@@ -1743,8 +1743,8 @@ priority = [
     {file = "priority-1.3.0.tar.gz", hash = "sha256:6bc1961a6d7fcacbfc337769f1a382c8e746566aaa365e78047abe9f66b2ffbe"},
 ]
 prompt-toolkit = [
-    {file = "prompt_toolkit-3.0.18-py3-none-any.whl", hash = "sha256:bf00f22079f5fadc949f42ae8ff7f05702826a97059ffcc6281036ad40ac6f04"},
-    {file = "prompt_toolkit-3.0.18.tar.gz", hash = "sha256:e1b4f11b9336a28fa11810bc623c357420f69dfdb6d2dac41ca2c21a55c033bc"},
+    {file = "prompt_toolkit-3.0.19-py3-none-any.whl", hash = "sha256:7089d8d2938043508aa9420ec18ce0922885304cddae87fb96eebca942299f88"},
+    {file = "prompt_toolkit-3.0.19.tar.gz", hash = "sha256:08360ee3a3148bdb5163621709ee322ec34fc4375099afa4bbf751e9b7b7fa4f"},
 ]
 protego = [
     {file = "Protego-0.1.16.tar.gz", hash = "sha256:a682771bc7b51b2ff41466460896c1a5a653f9a1e71639ef365a72e66d8734b4"},
@@ -1927,12 +1927,12 @@ types-markupsafe = [
     {file = "types_MarkupSafe-1.1.3-py2.py3-none-any.whl", hash = "sha256:b1893d090c72204110c232d9b964d2612e15deff738bb75360030473a45cbc0e"},
 ]
 types-redis = [
-    {file = "types-redis-3.5.2.tar.gz", hash = "sha256:eaf57c717c5c63e9b3a8e812aec2cf2115f5c97e9596157187af05ae485ee1dc"},
-    {file = "types_redis-3.5.2-py2.py3-none-any.whl", hash = "sha256:0c4aa5c2f8b78093303d3d4e64c0cf9882ec8ad4e9e301b9a5fb35039eeac6c0"},
+    {file = "types-redis-3.5.4.tar.gz", hash = "sha256:936e98f9090c11610f4f5171d2ca8fa5c5eab842422b3cc2f9355f57d01e1a6b"},
+    {file = "types_redis-3.5.4-py3-none-any.whl", hash = "sha256:954feb1f573216b215c1d564c1b27091a7ce8b7fd3af9474d9e88d4081881aff"},
 ]
 types-requests = [
-    {file = "types-requests-0.1.12.tar.gz", hash = "sha256:08323ce2be816c4c107ef605e66369cb26dfda99d278dd502ee32bbf37f9a285"},
-    {file = "types_requests-0.1.12-py2.py3-none-any.whl", hash = "sha256:59b218da05de6eb58e0ab9d096af5e258359365cdf52cf3a1206a8ea87244301"},
+    {file = "types-requests-0.1.13.tar.gz", hash = "sha256:917d6d0a8d8fe2d084ab6dc28d379ec4e6fa34738e905908680bbfa0ce2d8485"},
+    {file = "types_requests-0.1.13-py3-none-any.whl", hash = "sha256:f7e611082208358045fdeac6edb5d20422ce8cfc935d57dbbef6a6b3a59bfae2"},
 ]
 types-werkzeug = [
     {file = "types-Werkzeug-1.0.2.tar.gz", hash = "sha256:7f6d4c8771a67d44e83134d56e59b482bf81ebd28e6557015fdfcc81e3d11b53"},
