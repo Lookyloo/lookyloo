@@ -1100,7 +1100,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "0.1.13"
+version = "2.25.0"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1215,7 +1215,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "ccad2d81fdfcc43851c2483c26873e8fcaddd91218c32e77c7e9ed349ec2e177"
+content-hash = "ac074f31b8e2104b3c1df08d3b8d5f101ac56800e6193a9d9bf543dc336f8b3f"
 
 [metadata.files]
 aiohttp = [
@@ -1931,8 +1931,8 @@ types-redis = [
     {file = "types_redis-3.5.4-py3-none-any.whl", hash = "sha256:954feb1f573216b215c1d564c1b27091a7ce8b7fd3af9474d9e88d4081881aff"},
 ]
 types-requests = [
-    {file = "types-requests-0.1.13.tar.gz", hash = "sha256:917d6d0a8d8fe2d084ab6dc28d379ec4e6fa34738e905908680bbfa0ce2d8485"},
-    {file = "types_requests-0.1.13-py3-none-any.whl", hash = "sha256:f7e611082208358045fdeac6edb5d20422ce8cfc935d57dbbef6a6b3a59bfae2"},
+    {file = "types-requests-2.25.0.tar.gz", hash = "sha256:ee0d0c507210141b7d5b8639cc43eaa726084178775db2a5fb06fbf85c185808"},
+    {file = "types_requests-2.25.0-py3-none-any.whl", hash = "sha256:fa5c1e5e832ff6193507d8da7e1159281383908ee193a2f4b37bc08140b51844"},
 ]
 types-werkzeug = [
     {file = "types-Werkzeug-1.0.2.tar.gz", hash = "sha256:7f6d4c8771a67d44e83134d56e59b482bf81ebd28e6557015fdfcc81e3d11b53"},
