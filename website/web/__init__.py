@@ -757,6 +757,9 @@ def capture_web():
         if request.form.get('referer'):
             capture_query['referer'] = request.form['referer']
 
+        if request.form.get('proxy'):
+            capture_query['proxy'] = request.form['proxy']
+
         perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         time.sleep(30)
         return redirect(url_for('tree', tree_uuid=perma_uuid))
