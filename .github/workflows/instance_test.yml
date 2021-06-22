@@ -33,7 +33,7 @@ jobs:
           pushd ..
           git clone https://github.com/antirez/redis.git
           pushd redis
-          git checkout 6.0
+          git checkout 6.2
           make
           popd
           popd

@@ -328,7 +328,8 @@ class Lookyloo():
         '''Get basic information about the capture.'''
         ct = self.get_crawled_tree(capture_uuid)
         to_return = {'url': ct.root_url, 'title': ct.root_hartree.har.initial_title,
-                     'capture_time': ct.start_time.isoformat(), 'user_agent': ct.user_agent}
+                     'capture_time': ct.start_time.isoformat(), 'user_agent': ct.user_agent,
+                     'referer': ct.referer}
         return to_return
 
     def get_meta(self, capture_uuid: str, /) -> Dict[str, str]:
