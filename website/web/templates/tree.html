@@ -357,6 +357,12 @@
         <dt class="col-sm-2">User Agent</dt>
         <dd class="col-sm-10">{{ user_agent }}</dd>
 
+        {% if referer %}
+        <dt class="col-sm-2">Referer</dt>
+        <dd class="col-sm-10">{{ referer }}</dd>
+        {%endif%}
+
+
         {% if meta %}
           {% for k, v in meta.items() if k not in ['user_agent'] %}
             <dt class="col-sm-2">{{k.title()}}</dt>
