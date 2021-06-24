@@ -63,7 +63,7 @@ flask-restx = "^0.4.0"
 misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.902"
+mypy = "^0.910"
 ipython = "^7.23.1"
 types-redis = "^3.5.4"
 types-requests = "^2.25.0"
