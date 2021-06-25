@@ -866,7 +866,7 @@ class Lookyloo():
         self.logger.info(f'Capturing {url}')
         try:
             items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
-                          referer=referer, log_enabled=True, log_level=get_config('generic', 'splash_loglevel'))
+                          referer=referer, proxy=proxy, log_enabled=True, log_level=get_config('generic', 'splash_loglevel'))
         except Exception as e:
             self.logger.critical(f'Something went terribly wrong when capturing {url}.')
             raise e
