@@ -829,7 +829,7 @@ class Lookyloo():
 
     def _capture(self, url: str, *, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                  depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
-                 referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
+                 referer: str='', proxy: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
                  browser: Optional[str]=None, parent: Optional[str]=None) -> Union[bool, str]:
         '''Launch a capture'''
         url = url.strip()
