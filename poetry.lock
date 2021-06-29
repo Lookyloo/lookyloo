@@ -937,7 +937,7 @@ python-versions = "*"
 
 [[package]]
 name = "scrapysplashwrapper"
-version = "1.6.2"
+version = "1.6.3"
 description = "Scrapy splash wrapper as a standalone library."
 category = "main"
 optional = false
@@ -1215,7 +1215,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "6651067bb5998433d83d7b2829a031fd1499a8304e39cbbedd9f9fb514e73c89"
+content-hash = "ff30abec960d0da94330a97a12a8a1f414feeba646c3f434be9947433e0590a7"
 
 [metadata.files]
 aiohttp = [
@@ -1889,8 +1889,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.7.2-py2.py3-none-any.whl", hash = "sha256:71ac958370f8732fec746a25a8235b03a4d3c4c93a59be51aa8e910a08cfe511"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.6.2-py3-none-any.whl", hash = "sha256:c9c190052c14d978f25138210a9ad227d563636a2c7e6bd8bcca5b43b38e5228"},
-    {file = "scrapysplashwrapper-1.6.2.tar.gz", hash = "sha256:eb80cfdf87823b9e5507e097f0e0b02bc0a9786bbdedce42be9d0339d8d84032"},
+    {file = "scrapysplashwrapper-1.6.3-py3-none-any.whl", hash = "sha256:05b0bc668238349e5a251d544ffa112039e88b165f9490262e27f894db9117ce"},
+    {file = "scrapysplashwrapper-1.6.3.tar.gz", hash = "sha256:594b7f4990a86379ad972bdc6d81d066f6d275390d00361ec71f42fce5b770d0"},
 ]
 service-identity = [
     {file = "service-identity-21.1.0.tar.gz", hash = "sha256:6e6c6086ca271dc11b033d17c3a8bea9f24ebff920c587da090afc9519419d34"},
