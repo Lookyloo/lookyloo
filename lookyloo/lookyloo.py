@@ -536,7 +536,7 @@ class Lookyloo():
 
     def sorted_capture_cache(self, capture_uuids: Optional[Iterable[str]]=None) -> List[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).'''
-        if not capture_uuids:
+        if capture_uuids is None:
             # Sort all captures
             capture_uuids = self.capture_uuids
         if not capture_uuids:
