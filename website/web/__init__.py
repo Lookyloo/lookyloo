@@ -12,7 +12,7 @@ import calendar
 from typing import Optional, Dict, Any, Union, List
 import logging
 import hashlib
-from urllib.parse import quote_plus, unquote_plus
+from urllib.parse import quote_plus, unquote_plus, urlparse
 import time
 
 from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
@@ -758,7 +758,17 @@ def capture_web():
             capture_query['referer'] = request.form['referer']
 
         if request.form.get('proxy'):
-            capture_query['proxy'] = request.form['proxy']
+            parsed_proxy = urlparse(request.form['proxy'])
+            if parsed_proxy.scheme and parsed_proxy.hostname and parsed_proxy.port:
+                if parsed_proxy.scheme in ['http', 'https', 'socks5']:
+                    if (parsed_proxy.username and parsed_proxy.password) != (not parsed_proxy.username and not parsed_proxy.password):
+                        capture_query['proxy'] = request.form['proxy']
+                    else:
+                        flash('You need to enter a username AND a password for your proxy.', 'error')
+                else:
+                    flash('Proxy scheme not supported: must be http(s) or socks5.', 'error')
+            else:
+                flash('Invalid proxy: Check that you entered a scheme, a hostname and a port.', 'error')
 
         perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         time.sleep(30)
