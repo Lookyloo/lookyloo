@@ -544,7 +544,7 @@ class Lookyloo():
 
     def sorted_capture_cache(self, capture_uuids: Optional[Iterable[str]]=None) -> List[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).'''
-        if not capture_uuids:
+        if capture_uuids is None:
             # Sort all captures
             capture_uuids = self.capture_uuids
         if not capture_uuids:
@@ -837,7 +837,7 @@ class Lookyloo():
 
     def _capture(self, url: str, *, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                  depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
-                 referer: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
+                 referer: str='', proxy: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
                  browser: Optional[str]=None, parent: Optional[str]=None) -> Union[bool, str]:
         '''Launch a capture'''
         url = url.strip()
@@ -874,7 +874,7 @@ class Lookyloo():
         self.logger.info(f'Capturing {url}')
         try:
             items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
-                          referer=referer, log_enabled=True, log_level=get_config('generic', 'splash_loglevel'))
+                          referer=referer, proxy=proxy, log_enabled=True, log_level=get_config('generic', 'splash_loglevel'))
         except Exception as e:
             self.logger.critical(f'Something went terribly wrong when capturing {url}.')
             raise e

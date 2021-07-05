@@ -44,7 +44,7 @@ bootstrap-flask = "^1.7.0"
 defang = "^0.5.3"
 vt-py = "^0.6.2"
 pyeupi = "^1.1"
-scrapysplashwrapper = "^1.6.0"
+scrapysplashwrapper = "^1.6.3"
 pysanejs = "^1.4"
 har2tree = "^1.6.1"
 pylookyloo = "^1.6"
@@ -54,7 +54,7 @@ pymisp = {version = "^2.4.143", extras = ["url"]}
 python-magic = {version = "^0.4.22", optional = true}
 # pydeep requires libfuzzy-dev, and is only used in the MISP export module
 pydeep = {version = "^0.4", optional = true}
-Pillow = "^8.2.0"
+Pillow = "^8.3.0"
 lief = "^0.11.4"
 Flask-Login = "^0.5.0"
 flask-restx = "^0.4.0"
@@ -64,7 +64,7 @@ misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.910"
-ipython = "^7.23.1"
+ipython = "^7.25.0"
 types-redis = "^3.5.4"
 types-requests = "^2.25.0"
 types-Flask = "^1.1.0"
