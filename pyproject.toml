@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lookyloo"
-version = "1.6.0"
+version = "1.7.0-dev"
 description = "Web interface to track the trackers."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
