@@ -434,6 +434,7 @@ class Lookyloo():
 
     def _set_capture_cache(self, capture_dir: Path, force: bool=False, redis_pipeline: Optional[Redis]=None) -> None:
         '''Populate the redis cache for a capture. Mostly used on the index page.'''
+        # NOTE: this method is called in the background indexer as a fallback.
         if force or not self.redis.exists(str(capture_dir)):
             # (re)build cache
             pass

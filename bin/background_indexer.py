@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from lookyloo.abstractmanager import AbstractManager
 from lookyloo.lookyloo import Lookyloo
-from lookyloo.exceptions import NoValidHarFile
+from lookyloo.exceptions import NoValidHarFile, MissingUUID
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO, datefmt='%I:%M:%S')
@@ -50,6 +50,10 @@ class BackgroundIndexer(AbstractManager):
                 self.lookyloo.get_crawled_tree(uuid)
                 self.lookyloo.trigger_modules(uuid, auto_trigger=True)
                 self.logger.info(f'Pickle for {uuid} build.')
+            except MissingUUID:
+                # The cache is not up-to-date, but the UUID definitely exists in the captures.
+                self.logger.warning(f'Unable to find {uuid}, re-triggering the cache.')
+                self.lookyloo._set_capture_cache(uuid_path.parent, force=True)
             except NoValidHarFile:
                 self.logger.warning(f'Unable to build pickle for {uuid}: {uuid_path.parent.name}')
                 # The capture is not working, moving it away.
