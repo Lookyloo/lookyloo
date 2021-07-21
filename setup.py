@@ -5,7 +5,7 @@ from setuptools import setup  # type: ignore
 
 setup(
     name='lookyloo',
-    version='1.7-dev',
+    version='1.8-dev',
     author='Raphaël Vinot',
     author_email='raphael.vinot@circl.lu',
     maintainer='Raphaël Vinot',
