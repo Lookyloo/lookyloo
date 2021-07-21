@@ -324,6 +324,14 @@ class Lookyloo():
         ct = self.get_crawled_tree(capture_uuid)
         return ct.root_hartree.stats
 
+    def get_info(self, capture_uuid: str, /) -> Dict[str, Any]:
+        '''Get basic information about the capture.'''
+        ct = self.get_crawled_tree(capture_uuid)
+        to_return = {'url': ct.root_url, 'title': ct.root_hartree.har.initial_title,
+                     'capture_time': ct.start_time.isoformat(), 'user_agent': ct.user_agent,
+                     'referer': ct.referer}
+        return to_return
+
     def get_meta(self, capture_uuid: str, /) -> Dict[str, str]:
         '''Get the meta informations from a capture (mostly, details about the User Agent used.)'''
         capture_dir = self._get_capture_dir(capture_uuid)
@@ -1201,6 +1209,38 @@ class Lookyloo():
         else:
             container = self.get_crawled_tree(tree_uuid)
         return get_resources_hashes(container)
+
+    def get_hostnames(self, tree_uuid: str, /, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
+        """Return all the unique hostnames:
+            * of a complete tree if no hostnode_uuid and urlnode_uuid are given
+            * of a HostNode if hostnode_uuid is given
+            * of a URLNode if urlnode_uuid is given
+        """
+        if urlnode_uuid:
+            node = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
+            return {node.hostname}
+        elif hostnode_uuid:
+            node = self.get_hostnode_from_tree(tree_uuid, hostnode_uuid)
+            return {node.name}
+        else:
+            ct = self.get_crawled_tree(tree_uuid)
+            return {node.name for node in ct.root_hartree.hostname_tree.traverse()}
+
+    def get_urls(self, tree_uuid: str, /, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
+        """Return all the unique URLs:
+            * of a complete tree if no hostnode_uuid and urlnode_uuid are given
+            * of a HostNode if hostnode_uuid is given
+            * of a URLNode if urlnode_uuid is given
+        """
+        if urlnode_uuid:
+            node = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
+            return {node.name}
+        elif hostnode_uuid:
+            node = self.get_hostnode_from_tree(tree_uuid, hostnode_uuid)
+            return {urlnode.name for urlnode in node.urls}
+        else:
+            ct = self.get_crawled_tree(tree_uuid)
+            return {node.name for node in ct.root_hartree.url_tree.traverse()}
 
     def get_hostnode_investigator(self, capture_uuid: str, /, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
         '''Gather all the informations needed to display the Hostnode investigator popup.'''
