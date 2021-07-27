@@ -10,6 +10,7 @@ RUN pip3 install poetry
 WORKDIR lookyloo
 
 COPY lookyloo lookyloo/
+COPY tools tools
 COPY bin bin/
 COPY website website/
 COPY setup.py .
