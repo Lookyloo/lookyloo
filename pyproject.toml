@@ -67,7 +67,7 @@ misp = ['python-magic', 'pydeep']
 mypy = "^0.910"
 ipython = "^7.26.0"
 types-redis = "^3.5.4"
-types-requests = "^2.25.2"
+types-requests = "^2.25.6"
 types-Flask = "^1.1.0"
 types-pkg-resources = "^0.1.2"
 
