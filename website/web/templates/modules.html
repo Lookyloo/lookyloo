@@ -37,4 +37,10 @@
     </center>
   {% endfor %}
 {% endif%}
-</div>
+{% if urlscan %}
+  <center><h1 class="display-4">urlscan.io</h1></center>
+  <div>
+    <p>A scan was triggered for this capture, <a href="{{urlscan}}">click see it</a> on urlscan.io.</p>
+    <p>Note that if you get a 404, it probably means the capture is still ongoing.</p>
+  </div>
+{% endif%}

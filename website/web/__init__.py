@@ -392,7 +392,11 @@ def modules(tree_uuid: str):
                 continue
             pi_short_result[url] = full_report['results'][0]['tag_label']
 
-    return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result, pi=pi_short_result)
+    urlscan_permaurl: str = ''
+    if 'urlscan' in modules_responses:
+        urlscan = modules_responses.pop('urlscan')
+        urlscan_permaurl = urlscan['submission']['result']
+    return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result, pi=pi_short_result, urlscan=urlscan_permaurl)
 
 
 @app.route('/tree/<string:tree_uuid>/redirects', methods=['GET'])

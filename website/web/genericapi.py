@@ -57,6 +57,14 @@ class AuthToken(Resource):
         return {'error': 'User/Password invalid.'}
 
 
+@api.route('/json/splash_status')
+@api.doc(description='Get status of splash.')
+class SplashStatus(Resource):
+    def get(self):
+        status, info = lookyloo.splash_status()
+        return {'is_up': status, 'info': info}
+
+
 @api.route('/json/<string:capture_uuid>/status')
 @api.doc(description='Get the status of a capture',
          params={'capture_uuid': 'The UUID of the capture'})

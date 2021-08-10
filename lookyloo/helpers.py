@@ -6,6 +6,7 @@ import time
 import json
 import traceback
 import pickle
+import pkg_resources
 from typing import List, Optional, Dict, Union, Any, Set
 from io import BufferedIOBase
 from pathlib import Path
@@ -348,3 +349,9 @@ def try_make_file(filename: Path):
         return True
     except FileExistsError:
         return False
+
+
+@lru_cache(64)
+def get_useragent_for_requests():
+    version = pkg_resources.get_distribution('lookyloo').version
+    return f'Lookyloo / {version}'

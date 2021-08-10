@@ -30,6 +30,11 @@
     "port": 4243,
     "allow_auto_trigger": true
   },
+  "UrlScan": {
+    "apikey": null,
+    "autosubmit": false,
+    "allow_auto_trigger": false
+  },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
     "autosubmit": "Automatically submits the URL to the 3rd party service.",

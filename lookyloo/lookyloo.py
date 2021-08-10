@@ -40,7 +40,7 @@ from .helpers import (get_homedir, get_socket_path, load_cookies, get_config,
                       safe_create_dir, get_email_template, load_pickle_tree,
                       remove_pickle_tree, get_resources_hashes, get_taxonomies, uniq_domains,
                       CaptureStatus, try_make_file)
-from .modules import VirusTotal, SaneJavaScript, PhishingInitiative, MISP, UniversalWhois
+from .modules import VirusTotal, SaneJavaScript, PhishingInitiative, MISP, UniversalWhois, UrlScan
 from .capturecache import CaptureCache
 from .context import Context
 from .indexing import Indexing
@@ -89,6 +89,10 @@ class Lookyloo():
         self.uwhois = UniversalWhois(get_config('modules', 'UniversalWhois'))
         if not self.uwhois.available:
             self.logger.warning('Unable to setup the UniversalWhois module')
+
+        self.urlscan = UrlScan(get_config('modules', 'UrlScan'))
+        if not self.urlscan.available:
+            self.logger.warning('Unable to setup the UrlScan module')
 
         self.context = Context(self.sanejs)
         self._captures_index: Dict[str, CaptureCache] = {}
@@ -397,6 +401,7 @@ class Lookyloo():
         self.pi.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
         self.vt.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
         self.uwhois.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
+        self.urlscan.capture_default_trigger(self.get_info(capture_uuid), force=force, auto_trigger=auto_trigger)
 
     def get_modules_responses(self, capture_uuid: str, /) -> Optional[Dict[str, Any]]:
         '''Get the responses of the modules from the cached responses on the disk'''
@@ -420,6 +425,9 @@ class Lookyloo():
                     to_return['pi'][redirect] = self.pi.get_url_lookup(redirect)
             else:
                 to_return['pi'][ct.root_hartree.har.root_url] = self.pi.get_url_lookup(ct.root_hartree.har.root_url)
+        if self.urlscan.available:
+            to_return['urlscan'] = {'submission': {}, 'result': {}}
+            to_return['urlscan']['submission'] = self.urlscan.url_submit(self.get_info(capture_uuid))
         return to_return
 
     def get_misp_occurrences(self, capture_uuid: str, /) -> Optional[Dict[str, Set[str]]]:

@@ -12,7 +12,7 @@ import logging
 import socket
 import re
 
-from .helpers import get_homedir, get_config, get_public_suffix_list
+from .helpers import get_homedir, get_config, get_public_suffix_list, get_useragent_for_requests
 from .exceptions import ConfigError
 
 import vt  # type: ignore
@@ -20,6 +20,7 @@ from vt.error import APIError  # type: ignore
 from pysanejs import SaneJS
 from pyeupi import PyEUPI
 from pymisp import PyMISP, MISPEvent, MISPAttribute
+import requests
 
 from har2tree import CrawledTree, HostNode, URLNode, Har2TreeError
 
@@ -470,3 +471,117 @@ class VirusTotal():
                     self.client.scan_url(url)
                     scan_requested = True
             time.sleep(5)
+
+
+class UrlScan():
+
+    def __init__(self, config: Dict[str, Any]):
+        if not config.get('apikey'):
+            self.available = False
+            return
+
+        self.available = True
+        self.autosubmit = False
+        self.allow_auto_trigger = False
+        self.client = requests.session()
+        self.client.headers['User-Agent'] = get_useragent_for_requests()
+        self.client.headers['API-Key'] = config['apikey']
+        self.client.headers['Content-Type'] = 'application/json'
+
+        if config.get('allow_auto_trigger'):
+            self.allow_auto_trigger = True
+
+        if config.get('autosubmit'):
+            self.autosubmit = True
+
+        self.storage_dir_urlscan = get_homedir() / 'urlscan'
+        self.storage_dir_urlscan.mkdir(parents=True, exist_ok=True)
+
+    def __get_cache_directory(self, url: str, useragent: str, referer: str) -> Path:
+        m = hashlib.md5()
+        to_hash = f'{url}{useragent}{referer}'
+        m.update(to_hash.encode())
+        return self.storage_dir_urlscan / m.hexdigest()
+
+    def get_url_submission(self, url: str, useragent: str, referer: str) -> Optional[Dict[str, Any]]:
+        url_storage_dir = self.__get_cache_directory(url, useragent, referer)
+        if not url_storage_dir.exists():
+            return None
+        cached_entries = sorted(url_storage_dir.glob('*'), reverse=True)
+        if not cached_entries:
+            return None
+
+        with cached_entries[0].open() as f:
+            return json.load(f)
+
+    def capture_default_trigger(self, capture_info: Dict[str, Any], /, *, force: bool=False, auto_trigger: bool=False) -> None:
+        '''Run the module on the initial URL'''
+        if not self.available:
+            return None
+        if auto_trigger and not self.allow_auto_trigger:
+            return None
+
+        self.url_submit(capture_info, force)
+
+    def __submit_url(self, url: str, useragent: str, referer: str) -> Dict:
+        data = {"url": url, "visibility": "unlisted",
+                'customagent': useragent, 'referer': referer}
+        response = self.client.post('https://urlscan.io/api/v1/scan/', json=data)
+        response.raise_for_status()
+        return response.json()
+
+    def __url_result(self, uuid: str) -> Dict:
+        response = self.client.get(f'https://urlscan.io/api/v1/result/{uuid}')
+        response.raise_for_status()
+        return response.json()
+
+    def url_submit(self, capture_info: Dict[str, Any], force: bool=False) -> Dict:
+        '''Lookup an URL on urlscan.io
+        Note: force means 2 things:
+            * (re)scan of the URL
+            * re-fetch the object from urlscan.io even if we already did it today
+
+        Note: the URL will only be submitted if autosubmit is set to true in the config
+        '''
+        if not self.available:
+            raise ConfigError('UrlScan not available, probably no API key')
+
+        url_storage_dir = self.__get_cache_directory(capture_info['url'],
+                                                     capture_info['user_agent'],
+                                                     capture_info['referer']) / 'submit'
+        url_storage_dir.mkdir(parents=True, exist_ok=True)
+        urlscan_file_submit = url_storage_dir / date.today().isoformat()
+
+        if urlscan_file_submit.exists():
+            if not force:
+                with urlscan_file_submit.open('r') as _f:
+                    return json.load(_f)
+        elif self.autosubmit:
+            # submit is allowed and we either force it, or it's just allowed
+            try:
+                response = self.__submit_url(capture_info['url'],
+                                             capture_info['user_agent'],
+                                             capture_info['referer'])
+            except requests.exceptions.HTTPError as e:
+                return {'error': e}
+            with urlscan_file_submit.open('w') as _f:
+                json.dump(response, _f)
+            return response
+        return {'error': 'Submitting is not allowed by the configuration'}
+
+    def url_result(self, url: str, useragent: str, referer: str):
+        '''Get the result from a submission.'''
+        submission = self.get_url_submission(url, useragent, referer)
+        if submission and 'uuid' in submission:
+            uuid = submission['uuid']
+            if (self.storage_dir_urlscan / f'{uuid}.json').exists():
+                with (self.storage_dir_urlscan / f'{uuid}.json').open() as _f:
+                    return json.load(_f)
+            try:
+                result = self.__url_result(uuid)
+            except requests.exceptions.HTTPError as e:
+                return {'error': e}
+            with (self.storage_dir_urlscan / f'{uuid}.json').open('w') as _f:
+                json.dump(result, _f)
+            return result
+        return {'error': 'Submission incomplete or unavailable.'}
