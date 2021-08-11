@@ -233,8 +233,8 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/trigger_modules', methods=['GET'])
 def trigger_modules(tree_uuid: str):
-    force = True if request.args.get('force') else False
-    auto_trigger = True if request.args.get('auto_trigger') else False
+    force = True if (request.args.get('force') and request.args.get('force') == 'True') else False
+    auto_trigger = True if (request.args.get('auto_trigger') and request.args.get('auto_trigger') == 'True') else False
     lookyloo.trigger_modules(tree_uuid, force=force, auto_trigger=auto_trigger)
     return redirect(url_for('modules', tree_uuid=tree_uuid))
 
@@ -392,11 +392,24 @@ def modules(tree_uuid: str):
                 continue
             pi_short_result[url] = full_report['results'][0]['tag_label']
 
-    urlscan_permaurl: str = ''
+    urlscan_to_display: Dict = {}
     if 'urlscan' in modules_responses:
         urlscan = modules_responses.pop('urlscan')
-        urlscan_permaurl = urlscan['submission']['result']
-    return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result, pi=pi_short_result, urlscan=urlscan_permaurl)
+        urlscan_to_display = {'permaurl': '', 'malicious': False, 'tags': []}
+        if urlscan['submission'].get('result'):
+            urlscan_to_display['permaurl'] = urlscan['submission']['result']
+            if urlscan['result']:
+                # We have a result available, get the verdicts
+                if (urlscan['result'].get('verdicts')
+                        and urlscan['result']['verdicts'].get('overall')):
+                    if urlscan['result']['verdicts']['overall'].get('malicious') is not None:
+                        urlscan_to_display['malicious'] = urlscan['result']['verdicts']['overall']['malicious']
+                    if urlscan['result']['verdicts']['overall'].get('tags'):
+                        urlscan_to_display['tags'] = urlscan['result']['verdicts']['overall']['tags']
+        else:
+            # unable to run the query, probably an invalid key
+            pass
+    return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result, pi=pi_short_result, urlscan=urlscan_to_display)
 
 
 @app.route('/tree/<string:tree_uuid>/redirects', methods=['GET'])
@@ -648,7 +661,7 @@ def get_index_params(request):
     show_error: bool = True
     category: str = ''
     if hide_captures_with_error:
-        show_error = True if request.args.get('show_error') else False
+        show_error = True if (request.args.get('show_error') and request.args.get('show_error') == 'True') else False
 
     if enable_categorization:
         category = request.args['category'] if request.args.get('category') else ''
@@ -805,7 +818,7 @@ def cookies_name_detail(cookie_name: str):
 
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])
 def body_hash_details(body_hash: str):
-    from_popup = request.args.get('from_popup')
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     captures, domains = lookyloo.get_body_hash_investigator(body_hash.strip())
     return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures, from_popup=from_popup)
 

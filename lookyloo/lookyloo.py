@@ -398,10 +398,15 @@ class Lookyloo():
             self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_uuid}) is cached.')
             return
 
+        capture_cache = self.capture_cache(capture_uuid)
+
         self.pi.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
         self.vt.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
         self.uwhois.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
-        self.urlscan.capture_default_trigger(self.get_info(capture_uuid), force=force, auto_trigger=auto_trigger)
+        self.urlscan.capture_default_trigger(
+            self.get_info(capture_uuid),
+            visibility='unlisted' if (capture_cache and capture_cache.no_index) else 'public',
+            force=force, auto_trigger=auto_trigger)
 
     def get_modules_responses(self, capture_uuid: str, /) -> Optional[Dict[str, Any]]:
         '''Get the responses of the modules from the cached responses on the disk'''
@@ -426,8 +431,14 @@ class Lookyloo():
             else:
                 to_return['pi'][ct.root_hartree.har.root_url] = self.pi.get_url_lookup(ct.root_hartree.har.root_url)
         if self.urlscan.available:
+            info = self.get_info(capture_uuid)
             to_return['urlscan'] = {'submission': {}, 'result': {}}
-            to_return['urlscan']['submission'] = self.urlscan.url_submit(self.get_info(capture_uuid))
+            to_return['urlscan']['submission'] = self.urlscan.get_url_submission(info)
+            if to_return['urlscan']['submission'] and 'uuid' in to_return['urlscan']['submission']:
+                # The submission was done, try to get the results
+                result = self.urlscan.url_result(info)
+                if 'error' not in result:
+                    to_return['urlscan']['result'] = result
         return to_return
 
     def get_misp_occurrences(self, capture_uuid: str, /) -> Optional[Dict[str, Set[str]]]:
@@ -593,7 +604,9 @@ class Lookyloo():
             self.logger.warning(f'No cache available for {capture_dir}.')
             return None
         try:
-            return CaptureCache(cached)
+            cc = CaptureCache(cached)
+            self._captures_index[cc.uuid] = cc
+            return cc
         except LookylooException as e:
             self.logger.warning(f'Cache ({capture_dir}) is invalid ({e}): {json.dumps(cached, indent=2)}')
             return None

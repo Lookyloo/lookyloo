@@ -1,30 +1,48 @@
 {% from "macros.html" import shorten_string %}
 
 <div>
+{% if urlscan %}
+  <hr>
+  <center>
+    <h1 class="display-4">urlscan.io</h1>
+  <div>
+    <p>A scan was triggered for this capture,
+    <a href="{{urlscan['permaurl']}}">click to view it</a> on urlscan.io.</p>
+    {% if urlscan['malicious']%}
+    <p>It is considered malicious.</p>
+    {% endif%}
+    {% if urlscan['tags'] %}
+    <p>It is tagged as {{ ','.join(urlscan['tags']) }}.</p>
+    {% endif%}
+
+  </div>
+  </center>
+{% endif%}
 {% if vt %}
-    <center><h1 class="display-4">Virus Total</h1></center>
-    {% for url, entries in vt.items() %}
-        <div class="border-top my-3"></div>
-        <center>
-          <h3><small class="text-muted">URL</small>
-            {{ shorten_string(url, 50, with_title=True) }}
-          </h3>
-        </center>
-        {% if entries['malicious'] %}
-            <center>
-            <p class="lead">Detected as malicious by the following vendors</p>
-            <dl class="row">
-            {% for e in entries['malicious'] %}
-                <dt class="col-sm-3">{{ e[0] }}</dt>
-                <dd class="col-sm-3">{{ e[1] }}</dd>
-            {% endfor %}
-            </center>
-            </dl>
-        {% else %}
-            <p class="lead">No vendors consider this URL as malicious.</p>
-        {% endif%}
-        <h5 class="text-right"><a href="{{ entries['permaurl'] }}">Full report on VirusTotal</a></h5>
-    {% endfor %}
+  <hr>
+  <center><h1 class="display-4">Virus Total</h1></center>
+  {% for url, entries in vt.items() %}
+      <div class="border-top my-3"></div>
+      <center>
+        <h3><small class="text-muted">URL</small>
+          {{ shorten_string(url, 50, with_title=True) }}
+        </h3>
+      </center>
+      {% if entries['malicious'] %}
+          <center>
+          <p class="lead">Detected as malicious by the following vendors</p>
+          <dl class="row">
+          {% for e in entries['malicious'] %}
+              <dt class="col-sm-3">{{ e[0] }}</dt>
+              <dd class="col-sm-3">{{ e[1] }}</dd>
+          {% endfor %}
+          </center>
+          </dl>
+      {% else %}
+          <p class="lead">No vendors consider this URL as malicious.</p>
+      {% endif%}
+      <h5 class="text-right"><a href="{{ entries['permaurl'] }}">Full report on VirusTotal</a></h5>
+  {% endfor %}
 {% endif%}
 {% if pi%}
   <center><h1 class="display-4">Phishing Initiative</h1></center>
@@ -37,10 +55,4 @@
     </center>
   {% endfor %}
 {% endif%}
-{% if urlscan %}
-  <center><h1 class="display-4">urlscan.io</h1></center>
-  <div>
-    <p>A scan was triggered for this capture, <a href="{{urlscan}}">click see it</a> on urlscan.io.</p>
-    <p>Note that if you get a 404, it probably means the capture is still ongoing.</p>
-  </div>
-{% endif%}
+</div>

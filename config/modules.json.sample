@@ -33,7 +33,8 @@
   "UrlScan": {
     "apikey": null,
     "autosubmit": false,
-    "allow_auto_trigger": false
+    "allow_auto_trigger": false,
+    "force_visibility": false
   },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
