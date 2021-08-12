@@ -46,5 +46,9 @@
   "7f912f0d46c813133ece2374defed93c215da5d5dc67f36711089fdc6aceccc4bd0487545e9378d034b4816dac458ef1f1f32a8ce0702e52a92cf016e6877973": {
     "domain": [],
     "description": "amazon-dtb-javascript-api - apstag - v7.53.01"
+  },
+  "ae5caba833bce374ca7c93dc1289d7d006e1b3517bbaf7cfa7a1eadd4b095a8853f9e4130fc6e2edd0624d6c61145e51df5b7ad5c9a13040f3755775381c2057": {
+    "domain": ["www.labanquepostale.fr"],
+    "description": "La Banque Postale (fr) logo. Used on phishing websites a lot."
   }
 }

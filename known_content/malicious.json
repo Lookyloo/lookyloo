@@ -22,5 +22,13 @@
     "tag": [
       "phishing"
     ]
+  },
+  "f6a474c7680d49cddbc85d50acce49cadb1c0f03be07761f91eff83a7088756eaee455b694c3f05568263321fea18ffb4f1d3ec8aed4144fb08f8419e7a42ca1": {
+    "target": [
+      "labanquepostale.fr"
+    ],
+    "tag": [
+      "phishing"
+    ]
   }
 }
