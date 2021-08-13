@@ -219,6 +219,23 @@ class MISPPush(Resource):
         return to_return
 
 
+trigger_modules_fields = api.model('TriggerModulesFields', {
+    'force': fields.Boolean(description="Force trigger the modules, even if the results are already cached.",
+                            default=False, required=False),
+})
+
+
+@api.route('/json/<string:capture_uuid>/trigger_modules')
+@api.doc(description='Trigger all the available 3rd party modules on the given capture',
+         params={'capture_uuid': 'The UUID of the capture'})
+class TriggerModules(Resource):
+    @api.doc(body=trigger_modules_fields)
+    def post(self, capture_uuid: str):
+        parameters: Dict = request.get_json(force=True)
+        force = True if parameters.get('force') else False
+        return lookyloo.trigger_modules(capture_uuid, force=force)
+
+
 @api.route('/json/hash_info/<h>')
 @api.doc(description='Search for a ressource with a specific hash (sha512)',
          params={'h': 'The hash (sha512)'})

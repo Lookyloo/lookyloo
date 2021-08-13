@@ -388,7 +388,7 @@ class Lookyloo():
         with (capture_dir / 'categories').open('w') as f:
             f.writelines(f'{t}\n' for t in current_categories)
 
-    def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False) -> None:
+    def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False) -> Dict:
         '''Launch the 3rd party modules on a capture.
         It uses the cached result *if* the module was triggered the same day.
         The `force` flag re-triggers the module regardless of the cache.'''
@@ -396,17 +396,20 @@ class Lookyloo():
             ct = self.get_crawled_tree(capture_uuid)
         except LookylooException:
             self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_uuid}) is cached.')
-            return
+            return {'error': f'UUID {capture_uuid} is either unknown or the tree is not ready yet.'}
 
+        self.uwhois.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
+
+        to_return: Dict[str, Dict] = {'PhishingInitiative': {}, 'VirusTotal': {}, 'UrlScan': {}}
         capture_cache = self.capture_cache(capture_uuid)
 
-        self.pi.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
-        self.vt.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
-        self.uwhois.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
-        self.urlscan.capture_default_trigger(
+        to_return['PhishingInitiative'] = self.pi.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
+        to_return['VirusTotal'] = self.vt.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
+        to_return['UrlScan'] = self.urlscan.capture_default_trigger(
             self.get_info(capture_uuid),
             visibility='unlisted' if (capture_cache and capture_cache.no_index) else 'public',
             force=force, auto_trigger=auto_trigger)
+        return to_return
 
     def get_modules_responses(self, capture_uuid: str, /) -> Optional[Dict[str, Any]]:
         '''Get the responses of the modules from the cached responses on the disk'''

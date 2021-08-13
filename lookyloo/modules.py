@@ -328,18 +328,19 @@ class PhishingInitiative():
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, force: bool=False, auto_trigger: bool=False) -> None:
+    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
-            return None
+            return {'error': 'Module not available'}
         if auto_trigger and not self.allow_auto_trigger:
-            return None
+            return {'error': 'Auto trigger not allowed on module'}
 
         if crawled_tree.redirects:
             for redirect in crawled_tree.redirects:
                 self.url_lookup(redirect, force)
         else:
             self.url_lookup(crawled_tree.root_hartree.har.root_url, force)
+        return {'success': 'Module triggered'}
 
     def url_lookup(self, url: str, force: bool=False) -> None:
         '''Lookup an URL on Phishing Initiative
@@ -421,18 +422,19 @@ class VirusTotal():
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, force: bool=False, auto_trigger: bool=False) -> None:
+    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
-            return None
+            return {'error': 'Module not available'}
         if auto_trigger and not self.allow_auto_trigger:
-            return None
+            return {'error': 'Auto trigger not allowed on module'}
 
         if crawled_tree.redirects:
             for redirect in crawled_tree.redirects:
                 self.url_lookup(redirect, force)
         else:
             self.url_lookup(crawled_tree.root_hartree.har.root_url, force)
+        return {'success': 'Module triggered'}
 
     def url_lookup(self, url: str, force: bool=False) -> None:
         '''Lookup an URL on VT
@@ -531,18 +533,19 @@ class UrlScan():
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, capture_info: Dict[str, Any], /, visibility: str, *, force: bool=False, auto_trigger: bool=False) -> None:
+    def capture_default_trigger(self, capture_info: Dict[str, Any], /, visibility: str, *, force: bool=False, auto_trigger: bool=False) -> Dict:
         '''Run the module on the initial URL'''
         if not self.available:
-            return None
+            return {'error': 'Module not available'}
         if auto_trigger and not self.allow_auto_trigger:
             # NOTE: if auto_trigger is true, it means the request comes from the
             # auto trigger feature (disabled by default)
             # Each module can disable auto-trigger to avoid depleating the
             # API limits.
-            return None
+            return {'error': 'Auto trigger not allowed on module'}
 
         self.url_submit(capture_info, visibility, force)
+        return {'success': 'Module triggered'}
 
     def __submit_url(self, url: str, useragent: str, referer: str, visibility: str) -> Dict:
         data = {"url": url, 'customagent': useragent, 'referer': referer}
