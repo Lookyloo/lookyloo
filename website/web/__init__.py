@@ -396,7 +396,7 @@ def modules(tree_uuid: str):
     if 'urlscan' in modules_responses:
         urlscan = modules_responses.pop('urlscan')
         urlscan_to_display = {'permaurl': '', 'malicious': False, 'tags': []}
-        if urlscan['submission'].get('result'):
+        if urlscan['submission'] and urlscan['submission'].get('result'):
             urlscan_to_display['permaurl'] = urlscan['submission']['result']
             if urlscan['result']:
                 # We have a result available, get the verdicts
