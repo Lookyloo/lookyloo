@@ -350,7 +350,7 @@ hyperframe = ">=5.2.0,<6"
 
 [[package]]
 name = "har2tree"
-version = "1.7.0"
+version = "1.7.1"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -368,7 +368,7 @@ six = ">=1.16.0,<2.0.0"
 w3lib = ">=1.22.0,<2.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.1.1,<5.0.0)"]
+docs = ["Sphinx (>=4.1.2,<5.0.0)"]
 
 [[package]]
 name = "hpack"
@@ -1276,7 +1276,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "05c677853c82629e763c92a54c6fdc8f508b5670a25181a77cba5662b712c0b9"
+content-hash = "2f05a53f1867a39d8decf575a7e5535485bb462158367eaf25d6ef17dbd57b73"
 
 [metadata.files]
 aiohttp = [
@@ -1507,8 +1507,8 @@ h2 = [
     {file = "h2-3.2.0.tar.gz", hash = "sha256:875f41ebd6f2c44781259005b157faed1a5031df3ae5aa7bcb4628a6c0782f14"},
 ]
 har2tree = [
-    {file = "har2tree-1.7.0-py3-none-any.whl", hash = "sha256:a0e870e4b21937aa569b4906b73fc9d6dd49959e570b0ad3cdd74f52283f6b15"},
-    {file = "har2tree-1.7.0.tar.gz", hash = "sha256:c965d5385e95965f99fced7b2c58a9587a9f2babd79be50ea09b3e808ec88d77"},
+    {file = "har2tree-1.7.1-py3-none-any.whl", hash = "sha256:56a62bcfdcd1dee69e7772b3e4f7bcdf20111fea3d74993dcb667c06d5d133a8"},
+    {file = "har2tree-1.7.1.tar.gz", hash = "sha256:b4087c2bb781d9b2ff3581471f8713ede42e2113ba26678f3e503d8038c4f7a3"},
 ]
 hpack = [
     {file = "hpack-3.0.0-py2.py3-none-any.whl", hash = "sha256:0edd79eda27a53ba5be2dfabf3b15780928a0dff6eb0c60a3d6767720e970c89"},
