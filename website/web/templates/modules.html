@@ -1,13 +1,13 @@
 {% from "macros.html" import shorten_string %}
 
 <div>
-{% if urlscan %}
+{% if urlscan and urlscan.get('permaurl') %}
   <hr>
   <center>
     <h1 class="display-4">urlscan.io</h1>
   <div>
     <p>A scan was triggered for this capture,
-    <a href="{{urlscan['permaurl']}}">click to view it</a> on urlscan.io.</p>
+    <a href="{{ urlscan['permaurl'] }}">click to view it</a> on urlscan.io.</p>
     {% if urlscan['malicious']%}
     <p>It is considered malicious.</p>
     {% endif%}

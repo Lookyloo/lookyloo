@@ -548,7 +548,12 @@ class UrlScan():
         return {'success': 'Module triggered'}
 
     def __submit_url(self, url: str, useragent: str, referer: str, visibility: str) -> Dict:
-        data = {"url": url, 'customagent': useragent, 'referer': referer}
+        data = {'customagent': useragent, 'referer': referer}
+
+        if not url.startswith('http'):
+            url = f'http://{url}'
+        data['url'] = url
+
         if self.force_visibility is False:
             data["visibility"] = visibility
         elif self.force_visibility in ["public", "unlisted", "private"]:
