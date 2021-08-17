@@ -45,7 +45,7 @@ class AuthToken(Resource):
         password = request.args['password'] if request.args.get('password') else False
         if username in self.users_table and check_password_hash(self.users_table[username]['password'], password):
             return {'authkey': self.users_table[username]['authkey']}
-        return {'error': 'User/Password invalid.'}
+        return {'error': 'User/Password invalid.'}, 401
 
     @api.doc(body=token_request_fields)
     def post(self):
@@ -54,7 +54,7 @@ class AuthToken(Resource):
             if (auth['username'] in self.users_table
                     and check_password_hash(self.users_table[auth['username']]['password'], auth['password'])):
                 return {'authkey': self.users_table[auth['username']]['authkey']}
-        return {'error': 'User/Password invalid.'}
+        return {'error': 'User/Password invalid.'}, 401
 
 
 @api.route('/json/splash_status')
@@ -80,7 +80,7 @@ class CaptureHostnames(Resource):
     def get(self, capture_uuid: str):
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
-            return {'error': 'UUID missing in cache, try again later.'}
+            return {'error': 'UUID missing in cache, try again later.'}, 400
         to_return: Dict[str, Any] = {'response': {'hostnames': list(lookyloo.get_hostnames(capture_uuid))}}
         return to_return
 
@@ -92,7 +92,7 @@ class CaptureURLs(Resource):
     def get(self, capture_uuid: str):
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
-            return {'error': 'UUID missing in cache, try again later.'}
+            return {'error': 'UUID missing in cache, try again later.'}, 400
         to_return: Dict[str, Any] = {'response': {'urls': list(lookyloo.get_urls(capture_uuid))}}
         return to_return
 
@@ -104,7 +104,7 @@ class CaptureHashes(Resource):
     def get(self, capture_uuid: str):
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
-            return {'error': 'UUID missing in cache, try again later.'}
+            return {'error': 'UUID missing in cache, try again later.'}, 400
         to_return: Dict[str, Any] = {'response': {'hashes': list(lookyloo.get_hashes(capture_uuid))}}
         return to_return
 
@@ -116,7 +116,7 @@ class CaptureRedirects(Resource):
     def get(self, capture_uuid: str):
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
-            return {'error': 'UUID missing in cache, try again later.'}
+            return {'error': 'UUID missing in cache, try again later.'}, 400
 
         to_return: Dict[str, Any] = {'response': {'url': cache.url, 'redirects': []}}
         if not cache.redirects:
@@ -243,7 +243,7 @@ class HashInfo(Resource):
     def get(self, h: str):
         details, body = lookyloo.get_body_hash_full(h)
         if not details:
-            return {'error': 'Unknown Hash.'}
+            return {'error': 'Unknown Hash.'}, 400
         to_return: Dict[str, Any] = {'response': {'hash': h, 'details': details,
                                                   'body': base64.b64encode(body.getvalue()).decode()}}
         return to_return
@@ -290,15 +290,6 @@ class InstanceStats(Resource):
         return lookyloo.get_stats()
 
 
-submit_fields = api.model('SubmitFields', {
-    'url': fields.String(description="The URL to capture", required=True),
-    'listing': fields.Integer(description="Display the capture on the index", min=0, max=1, example=1),
-    'user_agent': fields.String(description="User agent to use for the capture", example=''),
-    'referer': fields.String(description="Referer to pass to the capture", example=''),
-    'cookies': fields.String(description="JSON export of a list of cookies as exported from an other capture", example='')
-})
-
-
 @api.route('/json/<string:capture_uuid>/stats')
 @api.doc(description='Get the statistics of the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
@@ -325,10 +316,46 @@ class CaptureCookies(Resource):
 
 # Just text
 
+submit_fields_post = api.model('SubmitFieldsPost', {
+    'url': fields.Url(description="The URL to capture", required=True),
+    'listing': fields.Integer(description="Display the capture on the index", min=0, max=1, example=1),
+    'user_agent': fields.String(description="User agent to use for the capture", example=''),
+    'referer': fields.String(description="Referer to pass to the capture", example=''),
+    'proxy': fields.Url(description="Proxy to use for the capture. Format: [scheme]://[username]:[password]@[hostname]:[port]", example=''),
+    'cookies': fields.String(description="JSON export of a list of cookies as exported from an other capture", example='')
+})
+
+
 @api.route('/submit')
 class SubmitCapture(Resource):
 
-    @api.doc(body=submit_fields)
+    @api.param('url', 'The URL to capture', required=True)
+    @api.param('listing', 'Display the capture on the index', default=1)
+    @api.param('user_agent', 'User agent to use for the capture')
+    @api.param('referer', 'Referer to pass to the capture')
+    @api.param('proxy', 'Proxy to use for the the capture')
+    @api.produces(['text/text'])
+    def get(self):
+        if flask_login.current_user.is_authenticated:
+            user = flask_login.current_user.get_id()
+        else:
+            user = src_request_ip(request)
+
+        if 'url' not in request.args or not request.args.get('url'):
+            return 'No "url" in the URL params, nothting to capture.', 400
+
+        to_query = {'url': request.args['url'], 'listing': int(request.args['listing'])}
+        if request.args.get('user_agent'):
+            to_query['user_agent'] = request.args['user_agent']
+        if request.args.get('referer'):
+            to_query['referer'] = request.args['referer']
+        if request.args.get('proxy'):
+            to_query['proxy'] = request.args['proxy']
+
+        perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
+        return perma_uuid
+
+    @api.doc(body=submit_fields_post)
     @api.produces(['text/text'])
     def post(self):
         if flask_login.current_user.is_authenticated:
@@ -374,7 +401,7 @@ class RebuildAll(Resource):
         try:
             lookyloo.rebuild_all()
         except Exception as e:
-            return {'error': f'Unable to rebuild all captures: {e}.'}
+            return {'error': f'Unable to rebuild all captures: {e}.'}, 400
         else:
             return {'info': 'Captures successfully rebuilt.'}
 
@@ -389,7 +416,7 @@ class RebuildAllCache(Resource):
         try:
             lookyloo.rebuild_cache()
         except Exception as e:
-            return {'error': f'Unable to rebuild all the caches: {e}.'}
+            return {'error': f'Unable to rebuild all the caches: {e}.'}, 400
         else:
             return {'info': 'All caches successfully rebuilt.'}
 
@@ -406,7 +433,7 @@ class CaptureRebuildTree(Resource):
             lookyloo.remove_pickle(capture_uuid)
             lookyloo.get_crawled_tree(capture_uuid)
         except Exception as e:
-            return {'error': f'Unable to rebuild tree: {e}.'}
+            return {'error': f'Unable to rebuild tree: {e}.'}, 400
         else:
             return {'info': f'Tree {capture_uuid} successfully rebuilt.'}
 
@@ -422,6 +449,6 @@ class CaptureHide(Resource):
         try:
             lookyloo.hide_capture(capture_uuid)
         except Exception as e:
-            return {'error': f'Unable to hide the tree: {e}.'}
+            return {'error': f'Unable to hide the tree: {e}.'}, 400
         else:
             return {'info': f'Capture {capture_uuid} successfully hidden.'}
