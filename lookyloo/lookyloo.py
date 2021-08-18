@@ -516,12 +516,12 @@ class Lookyloo():
         if not redis_pipeline:
             p = self.redis.pipeline()
         else:
-            p = redis_pipeline  # type: ignore
+            p = redis_pipeline
         p.hset('lookup_dirs', uuid, str(capture_dir))
         if error_cache:
             if 'HTTP Error' not in error_cache['error']:
                 self.logger.warning(error_cache['error'])
-            p.hmset(str(capture_dir), error_cache)  # type: ignore
+            p.hmset(str(capture_dir), error_cache)
 
         if not fatal_error:
             redirects = har.initial_redirects
@@ -550,7 +550,7 @@ class Lookyloo():
                 with (capture_dir / 'parent').open() as f:
                     cache['parent'] = f.read().strip()
 
-            p.hmset(str(capture_dir), cache)  # type: ignore
+            p.hmset(str(capture_dir), cache)
         if not redis_pipeline:
             p.execute()
         # If the cache is re-created for some reason, pop from the local cache.
@@ -644,7 +644,7 @@ class Lookyloo():
 
     def _get_capture_dir(self, capture_uuid: str, /) -> Path:
         '''Use the cache to get a capture directory from a capture UUID'''
-        capture_dir: str = self.redis.hget('lookup_dirs', capture_uuid)  # type: ignore
+        capture_dir: str = self.redis.hget('lookup_dirs', capture_uuid)
         if not capture_dir:
             raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
         to_return = Path(capture_dir)
@@ -674,7 +674,7 @@ class Lookyloo():
                 query[key] = 1 if value else ''
             if isinstance(value, list):
                 query[key] = json.dumps(value)
-        p.hmset(perma_uuid, query)  # type: ignore
+        p.hmset(perma_uuid, query)
         priority = self._get_priority(source, user, authenticated)
         p.zadd('to_capture', {perma_uuid: priority})
         p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
@@ -696,7 +696,7 @@ class Lookyloo():
         if not value or not value[0]:
             return None
         uuid, score = value[0]
-        queue: str = self.redis.get(f'{uuid}_mgmt')  # type: ignore
+        queue: str = self.redis.get(f'{uuid}_mgmt')
         self.redis.sadd('ongoing', uuid)
 
         lazy_cleanup = self.redis.pipeline()
