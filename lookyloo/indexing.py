@@ -7,7 +7,8 @@ from typing import List, Tuple, Set, Dict, Optional, Iterable
 from collections import defaultdict
 import re
 
-from redis import Redis
+from redis import Redis, ConnectionPool
+from redis.connection import UnixDomainSocketConnection
 from har2tree import CrawledTree
 
 from .helpers import get_socket_path, get_public_suffix_list
@@ -16,10 +17,15 @@ from .helpers import get_socket_path, get_public_suffix_list
 class Indexing():
 
     def __init__(self) -> None:
-        self.redis: Redis = Redis(unix_socket_path=get_socket_path('indexing'), decode_responses=True)
+        self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
+                                                         path=get_socket_path('indexing'), decode_responses=True)
 
     def clear_indexes(self):
         self.redis.flushdb()
+
+    @property
+    def redis(self):
+        return Redis(connection_pool=self.redis_pool)
 
     # ###### Cookies ######
 
