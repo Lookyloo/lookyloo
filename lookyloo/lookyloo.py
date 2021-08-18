@@ -31,7 +31,8 @@ from pymisp import MISPEvent, MISPAttribute, MISPObject
 from pymisp.tools import URLObject, FileObject
 import requests
 from requests.exceptions import HTTPError
-from redis import Redis
+from redis import Redis, ConnectionPool
+from redis.connection import UnixDomainSocketConnection
 from scrapysplashwrapper import crawl
 from werkzeug.useragents import UserAgent
 
@@ -56,7 +57,8 @@ class Lookyloo():
         self.public_domain = get_config('generic', 'public_domain')
         self.taxonomies = get_taxonomies()
 
-        self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
+        self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
+                                                         path=get_socket_path('cache'), decode_responses=True)
         self.capture_dir: Path = get_homedir() / 'scraped'
         if os.environ.get('SPLASH_URL_DOCKER'):
             # In order to have a working default for the docker image, it is easier to use an environment variable
@@ -99,6 +101,10 @@ class Lookyloo():
 
         if not self.redis.exists('cache_loaded'):
             self._init_existing_dumps()
+
+    @property
+    def redis(self):
+        return Redis(connection_pool=self.redis_pool)
 
     def _get_priority(self, source: str, user: str, authenticated: bool) -> int:
         src_prio: int = self._priority['sources'][source] if source in self._priority['sources'] else -1
