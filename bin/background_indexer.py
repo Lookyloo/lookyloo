@@ -61,11 +61,12 @@ class BackgroundIndexer(AbstractManager):
                 uuid_path.parent.rename(self.discarded_captures_dir / uuid_path.parent.name)
 
     def _check_indexes(self):
+        index_redis = self.lookyloo.indexing.redis
         for cache in self.lookyloo.sorted_capture_cache():
             if self.lookyloo.is_public_instance and cache.no_index:
                 # Capture unindexed
                 continue
-            p = self.lookyloo.indexing.redis.pipeline()
+            p = index_redis.pipeline()
             p.sismember('indexed_urls', cache.uuid)
             p.sismember('indexed_body_hashes', cache.uuid)
             p.sismember('indexed_cookies', cache.uuid)

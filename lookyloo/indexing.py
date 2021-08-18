@@ -126,7 +126,7 @@ class Indexing():
         pipeline.execute()
 
     def get_hash_uuids(self, body_hash: str) -> Tuple[str, str, str]:
-        capture_uuid: str = self.redis.srandmember(f'bh|{body_hash}|captures')  # type: ignore
+        capture_uuid: str = self.redis.srandmember(f'bh|{body_hash}|captures')
         entry = self.redis.zrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, 1)[0]
         urlnode_uuid, hostnode_uuid, url = entry.split('|', 2)
         return capture_uuid, urlnode_uuid, hostnode_uuid
@@ -204,7 +204,7 @@ class Indexing():
 
     @property
     def categories(self) -> List[Tuple[str, int]]:
-        return [(c, int(score))  # type: ignore
+        return [(c, int(score))
                 for c, score in self.redis.zrevrange('categories', 0, 200, withscores=True)]
 
     def index_categories_capture(self, capture_uuid: str, categories: Iterable[str]):

@@ -656,11 +656,12 @@ class Lookyloo():
         return to_return
 
     def get_capture_status(self, capture_uuid: str, /) -> CaptureStatus:
-        if self.redis.zrank('to_capture', capture_uuid) is not None:
+        redis = self.redis  # use a single connection
+        if redis.zrank('to_capture', capture_uuid) is not None:
             return CaptureStatus.QUEUED
-        elif self.redis.hexists('lookup_dirs', capture_uuid):
+        elif redis.hexists('lookup_dirs', capture_uuid):
             return CaptureStatus.DONE
-        elif self.redis.sismember('ongoing', capture_uuid):
+        elif redis.sismember('ongoing', capture_uuid):
             return CaptureStatus.ONGOING
         return CaptureStatus.UNKNOWN
 
@@ -684,7 +685,8 @@ class Lookyloo():
 
     def process_capture_queue(self) -> Union[bool, None]:
         '''Process a query from the capture queue'''
-        if not self.redis.exists('to_capture'):
+        redis = self.redis  # use a single connection
+        if not redis.exists('to_capture'):
             return None
 
         status, message = self.splash_status()
@@ -692,18 +694,18 @@ class Lookyloo():
             self.logger.critical(f'Splash is not running, unable to process the capture queue: {message}')
             return None
 
-        value = self.redis.zpopmax('to_capture')
+        value = redis.zpopmax('to_capture')
         if not value or not value[0]:
             return None
         uuid, score = value[0]
-        queue: str = self.redis.get(f'{uuid}_mgmt')
-        self.redis.sadd('ongoing', uuid)
+        queue: str = redis.get(f'{uuid}_mgmt')
+        redis.sadd('ongoing', uuid)
 
-        lazy_cleanup = self.redis.pipeline()
+        lazy_cleanup = redis.pipeline()
         lazy_cleanup.delete(f'{uuid}_mgmt')
         lazy_cleanup.zincrby('queues', -1, queue)
 
-        to_capture: Dict[str, Union[str, int, float]] = self.redis.hgetall(uuid)
+        to_capture: Dict[str, Union[str, int, float]] = redis.hgetall(uuid)
         to_capture['perma_uuid'] = uuid
         if 'cookies' in to_capture:
             to_capture['cookies_pseudofile'] = to_capture.pop('cookies')
