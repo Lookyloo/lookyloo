@@ -555,6 +555,10 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
         cache = lookyloo.capture_cache(tree_uuid)
     except MissingUUID:
         status = lookyloo.get_capture_status(tree_uuid)
+        splash_up, splash_message = lookyloo.splash_status()
+        if not splash_up:
+            flash(f'The capture module is not reachable ({splash_message}).', 'error')
+            flash('The request will be enqueued, but capturing may take a while and require the administrator to wake up.', 'error')
         if status == CaptureStatus.UNKNOWN:
             flash(f'Unable to find this UUID ({tree_uuid}).', 'error')
             return redirect(url_for('index'))
@@ -752,11 +756,12 @@ def search():
 
 @app.route('/capture', methods=['GET', 'POST'])
 def capture_web():
-    if request.form.get('url'):
-        if flask_login.current_user.is_authenticated:
-            user = flask_login.current_user.get_id()
-        else:
-            user = src_request_ip(request)
+    if flask_login.current_user.is_authenticated:
+        user = flask_login.current_user.get_id()
+    else:
+        user = src_request_ip(request)
+
+    if request.method == 'POST' and request.form.get('url'):
         capture_query: Dict[str, Union[str, bytes, int, bool]] = {'url': request.form['url']}
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
@@ -792,6 +797,12 @@ def capture_web():
         perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         time.sleep(30)
         return redirect(url_for('tree', tree_uuid=perma_uuid))
+    elif request.method == 'GET' and request.args.get('url'):
+        url = unquote_plus(request.args['url']).strip()
+        capture_query = {'url': url}
+        perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+        return redirect(url_for('tree', tree_uuid=perma_uuid))
+
     user_agents: Dict[str, Any] = {}
     if use_own_ua:
         user_agents = get_user_agents('own_user_agents')
