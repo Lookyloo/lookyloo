@@ -43,7 +43,7 @@
     }
   },
   "hide_captures_with_error": false,
-  "archive": 180
+  "archive": 180,
   "_notes": {
     "loglevel": "(lookyloo) Can be one of the value listed here: https://docs.python.org/3/library/logging.html#levels",
     "splash_loglevel": "(Splash) INFO is *very* verbose.",
