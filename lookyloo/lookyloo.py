@@ -99,9 +99,6 @@ class Lookyloo():
         self.context = Context(self.sanejs)
         self._captures_index: Dict[str, CaptureCache] = {}
 
-        if not self.redis.exists('cache_loaded'):
-            self._init_existing_dumps()
-
     @property
     def redis(self):
         return Redis(connection_pool=self.redis_pool)
@@ -186,8 +183,6 @@ class Lookyloo():
             self._ensure_meta(capture_dir, ct)
             self._resolve_dns(ct)
             self.context.contextualize_tree(ct)
-            # Force update cache of the capture (takes care of the incomplete redirect key)
-            self._set_capture_cache(capture_dir, force=True)
             cache = self.capture_cache(capture_uuid)
             if not cache:
                 raise LookylooException(f'Broken cache for {capture_dir}')
@@ -310,13 +305,14 @@ class Lookyloo():
         remove_pickle_tree(capture_dir)
 
     def rebuild_cache(self) -> None:
-        '''Flush and rebuild the redis cache. Doesn't remove the pickles.'''
+        '''Flush and rebuild the redis cache. Doesn't remove the pickles.
+        The cached captures will be rebuild when loading the index.'''
         self.redis.flushdb()
-        self._init_existing_dumps()
 
     def rebuild_all(self) -> None:
-        '''Flush and rebuild the redis cache, and delede all the pickles.'''
-        [remove_pickle_tree(capture_dir) for capture_dir in self.capture_dirs]  # type: ignore
+        '''Flush and rebuild the redis cache, and delete all the pickles.
+        The captures will be rebuilt by the background indexer'''
+        [remove_pickle_tree(capture_dir) for capture_dir in self.capture_dir.iterdir() if capture_dir.is_dir()]  # type: ignore
         self.rebuild_cache()
 
     def get_urlnode_from_tree(self, capture_uuid: str, /, node_uuid: str) -> URLNode:
@@ -468,15 +464,9 @@ class Lookyloo():
                 to_return[event_id].update(values)
         return to_return
 
-    def _set_capture_cache(self, capture_dir: Path, force: bool=False, redis_pipeline: Optional[Redis]=None) -> None:
-        '''Populate the redis cache for a capture. Mostly used on the index page.'''
-        # NOTE: this method is called in the background indexer as a fallback.
-        if force or not self.redis.exists(str(capture_dir)):
-            # (re)build cache
-            pass
-        else:
-            return
-
+    def _set_capture_cache(self, capture_dir: Path) -> Dict[str, Any]:
+        '''Populate the redis cache for a capture. Mostly used on the index page.
+        NOTE: Doesn't require the pickle.'''
         with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
@@ -513,10 +503,7 @@ class Lookyloo():
         else:
             categories = []
 
-        if not redis_pipeline:
-            p = self.redis.pipeline()
-        else:
-            p = redis_pipeline
+        p = self.redis.pipeline()
         p.hset('lookup_dirs', uuid, str(capture_dir))
         if error_cache:
             if 'HTTP Error' not in error_cache['error']:
@@ -551,10 +538,10 @@ class Lookyloo():
                     cache['parent'] = f.read().strip()
 
             p.hmset(str(capture_dir), cache)
-        if not redis_pipeline:
-            p.execute()
+        p.execute()
         # If the cache is re-created for some reason, pop from the local cache.
         self._captures_index.pop(uuid, None)
+        return cache
 
     def hide_capture(self, capture_uuid: str, /) -> None:
         """Add the capture in the hidden pool (not shown on the front page)
@@ -580,7 +567,9 @@ class Lookyloo():
             # No captures at all on the instance
             return []
 
-        all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids if uuid in self._captures_index and not self._captures_index[uuid].incomplete_redirects]
+        all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids
+                                         if (uuid in self._captures_index
+                                             and not self._captures_index[uuid].incomplete_redirects)]
 
         captures_to_get = set(capture_uuids) - set(self._captures_index.keys())
         if captures_to_get:
@@ -593,60 +582,47 @@ class Lookyloo():
                 if not c:
                     continue
                 c = CaptureCache(c)
-                if c.incomplete_redirects:
-                    self._set_capture_cache(c.capture_dir, force=True)
-                    c = self.capture_cache(c.uuid)
                 if hasattr(c, 'timestamp'):
                     all_cache.append(c)
                     self._captures_index[c.uuid] = c
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 
+    def clear_captures_index_cache(self, uuids: Iterable[str]) -> None:
+        [self._captures_index.pop(uuid) for uuid in uuids if uuid in self._captures_index]
+
     def capture_cache(self, capture_uuid: str, /) -> Optional[CaptureCache]:
-        """Get the cache from redis.
-        NOTE: Doesn't try to build the pickle"""
+        """Get the cache from redis."""
         if capture_uuid in self._captures_index:
+            if self._captures_index[capture_uuid].incomplete_redirects:
+                # Try to rebuild the cache
+                capture_dir = self._get_capture_dir(capture_uuid)
+                cached = self._set_capture_cache(capture_dir)
+                self._captures_index[capture_uuid] = CaptureCache(cached)
             return self._captures_index[capture_uuid]
         capture_dir = self._get_capture_dir(capture_uuid)
-        cached: Dict[str, Any] = self.redis.hgetall(str(capture_dir))
-        if not cached:
-            self.logger.warning(f'No cache available for {capture_dir}.')
+        if not capture_dir:
+            self.logger.warning(f'No directory for {capture_uuid}.')
             return None
+
+        cached = self.redis.hgetall(str(capture_dir))
+        if not cached:
+            cached = self._set_capture_cache(capture_dir)
         try:
-            cc = CaptureCache(cached)
-            self._captures_index[cc.uuid] = cc
-            return cc
+            self._captures_index[capture_uuid] = CaptureCache(cached)
+            return self._captures_index[capture_uuid]
         except LookylooException as e:
             self.logger.warning(f'Cache ({capture_dir}) is invalid ({e}): {json.dumps(cached, indent=2)}')
             return None
-
-    def _init_existing_dumps(self) -> None:
-        '''Initialize the cache for all the captures'''
-        p = self.redis.pipeline()
-        for capture_dir in self.capture_dirs:
-            if capture_dir.exists():
-                self._set_capture_cache(capture_dir, redis_pipeline=p)
-        p.set('cache_loaded', 1)
-        p.execute()
-
-    @property
-    def capture_dirs(self) -> List[Path]:
-        '''Get all the capture directories, sorder from newest to oldest.'''
-        for capture_dir in self.capture_dir.iterdir():
-            if capture_dir.is_dir() and not capture_dir.iterdir():
-                # Cleanup self.capture_dir of failed runs.
-                capture_dir.rmdir()
-            if not (capture_dir / 'uuid').exists():
-                # Create uuid if missing
-                with (capture_dir / 'uuid').open('w') as f:
-                    f.write(str(uuid4()))
-        return sorted(self.capture_dir.iterdir(), reverse=True)
 
     def _get_capture_dir(self, capture_uuid: str, /) -> Path:
         '''Use the cache to get a capture directory from a capture UUID'''
         capture_dir: str = self.redis.hget('lookup_dirs', capture_uuid)
         if not capture_dir:
-            raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+            # Try in the archive
+            capture_dir = self.redis.hget('lookup_dirs_archived', capture_uuid)
+            if not capture_dir:
+                raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
         to_return = Path(capture_dir)
         if not to_return.exists():
             # The capture was removed, remove the UUID
@@ -970,8 +946,7 @@ class Lookyloo():
                 cookies = item['cookies']
                 with (dirpath / '{0:0{width}}.cookies.json'.format(i, width=width)).open('w') as _cookies:
                     json.dump(cookies, _cookies)
-
-        self._set_capture_cache(dirpath)
+        self.redis.hset('lookup_dirs', perma_uuid, str(dirpath))
         return perma_uuid
 
     def get_body_hash_investigator(self, body_hash: str, /) -> Tuple[List[Tuple[str, str]], List[Tuple[str, float]]]:

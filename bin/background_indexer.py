@@ -27,7 +27,7 @@ class BackgroundIndexer(AbstractManager):
         self._check_indexes()
 
     def _build_missing_pickles(self):
-        for uuid_path in self.lookyloo.capture_dir.glob('*/uuid'):
+        for uuid_path in sorted(self.lookyloo.capture_dir.glob('*/uuid'), reverse=True):
             if (uuid_path.parent / 'tree.pickle').exists():
                 continue
             lock_file = uuid_path.parent / 'lock'
@@ -45,15 +45,17 @@ class BackgroundIndexer(AbstractManager):
 
             with uuid_path.open() as f:
                 uuid = f.read()
+            if not self.lookyloo.redis.hexists('lookup_dirs', uuid):
+                # The capture with this UUID exists, but it is for some reason missing in lookup_dirs
+                self.lookyloo.redis.hset('lookup_dirs', uuid, str(uuid_path.parent))
+
             try:
                 self.logger.info(f'Build pickle for {uuid}: {uuid_path.parent.name}')
                 self.lookyloo.get_crawled_tree(uuid)
                 self.lookyloo.trigger_modules(uuid, auto_trigger=True)
                 self.logger.info(f'Pickle for {uuid} build.')
             except MissingUUID:
-                # The cache is not up-to-date, but the UUID definitely exists in the captures.
-                self.logger.warning(f'Unable to find {uuid}, re-triggering the cache.')
-                self.lookyloo._set_capture_cache(uuid_path.parent, force=True)
+                self.logger.warning(f'Unable to find {uuid}. That should not happen.')
             except NoValidHarFile:
                 self.logger.warning(f'Unable to build pickle for {uuid}: {uuid_path.parent.name}')
                 # The capture is not working, moving it away.
