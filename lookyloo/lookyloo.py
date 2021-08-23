@@ -619,12 +619,13 @@ class Lookyloo():
 
     def _get_capture_dir(self, capture_uuid: str, /) -> Path:
         '''Use the cache to get a capture directory from a capture UUID'''
+        capture_dir: Optional[Union[str, Path]]
         if capture_uuid in self._captures_index:
             capture_dir = self._captures_index[capture_uuid].capture_dir
             if capture_dir.exists():
                 return capture_dir
             self._captures_index.pop(capture_uuid)
-        capture_dir: str = self.redis.hget('lookup_dirs', capture_uuid)
+        capture_dir = self.redis.hget('lookup_dirs', capture_uuid)
         if capture_dir and not Path(capture_dir).exists():
             # The capture was either removed or archived, cleaning up
             self.redis.hdel('lookup_dirs', capture_uuid)
