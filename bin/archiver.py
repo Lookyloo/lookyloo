@@ -86,7 +86,7 @@ class Archiver(AbstractManager):
 
         # NOTE: Initialize recent
         recent_uuids = {}
-        for uuid_path in sorted(self.lookyloo.capture_dir.glob('*/uuid'), reverse=True):
+        for uuid_path in sorted(lookyloo.capture_dir.glob('*/uuid'), reverse=True):
             with uuid_path.open() as f:
                 uuid = f.read()
             recent_uuids[uuid] = str(uuid_path.parent)
