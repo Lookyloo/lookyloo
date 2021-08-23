@@ -21,6 +21,7 @@ class Archiver(AbstractManager):
     def __init__(self, loglevel: int=logging.INFO):
         super().__init__(loglevel)
         self.script_name = 'archiver'
+        self._load_indexes()
 
     def _to_run_forever(self):
         self._archive()
@@ -75,6 +76,20 @@ class Archiver(AbstractManager):
             lookyloo.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
             lookyloo.clear_captures_index_cache(archived_uuids.keys())
         self.logger.info('Archiving done.')
+
+    def _load_indexes(self):
+        # Initialize the lookyloo class here, no need to keep it in memory all the time.
+        lookyloo = Lookyloo()
+        # make sure archived captures dir exists
+        archived_captures_dir = lookyloo.capture_dir.parent / 'archived_captures'
+        archived_captures_dir.mkdir(parents=True, exist_ok=True)
+        for year in archived_captures_dir.iterdir():
+            for month in year.iterdir():
+                if not (month / 'index').exists():
+                    continue
+                with (month / 'index').open('r') as _f:
+                    archived_uuids = {uuid: str(month / dirname) for uuid, dirname in csv.reader(_f)}
+                lookyloo.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
 
 
 def main():
