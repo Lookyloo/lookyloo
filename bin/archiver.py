@@ -34,14 +34,16 @@ class Archiver(AbstractManager):
         archived_captures_dir.mkdir(parents=True, exist_ok=True)
         archive_interval = timedelta(days=get_config('generic', 'archive'))
         cut_time = (datetime.now() - archive_interval).date()
-        cut_time.replace(day=1)
+        cut_time = cut_time.replace(day=1)
 
         # Format:
         # { 2020: { 12: [(directory, uuid)] } }
         to_archive: Dict[int, Dict[int, List[Tuple[Path, str]]]] = defaultdict(lambda: defaultdict(list))
         for capture_path in lookyloo.capture_dir.glob('*'):
+            if not capture_path.is_dir():
+                continue
             timestamp = datetime.strptime(capture_path.name, '%Y-%m-%dT%H:%M:%S.%f')
-            if timestamp >= cut_time:
+            if timestamp.date() >= cut_time:
                 # do not archive.
                 continue
             with (capture_path / 'uuid').open() as _f:
