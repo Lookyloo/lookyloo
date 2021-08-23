@@ -83,9 +83,21 @@ class Archiver(AbstractManager):
     def _load_indexes(self):
         # Initialize the lookyloo class here, no need to keep it in memory all the time.
         lookyloo = Lookyloo()
+
+        # NOTE: Initialize recent
+        recent_uuids = {}
+        for uuid_path in sorted(self.lookyloo.capture_dir.glob('*/uuid'), reverse=True):
+            with uuid_path.open() as f:
+                uuid = f.read()
+            recent_uuids[uuid] = str(uuid_path.parent)
+        lookyloo.redis.delete('lookup_dirs')
+        lookyloo.redis.hset('lookup_dirs', mapping=recent_uuids)
+
+        # NOTE: Initialize archives
         # make sure archived captures dir exists
         archived_captures_dir = lookyloo.capture_dir.parent / 'archived_captures'
         archived_captures_dir.mkdir(parents=True, exist_ok=True)
+        lookyloo.redis.delete('lookup_dirs_archived')
         for year in archived_captures_dir.iterdir():
             for month in year.iterdir():
                 if not (month / 'index').exists():
@@ -93,7 +105,6 @@ class Archiver(AbstractManager):
                 with (month / 'index').open('r') as _f:
                     archived_uuids = {uuid: str(month / dirname) for uuid, dirname in csv.reader(_f)}
                 lookyloo.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
-                lookyloo.redis.hdel('lookup_dirs', *archived_uuids.keys())
 
 
 def main():
