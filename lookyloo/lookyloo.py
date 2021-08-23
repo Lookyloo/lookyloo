@@ -36,7 +36,7 @@ from redis.connection import UnixDomainSocketConnection
 from scrapysplashwrapper import crawl
 from werkzeug.useragents import UserAgent
 
-from .exceptions import NoValidHarFile, MissingUUID, LookylooException
+from .exceptions import NoValidHarFile, MissingUUID, LookylooException, MissingCaptureDirectory
 from .helpers import (get_homedir, get_socket_path, load_cookies, get_config,
                       safe_create_dir, get_email_template, load_pickle_tree,
                       remove_pickle_tree, get_resources_hashes, get_taxonomies, uniq_domains,
@@ -581,7 +581,11 @@ class Lookyloo():
             for c in p.execute():
                 if not c:
                     continue
-                c = CaptureCache(c)
+                try:
+                    c = CaptureCache(c)
+                except LookylooException as e:
+                    self.logger.warning(e)
+                    continue
                 if hasattr(c, 'timestamp'):
                     all_cache.append(c)
                     self._captures_index[c.uuid] = c
@@ -593,12 +597,7 @@ class Lookyloo():
 
     def capture_cache(self, capture_uuid: str, /) -> Optional[CaptureCache]:
         """Get the cache from redis."""
-        if capture_uuid in self._captures_index:
-            if self._captures_index[capture_uuid].incomplete_redirects:
-                # Try to rebuild the cache
-                capture_dir = self._get_capture_dir(capture_uuid)
-                cached = self._set_capture_cache(capture_dir)
-                self._captures_index[capture_uuid] = CaptureCache(cached)
+        if capture_uuid in self._captures_index and not self._captures_index[capture_uuid].incomplete_redirects:
             return self._captures_index[capture_uuid]
         capture_dir = self._get_capture_dir(capture_uuid)
         if not capture_dir:
@@ -611,13 +610,25 @@ class Lookyloo():
         try:
             self._captures_index[capture_uuid] = CaptureCache(cached)
             return self._captures_index[capture_uuid]
+        except MissingCaptureDirectory:
+            self.logger.warning(f'Cache ({capture_dir}) is missing.')
+            return None
         except LookylooException as e:
             self.logger.warning(f'Cache ({capture_dir}) is invalid ({e}): {json.dumps(cached, indent=2)}')
             return None
 
     def _get_capture_dir(self, capture_uuid: str, /) -> Path:
         '''Use the cache to get a capture directory from a capture UUID'''
+        if capture_uuid in self._captures_index:
+            capture_dir = self._captures_index[capture_uuid].capture_dir
+            if capture_dir.exists():
+                return capture_dir
+            self._captures_index.pop(capture_uuid)
         capture_dir: str = self.redis.hget('lookup_dirs', capture_uuid)
+        if capture_dir and not Path(capture_dir).exists():
+            # The capture was either removed or archived, cleaning up
+            self.redis.hdel('lookup_dirs', capture_uuid)
+            capture_dir = None
         if not capture_dir:
             # Try in the archive
             capture_dir = self.redis.hget('lookup_dirs_archived', capture_uuid)
@@ -626,7 +637,7 @@ class Lookyloo():
         to_return = Path(capture_dir)
         if not to_return.exists():
             # The capture was removed, remove the UUID
-            self.redis.hdel('lookup_dirs', capture_uuid)
+            self.redis.hdel('lookup_dirs_archived', capture_uuid)
             self.logger.warning(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
             raise NoValidHarFile(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
         return to_return

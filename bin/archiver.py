@@ -45,6 +45,11 @@ class Archiver(AbstractManager):
             with (capture_path / 'uuid').open() as _f:
                 uuid = _f.read().strip()
             to_archive[timestamp.year][timestamp.month].append((capture_path, uuid))
+            self.logger.info(f'Archiving {capture_path}.')
+
+        if not to_archive:
+            self.logger.info('Nothing to archive.')
+            return
 
         archived_uuids = {}
         for year, month_captures in to_archive.items():

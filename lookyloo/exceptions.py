@@ -24,3 +24,7 @@ class ConfigError(LookylooException):
 
 class MissingUUID(LookylooException):
     pass
+
+
+class MissingCaptureDirectory(LookylooException):
+    pass

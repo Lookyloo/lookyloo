@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from .exceptions import LookylooException
+from .exceptions import LookylooException, MissingCaptureDirectory
 
 
 class CaptureCache():
@@ -22,6 +22,8 @@ class CaptureCache():
             self.url: str = cache_entry['url']
             self.redirects: List[str] = json.loads(cache_entry['redirects'])
             self.capture_dir: Path = Path(cache_entry['capture_dir'])
+            if not self.capture_dir.exists():
+                raise MissingCaptureDirectory(f'The capture {self.uuid} does not exists in {self.capture_dir}.')
         elif not cache_entry.get('error'):
             missing = set(__default_cache_keys) - set(cache_entry.keys())
             raise LookylooException(f'Missing keys ({missing}), no error message. It should not happen.')
