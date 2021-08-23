@@ -54,7 +54,7 @@ class Archiver(AbstractManager):
         archived_uuids = {}
         for year, month_captures in to_archive.items():
             for month, captures in month_captures.items():
-                dest_dir = archived_captures_dir / str(year) / str(month)
+                dest_dir = archived_captures_dir / str(year) / f'{month:02}'
                 dest_dir.mkdir(parents=True, exist_ok=True)
                 if (dest_dir / 'index').exists():
                     with (dest_dir / 'index').open('r') as _f:
@@ -74,6 +74,7 @@ class Archiver(AbstractManager):
             lookyloo.redis.hdel('lookup_dirs', *archived_uuids.keys())
             lookyloo.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
             lookyloo.clear_captures_index_cache(archived_uuids.keys())
+        self.logger.info('Archiving done.')
 
 
 def main():
