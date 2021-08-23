@@ -90,6 +90,7 @@ class Archiver(AbstractManager):
                 with (month / 'index').open('r') as _f:
                     archived_uuids = {uuid: str(month / dirname) for uuid, dirname in csv.reader(_f)}
                 lookyloo.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
+                lookyloo.redis.hdel('lookup_dirs', *archived_uuids.keys())
 
 
 def main():
