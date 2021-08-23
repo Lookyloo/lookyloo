@@ -33,7 +33,8 @@ class Archiver(AbstractManager):
         archived_captures_dir = lookyloo.capture_dir.parent / 'archived_captures'
         archived_captures_dir.mkdir(parents=True, exist_ok=True)
         archive_interval = timedelta(days=get_config('generic', 'archive'))
-        cut_time = datetime.now() - archive_interval
+        cut_time = (datetime.now() - archive_interval).date()
+        cut_time.replace(day=1)
 
         # Format:
         # { 2020: { 12: [(directory, uuid)] } }
