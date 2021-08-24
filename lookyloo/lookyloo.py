@@ -3,8 +3,8 @@
 
 import os
 import base64
-from collections import defaultdict, Counter
-from datetime import datetime, date, timedelta
+from collections import defaultdict
+from datetime import datetime, date
 from email.message import EmailMessage
 from io import BufferedIOBase, BytesIO
 import ipaddress
@@ -106,37 +106,32 @@ class Lookyloo():
         today = date.today().isoformat()
         self.redis.zincrby(f'user_agents|{today}', 1, f'{remote_ip}|{user_agent}')
 
-    def build_ua_file(self) -> None:
-        '''Build a file in a format compatible with the capture page'''
-        yesterday = (date.today() - timedelta(days=1))
-        self_generated_ua_file_path = get_homedir() / 'own_user_agents' / str(yesterday.year) / f'{yesterday.month:02}'
-        safe_create_dir(self_generated_ua_file_path)
-        self_generated_ua_file = self_generated_ua_file_path / f'{yesterday.isoformat()}.json'
-        if self_generated_ua_file.exists():
-            return
-        entries = self.redis.zrevrange(f'user_agents|{yesterday.isoformat()}', 0, -1)
-        if not entries:
-            return
-
-        to_store: Dict[str, Any] = {'by_frequency': []}
-        uas = Counter([entry.split('|', 1)[1] for entry in entries])
-        for ua, _ in uas.most_common():
-            parsed_ua = UserAgent(ua)
-            if not parsed_ua.platform or not parsed_ua.browser:
-                continue
-            if parsed_ua.platform not in to_store:
-                to_store[parsed_ua.platform] = {}
-            if f'{parsed_ua.browser} {parsed_ua.version}' not in to_store[parsed_ua.platform]:
-                to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'] = []
-            to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'].append(parsed_ua.string)
-            to_store['by_frequency'].append({'os': parsed_ua.platform,
-                                             'browser': f'{parsed_ua.browser} {parsed_ua.version}',
-                                             'useragent': parsed_ua.string})
-        with self_generated_ua_file.open('w') as f:
-            json.dump(to_store, f, indent=2)
-
-        # Remove the UA / IP mapping.
-        self.redis.delete(f'user_agents|{yesterday.isoformat()}')
+    def _get_capture_dir(self, capture_uuid: str, /) -> Path:
+        '''Use the cache to get a capture directory from a capture UUID'''
+        capture_dir: Optional[Union[str, Path]]
+        if capture_uuid in self._captures_index:
+            capture_dir = self._captures_index[capture_uuid].capture_dir
+            if capture_dir.exists():
+                return capture_dir
+            self.redis.delete(capture_dir)
+            self._captures_index.pop(capture_uuid)
+        capture_dir = self.redis.hget('lookup_dirs', capture_uuid)
+        if capture_dir and not Path(capture_dir).exists():
+            # The capture was either removed or archived, cleaning up
+            self.redis.hdel('lookup_dirs', capture_uuid)
+            capture_dir = None
+        if not capture_dir:
+            # Try in the archive
+            capture_dir = self.redis.hget('lookup_dirs_archived', capture_uuid)
+            if not capture_dir:
+                raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
+        to_return = Path(capture_dir)
+        if not to_return.exists():
+            # The capture was removed, remove the UUID
+            self.redis.hdel('lookup_dirs_archived', capture_uuid)
+            self.logger.warning(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
+            raise NoValidHarFile(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
+        return to_return
 
     def _cache_capture(self, capture_uuid: str, /) -> CrawledTree:
         '''Generate the pickle, set the cache, add capture in the indexes'''
@@ -196,6 +191,85 @@ class Lookyloo():
         finally:
             lock_file.unlink(missing_ok=True)
         return ct
+
+    def _set_capture_cache(self, capture_dir: Path) -> Dict[str, Any]:
+        '''Populate the redis cache for a capture. Mostly used on the index page.
+        NOTE: Doesn't require the pickle.'''
+        with (capture_dir / 'uuid').open() as f:
+            uuid = f.read().strip()
+
+        har_files = sorted(capture_dir.glob('*.har'))
+
+        error_cache: Dict[str, str] = {}
+        if (capture_dir / 'error.txt').exists():
+            # Something went wrong
+            with (capture_dir / 'error.txt').open() as _error:
+                content = _error.read()
+                try:
+                    error_to_cache = json.loads(content)
+                    if isinstance(error_to_cache, dict) and error_to_cache.get('details'):
+                        error_to_cache = error_to_cache.get('details')
+                except json.decoder.JSONDecodeError:
+                    # old format
+                    error_to_cache = content
+                error_cache['error'] = f'The capture {capture_dir.name} has an error: {error_to_cache}'
+
+        fatal_error = False
+        if har_files:
+            try:
+                har = HarFile(har_files[0], uuid)
+            except Har2TreeError as e:
+                error_cache['error'] = str(e)
+                fatal_error = True
+        else:
+            error_cache['error'] = f'No har files in {capture_dir.name}'
+            fatal_error = True
+
+        if (capture_dir / 'categories').exists():
+            with (capture_dir / 'categories').open() as _categories:
+                categories = [c.strip() for c in _categories.readlines()]
+        else:
+            categories = []
+
+        p = self.redis.pipeline()
+        p.hset('lookup_dirs', uuid, str(capture_dir))
+        if error_cache:
+            if 'HTTP Error' not in error_cache['error']:
+                self.logger.warning(error_cache['error'])
+            p.hmset(str(capture_dir), error_cache)
+
+        if not fatal_error:
+            redirects = har.initial_redirects
+            incomplete_redirects = False
+            if redirects and har.need_tree_redirects:
+                # load tree from disk, get redirects
+                ct = load_pickle_tree(capture_dir)
+                if ct:
+                    redirects = ct.redirects
+                else:
+                    # Pickle not available
+                    incomplete_redirects = True
+
+            cache: Dict[str, Union[str, int]] = {'uuid': uuid,
+                                                 'title': har.initial_title,
+                                                 'timestamp': har.initial_start_time,
+                                                 'url': har.root_url,
+                                                 'redirects': json.dumps(redirects),
+                                                 'categories': json.dumps(categories),
+                                                 'capture_dir': str(capture_dir),
+                                                 'incomplete_redirects': 1 if incomplete_redirects else 0}
+            if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
+                cache['no_index'] = 1
+
+            if (capture_dir / 'parent').exists():  # The capture was initiated from an other one
+                with (capture_dir / 'parent').open() as f:
+                    cache['parent'] = f.read().strip()
+
+            p.hmset(str(capture_dir), cache)
+        p.execute()
+        # If the cache is re-created for some reason, pop from the local cache.
+        self._captures_index.pop(uuid, None)
+        return cache
 
     def _build_cname_chain(self, known_cnames: Dict[str, Optional[str]], hostname) -> List[str]:
         '''Returns a list of CNAMEs starting from one hostname.
@@ -257,17 +331,6 @@ class Lookyloo():
             json.dump(host_cnames, f)
         with ips_path.open('w') as f:
             json.dump(host_ips, f)
-        return ct
-
-    def get_crawled_tree(self, capture_uuid: str, /) -> CrawledTree:
-        '''Get the generated tree in ETE Toolkit format.
-        Loads the pickle if it exists, creates it otherwise.'''
-        capture_dir = self._get_capture_dir(capture_uuid)
-        ct = load_pickle_tree(capture_dir)
-        if not ct:
-            ct = self._cache_capture(capture_uuid)
-        if not ct:
-            raise NoValidHarFile(f'Unable to get tree from {capture_dir}')
         return ct
 
     def add_context(self, capture_uuid: str, /, urlnode_uuid: str, *, ressource_hash: str,
@@ -449,85 +512,6 @@ class Lookyloo():
                 to_return[event_id].update(values)
         return to_return
 
-    def _set_capture_cache(self, capture_dir: Path) -> Dict[str, Any]:
-        '''Populate the redis cache for a capture. Mostly used on the index page.
-        NOTE: Doesn't require the pickle.'''
-        with (capture_dir / 'uuid').open() as f:
-            uuid = f.read().strip()
-
-        har_files = sorted(capture_dir.glob('*.har'))
-
-        error_cache: Dict[str, str] = {}
-        if (capture_dir / 'error.txt').exists():
-            # Something went wrong
-            with (capture_dir / 'error.txt').open() as _error:
-                content = _error.read()
-                try:
-                    error_to_cache = json.loads(content)
-                    if isinstance(error_to_cache, dict) and error_to_cache.get('details'):
-                        error_to_cache = error_to_cache.get('details')
-                except json.decoder.JSONDecodeError:
-                    # old format
-                    error_to_cache = content
-                error_cache['error'] = f'The capture {capture_dir.name} has an error: {error_to_cache}'
-
-        fatal_error = False
-        if har_files:
-            try:
-                har = HarFile(har_files[0], uuid)
-            except Har2TreeError as e:
-                error_cache['error'] = str(e)
-                fatal_error = True
-        else:
-            error_cache['error'] = f'No har files in {capture_dir.name}'
-            fatal_error = True
-
-        if (capture_dir / 'categories').exists():
-            with (capture_dir / 'categories').open() as _categories:
-                categories = [c.strip() for c in _categories.readlines()]
-        else:
-            categories = []
-
-        p = self.redis.pipeline()
-        p.hset('lookup_dirs', uuid, str(capture_dir))
-        if error_cache:
-            if 'HTTP Error' not in error_cache['error']:
-                self.logger.warning(error_cache['error'])
-            p.hmset(str(capture_dir), error_cache)
-
-        if not fatal_error:
-            redirects = har.initial_redirects
-            incomplete_redirects = False
-            if redirects and har.need_tree_redirects:
-                # load tree from disk, get redirects
-                ct = load_pickle_tree(capture_dir)
-                if ct:
-                    redirects = ct.redirects
-                else:
-                    # Pickle not available
-                    incomplete_redirects = True
-
-            cache: Dict[str, Union[str, int]] = {'uuid': uuid,
-                                                 'title': har.initial_title,
-                                                 'timestamp': har.initial_start_time,
-                                                 'url': har.root_url,
-                                                 'redirects': json.dumps(redirects),
-                                                 'categories': json.dumps(categories),
-                                                 'capture_dir': str(capture_dir),
-                                                 'incomplete_redirects': 1 if incomplete_redirects else 0}
-            if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
-                cache['no_index'] = 1
-
-            if (capture_dir / 'parent').exists():  # The capture was initiated from an other one
-                with (capture_dir / 'parent').open() as f:
-                    cache['parent'] = f.read().strip()
-
-            p.hmset(str(capture_dir), cache)
-        p.execute()
-        # If the cache is re-created for some reason, pop from the local cache.
-        self._captures_index.pop(uuid, None)
-        return cache
-
     def hide_capture(self, capture_uuid: str, /) -> None:
         """Add the capture in the hidden pool (not shown on the front page)
         NOTE: it won't remove the correlations until they are rebuilt.
@@ -599,32 +583,16 @@ class Lookyloo():
             self.logger.warning(f'Cache ({capture_dir}) is invalid ({e}): {json.dumps(cached, indent=2)}')
             return None
 
-    def _get_capture_dir(self, capture_uuid: str, /) -> Path:
-        '''Use the cache to get a capture directory from a capture UUID'''
-        capture_dir: Optional[Union[str, Path]]
-        if capture_uuid in self._captures_index:
-            capture_dir = self._captures_index[capture_uuid].capture_dir
-            if capture_dir.exists():
-                return capture_dir
-            self.redis.delete(capture_dir)
-            self._captures_index.pop(capture_uuid)
-        capture_dir = self.redis.hget('lookup_dirs', capture_uuid)
-        if capture_dir and not Path(capture_dir).exists():
-            # The capture was either removed or archived, cleaning up
-            self.redis.hdel('lookup_dirs', capture_uuid)
-            capture_dir = None
-        if not capture_dir:
-            # Try in the archive
-            capture_dir = self.redis.hget('lookup_dirs_archived', capture_uuid)
-            if not capture_dir:
-                raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
-        to_return = Path(capture_dir)
-        if not to_return.exists():
-            # The capture was removed, remove the UUID
-            self.redis.hdel('lookup_dirs_archived', capture_uuid)
-            self.logger.warning(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
-            raise NoValidHarFile(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
-        return to_return
+    def get_crawled_tree(self, capture_uuid: str, /) -> CrawledTree:
+        '''Get the generated tree in ETE Toolkit format.
+        Loads the pickle if it exists, creates it otherwise.'''
+        capture_dir = self._get_capture_dir(capture_uuid)
+        ct = load_pickle_tree(capture_dir)
+        if not ct:
+            ct = self._cache_capture(capture_uuid)
+        if not ct:
+            raise NoValidHarFile(f'Unable to get tree from {capture_dir}')
+        return ct
 
     def get_capture_status(self, capture_uuid: str, /) -> CaptureStatus:
         redis = self.redis  # use a single connection

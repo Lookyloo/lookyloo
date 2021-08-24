@@ -103,7 +103,7 @@ Run the following command (assuming you run the code from the clonned repository
 
 
 @lru_cache(64)
-def get_capture_dir() -> Path:
+def get_captures_dir() -> Path:
     capture_dir = get_homedir() / 'scraped'
     safe_create_dir(capture_dir)
     return capture_dir
@@ -365,13 +365,15 @@ def get_useragent_for_requests():
 
 
 def reload_uuids_index() -> None:
-    recent_uuids = {}
-    for uuid_path in sorted(get_capture_dir().glob('*/uuid'), reverse=True):
+    recent_uuids: Dict[str, str] = {}
+    for uuid_path in sorted(get_captures_dir().glob('*/uuid'), reverse=True):
         with uuid_path.open() as f:
             uuid = f.read()
         recent_uuids[uuid] = str(uuid_path.parent)
+    if not recent_uuids:
+        return None
     r = Redis(unix_socket_path=get_socket_path('cache'))
     p = r.pipeline()
     p.delete('lookup_dirs')
-    p.hset('lookup_dirs', mapping=recent_uuids)
+    p.hset('lookup_dirs', mapping=recent_uuids)  # type: ignore
     p.execute()

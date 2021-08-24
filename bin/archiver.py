@@ -25,7 +25,7 @@ class Archiver(AbstractManager):
         self.redis = Redis(unix_socket_path=get_socket_path('cache'))
 
         # make sure archived captures dir exists
-        self.archived_captures_dir = get_homedir / 'archived_captures'
+        self.archived_captures_dir = get_homedir() / 'archived_captures'
         self.archived_captures_dir.mkdir(parents=True, exist_ok=True)
 
         self._load_archives()
@@ -78,8 +78,8 @@ class Archiver(AbstractManager):
 
         if archived_uuids:
             p = self.redis.pipeline()
-            p.redis.hdel('lookup_dirs', *archived_uuids.keys())
-            p.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
+            p.hdel('lookup_dirs', *archived_uuids.keys())
+            p.hmset('lookup_dirs_archived', archived_uuids)  # type: ignore
             p.execute()
         self.logger.info('Archiving done.')
 
@@ -91,8 +91,8 @@ class Archiver(AbstractManager):
                 if not (month / 'index').exists():
                     continue
                 with (month / 'index').open('r') as _f:
-                    archived_uuids = {uuid: str(month / dirname) for uuid, dirname in csv.reader(_f)}
-                self.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
+                    archived_uuids: Dict[str, str] = {uuid: str(month / dirname) for uuid, dirname in csv.reader(_f)}
+                self.redis.hmset('lookup_dirs_archived', archived_uuids)  # type: ignore
 
 
 def main():

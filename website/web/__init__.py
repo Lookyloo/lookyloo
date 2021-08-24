@@ -21,7 +21,7 @@ from werkzeug.security import check_password_hash
 
 from pymisp import MISPEvent, MISPServerError
 
-from lookyloo.helpers import (update_user_agents, get_user_agents, get_config,
+from lookyloo.helpers import (get_user_agents, get_config,
                               get_taxonomies, load_cookies, CaptureStatus)
 from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
@@ -679,10 +679,6 @@ def index():
     if request.method == 'HEAD':
         # Just returns ack if the webserver is running
         return 'Ack'
-    if use_own_ua:
-        lookyloo.build_ua_file()
-    else:
-        update_user_agents()
     show_error, category = get_index_params(request)
     return index_generic(show_error=show_error)
 

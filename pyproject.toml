@@ -32,6 +32,7 @@ rebuild_caches = "bin.rebuild_caches:main"
 update = "bin.update:main"
 background_indexer = "bin.background_indexer:main"
 archiver = "bin.archiver:main"
+processing = "bin.background_processing:main"
 
 
 [tool.poetry.dependencies]
