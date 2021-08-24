@@ -40,7 +40,7 @@ from .exceptions import NoValidHarFile, MissingUUID, LookylooException, MissingC
 from .helpers import (get_homedir, get_socket_path, load_cookies, get_config,
                       safe_create_dir, get_email_template, load_pickle_tree,
                       remove_pickle_tree, get_resources_hashes, get_taxonomies, uniq_domains,
-                      CaptureStatus, try_make_file)
+                      CaptureStatus, try_make_file, get_captures_dir)
 from .modules import VirusTotal, SaneJavaScript, PhishingInitiative, MISP, UniversalWhois, UrlScan
 from .capturecache import CaptureCache
 from .context import Context
@@ -59,7 +59,7 @@ class Lookyloo():
 
         self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
                                                          path=get_socket_path('cache'), decode_responses=True)
-        self.capture_dir: Path = get_homedir() / 'scraped'
+        self.capture_dir: Path = get_captures_dir()
         if os.environ.get('SPLASH_URL_DOCKER'):
             # In order to have a working default for the docker image, it is easier to use an environment variable
             self.splash_url: str = os.environ['SPLASH_URL_DOCKER']
@@ -68,8 +68,6 @@ class Lookyloo():
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
 
         self._priority = get_config('generic', 'priority')
-
-        safe_create_dir(self.capture_dir)
 
         # Initialize 3rd party components
         self.pi = PhishingInitiative(get_config('modules', 'PhishingInitiative'))
@@ -102,19 +100,6 @@ class Lookyloo():
     @property
     def redis(self):
         return Redis(connection_pool=self.redis_pool)
-
-    def _get_priority(self, source: str, user: str, authenticated: bool) -> int:
-        src_prio: int = self._priority['sources'][source] if source in self._priority['sources'] else -1
-        if not authenticated:
-            usr_prio = self._priority['users']['_default_anon']
-            # reduce priority for anonymous users making lots of captures
-            queue_size = self.redis.zscore('queues', f'{source}|{authenticated}|{user}')
-            if queue_size is None:
-                queue_size = 0
-            usr_prio -= int(queue_size / 10)
-        else:
-            usr_prio = self._priority['users'][user] if self._priority['users'].get(user) else self._priority['users']['_default_auth']
-        return src_prio + usr_prio
 
     def cache_user_agents(self, user_agent: str, remote_ip: str) -> None:
         '''Cache the useragents of the visitors'''
@@ -592,9 +577,6 @@ class Lookyloo():
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 
-    def clear_captures_index_cache(self, uuids: Iterable[str]) -> None:
-        [self._captures_index.pop(uuid) for uuid in uuids if uuid in self._captures_index]
-
     def capture_cache(self, capture_uuid: str, /) -> Optional[CaptureCache]:
         """Get the cache from redis."""
         if capture_uuid in self._captures_index and not self._captures_index[capture_uuid].incomplete_redirects:
@@ -653,6 +635,19 @@ class Lookyloo():
         elif redis.sismember('ongoing', capture_uuid):
             return CaptureStatus.ONGOING
         return CaptureStatus.UNKNOWN
+
+    def _get_priority(self, source: str, user: str, authenticated: bool) -> int:
+        src_prio: int = self._priority['sources'][source] if source in self._priority['sources'] else -1
+        if not authenticated:
+            usr_prio = self._priority['users']['_default_anon']
+            # reduce priority for anonymous users making lots of captures
+            queue_size = self.redis.zscore('queues', f'{source}|{authenticated}|{user}')
+            if queue_size is None:
+                queue_size = 0
+            usr_prio -= int(queue_size / 10)
+        else:
+            usr_prio = self._priority['users'][user] if self._priority['users'].get(user) else self._priority['users']['_default_auth']
+        return src_prio + usr_prio
 
     def enqueue_capture(self, query: MutableMapping[str, Any], source: str, user: str, authenticated: bool) -> str:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''

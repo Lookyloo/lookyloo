@@ -8,9 +8,10 @@ import logging
 from typing import Dict, List, Tuple
 from pathlib import Path
 
+from redis import Redis
+
 from lookyloo.abstractmanager import AbstractManager
-from lookyloo.lookyloo import Lookyloo
-from lookyloo.helpers import get_config
+from lookyloo.helpers import get_config, get_homedir, get_socket_path, get_captures_dir
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO, datefmt='%I:%M:%S')
@@ -21,17 +22,18 @@ class Archiver(AbstractManager):
     def __init__(self, loglevel: int=logging.INFO):
         super().__init__(loglevel)
         self.script_name = 'archiver'
-        self._load_indexes()
+        self.redis = Redis(unix_socket_path=get_socket_path('cache'))
+
+        # make sure archived captures dir exists
+        self.archived_captures_dir = get_homedir / 'archived_captures'
+        self.archived_captures_dir.mkdir(parents=True, exist_ok=True)
+
+        self._load_archives()
 
     def _to_run_forever(self):
         self._archive()
 
     def _archive(self):
-        # Initialize the lookyloo class here, no need to keep it in memory all the time.
-        lookyloo = Lookyloo()
-        # make sure archived captures dir exists
-        archived_captures_dir = lookyloo.capture_dir.parent / 'archived_captures'
-        archived_captures_dir.mkdir(parents=True, exist_ok=True)
         archive_interval = timedelta(days=get_config('generic', 'archive'))
         cut_time = (datetime.now() - archive_interval).date()
         cut_time = cut_time.replace(day=1)
@@ -39,7 +41,7 @@ class Archiver(AbstractManager):
         # Format:
         # { 2020: { 12: [(directory, uuid)] } }
         to_archive: Dict[int, Dict[int, List[Tuple[Path, str]]]] = defaultdict(lambda: defaultdict(list))
-        for capture_path in lookyloo.capture_dir.glob('*'):
+        for capture_path in get_captures_dir().glob('*'):
             if not capture_path.is_dir():
                 continue
             timestamp = datetime.strptime(capture_path.name, '%Y-%m-%dT%H:%M:%S.%f')
@@ -58,7 +60,7 @@ class Archiver(AbstractManager):
         archived_uuids = {}
         for year, month_captures in to_archive.items():
             for month, captures in month_captures.items():
-                dest_dir = archived_captures_dir / str(year) / f'{month:02}'
+                dest_dir = self.archived_captures_dir / str(year) / f'{month:02}'
                 dest_dir.mkdir(parents=True, exist_ok=True)
                 if (dest_dir / 'index').exists():
                     with (dest_dir / 'index').open('r') as _f:
@@ -75,36 +77,22 @@ class Archiver(AbstractManager):
                         index_writer.writerow([uuid, dirname])
 
         if archived_uuids:
-            lookyloo.redis.hdel('lookup_dirs', *archived_uuids.keys())
-            lookyloo.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
-            lookyloo.clear_captures_index_cache(archived_uuids.keys())
+            p = self.redis.pipeline()
+            p.redis.hdel('lookup_dirs', *archived_uuids.keys())
+            p.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
+            p.execute()
         self.logger.info('Archiving done.')
 
-    def _load_indexes(self):
-        # Initialize the lookyloo class here, no need to keep it in memory all the time.
-        lookyloo = Lookyloo()
-
-        # NOTE: Initialize recent
-        recent_uuids = {}
-        for uuid_path in sorted(lookyloo.capture_dir.glob('*/uuid'), reverse=True):
-            with uuid_path.open() as f:
-                uuid = f.read()
-            recent_uuids[uuid] = str(uuid_path.parent)
-        lookyloo.redis.delete('lookup_dirs')
-        lookyloo.redis.hset('lookup_dirs', mapping=recent_uuids)
-
-        # NOTE: Initialize archives
-        # make sure archived captures dir exists
-        archived_captures_dir = lookyloo.capture_dir.parent / 'archived_captures'
-        archived_captures_dir.mkdir(parents=True, exist_ok=True)
-        lookyloo.redis.delete('lookup_dirs_archived')
-        for year in archived_captures_dir.iterdir():
+    def _load_archives(self):
+        # Initialize archives
+        self.redis.delete('lookup_dirs_archived')
+        for year in self.archived_captures_dir.iterdir():
             for month in year.iterdir():
                 if not (month / 'index').exists():
                     continue
                 with (month / 'index').open('r') as _f:
                     archived_uuids = {uuid: str(month / dirname) for uuid, dirname in csv.reader(_f)}
-                lookyloo.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
+                self.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
 
 
 def main():

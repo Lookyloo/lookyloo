@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from subprocess import run, Popen
-from lookyloo.helpers import get_homedir, get_config
+from lookyloo.helpers import get_homedir, get_config, reload_uuids_index
 
 
 def main():
@@ -12,8 +12,11 @@ def main():
     p = run(['run_backend', '--start'])
     p.check_returncode()
     print('done.')
+    print('Reload UUIDs index...')
+    reload_uuids_index()
+    print('done.')
     print('Start asynchronous ingestor...')
-    for i in range(get_config('generic', 'async_capture_processes')):
+    for _ in range(get_config('generic', 'async_capture_processes')):
         Popen(['async_capture'])
     print('done.')
     print('Start background indexer...')
