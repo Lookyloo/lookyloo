@@ -560,7 +560,7 @@ class Lookyloo():
             return None
 
         cached = self.redis.hgetall(str(capture_dir))
-        if not cached:
+        if not cached or cached.get('incomplete_redirects') == '1':
             cached = self._set_capture_cache(capture_dir)
         try:
             self._captures_index[capture_uuid] = CaptureCache(cached)
