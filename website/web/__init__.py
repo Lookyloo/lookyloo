@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from io import BytesIO, StringIO
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 import json
 import http
 import calendar
@@ -21,13 +21,14 @@ from werkzeug.security import check_password_hash
 
 from pymisp import MISPEvent, MISPServerError
 
-from lookyloo.helpers import (get_user_agents, get_config,
-                              get_taxonomies, load_cookies, CaptureStatus)
+from lookyloo.helpers import (get_user_agents, get_config, get_taxonomies, load_cookies,
+                              CaptureStatus, splash_status, get_capture_status)
 from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 
 from .proxied import ReverseProxied
-from .helpers import src_request_ip, User, load_user_from_request, build_users_table, get_secret_key, sri_load
+from .helpers import (src_request_ip, User, load_user_from_request, build_users_table,
+                      get_secret_key, sri_load)
 
 app: Flask = Flask(__name__)
 app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore
@@ -157,18 +158,20 @@ app.jinja_env.globals.update(get_sri=get_sri)
 
 @app.after_request
 def after_request(response):
-    # We keep a list user agents in order to build a list to use in the capture
-    # interface: this is the easiest way to have something up to date.
-    # The reason we also get the IP address of the client is because we
-    # count the frequency of each user agents and use it to sort them on the
-    # capture page, and we want to avoid counting the same user (same IP)
-    # multiple times in a day.
-    # The cache of IPs is deleted after the UA file is generated (see lookyloo.build_ua_file),
-    # once a day.
-    ua = request.headers.get('User-Agent')
-    real_ip = src_request_ip(request)
-    if ua:
-        lookyloo.cache_user_agents(ua, real_ip)
+    if use_own_ua:
+        # We keep a list user agents in order to build a list to use in the capture
+        # interface: this is the easiest way to have something up to date.
+        # The reason we also get the IP address of the client is because we
+        # count the frequency of each user agents and use it to sort them on the
+        # capture page, and we want to avoid counting the same user (same IP)
+        # multiple times in a day.
+        # The cache of IPs is deleted after the UA file is generated once a day.
+        # See bin/background_processing.py
+        ua = request.headers.get('User-Agent')
+        real_ip = src_request_ip(request)
+        if ua:
+            today = date.today().isoformat()
+            lookyloo.redis.zincrby(f'user_agents|{today}', 1, f'{real_ip}|{ua}')
     # Opt out of FLoC
     response.headers.set('Permissions-Policy', 'interest-cohort=()')
     return response
@@ -554,8 +557,8 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
     try:
         cache = lookyloo.capture_cache(tree_uuid)
     except MissingUUID:
-        status = lookyloo.get_capture_status(tree_uuid)
-        splash_up, splash_message = lookyloo.splash_status()
+        status = get_capture_status(tree_uuid)
+        splash_up, splash_message = splash_status()
         if not splash_up:
             flash(f'The capture module is not reachable ({splash_message}).', 'error')
             flash('The request will be enqueued, but capturing may take a while and require the administrator to wake up.', 'error')
@@ -809,7 +812,7 @@ def capture_web():
         if 'bot' not in ua['useragent'].lower():
             default_ua = ua
             break
-    splash_up, message = lookyloo.splash_status()
+    splash_up, message = splash_status()
     if not splash_up:
         flash(f'The capture module is not reachable ({message}).', 'error')
         flash('The request will be enqueued, but capturing may take a while and require the administrator to wake up.', 'error')

@@ -7,7 +7,8 @@ import json
 import traceback
 import pickle
 import pkg_resources
-from typing import List, Optional, Dict, Union, Any, Set
+from typing import List, Optional, Dict, Union, Any, Set, Tuple
+from urllib.parse import urljoin
 from io import BufferedIOBase
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -19,6 +20,8 @@ from enum import IntEnum, unique
 from har2tree import CrawledTree, HostNode, URLNode
 from redis import Redis
 from redis.exceptions import ConnectionError
+import requests
+from requests.exceptions import HTTPError
 from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
 from bs4 import BeautifulSoup  # type: ignore
 from pytaxonomies import Taxonomies
@@ -377,3 +380,38 @@ def reload_uuids_index() -> None:
     p.delete('lookup_dirs')
     p.hset('lookup_dirs', mapping=recent_uuids)  # type: ignore
     p.execute()
+
+
+def get_capture_status(capture_uuid: str, /) -> CaptureStatus:
+    r = Redis(unix_socket_path=get_socket_path('cache'))
+    if r.zrank('to_capture', capture_uuid) is not None:
+        return CaptureStatus.QUEUED
+    elif r.hexists('lookup_dirs', capture_uuid):
+        return CaptureStatus.DONE
+    elif r.sismember('ongoing', capture_uuid):
+        return CaptureStatus.ONGOING
+    return CaptureStatus.UNKNOWN
+
+
+@lru_cache(64)
+def get_splash_url() -> str:
+    if os.environ.get('SPLASH_URL_DOCKER'):
+        # In order to have a working default for the docker image, it is easier to use an environment variable
+        return os.environ['SPLASH_URL_DOCKER']
+    else:
+        return get_config('generic', 'splash_url')
+
+
+def splash_status() -> Tuple[bool, str]:
+    try:
+        splash_status = requests.get(urljoin(get_splash_url(), '_ping'))
+        splash_status.raise_for_status()
+        json_status = splash_status.json()
+        if json_status['status'] == 'ok':
+            return True, 'Splash is up'
+        else:
+            return False, str(json_status)
+    except HTTPError as http_err:
+        return False, f'HTTP error occurred: {http_err}'
+    except Exception as err:
+        return False, f'Other error occurred: {err}'

@@ -12,7 +12,8 @@ from werkzeug.security import check_password_hash
 
 from lookyloo.lookyloo import Lookyloo
 
-from .helpers import src_request_ip, load_user_from_request, build_users_table
+from .helpers import (src_request_ip, load_user_from_request, build_users_table)
+from lookyloo.helpers import splash_status, get_capture_status
 
 api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
@@ -61,7 +62,7 @@ class AuthToken(Resource):
 @api.doc(description='Get status of splash.')
 class SplashStatus(Resource):
     def get(self):
-        status, info = lookyloo.splash_status()
+        status, info = splash_status()
         return {'is_up': status, 'info': info}
 
 
@@ -70,7 +71,7 @@ class SplashStatus(Resource):
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureStatusQuery(Resource):
     def get(self, capture_uuid: str):
-        return {'status_code': lookyloo.get_capture_status(capture_uuid)}
+        return {'status_code': get_capture_status(capture_uuid)}
 
 
 @api.route('/json/<string:capture_uuid>/hostnames')
