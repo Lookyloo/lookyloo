@@ -170,18 +170,20 @@ def safe_create_dir(to_create: Path) -> None:
 
 
 def set_running(name: str) -> None:
-    r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
-    r.hset('running', name, 1)
+    r = Redis(unix_socket_path=get_socket_path('cache'), db=1)
+    r.zincrby('running', 1, name)
 
 
 def unset_running(name: str) -> None:
     r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
-    r.hdel('running', name)
+    current_running = r.zincrby('running', -1, name)
+    if int(current_running) <= 0:
+        r.zrem('running', name)
 
 
-def is_running() -> Dict[Any, Any]:
+def is_running() -> List[Tuple[str, float]]:
     r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
-    return r.hgetall('running')
+    return r.zrangebyscore('running', '-inf', '+inf', withscores=True)
 
 
 def get_socket_path(name: str) -> str:

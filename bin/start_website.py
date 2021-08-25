@@ -4,13 +4,10 @@
 import time
 import signal
 from subprocess import Popen
-from lookyloo.helpers import get_homedir, shutdown_requested, set_running, unset_running, get_socket_path, get_config
-from redis import StrictRedis
+from lookyloo.helpers import get_homedir, shutdown_requested, set_running, unset_running, get_config
 
 
 def main():
-    r = StrictRedis(unix_socket_path=get_socket_path('cache'))
-    r.delete('cache_loaded')
     website_dir = get_homedir() / 'website'
     ip = get_config('generic', 'website_listen_ip')
     port = get_config('generic', 'website_listen_port')

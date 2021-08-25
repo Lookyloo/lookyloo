@@ -12,7 +12,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union, Dict, Optional, Tuple, List
 from urllib.parse import urlsplit
-from uuid import uuid4
 
 from defang import refang  # type: ignore
 from redis import Redis
@@ -39,20 +38,13 @@ class AsyncCapture(AbstractManager):
         self.splash_url: str = get_splash_url()
         self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
 
-    def process_capture_queue(self) -> Union[bool, None]:
+    def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
-        if not self.redis.exists('to_capture'):
-            return None
-
-        status, message = splash_status()
-        if not status:
-            self.logger.critical(f'Splash is not running, unable to process the capture queue: {message}')
-            return None
-
         value: Optional[List[Tuple[str, int]]] = self.redis.zpopmax('to_capture')  # type: ignore
         if not value or not value[0]:
-            return None
-        uuid, score = value[0]
+            # The queue was consumed by an other process.
+            return
+        uuid, _score = value[0]
         queue: Optional[str] = self.redis.get(f'{uuid}_mgmt')
         self.redis.sadd('ongoing', uuid)
 
@@ -67,22 +59,20 @@ class AsyncCapture(AbstractManager):
         if 'cookies' in to_capture:
             to_capture['cookies_pseudofile'] = to_capture.pop('cookies')
 
-        status = self._capture(**to_capture)  # type: ignore
+        if self._capture(**to_capture):  # type: ignore
+            self.logger.info(f'Processed {to_capture["url"]}')
+        else:
+            self.logger.warning(f'Unable to capture {to_capture["url"]}')
         lazy_cleanup.srem('ongoing', uuid)
         lazy_cleanup.delete(uuid)
-        # make sure to expire the key if nothing was process for a while (= queues empty)
+        # make sure to expire the key if nothing was processed for a while (= queues empty)
         lazy_cleanup.expire('queues', 600)
         lazy_cleanup.execute()
-        if status:
-            self.logger.info(f'Processed {to_capture["url"]}')
-            return True
-        self.logger.warning(f'Unable to capture {to_capture["url"]}')
-        return False
 
-    def _capture(self, url: str, *, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
+    def _capture(self, url: str, *, perma_uuid: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                  depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
-                 referer: str='', proxy: str='', perma_uuid: Optional[str]=None, os: Optional[str]=None,
-                 browser: Optional[str]=None, parent: Optional[str]=None) -> Union[bool, str]:
+                 referer: str='', proxy: str='', os: Optional[str]=None,
+                 browser: Optional[str]=None, parent: Optional[str]=None) -> bool:
         '''Launch a capture'''
         url = url.strip()
         url = refang(url)
@@ -113,8 +103,6 @@ class AsyncCapture(AbstractManager):
         if int(depth) > int(get_config('generic', 'max_depth')):
             self.logger.warning(f'Not allowed to capture on a depth higher than {get_config("generic", "max_depth")}: {depth}')
             depth = int(get_config('generic', 'max_depth'))
-        if not perma_uuid:
-            perma_uuid = str(uuid4())
         self.logger.info(f'Capturing {url}')
         try:
             items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
@@ -182,12 +170,17 @@ class AsyncCapture(AbstractManager):
                 with (dirpath / '{0:0{width}}.cookies.json'.format(i, width=width)).open('w') as _cookies:
                     json.dump(cookies, _cookies)
         self.redis.hset('lookup_dirs', perma_uuid, str(dirpath))
-        return perma_uuid
+        return True
 
     def _to_run_forever(self):
-        while True:
-            url = self.process_capture_queue()
-            if url is None or shutdown_requested():
+        while self.redis.exists('to_capture'):
+            status, message = splash_status()
+            if not status:
+                self.logger.critical(f'Splash is not running, unable to process the capture queue: {message}')
+                break
+
+            self.process_capture_queue()
+            if shutdown_requested():
                 break
 
 

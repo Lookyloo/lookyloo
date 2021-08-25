@@ -3,11 +3,11 @@
 
 from lookyloo.helpers import is_running, get_socket_path
 import time
-from redis import StrictRedis
+from redis import Redis
 
 
 def main():
-    r = StrictRedis(unix_socket_path=get_socket_path('cache'), db=1)
+    r = Redis(unix_socket_path=get_socket_path('cache'), db=1)
     r.set('shutdown', 1)
     time.sleep(5)
     while True:
