@@ -41,17 +41,15 @@ class Archiver(AbstractManager):
         # Format:
         # { 2020: { 12: [(directory, uuid)] } }
         to_archive: Dict[int, Dict[int, List[Tuple[Path, str]]]] = defaultdict(lambda: defaultdict(list))
-        for capture_path in get_captures_dir().glob('*'):
-            if not capture_path.is_dir():
-                continue
-            timestamp = datetime.strptime(capture_path.name, '%Y-%m-%dT%H:%M:%S.%f')
+        for capture_uuid in get_captures_dir().glob('**/uuid'):
+            timestamp = datetime.strptime(capture_uuid.parent.name, '%Y-%m-%dT%H:%M:%S.%f')
             if timestamp.date() >= cut_time:
                 # do not archive.
                 continue
-            with (capture_path / 'uuid').open() as _f:
+            with capture_uuid.open() as _f:
                 uuid = _f.read().strip()
-            to_archive[timestamp.year][timestamp.month].append((capture_path, uuid))
-            self.logger.info(f'Archiving {capture_path}.')
+            to_archive[timestamp.year][timestamp.month].append((capture_uuid.parent, uuid))
+            self.logger.info(f'Archiving {capture_uuid.parent}.')
 
         if not to_archive:
             self.logger.info('Nothing to archive.')
@@ -78,6 +76,10 @@ class Archiver(AbstractManager):
 
         if archived_uuids:
             p = self.redis.pipeline()
+            for dir_key in self.redis.hmget('lookup_dirs', *archived_uuids.keys()):
+                # Clear cache
+                if dir_key:
+                    p.delete(dir_key)
             p.hdel('lookup_dirs', *archived_uuids.keys())
             p.hmset('lookup_dirs_archived', archived_uuids)  # type: ignore
             p.execute()
@@ -86,13 +88,10 @@ class Archiver(AbstractManager):
     def _load_archives(self):
         # Initialize archives
         self.redis.delete('lookup_dirs_archived')
-        for year in self.archived_captures_dir.iterdir():
-            for month in year.iterdir():
-                if not (month / 'index').exists():
-                    continue
-                with (month / 'index').open('r') as _f:
-                    archived_uuids: Dict[str, str] = {uuid: str(month / dirname) for uuid, dirname in csv.reader(_f)}
-                self.redis.hmset('lookup_dirs_archived', archived_uuids)  # type: ignore
+        for index in self.archived_captures_dir.glob('**/index'):
+            with index.open('r') as _f:
+                archived_uuids: Dict[str, str] = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f)}
+            self.redis.hmset('lookup_dirs_archived', archived_uuids)  # type: ignore
 
 
 def main():

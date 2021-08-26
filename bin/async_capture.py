@@ -115,7 +115,8 @@ class AsyncCapture(AbstractManager):
             self.logger.critical(f'Something went terribly wrong when capturing {url}.')
             return False
         width = len(str(len(items)))
-        dirpath = self.capture_dir / datetime.now().isoformat()
+        now = datetime.now()
+        dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / now.isoformat()
         safe_create_dir(dirpath)
 
         if os or browser:

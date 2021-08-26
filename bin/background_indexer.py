@@ -27,7 +27,7 @@ class BackgroundIndexer(AbstractManager):
         self._check_indexes()
 
     def _build_missing_pickles(self):
-        for uuid_path in sorted(self.lookyloo.capture_dir.glob('*/uuid'), reverse=True):
+        for uuid_path in sorted(self.lookyloo.capture_dir.glob('**/uuid'), reverse=True):
             if (uuid_path.parent / 'tree.pickle').exists():
                 continue
             lock_file = uuid_path.parent / 'lock'

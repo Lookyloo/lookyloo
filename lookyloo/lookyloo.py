@@ -100,6 +100,7 @@ class Lookyloo():
         if capture_dir and not Path(capture_dir).exists():
             # The capture was either removed or archived, cleaning up
             self.redis.hdel('lookup_dirs', capture_uuid)
+            self.redis.delete(capture_dir)
             capture_dir = None
         if not capture_dir:
             # Try in the archive
@@ -141,7 +142,11 @@ class Lookyloo():
             with metafile.open('w') as f:
                 json.dump(to_dump, f)
 
-        capture_dir = self._get_capture_dir(capture_uuid)
+        try:
+            capture_dir = self._get_capture_dir(capture_uuid)
+        except MissingUUID:
+            raise MissingCaptureDirectory(f'Unable to find the directory for {capture_uuid}')
+
         har_files = sorted(capture_dir.glob('*.har'))
         lock_file = capture_dir / 'lock'
         pickle_file = capture_dir / 'tree.pickle'
@@ -536,11 +541,14 @@ class Lookyloo():
                 if not directory:
                     continue
                 p.hgetall(directory)
-            for c in p.execute():
-                if not c:
-                    continue
+            for uuid, c in zip(captures_to_get, p.execute()):
                 try:
-                    c = CaptureCache(c)
+                    if not c:
+                        c = self.capture_cache(uuid)
+                        if not c:
+                            continue
+                    else:
+                        c = CaptureCache(c)
                 except LookylooException as e:
                     self.logger.warning(e)
                     continue
@@ -554,8 +562,9 @@ class Lookyloo():
         """Get the cache from redis."""
         if capture_uuid in self._captures_index and not self._captures_index[capture_uuid].incomplete_redirects:
             return self._captures_index[capture_uuid]
-        capture_dir = self._get_capture_dir(capture_uuid)
-        if not capture_dir:
+        try:
+            capture_dir = self._get_capture_dir(capture_uuid)
+        except MissingUUID:
             self.logger.warning(f'No directory for {capture_uuid}.')
             return None
 
@@ -575,7 +584,10 @@ class Lookyloo():
     def get_crawled_tree(self, capture_uuid: str, /) -> CrawledTree:
         '''Get the generated tree in ETE Toolkit format.
         Loads the pickle if it exists, creates it otherwise.'''
-        capture_dir = self._get_capture_dir(capture_uuid)
+        try:
+            capture_dir = self._get_capture_dir(capture_uuid)
+        except MissingUUID:
+            raise MissingCaptureDirectory(f'Unable to find the directory for {capture_uuid}')
         ct = load_pickle_tree(capture_dir)
         if not ct:
             ct = self._cache_capture(capture_uuid)

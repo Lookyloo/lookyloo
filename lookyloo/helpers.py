@@ -371,7 +371,7 @@ def get_useragent_for_requests():
 
 def reload_uuids_index() -> None:
     recent_uuids: Dict[str, str] = {}
-    for uuid_path in sorted(get_captures_dir().glob('*/uuid'), reverse=True):
+    for uuid_path in get_captures_dir().glob('**/uuid'):
         with uuid_path.open() as f:
             uuid = f.read()
         recent_uuids[uuid] = str(uuid_path.parent)
@@ -380,7 +380,7 @@ def reload_uuids_index() -> None:
     r = Redis(unix_socket_path=get_socket_path('cache'))
     p = r.pipeline()
     p.delete('lookup_dirs')
-    p.hset('lookup_dirs', mapping=recent_uuids)  # type: ignore
+    p.hmset('lookup_dirs', recent_uuids)  # type: ignore
     p.execute()
 
 

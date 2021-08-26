@@ -554,9 +554,8 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
     if tree_uuid == 'False':
         flash("Unable to process your request. The domain may not exist, or splash isn't started", 'error')
         return redirect(url_for('index'))
-    try:
-        cache = lookyloo.capture_cache(tree_uuid)
-    except MissingUUID:
+    cache = lookyloo.capture_cache(tree_uuid)
+    if not cache:
         status = get_capture_status(tree_uuid)
         splash_up, splash_message = splash_status()
         if not splash_up:
