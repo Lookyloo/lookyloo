@@ -4,7 +4,6 @@ import os
 import logging
 import time
 import json
-import traceback
 import pickle
 import pkg_resources
 from typing import List, Optional, Dict, Union, Any, Set, Tuple
@@ -23,14 +22,7 @@ from redis.exceptions import ConnectionError
 import requests
 from requests.exceptions import HTTPError
 from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
-from bs4 import BeautifulSoup  # type: ignore
 from pytaxonomies import Taxonomies
-
-try:
-    import cloudscraper  # type: ignore
-    HAS_CF = True
-except ImportError:
-    HAS_CF = False
 
 from .exceptions import MissingEnv, CreateDirectoryException, ConfigError
 
@@ -225,57 +217,9 @@ def long_sleep(sleep_in_sec: int, shutdown_check: int=10) -> bool:
     return True
 
 
-def update_user_agents() -> None:
-    if not HAS_CF:
-        # The website with the UAs is behind Cloudflare's anti-bot page, we need cloudscraper
-        return
-
-    today = datetime.now()
-    ua_path = get_homedir() / 'user_agents' / str(today.year) / f'{today.month:02}'
-    safe_create_dir(ua_path)
-    ua_file_name: Path = ua_path / f'{today.date().isoformat()}.json'
-    if ua_file_name.exists():
-        # Already have a UA for that day.
-        return
-    try:
-        s = cloudscraper.create_scraper()
-        r = s.get('https://techblog.willshouse.com/2012/01/03/most-common-user-agents/')
-    except Exception:
-        traceback.print_exc()
-        return
-    to_store = ua_parser(r.text)
-    with open(ua_file_name, 'w') as f:
-        json.dump(to_store, f, indent=2)
-
-
-def ua_parser(html_content: str) -> Dict[str, Any]:
-    soup = BeautifulSoup(html_content, 'html.parser')
-
-    try:
-        uas = soup.find_all('textarea')[1].text
-    except Exception:
-        traceback.print_exc()
-        return {}
-
-    to_store: Dict[str, Any] = {'by_frequency': []}
-    for ua in json.loads(uas.replace('\n', '')):
-        os = ua['system'].split(' ')[-1]
-        if os not in to_store:
-            to_store[os] = {}
-        browser = ' '.join(ua['system'].split(' ')[:-1])
-        if browser not in to_store[os]:
-            to_store[os][browser] = []
-        to_store[os][browser].append(ua['useragent'])
-        to_store['by_frequency'].append({'os': os, 'browser': browser, 'useragent': ua['useragent']})
-    return to_store
-
-
 def get_user_agents(directory: str='user_agents') -> Dict[str, Any]:
     ua_files_path = str(get_homedir() / directory / '*' / '*' / '*.json')
     paths = sorted(glob(ua_files_path), reverse=True)
-    if not paths:
-        update_user_agents()
-        paths = sorted(glob(ua_files_path), reverse=True)
     with open(paths[0]) as f:
         return json.load(f)
 
