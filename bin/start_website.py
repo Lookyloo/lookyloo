@@ -1,43 +1,40 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import time
-import signal
+import logging
+
 from subprocess import Popen
-from lookyloo.helpers import get_homedir, shutdown_requested, set_running, unset_running, get_config
+
+from lookyloo.abstractmanager import AbstractManager
+from lookyloo.helpers import get_homedir, get_config, set_running
+
+logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
+                    level=logging.INFO, datefmt='%I:%M:%S')
+
+
+class Website(AbstractManager):
+
+    def __init__(self, loglevel: int=logging.INFO):
+        super().__init__(loglevel)
+        self.script_name = 'website'
+        self.process = self._launch_website()
+        set_running(self.script_name)
+
+    def _launch_website(self):
+        website_dir = get_homedir() / 'website'
+        ip = get_config('generic', 'website_listen_ip')
+        port = get_config('generic', 'website_listen_port')
+        return Popen(['gunicorn', '-w', '10',
+                      '--graceful-timeout', '2', '--timeout', '300',
+                      '-b', f'{ip}:{port}',
+                      '--log-level', 'info',
+                      'web:app'],
+                     cwd=website_dir)
 
 
 def main():
-    website_dir = get_homedir() / 'website'
-    ip = get_config('generic', 'website_listen_ip')
-    port = get_config('generic', 'website_listen_port')
-    try:
-        p = Popen(['gunicorn', '-w', '10',
-                   '--graceful-timeout', '2', '--timeout', '300',
-                   '-b', f'{ip}:{port}',
-                   '--log-level', 'info',
-                   'web:app'],
-                  cwd=website_dir)
-        set_running('website')
-        while True:
-            if p.poll() is not None:
-                print('gunicorn stopped itself.')
-                break
-            if shutdown_requested():
-                print('"shutdown" key present in the cache database.')
-                break
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print('Website killed by user.')
-    finally:
-        print('Shutting down website.')
-        try:
-            # Killing everything if possible.
-            p.send_signal(signal.SIGWINCH)
-            p.send_signal(signal.SIGTERM)
-        except Exception:
-            pass
-        unset_running('website')
+    w = Website()
+    w.run(sleep_in_sec=10)
 
 
 if __name__ == '__main__':
