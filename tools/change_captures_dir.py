@@ -16,8 +16,8 @@ def rename_captures():
         with uuid_path.open() as f:
             uuid = f.read()
             dir_key = r.hget('lookup_dirs', uuid)
-            r.hdel('lookup_dirs', uuid)
             if dir_key:
+                r.hdel('lookup_dirs', uuid)
                 r.delete(dir_key)
         timestamp = datetime.strptime(uuid_path.parent.name, '%Y-%m-%dT%H:%M:%S.%f')
         dest_dir = capture_dir / str(timestamp.year) / f'{timestamp.month:02}'
