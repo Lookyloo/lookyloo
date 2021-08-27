@@ -18,7 +18,7 @@ from redis import Redis
 from scrapysplashwrapper import crawl
 
 from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import (shutdown_requested, splash_status, get_socket_path,
+from lookyloo.helpers import (splash_status, get_socket_path,
                               load_cookies, safe_create_dir, get_config, get_splash_url,
                               get_captures_dir)
 from lookyloo.lookyloo import Lookyloo
@@ -181,7 +181,7 @@ class AsyncCapture(AbstractManager):
                 break
 
             self.process_capture_queue()
-            if shutdown_requested():
+            if self.shutdown_requested():
                 break
 
 

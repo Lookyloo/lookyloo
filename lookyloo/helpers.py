@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import os
 import logging
-import time
 import json
 import pickle
 import pkg_resources
@@ -18,7 +17,6 @@ from enum import IntEnum, unique
 
 from har2tree import CrawledTree, HostNode, URLNode
 from redis import Redis
-from redis.exceptions import ConnectionError
 import requests
 from requests.exceptions import HTTPError
 from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
@@ -161,23 +159,6 @@ def safe_create_dir(to_create: Path) -> None:
     to_create.mkdir(parents=True, exist_ok=True)
 
 
-def set_running(name: str) -> None:
-    r = Redis(unix_socket_path=get_socket_path('cache'), db=1)
-    r.zincrby('running', 1, name)
-
-
-def unset_running(name: str) -> None:
-    r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
-    current_running = r.zincrby('running', -1, name)
-    if int(current_running) <= 0:
-        r.zrem('running', name)
-
-
-def is_running() -> List[Tuple[str, float]]:
-    r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
-    return r.zrangebyscore('running', '-inf', '+inf', withscores=True)
-
-
 def get_socket_path(name: str) -> str:
     mapping = {
         'cache': Path('cache', 'cache.sock'),
@@ -185,36 +166,6 @@ def get_socket_path(name: str) -> str:
         'storage': Path('storage', 'storage.sock'),
     }
     return str(get_homedir() / mapping[name])
-
-
-def check_running(name: str) -> bool:
-    socket_path = get_socket_path(name)
-    try:
-        r = Redis(unix_socket_path=socket_path)
-        return True if r.ping() else False
-    except ConnectionError:
-        return False
-
-
-def shutdown_requested() -> bool:
-    try:
-        r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
-        return True if r.exists('shutdown') else False
-    except ConnectionRefusedError:
-        return True
-    except ConnectionError:
-        return True
-
-
-def long_sleep(sleep_in_sec: int, shutdown_check: int=10) -> bool:
-    if shutdown_check > sleep_in_sec:
-        shutdown_check = sleep_in_sec
-    sleep_until = datetime.now() + timedelta(seconds=sleep_in_sec)
-    while sleep_until > datetime.now():
-        time.sleep(shutdown_check)
-        if shutdown_requested():
-            return False
-    return True
 
 
 def get_user_agents(directory: str='user_agents') -> Dict[str, Any]:

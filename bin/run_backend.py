@@ -1,13 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from lookyloo.helpers import get_homedir, check_running
-from subprocess import Popen
+import argparse
+import os
 import time
+
 from pathlib import Path
+from subprocess import Popen
 from typing import Optional, List, Union
 
-import argparse
+from redis import Redis
+
+from lookyloo.helpers import get_homedir, get_socket_path
+
+
+def check_running(name: str) -> bool:
+    socket_path = get_socket_path(name)
+    if not os.path.exists(socket_path):
+        return False
+    try:
+        r = Redis(unix_socket_path=socket_path)
+        return True if r.ping() else False
+    except ConnectionError:
+        return False
 
 
 def launch_cache(storage_directory: Optional[Path]=None):

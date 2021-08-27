@@ -6,7 +6,7 @@ import logging
 from subprocess import Popen
 
 from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import get_homedir, get_config, set_running
+from lookyloo.helpers import get_homedir, get_config
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO, datefmt='%I:%M:%S')
@@ -18,7 +18,7 @@ class Website(AbstractManager):
         super().__init__(loglevel)
         self.script_name = 'website'
         self.process = self._launch_website()
-        set_running(self.script_name)
+        self.set_running()
 
     def _launch_website(self):
         website_dir = get_homedir() / 'website'

@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from abc import ABC
 import logging
 import signal
+import time
 
-from .helpers import long_sleep, shutdown_requested, set_running, unset_running
+from abc import ABC
+from datetime import datetime, timedelta
+from typing import Optional, List, Tuple
+from subprocess import Popen
+
+from redis import Redis
+
+from .helpers import get_socket_path
 
 
 class AbstractManager(ABC):
@@ -17,7 +24,44 @@ class AbstractManager(ABC):
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(loglevel)
         self.logger.info(f'Initializing {self.__class__.__name__}')
-        self.process = None
+        self.process: Optional[Popen] = None
+        self.__redis = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
+
+    @staticmethod
+    def is_running() -> List[Tuple[str, float]]:
+        r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
+        return r.zrangebyscore('running', '-inf', '+inf', withscores=True)
+
+    @staticmethod
+    def force_shutdown():
+        r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
+        r.set('shutdown', 1)
+
+    def set_running(self) -> None:
+        self.__redis.zincrby('running', 1, self.script_name)
+
+    def unset_running(self) -> None:
+        current_running = self.__redis.zincrby('running', -1, self.script_name)
+        if int(current_running) <= 0:
+            self.__redis.zrem('running', self.script_name)
+
+    def long_sleep(self, sleep_in_sec: int, shutdown_check: int=10) -> bool:
+        if shutdown_check > sleep_in_sec:
+            shutdown_check = sleep_in_sec
+        sleep_until = datetime.now() + timedelta(seconds=sleep_in_sec)
+        while sleep_until > datetime.now():
+            time.sleep(shutdown_check)
+            if self.shutdown_requested():
+                return False
+        return True
+
+    def shutdown_requested(self) -> bool:
+        try:
+            return True if self.__redis.exists('shutdown') else False
+        except ConnectionRefusedError:
+            return True
+        except ConnectionError:
+            return True
 
     async def _to_run_forever_async(self) -> None:
         pass
@@ -29,7 +73,7 @@ class AbstractManager(ABC):
         self.logger.info(f'Launching {self.__class__.__name__}')
         try:
             while True:
-                if shutdown_requested():
+                if self.shutdown_requested():
                     break
                 try:
                     if self.process:
@@ -37,7 +81,7 @@ class AbstractManager(ABC):
                             self.logger.critical(f'Unable to start {self.script_name}.')
                             break
                     else:
-                        set_running(self.script_name)
+                        self.set_running()
                         self._to_run_forever()
                 except Exception:
                     self.logger.exception(f'Something went terribly wrong in {self.__class__.__name__}.')
@@ -45,8 +89,8 @@ class AbstractManager(ABC):
                     if not self.process:
                         # self.process means we run an external script, all the time,
                         # do not unset between sleep.
-                        unset_running(self.script_name)
-                if not long_sleep(sleep_in_sec):
+                        self.unset_running()
+                if not self.long_sleep(sleep_in_sec):
                     break
         except KeyboardInterrupt:
             self.logger.warning(f'{self.script_name} killed by user.')
@@ -58,5 +102,5 @@ class AbstractManager(ABC):
                     self.process.send_signal(signal.SIGTERM)
                 except Exception:
                     pass
-            unset_running(self.script_name)
+            self.unset_running()
             self.logger.info(f'Shutting down {self.__class__.__name__}')
