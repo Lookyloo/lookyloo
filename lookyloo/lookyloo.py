@@ -94,7 +94,7 @@ class Lookyloo():
             capture_dir = self._captures_index[capture_uuid].capture_dir
             if capture_dir.exists():
                 return capture_dir
-            self.redis.delete(capture_dir)
+            self.redis.delete(str(capture_dir))
             self._captures_index.pop(capture_uuid)
         capture_dir = self.redis.hget('lookup_dirs', capture_uuid)
         if capture_dir and not Path(capture_dir).exists():
