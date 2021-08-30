@@ -116,14 +116,20 @@ class Archiver(AbstractManager):
         # Initialize archives
         for index in get_captures_dir().glob('**/index'):
             with index.open('r') as _f:
-                recent_uuids: Dict[str, str] = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f)}
-            self.redis.hmset('lookup_dirs', recent_uuids)  # type: ignore
+                recent_uuids: Dict[str, str] = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
+            if recent_uuids:
+                self.redis.hmset('lookup_dirs', recent_uuids)  # type: ignore
+            else:
+                index.unlink()
 
         # Initialize archives
         for index in self.archived_captures_dir.glob('**/index'):
             with index.open('r') as _f:
-                archived_uuids: Dict[str, str] = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f)}
-            self.redis.hmset('lookup_dirs_archived', archived_uuids)  # type: ignore
+                archived_uuids: Dict[str, str] = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
+            if archived_uuids:
+                self.redis.hmset('lookup_dirs_archived', archived_uuids)  # type: ignore
+            else:
+                index.unlink()
 
 
 def main():
