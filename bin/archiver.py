@@ -57,8 +57,9 @@ class Archiver(AbstractManager):
                 current_index[_f.read().strip()] = uuid_file.parent.name
 
         if not current_index:
-            # The directory has been archived.
-            root_dir.unlink()
+            # The directory has been archived. It is probably safe to unlink, but
+            # if it's not, we will lose a whole buch of captures. Moving instead for safety.
+            root_dir.rename(get_homedir() / 'discarded_captures' / root_dir.name)
             return
 
         with index_file.open('w') as _f:
