@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lookyloo"
-version = "1.7.0"
+version = "1.8.0"
 description = "Web interface to track the trackers."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
@@ -47,10 +47,10 @@ bootstrap-flask = "^1.7.0"
 defang = "^0.5.3"
 vt-py = "^0.7.2"
 pyeupi = "^1.1"
-scrapysplashwrapper = "^1.7.0"
+scrapysplashwrapper = "^1.8"
 pysanejs = "^1.5"
-har2tree = "^1.7.1"
-pylookyloo = "^1.7"
+har2tree = "^1.8"
+pylookyloo = "^1.8"
 dnspython = "^2.1.0"
 pytaxonomies = "^1.4.1"
 pymisp = {version = "^2.4.148", extras = ["url"]}
