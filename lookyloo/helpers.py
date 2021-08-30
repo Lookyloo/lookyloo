@@ -264,21 +264,6 @@ def get_useragent_for_requests():
     return f'Lookyloo / {version}'
 
 
-def reload_uuids_index() -> None:
-    recent_uuids: Dict[str, str] = {}
-    for uuid_path in get_captures_dir().glob('**/uuid'):
-        with uuid_path.open() as f:
-            uuid = f.read()
-        recent_uuids[uuid] = str(uuid_path.parent)
-    if not recent_uuids:
-        return None
-    r = Redis(unix_socket_path=get_socket_path('cache'))
-    p = r.pipeline()
-    p.delete('lookup_dirs')
-    p.hmset('lookup_dirs', recent_uuids)  # type: ignore
-    p.execute()
-
-
 def get_capture_status(capture_uuid: str, /) -> CaptureStatus:
     r = Redis(unix_socket_path=get_socket_path('cache'))
     if r.zrank('to_capture', capture_uuid) is not None:

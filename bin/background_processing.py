@@ -37,7 +37,7 @@ class Processing(AbstractManager):
         safe_create_dir(self_generated_ua_file_path)
         self_generated_ua_file = self_generated_ua_file_path / f'{yesterday.isoformat()}.json'
         if self_generated_ua_file.exists():
-            self.logger.info('User-agent file for {yesterday} already exists.')
+            self.logger.info(f'User-agent file for {yesterday} already exists.')
             return
         self.logger.info(f'Generating user-agent file for {yesterday}')
         redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
