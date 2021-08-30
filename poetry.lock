@@ -426,7 +426,7 @@ scripts = ["click (>=6.0)", "twisted (>=16.4.0)"]
 
 [[package]]
 name = "ipython"
-version = "7.26.0"
+version = "7.27.0"
 description = "IPython: Productive Interactive Computing"
 category = "dev"
 optional = false
@@ -1161,7 +1161,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "3.5.6"
+version = "3.5.7"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1185,7 +1185,7 @@ python-versions = "*"
 
 [[package]]
 name = "typing-extensions"
-version = "3.10.0.0"
+version = "3.10.0.1"
 description = "Backported and Experimental Type Hints for Python 3.5+"
 category = "main"
 optional = false
@@ -1284,7 +1284,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "479a2a8b3e2741ea505b908df1d460cbde209962d008845e13c1423a24b17984"
+content-hash = "7efee6dfcbe1b5b850c014ad6cdc67433a295f39275951065495b24952d06756"
 
 [metadata.files]
 aiohttp = [
@@ -1587,8 +1587,8 @@ incremental = [
     {file = "incremental-21.3.0.tar.gz", hash = "sha256:02f5de5aff48f6b9f665d99d48bfc7ec03b6e3943210de7cfc88856d755d6f57"},
 ]
 ipython = [
-    {file = "ipython-7.26.0-py3-none-any.whl", hash = "sha256:892743b65c21ed72b806a3a602cca408520b3200b89d1924f4b3d2cdb3692362"},
-    {file = "ipython-7.26.0.tar.gz", hash = "sha256:0cff04bb042800129348701f7bd68a430a844e8fb193979c08f6c99f28bb735e"},
+    {file = "ipython-7.27.0-py3-none-any.whl", hash = "sha256:75b5e060a3417cf64f138e0bb78e58512742c57dc29db5a5058a2b1f0c10df02"},
+    {file = "ipython-7.27.0.tar.gz", hash = "sha256:58b55ebfdfa260dad10d509702dc2857cb25ad82609506b070cf2d7b7df5af13"},
 ]
 ipython-genutils = [
     {file = "ipython_genutils-0.2.0-py2.py3-none-any.whl", hash = "sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8"},
@@ -2092,8 +2092,8 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-redis = [
-    {file = "types-redis-3.5.6.tar.gz", hash = "sha256:5a1e59462ec596f8e9a2388907d26a0270b8c968be0645e7cc2d29df1003837b"},
-    {file = "types_redis-3.5.6-py3-none-any.whl", hash = "sha256:9b01c5b693e770cd31905d50c01a4c9cb8413cb7716ec36e4a3e20f7c878bd18"},
+    {file = "types-redis-3.5.7.tar.gz", hash = "sha256:da4d966e9fd6b1d80af82fadfbf1f7843119742dc24039663b896c0c574e4b34"},
+    {file = "types_redis-3.5.7-py3-none-any.whl", hash = "sha256:40b0b4b6ddb107a5c5fcf1d7bdfc7ebd6832b9ea644f8e32c1ab007575377951"},
 ]
 types-requests = [
     {file = "types-requests-2.25.6.tar.gz", hash = "sha256:e21541c0f55c066c491a639309159556dd8c5833e49fcde929c4c47bdb0002ee"},
@@ -2104,9 +2104,9 @@ types-werkzeug = [
     {file = "types_Werkzeug-1.0.5-py3-none-any.whl", hash = "sha256:428a07d828a2c3dc6979b2ef2a79345ab33c54e070d5af319c038e6ccdfd3387"},
 ]
 typing-extensions = [
-    {file = "typing_extensions-3.10.0.0-py2-none-any.whl", hash = "sha256:0ac0f89795dd19de6b97debb0c6af1c70987fd80a2d62d1958f7e56fcc31b497"},
-    {file = "typing_extensions-3.10.0.0-py3-none-any.whl", hash = "sha256:779383f6086d90c99ae41cf0ff39aac8a7937a9283ce0a414e5dd782f4c94a84"},
-    {file = "typing_extensions-3.10.0.0.tar.gz", hash = "sha256:50b6f157849174217d0656f99dc82fe932884fb250826c18350e159ec6cdf342"},
+    {file = "typing_extensions-3.10.0.1-py2-none-any.whl", hash = "sha256:8bbffbd37fbeb9747a0241fdfde5ae99d4531ad1d1a41ccaea62100e15a5814c"},
+    {file = "typing_extensions-3.10.0.1-py3-none-any.whl", hash = "sha256:045dd532231acfa03628df5e0c66dba64e2cc8fc8b844538d4ad6d5dd6cb82dc"},
+    {file = "typing_extensions-3.10.0.1.tar.gz", hash = "sha256:83af6730a045fda60f46510f7f1f094776d90321caa4d97d20ef38871bef4bd3"},
 ]
 urllib3 = [
     {file = "urllib3-1.26.6-py2.py3-none-any.whl", hash = "sha256:39fb8672126159acb139a7718dd10806104dec1e2f0f6c88aab05d17df10c8d4"},
