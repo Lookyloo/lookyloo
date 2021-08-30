@@ -69,7 +69,7 @@ misp = ['python-magic', 'pydeep']
 [tool.poetry.dev-dependencies]
 mypy = "^0.910"
 ipython = "^7.26.0"
-types-redis = "^3.5.6"
+types-redis = "^3.5.7"
 types-requests = "^2.25.6"
 types-Flask = "^1.1.3"
 types-pkg-resources = "^0.1.2"
