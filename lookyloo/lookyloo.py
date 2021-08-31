@@ -89,31 +89,39 @@ class Lookyloo():
 
     def _get_capture_dir(self, capture_uuid: str, /) -> Path:
         '''Use the cache to get a capture directory from a capture UUID'''
-        capture_dir: Optional[Union[str, Path]]
+        capture_dir: Optional[str]
+        to_return: Path
+
+        # Try to get from the in-class cache
         if capture_uuid in self._captures_index:
-            capture_dir = self._captures_index[capture_uuid].capture_dir
-            if capture_dir.exists():
-                return capture_dir
-            self.redis.delete(str(capture_dir))
+            to_return = self._captures_index[capture_uuid].capture_dir
+            if to_return.exists():
+                return to_return
+            self.redis.delete(str(to_return))
             self._captures_index.pop(capture_uuid)
+
+        # Try to get from the recent captures cache in redis
         capture_dir = self.redis.hget('lookup_dirs', capture_uuid)
-        if capture_dir and not Path(capture_dir).exists():
+        if capture_dir:
+            to_return = Path(capture_dir)
+            if to_return.exists():
+                return to_return
             # The capture was either removed or archived, cleaning up
             self.redis.hdel('lookup_dirs', capture_uuid)
             self.redis.delete(capture_dir)
-            capture_dir = None
-        if not capture_dir:
-            # Try in the archive
-            capture_dir = self.redis.hget('lookup_dirs_archived', capture_uuid)
-            if not capture_dir:
-                raise MissingUUID(f'Unable to find UUID {capture_uuid} in the cache')
-        to_return = Path(capture_dir)
-        if not to_return.exists():
-            # The capture was removed, remove the UUID
+
+        # Try to get from the archived captures cache in redis
+        capture_dir = self.redis.hget('lookup_dirs_archived', capture_uuid)
+        if capture_dir:
+            to_return = Path(capture_dir)
+            if to_return.exists():
+                return to_return
             self.redis.hdel('lookup_dirs_archived', capture_uuid)
-            self.logger.warning(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
-            raise NoValidHarFile(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}). Removed now.')
-        return to_return
+            # The capture was removed, remove the UUID
+            self.logger.warning(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}).')
+            raise MissingCaptureDirectory(f'UUID ({capture_uuid}) linked to a missing directory ({capture_dir}).')
+
+        raise MissingUUID(f'Unable to find UUID {capture_uuid}.')
 
     def _cache_capture(self, capture_uuid: str, /) -> CrawledTree:
         '''Generate the pickle, set the cache, add capture in the indexes'''
@@ -142,10 +150,7 @@ class Lookyloo():
             with metafile.open('w') as f:
                 json.dump(to_dump, f)
 
-        try:
-            capture_dir = self._get_capture_dir(capture_uuid)
-        except MissingUUID:
-            raise MissingCaptureDirectory(f'Unable to find the directory for {capture_uuid}')
+        capture_dir = self._get_capture_dir(capture_uuid)
 
         har_files = sorted(capture_dir.glob('*.har'))
         lock_file = capture_dir / 'lock'
@@ -564,8 +569,8 @@ class Lookyloo():
             return self._captures_index[capture_uuid]
         try:
             capture_dir = self._get_capture_dir(capture_uuid)
-        except MissingUUID:
-            self.logger.warning(f'No directory for {capture_uuid}.')
+        except LookylooException:
+            self.logger.warning(f'Unable to find {capture_uuid} (not in the cache and/or missing capture directory).')
             return None
 
         cached = self.redis.hgetall(str(capture_dir))
@@ -584,15 +589,10 @@ class Lookyloo():
     def get_crawled_tree(self, capture_uuid: str, /) -> CrawledTree:
         '''Get the generated tree in ETE Toolkit format.
         Loads the pickle if it exists, creates it otherwise.'''
-        try:
-            capture_dir = self._get_capture_dir(capture_uuid)
-        except MissingUUID:
-            raise MissingCaptureDirectory(f'Unable to find the directory for {capture_uuid}')
+        capture_dir = self._get_capture_dir(capture_uuid)
         ct = load_pickle_tree(capture_dir)
         if not ct:
             ct = self._cache_capture(capture_uuid)
-        if not ct:
-            raise NoValidHarFile(f'Unable to get tree from {capture_dir}')
         return ct
 
     def enqueue_capture(self, query: MutableMapping[str, Any], source: str, user: str, authenticated: bool) -> str:
@@ -678,8 +678,8 @@ class Lookyloo():
             capture_dir = self._get_capture_dir(capture_uuid)
         except MissingUUID:
             return BytesIO(f'Capture {capture_uuid} not unavailable, try again later.'.encode())
-        except NoValidHarFile:
-            return BytesIO(f'No capture {capture_uuid} on the system.'.encode())
+        except MissingCaptureDirectory:
+            return BytesIO(f'No capture {capture_uuid} on the system (directory missing).'.encode())
         all_paths = sorted(list(capture_dir.glob(f'*.{extension}')))
         if not all_files:
             # Only get the first one in the list
@@ -897,12 +897,12 @@ class Lookyloo():
             return {'error': 'UUID missing in cache, try again later.'}
 
         if cache.incomplete_redirects:
-            self._cache_capture(capture_uuid)
+            ct = self._cache_capture(capture_uuid)
             cache = self.capture_cache(capture_uuid)
             if not cache:
                 return {'error': 'UUID missing in cache, try again later.'}
-
-        ct = self.get_crawled_tree(capture_uuid)
+        else:
+            ct = self.get_crawled_tree(capture_uuid)
 
         event = MISPEvent()
         event.info = f'Lookyloo Capture ({cache.url})'
@@ -1061,8 +1061,6 @@ class Lookyloo():
 
         ct = self.get_crawled_tree(capture_uuid)
         hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
-        if not hostnode:
-            raise MissingUUID(f'Unable to find UUID {node_uuid} in {node_uuid}')
 
         known_content = self.context.find_known_content(hostnode)
         self.uwhois.query_whois_hostnode(hostnode)
