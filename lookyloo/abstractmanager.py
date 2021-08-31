@@ -102,5 +102,9 @@ class AbstractManager(ABC):
                     self.process.send_signal(signal.SIGTERM)
                 except Exception:
                     pass
-            self.unset_running()
+            try:
+                self.unset_running()
+            except Exception:
+                # the services can already be down at that point.
+                pass
             self.logger.info(f'Shutting down {self.__class__.__name__}')
