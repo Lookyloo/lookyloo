@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import json
-import logging
 import os
 import sys
 
@@ -10,17 +8,21 @@ from typing import List, Tuple
 
 from redis import Redis
 from redis.exceptions import ConnectionError
+from rich.console import Console
+from rich.padding import Padding
 
-from lookyloo.helpers import get_config, get_socket_path, splash_status
+from lookyloo.helpers import get_socket_path, splash_status
 from lookyloo.abstractmanager import AbstractManager
+
+# NOTE: run with watch:
+#   watch --color tools/monitoring.py
+
+console = Console(color_system="256")
 
 
 class Monitoring():
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
-
         self.redis_cache: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
         self.redis_indexing: Redis = Redis(unix_socket_path=get_socket_path('indexing'), decode_responses=True)
 
@@ -30,27 +32,27 @@ class Monitoring():
         socket_path_index = get_socket_path('indexing')
         backend_up = True
         if not os.path.exists(socket_path_cache):
-            print(f'Socket path for the cache redis DB does not exists ({socket_path_cache}).')
+            console.print(f'Socket path for the [blue]cache[/blue] redis DB [red]does not exists[/red] ({socket_path_cache}).')
             backend_up = False
         if not os.path.exists(socket_path_index):
-            print(f'Socket path for the indexing redis DB does not exists ({socket_path_index}).')
+            console.print(f'Socket path for the [blue]indexing[/blue] redis DB [red]does not exists[/red] ({socket_path_index}).')
             backend_up = False
         if backend_up:
             try:
                 cache_reachable = True if self.redis_cache.ping() else False
                 if not cache_reachable:
-                    print('Unable to ping the redis cache db.')
+                    console.print('Unable to ping the redis cache db.')
                     backend_up = False
             except ConnectionError:
-                print('Unable to connect to the redis cache db.')
+                console.print('Unable to connect to the redis cache db.')
                 backend_up = False
             try:
                 indexing_reachable = True if self.redis_indexing.ping() else False
                 if not indexing_reachable:
-                    print('Unable to ping the redis indexing db.')
+                    console.print('Unable to ping the redis indexing db.')
                     backend_up = False
             except ConnectionError:
-                print('Unable to connect to the redis indexing db.')
+                console.print('Unable to connect to the redis indexing db.')
                 backend_up = False
 
         return backend_up
@@ -77,28 +79,31 @@ if __name__ == '__main__':
 
     status, message = splash_status()
     if status:
-        print(message)
+        console.print(f'[green]{message}[/green]')
     else:
-        print('Splash is down: ', message)
+        console.print('Splash is [bold red]down[/bold red]: ', message)
 
     m = Monitoring()
     backend_up = m.backend_status
     if not backend_up:
-        print('Backend not up, breaking.')
+        console.print('[bold red]Backend not up, breaking.[/bold red]')
         sys.exit()
 
-    print('Services currently running:')
+    console.print('Services currently running:')
     running = AbstractManager.is_running()
     for service, number in running:
-        print(service, f'({int(number)} service(s))')
+        s = Padding(f'{service} ({int(number)} service(s))', (0, 2))
+        console.print(s)
 
-    print('Current queues:')
+    console.print('Current queues:')
     for q, priority in m.queues:
-        print(q, f'Priority: {int(priority)}')
+        s = Padding(f'{q} Priority: {int(priority)}', (0, 2))
+        console.print(s)
     # ------------------
-    print('Captures details:')
+    console.print('Captures details:')
     captures = m.ongoing_captures
-    print('Queue length', len(captures))
+    console.print(f'Queue length: [yellow]{len(captures)}[/yellow]')
     for uuid, rank, d in captures:
-        print(uuid, f'Rank: {int(rank)}')
-        print(json.dumps(d, indent=2))
+        a = Padding(f'{uuid} Rank: {int(rank)}', (0, 2))
+        console.print(a)
+        console.print(d)
