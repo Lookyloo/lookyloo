@@ -16,7 +16,6 @@ from functools import lru_cache
 from enum import IntEnum, unique
 
 from har2tree import CrawledTree, HostNode, URLNode
-from redis import Redis
 import requests
 from requests.exceptions import HTTPError
 from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
@@ -262,17 +261,6 @@ def try_make_file(filename: Path):
 def get_useragent_for_requests():
     version = pkg_resources.get_distribution('lookyloo').version
     return f'Lookyloo / {version}'
-
-
-def get_capture_status(capture_uuid: str, /) -> CaptureStatus:
-    r = Redis(unix_socket_path=get_socket_path('cache'))
-    if r.zrank('to_capture', capture_uuid) is not None:
-        return CaptureStatus.QUEUED
-    elif r.hexists('lookup_dirs', capture_uuid):
-        return CaptureStatus.DONE
-    elif r.sismember('ongoing', capture_uuid):
-        return CaptureStatus.ONGOING
-    return CaptureStatus.UNKNOWN
 
 
 @lru_cache(64)

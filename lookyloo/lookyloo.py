@@ -31,7 +31,7 @@ from werkzeug.useragents import UserAgent
 from .exceptions import NoValidHarFile, MissingUUID, LookylooException, MissingCaptureDirectory
 from .helpers import (get_homedir, get_socket_path, get_config, get_email_template, load_pickle_tree,
                       remove_pickle_tree, get_resources_hashes, get_taxonomies, uniq_domains,
-                      try_make_file, get_captures_dir, get_splash_url)
+                      try_make_file, get_captures_dir, get_splash_url, CaptureStatus)
 from .modules import VirusTotal, SaneJavaScript, PhishingInitiative, MISP, UniversalWhois, UrlScan
 from .capturecache import CaptureCache
 from .context import Context
@@ -563,6 +563,15 @@ class Lookyloo():
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 
+    def get_capture_status(self, capture_uuid: str, /) -> CaptureStatus:
+        if self.redis.zrank('to_capture', capture_uuid) is not None:
+            return CaptureStatus.QUEUED
+        elif self.redis.hexists('lookup_dirs', capture_uuid):
+            return CaptureStatus.DONE
+        elif self.redis.sismember('ongoing', capture_uuid):
+            return CaptureStatus.ONGOING
+        return CaptureStatus.UNKNOWN
+
     def capture_cache(self, capture_uuid: str, /) -> Optional[CaptureCache]:
         """Get the cache from redis."""
         if capture_uuid in self._captures_index and not self._captures_index[capture_uuid].incomplete_redirects:
@@ -570,7 +579,8 @@ class Lookyloo():
         try:
             capture_dir = self._get_capture_dir(capture_uuid)
         except LookylooException:
-            self.logger.warning(f'Unable to find {capture_uuid} (not in the cache and/or missing capture directory).')
+            if self.get_capture_status(capture_uuid) not in [CaptureStatus.QUEUED, CaptureStatus.ONGOING]:
+                self.logger.warning(f'Unable to find {capture_uuid} (not in the cache and/or missing capture directory).')
             return None
 
         cached = self.redis.hgetall(str(capture_dir))

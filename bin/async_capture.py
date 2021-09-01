@@ -59,10 +59,11 @@ class AsyncCapture(AbstractManager):
         if 'cookies' in to_capture:
             to_capture['cookies_pseudofile'] = to_capture.pop('cookies')
 
+        self.logger.info(f'Capturing {to_capture["url"]} - {uuid}')
         if self._capture(**to_capture):  # type: ignore
-            self.logger.info(f'Processed {to_capture["url"]}')
+            self.logger.info(f'Successfully captured {to_capture["url"]} - {uuid}')
         else:
-            self.logger.warning(f'Unable to capture {to_capture["url"]}')
+            self.logger.warning(f'Unable to capture {to_capture["url"]} - {uuid}')
         lazy_cleanup.srem('ongoing', uuid)
         lazy_cleanup.delete(uuid)
         # make sure to expire the key if nothing was processed for a while (= queues empty)

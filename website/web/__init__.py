@@ -22,7 +22,7 @@ from werkzeug.security import check_password_hash
 from pymisp import MISPEvent, MISPServerError
 
 from lookyloo.helpers import (get_user_agents, get_config, get_taxonomies, load_cookies,
-                              CaptureStatus, splash_status, get_capture_status)
+                              CaptureStatus, splash_status)
 from lookyloo.lookyloo import Lookyloo, Indexing
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 
@@ -556,7 +556,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
         return redirect(url_for('index'))
     cache = lookyloo.capture_cache(tree_uuid)
     if not cache:
-        status = get_capture_status(tree_uuid)
+        status = lookyloo.get_capture_status(tree_uuid)
         splash_up, splash_message = splash_status()
         if not splash_up:
             flash(f'The capture module is not reachable ({splash_message}).', 'error')
