@@ -11,6 +11,7 @@ from typing import Optional, List, Tuple
 from subprocess import Popen
 
 from redis import Redis
+from redis.exceptions import ConnectionError
 
 from .helpers import get_socket_path
 
