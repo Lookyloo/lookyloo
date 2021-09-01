@@ -13,7 +13,7 @@ from pathlib import Path
 from lookyloo.helpers import get_homedir
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-                    level=logging.INFO, datefmt='%I:%M:%S')
+                    level=logging.INFO)
 
 
 def compute_hash_self():

@@ -9,7 +9,7 @@ from lookyloo.abstractmanager import AbstractManager
 from lookyloo.helpers import get_homedir, get_config
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-                    level=logging.INFO, datefmt='%I:%M:%S')
+                    level=logging.INFO)
 
 
 class Website(AbstractManager):

@@ -7,7 +7,7 @@ import logging
 from lookyloo.lookyloo import Lookyloo, Indexing
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-                    level=logging.INFO, datefmt='%I:%M:%S')
+                    level=logging.INFO)
 
 
 def main():

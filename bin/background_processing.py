@@ -15,7 +15,7 @@ from lookyloo.helpers import (get_config, get_homedir, get_socket_path,
                               safe_create_dir)
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-                    level=logging.INFO, datefmt='%I:%M:%S')
+                    level=logging.INFO)
 
 
 class Processing(AbstractManager):

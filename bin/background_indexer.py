@@ -9,7 +9,7 @@ from lookyloo.lookyloo import Lookyloo
 from lookyloo.exceptions import NoValidHarFile, MissingUUID
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-                    level=logging.INFO, datefmt='%I:%M:%S')
+                    level=logging.INFO)
 
 
 class BackgroundIndexer(AbstractManager):
