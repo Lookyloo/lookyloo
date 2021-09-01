@@ -566,7 +566,9 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
             return redirect(url_for('index'))
         elif status == CaptureStatus.QUEUED:
             message = "The capture is queued, but didn't start yet."
-        elif status == CaptureStatus.ONGOING:
+        elif status in [CaptureStatus.ONGOING, CaptureStatus.DONE]:
+            # If CaptureStatus.DONE, the capture finished between the query to the cache and
+            # the request for a status. Give it an extra few seconds.
             message = "The capture is ongoing."
         return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid)
 
