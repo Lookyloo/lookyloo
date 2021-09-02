@@ -314,7 +314,7 @@ Flask = "*"
 
 [[package]]
 name = "flask-restx"
-version = "0.5.0"
+version = "0.5.1"
 description = "Fully featured framework for fast, easy and documented API development with Flask"
 category = "main"
 optional = false
@@ -1300,7 +1300,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "45847baf6fb2e8963b6cea41ad681434dff4fb0948fd48864778f4865a14bd50"
+content-hash = "d1deaa48e99cae9f6bf72a5f3d4df4260ae4938b6f3db6bdbe026a6b2c67ce72"
 
 [metadata.files]
 aiohttp = [
@@ -1529,8 +1529,8 @@ flask-login = [
     {file = "Flask_Login-0.5.0-py2.py3-none-any.whl", hash = "sha256:7451b5001e17837ba58945aead261ba425fdf7b4f0448777e597ddab39f4fba0"},
 ]
 flask-restx = [
-    {file = "flask-restx-0.5.0.tar.gz", hash = "sha256:7e9f7cd5e843dd653a71fafb7c8ce9d7b4fef29f982a2254b1e0ebb3fac1fe12"},
-    {file = "flask_restx-0.5.0-py2.py3-none-any.whl", hash = "sha256:c3c2b724e688c0a50ee5e78f2a508b7f0c34644f00f64170fa8a3d0cdc34f67a"},
+    {file = "flask-restx-0.5.1.tar.gz", hash = "sha256:63c69a61999a34f1774eaccc6fc8c7f504b1aad7d56a8ec672264e52d9ac05f4"},
+    {file = "flask_restx-0.5.1-py2.py3-none-any.whl", hash = "sha256:96157547acaa8892adcefd8c60abf9040212ac2a8634937a82946e07b46147fd"},
 ]
 gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},

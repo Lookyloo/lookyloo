@@ -22,17 +22,17 @@ classifiers = [
 ]
 
 [tool.poetry.scripts]
-start_website = "bin.start_website:main"
 start = "bin.start:main"
+stop = "bin.stop:main"
+update = "bin.update:main"
+rebuild_caches = "bin.rebuild_caches:main"
+shutdown = "bin.shutdown:main"
 run_backend = "bin.run_backend:main"
 async_capture = "bin.async_capture:main"
-shutdown = "bin.shutdown:main"
-stop = "bin.stop:main"
-rebuild_caches = "bin.rebuild_caches:main"
-update = "bin.update:main"
 background_indexer = "bin.background_indexer:main"
 archiver = "bin.archiver:main"
 processing = "bin.background_processing:main"
+start_website = "bin.start_website:main"
 
 
 [tool.poetry.dependencies]
@@ -60,7 +60,7 @@ pydeep = {version = "^0.4", optional = true}
 Pillow = "^8.3.1"
 lief = "^0.11.4"
 Flask-Login = "^0.5.0"
-flask-restx = "^0.5.0"
+flask-restx = "^0.5.1"
 hiredis = "^2.0.0"
 rich = "^10.9.0"
 
