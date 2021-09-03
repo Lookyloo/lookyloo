@@ -754,6 +754,32 @@ def search():
     return render_template('search.html')
 
 
+def _prepare_capture_template(user_ua: str, predefined_url: Optional[str]=None):
+    user_agents: Dict[str, Any] = {}
+    if use_own_ua:
+        user_agents = get_user_agents('own_user_agents')
+    if not user_agents:
+        user_agents = get_user_agents()
+    # get most frequest UA that isn't a bot (yes, it is dirty.)
+    for ua in user_agents.pop('by_frequency'):
+        if 'bot' not in ua['useragent'].lower():
+            default_ua = ua
+            break
+    splash_up, message = splash_status()
+    if not splash_up:
+        flash(f'The capture module is not reachable ({message}).', 'error')
+        flash('The request will be enqueued, but capturing may take a while and require the administrator to wake up.', 'error')
+    return render_template('capture.html', user_agents=user_agents, default=default_ua,
+                           max_depth=max_depth, personal_ua=user_ua,
+                           predefined_url_to_capture=predefined_url)
+
+
+@app.route('/recapture/<string:tree_uuid>', methods=['GET'])
+def recapture(tree_uuid: str):
+    cache = lookyloo.capture_cache(tree_uuid)
+    return _prepare_capture_template(user_ua=request.headers.get('User-Agent'), predefined_url=cache.url)
+
+
 @app.route('/capture', methods=['GET', 'POST'])
 def capture_web():
     if flask_login.current_user.is_authenticated:
@@ -803,22 +829,8 @@ def capture_web():
         perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         return redirect(url_for('tree', tree_uuid=perma_uuid))
 
-    user_agents: Dict[str, Any] = {}
-    if use_own_ua:
-        user_agents = get_user_agents('own_user_agents')
-    if not user_agents:
-        user_agents = get_user_agents()
-    # get most frequest UA that isn't a bot (yes, it is dirty.)
-    for ua in user_agents.pop('by_frequency'):
-        if 'bot' not in ua['useragent'].lower():
-            default_ua = ua
-            break
-    splash_up, message = splash_status()
-    if not splash_up:
-        flash(f'The capture module is not reachable ({message}).', 'error')
-        flash('The request will be enqueued, but capturing may take a while and require the administrator to wake up.', 'error')
-    return render_template('capture.html', user_agents=user_agents, default=default_ua,
-                           max_depth=max_depth, personal_ua=request.headers.get('User-Agent'))
+    # render template
+    return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
