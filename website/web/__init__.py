@@ -754,7 +754,7 @@ def search():
     return render_template('search.html')
 
 
-def _prepare_capture_template(user_ua: str, predefined_url: Optional[str]=None):
+def _prepare_capture_template(user_ua: Optional[str], predefined_url: Optional[str]=None):
     user_agents: Dict[str, Any] = {}
     if use_own_ua:
         user_agents = get_user_agents('own_user_agents')
@@ -777,7 +777,10 @@ def _prepare_capture_template(user_ua: str, predefined_url: Optional[str]=None):
 @app.route('/recapture/<string:tree_uuid>', methods=['GET'])
 def recapture(tree_uuid: str):
     cache = lookyloo.capture_cache(tree_uuid)
-    return _prepare_capture_template(user_ua=request.headers.get('User-Agent'), predefined_url=cache.url)
+    if cache:
+        return _prepare_capture_template(user_ua=request.headers.get('User-Agent'), predefined_url=cache.url)
+    flash(f'Unable to find the capture {tree_uuid} in the cache.', 'error')
+    return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
 
 @app.route('/capture', methods=['GET', 'POST'])
