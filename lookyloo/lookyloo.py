@@ -202,7 +202,10 @@ class Lookyloo():
                 # is discarded in the RecursionError above.
                 default_recursion_limit = sys.getrecursionlimit()
                 sys.setrecursionlimit(int(default_recursion_limit * 1.1))
-                pickle.dump(ct, _p)
+                try:
+                    pickle.dump(ct, _p)
+                except RecursionError as e:
+                    raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
                 sys.setrecursionlimit(default_recursion_limit)
         finally:
             lock_file.unlink(missing_ok=True)
