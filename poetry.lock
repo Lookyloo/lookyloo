@@ -361,7 +361,7 @@ hyperframe = ">=5.2.0,<6"
 
 [[package]]
 name = "har2tree"
-version = "1.8.2"
+version = "1.8.3"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -1300,7 +1300,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "1d1de45841e934dccbd93c649ab0bf6c306ebe5e47bf15fd56e7db94184abd11"
+content-hash = "dbaf93dd4f05bdd9bfd602cf0e37855a08cccf816c33dcbcad7e4d864ac05d1c"
 
 [metadata.files]
 aiohttp = [
@@ -1540,8 +1540,8 @@ h2 = [
     {file = "h2-3.2.0.tar.gz", hash = "sha256:875f41ebd6f2c44781259005b157faed1a5031df3ae5aa7bcb4628a6c0782f14"},
 ]
 har2tree = [
-    {file = "har2tree-1.8.2-py3-none-any.whl", hash = "sha256:0578a70d7d017357b74958ec822b1e68dab6bd82e8a86aad20632e4a13350be8"},
-    {file = "har2tree-1.8.2.tar.gz", hash = "sha256:a0d786d5519e15024b648bd03004613b76c490502fd3f96e2ec818773d3e2f53"},
+    {file = "har2tree-1.8.3-py3-none-any.whl", hash = "sha256:0adc8dbc0a4a0eabacc250c0501fe18fc9a4a98785b298d5adc3399d4e22cee8"},
+    {file = "har2tree-1.8.3.tar.gz", hash = "sha256:94dc41fb389acadfa14e5b4587de20505713085bb93f5f8c219880ade2d99c39"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
