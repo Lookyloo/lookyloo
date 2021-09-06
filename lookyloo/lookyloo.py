@@ -696,6 +696,8 @@ class Lookyloo():
             with open(all_paths[0], 'rb') as f:
                 return BytesIO(f.read())
         to_return = BytesIO()
+        # Add uuid file to the export, allows to keep the same UUID across platforms.
+        all_paths.append(capture_dir / 'uuid')
         with ZipFile(to_return, 'w') as myzip:
             for path in all_paths:
                 if path.name.endswith('pickle'):
