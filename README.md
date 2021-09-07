@@ -10,11 +10,11 @@
 * [Install Lookyloo](#installation)
 * [Lookyloo Client](#python-client)
 * [Contributing to Lookyloo](#contributing-to-lookyloo)
-  * [Code of Conduct](###code-of-conduct)
+  * [Code of Conduct](#code-of-conduct)
 * [Support](#support)
-  * [Security](###security)
-  * [Credits](###credits)
-  * [License](###license)
+  * [Security](#security)
+  * [Credits](#credits)
+  * [License](#license)
 
 
 
@@ -80,5 +80,5 @@ To report vulnerabilities, see our [Security Policy](lookyloo/SECURITY.md).
 Thank you very much [Tech Blog @ willshouse.com](https://techblog.willshouse.com/2012/01/03/most-common-user-agents/) for the up-to-date list of UserAgents.
 
 ### License
-See our [LICENSE](lookyloo/LICENSE).
+See our [LICENSE](LICENSE).
 
