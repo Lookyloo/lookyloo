@@ -216,7 +216,7 @@ class Lookyloo():
             lock_file.unlink(missing_ok=True)
         return ct
 
-    def _set_capture_cache(self, capture_dir: Path) -> Dict[str, Any]:
+    def _set_capture_cache(self, capture_dir: Path):
         '''Populate the redis cache for a capture. Mostly used on the index page.
         NOTE: Doesn't require the pickle.'''
         with (capture_dir / 'uuid').open() as f:
@@ -224,7 +224,7 @@ class Lookyloo():
 
         har_files = sorted(capture_dir.glob('*.har'))
 
-        error_cache: Dict[str, str] = {}
+        cache: Dict[str, Union[str, int]] = {}
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
             with (capture_dir / 'error.txt').open() as _error:
@@ -236,17 +236,17 @@ class Lookyloo():
                 except json.decoder.JSONDecodeError:
                     # old format
                     error_to_cache = content
-                error_cache['error'] = f'The capture {capture_dir.name} has an error: {error_to_cache}'
+                cache['error'] = f'The capture {capture_dir.name} has an error: {error_to_cache}'
 
         fatal_error = False
         if har_files:
             try:
                 har = HarFile(har_files[0], uuid)
             except Har2TreeError as e:
-                error_cache['error'] = str(e)
+                cache['error'] = str(e)
                 fatal_error = True
         else:
-            error_cache['error'] = f'No har files in {capture_dir.name}'
+            cache['error'] = f'No har files in {capture_dir.name}'
             fatal_error = True
 
         if (capture_dir / 'categories').exists():
@@ -257,10 +257,10 @@ class Lookyloo():
 
         p = self.redis.pipeline()
         p.hset('lookup_dirs', uuid, str(capture_dir))
-        if error_cache:
-            if 'HTTP Error' not in error_cache['error']:
-                self.logger.warning(error_cache['error'])
-            p.hmset(str(capture_dir), error_cache)
+        if cache:
+            if isinstance(cache['error'], str) and 'HTTP Error' not in cache['error']:
+                self.logger.warning(cache['error'])
+            p.hmset(str(capture_dir), cache)
 
         if not fatal_error:
             redirects = har.initial_redirects
@@ -274,14 +274,14 @@ class Lookyloo():
                     # Pickle not available
                     incomplete_redirects = True
 
-            cache: Dict[str, Union[str, int]] = {'uuid': uuid,
-                                                 'title': har.initial_title,
-                                                 'timestamp': har.initial_start_time,
-                                                 'url': har.root_url,
-                                                 'redirects': json.dumps(redirects),
-                                                 'categories': json.dumps(categories),
-                                                 'capture_dir': str(capture_dir),
-                                                 'incomplete_redirects': 1 if incomplete_redirects else 0}
+            cache = {'uuid': uuid,
+                     'title': har.initial_title,
+                     'timestamp': har.initial_start_time,
+                     'url': har.root_url,
+                     'redirects': json.dumps(redirects),
+                     'categories': json.dumps(categories),
+                     'capture_dir': str(capture_dir),
+                     'incomplete_redirects': 1 if incomplete_redirects else 0}
             if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
                 cache['no_index'] = 1
 
@@ -291,9 +291,7 @@ class Lookyloo():
 
             p.hmset(str(capture_dir), cache)
         p.execute()
-        # If the cache is re-created for some reason, pop from the local cache.
-        self._captures_index.pop(uuid, None)
-        return cache
+        self._captures_index[uuid] = CaptureCache(cache)
 
     def _resolve_dns(self, ct: CrawledTree):
         '''Resolves all domains of the tree, keeps A (IPv4), AAAA (IPv6), and CNAME entries
@@ -586,23 +584,27 @@ class Lookyloo():
             return self._captures_index[capture_uuid]
         try:
             capture_dir = self._get_capture_dir(capture_uuid)
-        except LookylooException:
+            cached = self.redis.hgetall(str(capture_dir))
+            if not cached or cached.get('incomplete_redirects') == '1':
+                self._set_capture_cache(capture_dir)
+            else:
+                self._captures_index[capture_uuid] = CaptureCache(cached)
+        except MissingCaptureDirectory as e:
+            # The UUID is in the captures but the directory is not on the disk.
+            self.logger.warning(e)
+            return None
+        except MissingUUID:
             if self.get_capture_status(capture_uuid) not in [CaptureStatus.QUEUED, CaptureStatus.ONGOING]:
                 self.logger.warning(f'Unable to find {capture_uuid} (not in the cache and/or missing capture directory).')
             return None
-
-        cached = self.redis.hgetall(str(capture_dir))
-        if not cached or cached.get('incomplete_redirects') == '1':
-            cached = self._set_capture_cache(capture_dir)
-        try:
-            self._captures_index[capture_uuid] = CaptureCache(cached)
-            return self._captures_index[capture_uuid]
-        except MissingCaptureDirectory:
-            self.logger.warning(f'Cache ({capture_dir}) is missing.')
-            return None
         except LookylooException as e:
-            self.logger.warning(f'Cache ({capture_dir}) is invalid ({e}): {json.dumps(cached, indent=2)}')
+            self.logger.warning(e)
             return None
+        except Exception as e:
+            self.logger.critical(e)
+            return None
+        else:
+            return self._captures_index[capture_uuid]
 
     def get_crawled_tree(self, capture_uuid: str, /) -> CrawledTree:
         '''Get the generated tree in ETE Toolkit format.
