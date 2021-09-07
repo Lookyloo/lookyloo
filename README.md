@@ -7,6 +7,7 @@
 
 
 * [What is Lookyloo?](#whats-in-a-name)
+* [REST API](#rest-api)
 * [Install Lookyloo](#installation)
 * [Lookyloo Client](#python-client)
 * [Contributing to Lookyloo](#contributing-to-lookyloo)
@@ -43,6 +44,9 @@ Find all you need to know about Lookyloo on our [documentation website](https://
 Here's an example of a Lookyloo capture of the site **github.com**
 ![Screenshot of Lookyloo capturing Github](https://www.lookyloo.eu/docs/main/_images/sample_github.png)
 
+# REST API
+
+The API is self documented with swagger. You can play with it [on the demo instance](https://lookyloo.circl.lu/doc/).
 
 # Installation
 
