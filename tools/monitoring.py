@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     console.print('Current queues:')
     for q, priority in m.queues:
-        s = Padding(f'{q} Priority: {int(priority)}', (0, 2))
+        s = Padding(f'{q} Recently enqueued captures: {int(priority)}', (0, 2))
         console.print(s)
     # ------------------
     console.print('Captures details:')
