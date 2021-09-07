@@ -4,14 +4,14 @@
 import json
 import logging
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Union
 from urllib.parse import urlsplit
-from typing import Optional, Union, Set, Any, Dict, List
 
-from redis import Redis
 from har2tree import CrawledTree, HostNode, URLNode
+from redis import Redis
 
-from .helpers import (get_config, get_socket_path, load_known_content, get_resources_hashes,
-                      get_homedir, serialize_to_json)
+from .helpers import (get_config, get_homedir, get_resources_hashes,
+                      get_socket_path, load_known_content, serialize_to_json)
 from .modules import SaneJavaScript
 
 

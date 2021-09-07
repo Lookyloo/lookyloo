@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 from subprocess import Popen
 
 from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import get_homedir, get_config
+from lookyloo.helpers import get_config, get_homedir
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)

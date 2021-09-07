@@ -1,34 +1,34 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from io import BytesIO, StringIO
-from datetime import datetime, timedelta, timezone, date
-import json
-import http
 import calendar
-from typing import Optional, Dict, Any, Union, List
+import http
+import json
 import logging
-from urllib.parse import quote_plus, unquote_plus, urlparse
 import time
-import pkg_resources
+from datetime import date, datetime, timedelta, timezone
+from io import BytesIO, StringIO
+from typing import Any, Dict, List, Optional, Union
+from urllib.parse import quote_plus, unquote_plus, urlparse
 
-from flask import Flask, render_template, request, send_file, redirect, url_for, Response, flash, jsonify
-from flask_bootstrap import Bootstrap  # type: ignore
 import flask_login  # type: ignore
+import pkg_resources
+from flask import (Flask, Response, flash, jsonify, redirect, render_template,
+                   request, send_file, url_for)
+from flask_bootstrap import Bootstrap  # type: ignore
 from flask_restx import Api  # type: ignore
-from .genericapi import api as generic_api
+from pymisp import MISPEvent, MISPServerError
 from werkzeug.security import check_password_hash
 
-from pymisp import MISPEvent, MISPServerError
+from lookyloo.exceptions import MissingUUID, NoValidHarFile
+from lookyloo.helpers import (CaptureStatus, get_config, get_taxonomies,
+                              get_user_agents, load_cookies, splash_status)
+from lookyloo.lookyloo import Indexing, Lookyloo
 
-from lookyloo.helpers import (get_user_agents, get_config, get_taxonomies, load_cookies,
-                              CaptureStatus, splash_status)
-from lookyloo.lookyloo import Lookyloo, Indexing
-from lookyloo.exceptions import NoValidHarFile, MissingUUID
-
+from .genericapi import api as generic_api
+from .helpers import (User, build_users_table, get_secret_key,
+                      load_user_from_request, src_request_ip, sri_load)
 from .proxied import ReverseProxied
-from .helpers import (src_request_ip, User, load_user_from_request, build_users_table,
-                      get_secret_key, sri_load)
 
 app: Flask = Flask(__name__)
 app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore

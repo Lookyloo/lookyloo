@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from subprocess import run, Popen
-from lookyloo.helpers import get_homedir, get_config
+from subprocess import Popen, run
+
+from lookyloo.helpers import get_config, get_homedir
 
 
 def main():

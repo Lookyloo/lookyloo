@@ -4,8 +4,8 @@
 import json
 import logging
 from collections import Counter
-from datetime import timedelta, date
-from typing import Dict, Any
+from datetime import date, timedelta
+from typing import Any, Dict
 
 from redis import Redis
 from werkzeug.useragents import UserAgent

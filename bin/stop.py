@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from subprocess import Popen
-from lookyloo.helpers import get_homedir, get_socket_path
+
 from redis import Redis
+
+from lookyloo.helpers import get_homedir, get_socket_path
 
 
 def main():

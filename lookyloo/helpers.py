@@ -1,27 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
-import logging
 import json
+import logging
+import os
 import pickle
-import pkg_resources
-from typing import List, Optional, Dict, Union, Any, Set, Tuple
-from urllib.parse import urljoin
+from datetime import datetime, timedelta
+from enum import IntEnum, unique
+from functools import lru_cache
+from glob import glob
 from io import BufferedIOBase
 from pathlib import Path
-from datetime import datetime, timedelta
-from glob import glob
-from urllib.parse import urlparse
-from functools import lru_cache
-from enum import IntEnum, unique
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from urllib.parse import urljoin, urlparse
 
-from har2tree import CrawledTree, HostNode, URLNode
+import pkg_resources
 import requests
-from requests.exceptions import HTTPError
+from har2tree import CrawledTree, HostNode, URLNode
 from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
 from pytaxonomies import Taxonomies
+from requests.exceptions import HTTPError
 
-from .exceptions import MissingEnv, CreateDirectoryException, ConfigError
+from .exceptions import ConfigError, CreateDirectoryException, MissingEnv
 
 configs: Dict[str, Dict[str, Any]] = {}
 logger = logging.getLogger('Lookyloo - Helpers')

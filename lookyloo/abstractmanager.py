@@ -4,11 +4,10 @@
 import logging
 import signal
 import time
-
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Optional, List, Tuple
 from subprocess import Popen
+from typing import List, Optional, Tuple
 
 from redis import Redis
 from redis.exceptions import ConnectionError

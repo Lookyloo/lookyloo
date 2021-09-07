@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import json
 import base64
-from typing import Dict, Any
+import json
+from typing import Any, Dict
 
-from flask import request, send_file
 import flask_login  # type: ignore
-from flask_restx import Namespace, Resource, fields, abort  # type: ignore
+from flask import request, send_file
+from flask_restx import Namespace, Resource, abort, fields  # type: ignore
 from werkzeug.security import check_password_hash
 
+from lookyloo.helpers import splash_status
 from lookyloo.lookyloo import Lookyloo
 
-from .helpers import (src_request_ip, load_user_from_request, build_users_table)
-from lookyloo.helpers import splash_status
+from .helpers import build_users_table, load_user_from_request, src_request_ip
 
 api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 

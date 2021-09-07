@@ -2,40 +2,45 @@
 # -*- coding: utf-8 -*-
 
 import base64
-from collections import defaultdict
-from datetime import datetime, date
-from email.message import EmailMessage
-from io import BytesIO
 import json
 import logging
-from pathlib import Path
+import operator
 import pickle
 import smtplib
 import sys
-from typing import Union, Dict, List, Tuple, Optional, Any, MutableMapping, Set, Iterable
+import time
+from collections import defaultdict
+from datetime import date, datetime
+from email.message import EmailMessage
+from io import BytesIO
+from pathlib import Path
+from typing import (Any, Dict, Iterable, List, MutableMapping, Optional, Set,
+                    Tuple, Union)
 from uuid import uuid4
 from zipfile import ZipFile
-import operator
-import time
 
-import dns.resolver
 import dns.rdatatype
+import dns.resolver
 from har2tree import CrawledTree, Har2TreeError, HarFile, HostNode, URLNode
 from PIL import Image  # type: ignore
-from pymisp import MISPEvent, MISPAttribute, MISPObject
-from pymisp.tools import URLObject, FileObject
-from redis import Redis, ConnectionPool
+from pymisp import MISPAttribute, MISPEvent, MISPObject
+from pymisp.tools import FileObject, URLObject
+from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 from werkzeug.useragents import UserAgent
 
-from .exceptions import NoValidHarFile, MissingUUID, LookylooException, MissingCaptureDirectory
-from .helpers import (get_homedir, get_socket_path, get_config, get_email_template, load_pickle_tree,
-                      remove_pickle_tree, get_resources_hashes, get_taxonomies, uniq_domains,
-                      try_make_file, get_captures_dir, get_splash_url, CaptureStatus)
-from .modules import VirusTotal, SaneJavaScript, PhishingInitiative, MISP, UniversalWhois, UrlScan
 from .capturecache import CaptureCache
 from .context import Context
+from .exceptions import (LookylooException, MissingCaptureDirectory,
+                         MissingUUID, NoValidHarFile)
+from .helpers import (CaptureStatus, get_captures_dir, get_config,
+                      get_email_template, get_homedir, get_resources_hashes,
+                      get_socket_path, get_splash_url, get_taxonomies,
+                      load_pickle_tree, remove_pickle_tree, try_make_file,
+                      uniq_domains)
 from .indexing import Indexing
+from .modules import (MISP, PhishingInitiative, SaneJavaScript, UniversalWhois,
+                      UrlScan, VirusTotal)
 
 
 class Lookyloo():

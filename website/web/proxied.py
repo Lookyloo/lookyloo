@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from typing import MutableMapping, Any
+from typing import Any, MutableMapping
 
 
 class ReverseProxied():

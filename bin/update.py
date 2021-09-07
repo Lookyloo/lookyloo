@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import logging
-import subprocess
-import shlex
-import sys
 import hashlib
+import logging
 import platform
+import shlex
+import subprocess
+import sys
 from pathlib import Path
 
 from lookyloo.helpers import get_homedir

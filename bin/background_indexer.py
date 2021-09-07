@@ -5,8 +5,8 @@ import logging
 from datetime import datetime, timedelta
 
 from lookyloo.abstractmanager import AbstractManager
+from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.lookyloo import Lookyloo
-from lookyloo.exceptions import NoValidHarFile, MissingUUID
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)

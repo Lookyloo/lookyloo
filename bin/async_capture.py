@@ -6,11 +6,10 @@ import ipaddress
 import json
 import logging
 import socket
-
-from io import BufferedIOBase
 from datetime import datetime
+from io import BufferedIOBase
 from pathlib import Path
-from typing import Union, Dict, Optional, Tuple, List
+from typing import Dict, List, Optional, Tuple, Union
 from urllib.parse import urlsplit
 
 from defang import refang  # type: ignore
@@ -18,9 +17,9 @@ from redis import Redis
 from scrapysplashwrapper import crawl
 
 from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import (splash_status, get_socket_path,
-                              load_cookies, safe_create_dir, get_config, get_splash_url,
-                              get_captures_dir)
+from lookyloo.helpers import (get_captures_dir, get_config, get_socket_path,
+                              get_splash_url, load_cookies, safe_create_dir,
+                              splash_status)
 from lookyloo.lookyloo import Lookyloo
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',

@@ -4,16 +4,14 @@
 import hashlib
 import json
 import os
-
 from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Union
 
 import flask_login  # type: ignore
-
 from werkzeug.security import generate_password_hash
 
-from lookyloo.helpers import get_homedir, get_config
+from lookyloo.helpers import get_config, get_homedir
 
 
 def src_request_ip(request) -> str:

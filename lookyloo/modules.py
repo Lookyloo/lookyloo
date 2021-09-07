@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Any, Optional, List, Union, Iterable, Set
-from datetime import date
-from collections import defaultdict
 import hashlib
 import json
-from pathlib import Path
-import time
 import logging
-import socket
 import re
+import socket
+import time
+from collections import defaultdict
+from datetime import date
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Set, Union
 
-from .helpers import get_homedir, get_config, get_public_suffix_list, get_useragent_for_requests
-from .exceptions import ConfigError
-
-import vt  # type: ignore
-from vt.error import APIError  # type: ignore
-from pysanejs import SaneJS
-from pyeupi import PyEUPI
-from pymisp import PyMISP, MISPEvent, MISPAttribute
 import requests
+import vt  # type: ignore
+from har2tree import CrawledTree, Har2TreeError, HostNode, URLNode
+from pyeupi import PyEUPI
+from pymisp import MISPAttribute, MISPEvent, PyMISP
+from pysanejs import SaneJS
+from vt.error import APIError  # type: ignore
 
-from har2tree import CrawledTree, HostNode, URLNode, Har2TreeError
+from .exceptions import ConfigError
+from .helpers import (get_config, get_homedir, get_public_suffix_list,
+                      get_useragent_for_requests)
 
 
 class MISP():

@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
-from urllib.parse import urlsplit
-from typing import List, Tuple, Set, Dict, Optional, Iterable
-from collections import defaultdict
 import re
+from collections import defaultdict
+from typing import Dict, Iterable, List, Optional, Set, Tuple
+from urllib.parse import urlsplit
 
-from redis import Redis, ConnectionPool
-from redis.connection import UnixDomainSocketConnection
 from har2tree import CrawledTree
+from redis import ConnectionPool, Redis
+from redis.connection import UnixDomainSocketConnection
 
-from .helpers import get_socket_path, get_public_suffix_list
+from .helpers import get_public_suffix_list, get_socket_path
 
 
 class Indexing():

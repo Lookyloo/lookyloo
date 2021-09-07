@@ -4,7 +4,7 @@
 import argparse
 import logging
 
-from lookyloo.lookyloo import Lookyloo, Indexing
+from lookyloo.lookyloo import Indexing, Lookyloo
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)

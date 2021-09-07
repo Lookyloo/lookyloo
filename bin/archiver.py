@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from collections import defaultdict
 import csv
-from datetime import datetime, timedelta
 import logging
-from typing import Dict, List
+from collections import defaultdict
+from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Dict, List
 
 from redis import Redis
 
 from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import get_config, get_homedir, get_socket_path, get_captures_dir
+from lookyloo.helpers import (get_captures_dir, get_config, get_homedir,
+                              get_socket_path)
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)

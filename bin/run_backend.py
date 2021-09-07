@@ -4,13 +4,13 @@
 import argparse
 import os
 import time
-
 from pathlib import Path
 from subprocess import Popen
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 from redis import Redis
 from redis.exceptions import ConnectionError
+
 from lookyloo.helpers import get_homedir, get_socket_path
 
 
