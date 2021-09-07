@@ -562,7 +562,11 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
             flash(f'The capture module is not reachable ({splash_message}).', 'error')
             flash('The request will be enqueued, but capturing may take a while and require the administrator to wake up.', 'error')
         if status == CaptureStatus.UNKNOWN:
-            flash(f'Unable to find this UUID ({tree_uuid}).', 'error')
+            error = lookyloo.try_error_status(tree_uuid)
+            if error:
+                flash(error, 'error')
+            else:
+                flash(f'Unable to find this UUID ({tree_uuid}).', 'error')
             return redirect(url_for('index'))
         elif status == CaptureStatus.QUEUED:
             message = "The capture is queued, but didn't start yet."
@@ -571,10 +575,6 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
             # the request for a status. Give it an extra few seconds.
             message = "The capture is ongoing."
         return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid)
-
-    if not cache:
-        flash('Invalid cache.', 'error')
-        return redirect(url_for('index'))
 
     if cache.error:
         flash(cache.error, 'error')

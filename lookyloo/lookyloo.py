@@ -578,6 +578,9 @@ class Lookyloo():
             return CaptureStatus.ONGOING
         return CaptureStatus.UNKNOWN
 
+    def try_error_status(self, capture_uuid: str, /) -> Optional[str]:
+        return self.redis.get(f'error_{capture_uuid}')
+
     def capture_cache(self, capture_uuid: str, /) -> Optional[CaptureCache]:
         """Get the cache from redis."""
         if capture_uuid in self._captures_index and not self._captures_index[capture_uuid].incomplete_redirects:

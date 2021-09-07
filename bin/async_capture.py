@@ -54,15 +54,26 @@ class AsyncCapture(AbstractManager):
             lazy_cleanup.zincrby('queues', -1, queue)
 
         to_capture: Dict[str, str] = self.redis.hgetall(uuid)
-        to_capture['perma_uuid'] = uuid
-        if 'cookies' in to_capture:
-            to_capture['cookies_pseudofile'] = to_capture.pop('cookies')
 
         self.logger.info(f'Capturing {to_capture["url"]} - {uuid}')
-        if self._capture(**to_capture):  # type: ignore
+        success, error_message = self._capture(
+            to_capture['url'],
+            perma_uuid=uuid,
+            cookies_pseudofile=to_capture.get('cookies', None),
+            depth=int(to_capture.get('depth', 1)),
+            listing=True if ('listing' in to_capture and to_capture['listing'] is True) else False,
+            user_agent=to_capture.get('user_agent', None),
+            referer=to_capture.get('referer', ''),
+            proxy=to_capture.get('proxy', ''),
+            os=to_capture.get('os', None),
+            browser=to_capture.get('browser', None),
+            parent=to_capture.get('parent', None)
+        )
+        if success:
             self.logger.info(f'Successfully captured {to_capture["url"]} - {uuid}')
         else:
-            self.logger.warning(f'Unable to capture {to_capture["url"]} - {uuid}')
+            self.logger.warning(f'Unable to capture {to_capture["url"]} - {uuid}: {error_message}')
+            lazy_cleanup.setex(f'error_{uuid}', 36000, f'{error_message} - {to_capture["url"]} - {uuid}')
         lazy_cleanup.srem('ongoing', uuid)
         lazy_cleanup.delete(uuid)
         # make sure to expire the key if nothing was processed for a while (= queues empty)
@@ -72,7 +83,7 @@ class AsyncCapture(AbstractManager):
     def _capture(self, url: str, *, perma_uuid: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                  depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
                  referer: str='', proxy: str='', os: Optional[str]=None,
-                 browser: Optional[str]=None, parent: Optional[str]=None) -> bool:
+                 browser: Optional[str]=None, parent: Optional[str]=None) -> Tuple[bool, str]:
         '''Launch a capture'''
         url = url.strip()
         url = refang(url)
@@ -87,11 +98,11 @@ class AsyncCapture(AbstractManager):
                             ip = socket.gethostbyname(splitted_url.hostname)
                         except socket.gaierror:
                             self.logger.info('Name or service not known')
-                            return False
+                            return False, 'Name or service not known.'
                         if not ipaddress.ip_address(ip).is_global:
-                            return False
+                            return False, 'Capturing ressources on private IPs is disabled.'
             else:
-                return False
+                return False, 'Unable to find hostname or IP in the query.'
 
         cookies = load_cookies(cookies_pseudofile)
         if not user_agent:
@@ -113,7 +124,7 @@ class AsyncCapture(AbstractManager):
         if not items:
             # broken
             self.logger.critical(f'Something went terribly wrong when capturing {url}.')
-            return False
+            return False, 'Something went terribly wrong when capturing {url}.'
         width = len(str(len(items)))
         now = datetime.now()
         dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / now.isoformat()
@@ -171,7 +182,7 @@ class AsyncCapture(AbstractManager):
                 with (dirpath / '{0:0{width}}.cookies.json'.format(i, width=width)).open('w') as _cookies:
                     json.dump(cookies, _cookies)
         self.redis.hset('lookup_dirs', perma_uuid, str(dirpath))
-        return True
+        return True, 'All good!'
 
     def _to_run_forever(self):
         while self.redis.exists('to_capture'):
