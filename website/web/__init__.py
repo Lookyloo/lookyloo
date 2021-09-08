@@ -500,7 +500,7 @@ def bulk_captures(base_tree_uuid: str):
                    'referer': ct.redirects[-1] if ct.redirects else ct.root_url,
                    'user_agent': ct.user_agent,
                    'parent': base_tree_uuid,
-                   'listing': False if cache.no_index else True
+                   'listing': False if cache and cache.no_index else True
                    }
         new_capture_uuid = lookyloo.enqueue_capture(capture, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         bulk_captures.append((new_capture_uuid, url))
