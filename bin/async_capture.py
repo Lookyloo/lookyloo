@@ -61,7 +61,7 @@ class AsyncCapture(AbstractManager):
             perma_uuid=uuid,
             cookies_pseudofile=to_capture.get('cookies', None),
             depth=int(to_capture.get('depth', 1)),
-            listing=True if ('listing' in to_capture and to_capture['listing'] is True) else False,
+            listing=True if ('listing' in to_capture and to_capture['listing'] in [True, 'True', 1, '1']) else False,
             user_agent=to_capture.get('user_agent', None),
             referer=to_capture.get('referer', ''),
             proxy=to_capture.get('proxy', ''),
