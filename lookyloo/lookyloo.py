@@ -222,9 +222,7 @@ class Lookyloo():
         with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
-        har_files = sorted(capture_dir.glob('*.har'))
-
-        cache: Dict[str, Union[str, int]] = {}
+        cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': str(capture_dir)}
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
             with (capture_dir / 'error.txt').open() as _error:
@@ -238,58 +236,51 @@ class Lookyloo():
                     error_to_cache = content
                 cache['error'] = f'The capture {capture_dir.name} has an error: {error_to_cache}'
 
-        fatal_error = False
-        if har_files:
+        if (har_files := sorted(capture_dir.glob('*.har'))):
             try:
                 har = HarFile(har_files[0], uuid)
+                cache['title'] = har.initial_title
+                cache['timestamp'] = har.initial_start_time
+                cache['url'] = har.root_url
+                if har.initial_redirects and har.need_tree_redirects:
+                    # try to load tree from disk, get redirects
+                    if (ct := load_pickle_tree(capture_dir)):
+                        cache['redirects'] = json.dumps(ct.redirects)
+                        cache['incomplete_redirects'] = 0
+                    else:
+                        # Pickle not available
+                        cache['redirects'] = json.dumps(har.initial_redirects)
+                        cache['incomplete_redirects'] = 1
+                else:
+                    cache['redirects'] = json.dumps(har.initial_redirects)
+                    cache['incomplete_redirects'] = 0
+
             except Har2TreeError as e:
                 cache['error'] = str(e)
-                fatal_error = True
         else:
             cache['error'] = f'No har files in {capture_dir.name}'
-            fatal_error = True
+
+        if (cache.get('error')
+                and isinstance(cache['error'], str)
+                and 'HTTP Error' not in cache['error']):
+            self.logger.warning(cache['error'])
 
         if (capture_dir / 'categories').exists():
             with (capture_dir / 'categories').open() as _categories:
-                categories = [c.strip() for c in _categories.readlines()]
-        else:
-            categories = []
+                cache['categories'] = json.dumps([c.strip() for c in _categories.readlines()])
+
+        if (capture_dir / 'no_index').exists():
+            # If the folders claims anonymity
+            cache['no_index'] = 1
+
+        if (capture_dir / 'parent').exists():
+            # The capture was initiated from an other one
+            with (capture_dir / 'parent').open() as f:
+                cache['parent'] = f.read().strip()
 
         p = self.redis.pipeline()
         p.hset('lookup_dirs', uuid, str(capture_dir))
-        if cache:
-            if isinstance(cache['error'], str) and 'HTTP Error' not in cache['error']:
-                self.logger.warning(cache['error'])
-            p.hmset(str(capture_dir), cache)
-
-        if not fatal_error:
-            redirects = har.initial_redirects
-            incomplete_redirects = False
-            if redirects and har.need_tree_redirects:
-                # load tree from disk, get redirects
-                ct = load_pickle_tree(capture_dir)
-                if ct:
-                    redirects = ct.redirects
-                else:
-                    # Pickle not available
-                    incomplete_redirects = True
-
-            cache = {'uuid': uuid,
-                     'title': har.initial_title,
-                     'timestamp': har.initial_start_time,
-                     'url': har.root_url,
-                     'redirects': json.dumps(redirects),
-                     'categories': json.dumps(categories),
-                     'capture_dir': str(capture_dir),
-                     'incomplete_redirects': 1 if incomplete_redirects else 0}
-            if (capture_dir / 'no_index').exists():  # If the folders claims anonymity
-                cache['no_index'] = 1
-
-            if (capture_dir / 'parent').exists():  # The capture was initiated from an other one
-                with (capture_dir / 'parent').open() as f:
-                    cache['parent'] = f.read().strip()
-
-            p.hmset(str(capture_dir), cache)
+        p.hmset(str(capture_dir), cache)
         p.execute()
         self._captures_index[uuid] = CaptureCache(cache)
 
