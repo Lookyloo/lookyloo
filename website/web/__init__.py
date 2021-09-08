@@ -491,14 +491,16 @@ def bulk_captures(base_tree_uuid: str):
     selected_urls = request.form.getlist('url')
     urls = lookyloo.get_urls_rendered_page(base_tree_uuid)
     ct = lookyloo.get_crawled_tree(base_tree_uuid)
+    cache = lookyloo.capture_cache(base_tree_uuid)
     cookies = load_cookies(lookyloo.get_cookies(base_tree_uuid))
     bulk_captures = []
     for url in [urls[int(selected_id) - 1] for selected_id in selected_urls]:
         capture = {'url': url,
                    'cookies': cookies,
-                   'referer': ct.root_url,
+                   'referer': ct.redirects[-1] if ct.redirects else ct.root_url,
                    'user_agent': ct.user_agent,
-                   'parent': base_tree_uuid
+                   'parent': base_tree_uuid,
+                   'listing': False if cache.no_index else True
                    }
         new_capture_uuid = lookyloo.enqueue_capture(capture, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         bulk_captures.append((new_capture_uuid, url))
