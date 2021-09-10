@@ -345,12 +345,8 @@ class SubmitCapture(Resource):
         if 'url' not in request.args or not request.args.get('url'):
             return 'No "url" in the URL params, nothting to capture.', 400
 
-        try:
-            listing = int(request.args['listing'])
-        except Exception:
-            listing = 1
-
-        to_query = {'url': request.args['url'], 'listing': listing}
+        to_query = {'url': request.args['url'],
+                    'listing': False if 'listing' in request.args and request.args['listing'] in [0, '0'] else True}
         if request.args.get('user_agent'):
             to_query['user_agent'] = request.args['user_agent']
         if request.args.get('referer'):

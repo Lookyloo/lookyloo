@@ -62,10 +62,10 @@ class AsyncCapture(AbstractManager):
             cookies_pseudofile=to_capture.get('cookies', None),
             depth=int(to_capture.get('depth', 1)),
             # By default, the captures are on the index, unless the user mark them as un-listed
-            listing=False if ('listing' in to_capture and to_capture['listing'] in ['False', '0']) else True,
+            listing=False if ('listing' in to_capture and to_capture['listing'].lower() in ['false', '0', '']) else True,
             user_agent=to_capture.get('user_agent', None),
-            referer=to_capture.get('referer', ''),
-            proxy=to_capture.get('proxy', ''),
+            referer=to_capture.get('referer', None),
+            proxy=to_capture.get('proxy', None),
             os=to_capture.get('os', None),
             browser=to_capture.get('browser', None),
             parent=to_capture.get('parent', None)
@@ -83,7 +83,7 @@ class AsyncCapture(AbstractManager):
 
     def _capture(self, url: str, *, perma_uuid: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                  depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
-                 referer: str='', proxy: str='', os: Optional[str]=None,
+                 referer: Optional[str]=None, proxy: Optional[str]=None, os: Optional[str]=None,
                  browser: Optional[str]=None, parent: Optional[str]=None) -> Tuple[bool, str]:
         '''Launch a capture'''
         url = url.strip()

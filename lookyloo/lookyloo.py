@@ -630,8 +630,7 @@ class Lookyloo():
         p = self.redis.pipeline()
         for key, value in query.items():
             if isinstance(value, bool):
-                # Yes, empty string because that's False.
-                query[key] = 1 if value else ''
+                query[key] = 1 if value else 0
             if isinstance(value, list):
                 query[key] = json.dumps(value)
         if priority < -10:
