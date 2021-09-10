@@ -100,7 +100,10 @@ class MISP():
                 return {'error': events}
             to_return = []
             for event in events:
-                new_event = self.client.add_event(event, pythonify=True)
+                try:
+                    new_event = self.client.add_event(event, pythonify=True)
+                except requests.exceptions.ReadTimeout:
+                    return {'error': 'The connection to MISP timed out, try increasing the timeout in the config.'}
                 if isinstance(new_event, MISPEvent):
                     to_return.append(new_event)
                 else:
