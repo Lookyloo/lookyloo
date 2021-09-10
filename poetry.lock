@@ -1177,7 +1177,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "3.5.7"
+version = "3.5.8"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1222,7 +1222,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.7.2"
+version = "0.7.4"
 description = "The official Python client library for VirusTotal"
 category = "main"
 optional = false
@@ -1230,6 +1230,9 @@ python-versions = ">=3.6.0"
 
 [package.dependencies]
 aiohttp = "*"
+
+[package.extras]
+test = ["pytest", "pytest-httpserver", "pytest-asyncio"]
 
 [[package]]
 name = "w3lib"
@@ -1300,7 +1303,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "e1d188bc012b161fdec7c9f8854b89bd30016edd5585895863de248cef9a2423"
+content-hash = "6e40d5f5559910df30c26b19d328f125a5227c6893040857ebbe6bc6d0614dd2"
 
 [metadata.files]
 aiohttp = [
@@ -2114,8 +2117,8 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-redis = [
-    {file = "types-redis-3.5.7.tar.gz", hash = "sha256:da4d966e9fd6b1d80af82fadfbf1f7843119742dc24039663b896c0c574e4b34"},
-    {file = "types_redis-3.5.7-py3-none-any.whl", hash = "sha256:40b0b4b6ddb107a5c5fcf1d7bdfc7ebd6832b9ea644f8e32c1ab007575377951"},
+    {file = "types-redis-3.5.8.tar.gz", hash = "sha256:be26f50259d1a7e74cbc1e83b377dbf6b534fdb037ff55ae31501e87ac2b5b5a"},
+    {file = "types_redis-3.5.8-py3-none-any.whl", hash = "sha256:85814769071721044857c34841e46064b867ccdd58fc81221c43462bd07e4892"},
 ]
 types-requests = [
     {file = "types-requests-2.25.6.tar.gz", hash = "sha256:e21541c0f55c066c491a639309159556dd8c5833e49fcde929c4c47bdb0002ee"},
@@ -2135,7 +2138,8 @@ urllib3 = [
     {file = "urllib3-1.26.6.tar.gz", hash = "sha256:f57b4c16c62fa2760b7e3d97c35b255512fb6b59a259730f36ba32ce9f8e342f"},
 ]
 vt-py = [
-    {file = "vt-py-0.7.2.tar.gz", hash = "sha256:e1adfcb54b4ff3e86456b8a551827702650e25469e9d99bf030b71d564358b1d"},
+    {file = "vt-py-0.7.4.tar.gz", hash = "sha256:27af411495a115f6cc2da5d184a9f32c12a2304eca94efefaae03d2b12b66174"},
+    {file = "vt_py-0.7.4-py3-none-any.whl", hash = "sha256:15be46323a2d760f023d83ed1ce3c460fbb0fca662f23573d9c0a48978dcbc70"},
 ]
 w3lib = [
     {file = "w3lib-1.22.0-py2.py3-none-any.whl", hash = "sha256:0161d55537063e00d95a241663ede3395c4c6d7b777972ba2fd58bbab2001e53"},
