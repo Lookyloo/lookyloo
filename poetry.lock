@@ -224,7 +224,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "decorator"
-version = "5.0.9"
+version = "5.1.0"
 description = "Decorators for Humans"
 category = "dev"
 optional = false
@@ -1015,7 +1015,7 @@ python-versions = "*"
 
 [[package]]
 name = "scrapysplashwrapper"
-version = "1.8.0"
+version = "1.8.1"
 description = "Scrapy splash wrapper as a standalone library."
 category = "main"
 optional = false
@@ -1303,7 +1303,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "6e40d5f5559910df30c26b19d328f125a5227c6893040857ebbe6bc6d0614dd2"
+content-hash = "3c6643e28a08443218642843b33913f81d80b8cb24c7055ed1f5e30c9e48099c"
 
 [metadata.files]
 aiohttp = [
@@ -1501,8 +1501,8 @@ cssselect = [
     {file = "cssselect-1.1.0.tar.gz", hash = "sha256:f95f8dedd925fd8f54edb3d2dfb44c190d9d18512377d3c1e2388d16126879bc"},
 ]
 decorator = [
-    {file = "decorator-5.0.9-py3-none-any.whl", hash = "sha256:6e5c199c16f7a9f0e3a61a4a54b3d27e7dad0dbdde92b944426cb20914376323"},
-    {file = "decorator-5.0.9.tar.gz", hash = "sha256:72ecfba4320a893c53f9706bebb2d55c270c1e51a28789361aa93e4a21319ed5"},
+    {file = "decorator-5.1.0-py3-none-any.whl", hash = "sha256:7b12e7c3c6ab203a29e157335e9122cb03de9ab7264b137594103fd4a683b374"},
+    {file = "decorator-5.1.0.tar.gz", hash = "sha256:e59913af105b9860aa2c8d3272d9de5a56a4e608db9a2f167a8480b323d529a7"},
 ]
 defang = [
     {file = "defang-0.5.3.tar.gz", hash = "sha256:86aeff658d7cd4c3b61d16089872e1c1f0a1b7b3c64d4ca9525c017caeb284d7"},
@@ -2055,8 +2055,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.7.2-py2.py3-none-any.whl", hash = "sha256:71ac958370f8732fec746a25a8235b03a4d3c4c93a59be51aa8e910a08cfe511"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.8.0-py3-none-any.whl", hash = "sha256:396871639fe5c2d910dfe7e0f3fe425135143f9c8e1f3ab9d95d50375c4ea264"},
-    {file = "scrapysplashwrapper-1.8.0.tar.gz", hash = "sha256:cb2d7cdff3175abb7a48a05a977fd3061cde9e6c8e1ac49c0d371dc6df159f4a"},
+    {file = "scrapysplashwrapper-1.8.1-py3-none-any.whl", hash = "sha256:053e01e9954087547d21cd4a36d8b4330627c146c1fa13ec846d691adc8826df"},
+    {file = "scrapysplashwrapper-1.8.1.tar.gz", hash = "sha256:33f3a3ba4247024974b81d5fa3a0dddcbab24f3de06674c2687dfc6ffb711541"},
 ]
 service-identity = [
     {file = "service-identity-21.1.0.tar.gz", hash = "sha256:6e6c6086ca271dc11b033d17c3a8bea9f24ebff920c587da090afc9519419d34"},
