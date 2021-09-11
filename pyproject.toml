@@ -50,7 +50,7 @@ pyeupi = "^1.1"
 scrapysplashwrapper = "^1.8.1"
 pysanejs = "^1.5"
 har2tree = "^1.8.4"
-pylookyloo = "^1.8"
+pylookyloo = "^1.8.1"
 dnspython = "^2.1.0"
 pytaxonomies = "^1.4.1"
 pymisp = {version = "^2.4.148", extras = ["url"]}
