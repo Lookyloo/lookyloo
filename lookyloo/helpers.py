@@ -7,7 +7,6 @@ import pickle
 from datetime import datetime, timedelta
 from enum import IntEnum, unique
 from functools import lru_cache
-from glob import glob
 from io import BufferedIOBase
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
@@ -167,9 +166,8 @@ def get_socket_path(name: str) -> str:
 
 
 def get_user_agents(directory: str='user_agents') -> Dict[str, Any]:
-    ua_files_path = str(get_homedir() / directory / '*' / '*' / '*.json')
-    paths = sorted(glob(ua_files_path), reverse=True)
-    with open(paths[0]) as f:
+    ua_files_path = sorted((get_homedir() / directory).glob('**/*.json'), reverse=True)
+    with ua_files_path[0].open() as f:
         return json.load(f)
 
 
