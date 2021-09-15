@@ -904,6 +904,15 @@ class Lookyloo():
         obj.add_reference(vt_obj, 'analysed-with')
         return vt_obj
 
+    def __misp_add_urlscan_to_event(self, capture_uuid: str, visibility: str) -> Optional[MISPAttribute]:
+        response = self.urlscan.url_submit(self.get_info(capture_uuid), visibility)
+        if 'result' in response:
+            attribute = MISPAttribute()
+            attribute.value = response['result']
+            attribute.type = 'link'
+            return attribute
+        return None
+
     def misp_export(self, capture_uuid: str, /, with_parent: bool=False) -> Union[List[MISPEvent], Dict[str, str]]:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''
@@ -973,6 +982,12 @@ class Lookyloo():
                 vt_obj = self.__misp_add_vt_to_URLObject(e_obj)
                 if vt_obj:
                     event.add_object(vt_obj)
+        if self.urlscan.available:
+            urlscan_attribute = self.__misp_add_urlscan_to_event(
+                capture_uuid,
+                visibility='unlisted' if (cache and cache.no_index) else 'public')
+            if urlscan_attribute:
+                event.add_attribute(**urlscan_attribute)
 
         if with_parent and cache.parent:
             parent = self.misp_export(cache.parent, with_parent)
