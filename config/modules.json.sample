@@ -36,6 +36,11 @@
     "allow_auto_trigger": false,
     "force_visibility": false
   },
+  "Phishtank": {
+    "enabled": false,
+    "url": null,
+    "allow_auto_trigger": true
+  },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
     "autosubmit": "Automatically submits the URL to the 3rd party service.",
@@ -45,6 +50,7 @@
     "SaneJS": "Module to query SaneJS: https://github.com/Lookyloo/sanejs",
     "MISP": "Module to query MISP: https://www.misp-project.org/",
     "UniversalWhois": "Module to query a local instance of uWhoisd: https://github.com/Lookyloo/uwhoisd",
-    "UrlScan": "Module to query urlscan.io"
+    "UrlScan": "Module to query urlscan.io",
+    "Phishtank": "Module to query Phishtank Lookup (https://github.com/Lookyloo/phishtank-lookup). URL set to none means querying the public instance."
   }
 }

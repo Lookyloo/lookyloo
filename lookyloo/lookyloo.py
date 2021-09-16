@@ -40,7 +40,7 @@ from .helpers import (CaptureStatus, get_captures_dir, get_config,
                       uniq_domains)
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, SaneJavaScript, UniversalWhois,
-                      UrlScan, VirusTotal)
+                      UrlScan, VirusTotal, Phishtank)
 
 
 class Lookyloo():
@@ -84,6 +84,10 @@ class Lookyloo():
         self.urlscan = UrlScan(get_config('modules', 'UrlScan'))
         if not self.urlscan.available:
             self.logger.warning('Unable to setup the UrlScan module')
+
+        self.phishtank = Phishtank(get_config('modules', 'Phishtank'))
+        if not self.phishtank.available:
+            self.logger.warning('Unable to setup the Phishtank module')
 
         self.context = Context(self.sanejs)
         self._captures_index: Dict[str, CaptureCache] = {}
@@ -473,6 +477,7 @@ class Lookyloo():
             self.get_info(capture_uuid),
             visibility='unlisted' if (capture_cache and capture_cache.no_index) else 'public',
             force=force, auto_trigger=auto_trigger)
+        to_return['Phishtank'] = self.phishtank.capture_default_trigger(ct, auto_trigger=auto_trigger)
         return to_return
 
     def get_modules_responses(self, capture_uuid: str, /) -> Optional[Dict[str, Any]]:
@@ -497,6 +502,13 @@ class Lookyloo():
                     to_return['pi'][redirect] = self.pi.get_url_lookup(redirect)
             else:
                 to_return['pi'][ct.root_hartree.har.root_url] = self.pi.get_url_lookup(ct.root_hartree.har.root_url)
+        if self.phishtank.available:
+            to_return['phishtank'] = {}
+            if ct.redirects:
+                for redirect in ct.redirects:
+                    to_return['phishtank'][redirect] = self.phishtank.get_url_lookup(redirect)
+            else:
+                to_return['phishtank'][ct.root_hartree.har.root_url] = self.phishtank.get_url_lookup(ct.root_hartree.har.root_url)
         if self.urlscan.available:
             info = self.get_info(capture_uuid)
             to_return['urlscan'] = {'submission': {}, 'result': {}}

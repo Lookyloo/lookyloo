@@ -395,6 +395,14 @@ def modules(tree_uuid: str):
                 continue
             pi_short_result[url] = full_report['results'][0]['tag_label']
 
+    phishtank_short_result: Dict[str, str] = {}
+    if 'phishtank' in modules_responses:
+        pt = modules_responses.pop('phishtank')
+        for url, full_report in pt.items():
+            if not full_report:
+                continue
+            phishtank_short_result[url] = full_report['phish_detail_url']
+
     urlscan_to_display: Dict = {}
     if 'urlscan' in modules_responses:
         urlscan = modules_responses.pop('urlscan')
@@ -412,7 +420,9 @@ def modules(tree_uuid: str):
         else:
             # unable to run the query, probably an invalid key
             pass
-    return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result, pi=pi_short_result, urlscan=urlscan_to_display)
+    return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result,
+                           pi=pi_short_result, urlscan=urlscan_to_display,
+                           phishtank=phishtank_short_result)
 
 
 @app.route('/tree/<string:tree_uuid>/redirects', methods=['GET'])
