@@ -23,11 +23,10 @@
 <center>
   <h1 class="display-4">Phishtank</h1>
   <div>
-    <p>A scan was triggered for the url(s) below: </p>
+    <p>Phishtank flagged the URLs below as phishing:</p>
     <ul>
     {% for url, permaurl in phishtank.items() %}
-    <li>{{ shorten_string(url, 150) }}: <a href="{{ permaurl }}">click to view it</a> on phishtank.</p>
-    </li>
+    <li>{{ shorten_string(url, 150) }}: <a href="{{ permaurl }}">click to view it</a> on phishtank.</p></li>
     {% endfor %}
   </div>
 </center>
