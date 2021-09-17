@@ -6,7 +6,7 @@ import json
 import logging
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import requests
 
