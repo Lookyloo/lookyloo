@@ -406,20 +406,26 @@ def modules(tree_uuid: str):
     urlscan_to_display: Dict = {}
     if 'urlscan' in modules_responses:
         urlscan = modules_responses.pop('urlscan')
-        urlscan_to_display = {'permaurl': '', 'malicious': False, 'tags': []}
-        if urlscan['submission'] and urlscan['submission'].get('result'):
-            urlscan_to_display['permaurl'] = urlscan['submission']['result']
-            if urlscan['result']:
-                # We have a result available, get the verdicts
-                if (urlscan['result'].get('verdicts')
-                        and urlscan['result']['verdicts'].get('overall')):
-                    if urlscan['result']['verdicts']['overall'].get('malicious') is not None:
-                        urlscan_to_display['malicious'] = urlscan['result']['verdicts']['overall']['malicious']
-                    if urlscan['result']['verdicts']['overall'].get('tags'):
-                        urlscan_to_display['tags'] = urlscan['result']['verdicts']['overall']['tags']
+        if 'error' in urlscan['submission']:
+            if 'description' in urlscan['submission']['error']:
+                urlscan_to_display = {'error_message': urlscan['submission']['error']['description']}
+            else:
+                urlscan_to_display = {'error_message': urlscan['submission']['error']}
         else:
-            # unable to run the query, probably an invalid key
-            pass
+            urlscan_to_display = {'permaurl': '', 'malicious': False, 'tags': []}
+            if urlscan['submission'] and urlscan['submission'].get('result'):
+                urlscan_to_display['permaurl'] = urlscan['submission']['result']
+                if urlscan['result']:
+                    # We have a result available, get the verdicts
+                    if (urlscan['result'].get('verdicts')
+                            and urlscan['result']['verdicts'].get('overall')):
+                        if urlscan['result']['verdicts']['overall'].get('malicious') is not None:
+                            urlscan_to_display['malicious'] = urlscan['result']['verdicts']['overall']['malicious']
+                        if urlscan['result']['verdicts']['overall'].get('tags'):
+                            urlscan_to_display['tags'] = urlscan['result']['verdicts']['overall']['tags']
+            else:
+                # unable to run the query, probably an invalid key
+                pass
     return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result,
                            pi=pi_short_result, urlscan=urlscan_to_display,
                            phishtank=phishtank_short_result)

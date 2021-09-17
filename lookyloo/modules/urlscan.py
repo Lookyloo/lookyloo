@@ -101,6 +101,9 @@ class UrlScan():
             # default to key config on urlscan.io website
             pass
         response = self.client.post('https://urlscan.io/api/v1/scan/', json=data)
+        if response.status_code == 400:
+            # Error, but we have details in the response
+            return response.json()
         response.raise_for_status()
         return response.json()
 
@@ -139,6 +142,8 @@ class UrlScan():
                                              visibility)
             except requests.exceptions.HTTPError as e:
                 return {'error': e}
+            if 'status' in response and response['status'] == 400:
+                response = {'error': response}
             with urlscan_file_submit.open('w') as _f:
                 json.dump(response, _f)
             return response

@@ -1,11 +1,12 @@
 {% from "macros.html" import shorten_string %}
 
 <div>
-{% if urlscan and urlscan.get('permaurl') %}
+{% if urlscan %}
   <hr>
   <center>
     <h1 class="display-4">urlscan.io</h1>
   <div>
+  {% if urlscan.get('permaurl') %}
     <p>A scan was triggered for this capture,
     <a href="{{ urlscan['permaurl'] }}">click to view it</a> on urlscan.io.</p>
     {% if urlscan['malicious']%}
@@ -15,6 +16,10 @@
     <p>It is tagged as {{ ','.join(urlscan['tags']) }}.</p>
     {% endif%}
 
+  {% elif urlscan.get('error_message') %}
+  <p> Unable to trigger the scan, urlscan.io returned the following message:</p>
+  <p class="font-italic">{{ urlscan.get('error_message') }}</p>
+  {% endif%}
   </div>
   </center>
 {% endif%}
