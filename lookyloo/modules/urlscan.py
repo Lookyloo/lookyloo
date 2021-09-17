@@ -59,15 +59,15 @@ class UrlScan():
         m.update(to_hash.encode())
         return self.storage_dir_urlscan / m.hexdigest()
 
-    def get_url_submission(self, capture_info: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def get_url_submission(self, capture_info: Dict[str, Any]) -> Dict[str, Any]:
         url_storage_dir = self.__get_cache_directory(capture_info['url'],
                                                      capture_info['user_agent'],
                                                      capture_info['referer']) / 'submit'
         if not url_storage_dir.exists():
-            return None
+            return {}
         cached_entries = sorted(url_storage_dir.glob('*'), reverse=True)
         if not cached_entries:
-            return None
+            return {}
 
         with cached_entries[0].open() as f:
             return json.load(f)
