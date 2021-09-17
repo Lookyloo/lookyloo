@@ -404,7 +404,7 @@ def modules(tree_uuid: str):
             phishtank_short_result[url] = full_report['phish_detail_url']
 
     urlscan_to_display: Dict = {}
-    if 'urlscan' in modules_responses:
+    if 'urlscan' in modules_responses and modules_responses.get('urlscan'):
         urlscan = modules_responses.pop('urlscan')
         if 'error' in urlscan['submission']:
             if 'description' in urlscan['submission']['error']:
