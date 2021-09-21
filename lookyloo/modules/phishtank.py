@@ -75,7 +75,7 @@ class Phishtank():
         Note: It will trigger a request to phishtank every time *until* there is a hit (it's cheap), then once a day.
         '''
         if not self.available:
-            raise ConfigError('VirusTotal not available, probably no API key')
+            raise ConfigError('Phishtank not available, probably not enabled.')
 
         url_storage_dir = self.__get_cache_directory(url)
         url_storage_dir.mkdir(parents=True, exist_ok=True)

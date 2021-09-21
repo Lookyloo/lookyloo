@@ -17,12 +17,14 @@ from .modules import SaneJavaScript
 
 class Context():
 
-    def __init__(self, sanejs: SaneJavaScript):
+    def __init__(self):
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('indexing'), db=1, decode_responses=True)
-        self.sanejs = sanejs
         self._cache_known_content()
+        self.sanejs = SaneJavaScript(get_config('modules', 'SaneJS'))
+        if not self.sanejs.available:
+            self.logger.warning('Unable to setup the SaneJS module')
 
     def clear_context(self):
         self.redis.flushdb()

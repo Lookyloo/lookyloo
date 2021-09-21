@@ -39,7 +39,7 @@ from .helpers import (CaptureStatus, get_captures_dir, get_config,
                       load_pickle_tree, remove_pickle_tree, try_make_file,
                       uniq_domains)
 from .indexing import Indexing
-from .modules import (MISP, PhishingInitiative, SaneJavaScript, UniversalWhois,
+from .modules import (MISP, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank)
 
 
@@ -69,10 +69,6 @@ class Lookyloo():
         if not self.vt.available:
             self.logger.warning('Unable to setup the VirusTotal module')
 
-        self.sanejs = SaneJavaScript(get_config('modules', 'SaneJS'))
-        if not self.sanejs.available:
-            self.logger.warning('Unable to setup the SaneJS module')
-
         self.misp = MISP(get_config('modules', 'MISP'))
         if not self.misp.available:
             self.logger.warning('Unable to setup the MISP module')
@@ -89,7 +85,7 @@ class Lookyloo():
         if not self.phishtank.available:
             self.logger.warning('Unable to setup the Phishtank module')
 
-        self.context = Context(self.sanejs)
+        self.context = Context()
         self._captures_index: Dict[str, CaptureCache] = {}
 
     @property
@@ -135,30 +131,6 @@ class Lookyloo():
     def _cache_capture(self, capture_uuid: str, /) -> CrawledTree:
         '''Generate the pickle, set the cache, add capture in the indexes'''
 
-        def _ensure_meta(capture_dir: Path, tree: CrawledTree) -> None:
-            '''Make sure the meta file is present, it contains information about the User Agent used for the capture.'''
-            metafile = capture_dir / 'meta'
-            if metafile.exists():
-                return
-            ua = UserAgent(tree.root_hartree.user_agent)
-            to_dump = {}
-            if ua.platform:
-                to_dump['os'] = ua.platform
-            if ua.browser:
-                if ua.version:
-                    to_dump['browser'] = f'{ua.browser} {ua.version}'
-                else:
-                    to_dump['browser'] = ua.browser
-            if ua.language:
-                to_dump['language'] = ua.language
-
-            if not to_dump:
-                # UA not recognized
-                self.logger.info(f'Unable to recognize the User agent: {ua}')
-            to_dump['user_agent'] = ua.string
-            with metafile.open('w') as f:
-                json.dump(to_dump, f)
-
         capture_dir = self._get_capture_dir(capture_uuid)
 
         har_files = sorted(capture_dir.glob('*.har'))
@@ -185,7 +157,6 @@ class Lookyloo():
         index = True
         try:
             ct = CrawledTree(har_files, capture_uuid)
-            _ensure_meta(capture_dir, ct)
             self._resolve_dns(ct)
             self.context.contextualize_tree(ct)
             cache = self.capture_cache(capture_uuid)
@@ -407,10 +378,30 @@ class Lookyloo():
     def get_meta(self, capture_uuid: str, /) -> Dict[str, str]:
         '''Get the meta informations from a capture (mostly, details about the User Agent used.)'''
         capture_dir = self._get_capture_dir(capture_uuid)
+        metafile = capture_dir / 'meta'
+        if metafile.exists():
+            with metafile.open('r') as f:
+                return json.load(f)
+
         meta = {}
-        if (capture_dir / 'meta').exists():
-            with open((capture_dir / 'meta'), 'r') as f:
-                meta = json.load(f)
+        ct = self.get_crawled_tree(capture_uuid)
+        ua = UserAgent(ct.root_hartree.user_agent)
+        meta['user_agent'] = ua.string
+        if ua.platform:
+            meta['os'] = ua.platform
+        if ua.browser:
+            if ua.version:
+                meta['browser'] = f'{ua.browser} {ua.version}'
+            else:
+                meta['browser'] = ua.browser
+        if ua.language:
+            meta['language'] = ua.language
+
+        if not meta:
+            # UA not recognized
+            self.logger.info(f'Unable to recognize the User agent: {ua}')
+        with metafile.open('w') as f:
+            json.dump(meta, f)
         return meta
 
     def categories_capture(self, capture_uuid: str, /) -> Dict[str, Any]:
