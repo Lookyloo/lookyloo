@@ -91,6 +91,8 @@ class BackgroundIndexer(AbstractManager):
             if not indexed[2]:
                 self.logger.info(f'Indexing cookies for {cache.uuid}')
                 self.lookyloo.indexing.index_cookies_capture(ct)
+            # NOTE: categories aren't taken in account here, should be fixed(?)
+            # see indexing.index_categories_capture(capture_uuid, categories)
 
 
 def main():

@@ -3,7 +3,6 @@
 import json
 import logging
 import os
-import pickle
 from datetime import datetime, timedelta
 from enum import IntEnum, unique
 from functools import lru_cache
@@ -214,28 +213,6 @@ def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str]]=None) -
     except Exception as e:
         print(f'Unable to load the cookie file: {e}')
     return to_return
-
-
-def load_pickle_tree(capture_dir: Path) -> Optional[CrawledTree]:
-    pickle_file = capture_dir / 'tree.pickle'
-    if pickle_file.exists():
-        with pickle_file.open('rb') as _p:
-            try:
-                return pickle.load(_p)
-            except pickle.UnpicklingError:
-                remove_pickle_tree(capture_dir)
-            except EOFError:
-                remove_pickle_tree(capture_dir)
-            except Exception:
-                remove_pickle_tree(capture_dir)
-
-    return None
-
-
-def remove_pickle_tree(capture_dir: Path) -> None:
-    pickle_file = capture_dir / 'tree.pickle'
-    if pickle_file.exists():
-        pickle_file.unlink()
 
 
 def uniq_domains(uniq_urls):

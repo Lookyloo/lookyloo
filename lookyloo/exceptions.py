@@ -28,3 +28,7 @@ class MissingUUID(LookylooException):
 
 class MissingCaptureDirectory(LookylooException):
     pass
+
+
+class TreeNeedsRebuild(LookylooException):
+    pass
