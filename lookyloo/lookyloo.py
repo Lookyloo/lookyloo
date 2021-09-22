@@ -27,7 +27,7 @@ from werkzeug.useragents import UserAgent
 from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
 from .exceptions import (LookylooException, MissingCaptureDirectory,
-                         MissingUUID)
+                         MissingUUID, TreeNeedsRebuild)
 from .helpers import (CaptureStatus, get_captures_dir, get_config,
                       get_email_template, get_homedir, get_resources_hashes,
                       get_socket_path, get_splash_url, get_taxonomies, uniq_domains)
@@ -336,7 +336,11 @@ class Lookyloo():
     def get_crawled_tree(self, capture_uuid: str, /) -> CrawledTree:
         '''Get the generated tree in ETE Toolkit format.
         Loads the pickle if it exists, creates it otherwise.'''
-        return self._captures_index[capture_uuid].tree
+        try:
+            return self._captures_index[capture_uuid].tree
+        except TreeNeedsRebuild:
+            self._captures_index.reload_cache(capture_uuid)
+            return self._captures_index[capture_uuid].tree
 
     def enqueue_capture(self, query: MutableMapping[str, Any], source: str, user: str, authenticated: bool) -> str:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
