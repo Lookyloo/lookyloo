@@ -23,7 +23,7 @@
   </div>
   </center>
 {% endif%}
-{% if phishtank %}
+{% if phishtank and phishtank.get('urls') or phishtank.get('ips_hits') %}
 <hr>
 <center>
   <h1 class="display-4">Phishtank</h1>
