@@ -68,7 +68,12 @@ def load_pickle_tree(capture_dir: Path) -> CrawledTree:
     if pickle_file.exists():
         with pickle_file.open('rb') as _p:
             try:
-                return pickle.load(_p)
+                tree = pickle.load(_p)
+                if tree.root_hartree.har.path.exists():
+                    return tree
+                else:
+                    # The capture was moved.
+                    remove_pickle_tree(capture_dir)
             except pickle.UnpicklingError:
                 remove_pickle_tree(capture_dir)
             except EOFError:
