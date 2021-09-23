@@ -53,11 +53,7 @@ class CaptureCache():
 
     @property
     def tree(self) -> CrawledTree:
-        try:
-            return load_pickle_tree(self.capture_dir)
-        except TreeNeedsRebuild:
-            # The pickle is missing, that shouldn't at this stage.
-            raise LookylooException(f'Unable to get pickle for {self.uuid} - {self.capture_dir}')
+        return load_pickle_tree(self.capture_dir)
 
 
 def remove_pickle_tree(capture_dir: Path) -> None:
