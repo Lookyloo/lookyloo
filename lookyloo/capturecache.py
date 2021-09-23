@@ -86,6 +86,7 @@ class CapturesIndex(Mapping):
         self.redis = redis
         self.contextualizer = contextualizer
         self.__cache: Dict[str, CaptureCache] = {}
+        self._quick_init()
 
     def __getitem__(self, uuid: str) -> CaptureCache:
         if uuid in self.__cache:
@@ -130,6 +131,22 @@ class CapturesIndex(Mapping):
             remove_pickle_tree(cache.capture_dir)
         self.redis.flushdb()
         self.__cache = {}
+
+    def _quick_init(self) -> None:
+        '''Initialize the cache with a list of UUIDs, with less back and forth with redis.
+        Only get recent captures.'''
+        p = self.redis.pipeline()
+        for directory in self.redis.hvals('lookup_dirs'):
+            p.hgetall(directory)
+        for cache in p.execute():
+            if not cache:
+                continue
+            try:
+                cc = CaptureCache(cache)
+            except LookylooException as e:
+                self.logger.warning(e)
+                continue
+            self.__cache[cc.uuid] = cc
 
     def _get_capture_dir(self, uuid: str) -> Path:
         # Try to get from the recent captures cache in redis
