@@ -259,12 +259,15 @@ class Lookyloo():
             else:
                 to_return['pi'][ct.root_hartree.har.root_url] = self.pi.get_url_lookup(ct.root_hartree.har.root_url)
         if self.phishtank.available:
-            to_return['phishtank'] = {}
+            to_return['phishtank'] = {'urls': {}, 'ips_hits': {}}
             if ct.redirects:
                 for redirect in ct.redirects:
-                    to_return['phishtank'][redirect] = self.phishtank.get_url_lookup(redirect)
+                    to_return['phishtank']['urls'][redirect] = self.phishtank.get_url_lookup(redirect)
             else:
-                to_return['phishtank'][ct.root_hartree.har.root_url] = self.phishtank.get_url_lookup(ct.root_hartree.har.root_url)
+                to_return['phishtank']['urls'][ct.root_hartree.har.root_url] = self.phishtank.get_url_lookup(ct.root_hartree.har.root_url)
+            ips_hits = self.phishtank.lookup_ips_capture(ct)
+            if ips_hits:
+                to_return['phishtank']['ips_hits'] = ips_hits
         if self.urlscan.available:
             info = self.get_info(capture_uuid)
             to_return['urlscan'] = {'submission': {}, 'result': {}}

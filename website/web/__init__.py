@@ -395,13 +395,22 @@ def modules(tree_uuid: str):
                 continue
             pi_short_result[url] = full_report['results'][0]['tag_label']
 
-    phishtank_short_result: Dict[str, str] = {}
+    phishtank_short_result: Dict[str, Dict] = {'urls': {}, 'ips_hits': {}}
     if 'phishtank' in modules_responses:
         pt = modules_responses.pop('phishtank')
-        for url, full_report in pt.items():
+        for url, full_report in pt['urls'].items():
             if not full_report:
                 continue
-            phishtank_short_result[url] = full_report['phish_detail_url']
+            phishtank_short_result['urls'][url] = full_report['phish_detail_url']
+
+        for ip, entries in pt['ips_hits'].items():
+            if not entries:
+                continue
+            phishtank_short_result['ips_hits'] = {ip: []}
+            for full_report in entries:
+                phishtank_short_result['ips_hits'][ip].append((
+                    full_report['url'],
+                    full_report['phish_detail_url']))
 
     urlscan_to_display: Dict = {}
     if 'urlscan' in modules_responses and modules_responses.get('urlscan'):
