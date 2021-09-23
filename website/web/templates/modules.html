@@ -31,8 +31,10 @@
     <p>Phishtank flagged the URLs below as phishing:</p>
     <ul>
     {% for url, permaurl in phishtank['urls'].items() %}
-    <li>{{ shorten_string(url, 150) }}: <a href="{{ permaurl }}">click to view it</a> on phishtank.</p></li>
+      <li>{{ shorten_string(url, 150) }}: <a href="{{ permaurl }}">click to view it</a> on phishtank.</p></li>
     {% endfor %}
+    </ul>
+
     {% if phishtank.get('ips_hits') %}
     <p>The IPs below are in the tree and are flagged as phishing on Phishtank, might on on other URLs:</p>
     <ul>
