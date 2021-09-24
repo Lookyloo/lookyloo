@@ -287,6 +287,9 @@ class Lookyloo():
         (self._get_capture_dir(capture_uuid) / 'no_index').touch()
         self._captures_index.reload_cache(capture_uuid)
 
+    def update_tree_cache_info(self, process_id: int, classname: str) -> None:
+        self.redis.hset('tree_cache', f'{process_id}|{classname}', str(self._captures_index.lru_cache_status()))
+
     @property
     def capture_uuids(self) -> List[str]:
         '''All the capture UUIDs present in the cache.'''

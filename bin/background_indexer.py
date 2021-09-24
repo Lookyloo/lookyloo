@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import os
 from datetime import datetime, timedelta
 
 from lookyloo.abstractmanager import AbstractManager
@@ -25,6 +26,7 @@ class BackgroundIndexer(AbstractManager):
     def _to_run_forever(self):
         self._build_missing_pickles()
         self._check_indexes()
+        self.lookyloo.update_tree_cache_info(os.getpid(), self.script_name)
 
     def _build_missing_pickles(self):
         for uuid_path in sorted(self.lookyloo.capture_dir.glob('**/uuid'), reverse=True):

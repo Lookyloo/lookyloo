@@ -20,7 +20,6 @@ from lookyloo.abstractmanager import AbstractManager
 from lookyloo.helpers import (get_captures_dir, get_config, get_socket_path,
                               get_splash_url, load_cookies, safe_create_dir,
                               splash_status)
-from lookyloo.lookyloo import Lookyloo
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)
@@ -30,7 +29,6 @@ class AsyncCapture(AbstractManager):
 
     def __init__(self, loglevel: int=logging.INFO):
         super().__init__(loglevel)
-        self.lookyloo = Lookyloo()
         self.script_name = 'async_capture'
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
         self.capture_dir: Path = get_captures_dir()

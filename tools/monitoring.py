@@ -74,6 +74,10 @@ class Monitoring():
 
         return to_return
 
+    @property
+    def tree_cache(self):
+        return self.redis_cache.hgetall('tree_cache')
+
 
 if __name__ == '__main__':
 
@@ -93,6 +97,11 @@ if __name__ == '__main__':
     running = AbstractManager.is_running()
     for service, number in running:
         s = Padding(f'{service} ({int(number)} service(s))', (0, 2))
+        console.print(s)
+
+    console.print('Current cache status:')
+    for name, status in m.tree_cache.items():
+        s = Padding(f'{name}: {status}', (0, 2))
         console.print(s)
 
     console.print('Current queues:')

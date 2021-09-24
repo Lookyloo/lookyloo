@@ -137,6 +137,9 @@ class CapturesIndex(Mapping):
         self.redis.flushdb()
         self.__cache = {}
 
+    def lru_cache_status(self):
+        return load_pickle_tree.cache_info()
+
     def _quick_init(self) -> None:
         '''Initialize the cache with a list of UUIDs, with less back and forth with redis.
         Only get recent captures.'''

@@ -5,6 +5,7 @@ import calendar
 import http
 import json
 import logging
+import os
 import time
 from datetime import date, datetime, timedelta, timezone
 from io import BytesIO, StringIO
@@ -646,6 +647,8 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
 
     except NoValidHarFile as e:
         return render_template('error.html', error_message=e)
+    finally:
+        lookyloo.update_tree_cache_info(os.getpid(), 'website')
 
 
 @app.route('/tree/<string:tree_uuid>/mark_as_legitimate', methods=['POST'])

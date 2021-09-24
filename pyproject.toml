@@ -25,7 +25,6 @@ classifiers = [
 start = "bin.start:main"
 stop = "bin.stop:main"
 update = "bin.update:main"
-rebuild_caches = "bin.rebuild_caches:main"
 shutdown = "bin.shutdown:main"
 run_backend = "bin.run_backend:main"
 async_capture = "bin.async_capture:main"
