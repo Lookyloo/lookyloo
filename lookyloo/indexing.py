@@ -27,6 +27,13 @@ class Indexing():
     def redis(self):
         return Redis(connection_pool=self.redis_pool)
 
+    def new_internal_uuids(self, crawled_tree: CrawledTree) -> None:
+        # only trigger this method if the capture was already indexed.
+        if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
+            self._reindex_cookies_capture(crawled_tree)
+        if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
+            self._reindex_body_hashes_capture(crawled_tree)
+
     # ###### Cookies ######
 
     @property
@@ -44,6 +51,25 @@ class Indexing():
 
     def get_cookies_names_captures(self, cookie_name: str) -> List[Tuple[str, str]]:
         return [uuids.split('|') for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]
+
+    def _reindex_cookies_capture(self, crawled_tree: CrawledTree) -> None:
+        pipeline = self.redis.pipeline()
+        already_loaded: Set[Tuple[str, str]] = set()
+        already_cleaned_up = []
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            if hasattr(urlnode, 'cookies_received'):
+                for domain, cookie, _ in urlnode.cookies_received:
+                    name, value = cookie.split('=', 1)
+                    if (name, domain) in already_loaded:
+                        # Only add cookie name once / capture
+                        continue
+                    already_loaded.add((name, domain))
+                    if name not in already_cleaned_up:
+                        for key in self.redis.sscan_iter(f'cn|{name}|captures', f'{crawled_tree.uuid}|*'):
+                            pipeline.srem(f'cn|{name}|captures', key)
+                    already_cleaned_up.append(name)
+                    pipeline.sadd(f'cn|{name}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
+        pipeline.execute()
 
     def index_cookies_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
@@ -106,6 +132,19 @@ class Indexing():
         if hash_domains_freq:
             to_return['hash_domains_freq'] = int(hash_domains_freq)
         return to_return
+
+    def _reindex_body_hashes_capture(self, crawled_tree: CrawledTree) -> None:
+        # if the capture is regenerated, the hostnodes/urlnodes UUIDs are changed
+        cleaned_up_hashes = []
+        pipeline = self.redis.pipeline()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            for h in urlnode.resources_hashes:
+                if h not in cleaned_up_hashes:
+                    self.redis.delete(f'bh|{h}|captures|{crawled_tree.uuid}')
+                cleaned_up_hashes.append(h)
+                pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1,
+                                 f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
+        pipeline.execute()
 
     def index_body_hashes_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):

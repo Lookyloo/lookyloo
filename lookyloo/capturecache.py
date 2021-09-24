@@ -19,6 +19,7 @@ from har2tree import CrawledTree, Har2TreeError, HarFile
 from redis import Redis
 
 from .context import Context
+from .indexing import Indexing
 from .exceptions import (LookylooException, MissingCaptureDirectory, NoValidHarFile,
                          MissingUUID, TreeNeedsRebuild)
 from .helpers import try_make_file, get_config
@@ -53,7 +54,7 @@ class CaptureCache():
 
     @property
     def tree(self) -> CrawledTree:
-        return load_pickle_tree(self.capture_dir)
+        return load_pickle_tree(self.capture_dir, self.capture_dir.stat().st_mtime)
 
 
 def remove_pickle_tree(capture_dir: Path) -> None:
@@ -62,8 +63,8 @@ def remove_pickle_tree(capture_dir: Path) -> None:
         pickle_file.unlink()
 
 
-@lru_cache(maxsize=1024)
-def load_pickle_tree(capture_dir: Path) -> CrawledTree:
+@lru_cache(maxsize=256)
+def load_pickle_tree(capture_dir: Path, last_mod_time: int) -> CrawledTree:
     pickle_file = capture_dir / 'tree.pickle'
     if pickle_file.exists():
         with pickle_file.open('rb') as _p:
@@ -89,6 +90,7 @@ class CapturesIndex(Mapping):
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.redis = redis
+        self.indexing = Indexing()
         self.contextualizer = contextualizer
         self.__cache: Dict[str, CaptureCache] = {}
         self._quick_init()
@@ -110,9 +112,10 @@ class CapturesIndex(Mapping):
                 self.__cache[uuid] = cc
                 return self.__cache[uuid]
         try:
-            tree = load_pickle_tree(capture_dir)
+            tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
         except TreeNeedsRebuild:
             tree = self._create_pickle(capture_dir)
+            self.indexing.new_internal_uuids(tree)
         self.__cache[uuid] = self._set_capture_cache(capture_dir, tree)
         return self.__cache[uuid]
 
@@ -193,7 +196,7 @@ class CapturesIndex(Mapping):
             # The pickle is being created somewhere else, wait until it's done.
             while lock_file.exists():
                 time.sleep(5)
-            return load_pickle_tree(capture_dir)
+            return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
 
         har_files = sorted(capture_dir.glob('*.har'))
         pickle_file = capture_dir / 'tree.pickle'
@@ -251,7 +254,7 @@ class CapturesIndex(Mapping):
                 if har.initial_redirects and har.need_tree_redirects:
                     if not tree:
                         # try to load tree from disk
-                        tree = load_pickle_tree(capture_dir)
+                        tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
                     # get redirects
                     if tree:
                         cache['redirects'] = json.dumps(tree.redirects)

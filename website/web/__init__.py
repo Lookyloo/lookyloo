@@ -220,7 +220,10 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
         'request_cookie': {'icon': "cookie_read.png", 'tooltip': 'There are cookies in the request'}
     }
 
-    hostnode, urls = lookyloo.get_hostnode_investigator(tree_uuid, node_uuid)
+    try:
+        hostnode, urls = lookyloo.get_hostnode_investigator(tree_uuid, node_uuid)
+    except IndexError:
+        return render_template('error.html', error_message='Sorry, this one is on us. The tree was rebuild, please reload the tree and try again.')
 
     return render_template('hostname_popup.html',
                            tree_uuid=tree_uuid,
