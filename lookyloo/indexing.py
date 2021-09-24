@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
+import logging
 import re
 from collections import defaultdict
 from typing import Dict, Iterable, List, Optional, Set, Tuple
@@ -11,12 +12,14 @@ from har2tree import CrawledTree
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
-from .helpers import get_public_suffix_list, get_socket_path
+from .helpers import get_public_suffix_list, get_socket_path, get_config
 
 
 class Indexing():
 
     def __init__(self) -> None:
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.logger.setLevel(get_config('generic', 'loglevel'))
         self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
                                                          path=get_socket_path('indexing'), decode_responses=True)
 
@@ -30,8 +33,10 @@ class Indexing():
     def new_internal_uuids(self, crawled_tree: CrawledTree) -> None:
         # only trigger this method if the capture was already indexed.
         if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
+            self.logger.info(f'Cookies index: update internal UUIDs for {crawled_tree.uuid}')
             self._reindex_cookies_capture(crawled_tree)
         if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
+            self.logger.info(f'Body hashes index: update internal UUIDs for {crawled_tree.uuid}')
             self._reindex_body_hashes_capture(crawled_tree)
 
     # ###### Cookies ######
