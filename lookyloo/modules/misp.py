@@ -4,13 +4,16 @@
 import logging
 import re
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union, TYPE_CHECKING
 
 import requests
-from har2tree import HostNode, URLNode
+from har2tree import HostNode, URLNode, Har2TreeError
 from pymisp import MISPAttribute, MISPEvent, PyMISP
+from pymisp.tools import FileObject, URLObject
 
 from ..helpers import get_config, get_homedir, get_public_suffix_list
+if TYPE_CHECKING:
+    from ..capturecache import CaptureCache
 
 
 class MISP():
@@ -139,3 +142,60 @@ class MISP():
             return {'info': 'No hits.'}
         else:
             return {'error': 'Module not available or lookup not enabled.'}
+
+    def __misp_add_ips_to_URLObject(self, obj: URLObject, hostname_tree: HostNode) -> None:
+        hosts = obj.get_attributes_by_relation('host')
+        if hosts:
+            hostnodes = hostname_tree.search_nodes(name=hosts[0].value)
+            if hostnodes and hasattr(hostnodes[0], 'resolved_ips'):
+                obj.add_attributes('ip', *hostnodes[0].resolved_ips)
+
+    def export(self, cache: 'CaptureCache', is_public_instance: bool=False) -> MISPEvent:
+        '''Export a capture in MISP format. You can POST the return of this method
+        directly to a MISP instance and it will create an event.'''
+        public_domain = get_config('generic', 'public_domain')
+        event = MISPEvent()
+        event.info = f'Lookyloo Capture ({cache.url})'
+        lookyloo_link: MISPAttribute = event.add_attribute('link', f'https://{public_domain}/tree/{cache.uuid}')  # type: ignore
+        if not is_public_instance:
+            lookyloo_link.distribution = 0
+
+        initial_url = URLObject(cache.url)
+        initial_url.comment = 'Submitted URL'
+        self.__misp_add_ips_to_URLObject(initial_url, cache.tree.root_hartree.hostname_tree)
+
+        redirects: List[URLObject] = []
+        for nb, url in enumerate(cache.redirects):
+            if url == cache.url:
+                continue
+            obj = URLObject(url)
+            obj.comment = f'Redirect {nb}'
+            self.__misp_add_ips_to_URLObject(obj, cache.tree.root_hartree.hostname_tree)
+            redirects.append(obj)
+        if redirects:
+            redirects[-1].comment = f'Last redirect ({nb})'
+
+        if redirects:
+            prec_object = initial_url
+            for u_object in redirects:
+                prec_object.add_reference(u_object, 'redirects-to')
+                prec_object = u_object
+
+        initial_obj = event.add_object(initial_url)
+        initial_obj.add_reference(lookyloo_link, 'captured-by', 'Capture on lookyloo')
+
+        for u_object in redirects:
+            event.add_object(u_object)
+        final_redirect = event.objects[-1]
+
+        try:
+            fo = FileObject(pseudofile=cache.tree.root_hartree.rendered_node.body, filename=cache.tree.root_hartree.rendered_node.filename)
+            fo.comment = 'Content received for the final redirect (before rendering)'
+            fo.add_reference(final_redirect, 'loaded-by', 'URL loading that content')
+            event.add_object(fo)
+        except Har2TreeError:
+            pass
+        except AttributeError:
+            # No `body` in rendered node
+            pass
+        return event

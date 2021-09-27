@@ -16,10 +16,9 @@ from typing import (Any, Dict, Iterable, List, MutableMapping, Optional, Set,
 from uuid import uuid4
 from zipfile import ZipFile
 
-from har2tree import CrawledTree, Har2TreeError, HostNode, URLNode
+from har2tree import CrawledTree, HostNode, URLNode
 from PIL import Image  # type: ignore
 from pymisp import MISPAttribute, MISPEvent, MISPObject
-from pymisp.tools import FileObject, URLObject
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 from werkzeug.useragents import UserAgent
@@ -619,13 +618,6 @@ class Lookyloo():
                     return 'embedded_ressource.bin', blob, mimetype
         return None
 
-    def __misp_add_ips_to_URLObject(self, obj: URLObject, hostname_tree: HostNode) -> None:
-        hosts = obj.get_attributes_by_relation('host')
-        if hosts:
-            hostnodes = hostname_tree.search_nodes(name=hosts[0].value)
-            if hostnodes and hasattr(hostnodes[0], 'resolved_ips'):
-                obj.add_attributes('ip', *hostnodes[0].resolved_ips)
-
     def __misp_add_vt_to_URLObject(self, obj: MISPObject) -> Optional[MISPObject]:
         urls = obj.get_attributes_by_relation('url')
         url = urls[0]
@@ -656,52 +648,13 @@ class Lookyloo():
         if not cache:
             return {'error': 'UUID missing in cache, try again later.'}
 
-        event = MISPEvent()
-        event.info = f'Lookyloo Capture ({cache.url})'
-        lookyloo_link: MISPAttribute = event.add_attribute('link', f'https://{self.public_domain}/tree/{capture_uuid}')  # type: ignore
-        if not self.is_public_instance:
-            lookyloo_link.distribution = 0
-
-        initial_url = URLObject(cache.url)
-        initial_url.comment = 'Submitted URL'
-        self.__misp_add_ips_to_URLObject(initial_url, cache.tree.root_hartree.hostname_tree)
-
-        redirects: List[URLObject] = []
-        for nb, url in enumerate(cache.redirects):
-            if url == cache.url:
-                continue
-            obj = URLObject(url)
-            obj.comment = f'Redirect {nb}'
-            self.__misp_add_ips_to_URLObject(obj, cache.tree.root_hartree.hostname_tree)
-            redirects.append(obj)
-        if redirects:
-            redirects[-1].comment = f'Last redirect ({nb})'
-
-        if redirects:
-            prec_object = initial_url
-            for u_object in redirects:
-                prec_object.add_reference(u_object, 'redirects-to')
-                prec_object = u_object
-
-        initial_obj = event.add_object(initial_url)
-        initial_obj.add_reference(lookyloo_link, 'captured-by', 'Capture on lookyloo')
-
-        for u_object in redirects:
-            event.add_object(u_object)
-        final_redirect = event.objects[-1]
-
-        screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png', data=self.get_screenshot(capture_uuid), disable_correlation=True)  # type: ignore
-        try:
-            fo = FileObject(pseudofile=cache.tree.root_hartree.rendered_node.body, filename=cache.tree.root_hartree.rendered_node.filename)
-            fo.comment = 'Content received for the final redirect (before rendering)'
-            fo.add_reference(final_redirect, 'loaded-by', 'URL loading that content')
-            fo.add_reference(screenshot, 'rendered-as', 'Screenshot of the page')
-            event.add_object(fo)
-        except Har2TreeError:
-            pass
-        except AttributeError:
-            # No `body` in rendered node
-            pass
+        event = self.misp.export(cache, self.is_public_instance)
+        screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png',
+                                                        data=self.get_screenshot(cache.uuid),
+                                                        disable_correlation=True)  # type: ignore
+        # If the last object attached to tht event is a file, it is the rendered page
+        if event.objects and event.objects[-1].name == 'file':
+            event.objects[-1].add_reference(screenshot, 'rendered-as', 'Screenshot of the page')
 
         if self.vt.available:
             for e_obj in event.objects:
@@ -710,6 +663,20 @@ class Lookyloo():
                 vt_obj = self.__misp_add_vt_to_URLObject(e_obj)
                 if vt_obj:
                     event.add_object(vt_obj)
+
+        if self.phishtank.available:
+            for e_obj in event.objects:
+                if e_obj.name != 'url':
+                    continue
+                urls = e_obj.get_attributes_by_relation('url')
+                if not urls:
+                    continue
+                pt_entry = self.phishtank.get_url_lookup(urls[0].value)
+                if not pt_entry or not pt_entry.get('phish_detail_url'):
+                    continue
+                pt_attribute: MISPAttribute = event.add_attribute('link', value=pt_entry['phish_detail_url'], comment='Phishtank permalink')  # type: ignore
+                e_obj.add_reference(pt_attribute, 'known-as', 'Permalink on Phishtank')
+
         if self.urlscan.available:
             urlscan_attribute = self.__misp_add_urlscan_to_event(
                 capture_uuid,
