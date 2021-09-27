@@ -23,10 +23,7 @@ def uniq_domains(uniq_urls):
     return domains
 
 
-for uuid in lookyloo.capture_uuids:
-    cache = lookyloo.capture_cache(uuid)
-    if not cache or not hasattr(cache, 'timestamp'):
-        continue
+for cache in lookyloo.sorted_capture_cache():
     date = cache.timestamp
     if date.year not in stats:
         stats[date.year] = {}

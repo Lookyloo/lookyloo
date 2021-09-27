@@ -176,11 +176,11 @@ class CapturesIndex(Mapping):
             to_return = Path(capture_dir)
             if to_return.exists():
                 return to_return
-            self.redis.hdel('lookup_dirs_archived', uuid)
             # The capture was removed, remove the UUID
+            self.redis.hdel('lookup_dirs_archived', uuid)
+            self.redis.delete(capture_dir)
             self.logger.warning(f'UUID ({uuid}) linked to a missing directory ({capture_dir}).')
             raise MissingCaptureDirectory(f'UUID ({uuid}) linked to a missing directory ({capture_dir}).')
-
         raise MissingUUID(f'Unable to find UUID {uuid}.')
 
     def _create_pickle(self, capture_dir: Path) -> CrawledTree:

@@ -27,7 +27,7 @@ from werkzeug.useragents import UserAgent
 from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
 from .exceptions import (LookylooException, MissingCaptureDirectory,
-                         MissingUUID, TreeNeedsRebuild)
+                         MissingUUID, TreeNeedsRebuild, NoValidHarFile)
 from .helpers import (CaptureStatus, get_captures_dir, get_config,
                       get_email_template, get_homedir, get_resources_hashes,
                       get_socket_path, get_splash_url, get_taxonomies, uniq_domains)
@@ -85,10 +85,6 @@ class Lookyloo():
     def redis(self):
         return Redis(connection_pool=self.redis_pool)
 
-    def _get_capture_dir(self, capture_uuid: str, /) -> Path:
-        '''Use the cache to get a capture directory from a capture UUID'''
-        return self._captures_index[capture_uuid].capture_dir
-
     def add_context(self, capture_uuid: str, /, urlnode_uuid: str, *, ressource_hash: str,
                     legitimate: bool, malicious: bool, details: Dict[str, Dict[str, str]]):
         '''Adds context information to a capture or a URL node'''
@@ -142,8 +138,7 @@ class Lookyloo():
 
     def get_meta(self, capture_uuid: str, /) -> Dict[str, str]:
         '''Get the meta informations from a capture (mostly, details about the User Agent used.)'''
-        capture_dir = self._get_capture_dir(capture_uuid)
-        metafile = capture_dir / 'meta'
+        metafile = self._captures_index[capture_uuid].capture_dir / 'meta'
         if metafile.exists():
             with metafile.open('r') as f:
                 return json.load(f)
@@ -171,10 +166,10 @@ class Lookyloo():
 
     def categories_capture(self, capture_uuid: str, /) -> Dict[str, Any]:
         '''Get all the categories related to a capture, in MISP Taxonomies format'''
-        capture_dir = self._get_capture_dir(capture_uuid)
+        categ_file = self._captures_index[capture_uuid].capture_dir / 'categories'
         # get existing categories if possible
-        if (capture_dir / 'categories').exists():
-            with (capture_dir / 'categories').open() as f:
+        if categ_file.exists():
+            with categ_file.open() as f:
                 current_categories = [line.strip() for line in f.readlines()]
             return {e: self.taxonomies.revert_machinetag(e) for e in current_categories}
         return {}
@@ -186,30 +181,30 @@ class Lookyloo():
         # Make sure the category is mappable to a taxonomy.
         self.taxonomies.revert_machinetag(category)
 
-        capture_dir = self._get_capture_dir(capture_uuid)
+        categ_file = self._captures_index[capture_uuid].capture_dir / 'categories'
         # get existing categories if possible
-        if (capture_dir / 'categories').exists():
-            with (capture_dir / 'categories').open() as f:
+        if categ_file.exists():
+            with categ_file.open() as f:
                 current_categories = set(line.strip() for line in f.readlines())
         else:
             current_categories = set()
         current_categories.add(category)
-        with (capture_dir / 'categories').open('w') as f:
+        with categ_file.open('w') as f:
             f.writelines(f'{t}\n' for t in current_categories)
 
     def uncategorize_capture(self, capture_uuid: str, /, category: str) -> None:
         '''Remove a category (MISP Taxonomy tag) from a capture.'''
         if not get_config('generic', 'enable_categorization'):
             return
-        capture_dir = self._get_capture_dir(capture_uuid)
+        categ_file = self._captures_index[capture_uuid].capture_dir / 'categories'
         # get existing categories if possible
-        if (capture_dir / 'categories').exists():
-            with (capture_dir / 'categories').open() as f:
+        if categ_file.exists():
+            with categ_file.open() as f:
                 current_categories = set(line.strip() for line in f.readlines())
         else:
             current_categories = set()
         current_categories.remove(category)
-        with (capture_dir / 'categories').open('w') as f:
+        with categ_file.open('w') as f:
             f.writelines(f'{t}\n' for t in current_categories)
 
     def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False) -> Dict:
@@ -283,23 +278,19 @@ class Lookyloo():
         """Add the capture in the hidden pool (not shown on the front page)
         NOTE: it won't remove the correlations until they are rebuilt.
         """
-        self.redis.hset(str(self._get_capture_dir(capture_uuid)), 'no_index', 1)
-        (self._get_capture_dir(capture_uuid) / 'no_index').touch()
+        capture_dir = self._captures_index[capture_uuid].capture_dir
+        self.redis.hset(str(capture_dir), 'no_index', 1)
+        (capture_dir / 'no_index').touch()
         self._captures_index.reload_cache(capture_uuid)
 
     def update_tree_cache_info(self, process_id: int, classname: str) -> None:
         self.redis.hset('tree_cache', f'{process_id}|{classname}', str(self._captures_index.lru_cache_status()))
 
-    @property
-    def capture_uuids(self) -> List[str]:
-        '''All the capture UUIDs present in the cache.'''
-        return self.redis.hkeys('lookup_dirs')
-
     def sorted_capture_cache(self, capture_uuids: Optional[Iterable[str]]=None) -> List[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).'''
         if capture_uuids is None:
-            # Sort all captures
-            capture_uuids = self.capture_uuids
+            # Sort all recent captures
+            capture_uuids = self.redis.hkeys('lookup_dirs')
         if not capture_uuids:
             # No captures at all on the instance
             return []
@@ -309,6 +300,7 @@ class Lookyloo():
         return all_cache
 
     def get_capture_status(self, capture_uuid: str, /) -> CaptureStatus:
+        '''Returns the status (queued, ongoing, done, or UUID unknown)'''
         if self.redis.zrank('to_capture', capture_uuid) is not None:
             return CaptureStatus.QUEUED
         elif self.redis.hexists('lookup_dirs', capture_uuid):
@@ -318,6 +310,7 @@ class Lookyloo():
         return CaptureStatus.UNKNOWN
 
     def try_error_status(self, capture_uuid: str, /) -> Optional[str]:
+        '''If it is not possible to do the capture, we store the error for a short amount of time'''
         return self.redis.get(f'error_{capture_uuid}')
 
     def capture_cache(self, capture_uuid: str, /) -> Optional[CaptureCache]:
@@ -351,7 +344,7 @@ class Lookyloo():
     def enqueue_capture(self, query: MutableMapping[str, Any], source: str, user: str, authenticated: bool) -> str:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
 
-        def _get_priority(source: str, user: str, authenticated: bool) -> int:
+        def get_priority(source: str, user: str, authenticated: bool) -> int:
             src_prio: int = self._priority['sources'][source] if source in self._priority['sources'] else -1
             if not authenticated:
                 usr_prio = self._priority['users']['_default_anon']
@@ -364,7 +357,7 @@ class Lookyloo():
                 usr_prio = self._priority['users'][user] if self._priority['users'].get(user) else self._priority['users']['_default_auth']
             return src_prio + usr_prio
 
-        priority = _get_priority(source, user, authenticated)
+        priority = get_priority(source, user, authenticated)
         perma_uuid = str(uuid4())
         p = self.redis.pipeline()
         for key, value in query.items():
@@ -427,7 +420,7 @@ class Lookyloo():
     def _get_raw(self, capture_uuid: str, /, extension: str='*', all_files: bool=True) -> BytesIO:
         '''Get file(s) from the capture directory'''
         try:
-            capture_dir = self._get_capture_dir(capture_uuid)
+            capture_dir = self._captures_index[capture_uuid].capture_dir
         except MissingUUID:
             return BytesIO(f'Capture {capture_uuid} not unavailable, try again later.'.encode())
         except MissingCaptureDirectory:
@@ -606,6 +599,10 @@ class Lookyloo():
             url = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
         except IndexError:
             # unable to find the uuid, the cache is probably in a weird state.
+            return None
+        except NoValidHarFile as e:
+            # something went poorly when rebuilding the tree (probably a recursive error)
+            self.logger.warning(e)
             return None
         if url.empty_response:
             return None
@@ -800,7 +797,7 @@ class Lookyloo():
     def get_hostnode_investigator(self, capture_uuid: str, /, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
         '''Gather all the informations needed to display the Hostnode investigator popup.'''
 
-        def _normalize_known_content(h: str, /, known_content: Dict[str, Any], url: URLNode) -> Tuple[Optional[Union[str, List[Any]]], Optional[Tuple[bool, Any]]]:
+        def normalize_known_content(h: str, /, known_content: Dict[str, Any], url: URLNode) -> Tuple[Optional[Union[str, List[Any]]], Optional[Tuple[bool, Any]]]:
             ''' There are a few different sources to figure out known vs. legitimate content,
             this method normalize it for the web interface.'''
             known: Optional[Union[str, List[Any]]] = None
@@ -861,13 +858,13 @@ class Lookyloo():
                             if freq_embedded['hash_freq'] > 1:
                                 to_append['embedded_ressources'][h]['other_captures'] = self.hash_lookup(h, url.name, capture_uuid)
                     for h in to_append['embedded_ressources'].keys():
-                        known, legitimate = _normalize_known_content(h, known_content, url)
+                        known, legitimate = normalize_known_content(h, known_content, url)
                         if known:
                             to_append['embedded_ressources'][h]['known_content'] = known
                         elif legitimate:
                             to_append['embedded_ressources'][h]['legitimacy'] = legitimate
 
-                known, legitimate = _normalize_known_content(url.body_hash, known_content, url)
+                known, legitimate = normalize_known_content(url.body_hash, known_content, url)
                 if known:
                     to_append['known_content'] = known
                 elif legitimate:
