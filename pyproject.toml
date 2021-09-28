@@ -35,7 +35,7 @@ start_website = "bin.start_website:main"
 
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.8,<3.11"
 requests = "^2.26"
 flask = "^2.0.1"
 gunicorn = "^20.1.0"
@@ -48,7 +48,7 @@ vt-py = "^0.7.4"
 pyeupi = "^1.1"
 scrapysplashwrapper = "^1.8.1"
 pysanejs = "^1.5"
-har2tree = "^1.8.4"
+har2tree = "^1.8.5"
 pylookyloo = "^1.8.1"
 dnspython = "^2.1.0"
 pytaxonomies = "^1.4.1"
