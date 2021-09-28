@@ -29,25 +29,25 @@
   <h1 class="display-4">Phishtank</h1>
   <div>
     {% if phishtank.get('urls') %}
-    <p>Phishtank flagged the URLs below as phishing:</p>
-    <ul>
+    <p class="lead">Phishtank flagged the URLs below as phishing</p>
+    <dl class="row">
     {% for url, permaurl in phishtank['urls'].items() %}
-      <li>{{ shorten_string(url, 150) }}: <a href="{{ permaurl }}">click to view it</a> on phishtank.</p></li>
+    <dt class="col-sm-7">{{ shorten_string(url, 150) }}</dt>
+    <dd class="col-sm-3"><a href="{{ permaurl }}">View on phishtank</a></li></dd>
     {% endfor %}
-    </ul>
+    </dl>
     {% endif%}
 
     {% if phishtank.get('ips_hits') %}
-    <p>The IPs below are in the tree and are flagged as phishing on Phishtank, might on on other URLs:</p>
-    <ul>
+    <p class="lead">The IPs below are in the tree and are flagged as phishing on Phishtank</p>
     {% for ip, entries in phishtank['ips_hits'].items() %}
-    <li>{{ ip }}:
-      <ul>
-        {% for related_url, permaurl in entries %}
-        <li>{{ shorten_string(related_url, 150) }}: <a href="{{ permaurl }}">click to view it</a> on phishtank.</p></li>
-        {% endfor %}
-      </ul>
-    </li>
+    <p>{{ ip }}</p>
+    <dl class="row">
+      {% for related_url, permaurl in entries %}
+      <dt class="col-sm-7">{{ shorten_string(related_url, 150) }}</dt>
+      <dd class="col-sm-3"><a href="{{ permaurl }}">View on phishtank</a></li></dd>
+      {% endfor %}
+    </dl>
     {% endfor %}
     {% endif%}
   </div>
