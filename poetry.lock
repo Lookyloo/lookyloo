@@ -889,7 +889,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pysanejs"
-version = "1.5"
+version = "1.5.1"
 description = "Python client for SaneJS"
 category = "main"
 optional = false
@@ -1317,7 +1317,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "3c8f276f92987f36bf41c13c1b99d29b7f916abb258773ca515af9deb4c67b32"
+content-hash = "28ea3eefa2f25e253b447154eee67a9d950eb9c88ac293356472f5c2d6125e84"
 
 [metadata.files]
 aiohttp = [
@@ -2031,8 +2031,8 @@ pyrsistent = [
     {file = "pyrsistent-0.18.0.tar.gz", hash = "sha256:773c781216f8c2900b42a7b638d5b517bb134ae1acbebe4d1e8f1f41ea60eb4b"},
 ]
 pysanejs = [
-    {file = "pysanejs-1.5-py3-none-any.whl", hash = "sha256:e36779030a0f1777a59912a5a830b2854eb580f6e78940b7ce901e7a6f98c7bc"},
-    {file = "pysanejs-1.5.tar.gz", hash = "sha256:67f3e7b3a8b60ba5c9bcda84129dcea7180ee1db7bb96090f630be904b9e7ec1"},
+    {file = "pysanejs-1.5.1-py3-none-any.whl", hash = "sha256:feb5a00d389c6bb7f094db3592552604b8fb256515d9e7f8b42d7bbf7d98bf9a"},
+    {file = "pysanejs-1.5.1.tar.gz", hash = "sha256:58449b9aaa35e6fbb597504c23d046379fa95f959e3d19df7ed3df3f21214bf6"},
 ]
 pytaxonomies = [
     {file = "pytaxonomies-1.4.1-py3-none-any.whl", hash = "sha256:a7996a02c20148cf78e565d578d4faa38df8ad168e35d8a11011a9624b1f07ba"},
