@@ -361,7 +361,7 @@ hyperframe = ">=5.2.0,<6"
 
 [[package]]
 name = "har2tree"
-version = "1.8.5"
+version = "1.9.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -804,7 +804,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pylookyloo"
-version = "1.8.1"
+version = "1.9.0"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
@@ -814,7 +814,7 @@ python-versions = ">=3.8,<4.0"
 requests = ">=2.26.0,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.0.2,<5.0.0)"]
+docs = ["Sphinx (>=4.2.0,<5.0.0)"]
 
 [[package]]
 name = "pymisp"
@@ -1029,7 +1029,7 @@ python-versions = "*"
 
 [[package]]
 name = "scrapysplashwrapper"
-version = "1.8.1"
+version = "1.9.0"
 description = "Scrapy splash wrapper as a standalone library."
 category = "main"
 optional = false
@@ -1040,7 +1040,7 @@ Scrapy = ">=2.5.0,<3.0.0"
 scrapy-splash = ">=0.7.2,<0.8.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.1.2,<5.0.0)"]
+docs = ["Sphinx (>=4.2.0,<5.0.0)"]
 
 [[package]]
 name = "service-identity"
@@ -1317,7 +1317,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "b6829f8a3e2a4b07c509678fd381bd16f09d514fe32de99170a06a2b50bc78e6"
+content-hash = "3c8f276f92987f36bf41c13c1b99d29b7f916abb258773ca515af9deb4c67b32"
 
 [metadata.files]
 aiohttp = [
@@ -1556,8 +1556,8 @@ h2 = [
     {file = "h2-3.2.0.tar.gz", hash = "sha256:875f41ebd6f2c44781259005b157faed1a5031df3ae5aa7bcb4628a6c0782f14"},
 ]
 har2tree = [
-    {file = "har2tree-1.8.5-py3-none-any.whl", hash = "sha256:d59864ce4648cfc23c913f92c4ba6723bb62591e31a4573610fd7ff1e375575e"},
-    {file = "har2tree-1.8.5.tar.gz", hash = "sha256:f1e0498092c1fb06e587c4e39e944c68bcc67a2a3c3dc0b11871226095461a5f"},
+    {file = "har2tree-1.9.0-py3-none-any.whl", hash = "sha256:ba643e3bce07105f005cd6664bfc975fdc0f9a8059cfaa2fd89ccccdb765a519"},
+    {file = "har2tree-1.9.0.tar.gz", hash = "sha256:a984abf8451d9d23ef6e4fce09176ca51d753f5828497006c357781bb65aff9d"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -1989,8 +1989,8 @@ pygments = [
     {file = "Pygments-2.10.0.tar.gz", hash = "sha256:f398865f7eb6874156579fdf36bc840a03cab64d1cde9e93d68f46a425ec52c6"},
 ]
 pylookyloo = [
-    {file = "pylookyloo-1.8.1-py3-none-any.whl", hash = "sha256:00b013171becb270904c093fa8f288745efeac9ce324f61d69ddd22bc39b5fc1"},
-    {file = "pylookyloo-1.8.1.tar.gz", hash = "sha256:18878da2b8e59cd635209dce5f8683edf9d66149d199f485b4b7cc85141f3f74"},
+    {file = "pylookyloo-1.9.0-py3-none-any.whl", hash = "sha256:d0ad7de714e6f8b1b024c1b296f0ca8c7ad83a1b8d6dd78c8655a3561d52089d"},
+    {file = "pylookyloo-1.9.0.tar.gz", hash = "sha256:2123fa321058b7aa2d7269911d46fe79df00a00be25c96372ed9502a2749f309"},
 ]
 pymisp = [
     {file = "pymisp-2.4.148-py3-none-any.whl", hash = "sha256:5971eba9a4d3b7f5ee47035417c7692fc0ec45d581afcaa63e3f7e2d6a400923"},
@@ -2075,8 +2075,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.7.2-py2.py3-none-any.whl", hash = "sha256:71ac958370f8732fec746a25a8235b03a4d3c4c93a59be51aa8e910a08cfe511"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.8.1-py3-none-any.whl", hash = "sha256:053e01e9954087547d21cd4a36d8b4330627c146c1fa13ec846d691adc8826df"},
-    {file = "scrapysplashwrapper-1.8.1.tar.gz", hash = "sha256:33f3a3ba4247024974b81d5fa3a0dddcbab24f3de06674c2687dfc6ffb711541"},
+    {file = "scrapysplashwrapper-1.9.0-py3-none-any.whl", hash = "sha256:5d8b0de7cd07e037223b706e967af3c069613d795d94511616b8f8abee798184"},
+    {file = "scrapysplashwrapper-1.9.0.tar.gz", hash = "sha256:c348cc71730f981105fc09752869fc84debbf55e0a4d6f4c34a8aed88df2edd4"},
 ]
 service-identity = [
     {file = "service-identity-21.1.0.tar.gz", hash = "sha256:6e6c6086ca271dc11b033d17c3a8bea9f24ebff920c587da090afc9519419d34"},
