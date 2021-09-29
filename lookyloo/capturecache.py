@@ -321,13 +321,21 @@ class CapturesIndex(Mapping):
         ips_path = ct.root_hartree.har.path.parent / 'ips.json'
         host_cnames: Dict[str, Optional[str]] = {}
         if cnames_path.exists():
-            with cnames_path.open() as f:
-                host_cnames = json.load(f)
+            try:
+                with cnames_path.open() as f:
+                    host_cnames = json.load(f)
+            except json.decoder.JSONDecodeError:
+                # The json is broken, delete and re-trigger the requests
+                host_cnames = {}
 
         host_ips: Dict[str, List[str]] = {}
         if ips_path.exists():
-            with ips_path.open() as f:
-                host_ips = json.load(f)
+            try:
+                with ips_path.open() as f:
+                    host_ips = json.load(f)
+            except json.decoder.JSONDecodeError:
+                # The json is broken, delete and re-trigger the requests
+                host_ips = {}
 
         for node in ct.root_hartree.hostname_tree.traverse():
             if node.name not in host_cnames or node.name not in host_ips:
