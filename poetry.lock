@@ -843,14 +843,14 @@ brotli = ["urllib3[brotli] (>=1.26.4,<2.0.0)"]
 
 [[package]]
 name = "pyopenssl"
-version = "20.0.1"
+version = "21.0.0"
 description = "Python wrapper module around the OpenSSL library"
 category = "main"
 optional = false
-python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*"
 
 [package.dependencies]
-cryptography = ">=3.2"
+cryptography = ">=3.3"
 six = ">=1.5.2"
 
 [package.extras]
@@ -1191,7 +1191,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "3.5.8"
+version = "3.5.9"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1997,8 +1997,8 @@ pymisp = [
     {file = "pymisp-2.4.148.tar.gz", hash = "sha256:641e3db1af1010cff3a652df6eb51ac4f4e540b1801b811d5e009c59114bf26a"},
 ]
 pyopenssl = [
-    {file = "pyOpenSSL-20.0.1-py2.py3-none-any.whl", hash = "sha256:818ae18e06922c066f777a33f1fca45786d85edfe71cd043de6379337a7f274b"},
-    {file = "pyOpenSSL-20.0.1.tar.gz", hash = "sha256:4c231c759543ba02560fcd2480c48dcec4dae34c9da7d3747c508227e0624b51"},
+    {file = "pyOpenSSL-21.0.0-py2.py3-none-any.whl", hash = "sha256:8935bd4920ab9abfebb07c41a4f58296407ed77f04bd1a92914044b848ba1ed6"},
+    {file = "pyOpenSSL-21.0.0.tar.gz", hash = "sha256:5e2d8c5e46d0d865ae933bef5230090bdaf5506281e9eec60fa250ee80600cb3"},
 ]
 pyphishtanklookup = [
     {file = "pyphishtanklookup-1.0.1-py3-none-any.whl", hash = "sha256:f000c088255b2d18b166c80b51457e13b1dea30538d1d1943344d70ddc711b41"},
@@ -2137,8 +2137,8 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-redis = [
-    {file = "types-redis-3.5.8.tar.gz", hash = "sha256:be26f50259d1a7e74cbc1e83b377dbf6b534fdb037ff55ae31501e87ac2b5b5a"},
-    {file = "types_redis-3.5.8-py3-none-any.whl", hash = "sha256:85814769071721044857c34841e46064b867ccdd58fc81221c43462bd07e4892"},
+    {file = "types-redis-3.5.9.tar.gz", hash = "sha256:f142c48f4080757ca2a9441ec40213bda3b1535eebebfc4f3519e5aa46498076"},
+    {file = "types_redis-3.5.9-py3-none-any.whl", hash = "sha256:5f5648ffc025708858097173cf695164c20f2b5e3f57177de14e352cae8cc335"},
 ]
 types-requests = [
     {file = "types-requests-2.25.9.tar.gz", hash = "sha256:4ec8b71da73e5344adb9bee725a74ec8598e7286f9bcb17500d627f259fe4fb9"},
