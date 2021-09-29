@@ -1000,7 +1000,6 @@ def get_ressource(tree_uuid: str, node_uuid: str):
         to_return = BytesIO(b'Unknown Hash')
         filename = 'file.txt'
         mimetype = 'text/text'
-    to_return.seek(0)
     return send_file(to_return, mimetype=mimetype, as_attachment=True, attachment_filename=filename)
 
 
