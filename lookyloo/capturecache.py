@@ -34,7 +34,11 @@ class CaptureCache():
         if all(key in cache_entry.keys() for key in __default_cache_keys):
             self.uuid: str = cache_entry['uuid']
             self.title: str = cache_entry['title']
-            self.timestamp: datetime = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')
+            try:
+                self.timestamp: datetime = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')
+            except ValueError:
+                # If the microsecond is missing (0), it fails
+                self.timestamp: datetime = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
             self.url: str = cache_entry['url']
             self.redirects: List[str] = json.loads(cache_entry['redirects'])
             self.capture_dir: Path = Path(cache_entry['capture_dir'])
