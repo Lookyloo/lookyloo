@@ -38,7 +38,7 @@ class CaptureCache():
                 self.timestamp: datetime = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')
             except ValueError:
                 # If the microsecond is missing (0), it fails
-                self.timestamp: datetime = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
+                self.timestamp = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
             self.url: str = cache_entry['url']
             self.redirects: List[str] = json.loads(cache_entry['redirects'])
             self.capture_dir: Path = Path(cache_entry['capture_dir'])
