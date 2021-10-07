@@ -77,8 +77,12 @@ class Lookyloo():
         if not self.phishtank.available:
             self.logger.warning('Unable to setup the Phishtank module')
 
+        self.logger.info('Initializing context...')
         self.context = Context()
+        self.logger.info('Context initialized.')
+        self.logger.info('Initializing index...')
         self._captures_index = CapturesIndex(self.redis, self.context)
+        self.logger.info('Index initialized.')
 
     @property
     def redis(self):
@@ -93,7 +97,7 @@ class Lookyloo():
             self.context.add_legitimate(ressource_hash, details['legitimate'])
 
     def add_to_legitimate(self, capture_uuid: str, /, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None):
-        '''Mark a full captyre as legitimate.
+        '''Mark a full capture as legitimate.
         Iterates over all the nodes and mark them all as legitimate too.'''
         ct = self.get_crawled_tree(capture_uuid)
         self.context.mark_as_legitimate(ct, hostnode_uuid, urlnode_uuid)
