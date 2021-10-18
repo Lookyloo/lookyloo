@@ -5,7 +5,7 @@ from subprocess import Popen
 
 from redis import Redis
 
-from lookyloo.helpers import get_homedir, get_socket_path
+from lookyloo.default import get_homedir, get_socket_path
 
 
 def main():

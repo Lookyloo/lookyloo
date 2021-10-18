@@ -11,7 +11,7 @@ from typing import List, Optional, Union
 from redis import Redis
 from redis.exceptions import ConnectionError
 
-from lookyloo.helpers import get_homedir, get_socket_path
+from lookyloo.default import get_homedir, get_socket_path
 
 
 def check_running(name: str) -> bool:

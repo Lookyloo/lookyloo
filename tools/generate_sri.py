@@ -7,7 +7,7 @@ import json
 
 from typing import Dict
 
-from lookyloo.helpers import get_homedir
+from lookyloo.default import get_homedir
 
 if __name__ == '__main__':
     dest_dir = get_homedir() / 'website' / 'web'

@@ -6,7 +6,8 @@ from pathlib import Path
 
 from redis import Redis
 
-from lookyloo.helpers import get_captures_dir, safe_create_dir, get_socket_path
+from lookyloo.default import safe_create_dir, get_socket_path
+from lookyloo.helpers import get_captures_dir
 
 
 def rename_captures():

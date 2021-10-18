@@ -10,9 +10,8 @@ from typing import Dict, List
 
 from redis import Redis
 
-from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import (get_captures_dir, get_config, get_homedir,
-                              get_socket_path)
+from lookyloo.default import AbstractManager, get_config, get_homedir, get_socket_path
+from lookyloo.helpers import get_captures_dir
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)

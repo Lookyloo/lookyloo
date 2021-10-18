@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterable, List, Union
 
 from pysanejs import SaneJS
 
-from ..helpers import get_config, get_homedir
+from ..default import get_config, get_homedir
 
 
 class SaneJavaScript():

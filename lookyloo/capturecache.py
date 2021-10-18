@@ -20,9 +20,8 @@ from redis import Redis
 
 from .context import Context
 from .indexing import Indexing
-from .exceptions import (LookylooException, MissingCaptureDirectory, NoValidHarFile,
-                         MissingUUID, TreeNeedsRebuild)
-from .helpers import try_make_file, get_config
+from .default import LookylooException, try_make_file, get_config
+from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
 
 
 class CaptureCache():

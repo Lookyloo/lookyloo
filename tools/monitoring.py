@@ -11,8 +11,8 @@ from redis.exceptions import ConnectionError
 from rich.console import Console
 from rich.padding import Padding
 
-from lookyloo.helpers import get_socket_path, splash_status
-from lookyloo.abstractmanager import AbstractManager
+from lookyloo.default import get_socket_path, AbstractManager
+from lookyloo.helpers import splash_status
 
 # NOTE: run with watch:
 #   watch --color tools/monitoring.py

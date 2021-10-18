@@ -10,8 +10,8 @@ from urllib.parse import urlsplit
 from har2tree import CrawledTree, HostNode, URLNode
 from redis import Redis
 
-from .helpers import (get_config, get_homedir, get_resources_hashes,
-                      get_socket_path, load_known_content, serialize_to_json)
+from .default import get_config, get_homedir, get_socket_path
+from .helpers import get_resources_hashes, load_known_content, serialize_to_json
 from .modules import SaneJavaScript
 
 

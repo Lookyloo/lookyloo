@@ -10,8 +10,8 @@ from typing import Any, Dict
 
 import requests
 
-from ..exceptions import ConfigError
-from ..helpers import get_config, get_homedir, get_useragent_for_requests
+from ..default import ConfigError, get_config, get_homedir
+from ..helpers import get_useragent_for_requests
 
 
 class UrlScan():

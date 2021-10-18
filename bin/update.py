@@ -10,7 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from lookyloo.helpers import get_homedir
+from lookyloo.default import get_homedir
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)

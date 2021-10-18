@@ -11,7 +11,7 @@ from typing import Dict, List, Union
 import flask_login  # type: ignore
 from werkzeug.security import generate_password_hash
 
-from lookyloo.helpers import get_config, get_homedir
+from lookyloo.default import get_config, get_homedir
 
 
 def src_request_ip(request) -> str:

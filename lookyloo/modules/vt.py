@@ -12,8 +12,7 @@ import vt  # type: ignore
 from har2tree import CrawledTree
 from vt.error import APIError  # type: ignore
 
-from ..exceptions import ConfigError
-from ..helpers import get_homedir
+from ..default import ConfigError, get_homedir
 
 
 class VirusTotal():

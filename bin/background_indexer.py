@@ -5,7 +5,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 
-from lookyloo.abstractmanager import AbstractManager
+from lookyloo.default import AbstractManager
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.lookyloo import Lookyloo
 

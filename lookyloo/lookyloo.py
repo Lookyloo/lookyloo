@@ -25,11 +25,11 @@ from werkzeug.useragents import UserAgent
 
 from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
-from .exceptions import (LookylooException, MissingCaptureDirectory,
+from .default import LookylooException, get_homedir, get_config, get_socket_path
+from .exceptions import (MissingCaptureDirectory,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile)
-from .helpers import (CaptureStatus, get_captures_dir, get_config,
-                      get_email_template, get_homedir, get_resources_hashes,
-                      get_socket_path, get_splash_url, get_taxonomies, uniq_domains)
+from .helpers import (CaptureStatus, get_captures_dir, get_email_template,
+                      get_resources_hashes, get_splash_url, get_taxonomies, uniq_domains)
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank)

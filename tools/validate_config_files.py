@@ -5,7 +5,7 @@ import json
 import logging
 import argparse
 
-from lookyloo.helpers import get_homedir
+from lookyloo.default import get_homedir
 
 
 def validate_generic_config_file():

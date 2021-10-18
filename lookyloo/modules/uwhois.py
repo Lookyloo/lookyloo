@@ -7,7 +7,7 @@ from typing import Any, Dict
 
 from har2tree import CrawledTree, Har2TreeError, HostNode
 
-from ..helpers import get_config
+from ..default import get_config
 
 
 class UniversalWhois():

@@ -16,10 +16,8 @@ from defang import refang  # type: ignore
 from redis import Redis
 from scrapysplashwrapper import crawl
 
-from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import (get_captures_dir, get_config, get_socket_path,
-                              get_splash_url, load_cookies, safe_create_dir,
-                              splash_status)
+from lookyloo.default import AbstractManager, get_config, get_socket_path, safe_create_dir
+from lookyloo.helpers import get_captures_dir, get_splash_url, load_cookies, splash_status
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)

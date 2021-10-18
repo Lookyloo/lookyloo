@@ -11,7 +11,8 @@ from har2tree import HostNode, URLNode, Har2TreeError
 from pymisp import MISPAttribute, MISPEvent, PyMISP
 from pymisp.tools import FileObject, URLObject
 
-from ..helpers import get_config, get_homedir, get_public_suffix_list
+from ..default import get_config, get_homedir
+from ..helpers import get_public_suffix_list
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 

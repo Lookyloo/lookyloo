@@ -29,13 +29,20 @@ class AbstractManager(ABC):
 
     @staticmethod
     def is_running() -> List[Tuple[str, float]]:
-        r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
-        return r.zrangebyscore('running', '-inf', '+inf', withscores=True)
+        try:
+            r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
+            return r.zrangebyscore('running', '-inf', '+inf', withscores=True)
+        except ConnectionError:
+            print('Unable to connect to redis, the system is down.')
+            return []
 
     @staticmethod
     def force_shutdown():
-        r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
-        r.set('shutdown', 1)
+        try:
+            r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
+            r.set('shutdown', 1)
+        except ConnectionError:
+            print('Unable to connect to redis, the system is down.')
 
     def set_running(self) -> None:
         self.__redis.zincrby('running', 1, self.script_name)

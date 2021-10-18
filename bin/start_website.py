@@ -4,8 +4,7 @@
 import logging
 from subprocess import Popen
 
-from lookyloo.abstractmanager import AbstractManager
-from lookyloo.helpers import get_config, get_homedir
+from lookyloo.default import get_config, get_homedir, AbstractManager
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)

@@ -10,8 +10,7 @@ from typing import Any, Dict, Optional, List
 from har2tree import CrawledTree
 from pyphishtanklookup import PhishtankLookup
 
-from ..exceptions import ConfigError
-from ..helpers import get_homedir
+from ..default import ConfigError, get_homedir
 
 # Note: stop doing requests 48 after the capture was intially done.
 

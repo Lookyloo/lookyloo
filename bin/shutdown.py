@@ -3,7 +3,7 @@
 
 import time
 
-from lookyloo.abstractmanager import AbstractManager
+from lookyloo.default import AbstractManager
 
 
 def main():

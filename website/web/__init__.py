@@ -21,8 +21,9 @@ from flask_restx import Api  # type: ignore
 from pymisp import MISPEvent, MISPServerError
 from werkzeug.security import check_password_hash
 
+from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
-from lookyloo.helpers import (CaptureStatus, get_config, get_taxonomies,
+from lookyloo.helpers import (CaptureStatus, get_taxonomies,
                               get_user_agents, load_cookies, splash_status)
 from lookyloo.lookyloo import Indexing, Lookyloo
 

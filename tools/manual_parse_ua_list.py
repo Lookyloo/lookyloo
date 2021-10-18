@@ -14,7 +14,7 @@ try:
 except ImportError:
     HAS_CF = False
 
-from lookyloo.helpers import get_homedir, safe_create_dir
+from lookyloo.default import get_homedir, safe_create_dir
 
 
 def update_user_agents() -> None:
@@ -63,6 +63,7 @@ def ua_parser(html_content: str) -> Dict[str, Any]:
         to_store['by_frequency'].append({'os': os, 'browser': browser, 'useragent': ua['useragent']})
     return to_store
 
+
 def main():
     to_parse = Path('Most Common User Agents - Tech Blog (wh).html')
 
@@ -76,6 +77,7 @@ def main():
 
     with open(ua_file_name, 'w') as f:
         json.dump(to_store, f, indent=2)
+
 
 if __name__ == '__main__':
     main()

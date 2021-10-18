@@ -3,7 +3,7 @@
 
 from subprocess import Popen, run
 
-from lookyloo.helpers import get_config, get_homedir
+from lookyloo.default import get_config, get_homedir
 
 
 def main():

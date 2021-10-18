@@ -11,8 +11,7 @@ from typing import Any, Dict, Optional
 from har2tree import CrawledTree
 from pyeupi import PyEUPI
 
-from ..exceptions import ConfigError
-from ..helpers import get_homedir
+from ..default import ConfigError, get_homedir
 
 
 class PhishingInitiative():
