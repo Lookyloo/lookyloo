@@ -1,9 +1,8 @@
 /* Capture button */
 .new-capture-button {
-  width: 300px;
+  width: 270px;
   height: 60px;
   font-size: 25px;
-  letter-spacing: 2.5px;
   font-weight: 500;
   color: #ffffff;
   background-color: #0000ff;

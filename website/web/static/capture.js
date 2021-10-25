@@ -31,10 +31,3 @@ $('select[name="browser"]').change(function(){
   $("[id='" + os_name + '_' + browser_name + "']").show();
   $("[id='" + os_name + '_' + browser_name + "'] > div > select").removeAttr('disabled');
 });
-
-$('#btn-looking').click(function() {
-  $('#btn-looking').html('<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>Looking...').addClass('disabled');
-  $('#long').fadeOut(0).delay(9000).fadeIn(100);
-  $('#too-long').fadeOut(0).delay(19000).fadeIn(100);
-  $('#way-too-long').fadeOut(0).delay(27000).fadeIn(100);
-});

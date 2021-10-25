@@ -858,7 +858,7 @@ def capture_web():
                 flash('Invalid proxy: Check that you entered a scheme, a hostname and a port.', 'error')
 
         perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
-        time.sleep(30)
+        time.sleep(2)
         return redirect(url_for('tree', tree_uuid=perma_uuid))
     elif request.method == 'GET' and request.args.get('url'):
         url = unquote_plus(request.args['url']).strip()
