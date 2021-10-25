@@ -123,3 +123,5 @@ config/*.json.bkp
 known_content_user/
 
 user_agents/
+
+.DS_Store
