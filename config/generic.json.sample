@@ -7,8 +7,9 @@
   "website_listen_ip": "0.0.0.0",
   "website_listen_port": 5100,
   "systemd_service_name": "lookyloo",
+  "default_public": true,
   "splash_url": "http://127.0.0.1:8050",
-  "default_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
+  "default_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36",
   "users": {},
   "time_delta_on_index": {
     "weeks": 1,
@@ -54,6 +55,7 @@
     "website_listen_ip": "IP Flask will listen on. Defaults to 0.0.0.0, meaning all interfaces.",
     "website_listen_port": "Port Flask will listen on.",
     "systemd_service_name": "(Optional) Name of the systemd service if your project has one.",
+    "default_public": "If true, the capture is public and will be visible on the index page by default (can be unticked on the capture page)."
     "splash_url": "URL to connect to splash",
     "default_user_agent": "Ultimate fallback if the capture form, or the asynchronous submission, doesn't provide a user agent.",
     "users": "It is some kind of an admin accounts. Format: {username: password}",

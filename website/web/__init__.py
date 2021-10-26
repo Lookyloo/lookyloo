@@ -805,6 +805,7 @@ def _prepare_capture_template(user_ua: Optional[str], predefined_url: Optional[s
         flash('The request will be enqueued, but capturing may take a while and require the administrator to wake up.', 'error')
     return render_template('capture.html', user_agents=user_agents, default=default_ua,
                            max_depth=max_depth, personal_ua=user_ua,
+                           default_public=get_config('generic', 'default_public'),
                            predefined_url_to_capture=predefined_url if predefined_url else '')
 
 

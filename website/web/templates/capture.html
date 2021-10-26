@@ -35,7 +35,7 @@
     <div class="form-group row">
       <div class="col-sm-10">
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" name="listing" checked="true"></input>
+            <input class="form-check-input" type="checkbox" name="listing" {% if default_public %}checked="true"{% endif %}></input>
           <label for="listing" class="form-check-label">Display results on public page</label>
         </div>
       </div>
@@ -89,7 +89,7 @@
         <div class="col-sm-10">
           <div class="form-check">
             <input class="form-check-input" type="checkbox" name="personal_ua"></input>
-            <label for="personal_ua" class="form-check-label">Tick the box to use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser:</br>
+            <label for="personal_ua" class="form-check-label">Use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser:</br>
                 {{ personal_ua }}
             </label>
           </div>
@@ -144,7 +144,13 @@
       {% endfor%}
       <div class="dropdown-divider"></div>
       <center>
-        <b>By default, the capture is public. If you do not want that, untick the box at the top of the form.</b>
+        <b>
+        {% if default_public %}
+          By default, the capture is public. If you do not want that, untick the box at the top of the form.
+        {% else %}
+          By default, the capture is private (not visible on the index page). If you want it to be public tick the box at the top of the form.
+        {% endif %}
+        </b>
         </br>
         </br>
         <button type="submit" class="new-capture-button" id="btn-looking">Start looking!</button>
