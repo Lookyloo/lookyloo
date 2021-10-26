@@ -28,19 +28,6 @@
   scroll-margin: 50px;
 }
 
-/* Arrows */
-.arrow-down {
-  transform: rotate(180deg);
-}
-
-.arrow-right {
-  transform: rotate(90deg);
-}
-
-.arrow-left {
-  transform: rotate(270deg);
-}
-
 /* Generic parts of menus */
 hr {
   display: block;

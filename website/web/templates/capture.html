@@ -40,50 +40,70 @@
         </div>
       </div>
     </div>
-      <div class="form-group row">
-        <label for="url" class="col-sm-2 col-form-label">URL:</label>
-        <div class="col-sm-10">
-            <input type="text" class="form-control" name="url" id=url
-                   placeholder="URL to capture" value="{{predefined_url_to_capture}}" required>
+    <div class="form-group row">
+      <label for="url" class="col-sm-2 col-form-label">URL:</label>
+      <div class="col-sm-10">
+          <input type="text" class="form-control" name="url" id=url
+                 placeholder="URL to capture" value="{{predefined_url_to_capture}}" required>
+      </div>
+    </div>
+
+    <div>
+      <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseConfigCapture" aria-expanded="false" aria-controls="collapseConfigCapture">
+          <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; color: black; text-decoration: underline; text-decoration-color: blue;"><b>Capture Configuration</b></p>
+        <!--
+        <span class="if-collapsed">
+          <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-down" alt="Expand config" height="25" width="25" title="Expand">
+        </span>
+        <span class="if-not-collapsed">
+          <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize config" height="25" width="25" title="Collapse">
+        </span>
+        -->
+      </button>
+      <div class="help-tip" title="Edit configuration options for the capture."></div>
+    </div>
+    <div id="collapseConfigCapture" class="collapse">
+      <div class="card card-body">
+        {% if max_depth >= 2 %}
+        <div class="form-group row">
+          <label for="depth" class="col-sm-2 col-form-label">Link Depth:</label>
+          <div class="col-sm-1">
+            <select class="form-control" name="depth" id=depth>
+              {% for depth in range(max_depth) %}
+              <option value="{{ depth + 1 }}">{{ depth + 1 }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        {%endif%}
+
+        <div class="form-group row">
+          <label for="referer" class="col-sm-2 col-form-label">Referer:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" name="referer" id=referer placeholder="Pass referer of the URL">
+          </div>
+        </div>
+
+        <div class="form-group row">
+          <label for="proxy" class="col-sm-2 col-form-label">Proxy:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" name="proxy" id="proxy" placeholder="Expected format: [scheme]://[username]:[password]@[hostname]:[port]">
+          </div>
+        </div>
+
+        <div class="form-group row">
+          <label for="cookies" class="col-sm-6">Cookies (JSON export from the Firefox plugin Cookie Quick Manager)</label>
+          <div class="col-sm-4">
+            <input type="file" class="form-control-file" id="cookies" name="cookies">
+          </div>
         </div>
       </div>
+    </div>
 
-      {% if max_depth >= 2 %}
-      <div class="form-group row">
-        <label for="depth" class="col-sm-2 col-form-label">Link Depth:</label>
-        <div class="col-sm-1">
-          <select class="form-control" name="depth" id=depth>
-          {% for depth in range(max_depth) %}
-          <option value="{{ depth + 1 }}">{{ depth + 1 }}</option>
-          {% endfor %}
-          </select>
-        </div>
-      </div>
-      {%endif%}
+    <div class="dropdown-divider"></div>
 
-      <div class="form-group row">
-        <label for="referer" class="col-sm-2 col-form-label">Referer (Optional):</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control" name="referer" id=referer placeholder="Pass referer of the URL">
-        </div>
-      </div>
-
-      <div class="form-group row">
-        <label for="proxy" class="col-sm-2 col-form-label">Proxy (Optional):</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control" name="proxy" id="proxy" placeholder="Expected format: [scheme]://[username]:[password]@[hostname]:[port]">
-        </div>
-      </div>
-
-      <div class="form-group row">
-        <label for="cookies" class="col-sm-6">Cookies (JSON export from the Firefox plugin Cookie Quick Manager)</label>
-        <div class="col-sm-4">
-          <input type="file" class="form-control-file" id="cookies" name="cookies">
-        </div>
-      </div>
-
-      <div class="dropdown-divider"></div>
-      <p style="font-size: x-large"><b>Browser Configuration</b> (Lookyloo uses an emulated browser for all captures)</p>
+    <p style="font-size: x-large"><b>Browser Configuration</b> (Lookyloo uses an emulated browser for all captures)</p>
+    <div class="card card-body">
       {% if personal_ua %}
       <div class="form-group row">
         <div class="col-sm-10">
@@ -95,7 +115,6 @@
           </div>
         </div>
       </div>
-      </br>
       <div>Or pick the user agent of your choice:</div>
       </br>
       {% endif %}
@@ -112,7 +131,7 @@
         </div>
       </div>
 
-      {% for os, browsers in user_agents.items() %}
+    {% for os, browsers in user_agents.items() %}
       <!-- Hide the browsers that aren't part of the default os -->
       <div id="{{os.replace(' ', '_')}}" class="style-sub-1 form-group row" {% if not os==default['os'] %}style="display: none;"{%endif%}>
         <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
@@ -126,7 +145,7 @@
           </select>
         </div>
       </div>
-          {% for browser, user_agents in browsers.items()%}
+      {% for browser, user_agents in browsers.items()%}
       <!-- Hide the user agents that aren't part of the default OS and browsers that aren't part of the default os -->
       <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 form-group row" {% if not os==default['os'] or not browser==default['browser']%} style="display: none;"{%endif%}>
         <label for="user_agent" class="col-sm-2 col-form-label">User Agent:</label>
@@ -140,21 +159,21 @@
           </select>
         </div>
       </div>
-          {% endfor%}
       {% endfor%}
-      <div class="dropdown-divider"></div>
-      <center>
-        <b>
-        {% if default_public %}
-          By default, the capture is public. If you do not want that, untick the box at the top of the form.
-        {% else %}
-          By default, the capture is private (not visible on the index page). If you want it to be public tick the box at the top of the form.
-        {% endif %}
-        </b>
-        </br>
-        </br>
-        <button type="submit" class="new-capture-button" id="btn-looking">Start looking!</button>
-      </center>
+    {% endfor%}
+    </div>
+    <center>
+      <b>
+      {% if default_public %}
+        By default, the capture is public. If you do not want that, untick the box at the top of the form.
+      {% else %}
+        By default, the capture is private (not visible on the index page). If you want it to be public tick the box at the top of the form.
+      {% endif %}
+      </b>
+      </br>
+      </br>
+      <button type="submit" class="new-capture-button" id="btn-looking">Start looking!</button>
+    </center>
   </form>
 </div>
 {% endblock %}

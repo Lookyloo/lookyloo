@@ -12,17 +12,7 @@
   transition: all 0.3s ease 0s;
   cursor: pointer;
   outline: none;
-  padding-right: 15px;
-  padding-left: 15px;
-  padding-bottom: 20px;
-  padding-top: 15px;
-}
-
-.new-capture-button:hover {
-  background-color: #007070;
-  box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.1);
-  color: #fff;
-  transform: translateY(-7px);
+  align-items: center;
 }
 
 /* CSS collapse thing */
@@ -94,4 +84,37 @@ table td p {
   height: 0;
   width: 0;
   z-index: -1;
+}
+
+/* Arrows */
+.arrow-down {
+  transform: rotate(180deg);
+}
+
+.arrow-right {
+  transform: rotate(90deg);
+}
+
+.arrow-left {
+  transform: rotate(270deg);
+}
+
+/* help Tooltip */
+.help-tip{
+    text-align: center;
+    background-color: #BCDBEA;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    line-height: 26px;
+    cursor: default;
+    position: relative;
+    display:inline-block;
+}
+
+.help-tip:before{
+    content:'?';
+    font-weight: bold;
+    color:#fff;
 }
