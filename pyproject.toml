@@ -63,13 +63,14 @@ flask-restx = "^0.5.1"
 hiredis = "^2.0.0"
 rich = "^10.12.0"
 pyphishtanklookup = "^1.0.1"
+chardet = "^4.0.0"
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.910"
-ipython = "^7.28.0"
+ipython = "^7.29.0"
 types-redis = "^3.5.12"
 types-requests = "^2.25.10"
 types-Flask = "^1.1.4"
