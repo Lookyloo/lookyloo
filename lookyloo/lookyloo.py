@@ -366,7 +366,7 @@ class Lookyloo():
         for key, value in query.items():
             if isinstance(value, bool):
                 query[key] = 1 if value else 0
-            if isinstance(value, list):
+            if isinstance(value, (list, dict)):
                 query[key] = json.dumps(value)
         if priority < -10:
             # Someone is probably abusing the system with useless URLs, remove them from the index

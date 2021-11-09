@@ -17,6 +17,7 @@ import pkg_resources
 from flask import (Flask, Response, flash, jsonify, redirect, render_template,
                    request, send_file, url_for)
 from flask_bootstrap import Bootstrap  # type: ignore
+from flask_cors import CORS  # type: ignore
 from flask_restx import Api  # type: ignore
 from pymisp import MISPEvent, MISPServerError
 from werkzeug.security import check_password_hash
@@ -1069,6 +1070,7 @@ authorizations = {
     }
 }
 
+CORS(app, resources={r"/submit": {"origins": "*"}})
 
 api = Api(app, title='Lookyloo API',
           description='API to submit captures and query a lookyloo instance.',
