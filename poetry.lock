@@ -549,7 +549,7 @@ testing = ["Django (<3.1)", "colorama", "docopt", "pytest (<6.0.0)"]
 
 [[package]]
 name = "jinja2"
-version = "3.0.2"
+version = "3.0.3"
 description = "A very fast and expressive template engine."
 category = "main"
 optional = false
@@ -1186,7 +1186,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-flask"
-version = "1.1.4"
+version = "1.1.5"
 description = "Typing stubs for Flask"
 category = "dev"
 optional = false
@@ -1234,7 +1234,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.25.11"
+version = "2.26.0"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1271,7 +1271,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.7.6"
+version = "0.8.0"
 description = "The official Python client library for VirusTotal"
 category = "main"
 optional = false
@@ -1352,7 +1352,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "ebd2537ff48bcabf17c21f8cda40626b20b7353f39e4c3966cf89b18d7d3d455"
+content-hash = "aea66123f5bcdd7d07ef5ca1768a29c7d43ce58f1e2ff8402c387f184e857bd4"
 
 [metadata.files]
 aiohttp = [
@@ -1808,8 +1808,8 @@ jedi = [
     {file = "jedi-0.18.0.tar.gz", hash = "sha256:92550a404bad8afed881a137ec9a461fed49eca661414be45059329614ed0707"},
 ]
 jinja2 = [
-    {file = "Jinja2-3.0.2-py3-none-any.whl", hash = "sha256:8569982d3f0889eed11dd620c706d39b60c36d6d25843961f33f77fb6bc6b20c"},
-    {file = "Jinja2-3.0.2.tar.gz", hash = "sha256:827a0e32839ab1600d4eb1c4c33ec5a8edfbc5cb42dafa13b81f182f97784b45"},
+    {file = "Jinja2-3.0.3-py3-none-any.whl", hash = "sha256:077ce6014f7b40d03b47d1f1ca4b0fc8328a692bd284016f806ed0eaca390ad8"},
+    {file = "Jinja2-3.0.3.tar.gz", hash = "sha256:611bb273cd68f3b993fabdc4064fc858c5b47a973cb5aa7999ec1ba405c87cd7"},
 ]
 jmespath = [
     {file = "jmespath-0.10.0-py2.py3-none-any.whl", hash = "sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f"},
@@ -2348,8 +2348,8 @@ types-click = [
     {file = "types_click-7.1.7-py3-none-any.whl", hash = "sha256:64dd3dc1fe5ed7e105b7a0479a6aebdd3c132c474c54f42a744af1bfba1989fd"},
 ]
 types-flask = [
-    {file = "types-Flask-1.1.4.tar.gz", hash = "sha256:09306465574a1b42c48fa4a83458fbb0cd9a46df20f6901e4bf148550126cc85"},
-    {file = "types_Flask-1.1.4-py3-none-any.whl", hash = "sha256:ed06c39b5838eed4e099c5fc0117714097975d86177b1663c4fb547a5f7ff298"},
+    {file = "types-Flask-1.1.5.tar.gz", hash = "sha256:1294df1615e01135c5dbba530e3f8d58918afa6796f1dee8b2143c7dd47b7970"},
+    {file = "types_Flask-1.1.5-py3-none-any.whl", hash = "sha256:80086412a55202b2d18a2774d3a24b4a9acfa0d2f7935e9ecf4de53a705e1944"},
 ]
 types-jinja2 = [
     {file = "types-Jinja2-2.11.8.tar.gz", hash = "sha256:8331174ba46bc4570b65edc5c6828bb0aec8a93b1e487fc5e878aad5e373ae21"},
@@ -2368,8 +2368,8 @@ types-redis = [
     {file = "types_redis-3.5.15-py3-none-any.whl", hash = "sha256:e617c08bff88449b52f6dbdaa9bb81a806f27c89fd30bbf98fe9683ed5d1046a"},
 ]
 types-requests = [
-    {file = "types-requests-2.25.11.tar.gz", hash = "sha256:b279284e51f668e38ee12d9665e4d789089f532dc2a0be4a1508ca0efd98ba9e"},
-    {file = "types_requests-2.25.11-py3-none-any.whl", hash = "sha256:ba1d108d512e294b6080c37f6ae7cb2a2abf527560e2b671d1786c1fc46b541a"},
+    {file = "types-requests-2.26.0.tar.gz", hash = "sha256:df5ec8c34b413a42ebb38e4f96bdeb68090b875bdfcc5138dc82989c95445883"},
+    {file = "types_requests-2.26.0-py3-none-any.whl", hash = "sha256:809b5dcd3c408ac39d11d593835b6aff32420b3e7ddb79c7f3e823330f040466"},
 ]
 types-werkzeug = [
     {file = "types-Werkzeug-1.0.7.tar.gz", hash = "sha256:2e8779fd17856ce4e2cc7eeb1446bfb9afc43fd1a5b067265a4f13d6f7f68499"},
@@ -2385,8 +2385,8 @@ urllib3 = [
     {file = "urllib3-1.26.7.tar.gz", hash = "sha256:4987c65554f7a2dbf30c18fd48778ef124af6fab771a377103da0585e2336ece"},
 ]
 vt-py = [
-    {file = "vt-py-0.7.6.tar.gz", hash = "sha256:27b08f52c282298da1c8ebe166984697496d8f557b46fef67f64f808b5deba55"},
-    {file = "vt_py-0.7.6-py3-none-any.whl", hash = "sha256:6f76c307c1e8b488a0ee093822e3351b0eaae3153046a3893e8fb92dff66ea3f"},
+    {file = "vt-py-0.8.0.tar.gz", hash = "sha256:40614c653f87c341d9744719c90fcf5b22d0da47f9ba14f66251b9f4424fd8bc"},
+    {file = "vt_py-0.8.0-py3-none-any.whl", hash = "sha256:b691224c0050b2d678d9251ce889ed42bcb41e5ea70933a01e628ccc9c2642c1"},
 ]
 w3lib = [
     {file = "w3lib-1.22.0-py2.py3-none-any.whl", hash = "sha256:0161d55537063e00d95a241663ede3395c4c6d7b777972ba2fd58bbab2001e53"},
