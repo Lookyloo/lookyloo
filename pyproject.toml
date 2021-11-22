@@ -52,7 +52,7 @@ har2tree = "^1.9.1"
 pylookyloo = "^1.9"
 dnspython = "^2.1.0"
 pytaxonomies = "^1.4.1"
-pymisp = {version = "^2.4.148.1", extras = ["url"]}
+pymisp = {version = "^2.4.151", extras = ["url"]}
 python-magic = {version = "^0.4.22", optional = true}
 # pydeep requires libfuzzy-dev, and is only used in the MISP export module
 pydeep = {version = "^0.4", optional = true}
