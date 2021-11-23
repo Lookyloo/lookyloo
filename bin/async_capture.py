@@ -58,6 +58,17 @@ class AsyncCapture(AbstractManager):
             # By default, the captures are not on the index, unless the user mark them as listed
             listing = True if ('listing' in to_capture and to_capture['listing'].lower() in ['true', '1']) else False
 
+        # Turn the freetext for the headers into a dict
+        headers = {}
+        if 'headers' in to_capture:
+            for header_line in to_capture['headers'].splitlines():
+                if header_line and ':' in header_line:
+                    splitted = header_line.split(':', 1)
+                    if splitted and len(splitted) == 2:
+                        header, h_value = splitted
+                        if header and h_value:
+                            headers[header.strip()] = h_value.strip()
+
         self.logger.info(f'Capturing {to_capture["url"]} - {uuid}')
         success, error_message = self._capture(
             to_capture['url'],
@@ -67,6 +78,7 @@ class AsyncCapture(AbstractManager):
             listing=listing,
             user_agent=to_capture.get('user_agent', None),
             referer=to_capture.get('referer', None),
+            headers=headers if headers else None,
             proxy=to_capture.get('proxy', None),
             os=to_capture.get('os', None),
             browser=to_capture.get('browser', None),
@@ -85,7 +97,7 @@ class AsyncCapture(AbstractManager):
 
     def _capture(self, url: str, *, perma_uuid: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                  depth: int=1, listing: bool=True, user_agent: Optional[str]=None,
-                 referer: Optional[str]=None, proxy: Optional[str]=None, os: Optional[str]=None,
+                 referer: Optional[str]=None, headers: Optional[Dict[str, str]]=None, proxy: Optional[str]=None, os: Optional[str]=None,
                  browser: Optional[str]=None, parent: Optional[str]=None) -> Tuple[bool, str]:
         '''Launch a capture'''
         url = url.strip()
@@ -120,14 +132,15 @@ class AsyncCapture(AbstractManager):
         self.logger.info(f'Capturing {url}')
         try:
             items = crawl(self.splash_url, url, cookies=cookies, depth=depth, user_agent=ua,
-                          referer=referer, proxy=proxy, log_enabled=True, log_level=get_config('generic', 'splash_loglevel'))
+                          referer=referer, headers=headers, proxy=proxy, log_enabled=True,
+                          log_level=get_config('generic', 'splash_loglevel'))
         except Exception as e:
             self.logger.critical(f'Something went terribly wrong when capturing {url}.')
             raise e
         if not items:
             # broken
             self.logger.critical(f'Something went terribly wrong when capturing {url}.')
-            return False, 'Something went terribly wrong when capturing {url}.'
+            return False, f'Something went terribly wrong when capturing {url}.'
         width = len(str(len(items)))
         now = datetime.now()
         dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / now.isoformat()

@@ -1069,7 +1069,7 @@ python-versions = "*"
 
 [[package]]
 name = "scrapysplashwrapper"
-version = "1.9.2"
+version = "1.9.3"
 description = "Scrapy splash wrapper as a standalone library."
 category = "main"
 optional = false
@@ -1080,7 +1080,7 @@ Scrapy = ">=2.5.1,<3.0.0"
 scrapy-splash = ">=0.8.0,<0.9.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.2.0,<5.0.0)"]
+docs = ["Sphinx (>=4.3.0,<5.0.0)"]
 
 [[package]]
 name = "service-identity"
@@ -1183,7 +1183,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-click"
-version = "7.1.7"
+version = "7.1.8"
 description = "Typing stubs for click"
 category = "dev"
 optional = false
@@ -1231,7 +1231,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "3.5.17"
+version = "3.5.18"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1247,7 +1247,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-werkzeug"
-version = "1.0.7"
+version = "1.0.8"
 description = "Typing stubs for Werkzeug"
 category = "dev"
 optional = false
@@ -1357,7 +1357,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "19237996db1901ec730199fe80f3a6ecaa58d5c1472429165c49a0770218f188"
+content-hash = "e74e1a05ff00a1cec28efc8ee00fb90318684d682e825ad67da9a6d10a9f8975"
 
 [metadata.files]
 aiohttp = [
@@ -2308,8 +2308,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.8.0-py2.py3-none-any.whl", hash = "sha256:f35986fbe916d4b7878f4d303ca6a9d4f013157ab2bae13d85f14da78d211193"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.9.2-py3-none-any.whl", hash = "sha256:ca63c67c0892ac1ab1a9db5c3e83711b7683306571a08fbfba43d9b71d55f826"},
-    {file = "scrapysplashwrapper-1.9.2.tar.gz", hash = "sha256:3edb2860a35c4cf74e13c377130ebda777498e7f576e9b6aca2dd7b268d85934"},
+    {file = "scrapysplashwrapper-1.9.3-py3-none-any.whl", hash = "sha256:ece1dbf0ec4c0b9fe34f34bc063ae27592cd89fe2d205c2c476514baf4b1c372"},
+    {file = "scrapysplashwrapper-1.9.3.tar.gz", hash = "sha256:0621a02fffba2d9eab8e0bea3e986474b3d9edfcd5681f41a8162c8bba517490"},
 ]
 service-identity = [
     {file = "service-identity-21.1.0.tar.gz", hash = "sha256:6e6c6086ca271dc11b033d17c3a8bea9f24ebff920c587da090afc9519419d34"},
@@ -2350,8 +2350,8 @@ twisted-iocpsupport = [
     {file = "twisted_iocpsupport-1.0.2-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:7d972cfa8439bdcb35a7be78b7ef86d73b34b808c74be56dfa785c8a93b851bf"},
 ]
 types-click = [
-    {file = "types-click-7.1.7.tar.gz", hash = "sha256:fff7ea52619581401a90cb9247e1a7e95c29084cfdbc26b7a49ed94c40fcd3d8"},
-    {file = "types_click-7.1.7-py3-none-any.whl", hash = "sha256:64dd3dc1fe5ed7e105b7a0479a6aebdd3c132c474c54f42a744af1bfba1989fd"},
+    {file = "types-click-7.1.8.tar.gz", hash = "sha256:b6604968be6401dc516311ca50708a0a28baa7a0cb840efd7412f0dbbff4e092"},
+    {file = "types_click-7.1.8-py3-none-any.whl", hash = "sha256:8cb030a669e2e927461be9827375f83c16b8178c365852c060a34e24871e7e81"},
 ]
 types-flask = [
     {file = "types-Flask-1.1.5.tar.gz", hash = "sha256:1294df1615e01135c5dbba530e3f8d58918afa6796f1dee8b2143c7dd47b7970"},
@@ -2370,16 +2370,16 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-redis = [
-    {file = "types-redis-3.5.17.tar.gz", hash = "sha256:79a95e3da407fe8a6f227ce29e3ca6e4a235fd30331e1a599879d3c9258291ff"},
-    {file = "types_redis-3.5.17-py3-none-any.whl", hash = "sha256:f267bcbc2f0c30af72de334ceb644c3694efc69f0b9131f3f359cf824ed8d079"},
+    {file = "types-redis-3.5.18.tar.gz", hash = "sha256:15482304e8848c63b383b938ffaba7ebe0b7f8f33381ecc450ee03935213e166"},
+    {file = "types_redis-3.5.18-py3-none-any.whl", hash = "sha256:5c55c4b9e8ebdc6d57d4e47900b77d99f19ca0a563264af3f701246ed0926335"},
 ]
 types-requests = [
     {file = "types-requests-2.26.0.tar.gz", hash = "sha256:df5ec8c34b413a42ebb38e4f96bdeb68090b875bdfcc5138dc82989c95445883"},
     {file = "types_requests-2.26.0-py3-none-any.whl", hash = "sha256:809b5dcd3c408ac39d11d593835b6aff32420b3e7ddb79c7f3e823330f040466"},
 ]
 types-werkzeug = [
-    {file = "types-Werkzeug-1.0.7.tar.gz", hash = "sha256:2e8779fd17856ce4e2cc7eeb1446bfb9afc43fd1a5b067265a4f13d6f7f68499"},
-    {file = "types_Werkzeug-1.0.7-py3-none-any.whl", hash = "sha256:dc0972040f0f043b813ab574079b0b101a44d434d67bf1695afffc6b0aad0362"},
+    {file = "types-Werkzeug-1.0.8.tar.gz", hash = "sha256:310f06032b71c28c7ae2b189b44d52c29e1a667e87c2e9e8405761b01cb83859"},
+    {file = "types_Werkzeug-1.0.8-py3-none-any.whl", hash = "sha256:212e8e0da7b205b159d70eaf1121a8cef08ee7a7eeae83406379045d3385078d"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.0.0-py3-none-any.whl", hash = "sha256:829704698b22e13ec9eaf959122315eabb370b0884400e9818334d8b677023d9"},

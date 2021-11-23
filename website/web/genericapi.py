@@ -322,6 +322,7 @@ submit_fields_post = api.model('SubmitFieldsPost', {
     'listing': fields.Integer(description="Display the capture on the index", min=0, max=1, example=1),
     'user_agent': fields.String(description="User agent to use for the capture", example=''),
     'referer': fields.String(description="Referer to pass to the capture", example=''),
+    'headers': fields.String(description="Referer to pass to the capture", example='Accept-Language: en-US;q=0.5, fr-FR;q=0.4'),
     'proxy': fields.Url(description="Proxy to use for the capture. Format: [scheme]://[username]:[password]@[hostname]:[port]", example=''),
     'cookies': fields.String(description="JSON export of a list of cookies as exported from an other capture", example='')
 })
@@ -351,6 +352,8 @@ class SubmitCapture(Resource):
             to_query['user_agent'] = request.args['user_agent']
         if request.args.get('referer'):
             to_query['referer'] = request.args['referer']
+        if request.args.get('headers'):
+            to_query['headers'] = request.args['headers']
         if request.args.get('proxy'):
             to_query['proxy'] = request.args['proxy']
 
