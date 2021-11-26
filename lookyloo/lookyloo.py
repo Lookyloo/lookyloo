@@ -16,6 +16,7 @@ from typing import (Any, Dict, Iterable, List, MutableMapping, Optional, Set,
 from uuid import uuid4
 from zipfile import ZipFile
 
+from defang import defang
 from har2tree import CrawledTree, HostNode, URLNode
 from PIL import Image  # type: ignore
 from pymisp import MISPAttribute, MISPEvent, MISPObject
@@ -387,10 +388,10 @@ class Lookyloo():
         initial_url = ''
         cache = self.capture_cache(capture_uuid)
         if cache:
-            initial_url = cache.url
+            initial_url = defang(cache.url, colon=True, all_dots=True)
             if cache.redirects:
                 redirects = "Redirects:\n"
-                redirects += '\n'.join(cache.redirects)
+                redirects += defang('\n'.join(cache.redirects), colon=True, all_dots=True)
             else:
                 redirects = "No redirects."
 
