@@ -1191,7 +1191,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-flask"
-version = "1.1.5"
+version = "1.1.6"
 description = "Typing stubs for Flask"
 category = "dev"
 optional = false
@@ -1204,7 +1204,7 @@ types-Werkzeug = "*"
 
 [[package]]
 name = "types-jinja2"
-version = "2.11.8"
+version = "2.11.9"
 description = "Typing stubs for Jinja2"
 category = "dev"
 optional = false
@@ -1215,7 +1215,7 @@ types-MarkupSafe = "*"
 
 [[package]]
 name = "types-markupsafe"
-version = "1.1.8"
+version = "1.1.9"
 description = "Typing stubs for MarkupSafe"
 category = "dev"
 optional = false
@@ -1231,7 +1231,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.0.0"
+version = "4.0.1"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1239,7 +1239,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.26.0"
+version = "2.26.1"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1247,7 +1247,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-werkzeug"
-version = "1.0.8"
+version = "1.0.9"
 description = "Typing stubs for Werkzeug"
 category = "dev"
 optional = false
@@ -2354,32 +2354,32 @@ types-click = [
     {file = "types_click-7.1.8-py3-none-any.whl", hash = "sha256:8cb030a669e2e927461be9827375f83c16b8178c365852c060a34e24871e7e81"},
 ]
 types-flask = [
-    {file = "types-Flask-1.1.5.tar.gz", hash = "sha256:1294df1615e01135c5dbba530e3f8d58918afa6796f1dee8b2143c7dd47b7970"},
-    {file = "types_Flask-1.1.5-py3-none-any.whl", hash = "sha256:80086412a55202b2d18a2774d3a24b4a9acfa0d2f7935e9ecf4de53a705e1944"},
+    {file = "types-Flask-1.1.6.tar.gz", hash = "sha256:aac777b3abfff9436e6b01f6d08171cf23ea6e5be71cbf773aaabb1c5763e9cf"},
+    {file = "types_Flask-1.1.6-py3-none-any.whl", hash = "sha256:6ab8a9a5e258b76539d652f6341408867298550b19b81f0e41e916825fc39087"},
 ]
 types-jinja2 = [
-    {file = "types-Jinja2-2.11.8.tar.gz", hash = "sha256:8331174ba46bc4570b65edc5c6828bb0aec8a93b1e487fc5e878aad5e373ae21"},
-    {file = "types_Jinja2-2.11.8-py3-none-any.whl", hash = "sha256:f80f29dbf8fec4a3c0f3ee1c9504235757232e739881325a78c14858814012a4"},
+    {file = "types-Jinja2-2.11.9.tar.gz", hash = "sha256:dbdc74a40aba7aed520b7e4d89e8f0fe4286518494208b35123bcf084d4b8c81"},
+    {file = "types_Jinja2-2.11.9-py3-none-any.whl", hash = "sha256:60a1e21e8296979db32f9374d8a239af4cb541ff66447bb915d8ad398f9c63b2"},
 ]
 types-markupsafe = [
-    {file = "types-MarkupSafe-1.1.8.tar.gz", hash = "sha256:b2940f4faab46be0f9509b2f98ea9ff36d058f89fa113d98ae07cdc7958ec15f"},
-    {file = "types_MarkupSafe-1.1.8-py3-none-any.whl", hash = "sha256:08ca3cf19abab0476a1efe4a82af6d21471573e08c1e5e065e26aa78a1b552ad"},
+    {file = "types-MarkupSafe-1.1.9.tar.gz", hash = "sha256:a9212736c37763549a96d71e358bc0fc16723798468b40fe3615960e9e2a8b1b"},
+    {file = "types_MarkupSafe-1.1.9-py3-none-any.whl", hash = "sha256:91777713ffea6b70ce6ef85abaf544bfba1671d47a5985fc88a75136541b99c6"},
 ]
 types-pkg-resources = [
     {file = "types-pkg_resources-0.1.3.tar.gz", hash = "sha256:834a9b8d3dbea343562fd99d5d3359a726f6bf9d3733bccd2b4f3096fbab9dae"},
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-redis = [
-    {file = "types-redis-4.0.0.tar.gz", hash = "sha256:0a9c4eb73e6e09a2ba2d4f8ed4a97b6f8cbc5bfc13327a188915fe9011e13bf7"},
-    {file = "types_redis-4.0.0-py3-none-any.whl", hash = "sha256:252f4dc8e28e66f8ff64faafa26214328897a87d8d8c2e412b341bbf5f4c11d7"},
+    {file = "types-redis-4.0.1.tar.gz", hash = "sha256:583e371eae99d47913629cce9ecf06c0cf3c72885f5fc4d22de6f8b9260a82db"},
+    {file = "types_redis-4.0.1-py3-none-any.whl", hash = "sha256:5978fbd61fb512c5c7c4faea94e5af4ef34e5b3a82c2928d5949bf05272cd767"},
 ]
 types-requests = [
-    {file = "types-requests-2.26.0.tar.gz", hash = "sha256:df5ec8c34b413a42ebb38e4f96bdeb68090b875bdfcc5138dc82989c95445883"},
-    {file = "types_requests-2.26.0-py3-none-any.whl", hash = "sha256:809b5dcd3c408ac39d11d593835b6aff32420b3e7ddb79c7f3e823330f040466"},
+    {file = "types-requests-2.26.1.tar.gz", hash = "sha256:0893e112e1510bbb67f537941c92192de7472e51bf7f236e0e583866f0ed933e"},
+    {file = "types_requests-2.26.1-py3-none-any.whl", hash = "sha256:853571b3accc188976c0f4feffcaebf6cdfc170082b5e43f3358aa78de61f531"},
 ]
 types-werkzeug = [
-    {file = "types-Werkzeug-1.0.8.tar.gz", hash = "sha256:310f06032b71c28c7ae2b189b44d52c29e1a667e87c2e9e8405761b01cb83859"},
-    {file = "types_Werkzeug-1.0.8-py3-none-any.whl", hash = "sha256:212e8e0da7b205b159d70eaf1121a8cef08ee7a7eeae83406379045d3385078d"},
+    {file = "types-Werkzeug-1.0.9.tar.gz", hash = "sha256:5cc269604c400133d452a40cee6397655f878fc460e03fde291b9e3a5eaa518c"},
+    {file = "types_Werkzeug-1.0.9-py3-none-any.whl", hash = "sha256:194bd5715a13c598f05c63e8a739328657590943bce941e8a3619a6b5d4a54ec"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.0.0-py3-none-any.whl", hash = "sha256:829704698b22e13ec9eaf959122315eabb370b0884400e9818334d8b677023d9"},
