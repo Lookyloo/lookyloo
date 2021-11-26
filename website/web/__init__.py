@@ -832,7 +832,9 @@ def capture_web():
         if 'cookies' in request.files and request.files['cookies'].filename:
             capture_query['cookies'] = request.files['cookies'].stream.read()
 
-        if request.form.get('personal_ua') and request.headers.get('User-Agent'):
+        if request.form.get('freetext_ua'):
+            capture_query['user_agent'] = request.form['freetext_ua']
+        elif request.form.get('personal_ua') and request.headers.get('User-Agent'):
             capture_query['user_agent'] = request.headers['User-Agent']
         else:
             capture_query['user_agent'] = request.form['user_agent']
