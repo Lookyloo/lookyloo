@@ -36,18 +36,20 @@ class Archiver(AbstractManager):
         self._load_indexes()
 
     def _update_index(self, root_dir: Path) -> None:
-        current_index: Dict[str, str]
+        current_index: Dict[str, str] = {}
 
         index_file = root_dir / 'index'
         if index_file.exists():
             # Skip index if the directory has been archived.
             existing_captures = index_file.parent.iterdir()
-            with index_file.open('r') as _f:
-                current_index = {uuid: dirname for uuid, dirname in csv.reader(_f) if (index_file.parent / dirname) in existing_captures}
+            try:
+                with index_file.open('r') as _f:
+                    current_index = {uuid: dirname for uuid, dirname in csv.reader(_f) if (index_file.parent / dirname) in existing_captures}
+            except Exception:
+                # the index file is broken, it will be recreated.
+                pass
             if not current_index:
                 index_file.unlink()
-        else:
-            current_index = {}
 
         for uuid_file in root_dir.glob('*/uuid'):
             if uuid_file.parent.name in current_index.values():
