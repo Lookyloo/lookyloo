@@ -101,7 +101,11 @@ def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str]]=None) -
     cookies: List[Dict[str, Union[str, bool]]]
     if cookie_pseudofile:
         if isinstance(cookie_pseudofile, str):
-            cookies = json.loads(cookie_pseudofile)
+            try:
+                cookies = json.loads(cookie_pseudofile)
+            except json.decoder.JSONDecodeError:
+                logger.warning(f'Unable to load json content: {cookie_pseudofile}')
+                return []
         else:
             cookies = json.load(cookie_pseudofile)
     else:
