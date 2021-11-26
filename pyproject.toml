@@ -73,7 +73,7 @@ mypy = "^0.910"
 ipython = "^7.29.0"
 types-redis = "^4.0"
 types-requests = "^2.26"
-types-Flask = "^1.1.5"
+types-Flask = "^1.1.6"
 types-pkg-resources = "^0.1.2"
 
 [build-system]
