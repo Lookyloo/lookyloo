@@ -16,7 +16,7 @@ from typing import (Any, Dict, Iterable, List, MutableMapping, Optional, Set,
 from uuid import uuid4
 from zipfile import ZipFile
 
-from defang import defang
+from defang import defang  # type: ignore
 from har2tree import CrawledTree, HostNode, URLNode
 from PIL import Image  # type: ignore
 from pymisp import MISPAttribute, MISPEvent, MISPObject
