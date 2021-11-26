@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from subprocess import Popen
+from subprocess import Popen, run
 
 from redis import Redis
 
@@ -16,7 +16,10 @@ def main():
     r.delete('shutdown')
     r = Redis(unix_socket_path=get_socket_path('cache'))
     r.delete('tree_cache')
-    Popen(['run_backend', '--stop'])
+    print('Shutting down databases...')
+    p = run(['run_backend', '--stop'])
+    p.check_returncode()
+    print('done.')
 
 
 if __name__ == '__main__':
