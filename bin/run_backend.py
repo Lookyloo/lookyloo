@@ -35,7 +35,10 @@ def launch_cache(storage_directory: Optional[Path]=None):
 def shutdown_cache(storage_directory: Optional[Path]=None):
     if not storage_directory:
         storage_directory = get_homedir()
-    Popen(["./shutdown_redis.sh"], cwd=(storage_directory / 'cache'))
+    r = Redis(unix_socket_path=get_socket_path('cache'))
+    r.save()
+    r.shutdown()
+    print('Redis cache database shutdown.')
 
 
 def launch_indexing(storage_directory: Optional[Path]=None):
@@ -48,7 +51,10 @@ def launch_indexing(storage_directory: Optional[Path]=None):
 def shutdown_indexing(storage_directory: Optional[Path]=None):
     if not storage_directory:
         storage_directory = get_homedir()
-    Popen(["./shutdown_redis.sh"], cwd=(storage_directory / 'indexing'))
+    r = Redis(unix_socket_path=get_socket_path('indexing'))
+    r.save()
+    r.shutdown()
+    print('Redis indexing database shutdown.')
 
 
 def launch_all():
