@@ -736,7 +736,7 @@ class Lookyloo():
             return {h: [node.name for node in nodes] for h, nodes in hashes.items()}
         return hashes
 
-    def merge_hashlookup_tree(self, tree_uuid: str, /):
+    def merge_hashlookup_tree(self, tree_uuid: str, /) -> Tuple[Dict[str, Dict[str, Any]], int]:
         if not self.hashlookup.available:
             raise LookylooException('Hashlookup module not enabled.')
         hashes_tree = self.get_hashes_with_context(tree_uuid, algorithm='sha1')
@@ -748,7 +748,7 @@ class Lookyloo():
 
         if not hashlookup_file.exists():
             # no hits on hashlookup
-            return
+            return {}, len(hashes_tree)
 
         with hashlookup_file.open() as f:
             hashlookup_entries = json.load(f)
