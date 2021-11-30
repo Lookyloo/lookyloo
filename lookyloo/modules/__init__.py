@@ -8,3 +8,4 @@ from .urlscan import UrlScan  # noqa
 from .uwhois import UniversalWhois  # noqa
 from .vt import VirusTotal  # noqa
 from .phishtank import Phishtank  # noqa
+from .hashlookup import HashlookupModule as Hashlookup  # noqa

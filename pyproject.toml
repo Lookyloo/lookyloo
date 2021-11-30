@@ -48,7 +48,7 @@ vt-py = "^0.8.0"
 pyeupi = "^1.1"
 scrapysplashwrapper = "^1.9.3"
 pysanejs = "^2.0"
-har2tree = "^1.9.1"
+har2tree = "^1.9.2"
 pylookyloo = "^1.9"
 dnspython = "^2.1.0"
 pytaxonomies = "^1.4.1"
@@ -64,6 +64,7 @@ rich = "^10.14.0"
 pyphishtanklookup = "^1.0.1"
 chardet = "^4.0.0"
 Flask-Cors = "^3.0.10"
+pyhashlookup = "^1.1"
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep']
@@ -71,9 +72,9 @@ misp = ['python-magic', 'pydeep']
 [tool.poetry.dev-dependencies]
 mypy = "^0.910"
 ipython = "^7.29.0"
-types-redis = "^4.0"
-types-requests = "^2.26"
-types-Flask = "^1.1.5"
+types-redis = "^4.0.1"
+types-requests = "^2.26.1"
+types-Flask = "^1.1.6"
 types-pkg-resources = "^0.1.2"
 
 [build-system]

@@ -38,7 +38,12 @@
   },
   "Phishtank": {
     "enabled": false,
-    "url": null,
+    "url": "https://phishtankapi.circl.lu/",
+    "allow_auto_trigger": true
+  },
+  "Hashlookup": {
+    "enabled": false,
+    "url": "https://hashlookup.circl.lu/",
     "allow_auto_trigger": true
   },
   "_notes": {
@@ -51,6 +56,7 @@
     "MISP": "Module to query MISP: https://www.misp-project.org/",
     "UniversalWhois": "Module to query a local instance of uWhoisd: https://github.com/Lookyloo/uwhoisd",
     "UrlScan": "Module to query urlscan.io",
-    "Phishtank": "Module to query Phishtank Lookup (https://github.com/Lookyloo/phishtank-lookup). URL set to none means querying the public instance."
+    "Phishtank": "Module to query Phishtank Lookup (https://github.com/Lookyloo/phishtank-lookup). URL set to none means querying the public instance.",
+    "Hashlookup": "Module to query Hashlookup (https://github.com/adulau/hashlookup-server). URL set to none means querying the public instance."
   }
 }

@@ -33,7 +33,7 @@ from .helpers import (CaptureStatus, get_captures_dir, get_email_template,
                       get_resources_hashes, get_splash_url, get_taxonomies, uniq_domains)
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
-                      UrlScan, VirusTotal, Phishtank)
+                      UrlScan, VirusTotal, Phishtank, Hashlookup)
 
 
 class Lookyloo():
@@ -77,6 +77,10 @@ class Lookyloo():
         self.phishtank = Phishtank(get_config('modules', 'Phishtank'))
         if not self.phishtank.available:
             self.logger.warning('Unable to setup the Phishtank module')
+
+        self.hashlookup = Hashlookup(get_config('modules', 'Hashlookup'))
+        if not self.hashlookup.available:
+            self.logger.warning('Unable to setup the Hashlookup module')
 
         self.logger.info('Initializing context...')
         self.context = Context()
@@ -222,6 +226,7 @@ class Lookyloo():
             return {'error': f'UUID {capture_uuid} is either unknown or the tree is not ready yet.'}
 
         self.uwhois.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
+        self.hashlookup.capture_default_trigger(ct, auto_trigger=auto_trigger)
 
         to_return: Dict[str, Dict] = {'PhishingInitiative': {}, 'VirusTotal': {}, 'UrlScan': {}}
         capture_cache = self.capture_cache(capture_uuid)
@@ -719,8 +724,44 @@ class Lookyloo():
                 to_return[event_id].update(values)
         return to_return
 
+    def get_hashes_with_context(self, tree_uuid: str, /, algorithm: str, *, hashes_only: bool=False, urls_only: bool=False):
+        """Build (on demand) hashes for all the ressources of the tree, using the alorighm provided by the user.
+        If you just want the hashes in SHA512, use the get_hashes method, it gives you a list of hashes an they're build
+        with the tree. This method is computing the hashes when you query it, so it is slower."""
+        ct = self.get_crawled_tree(tree_uuid)
+        hashes = ct.root_hartree.build_all_hashes(algorithm)
+        if hashes_only:
+            return list(hashes.keys())
+        if urls_only:
+            return {h: [node.name for node in nodes] for h, nodes in hashes.items()}
+        return hashes
+
+    def merge_hashlookup_tree(self, tree_uuid: str, /):
+        if not self.hashlookup.available:
+            raise LookylooException('Hashlookup module not enabled.')
+        hashes_tree = self.get_hashes_with_context(tree_uuid, algorithm='sha1')
+
+        hashlookup_file = self._captures_index[tree_uuid].capture_dir / 'hashlookup.json'
+        if not hashlookup_file.exists():
+            ct = self.get_crawled_tree(tree_uuid)
+            self.hashlookup.capture_default_trigger(ct, auto_trigger=False)
+
+        if not hashlookup_file.exists():
+            # no hits on hashlookup
+            return
+
+        with hashlookup_file.open() as f:
+            hashlookup_entries = json.load(f)
+
+        to_return = defaultdict(dict)
+
+        for sha1 in hashlookup_entries.keys():
+            to_return[sha1]['nodes'] = hashes_tree[sha1]
+            to_return[sha1]['hashlookup'] = hashlookup_entries[sha1]
+        return to_return
+
     def get_hashes(self, tree_uuid: str, /, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
-        """Return hashes of resources.
+        """Return hashes (sha512) of resources.
         Only tree_uuid: All the hashes
         tree_uuid and hostnode_uuid: hashes of all the resources in that hostnode (including embedded ressources)
         tree_uuid, hostnode_uuid, and urlnode_uuid: hash of the URL node body, and embedded resources

@@ -1,0 +1,26 @@
+<div>
+  {% for sha1, entries in merged.items() %}
+    <dl class="row">
+      <dt class="col-sm-2">URLs in tree</dt>
+      <dd class="col-sm-10">
+      {% for node in entries['nodes'] %}
+      {{ node.name }} </br>
+      {% endfor %}
+      </dd>
+    </dl>
+    <dl class="row">
+      <dt class="col-sm-2">Entries on hashlookup</dt>
+      <dd class="col-sm-7">
+      {% for k, v in entries['hashlookup'].items() %}
+        <b>{{k}}</b>:
+        {% if k == "SHA-1" %}
+        <a href="https://hashlookup.circl.lu/lookup/sha1/{{ v }}">{{ v }}</a>
+        {% else %}
+        {{ v }}
+        {% endif %}
+        </br>
+      {% endfor %}
+      </dd>
+    </dl>
+  {% endfor %}
+</div>

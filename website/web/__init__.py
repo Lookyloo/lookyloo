@@ -513,6 +513,12 @@ def urls_rendered_page(tree_uuid: str):
     return render_template('urls_rendered.html', base_tree_uuid=tree_uuid, urls=urls)
 
 
+@app.route('/tree/<string:tree_uuid>/hashlookup', methods=['GET'])
+def hashlookup(tree_uuid: str):
+    merged = lookyloo.merge_hashlookup_tree(tree_uuid)
+    return render_template('hashlookup.html', base_tree_uuid=tree_uuid, merged=merged)
+
+
 @app.route('/bulk_captures/<string:base_tree_uuid>', methods=['POST'])
 def bulk_captures(base_tree_uuid: str):
     if flask_login.current_user.is_authenticated:

@@ -118,6 +118,7 @@ class Phishtank():
 
         urls = self.client.get_urls_by_ip(ip)
         if not urls:
+            ip_storage_dir.unlink()
             return
         to_dump = {'ip': ip, 'urls': urls}
         with pt_file.open('w') as _f:
@@ -140,6 +141,9 @@ class Phishtank():
             return
 
         url_information = self.client.get_url_entry(url)
-        if url_information:
-            with pt_file.open('w') as _f:
-                json.dump(url_information, _f)
+        if not url_information:
+            url_storage_dir.unlink()
+            return
+
+        with pt_file.open('w') as _f:
+            json.dump(url_information, _f)

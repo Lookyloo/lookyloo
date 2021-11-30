@@ -396,7 +396,7 @@ hyperframe = ">=5.2.0,<6"
 
 [[package]]
 name = "har2tree"
-version = "1.9.1"
+version = "1.9.2"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -408,13 +408,13 @@ cchardet = ">=2.1.7,<3.0.0"
 ete3 = ">=3.1.2,<4.0.0"
 filetype = ">=1.0.8,<2.0.0"
 lxml = ">=4.6.3,<5.0.0"
-numpy = ">=1.21.2,<2.0.0"
+numpy = ">=1.21.4,<2.0.0"
 publicsuffix2 = ">=2.20191221,<3.0"
 six = ">=1.16.0,<2.0.0"
 w3lib = ">=1.22.0,<2.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.2.0,<5.0.0)"]
+docs = ["Sphinx (>=4.3.0,<5.0.0)"]
 
 [[package]]
 name = "hiredis"
@@ -472,7 +472,7 @@ scripts = ["click (>=6.0)", "twisted (>=16.4.0)"]
 
 [[package]]
 name = "ipython"
-version = "7.29.0"
+version = "7.30.0"
 description = "IPython: Productive Interactive Computing"
 category = "dev"
 optional = false
@@ -731,7 +731,7 @@ python-versions = "*"
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.22"
+version = "3.0.23"
 description = "Library for building powerful interactive command lines in Python"
 category = "dev"
 optional = false
@@ -836,6 +836,21 @@ description = "Pygments is a syntax highlighting package written in Python."
 category = "main"
 optional = false
 python-versions = ">=3.5"
+
+[[package]]
+name = "pyhashlookup"
+version = "1.1"
+description = "Python CLI and module for CIRCL hash lookup"
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+
+[package.dependencies]
+dnspython = ">=2.1.0,<3.0.0"
+requests = ">=2.26.0,<3.0.0"
+
+[package.extras]
+docs = ["Sphinx (>=4.3.1,<5.0.0)"]
 
 [[package]]
 name = "pylookyloo"
@@ -1016,7 +1031,7 @@ use_chardet_on_py3 = ["chardet (>=3.0.2,<5)"]
 
 [[package]]
 name = "rich"
-version = "10.14.0"
+version = "10.15.1"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
@@ -1215,7 +1230,7 @@ types-MarkupSafe = "*"
 
 [[package]]
 name = "types-markupsafe"
-version = "1.1.9"
+version = "1.1.10"
 description = "Typing stubs for MarkupSafe"
 category = "dev"
 optional = false
@@ -1357,7 +1372,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "9423f914579690635fab7c71e0f299cf17917d5277514a89cb3474d81ad7a016"
+content-hash = "dc3eee3a35264d9d47d1e91b97a518f5be514566f923d817d30bacb18384fc0a"
 
 [metadata.files]
 aiohttp = [
@@ -1727,8 +1742,8 @@ h2 = [
     {file = "h2-3.2.0.tar.gz", hash = "sha256:875f41ebd6f2c44781259005b157faed1a5031df3ae5aa7bcb4628a6c0782f14"},
 ]
 har2tree = [
-    {file = "har2tree-1.9.1-py3-none-any.whl", hash = "sha256:b3ff9307d2b08c755258211aa27a7ed114cca257b49c2c73f15300bd059b22f5"},
-    {file = "har2tree-1.9.1.tar.gz", hash = "sha256:fa81639762c7ebb505b6755b48134e96bfe9d7434a8ab0ce595c928785434d4c"},
+    {file = "har2tree-1.9.2-py3-none-any.whl", hash = "sha256:e94ec07e85eedf2d63a2fee8c9c26e7cc5c73ebe96eb243bea3e238b6240cb37"},
+    {file = "har2tree-1.9.2.tar.gz", hash = "sha256:7a9854b9d6052d53bc5a76aab6687d4fe797b82f1150c2c4a4c96d0009ef2485"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -1794,8 +1809,8 @@ incremental = [
     {file = "incremental-21.3.0.tar.gz", hash = "sha256:02f5de5aff48f6b9f665d99d48bfc7ec03b6e3943210de7cfc88856d755d6f57"},
 ]
 ipython = [
-    {file = "ipython-7.29.0-py3-none-any.whl", hash = "sha256:a658beaf856ce46bc453366d5dc6b2ddc6c481efd3540cb28aa3943819caac9f"},
-    {file = "ipython-7.29.0.tar.gz", hash = "sha256:4f69d7423a5a1972f6347ff233e38bbf4df6a150ef20fbb00c635442ac3060aa"},
+    {file = "ipython-7.30.0-py3-none-any.whl", hash = "sha256:c8f3e07aefb9cf9e067f39686f035ce09b27a1ee602116a3030b91b6fc138ee4"},
+    {file = "ipython-7.30.0.tar.gz", hash = "sha256:d41f8e80b99690122400f9b2069b12f670246a1b4cc5d332bd6c4e2500e6d6fb"},
 ]
 itemadapter = [
     {file = "itemadapter-0.4.0-py3-none-any.whl", hash = "sha256:695809a4e2f42174f0392dd66c2ceb2b2454d3ebbf65a930e5c85910d8d88d8f"},
@@ -2154,8 +2169,8 @@ priority = [
     {file = "priority-1.3.0.tar.gz", hash = "sha256:6bc1961a6d7fcacbfc337769f1a382c8e746566aaa365e78047abe9f66b2ffbe"},
 ]
 prompt-toolkit = [
-    {file = "prompt_toolkit-3.0.22-py3-none-any.whl", hash = "sha256:48d85cdca8b6c4f16480c7ce03fd193666b62b0a21667ca56b4bb5ad679d1170"},
-    {file = "prompt_toolkit-3.0.22.tar.gz", hash = "sha256:449f333dd120bd01f5d296a8ce1452114ba3a71fae7288d2f0ae2c918764fa72"},
+    {file = "prompt_toolkit-3.0.23-py3-none-any.whl", hash = "sha256:5f29d62cb7a0ecacfa3d8ceea05a63cd22500543472d64298fc06ddda906b25d"},
+    {file = "prompt_toolkit-3.0.23.tar.gz", hash = "sha256:7053aba00895473cb357819358ef33f11aa97e4ac83d38efb123e5649ceeecaf"},
 ]
 protego = [
     {file = "Protego-0.1.16.tar.gz", hash = "sha256:a682771bc7b51b2ff41466460896c1a5a653f9a1e71639ef365a72e66d8734b4"},
@@ -2220,6 +2235,10 @@ pyfaup = [
 pygments = [
     {file = "Pygments-2.10.0-py3-none-any.whl", hash = "sha256:b8e67fe6af78f492b3c4b3e2970c0624cbf08beb1e493b2c99b9fa1b67a20380"},
     {file = "Pygments-2.10.0.tar.gz", hash = "sha256:f398865f7eb6874156579fdf36bc840a03cab64d1cde9e93d68f46a425ec52c6"},
+]
+pyhashlookup = [
+    {file = "pyhashlookup-1.1-py3-none-any.whl", hash = "sha256:442cd03b9676e02c5fccb9968128debd73b7ad080ae46f9fa3694b0fad3ae0c5"},
+    {file = "pyhashlookup-1.1.tar.gz", hash = "sha256:f43da968e762331ca25e52d0d031ed577183d31e228ec504ca9712670114f4e5"},
 ]
 pylookyloo = [
     {file = "pylookyloo-1.9.0-py3-none-any.whl", hash = "sha256:d0ad7de714e6f8b1b024c1b296f0ca8c7ad83a1b8d6dd78c8655a3561d52089d"},
@@ -2296,8 +2315,8 @@ requests = [
     {file = "requests-2.26.0.tar.gz", hash = "sha256:b8aa58f8cf793ffd8782d3d8cb19e66ef36f7aba4353eec859e74678b01b07a7"},
 ]
 rich = [
-    {file = "rich-10.14.0-py3-none-any.whl", hash = "sha256:ab9cbfd7a3802d8c6f0fa91e974630e2a69447972dcbb9dfe9b01016dd95e38e"},
-    {file = "rich-10.14.0.tar.gz", hash = "sha256:8bfe4546d56b4131298d3a9e571a0742de342f1593770bd0d4707299f772a0af"},
+    {file = "rich-10.15.1-py3-none-any.whl", hash = "sha256:a59fb2721c52c5061ac65f318c0afb709e098b1ab6ce5813ea38982654c4b6ee"},
+    {file = "rich-10.15.1.tar.gz", hash = "sha256:93d0ea3c35ecfd8703dbe52b76885e224ad8d68c7766c921c726b14b22a57b7d"},
 ]
 scrapy = [
     {file = "Scrapy-2.5.1-py2.py3-none-any.whl", hash = "sha256:1a9a36970004950ee3c519a14c4db945f9d9a63fecb3d593dddcda477331dde9"},
@@ -2362,8 +2381,8 @@ types-jinja2 = [
     {file = "types_Jinja2-2.11.9-py3-none-any.whl", hash = "sha256:60a1e21e8296979db32f9374d8a239af4cb541ff66447bb915d8ad398f9c63b2"},
 ]
 types-markupsafe = [
-    {file = "types-MarkupSafe-1.1.9.tar.gz", hash = "sha256:a9212736c37763549a96d71e358bc0fc16723798468b40fe3615960e9e2a8b1b"},
-    {file = "types_MarkupSafe-1.1.9-py3-none-any.whl", hash = "sha256:91777713ffea6b70ce6ef85abaf544bfba1671d47a5985fc88a75136541b99c6"},
+    {file = "types-MarkupSafe-1.1.10.tar.gz", hash = "sha256:85b3a872683d02aea3a5ac2a8ef590193c344092032f58457287fbf8e06711b1"},
+    {file = "types_MarkupSafe-1.1.10-py3-none-any.whl", hash = "sha256:ca2bee0f4faafc45250602567ef38d533e877d2ddca13003b319c551ff5b3cc5"},
 ]
 types-pkg-resources = [
     {file = "types-pkg_resources-0.1.3.tar.gz", hash = "sha256:834a9b8d3dbea343562fd99d5d3359a726f6bf9d3733bccd2b4f3096fbab9dae"},
