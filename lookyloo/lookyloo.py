@@ -758,7 +758,7 @@ class Lookyloo():
         for sha1 in hashlookup_entries.keys():
             to_return[sha1]['nodes'] = hashes_tree[sha1]
             to_return[sha1]['hashlookup'] = hashlookup_entries[sha1]
-        return to_return
+        return to_return, len(hashes_tree)
 
     def get_hashes(self, tree_uuid: str, /, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
         """Return hashes (sha512) of resources.

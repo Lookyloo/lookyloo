@@ -515,8 +515,8 @@ def urls_rendered_page(tree_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/hashlookup', methods=['GET'])
 def hashlookup(tree_uuid: str):
-    merged = lookyloo.merge_hashlookup_tree(tree_uuid)
-    return render_template('hashlookup.html', base_tree_uuid=tree_uuid, merged=merged)
+    merged, total_ressources = lookyloo.merge_hashlookup_tree(tree_uuid)
+    return render_template('hashlookup.html', base_tree_uuid=tree_uuid, merged=merged, total_ressources=total_ressources)
 
 
 @app.route('/bulk_captures/<string:base_tree_uuid>', methods=['POST'])

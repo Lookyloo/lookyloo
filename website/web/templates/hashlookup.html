@@ -1,4 +1,6 @@
 <div>
+  <b>Total Hits</b>: {{ merged|length }}</br>
+  <b>Total ressources</b>: {{total_ressources}}</br></br>
   {% for sha1, entries in merged.items() %}
     <dl class="row">
       <dt class="col-sm-2">URLs in tree</dt>
