@@ -753,7 +753,7 @@ class Lookyloo():
         with hashlookup_file.open() as f:
             hashlookup_entries = json.load(f)
 
-        to_return = defaultdict(dict)
+        to_return: Dict[str, Dict[str, Any]] = defaultdict(dict)
 
         for sha1 in hashlookup_entries.keys():
             to_return[sha1]['nodes'] = hashes_tree[sha1]

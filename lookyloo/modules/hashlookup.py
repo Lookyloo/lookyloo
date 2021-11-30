@@ -57,8 +57,8 @@ class HashlookupModule():
         if not self.available:
             raise ConfigError('Hashlookup not available, probably not enabled.')
 
-        to_return = {}
+        to_return: Dict[str, Dict[str, str]] = {}
         for entry in self.client.sha1_bulk_lookup(hashes):
-            if 'SHA-1' in entry:
-                to_return[entry['SHA-1'].lower()] = entry
+            if 'SHA-1' in entry and isinstance(entry['SHA-1'], str):
+                to_return[entry['SHA-1'].lower()] = entry  # type: ignore
         return to_return
