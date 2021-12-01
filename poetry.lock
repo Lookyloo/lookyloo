@@ -839,7 +839,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pyhashlookup"
-version = "1.1"
+version = "1.1.1"
 description = "Python CLI and module for CIRCL hash lookup"
 category = "main"
 optional = false
@@ -1246,7 +1246,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.0.1"
+version = "4.0.2"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1372,7 +1372,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "30db117c99c429dbc7056796ea1e3c5293f95e037f0249be1e06d926c33c763e"
+content-hash = "713d24cfa75de52121d6f4ec9b7c5eb6e35e112b2f85d9b05e881887c47c7dde"
 
 [metadata.files]
 aiohttp = [
@@ -2237,8 +2237,8 @@ pygments = [
     {file = "Pygments-2.10.0.tar.gz", hash = "sha256:f398865f7eb6874156579fdf36bc840a03cab64d1cde9e93d68f46a425ec52c6"},
 ]
 pyhashlookup = [
-    {file = "pyhashlookup-1.1-py3-none-any.whl", hash = "sha256:442cd03b9676e02c5fccb9968128debd73b7ad080ae46f9fa3694b0fad3ae0c5"},
-    {file = "pyhashlookup-1.1.tar.gz", hash = "sha256:f43da968e762331ca25e52d0d031ed577183d31e228ec504ca9712670114f4e5"},
+    {file = "pyhashlookup-1.1.1-py3-none-any.whl", hash = "sha256:e1563296524f62f02025191b85bfd36f8531ba472dab6b5ad2fcea7223b96ba6"},
+    {file = "pyhashlookup-1.1.1.tar.gz", hash = "sha256:3b0ecd0aab7ff803044617a1f7026fe96469f1c5e62b17891755c9bca702371e"},
 ]
 pylookyloo = [
     {file = "pylookyloo-1.9.0-py3-none-any.whl", hash = "sha256:d0ad7de714e6f8b1b024c1b296f0ca8c7ad83a1b8d6dd78c8655a3561d52089d"},
@@ -2389,8 +2389,8 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-redis = [
-    {file = "types-redis-4.0.1.tar.gz", hash = "sha256:583e371eae99d47913629cce9ecf06c0cf3c72885f5fc4d22de6f8b9260a82db"},
-    {file = "types_redis-4.0.1-py3-none-any.whl", hash = "sha256:5978fbd61fb512c5c7c4faea94e5af4ef34e5b3a82c2928d5949bf05272cd767"},
+    {file = "types-redis-4.0.2.tar.gz", hash = "sha256:ac87b237fc1f42344ea6d33f6c0dcbf0aa990834d5d1f50fe96508b86d69e102"},
+    {file = "types_redis-4.0.2-py3-none-any.whl", hash = "sha256:58928f32b061005e33c1ca660b6c3c7341f9f94f5330fce5a40d00557e7efe40"},
 ]
 types-requests = [
     {file = "types-requests-2.26.1.tar.gz", hash = "sha256:0893e112e1510bbb67f537941c92192de7472e51bf7f236e0e583866f0ed933e"},

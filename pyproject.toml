@@ -64,7 +64,7 @@ rich = "^10.14.0"
 pyphishtanklookup = "^1.0.1"
 chardet = "^4.0.0"
 Flask-Cors = "^3.0.10"
-pyhashlookup = "^1.1"
+pyhashlookup = "^1.1.1"
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep']

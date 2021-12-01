@@ -59,6 +59,6 @@ class HashlookupModule():
 
         to_return: Dict[str, Dict[str, str]] = {}
         for entry in self.client.sha1_bulk_lookup(hashes):
-            if 'SHA-1' in entry and isinstance(entry['SHA-1'], str):
-                to_return[entry['SHA-1'].lower()] = entry  # type: ignore
+            if 'SHA-1' in entry:
+                to_return[entry['SHA-1'].lower()] = entry
         return to_return
