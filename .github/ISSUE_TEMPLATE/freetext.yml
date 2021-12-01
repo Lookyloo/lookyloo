@@ -14,4 +14,4 @@ body:
       label: Notes
       description: Write anything you want to say.
     validations:
-    required: true
+      required: true
