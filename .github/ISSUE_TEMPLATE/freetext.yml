@@ -1,0 +1,17 @@
+name: Notes
+description: Freetext form, use it for quick notes and remarks that don't fit anywhere else.
+title: "[Notes]: "
+labels: ["Notes", "help wanted"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tell us what you think!
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Write anything you want to say.
+    validations:
+    required: true

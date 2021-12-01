@@ -1,6 +1,9 @@
 blank_issues_enabled: false
 
 contact_links:
+  - name: Discussions
+    url: https://github.com/Lookyloo/lookyloo/discussions
+    about: For more general questions.
   - name: Lookyloo Community Support
     url: https://gitter.im/lookyloo-app/community
     about: Please ask and answer questions here.

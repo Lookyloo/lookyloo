@@ -1,0 +1,13 @@
+name: Documentation
+description: Suggest an improvement/change to the docs
+title: "[Doc]: "
+labels: ['documentation']
+
+body:
+  - type: textarea
+    id: doc
+    attributes:
+      label: Describe the change
+      description: What is missing or unclear?
+    validations:
+      required: true
