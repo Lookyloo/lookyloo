@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import base64
+import hashlib
 import json
 from typing import Any, Dict
 
@@ -102,11 +103,28 @@ class CaptureURLs(Resource):
 @api.doc(description='Get all the hashes of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureHashes(Resource):
+    # Note: shake algos require a length for the digest, discarding them.
+    supported_hash_algos = [algo for algo in hashlib.algorithms_available if not algo.startswith('shake')]
+
+    # NOTE: the SHA512 hashes are pre-computed in the tree, anything else must be computed on the spot
+    #       so we return the SHA512 hashes by default
+
+    @api.param('algorithm', default='sha512', description=f'Algorithm of the hashes (default: sha512). Supported options: {", ".join(supported_hash_algos)}')
+    @api.param('hashes_only', default=1, description='If 1 (default), only returns a list hashes instead of a dictionary of hashes with their respective URLs..')
     def get(self, capture_uuid: str):
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
             return {'error': 'UUID missing in cache, try again later.'}, 400
-        to_return: Dict[str, Any] = {'response': {'hashes': list(lookyloo.get_hashes(capture_uuid))}}
+
+        algorithm = request.args['algorithm'].lower() if request.args.get('algorithm') else 'sha512'
+        hashes_only = False if 'hashes_only' in request.args and request.args['hashes_only'] in [0, '0'] else True
+        if algorithm == 'sha512' and hashes_only:
+            to_return: Dict[str, Any] = {'response': {'hashes': list(lookyloo.get_hashes(capture_uuid))}}
+        else:
+            hashes = lookyloo.get_hashes_with_context(capture_uuid, algorithm=algorithm, urls_only=True)
+            to_return = {'response': {'hashes': list(hashes.keys())}}
+            if not hashes_only:
+                to_return['response']['hashes_with_urls'] = {h: list(urls) for h, urls in hashes.items()}
         return to_return
 
 

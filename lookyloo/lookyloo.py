@@ -724,16 +724,14 @@ class Lookyloo():
                 to_return[event_id].update(values)
         return to_return
 
-    def get_hashes_with_context(self, tree_uuid: str, /, algorithm: str, *, hashes_only: bool=False, urls_only: bool=False):
+    def get_hashes_with_context(self, tree_uuid: str, /, algorithm: str, *, urls_only: bool=False) -> Union[Dict[str, Set[str]], Dict[str, List[URLNode]]]:
         """Build (on demand) hashes for all the ressources of the tree, using the alorighm provided by the user.
         If you just want the hashes in SHA512, use the get_hashes method, it gives you a list of hashes an they're build
         with the tree. This method is computing the hashes when you query it, so it is slower."""
         ct = self.get_crawled_tree(tree_uuid)
         hashes = ct.root_hartree.build_all_hashes(algorithm)
-        if hashes_only:
-            return list(hashes.keys())
         if urls_only:
-            return {h: [node.name for node in nodes] for h, nodes in hashes.items()}
+            return {h: set(node.name for node in nodes) for h, nodes in hashes.items()}
         return hashes
 
     def merge_hashlookup_tree(self, tree_uuid: str, /) -> Tuple[Dict[str, Dict[str, Any]], int]:
