@@ -61,3 +61,7 @@ jobs:
           poetry install
           poetry run python tests/testing_github.py
           popd
+
+      - name: Stop instance
+        run: |
+          poetry run stop
