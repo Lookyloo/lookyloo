@@ -44,7 +44,7 @@ redis = {version = "^4.0.2", extras = ["hiredis"]}
 beautifulsoup4 = "^4.10"
 bootstrap-flask = "^1.8.0"
 defang = "^0.5.3"
-vt-py = "^0.9.0"
+vt-py = "^0.11.0"
 pyeupi = "^1.1"
 scrapysplashwrapper = "^1.10.1"
 pysanejs = "^2.0"
