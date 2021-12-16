@@ -70,7 +70,7 @@ pyhashlookup = "^1.1.1"
 misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.910"
+mypy = "^0.920"
 ipython = "^7.29.0"
 types-redis = "^4.0.3"
 types-requests = "^2.26.1"
