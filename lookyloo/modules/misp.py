@@ -93,7 +93,14 @@ class MISP():
             to_return = []
             for event in events:
                 try:
+                    # NOTE: POST the event as published publishes inline, which can tak a long time.
+                    # Here, we POST as not published, and trigger the publishing in a second call.
+                    background_publish = event.published
+                    if background_publish:
+                        event.published = False
                     new_event = self.client.add_event(event, pythonify=True)
+                    if background_publish and isinstance(new_event, MISPEvent):
+                        self.client.publish(new_event)
                 except requests.exceptions.ReadTimeout:
                     return {'error': 'The connection to MISP timed out, try increasing the timeout in the config.'}
                 if isinstance(new_event, MISPEvent):
