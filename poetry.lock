@@ -865,7 +865,7 @@ docs = ["Sphinx (>=4.3.1,<5.0.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.151"
+version = "2.4.152"
 description = "Python API for MISP."
 category = "main"
 optional = false
@@ -885,7 +885,7 @@ fileobjects = ["python-magic (>=0.4.24,<0.5.0)", "pydeep (>=0.4,<0.5)", "lief (>
 openioc = ["beautifulsoup4 (>=4.10.0,<5.0.0)"]
 virustotal = ["validators (>=0.18.2,<0.19.0)"]
 docs = ["sphinx-autodoc-typehints (>=1.12.0,<2.0.0)", "recommonmark (>=0.7.1,<0.8.0)"]
-pdfexport = ["reportlab (>=3.6.2,<4.0.0)"]
+pdfexport = ["reportlab (>=3.6.3,<4.0.0)"]
 url = ["pyfaup (>=1.2,<2.0)", "chardet (>=4.0,<5.0)"]
 brotli = ["urllib3[brotli] (>=1.26.7,<2.0.0)"]
 
@@ -1289,7 +1289,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.11.0"
+version = "0.12.0"
 description = "The official Python client library for VirusTotal"
 category = "main"
 optional = false
@@ -1370,7 +1370,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "270f7f9c41c5f9e3c880dc3791c046a0621ac652b2bf9b7a98c5d0460100e88e"
+content-hash = "50df908f81c1aebf9473c20f56f3540e100b1c0e667ffda50e6e04fc7e65c138"
 
 [metadata.files]
 aiohttp = [
@@ -2239,8 +2239,8 @@ pylookyloo = [
     {file = "pylookyloo-1.10.0.tar.gz", hash = "sha256:684131f23200e6157fab60dd9b0795a9e5858db3be5e1f0bd9bb3e50bd39ca60"},
 ]
 pymisp = [
-    {file = "pymisp-2.4.151-py3-none-any.whl", hash = "sha256:52f82121cfec16ebb74de0184bb996ca827a5ffd57a5a1d6cae66026ebe956b3"},
-    {file = "pymisp-2.4.151.tar.gz", hash = "sha256:a8e256cb62a84ce2a12c182208c6b3837d382581bc50834d83aab5d7de8ae17d"},
+    {file = "pymisp-2.4.152-py3-none-any.whl", hash = "sha256:71848f48ca055f756b993466d6bc535c689cf3b98a251f1022e51fb67fff25a4"},
+    {file = "pymisp-2.4.152.tar.gz", hash = "sha256:c17558a68400c69f8f0f8e81a9586c12adaaa6d9f97ffa0ede530bec6e928a0e"},
 ]
 pyopenssl = [
     {file = "pyOpenSSL-21.0.0-py2.py3-none-any.whl", hash = "sha256:8935bd4920ab9abfebb07c41a4f58296407ed77f04bd1a92914044b848ba1ed6"},
@@ -2403,8 +2403,7 @@ urllib3 = [
     {file = "urllib3-1.26.7.tar.gz", hash = "sha256:4987c65554f7a2dbf30c18fd48778ef124af6fab771a377103da0585e2336ece"},
 ]
 vt-py = [
-    {file = "vt-py-0.11.0.tar.gz", hash = "sha256:68a14cbb1564adef7750928ad9c7eaf096ce0425d2ff6a5240809cf7841cd3d8"},
-    {file = "vt_py-0.11.0-py3-none-any.whl", hash = "sha256:b5d17e41a9e9d960a1af81b9ab40851af0c7602e7e4d54c826b6ab414fc25144"},
+    {file = "vt-py-0.12.0.tar.gz", hash = "sha256:f963a5a1661b5ed4de7496bca2ef374131db4ea21037386cdfa52b18c9a00593"},
 ]
 w3lib = [
     {file = "w3lib-1.22.0-py2.py3-none-any.whl", hash = "sha256:0161d55537063e00d95a241663ede3395c4c6d7b777972ba2fd58bbab2001e53"},
