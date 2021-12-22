@@ -9,10 +9,8 @@ from lookyloo.default import get_homedir
 
 
 def validate_generic_config_file():
-    user_config = get_homedir() / 'config' / 'generic.json'
-    with user_config.open() as f:
-        generic_config = json.load(f)
-    with (get_homedir() / 'config' / 'generic.json.sample').open() as f:
+    sample_config = get_homedir() / 'config' / 'generic.json.sample'
+    with sample_config.open() as f:
         generic_config_sample = json.load(f)
     # Check documentation
     for key in generic_config_sample.keys():
@@ -20,6 +18,15 @@ def validate_generic_config_file():
             continue
         if key not in generic_config_sample['_notes']:
             raise Exception(f'###### - Documentation missing for {key}')
+
+    user_config = get_homedir() / 'config' / 'generic.json'
+    if not user_config.exists():
+        # The config file was never created, copy the sample.
+        with user_config.open('w') as _fw:
+            json.dump(generic_config_sample, _fw)
+
+    with user_config.open() as f:
+        generic_config = json.load(f)
 
     # Check all entries in the sample files are in the user file, and they have the same type
     for key in generic_config_sample.keys():
@@ -42,7 +49,7 @@ def validate_generic_config_file():
     # Make sure the user config file doesn't have entries missing in the sample config
     for key in generic_config.keys():
         if key not in generic_config_sample:
-            raise Exception(f'{key} is missing in the sample config file. You need to compare {user_config} with {user_config}.sample.')
+            raise Exception(f'{key} is missing in the sample config file. You need to compare {user_config} with {sample_config}.')
 
     return True
 
