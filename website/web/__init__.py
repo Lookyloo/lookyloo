@@ -44,6 +44,8 @@ app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.debug = False
 
+version = pkg_resources.get_distribution('lookyloo').version
+
 # Auth stuff
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
@@ -706,7 +708,7 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: Opti
         titles.append((cached.uuid, cached.title, cached.timestamp.isoformat(), cached.url,
                        cached.redirects, cached.incomplete_redirects))
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
-    return render_template('index.html', titles=titles, public_domain=lookyloo.public_domain)
+    return render_template('index.html', titles=titles, public_domain=lookyloo.public_domain, version=version)
 
 
 def get_index_params(request):
@@ -1090,6 +1092,6 @@ api = Api(app, title='Lookyloo API',
           description='API to submit captures and query a lookyloo instance.',
           doc='/doc/',
           authorizations=authorizations,
-          version=pkg_resources.get_distribution('lookyloo').version)
+          version=version)
 
 api.add_namespace(generic_api)
