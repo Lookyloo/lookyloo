@@ -35,6 +35,9 @@
     {% block scripts %}
     <!-- Optional JavaScript -->
     {{ bootstrap.load_js() }}
+    <script src='{{ url_for('static', filename='jquery.min.js') }}'
+            integrity="{{get_sri('static', 'jquery.min.js')}}"
+            crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='datatables.min.js') }}'
             integrity="{{get_sri('static', 'datatables.min.js')}}"
             crossorigin="anonymous"></script>

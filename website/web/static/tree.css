@@ -40,18 +40,6 @@ hr {
   border-width: 1px;
 }
 
-hr.vertical {
-  display: block;
-  margin-top: 0.1em;
-  margin-bottom: 0.5em;
-  margin-left: auto;
-  margin-right: auto;
-  border-color: black;
-  border-style: inset;
-  border-width: 1px;
-  height: 100px;
-}
-
 /* menu vertical */
 #menu_vertical {
   position: fixed;

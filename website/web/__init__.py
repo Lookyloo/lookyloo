@@ -16,7 +16,7 @@ import flask_login  # type: ignore
 import pkg_resources
 from flask import (Flask, Response, flash, jsonify, redirect, render_template,
                    request, send_file, url_for)
-from flask_bootstrap import Bootstrap  # type: ignore
+from flask_bootstrap import Bootstrap5  # type: ignore
 from flask_cors import CORS  # type: ignore
 from flask_restx import Api  # type: ignore
 from pymisp import MISPEvent, MISPServerError
@@ -38,7 +38,7 @@ app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore
 
 app.config['SECRET_KEY'] = get_secret_key()
 
-Bootstrap(app)
+Bootstrap5(app)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'

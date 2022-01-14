@@ -1,6 +1,6 @@
 {% extends "main.html" %}
 
-{% from 'bootstrap/utils.html' import render_messages %}
+{% from 'bootstrap5/utils.html' import render_messages %}
 {% from "macros.html" import shorten_string %}
 
 {% block title %}Capture of {{info['url']}}{% endblock %}
@@ -157,7 +157,7 @@
     <hr/>
     <center>
       <div>
-        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#menu_vertical_content">
+        <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#menu_vertical_content">
             <span class="if-collapsed">
               <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-down" alt="Maximize menu" height="25" width="25" title="Expand">
             </span>
@@ -171,7 +171,7 @@
     <div id=menu_vertical_content class="collapse show">
       <ul class="list-unstyled components">
         <li>
-          <a href="#detailsModal" data-toggle="modal" data-target="#detailsModal" role="button">Capture Details</a>
+          <a href="#detailsModal" data-bs-toggle="modal" data-bs-target="#detailsModal" role="button">Capture Details</a>
         </li>
         <li>
           <a href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button">Lookyloo Manual</a>
@@ -184,46 +184,47 @@
   </div>
 </div>
 
-<div id="menu_container_horizontal" class="tree-panel-container">
-  <div id=menu_horizontal class="media">
-    <button type="button" class="btn btn-link mr-3 align-self-center" data-toggle="collapse" data-target="#menu_horizontal_content">
+<div class="tree-panel-container d-flex" id="menu_horizontal">
+    <div class="flex-shrink-1">
+      <button type="button" class="btn btn-link mr-3 align-self-center" data-bs-toggle="collapse" data-bs-target="#menu_horizontal_content">
         <span class="if-collapsed">
           <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-right" alt="Maximize menu" height="25" width="25" title="Expand">
         </span>
         <span class="if-not-collapsed">
           <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-left" alt="Minimize menu" height="25" width="25" title="Collapse">
         </span>
-    </button>
-    <div id="menu_horizontal_content" class="collapse show media-body mt-0 container">
-      <div class="row">
-        <hr class="vertical">
+      </button>
+    </div>
+    <div id="menu_horizontal_content" class="collapse show flex-grow-1 ms-3 container">
+      <div class="hstack gap-3">
+        <div class="vr"></div>
         <div class="col-sm">
           <ul class="list-unstyled components">
             <li>
-              <a href="#screenshotModal" data-toggle="modal" data-target="#screenshotModal" role="button">Page Screenshot</a>
+              <a href="#screenshotModal" data-bs-toggle="modal" data-bs-target="#screenshotModal" role="button">Page Screenshot</a>
             </li>
             <li>
               <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
-                 data-toggle="modal" data-target="#statsModal" role="button">Tree Statistics</a>
+                 data-bs-toggle="modal" data-bs-target="#statsModal" role="button">Tree Statistics</a>
             </li>
             <li>
               <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
-                 data-toggle="modal" data-target="#modulesModal" role="button">Third Party Reports</a>
+                 data-bs-toggle="modal" data-bs-target="#modulesModal" role="button">Third Party Reports</a>
             </li>
             {% if current_user.is_authenticated %}
             <li>
               <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
-                 data-toggle="modal" data-target="#hashlookupModal" role="button">Hashlookup hits</a>
+                 data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button">Hashlookup hits</a>
             </li>
             {% endif %}
           </ul>
         </div>
-        <hr class="vertical">
+        <div class="vr"></div>
         <div class="col-sm">
           <ul class="list-unstyled components">
             <li>
               <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
-                 data-toggle="modal" data-target="#urlsInPageModal" role="button">Run Subsequent Captures</a>
+                 data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button">Run Subsequent Captures</a>
             </li>
             <li>
               <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button">Re-Capture URL</a>
@@ -235,31 +236,31 @@
             {% endif %}
             {% if enable_mail_notification %}
             <li>
-              <a href="#emailModal" data-toggle="modal" data-target="#emailModal" role="button">Contact Local Administrator</a>
+              <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button">Contact Local Administrator</a>
             </li>
             {% endif %}
           </ul>
         </div>
         {%if enable_categorization or (current_user.is_authenticated and misp_push) or enable_bookmark or enable_context_by_users %}
-        <hr class="vertical">
+        <div class="vr"></div>
         <div class="col-sm">
           <ul class="list-unstyled components">
             {% if enable_categorization %}
             <li>
               <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
-                 data-toggle="modal" data-target="#categoriesModal" role="button">Manage categories</a>
+                 data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
             </li>
             {% endif %}
             {% if current_user.is_authenticated and misp_push%}
             <li>
               <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
-                 data-toggle="modal" data-target="#mispPushModal" role="button">Prepare push to MISP</a>
+                 data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
             </li>
             {% endif %}
             {% if current_user.is_authenticated and misp_lookup%}
             <li>
               <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
-                 data-toggle="modal" data-target="#mispLookupModal" role="button">Search events on MISP</a>
+                 data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
             </li>
             {% endif %}
             {% if enable_bookmark %}
@@ -287,7 +288,7 @@
         <b>Legend</b>
       </div>
       <div style="display: inline;">
-        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#legend">
+        <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#legend">
             <img src="{{ url_for('static', filename='down.jpg') }}" alt="Minimize legend" height="25" width="25" title="Collapse">
         </button>
       </div>
@@ -371,7 +372,7 @@
 
   <div style="width: 70px; float: right;">
     <center>
-    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#legend">
+    <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#legend">
       <img src="{{ url_for('static', filename='up.jpg') }}" alt="Maximize legend" height="40" width="40" title="Expand">
       <b>Legend</b>
     </button>
@@ -386,9 +387,7 @@
   <div class="modal-content">
     <div class="modal-header">
       <h5 class="modal-title" id="detailsModalLabel">Details of the capture at the time it happened</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">×</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
       <dl class="row">
@@ -418,7 +417,7 @@
         {%endif%}
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
     </div>
   </div>
   </div>
@@ -429,15 +428,13 @@
       <div class="modal-content">
           <div class="modal-header">
               <h5 class="modal-title" id="statsModalLabel">Statistics</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-              </button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
               ... loading statistics ...
           </div>
           <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
   </div>
@@ -448,15 +445,13 @@
       <div class="modal-content">
           <div class="modal-header">
               <h5 class="modal-title" id="mispPushModalLabel">MISP Push</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-              </button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
               ... loading MISP Push view ...
           </div>
           <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
   </div>
@@ -467,15 +462,13 @@
       <div class="modal-content">
           <div class="modal-header">
               <h5 class="modal-title" id="mispLookupModalLabel">MISP Lookup</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-              </button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
               ... loading MISP Lookup view ...
           </div>
           <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
   </div>
@@ -486,9 +479,7 @@
   <div class="modal-content">
     <div class="modal-header">
       <h5 class="modal-title" id="screenshotModalLabel">Screenshot</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">×</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
     <center>
@@ -508,7 +499,7 @@
     </center>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
     </div>
   </div>
   </div>
@@ -522,9 +513,7 @@
                   Reports from 3rd party services
               </h4>
               </br>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-              </button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           </br>
           <center><h5>Note that if you get an error when you click on a
@@ -535,7 +524,7 @@
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-success modulesForceRefresh">Re-run all modules</button>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
   </div>
@@ -549,16 +538,14 @@
                   Hits in Hashlookup
               </h4>
               </br>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-              </button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           </br>
           <div class="modal-body">
               ... loading results from hashlookup ...
           </div>
           <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
   </div>
@@ -570,22 +557,20 @@
       <div class="modal-content">
           <div class="modal-header">
               <h5 class="modal-title" id="categoriesModalLabel">Categorize the capture</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-              </button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
               ... loading the categorization options ...
           </div>
           <p>
             <form id=searchCategories>
-            <label for="query">Category to search</label>
+            <label for="query" class="form-label">Category to search</label>
             <input type="text" class="form-control" name="query" id="query" placeholder="Query">
             <button type="submit" class="btn btn-success">Search</button>
             </form>
           </p>
           <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
   </div>
@@ -599,33 +584,31 @@
       <div class="modal-content">
           <div class="modal-header">
               <h5 class="modal-title" id="emailModalLabel">Notify by email</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-              </button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <p>A notification of this capture will be sent to the owners of this Lookyloo instance. They may or may not act on it.</p>
-            <div class="form-group">
-              <label for="email">Email address - used to get back in touch with you if needed (optional)</label>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email address - used to get back in touch with you if needed (optional)</label>
               <input type="email" class="form-control" name="email" id="email" placeholder="Enter email">
 
               <!-- boat fields -->
-              <label class="boatymcboat" for="name">Your Name</label>
+              <label class="boatymcboat form-label" for="name">Your Name</label>
               <input class="boatymcboat" autocomplete="off" type="text" id="name" name="name"
                      placeholder="Your fav boat name here">
             </div>
-            <div class="form-group">
-              <label for="comment">Please write a comment (optional)</label>
+            <div class="mb-3">
+              <label for="comment" class="form-label">Please write a comment (optional)</label>
               <textarea class="form-control" name="comment" id=comment rows="3"></textarea>
             </div>
-            <div class="form-check">
+            <div class="mb-3 form-check">
                 <input class="form-check-input" type="checkbox" name="confirm" onchange="document.getElementById('btn-notification').disabled = !this.checked;"></input>
                 <label for="force_push" class="form-check-label">{{ confirm_message }}</label>
             </div>
           </div>
           <div class="modal-footer">
               <button type="submit" class="btn btn-success" id="btn-notification" disabled=true>Send email</button>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
     </form>
@@ -638,15 +621,13 @@
       <div class="modal-content">
           <div class="modal-header">
               <h5 class="modal-title" id="urlsInPageModalLabel">URLs in the rendered page</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-              </button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
               ... loading URLs in rendered page ...
           </div>
           <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
   </div>

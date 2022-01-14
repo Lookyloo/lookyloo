@@ -75,40 +75,52 @@
 {% endmacro %}
 
 {% macro context_form(tree_uuid, urlnode_uuid, hostnode_uuid, hash, callback_str) %}
-<button class="btn btn-info collapsed" type="button" data-toggle="collapse" data-target="#context_response_{{ urlnode_uuid }}" aria-expanded="false" aria-controls="collapseContextForm">
+<button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#context_response_{{ urlnode_uuid }}" aria-expanded="false" aria-controls="collapseContextForm">
   <span class="if-collapsed">Add context</span>
   <span class="if-not-collapsed">Hide context form</span>
 </button>
 <div class="collapse" id="context_response_{{ urlnode_uuid }}">
   <div class="card card-body">
       <form role="form" action="{{ url_for('add_context', tree_uuid=tree_uuid, node_uuid=urlnode_uuid) }}" method=post enctype=multipart/form-data>
-        <div class="form-group">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="legitimate" id="legitimate">
-            <label for="legitimate" class="form-check-label">Legitimate</label>
+        <div class="row mb-3">
+          <div class="col-sm-10">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="legitimate" id="legitimate">
+              <label for="legitimate" class="form-check-label">Legitimate</label>
+            </div>
           </div>
         </div>
-        <div class="form-group">
-          <label for="legitimate_domain">Domain serving the file when considered legitimate:</label>
-          <input type="text" class="form-control" name="legitimate_domain" id="legitimate_domain" placeholder="Domain name">
-        </div>
-        <div class="form-group">
-          <label for="legitimate_description">Other context for this content (library name, owner, ...):</label>
-          <input type="text" class="form-control" name="legitimate_description" id="legitimate_description" placeholder="Description">
-        </div>
-        <div class="form-group">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="malicious"></input>
-            <label for="malicious" class="form-check-label">Malicious</label>
+        <div class="row mb-3">
+          <div class="col-sm-10">
+            <label for="legitimate_domain" class="form-label">Domain serving the file when considered legitimate:</label>
+            <input type="text" class="form-control" name="legitimate_domain" id="legitimate_domain" placeholder="Domain name">
           </div>
         </div>
-        <div class="form-group">
-          <label for="malicious_type">Type of malicious content (phishing, malware, ...):</label>
-          <input type="text" class="form-control" name="malicious_type" id="malicious_type" placeholder="Type of malicious content">
+        <div class="row mb-3">
+          <div class="col-sm-10">
+            <label for="legitimate_description" class="form-label">Other context for this content (library name, owner, ...):</label>
+            <input type="text" class="form-control" name="legitimate_description" id="legitimate_description" placeholder="Description">
+          </div>
         </div>
-        <div class="form-group">
-          <label for="malicious_target">Legitimate target of the malicious content (expecially for phishing):</label>
-          <input type="text" class="form-control" name="malicious_target" id="malicious_target" placeholder="Target">
+        <div class="row mb-3">
+          <div class="col-sm-10">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="malicious"></input>
+              <label for="malicious" class="form-check-label">Malicious</label>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-sm-10">
+            <label for="malicious_type" class="form-label">Type of malicious content (phishing, malware, ...):</label>
+            <input type="text" class="form-control" name="malicious_type" id="malicious_type" placeholder="Type of malicious content">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-sm-10">
+            <label for="malicious_target" class="form-label">Legitimate target of the malicious content (expecially for phishing):</label>
+            <input type="text" class="form-control" name="malicious_target" id="malicious_target" placeholder="Target">
+          </div>
         </div>
         <input type="hidden" id="hash_to_contextualize" name="hash_to_contextualize" value="{{ hash }}">
         <input type="hidden" id="hostnode_uuid" name="hostnode_uuid" value="{{ hostnode_uuid }}">
@@ -123,7 +135,7 @@
 <form method="post" action="{{ url_for('get_ressource', tree_uuid=capture_uuid, node_uuid=urlnode_uuid) }}">
   <button class="btn btn-info" name="ressource_hash" value="{{ hash }}"
     {% if can_preview %}
-    data-toggle="tooltip" data-placement="bottom" data-html="true"
+    data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
     title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=capture_uuid, node_uuid=urlnode_uuid, h_ressource=hash) }}"/>'
     {% endif %}
   >{{ text }}</button>
@@ -165,7 +177,7 @@
 <p>
   The same file was seen in <b>{{ total_captures }}</b> other captures.
   </br>
-  <button class="btn btn-info collapsed" type="button" data-toggle="collapse" data-target="#captureslist_{{ identifier_for_toggle }}" aria-expanded="false" aria-controls="collapseExample">
+  <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#captureslist_{{ identifier_for_toggle }}" aria-expanded="false" aria-controls="collapseExample">
     <span class="if-collapsed">Show other captures</span>
     <span class="if-not-collapsed">Hide other captures</span>
   </button>
@@ -271,9 +283,9 @@
         <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
              width="21" height="21"
         {% if key == "image" %}
-             data-toggle="tooltip" data-placement="bottom" data-html="true" title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> </br>Click to download.'
+             data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> </br>Click to download.'
         {% else %}
-             data-toggle="tooltip" data-placement="bottom" data-html="true" title="{{icon_info['tooltip']}} <br/>Click to download."
+             data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="{{icon_info['tooltip']}} <br/>Click to download."
         {% endif %}
         />
       </a>
