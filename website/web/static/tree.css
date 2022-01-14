@@ -87,7 +87,6 @@ hr {
 #menu_horizontal {
   position: fixed;
   top: 5px;
-  left: 222px;
   background: white;
   border: 2px solid;
   padding-top: 5px;
@@ -99,6 +98,7 @@ hr {
   position: fixed;
   top: 5px;
   left: 5px;
+  left: 217px;
   padding-top: 5px;
   padding-right: 5px;
   padding-left: 5px;
