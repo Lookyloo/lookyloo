@@ -40,7 +40,7 @@ requests = "^2.27"
 flask = "^2.0.2"
 gunicorn = "^20.1.0"
 cchardet = "^2.1.7"
-redis = {version = "^4.1.0", extras = ["hiredis"]}
+redis = {version = "^4.1.1", extras = ["hiredis"]}
 beautifulsoup4 = "^4.10"
 bootstrap-flask = "^2.0.0"
 defang = "^0.5.3"
