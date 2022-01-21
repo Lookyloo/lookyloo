@@ -40,7 +40,7 @@ requests = "^2.27"
 flask = "^2.0.2"
 gunicorn = "^20.1.0"
 cchardet = "^2.1.7"
-redis = {version = "^4.1.0", extras = ["hiredis"]}
+redis = {version = "^4.1.1", extras = ["hiredis"]}
 beautifulsoup4 = "^4.10"
 bootstrap-flask = "^2.0.0"
 defang = "^0.5.3"
@@ -50,7 +50,7 @@ scrapysplashwrapper = "^1.10.1"
 pysanejs = "^2.0"
 har2tree = "^1.10.2"
 pylookyloo = "^1.10.0"
-dnspython = "^2.1.0"
+dnspython = "^2.2.0"
 pytaxonomies = "^1.4.1"
 pymisp = {version = "^2.4.152", extras = ["url"]}
 python-magic = {version = "^0.4.22", optional = true}
@@ -71,8 +71,8 @@ misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.931"
-ipython = "^8.0.0"
-types-redis = "^4.1.8"
+ipython = "^8.0.1"
+types-redis = "^4.1.10"
 types-requests = "^2.27.7"
 types-Flask = "^1.1.6"
 types-pkg-resources = "^0.1.3"
