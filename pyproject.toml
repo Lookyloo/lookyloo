@@ -53,7 +53,7 @@ pylookyloo = "^1.10.0"
 dnspython = "^2.2.0"
 pytaxonomies = "^1.4.1"
 pymisp = {version = "^2.4.152", extras = ["url"]}
-python-magic = {version = "^0.4.22", optional = true}
+python-magic = {version = "^0.4.25", optional = true}
 # pydeep requires libfuzzy-dev, and is only used in the MISP export module
 pydeep = {version = "^0.4", optional = true}
 Pillow = "^9.0.0"
