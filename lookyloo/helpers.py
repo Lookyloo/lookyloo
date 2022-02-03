@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import hashlib
 import json
 import logging
 import os
@@ -174,3 +175,12 @@ def splash_status() -> Tuple[bool, str]:
         return False, f'HTTP error occurred: {http_err}'
     except Exception as err:
         return False, f'Other error occurred: {err}'
+
+
+def get_cache_directory(root: Path, identifier: str, namespace: Optional[str] = None) -> Path:
+    m = hashlib.md5()
+    m.update(identifier.encode())
+    digest = m.hexdigest()
+    if namespace:
+        root = root / namespace
+    return root / digest[0] / digest[1] / digest[2] / digest

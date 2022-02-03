@@ -54,7 +54,8 @@ class UrlScan():
     def get_url_submission(self, capture_info: Dict[str, Any]) -> Dict[str, Any]:
         url_storage_dir = get_cache_directory(
             self.storage_dir_urlscan,
-            f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}') / 'submit'
+            f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}',
+            'submit')
         if not url_storage_dir.exists():
             return {}
         cached_entries = sorted(url_storage_dir.glob('*'), reverse=True)
@@ -117,7 +118,8 @@ class UrlScan():
 
         url_storage_dir = get_cache_directory(
             self.storage_dir_urlscan,
-            f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}') / 'submit'
+            f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}',
+            'submit')
         url_storage_dir.mkdir(parents=True, exist_ok=True)
         urlscan_file_submit = url_storage_dir / date.today().isoformat()
 
@@ -146,14 +148,18 @@ class UrlScan():
         submission = self.get_url_submission(capture_info)
         if submission and 'uuid' in submission:
             uuid = submission['uuid']
-            if (self.storage_dir_urlscan / f'{uuid}.json').exists():
-                with (self.storage_dir_urlscan / f'{uuid}.json').open() as _f:
+            url_storage_dir_response = get_cache_directory(
+                self.storage_dir_urlscan,
+                f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}',
+                'response')
+            if (url_storage_dir_response / f'{uuid}.json').exists():
+                with (url_storage_dir_response / f'{uuid}.json').open() as _f:
                     return json.load(_f)
             try:
                 result = self.__url_result(uuid)
             except requests.exceptions.HTTPError as e:
                 return {'error': e}
-            with (self.storage_dir_urlscan / f'{uuid}.json').open('w') as _f:
+            with (url_storage_dir_response / f'{uuid}.json').open('w') as _f:
                 json.dump(result, _f)
             return result
         return {'error': 'Submission incomplete or unavailable.'}

@@ -1,25 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import hashlib
 import json
 from datetime import date, datetime, timedelta, timezone
-from pathlib import Path
 from typing import Any, Dict, Optional, List
 
 from har2tree import CrawledTree
 from pyphishtanklookup import PhishtankLookup
 
 from ..default import ConfigError, get_homedir
-
-
-def get_cache_directory(root: Path, identifier: str, namespace: Optional[str] = None) -> Path:
-    m = hashlib.md5()
-    m.update(identifier.encode())
-    digest = m.hexdigest()
-    if namespace:
-        root = root / namespace
-    return root / digest[0] / digest[1] / digest[2] / digest
+from ..helpers import get_cache_directory
 
 
 class Phishtank():
