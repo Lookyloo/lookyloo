@@ -152,6 +152,7 @@ class UrlScan():
                 self.storage_dir_urlscan,
                 f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}',
                 'response')
+            url_storage_dir_response.mkdir(parents=True, exist_ok=True)
             if (url_storage_dir_response / f'{uuid}.json').exists():
                 with (url_storage_dir_response / f'{uuid}.json').open() as _f:
                     return json.load(_f)
