@@ -12,7 +12,14 @@ from pyphishtanklookup import PhishtankLookup
 
 from ..default import ConfigError, get_homedir
 
-# Note: stop doing requests 48 after the capture was intially done.
+
+def get_cache_directory(root: Path, identifier: str, namespace: Optional[str] = None) -> Path:
+    m = hashlib.md5()
+    m.update(identifier.encode())
+    digest = m.hexdigest()
+    if namespace:
+        root = root / namespace
+    return root / digest[0] / digest[1] / digest[2] / digest
 
 
 class Phishtank():
@@ -35,13 +42,8 @@ class Phishtank():
         self.storage_dir_pt = get_homedir() / 'phishtank'
         self.storage_dir_pt.mkdir(parents=True, exist_ok=True)
 
-    def __get_cache_directory(self, url: str) -> Path:
-        m = hashlib.md5()
-        m.update(url.encode())
-        return self.storage_dir_pt / m.hexdigest()
-
     def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
-        url_storage_dir = self.__get_cache_directory(url)
+        url_storage_dir = get_cache_directory(self.storage_dir_pt, url, 'url')
         if not url_storage_dir.exists():
             return None
         cached_entries = sorted(url_storage_dir.glob('*'), reverse=True)
@@ -67,7 +69,7 @@ class Phishtank():
         return to_return
 
     def get_ip_lookup(self, ip: str) -> Optional[Dict[str, Any]]:
-        ip_storage_dir = self.__get_cache_directory(ip)
+        ip_storage_dir = get_cache_directory(self.storage_dir_pt, ip, 'ip')
         if not ip_storage_dir.exists():
             return None
         cached_entries = sorted(ip_storage_dir.glob('*'), reverse=True)
@@ -109,7 +111,7 @@ class Phishtank():
         if not self.available:
             raise ConfigError('Phishtank not available, probably not enabled.')
 
-        ip_storage_dir = self.__get_cache_directory(ip)
+        ip_storage_dir = get_cache_directory(self.storage_dir_pt, ip, 'ip')
         ip_storage_dir.mkdir(parents=True, exist_ok=True)
         pt_file = ip_storage_dir / date.today().isoformat()
 
@@ -133,7 +135,7 @@ class Phishtank():
         if not self.available:
             raise ConfigError('Phishtank not available, probably not enabled.')
 
-        url_storage_dir = self.__get_cache_directory(url)
+        url_storage_dir = get_cache_directory(self.storage_dir_pt, url, 'url')
         url_storage_dir.mkdir(parents=True, exist_ok=True)
         pt_file = url_storage_dir / date.today().isoformat()
 
