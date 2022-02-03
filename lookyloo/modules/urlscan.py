@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import hashlib
 import json
 import logging
 from datetime import date
-from pathlib import Path
 from typing import Any, Dict
 
 import requests
 
 from ..default import ConfigError, get_config, get_homedir
-from ..helpers import get_useragent_for_requests
+from ..helpers import get_useragent_for_requests, get_cache_directory
 
 
 class UrlScan():
@@ -53,16 +51,10 @@ class UrlScan():
         self.storage_dir_urlscan = get_homedir() / 'urlscan'
         self.storage_dir_urlscan.mkdir(parents=True, exist_ok=True)
 
-    def __get_cache_directory(self, url: str, useragent: str, referer: str) -> Path:
-        m = hashlib.md5()
-        to_hash = f'{url}{useragent}{referer}'
-        m.update(to_hash.encode())
-        return self.storage_dir_urlscan / m.hexdigest()
-
     def get_url_submission(self, capture_info: Dict[str, Any]) -> Dict[str, Any]:
-        url_storage_dir = self.__get_cache_directory(capture_info['url'],
-                                                     capture_info['user_agent'],
-                                                     capture_info['referer']) / 'submit'
+        url_storage_dir = get_cache_directory(
+            self.storage_dir_urlscan,
+            f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}') / 'submit'
         if not url_storage_dir.exists():
             return {}
         cached_entries = sorted(url_storage_dir.glob('*'), reverse=True)
@@ -123,9 +115,9 @@ class UrlScan():
         if not self.available:
             raise ConfigError('UrlScan not available, probably no API key')
 
-        url_storage_dir = self.__get_cache_directory(capture_info['url'],
-                                                     capture_info['user_agent'],
-                                                     capture_info['referer']) / 'submit'
+        url_storage_dir = get_cache_directory(
+            self.storage_dir_urlscan,
+            f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}') / 'submit'
         url_storage_dir.mkdir(parents=True, exist_ok=True)
         urlscan_file_submit = url_storage_dir / date.today().isoformat()
 

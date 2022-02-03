@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import hashlib
 import json
 import time
 from datetime import date
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 import vt  # type: ignore
@@ -13,6 +11,7 @@ from har2tree import CrawledTree
 from vt.error import APIError  # type: ignore
 
 from ..default import ConfigError, get_homedir
+from ..helpers import get_cache_directory
 
 
 class VirusTotal():
@@ -36,14 +35,8 @@ class VirusTotal():
         self.storage_dir_vt = get_homedir() / 'vt_url'
         self.storage_dir_vt.mkdir(parents=True, exist_ok=True)
 
-    def __get_cache_directory(self, url: str) -> Path:
-        url_id = vt.url_id(url)
-        m = hashlib.md5()
-        m.update(url_id.encode())
-        return self.storage_dir_vt / m.hexdigest()
-
     def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
-        url_storage_dir = self.__get_cache_directory(url)
+        url_storage_dir = get_cache_directory(self.storage_dir_vt, vt.url_id(url))
         if not url_storage_dir.exists():
             return None
         cached_entries = sorted(url_storage_dir.glob('*'), reverse=True)
@@ -78,7 +71,7 @@ class VirusTotal():
         if not self.available:
             raise ConfigError('VirusTotal not available, probably no API key')
 
-        url_storage_dir = self.__get_cache_directory(url)
+        url_storage_dir = get_cache_directory(self.storage_dir_vt, vt.url_id(url))
         url_storage_dir.mkdir(parents=True, exist_ok=True)
         vt_file = url_storage_dir / date.today().isoformat()
 

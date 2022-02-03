@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import hashlib
 import json
 import time
 from datetime import date
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 from har2tree import CrawledTree
 from pyeupi import PyEUPI
 
 from ..default import ConfigError, get_homedir
+from ..helpers import get_cache_directory
 
 
 class PhishingInitiative():
@@ -35,13 +34,8 @@ class PhishingInitiative():
         self.storage_dir_eupi = get_homedir() / 'eupi'
         self.storage_dir_eupi.mkdir(parents=True, exist_ok=True)
 
-    def __get_cache_directory(self, url: str) -> Path:
-        m = hashlib.md5()
-        m.update(url.encode())
-        return self.storage_dir_eupi / m.hexdigest()
-
     def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
-        url_storage_dir = self.__get_cache_directory(url)
+        url_storage_dir = get_cache_directory(self.storage_dir_eupi, url)
         if not url_storage_dir.exists():
             return None
         cached_entries = sorted(url_storage_dir.glob('*'), reverse=True)
@@ -76,7 +70,7 @@ class PhishingInitiative():
         if not self.available:
             raise ConfigError('PhishingInitiative not available, probably no API key')
 
-        url_storage_dir = self.__get_cache_directory(url)
+        url_storage_dir = get_cache_directory(self.storage_dir_eupi, url)
         url_storage_dir.mkdir(parents=True, exist_ok=True)
         pi_file = url_storage_dir / date.today().isoformat()
 
