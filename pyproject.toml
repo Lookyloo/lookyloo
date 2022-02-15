@@ -37,7 +37,7 @@ start_website = "bin.start_website:main"
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
 requests = "^2.27"
-flask = "^2.0.2"
+flask = "^2.0.3"
 gunicorn = "^20.1.0"
 cchardet = "^2.1.7"
 redis = {version = "^4.1.3", extras = ["hiredis"]}
