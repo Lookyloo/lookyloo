@@ -39,31 +39,32 @@
       <li><b>Total redirects</b>: {{ year['yearly_redirects'] }}</li>
   </ul>
   <div>
+    <div class="table-responsive">
+    <table id="table" class="table" style="width:96%">
+      <thead>
+      <tr>
+        <th>Month</th>
+        <th>Submissions</th>
+        <th>Submissions with redirects</th>
+        <th>Redirects</th>
+        <th>Unique urls (including redirects)</th>
+        <th>Unique domains (including redirects)</th>
+      </tr>
+      </thead>
+      <tbody>
       {% for month in year['months'] %}
-      <h4>{{ month_name(month['month_number']) }}</h4>
-      <div class="table-responsive">
-      <table id="table" class="table" style="width:96%">
-        <thead>
         <tr>
-          <th>Submissions</th>
-          <th>Submissions with redirects</th>
-          <th>Redirects</th>
-          <th>Unique urls (including redirects)</th>
-          <th>Unique domains (including redirects)</th>
+          <td> {{ month_name(month['month_number']) }} </td>
+          <td> {{ month['submissions'] }} </td>
+          <td> {{ month['submissions_with_redirects'] }} </td>
+          <td> {{ month['redirects'] }} </td>
+          <td> {{ month['uniq_urls'] }} </td>
+          <td> {{ month['uniq_domains'] }} </td>
         </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td> {{ month['submissions'] }} </td>
-            <td> {{ month['submissions_with_redirects'] }} </td>
-            <td> {{ month['redirects'] }} </td>
-            <td> {{ month['uniq_urls'] }} </td>
-            <td> {{ month['uniq_domains'] }} </td>
-          </tr>
-        </tbody>
-      </table>
-      </div>
       {% endfor %}
+      </tbody>
+    </table>
+    </div>
   </div>
 {% endfor %}
 </div>
