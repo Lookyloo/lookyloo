@@ -50,7 +50,7 @@ scrapysplashwrapper = "^1.10.1"
 pysanejs = "^2.0"
 har2tree = "^1.10.2"
 pylookyloo = "^1.10.0"
-dnspython = "^2.2.0"
+dnspython = "^2.2.1"
 pytaxonomies = "^1.4.1"
 pymisp = {version = "^2.4.152", extras = ["url"]}
 python-magic = {version = "^0.4.22", optional = true}
