@@ -1388,7 +1388,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.13.1"
+version = "0.13.2"
 description = "The official Python client library for VirusTotal"
 category = "main"
 optional = false
@@ -1495,7 +1495,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "f0ea01e1d7abd4fe09403dc7fbb34b8c61dce00a840ff7191575513fc78f87e2"
+content-hash = "1e2b99202843724810c90f32dcd0895b026715beaaf1006255365f9c297dcabc"
 
 [metadata.files]
 aiohttp = [
@@ -1613,13 +1613,6 @@ bootstrap-flask = [
     {file = "Bootstrap_Flask-2.0.2-py2.py3-none-any.whl", hash = "sha256:32867bb785dd2be84a045367401849c6afb1debba25b966b0c48e1fd62bb97c8"},
 ]
 cchardet = [
-    {file = "cchardet-2.1.7-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:58005cd94e4bbb25fb4cee3ad75a0fe121384cb2b99ac5619aa45aecedf43c7b"},
-    {file = "cchardet-2.1.7-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:0ba0793737edc6f58e668edb9d096e5234ddac2326fba984118f8275d54ec484"},
-    {file = "cchardet-2.1.7-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:445162d42a7b53cb7ec5c9b0d390b3c72660c8cabfaeb778f547a6e9efc9462f"},
-    {file = "cchardet-2.1.7-cp35-cp35m-manylinux2010_i686.whl", hash = "sha256:8ff7db6482622255cd42a7052e63ab36122a8d6df2b883effc37e2096ce4ee8a"},
-    {file = "cchardet-2.1.7-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:b5f4f09246aacae6d9bf5b741a06141980bcd314392e535239bb22267bd9d8b4"},
-    {file = "cchardet-2.1.7-cp35-cp35m-win32.whl", hash = "sha256:fe50d449f50c0dcb62ccd364daa1185cf6b72813ecf1ae8109d24cb66672fc2e"},
-    {file = "cchardet-2.1.7-cp35-cp35m-win_amd64.whl", hash = "sha256:9a57db6ddadb0727c528ce8028a1f963635324d2a17355c8415812d62ab2dda8"},
     {file = "cchardet-2.1.7-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:c6f70139aaf47ffb94d89db603af849b82efdf756f187cdd3e566e30976c519f"},
     {file = "cchardet-2.1.7-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:5a25f9577e9bebe1a085eec2d6fdd72b7a9dd680811bba652ea6090fb2ff472f"},
     {file = "cchardet-2.1.7-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:6b6397d8a32b976a333bdae060febd39ad5479817fabf489e5596a588ad05133"},
@@ -1641,6 +1634,13 @@ cchardet = [
     {file = "cchardet-2.1.7-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:f16517f3697569822c6d09671217fdeab61dfebc7acb5068634d6b0728b86c0b"},
     {file = "cchardet-2.1.7-cp38-cp38-win32.whl", hash = "sha256:0b859069bbb9d27c78a2c9eb997e6f4b738db2d7039a03f8792b4058d61d1109"},
     {file = "cchardet-2.1.7-cp38-cp38-win_amd64.whl", hash = "sha256:273699c4e5cd75377776501b72a7b291a988c6eec259c29505094553ee505597"},
+    {file = "cchardet-2.1.7-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:48ba829badef61441e08805cfa474ccd2774be2ff44b34898f5854168c596d4d"},
+    {file = "cchardet-2.1.7-cp39-cp39-manylinux1_i686.whl", hash = "sha256:bd7f262f41fd9caf5a5f09207a55861a67af6ad5c66612043ed0f81c58cdf376"},
+    {file = "cchardet-2.1.7-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:fdac1e4366d0579fff056d1280b8dc6348be964fda8ebb627c0269e097ab37fa"},
+    {file = "cchardet-2.1.7-cp39-cp39-manylinux2010_i686.whl", hash = "sha256:80e6faae75ecb9be04a7b258dc4750d459529debb6b8dee024745b7b5a949a34"},
+    {file = "cchardet-2.1.7-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:c96aee9ebd1147400e608a3eff97c44f49811f8904e5a43069d55603ac4d8c97"},
+    {file = "cchardet-2.1.7-cp39-cp39-win32.whl", hash = "sha256:2309ff8fc652b0fc3c0cff5dbb172530c7abb92fe9ba2417c9c0bcf688463c1c"},
+    {file = "cchardet-2.1.7-cp39-cp39-win_amd64.whl", hash = "sha256:24974b3e40fee9e7557bb352be625c39ec6f50bc2053f44a3d1191db70b51675"},
     {file = "cchardet-2.1.7.tar.gz", hash = "sha256:c428b6336545053c2589f6caf24ea32276c6664cb86db817e03a94c60afa0eaf"},
 ]
 certifi = [
@@ -1713,6 +1713,7 @@ click = [
 ]
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
+    {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
 ]
 commonmark = [
     {file = "commonmark-0.9.1-py2.py3-none-any.whl", hash = "sha256:da2f38c92590f83de410ba1a3cbceafbc74fee9def35f9251ba9a971d6d66fd9"},
@@ -1856,6 +1857,7 @@ frozenlist = [
     {file = "frozenlist-1.3.0.tar.gz", hash = "sha256:ce6f2ba0edb7b0c1d8976565298ad2deba6f8064d2bebb6ffce2ca896eb35b0b"},
 ]
 gunicorn = [
+    {file = "gunicorn-20.1.0-py3-none-any.whl", hash = "sha256:9dcc4547dbb1cb284accfb15ab5667a0e5d1881cc443e0677b4882a4067a807e"},
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
@@ -1954,6 +1956,10 @@ jsonschema = [
     {file = "jsonschema-4.4.0.tar.gz", hash = "sha256:636694eb41b3535ed608fe04129f26542b59ed99808b4f688aa32dcf55317a83"},
 ]
 lief = [
+    {file = "lief-0.11.5-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:be2b5420a8c48968c37621aa9ff0b34bc56115687f095da419ff97e4542cd27a"},
+    {file = "lief-0.11.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4f7f33e44ea73aebdfa4f511866a919a7a8cb5cbb6a3ca573549f8137232ec7b"},
+    {file = "lief-0.11.5-cp310-cp310-win32.whl", hash = "sha256:c30be8afd44f2b2441427f71b06a0cae190d535268304ba92f13b0eec9436221"},
+    {file = "lief-0.11.5-cp310-cp310-win_amd64.whl", hash = "sha256:aa41e6fbd8feb7e42a1d67b99604f4c32b31e5dd1e36c99a90af73f19dc377f8"},
     {file = "lief-0.11.5-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:1cca100e77382f4137a3b1283769efa0e68a965fa4f3e21e64e3f67b6e22fdc8"},
     {file = "lief-0.11.5-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:621ad19f77884a008d61e05b92aed8309a8460e93916f4722439beaa529ca37d"},
     {file = "lief-0.11.5-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c672dcd78dbbe2c0746721cdb1593b237a8b983d039e73713b055449e4a58207"},
@@ -2185,6 +2191,7 @@ numpy = [
     {file = "numpy-1.22.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:8251ed96f38b47b4295b1ae51631de7ffa8260b5b087808ef09a39a9d66c97ab"},
     {file = "numpy-1.22.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:48a3aecd3b997bf452a2dedb11f4e79bc5bfd21a1d4cc760e703c31d57c84b3e"},
     {file = "numpy-1.22.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a3bae1a2ed00e90b3ba5f7bd0a7c7999b55d609e0c54ceb2b076a25e345fa9f4"},
+    {file = "numpy-1.22.3-cp310-cp310-win32.whl", hash = "sha256:f950f8845b480cffe522913d35567e29dd381b0dc7e4ce6a4a9f9156417d2430"},
     {file = "numpy-1.22.3-cp310-cp310-win_amd64.whl", hash = "sha256:08d9b008d0156c70dc392bb3ab3abb6e7a711383c3247b410b39962263576cd4"},
     {file = "numpy-1.22.3-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:201b4d0552831f7250a08d3b38de0d989d6f6e4658b709a02a73c524ccc6ffce"},
     {file = "numpy-1.22.3-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:f8c1f39caad2c896bc0018f699882b345b2a63708008be29b1f355ebf6f933fe"},
@@ -2222,6 +2229,9 @@ pickleshare = [
     {file = "pickleshare-0.7.5.tar.gz", hash = "sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca"},
 ]
 pillow = [
+    {file = "Pillow-9.0.1-1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:a5d24e1d674dd9d72c66ad3ea9131322819ff86250b30dc5821cbafcfa0b96b4"},
+    {file = "Pillow-9.0.1-1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:2632d0f846b7c7600edf53c48f8f9f1e13e62f66a6dbc15191029d950bfed976"},
+    {file = "Pillow-9.0.1-1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:b9618823bd237c0d2575283f2939655f54d51b4527ec3972907a927acbcc5bfc"},
     {file = "Pillow-9.0.1-cp310-cp310-macosx_10_10_universal2.whl", hash = "sha256:9bfdb82cdfeccec50aad441afc332faf8606dfa5e8efd18a6692b5d6e79f00fd"},
     {file = "Pillow-9.0.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:5100b45a4638e3c00e4d2320d3193bdabb2d75e79793af7c3eb139e4f569f16f"},
     {file = "Pillow-9.0.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:528a2a692c65dd5cafc130de286030af251d2ee0483a5bf50c9348aefe834e8a"},
@@ -2521,8 +2531,8 @@ urllib3 = [
     {file = "urllib3-1.26.8.tar.gz", hash = "sha256:0e7c33d9a63e7ddfcb86780aac87befc2fbddf46c58dbb487e0855f7ceec283c"},
 ]
 vt-py = [
-    {file = "vt-py-0.13.1.tar.gz", hash = "sha256:457258b4880146147eb40f71088845f1baac5448a74a7afbc8e083b658a691c3"},
-    {file = "vt_py-0.13.1-py3-none-any.whl", hash = "sha256:4f4d72a8663965dfa7d5c3c65366e5cd5653825c262120f824fb646ef30da550"},
+    {file = "vt-py-0.13.2.tar.gz", hash = "sha256:2a505f4f416e68f21dbf785af8fd7b427527cb21f054ce75323e3539714cc773"},
+    {file = "vt_py-0.13.2-py3-none-any.whl", hash = "sha256:77786de6771b9c1cd730821de8e9568ddc9005b279742895194fdcc426f27660"},
 ]
 w3lib = [
     {file = "w3lib-1.22.0-py2.py3-none-any.whl", hash = "sha256:0161d55537063e00d95a241663ede3395c4c6d7b777972ba2fd58bbab2001e53"},
