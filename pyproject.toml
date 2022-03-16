@@ -44,7 +44,7 @@ redis = {version = "^4.1.4", extras = ["hiredis"]}
 beautifulsoup4 = "^4.10"
 bootstrap-flask = "^2.0.2"
 defang = "^0.5.3"
-vt-py = "^0.13.1"
+vt-py = "^0.13.2"
 pyeupi = "^1.1"
 scrapysplashwrapper = "^1.10.1"
 pysanejs = "^2.0"
@@ -70,7 +70,7 @@ lief = "^0.11.5"
 misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.940"
+mypy = "^0.941"
 ipython = "^8.1.1"
 types-redis = "^4.1.17"
 types-requests = "^2.27.11"
