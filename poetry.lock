@@ -1388,7 +1388,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.13.2"
+version = "0.14.0"
 description = "The official Python client library for VirusTotal"
 category = "main"
 optional = false
@@ -1495,7 +1495,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "c9d8087a9e58f5d19eff4c12494198dc357f3ffb2430b64d015a4633ed07abf7"
+content-hash = "9e7d55dc0fa4c052da63631cbbffe4c96118917b40feea60bbfa0a9635270705"
 
 [metadata.files]
 aiohttp = [
@@ -2521,8 +2521,8 @@ urllib3 = [
     {file = "urllib3-1.26.8.tar.gz", hash = "sha256:0e7c33d9a63e7ddfcb86780aac87befc2fbddf46c58dbb487e0855f7ceec283c"},
 ]
 vt-py = [
-    {file = "vt-py-0.13.2.tar.gz", hash = "sha256:2a505f4f416e68f21dbf785af8fd7b427527cb21f054ce75323e3539714cc773"},
-    {file = "vt_py-0.13.2-py3-none-any.whl", hash = "sha256:77786de6771b9c1cd730821de8e9568ddc9005b279742895194fdcc426f27660"},
+    {file = "vt-py-0.14.0.tar.gz", hash = "sha256:f3e9341cfa344ec3b3b582e29255af7055a61c907c2f28e2a402e363bdf4c40b"},
+    {file = "vt_py-0.14.0-py3-none-any.whl", hash = "sha256:0841b54da3f3e0ba80d1086e2e4e4d3dfb5282db42bfe991d67a6e946d9e9cf9"},
 ]
 w3lib = [
     {file = "w3lib-1.22.0-py2.py3-none-any.whl", hash = "sha256:0161d55537063e00d95a241663ede3395c4c6d7b777972ba2fd58bbab2001e53"},
