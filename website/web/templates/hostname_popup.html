@@ -70,16 +70,16 @@
   {# Headers #}
   <center>
       <h3>{{ hostnode.name }}</h3>
-    <button type="button" class="btn btn-info" onclick="whereAmI('{{ hostnode_uuid }}')">Locate in tree</button>
+    <button type="button" class="btn btn-primary" onclick="whereAmI('{{ hostnode_uuid }}')">Locate in tree</button>
     {% if uwhois_available %}
-    <a href="{{ url_for('whois', query=hostnode.name) }}" class="btn btn-info" role="button">
+    <a href="{{ url_for('whois', query=hostnode.name) }}" class="btn btn-primary" role="button">
         Download whois entry
     </a>
     {% endif %}
-    <a href="{{ url_for('urls_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-info" role="button">
+    <a href="{{ url_for('urls_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-primary" role="button">
         Download all URLs as text
     </a>
-    <a href="{{ url_for('hashes_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-info" role="button">
+    <a href="{{ url_for('hashes_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-primary" role="button">
         Download all Hashes as text
     </a>
   </center>
@@ -140,7 +140,7 @@
           {% if url['cookies_sent'] %}
           <div>
             <p class="h5">This request contains cookies.
-              <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#request_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+              <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#request_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
                 <span class="if-collapsed">Show cookies sent.</span>
                 <span class="if-not-collapsed">Hide cookies sent.</span>
               </button>
@@ -215,7 +215,7 @@
           {% if url['embedded_ressources'] %}
           {# Details on embedded resources #}
           <div><b>This response contains embedded ressources</b>
-          <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#embedded_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+          <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#embedded_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
             <span class="if-collapsed">Show embedded resources.</span>
             <span class="if-not-collapsed">Hide embedded resources.</span>
           </button>
@@ -255,7 +255,7 @@
           {% if url['cookies_received'] %}
           <div>
             <p class="h5">This response contains cookies.
-              <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#response_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+              <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#response_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
                   <span class="if-collapsed">Show cookies received.</span>
                   <span class="if-not-collapsed">Hide cookies received.</span>
               </button>

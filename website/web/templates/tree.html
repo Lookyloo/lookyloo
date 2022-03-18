@@ -490,9 +490,9 @@
         </br>
       {% endif %}
       {% if blur_screenshot %}
-      <button type="button" class="btn btn-info" onclick="$('#screenshot').removeClass('blur')">Unblur</button>
+      <button type="button" class="btn btn-primary" onclick="$('#screenshot').removeClass('blur')">Unblur</button>
       {% endif %}
-      <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button" class="btn btn-info">Download</a>
+      <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button" class="btn btn-primary">Download</a>
       </br>
       </br>
       <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '') }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>

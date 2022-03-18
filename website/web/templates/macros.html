@@ -32,7 +32,7 @@
         </td>
         <td>{{ mt }}</td>
         <td>
-          <button type="button" class="btn btn-info {% if add_category %}categorize_capture{% else %}uncategorize_capture{% endif %}" value="{{ mt }}">
+          <button type="button" class="btn btn-primary {% if add_category %}categorize_capture{% else %}uncategorize_capture{% endif %}" value="{{ mt }}">
           {% if add_category %}
           Categorize capture.
           {% else %}
@@ -75,7 +75,7 @@
 {% endmacro %}
 
 {% macro context_form(tree_uuid, urlnode_uuid, hostnode_uuid, hash, callback_str) %}
-<button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#context_response_{{ urlnode_uuid }}" aria-expanded="false" aria-controls="collapseContextForm">
+<button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#context_response_{{ urlnode_uuid }}" aria-expanded="false" aria-controls="collapseContextForm">
   <span class="if-collapsed">Add context</span>
   <span class="if-not-collapsed">Hide context form</span>
 </button>
@@ -125,7 +125,7 @@
         <input type="hidden" id="hash_to_contextualize" name="hash_to_contextualize" value="{{ hash }}">
         <input type="hidden" id="hostnode_uuid" name="hostnode_uuid" value="{{ hostnode_uuid }}">
         <input type="hidden" id="callback_str" name="callback_str" value="{{ callback_str }}">
-        <button type="submit" class="btn btn-info" id="btn-looking">Submit context</button>
+        <button type="submit" class="btn btn-primary" id="btn-looking">Submit context</button>
       </form>
   </div>
 </div>
@@ -133,7 +133,7 @@
 
 {% macro get_ressource_button(capture_uuid, urlnode_uuid, hash, text, can_preview=False) %}
 <form method="post" action="{{ url_for('get_ressource', tree_uuid=capture_uuid, node_uuid=urlnode_uuid) }}">
-  <button class="btn btn-info" name="ressource_hash" value="{{ hash }}"
+  <button class="btn btn-primary" name="ressource_hash" value="{{ hash }}"
     {% if can_preview %}
     data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
     title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=capture_uuid, node_uuid=urlnode_uuid, h_ressource=hash) }}"/>'
@@ -177,7 +177,7 @@
 <p>
   The same file was seen in <b>{{ total_captures }}</b> other captures.
   </br>
-  <button class="btn btn-info collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#captureslist_{{ identifier_for_toggle }}" aria-expanded="false" aria-controls="collapseExample">
+  <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#captureslist_{{ identifier_for_toggle }}" aria-expanded="false" aria-controls="collapseExample">
     <span class="if-collapsed">Show other captures</span>
     <span class="if-not-collapsed">Hide other captures</span>
   </button>
@@ -251,7 +251,7 @@
           {{ cookie_name_value[0] }}</a>={{ shorten_string(cookie_name_value[1], 200) }} -
         </br>
         {{ button_text }}
-        <button type="button" class="btn btn-info" onclick="whereAmI('{{ detail[1] }}')">Locate</button>
+        <button type="button" class="btn btn-primary" onclick="whereAmI('{{ detail[1] }}')">Locate</button>
     </li>
     {% endif %}
   {% endfor %}
