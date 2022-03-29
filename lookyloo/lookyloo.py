@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import base64
 import json
@@ -22,7 +21,6 @@ from PIL import Image  # type: ignore
 from pymisp import MISPAttribute, MISPEvent, MISPObject
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
-from werkzeug.useragents import UserAgent
 
 from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
@@ -30,7 +28,8 @@ from .default import LookylooException, get_homedir, get_config, get_socket_path
 from .exceptions import (MissingCaptureDirectory,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile)
 from .helpers import (CaptureStatus, get_captures_dir, get_email_template,
-                      get_resources_hashes, get_splash_url, get_taxonomies, uniq_domains)
+                      get_resources_hashes, get_splash_url, get_taxonomies,
+                      uniq_domains, ParsedUserAgent)
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup)
@@ -153,7 +152,7 @@ class Lookyloo():
 
         meta = {}
         ct = self.get_crawled_tree(capture_uuid)
-        ua = UserAgent(ct.root_hartree.user_agent)
+        ua = ParsedUserAgent(ct.root_hartree.user_agent)
         meta['user_agent'] = ua.string
         if ua.platform:
             meta['os'] = ua.platform
@@ -162,8 +161,6 @@ class Lookyloo():
                 meta['browser'] = f'{ua.browser} {ua.version}'
             else:
                 meta['browser'] = ua.browser
-        if ua.language:
-            meta['language'] = ua.language
 
         if not meta:
             # UA not recognized
@@ -193,7 +190,7 @@ class Lookyloo():
         # get existing categories if possible
         if categ_file.exists():
             with categ_file.open() as f:
-                current_categories = set(line.strip() for line in f.readlines())
+                current_categories = {line.strip() for line in f.readlines()}
         else:
             current_categories = set()
         current_categories.add(category)
@@ -208,7 +205,7 @@ class Lookyloo():
         # get existing categories if possible
         if categ_file.exists():
             with categ_file.open() as f:
-                current_categories = set(line.strip() for line in f.readlines())
+                current_categories = {line.strip() for line in f.readlines()}
         else:
             current_categories = set()
         current_categories.remove(category)
@@ -731,7 +728,7 @@ class Lookyloo():
         ct = self.get_crawled_tree(tree_uuid)
         hashes = ct.root_hartree.build_all_hashes(algorithm)
         if urls_only:
-            return {h: set(node.name for node in nodes) for h, nodes in hashes.items()}
+            return {h: {node.name for node in nodes} for h, nodes in hashes.items()}
         return hashes
 
     def merge_hashlookup_tree(self, tree_uuid: str, /) -> Tuple[Dict[str, Dict[str, Any]], int]:

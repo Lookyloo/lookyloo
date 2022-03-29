@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import json
 import logging
@@ -352,7 +351,7 @@ class CapturesIndex(Mapping):
                             host_cnames[str(answer.name).rstrip('.')] = None
 
                         if answer.rdtype in [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]:
-                            host_ips[str(answer.name).rstrip('.')] = list(set(str(b) for b in answer))
+                            host_ips[str(answer.name).rstrip('.')] = list({str(b) for b in answer})
                 except Exception:
                     host_cnames[node.name] = None
                     host_ips[node.name] = []

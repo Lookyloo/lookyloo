@@ -8,9 +8,9 @@ from datetime import date, timedelta
 from typing import Any, Dict
 
 from redis import Redis
-from werkzeug.useragents import UserAgent
 
 from lookyloo.default import AbstractManager, get_config, get_homedir, get_socket_path, safe_create_dir
+from lookyloo.helpers import ParsedUserAgent
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)
@@ -47,7 +47,7 @@ class Processing(AbstractManager):
         to_store: Dict[str, Any] = {'by_frequency': []}
         uas = Counter([entry.split('|', 1)[1] for entry in entries])
         for ua, _ in uas.most_common():
-            parsed_ua = UserAgent(ua)
+            parsed_ua = ParsedUserAgent(ua)
             if not parsed_ua.platform or not parsed_ua.browser:
                 continue
             if parsed_ua.platform not in to_store:

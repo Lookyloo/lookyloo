@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import hashlib
 import json
 import logging
 import os
+import pkg_resources
+
 from datetime import datetime, timedelta
 from enum import IntEnum, unique
 from functools import lru_cache
@@ -12,12 +13,15 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from urllib.parse import urljoin, urlparse
 
-import pkg_resources
 import requests
+
 from har2tree import CrawledTree, HostNode, URLNode
 from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
 from pytaxonomies import Taxonomies
 from requests.exceptions import HTTPError
+from ua_parser import user_agent_parser  # type: ignore
+from werkzeug.user_agent import UserAgent
+from werkzeug.utils import cached_property
 
 from .default import get_homedir, safe_create_dir, get_config
 
@@ -184,3 +188,28 @@ def get_cache_directory(root: Path, identifier: str, namespace: Optional[str] = 
     if namespace:
         root = root / namespace
     return root / digest[0] / digest[1] / digest[2] / digest
+
+
+class ParsedUserAgent(UserAgent):
+
+    # from https://python.tutorialink.com/how-do-i-get-the-user-agent-with-flask/
+
+    @cached_property
+    def _details(self):
+        return user_agent_parser.Parse(self.string)
+
+    @property
+    def platform(self):
+        return self._details['os'].get('family')
+
+    @property
+    def browser(self):
+        return self._details['user_agent'].get('family')
+
+    @property
+    def version(self):
+        return '.'.join(
+            part
+            for key in ('major', 'minor', 'patch')
+            if (part := self._details['user_agent'][key]) is not None
+        )
