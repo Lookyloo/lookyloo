@@ -25,12 +25,10 @@
   <center>
     <a href="{{ url_for('index') }}" title="Go back to index">
       <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
-           alt="Lookyloo" width="400">
+           alt="Lookyloo" width="30%">
     </a>
   </center>
-  </br>
   {{ render_messages(container=True, dismissible=True) }}
-  </br>
   <form role="form" action="{{ url_for('capture_web') }}" method=post enctype=multipart/form-data>
     <div class="row mb-3">
       <div class="col-sm-10">
@@ -41,87 +39,103 @@
       </div>
     </div>
     <div class="row mb-3">
+      <label for="url" class="col-sm-1 col-form-label">URL:</label>
       <div class="col-sm-10">
-        <label for="url" class="col-sm-2 col-form-label">URL:</label>
         <input type="text" class="form-control" name="url" id=url
                placeholder="URL to capture" value="{{predefined_url_to_capture}}" required>
       </div>
     </div>
 
-    <p style="font-size: x-large"><b>Browser Configuration</b> (Lookyloo uses an emulated browser for all captures)</p>
-    <div class="card card-body">
-      {% if personal_ua %}
-      <div class="row mb-3">
-        <div class="col-sm-10">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="personal_ua"></input>
-            <label for="personal_ua" class="form-check-label">Use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser:</br>
-                {{ personal_ua }}
-            </label>
+    <div>
+      <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfigBrowser"
+              aria-expanded="false" aria-controls="collapseConfigBrowser">
+          <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; color: black; text-decoration: underline; text-decoration-color: blue;">
+            <b>Browser Configuration</b>
+          </p>
+      </button>
+      <div class="help-tip" title="Lookyloo uses an emulated browser for all captures, click to configure the User-Agent"></div>
+    </div>
+
+    <div id="collapseConfigBrowser" class="collapse d-xl-block">
+      <div class="card card-body">
+        {% if personal_ua %}
+        <div class="row mb-3">
+          <div class="col-sm-10">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="personal_ua"></input>
+              <label for="personal_ua" class="form-check-label">Use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser:</br>
+                  {{ personal_ua }}
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div><b>Or</b> pick the user agent of your choice:</div>
+        </br>
+        {% endif %}
+
+        <div class="row mb-3">
+          <label for="os" class="col-sm-2 col-form-label">Operating System:</label>
+          <div class="col-sm-10">
+            <select class="form-select" name="os" id="os">
+              {% for os in user_agents.keys() %}
+              <!-- Select the default os -->
+              <option value="{{ os }}" {% if os==default['os'] %}selected{% endif %}>{{ os }}</option>
+              {% endfor%}
+            </select>
+          </div>
+        </div>
+
+      {% for os, browsers in user_agents.items() %}
+        <!-- Hide the browsers that aren't part of the default os -->
+        <div id="{{os.replace(' ', '_')}}" class="style-sub-1 row mb-3" {% if not os==default['os'] %}style="display: none;"{%endif%}>
+          <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
+          <div class="col-sm-10">
+            <!-- Disable all the selects not related to the default os -->
+            <select class="form-select" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
+            {% for browser in browsers.keys()%}
+            <!-- Select the default browser -->
+            <option value="{{ browser }}" {% if browser==default['browser'] %}selected{% endif %}>{{ browser }}</option>
+            {% endfor%}
+            </select>
+          </div>
+        </div>
+        {% for browser, user_agents in browsers.items()%}
+        <!-- Hide the user agents that aren't part of the default OS and browsers that aren't part of the default os -->
+        <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 row mb-3" {% if not os==default['os'] or not browser==default['browser']%} style="display: none;"{%endif%}>
+          <label for="user_agent" class="col-sm-2 col-form-label">User-Agent:</label>
+          <div class="col-sm-10">
+            <!-- Disable all the selects, unless it is in default os and browser -->
+            <select class="form-select" name="user_agent" {% if not os==default['os'] or not browser==default['browser']  %}disabled{%endif%}>
+              {% for user_agent in user_agents %}
+              <!-- Select the default ua -->
+              <option value="{{ user_agent }}" {% if user_agent==default['useragent'] %}selected{% endif %}>{{ user_agent }}</option>
+              {% endfor%}
+            </select>
+          </div>
+        </div>
+        {% endfor%}
+      {% endfor%}
+        <div class="dropdown-divider"></div>
+        <div><b>Or</b> type the user-agent of your choice:</div>
+        </br>
+        <div class="row mb-3">
+          <label for="freetext_ua" class="col-sm-2 col-form-label">User-Agent:</label>
+          <div class="col-sm-10">
+              <input type="text" class="form-control" name="freetext_ua" id="freetext_ua"
+                     placeholder="String to use as a User-Agent for the capture">
           </div>
         </div>
       </div>
-      <div class="dropdown-divider"></div>
-      <div><b>Or</b> pick the user agent of your choice:</div>
-      </br>
-      {% endif %}
-
-      <div class="row mb-3">
-        <label for="os" class="col-sm-2 col-form-label">Operating System:</label>
-        <div class="col-sm-10">
-          <select class="form-select" name="os" id="os">
-            {% for os in user_agents.keys() %}
-            <!-- Select the default os -->
-            <option value="{{ os }}" {% if os==default['os'] %}selected{% endif %}>{{ os }}</option>
-            {% endfor%}
-          </select>
-        </div>
-      </div>
-
-    {% for os, browsers in user_agents.items() %}
-      <!-- Hide the browsers that aren't part of the default os -->
-      <div id="{{os.replace(' ', '_')}}" class="style-sub-1 row mb-3" {% if not os==default['os'] %}style="display: none;"{%endif%}>
-        <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
-        <div class="col-sm-10">
-          <!-- Disable all the selects not related to the default os -->
-          <select class="form-select" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
-          {% for browser in browsers.keys()%}
-          <!-- Select the default browser -->
-          <option value="{{ browser }}" {% if browser==default['browser'] %}selected{% endif %}>{{ browser }}</option>
-          {% endfor%}
-          </select>
-        </div>
-      </div>
-      {% for browser, user_agents in browsers.items()%}
-      <!-- Hide the user agents that aren't part of the default OS and browsers that aren't part of the default os -->
-      <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 row mb-3" {% if not os==default['os'] or not browser==default['browser']%} style="display: none;"{%endif%}>
-        <label for="user_agent" class="col-sm-2 col-form-label">User-Agent:</label>
-        <div class="col-sm-10">
-          <!-- Disable all the selects, unless it is in default os and browser -->
-          <select class="form-select" name="user_agent" {% if not os==default['os'] or not browser==default['browser']  %}disabled{%endif%}>
-            {% for user_agent in user_agents %}
-            <!-- Select the default ua -->
-            <option value="{{ user_agent }}" {% if user_agent==default['useragent'] %}selected{% endif %}>{{ user_agent }}</option>
-            {% endfor%}
-          </select>
-        </div>
-      </div>
-      {% endfor%}
-    {% endfor%}
-      <div class="dropdown-divider"></div>
-      <div><b>Or</b> type the user-agent of your choice:</div>
-      </br>
-      <div class="row mb-3">
-        <label for="freetext_ua" class="col-sm-2 col-form-label">User-Agent:</label>
-        <div class="col-sm-10">
-            <input type="text" class="form-control" name="freetext_ua" id="freetext_ua"
-                   placeholder="String to use as a User-Agent for the capture">
-        </div>
-      </div>
     </div>
+
+    <div class="dropdown-divider"></div>
+
     <div>
       <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfigCapture" aria-expanded="false" aria-controls="collapseConfigCapture">
-          <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; color: black; text-decoration: underline; text-decoration-color: blue;"><b>Capture Configuration</b></p>
+          <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; color: black; text-decoration: underline; text-decoration-color: blue;">
+            <b>Capture Configuration</b>
+          </p>
       </button>
       <div class="help-tip" title="Edit configuration options for the capture."></div>
     </div>
