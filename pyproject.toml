@@ -57,7 +57,6 @@ python-magic = {version = "^0.4.22", optional = true}
 # pydeep requires libfuzzy-dev, and is only used in the MISP export module
 pydeep = {version = "^0.4", optional = true}
 Pillow = "^9.0.1"
-Flask-Login = "^0.5.0"
 flask-restx = "^0.5.1"
 rich = "^12.0.1"
 pyphishtanklookup = "^1.0.1"
@@ -66,6 +65,7 @@ Flask-Cors = "^3.0.10"
 pyhashlookup = "^1.1.1"
 lief = "^0.12.0"
 ua-parser = "^0.10.0"
+flask-login = {git = "https://github.com/maxcountryman/flask-login", rev = "main"}
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep']
