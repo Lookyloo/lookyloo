@@ -17,3 +17,10 @@ let copyToClipboard = (text, el) => {
   document.body.removeChild(copyTextArea);
   el.attr('data-original-title', elOriginalText);
 }
+
+function checkAllBoxes(name) {
+  let checkboxs = document.getElementsByName(name);
+  for(let i = 0; i < checkboxs.length ; i++) {
+    checkboxs[i].checked = !checkboxs[i].checked;
+  }
+}
