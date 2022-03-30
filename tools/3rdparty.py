@@ -7,7 +7,7 @@ from lookyloo.default import get_homedir
 
 d3js_version = '7'
 jquery_version = "3.6.0"
-datatables_version = "1.11.3"
+datatables_version = "1.11.5"
 
 
 if __name__ == '__main__':
