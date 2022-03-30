@@ -38,12 +38,20 @@
         </div>
       </div>
     </div>
-    <div class="row mb-3">
+
+    <div class="row input-group mb-3">
       <label for="url" class="col-sm-1 col-form-label">URL:</label>
-      <div class="col-sm-10">
-        <input type="text" class="form-control" name="url" id=url
-               placeholder="URL to capture" value="{{predefined_url_to_capture}}" required>
-      </div>
+      <input type="text" class="form-control col-auto" name="url" id=singleCaptureField
+             placeholder="URL to capture" value="{{predefined_url_to_capture}}" required>
+      <textarea class="form-control col-auto d-none" placeholder="URLs to capture, one per line"
+                name="urls" id=multipleCapturesField></textarea>
+      <span class="col-sm-2 input-group-text">
+        <div class="form-check">
+          <input class="form-check-input" name="multipleCaptures" id="multipleCaptures" type="checkbox"
+                 value="" aria-label="tick to enable multiple captures">
+          <label for="multipleCaptures" class="form-check-label">Multiple captures</label>
+        </div>
+      </span>
     </div>
 
     <div>
@@ -208,4 +216,23 @@
   <script src='{{ url_for('static', filename='capture.js') }}'
           integrity="{{get_sri('static', 'capture.js')}}"
           crossorigin="anonymous"></script>
+  <script>
+      $('#multipleCaptures').on('click', function(e) {
+        if (document.getElementById('multipleCaptures').checked == true) {
+            document.getElementById('singleCaptureField').value = '';
+            $("#singleCaptureField").addClass("d-none");
+            $("#singleCaptureField").removeAttr("required");
+            $("#multipleCapturesField").removeClass("d-none");
+            $("#multipleCapturesField").attr("required", true);
+        }
+        else {
+            document.getElementById('multipleCapturesField').value = '';
+            $("#singleCaptureField").removeClass("d-none");
+            $("#singleCaptureField").attr("required", true);
+            $("#multipleCapturesField").addClass("d-none");
+            $("#multipleCapturesField").removeAttr("required");
+        }
+      })
+  </script>
+
 {% endblock %}

@@ -837,8 +837,8 @@ def capture_web():
     else:
         user = src_request_ip(request)
 
-    if request.method == 'POST' and request.form.get('url'):
-        capture_query: Dict[str, Union[str, bytes, int, bool]] = {'url': request.form['url']}
+    if request.method == 'POST' and (request.form.get('url') or request.form.get('urls')):
+        capture_query: Dict[str, Union[str, bytes, int, bool]] = {}
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
             capture_query['cookies'] = request.files['cookies'].stream.read()
@@ -875,9 +875,21 @@ def capture_web():
             else:
                 flash('Invalid proxy: Check that you entered a scheme, a hostname and a port.', 'error')
 
-        perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
-        time.sleep(2)
-        return redirect(url_for('tree', tree_uuid=perma_uuid))
+        if request.form.get('url'):
+            capture_query['url'] = request.form['url']
+            perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+            time.sleep(2)
+            return redirect(url_for('tree', tree_uuid=perma_uuid))
+        else:
+            # bulk query
+            bulk_captures = []
+            for url in request.form['urls'].split('\n'):
+                query = capture_query.copy()
+                query['url'] = url
+                new_capture_uuid = lookyloo.enqueue_capture(query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+                bulk_captures.append((new_capture_uuid, url))
+
+            return render_template('bulk_captures.html', bulk_captures=bulk_captures)
     elif request.method == 'GET' and request.args.get('url'):
         url = unquote_plus(request.args['url']).strip()
         capture_query = {'url': url}

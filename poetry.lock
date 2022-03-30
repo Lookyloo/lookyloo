@@ -359,23 +359,16 @@ Flask = ">=0.9"
 Six = "*"
 
 [[package]]
-name = "Flask-Login"
-version = "0.6.0.dev0"
+name = "flask-login"
+version = "0.6.0"
 description = "User authentication and session management for Flask."
 category = "main"
 optional = false
 python-versions = ">=3.7"
-develop = false
 
 [package.dependencies]
 Flask = ">=1.0.4"
 Werkzeug = ">=1.0.1"
-
-[package.source]
-type = "git"
-url = "https://github.com/maxcountryman/flask-login"
-reference = "main"
-resolved_reference = "0f94639858946ea8e921743db684b6da97d46385"
 
 [[package]]
 name = "flask-restx"
@@ -1530,7 +1523,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "a1c1bf9772f545beeebf0e22a59bfb19932e4d88f5016744941fec9f5b8770fa"
+content-hash = "45a1f781fb6065d0091dafc64bbfe2c3512adbdd18dcd20a61ba399302e449ab"
 
 [metadata.files]
 aiohttp = [
@@ -1821,7 +1814,10 @@ flask-cors = [
     {file = "Flask-Cors-3.0.10.tar.gz", hash = "sha256:b60839393f3b84a0f3746f6cdca56c1ad7426aa738b70d6c61375857823181de"},
     {file = "Flask_Cors-3.0.10-py2.py3-none-any.whl", hash = "sha256:74efc975af1194fc7891ff5cd85b0f7478be4f7f59fe158102e91abb72bb4438"},
 ]
-Flask-Login = []
+flask-login = [
+    {file = "Flask-Login-0.6.0.tar.gz", hash = "sha256:aa84fcfb4c3cf09ca58c08e816b7bce73f1349ba1cf13d00d8dffc5872d5fcf6"},
+    {file = "Flask_Login-0.6.0-py3-none-any.whl", hash = "sha256:5cb01ce4dc253967b6ac722a11e46de83b6272ef7a19cc7b5725ae636916d04d"},
+]
 flask-restx = [
     {file = "flask-restx-0.5.1.tar.gz", hash = "sha256:63c69a61999a34f1774eaccc6fc8c7f504b1aad7d56a8ec672264e52d9ac05f4"},
     {file = "flask_restx-0.5.1-py2.py3-none-any.whl", hash = "sha256:96157547acaa8892adcefd8c60abf9040212ac2a8634937a82946e07b46147fd"},
