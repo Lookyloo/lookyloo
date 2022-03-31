@@ -11,7 +11,7 @@
     {% for url in urls %}
     <div class="form-check">
       <input class="form-check-input" type="checkbox" name="url" id="url_{{loop.index}}" value="{{loop.index}}">
-      <label class="form-check-label" for="url_{{loop.index}}">{{url}}</label>
+      <label class="form-check-label text-wrap text-break" for="url_{{loop.index}}">{{url}}</label>
     </div>
     {% endfor %}
     <button type="submit" class="btn btn-primary" id="btn-capture-urls">Capture selected URLs</button>
