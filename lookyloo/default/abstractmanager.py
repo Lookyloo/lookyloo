@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import asyncio
 import logging
 import signal
 import time
@@ -61,6 +62,16 @@ class AbstractManager(ABC):
                 return False
         return True
 
+    async def long_sleep_async(self, sleep_in_sec: int, shutdown_check: int=10) -> bool:
+        if shutdown_check > sleep_in_sec:
+            shutdown_check = sleep_in_sec
+        sleep_until = datetime.now() + timedelta(seconds=sleep_in_sec)
+        while sleep_until > datetime.now():
+            await asyncio.sleep(shutdown_check)
+            if self.shutdown_requested():
+                return False
+        return True
+
     def shutdown_requested(self) -> bool:
         try:
             return True if self.__redis.exists('shutdown') else False
@@ -69,11 +80,23 @@ class AbstractManager(ABC):
         except ConnectionError:
             return True
 
-    async def _to_run_forever_async(self) -> None:
-        pass
-
     def _to_run_forever(self) -> None:
         pass
+
+    def _kill_process(self):
+        kill_order = [signal.SIGWINCH, signal.SIGTERM, signal.SIGINT, signal.SIGKILL]
+        for sig in kill_order:
+            if self.process.poll() is None:
+                self.logger.info(f'Sending {sig} to {self.process.pid}.')
+                self.process.send_signal(sig)
+                time.sleep(1)
+            else:
+                break
+        else:
+            self.logger.warning(f'Unable to kill {self.process.pid}, keep sending SIGKILL')
+            while self.process.poll() is None:
+                self.process.send_signal(signal.SIGKILL)
+                time.sleep(1)
 
     def run(self, sleep_in_sec: int) -> None:
         self.logger.info(f'Launching {self.__class__.__name__}')
@@ -102,12 +125,45 @@ class AbstractManager(ABC):
             self.logger.warning(f'{self.script_name} killed by user.')
         finally:
             if self.process:
+                self._kill_process()
+            try:
+                self.unset_running()
+            except Exception:
+                # the services can already be down at that point.
+                pass
+            self.logger.info(f'Shutting down {self.__class__.__name__}')
+
+    async def _to_run_forever_async(self) -> None:
+        pass
+
+    async def run_async(self, sleep_in_sec: int) -> None:
+        self.logger.info(f'Launching {self.__class__.__name__}')
+        try:
+            while True:
+                if self.shutdown_requested():
+                    break
                 try:
-                    # Killing everything if possible.
-                    self.process.send_signal(signal.SIGWINCH)
-                    self.process.send_signal(signal.SIGTERM)
+                    if self.process:
+                        if self.process.poll() is not None:
+                            self.logger.critical(f'Unable to start {self.script_name}.')
+                            break
+                    else:
+                        self.set_running()
+                        await self._to_run_forever_async()
                 except Exception:
-                    pass
+                    self.logger.exception(f'Something went terribly wrong in {self.__class__.__name__}.')
+                finally:
+                    if not self.process:
+                        # self.process means we run an external script, all the time,
+                        # do not unset between sleep.
+                        self.unset_running()
+                if not await self.long_sleep_async(sleep_in_sec):
+                    break
+        except KeyboardInterrupt:
+            self.logger.warning(f'{self.script_name} killed by user.')
+        finally:
+            if self.process:
+                self._kill_process()
             try:
                 self.unset_running()
             except Exception:
