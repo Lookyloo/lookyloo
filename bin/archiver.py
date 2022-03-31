@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import csv
 import logging
@@ -72,12 +71,12 @@ class Archiver(AbstractManager):
     def _update_all_capture_indexes(self):
         '''Run that after the captures are in the proper directories'''
         # Recent captures
-        directories_to_index = set(capture_dir.parent.parent for capture_dir in get_captures_dir().glob('**/uuid'))
+        directories_to_index = {capture_dir.parent.parent for capture_dir in get_captures_dir().glob('**/uuid')}
         for directory_to_index in directories_to_index:
             self._update_index(directory_to_index)
 
         # Archived captures
-        directories_to_index = set(capture_dir.parent.parent for capture_dir in self.archived_captures_dir.glob('**/uuid'))
+        directories_to_index = {capture_dir.parent.parent for capture_dir in self.archived_captures_dir.glob('**/uuid')}
         for directory_to_index in directories_to_index:
             self._update_index(directory_to_index)
 

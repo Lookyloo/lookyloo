@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import json
 import traceback
@@ -7,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
 
-from bs4 import BeautifulSoup  # type: ignore
+from bs4 import BeautifulSoup
 try:
     import cloudscraper  # type: ignore
     HAS_CF = True

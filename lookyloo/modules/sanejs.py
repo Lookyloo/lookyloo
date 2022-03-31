@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import json
 import logging
@@ -43,7 +42,7 @@ class SaneJavaScript():
         unknown_hashes = set()
         if sanejs_unknowns.exists():
             with sanejs_unknowns.open() as f:
-                unknown_hashes = set(line.strip() for line in f.readlines())
+                unknown_hashes = {line.strip() for line in f.readlines()}
 
         to_return: Dict[str, List[str]] = {}
 

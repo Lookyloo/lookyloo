@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 from .misp import MISP  # noqa
 from .pi import PhishingInitiative  # noqa

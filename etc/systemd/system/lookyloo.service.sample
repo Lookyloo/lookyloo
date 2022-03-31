@@ -16,4 +16,3 @@ StandardError=append:/var/log/lookyloo_error.log
 
 [Install]
 WantedBy=multi-user.target
-

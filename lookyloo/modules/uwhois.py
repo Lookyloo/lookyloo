@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import logging
 import socket
@@ -65,7 +64,7 @@ class UniversalWhois():
         bytes_whois = b''
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect((self.server, self.port))
-            sock.sendall('{}\n'.format(query).encode())
+            sock.sendall(f'{query}\n'.encode())
             while True:
                 data = sock.recv(2048)
                 if not data:

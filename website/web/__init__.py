@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import calendar
 import http
@@ -127,9 +126,9 @@ logging.basicConfig(level=get_config('generic', 'loglevel'))
 def sizeof_fmt(num, suffix='B'):
     for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
         if abs(num) < 1024.0:
-            return "%3.1f%s%s" % (num, unit, suffix)
+            return f"{num:3.1f}{unit}{suffix}"
         num /= 1024.0
-    return ("%.1f%s%s" % (num, 'Yi', suffix)).strip()
+    return ("{:.1f}{}{}".format(num, 'Yi', suffix)).strip()
 
 
 app.jinja_env.globals.update(sizeof_fmt=sizeof_fmt)
@@ -520,7 +519,7 @@ def hashlookup(tree_uuid: str):
     merged, total_ressources = lookyloo.merge_hashlookup_tree(tree_uuid)
     # We only want unique URLs for the template
     for sha1, entries in merged.items():
-        entries['nodes'] = set(node.name for node in entries['nodes'])
+        entries['nodes'] = {node.name for node in entries['nodes']}
     return render_template('hashlookup.html', base_tree_uuid=tree_uuid, merged=merged, total_ressources=total_ressources)
 
 

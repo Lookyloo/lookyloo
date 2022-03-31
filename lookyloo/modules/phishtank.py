@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import json
 from datetime import date, datetime, timedelta, timezone
@@ -47,7 +46,7 @@ class Phishtank():
         with (crawled_tree.root_hartree.har.path.parent / 'ips.json').open() as f:
             ips_dump = json.load(f)
         to_return: Dict[str, List[Dict[str, Any]]] = {}
-        for ip in set(ip for ips_list in ips_dump.values() for ip in ips_list):
+        for ip in {ip for ips_list in ips_dump.values() for ip in ips_list}:
             entry = self.get_ip_lookup(ip)
             if not entry:
                 continue
@@ -90,7 +89,7 @@ class Phishtank():
         # Check all the IPs in the ips file of the capture
         with (crawled_tree.root_hartree.har.path.parent / 'ips.json').open() as f:
             ips_dump = json.load(f)
-        for ip in set(ip for ips_list in ips_dump.values() for ip in ips_list):
+        for ip in {ip for ips_list in ips_dump.values() for ip in ips_list}:
             self.ip_lookup(ip)
         return {'success': 'Module triggered'}
 
