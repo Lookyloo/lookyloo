@@ -84,6 +84,8 @@ class AbstractManager(ABC):
         pass
 
     def _kill_process(self):
+        if self.process is None:
+            return
         kill_order = [signal.SIGWINCH, signal.SIGTERM, signal.SIGINT, signal.SIGKILL]
         for sig in kill_order:
             if self.process.poll() is None:
