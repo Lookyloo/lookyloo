@@ -182,7 +182,7 @@ unicode_backport = ["unicodedata2"]
 
 [[package]]
 name = "click"
-version = "8.1.0"
+version = "8.1.1"
 description = "Composable command line interface toolkit"
 category = "main"
 optional = false
@@ -329,7 +329,7 @@ python-versions = "*"
 
 [[package]]
 name = "flask"
-version = "2.1.0"
+version = "2.1.1"
 description = "A simple framework for building complex web applications."
 category = "main"
 optional = false
@@ -337,7 +337,7 @@ python-versions = ">=3.7"
 
 [package.dependencies]
 click = ">=8.0"
-importlib-metadata = {version = "*", markers = "python_version < \"3.10\""}
+importlib-metadata = {version = ">=3.6.0", markers = "python_version < \"3.10\""}
 itsdangerous = ">=2.0"
 Jinja2 = ">=3.0"
 Werkzeug = ">=2.0"
@@ -415,7 +415,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.10.2"
+version = "1.11.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -425,15 +425,15 @@ python-versions = ">=3.8,<3.11"
 beautifulsoup4 = ">=4.10,<5.0"
 cchardet = ">=2.1.7,<3.0.0"
 ete3 = ">=3.1.2,<4.0.0"
-filetype = ">=1.0.8,<2.0.0"
-lxml = ">=4.6.5,<4.7.0 || >4.7.0,<5.0.0"
-numpy = ">=1.21.5,<2.0.0"
+filetype = ">=1.0.10,<2.0.0"
+lxml = ">=4.8.0,<5.0.0"
+numpy = ">=1.22.3,<2.0.0"
 publicsuffix2 = ">=2.20191221,<3.0"
 six = ">=1.16.0,<2.0.0"
 w3lib = ">=1.22.0,<2.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.3.2,<5.0.0)"]
+docs = ["Sphinx (>=4.5.0,<5.0.0)"]
 
 [[package]]
 name = "hiredis"
@@ -1060,7 +1060,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "redis"
-version = "4.2.0"
+version = "4.2.1"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
@@ -1071,7 +1071,6 @@ async-timeout = ">=4.0.2"
 deprecated = ">=1.2.3"
 hiredis = {version = ">=1.0.0", optional = true, markers = "extra == \"hiredis\""}
 packaging = ">=20.4"
-typing-extensions = "*"
 
 [package.extras]
 hiredis = ["hiredis (>=1.0.0)"]
@@ -1161,19 +1160,19 @@ python-versions = "*"
 
 [[package]]
 name = "scrapysplashwrapper"
-version = "1.10.1"
+version = "1.11.0"
 description = "Scrapy splash wrapper as a standalone library."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
-lxml = ">=4.6.5,<4.7.0 || >4.7.0,<5.0.0"
-Scrapy = ">=2.5.1,<3.0.0"
+lxml = ">=4.8.0,<5.0.0"
+Scrapy = ">=2.6.1,<3.0.0"
 scrapy-splash = ">=0.8.0,<0.9.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.3.0,<5.0.0)"]
+docs = ["Sphinx (>=4.5.0,<5.0.0)"]
 
 [[package]]
 name = "service-identity"
@@ -1303,9 +1302,25 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "types-beautifulsoup4"
+version = "4.10.16"
+description = "Typing stubs for beautifulsoup4"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "types-click"
 version = "7.1.8"
 description = "Typing stubs for click"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "types-deprecated"
+version = "1.2.5"
+description = "Typing stubs for Deprecated"
 category = "dev"
 optional = false
 python-versions = "*"
@@ -1351,6 +1366,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "types-python-dateutil"
+version = "2.8.10"
+description = "Typing stubs for python-dateutil"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "types-redis"
 version = "4.1.18"
 description = "Typing stubs for redis"
@@ -1368,6 +1391,14 @@ python-versions = "*"
 
 [package.dependencies]
 types-urllib3 = "<1.27"
+
+[[package]]
+name = "types-setuptools"
+version = "57.4.11"
+description = "Typing stubs for setuptools"
+category = "dev"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "types-urllib3"
@@ -1523,7 +1554,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "45a1f781fb6065d0091dafc64bbfe2c3512adbdd18dcd20a61ba399302e449ab"
+content-hash = "5dfdafbfd4cee2ba05598e7c5d00d504f5441403ae473bff05ac1e324fbf41b2"
 
 [metadata.files]
 aiohttp = [
@@ -1736,8 +1767,8 @@ charset-normalizer = [
     {file = "charset_normalizer-2.0.12-py3-none-any.whl", hash = "sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df"},
 ]
 click = [
-    {file = "click-8.1.0-py3-none-any.whl", hash = "sha256:19a4baa64da924c5e0cd889aba8e947f280309f1a2ce0947a3e3a7bcb7cc72d6"},
-    {file = "click-8.1.0.tar.gz", hash = "sha256:977c213473c7665d3aa092b41ff12063227751c41d7b17165013e10069cc5cd2"},
+    {file = "click-8.1.1-py3-none-any.whl", hash = "sha256:5e0d195c2067da3136efb897449ec1e9e6c98282fbf30d7f9e164af9be901a6b"},
+    {file = "click-8.1.1.tar.gz", hash = "sha256:7ab900e38149c9872376e8f9b5986ddcaf68c0f413cf73678a0bca5547e6f976"},
 ]
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
@@ -1807,8 +1838,8 @@ filetype = [
     {file = "filetype-1.0.10.tar.gz", hash = "sha256:323a13500731b6c65a253bc3930bbce9a56dfba71e90b60ffd968ab69d9ae937"},
 ]
 flask = [
-    {file = "Flask-2.1.0-py3-none-any.whl", hash = "sha256:e4c69910f6a096cc57e4ee45b7ba9afafdcad4cc571db6eb97d5bd01b95422ea"},
-    {file = "Flask-2.1.0.tar.gz", hash = "sha256:c4dd4a3d8fcae9f892e3f61edfbb1d3cdf9ac03dc72ea1bf8d5c6c964a669674"},
+    {file = "Flask-2.1.1-py3-none-any.whl", hash = "sha256:8a4cf32d904cf5621db9f0c9fbcd7efabf3003f22a04e4d0ce790c7137ec5264"},
+    {file = "Flask-2.1.1.tar.gz", hash = "sha256:a8c9bd3e558ec99646d177a9739c41df1ded0629480b4c8d2975412f3c9519c8"},
 ]
 flask-cors = [
     {file = "Flask-Cors-3.0.10.tar.gz", hash = "sha256:b60839393f3b84a0f3746f6cdca56c1ad7426aa738b70d6c61375857823181de"},
@@ -1887,8 +1918,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.10.2-py3-none-any.whl", hash = "sha256:d97163081a58df3bac4d1b71546f0cc8c59169065a3e19e7245520bdd6b7d4bf"},
-    {file = "har2tree-1.10.2.tar.gz", hash = "sha256:3b18ec9de729bce4a0d1aaa1220175551e793fa9122b96fcf16dfb018345ac9c"},
+    {file = "har2tree-1.11.0-py3-none-any.whl", hash = "sha256:0d211b801add9847c48137cfff245f0b6f9dbda8d477092eb6d82949b279ce1f"},
+    {file = "har2tree-1.11.0.tar.gz", hash = "sha256:c2d4ed6d16b2b84af3f5df067a4625f7b5a46002ead23bc74f2bc28695488fe5"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -2433,8 +2464,8 @@ queuelib = [
     {file = "queuelib-1.6.2.tar.gz", hash = "sha256:4b207267f2642a8699a1f806045c56eb7ad1a85a10c0e249884580d139c2fcd2"},
 ]
 redis = [
-    {file = "redis-4.2.0-py3-none-any.whl", hash = "sha256:3cbe235cea80b9c9991b397567aa2d65eb4e6fb09787f61d227ae82eb4eb50b4"},
-    {file = "redis-4.2.0.tar.gz", hash = "sha256:6758d01dec81af191b98a35cce3402675d115456584c39b500ab485a5e386bbb"},
+    {file = "redis-4.2.1-py3-none-any.whl", hash = "sha256:69d05fac17bf3f43937afbb775c536eb516bd21355a4f17d59a966f4a531ce71"},
+    {file = "redis-4.2.1.tar.gz", hash = "sha256:fe45513881229dbee610620b9e0817b1f48c47ba635870320fd44a712204bbdd"},
 ]
 requests = [
     {file = "requests-2.27.1-py2.py3-none-any.whl", hash = "sha256:f22fa1e554c9ddfd16e6e41ac79759e17be9e492b3587efa038054674760e72d"},
@@ -2457,8 +2488,8 @@ scrapy-splash = [
     {file = "scrapy_splash-0.8.0-py2.py3-none-any.whl", hash = "sha256:f35986fbe916d4b7878f4d303ca6a9d4f013157ab2bae13d85f14da78d211193"},
 ]
 scrapysplashwrapper = [
-    {file = "scrapysplashwrapper-1.10.1-py3-none-any.whl", hash = "sha256:b0ff416733d582b64c8dd1b19ff850d349b7c5911a15da78b77c9da6f756f4f7"},
-    {file = "scrapysplashwrapper-1.10.1.tar.gz", hash = "sha256:82394d0317e4d19654ee1c3382a200ab1202b574226612f9cc3e6250abd38532"},
+    {file = "scrapysplashwrapper-1.11.0-py3-none-any.whl", hash = "sha256:04653a97ca0f44afd1c65902bf7055f0c476c7356843c76bc3b4098a1acbf693"},
+    {file = "scrapysplashwrapper-1.11.0.tar.gz", hash = "sha256:563475623e0c9f8d09249df20cd65ffff8136b17dbc39ecb6cfb804f7f0a835b"},
 ]
 service-identity = [
     {file = "service-identity-21.1.0.tar.gz", hash = "sha256:6e6c6086ca271dc11b033d17c3a8bea9f24ebff920c587da090afc9519419d34"},
@@ -2506,9 +2537,17 @@ twisted-iocpsupport = [
     {file = "twisted_iocpsupport-1.0.2-cp39-cp39-win_amd64.whl", hash = "sha256:b435857b9efcbfc12f8c326ef0383f26416272260455bbca2cd8d8eca470c546"},
     {file = "twisted_iocpsupport-1.0.2-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:7d972cfa8439bdcb35a7be78b7ef86d73b34b808c74be56dfa785c8a93b851bf"},
 ]
+types-beautifulsoup4 = [
+    {file = "types-beautifulsoup4-4.10.16.tar.gz", hash = "sha256:b48fa153ddfeb4c338f83ac8510de0085cf6e1a221b4adf9e52d9d6349205fda"},
+    {file = "types_beautifulsoup4-4.10.16-py3-none-any.whl", hash = "sha256:903d20430df659e98ea5063c013b9219d91861ecef145a0ac63061f0aad63d7b"},
+]
 types-click = [
     {file = "types-click-7.1.8.tar.gz", hash = "sha256:b6604968be6401dc516311ca50708a0a28baa7a0cb840efd7412f0dbbff4e092"},
     {file = "types_click-7.1.8-py3-none-any.whl", hash = "sha256:8cb030a669e2e927461be9827375f83c16b8178c365852c060a34e24871e7e81"},
+]
+types-deprecated = [
+    {file = "types-Deprecated-1.2.5.tar.gz", hash = "sha256:6f1f3250a80ed5ae9ef1b599adf8ca850324bcd544af2efb655fdf15212a287e"},
+    {file = "types_Deprecated-1.2.5-py3-none-any.whl", hash = "sha256:a86cf8cec2c995410390d640bd0328c5d905d5544d82555dc98deb98ad1e98a4"},
 ]
 types-flask = [
     {file = "types-Flask-1.1.6.tar.gz", hash = "sha256:aac777b3abfff9436e6b01f6d08171cf23ea6e5be71cbf773aaabb1c5763e9cf"},
@@ -2526,6 +2565,10 @@ types-pkg-resources = [
     {file = "types-pkg_resources-0.1.3.tar.gz", hash = "sha256:834a9b8d3dbea343562fd99d5d3359a726f6bf9d3733bccd2b4f3096fbab9dae"},
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
+types-python-dateutil = [
+    {file = "types-python-dateutil-2.8.10.tar.gz", hash = "sha256:6bcf3aae7242e5793bafd7b2bcfb4e255eb7b2b3144acd0df0e182dce58ccad3"},
+    {file = "types_python_dateutil-2.8.10-py3-none-any.whl", hash = "sha256:1f6d2305513d54da353a9dde7ed8a9ef46e8987377291612a0e2b9aac2d2b875"},
+]
 types-redis = [
     {file = "types-redis-4.1.18.tar.gz", hash = "sha256:b00fc56074d8ef0d7f52f5dc3ebfa2cc2f1970b384c8c83733ebab940b1f985e"},
     {file = "types_redis-4.1.18-py3-none-any.whl", hash = "sha256:93bc85db6fb4634e85eff8b64cb662d47a55141b532085f4a99c70b174e65e8d"},
@@ -2533,6 +2576,10 @@ types-redis = [
 types-requests = [
     {file = "types-requests-2.27.15.tar.gz", hash = "sha256:2d371183c535208d2cc8fe7473d9b49c344c7077eb70302eb708638fb86086a8"},
     {file = "types_requests-2.27.15-py3-none-any.whl", hash = "sha256:77d09182a68e447e9e8b0ffc21abf54618b96f07689dffbb6a41cf0356542969"},
+]
+types-setuptools = [
+    {file = "types-setuptools-57.4.11.tar.gz", hash = "sha256:262f7406e0c7d705ad6bb4526b5b761fa500bf99eab74de85ac3592187d62935"},
+    {file = "types_setuptools-57.4.11-py3-none-any.whl", hash = "sha256:fbb0647569d6fb2f6bc472402265250c0ffa53e60180d2cbfee9e84f085921f0"},
 ]
 types-urllib3 = [
     {file = "types-urllib3-1.26.11.tar.gz", hash = "sha256:24d64e441168851eb05f1d022de18ae31558f5649c8f1117e384c2e85e31315b"},

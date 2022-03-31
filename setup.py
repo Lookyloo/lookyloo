@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='lookyloo',
-    version='1.11-dev',
+    version='1.12-dev',
     author='Raphaël Vinot',
     author_email='raphael.vinot@circl.lu',
     maintainer='Raphaël Vinot',
