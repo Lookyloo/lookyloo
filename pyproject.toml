@@ -63,7 +63,7 @@ pyphishtanklookup = "^1.0.1"
 chardet = "^4.0.0"
 Flask-Cors = "^3.0.10"
 pyhashlookup = "^1.1.1"
-lief = "^0.12.0"
+lief = "^0.12.1"
 ua-parser = "^0.10.0"
 Flask-Login = "^0.6.0"
 
