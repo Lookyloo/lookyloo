@@ -23,3 +23,4 @@ RUN mkdir cache user_agents scraped
 RUN poetry install
 RUN echo LOOKYLOO_HOME="'`pwd`'" > .env
 RUN poetry run tools/3rdparty.py
+RUN poetry run tools/generate_sri.py
