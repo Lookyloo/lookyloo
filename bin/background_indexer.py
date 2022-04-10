@@ -3,6 +3,7 @@
 import logging
 import os
 from datetime import datetime, timedelta
+import shutil
 
 from lookyloo.default import AbstractManager
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
@@ -61,7 +62,7 @@ class BackgroundIndexer(AbstractManager):
                 self.logger.warning(f'Unable to build pickle for {uuid}: {uuid_path.parent.name}')
                 # The capture is not working, moving it away.
                 self.lookyloo.redis.hdel('lookup_dirs', uuid)
-                uuid_path.parent.rename(self.discarded_captures_dir / uuid_path.parent.name)
+                shutil.move(uuid_path.parent, (self.discarded_captures_dir / uuid_path.parent.name))
 
     def _check_indexes(self):
         index_redis = self.lookyloo.indexing.redis

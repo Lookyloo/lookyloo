@@ -38,6 +38,7 @@ services:
         - ./cache:/lookyloo/cache
         - ./indexing:/lookyloo/indexing
         - ./scraped:/lookyloo/scraped
+        - ./discarded:/lookyloo/discarded_captures
         - ./user_agents:/lookyloo/user_agents
         - ./config:/lookyloo/config
     ports:
