@@ -62,7 +62,7 @@ class BackgroundIndexer(AbstractManager):
                 self.logger.warning(f'Unable to build pickle for {uuid}: {uuid_path.parent.name}')
                 # The capture is not working, moving it away.
                 self.lookyloo.redis.hdel('lookup_dirs', uuid)
-                shutil.move(uuid_path.parent, (self.discarded_captures_dir / uuid_path.parent.name))
+                shutil.move(str(uuid_path.parent), str(self.discarded_captures_dir / uuid_path.parent.name))
 
     def _check_indexes(self):
         index_redis = self.lookyloo.indexing.redis
