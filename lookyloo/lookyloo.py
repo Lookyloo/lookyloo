@@ -335,7 +335,7 @@ class Lookyloo():
             self.logger.warning(e)
             return None
         except Exception as e:
-            self.logger.critical(e)
+            self.logger.exception(e)
             return None
 
     def get_crawled_tree(self, capture_uuid: str, /) -> CrawledTree:

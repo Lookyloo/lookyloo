@@ -24,7 +24,7 @@ from werkzeug.security import check_password_hash
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import (CaptureStatus, get_taxonomies,
-                              get_user_agents, load_cookies, splash_status)
+                              get_user_agents, load_cookies)
 from lookyloo.lookyloo import Indexing, Lookyloo
 
 from .genericapi import api as generic_api
@@ -600,10 +600,6 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
     cache = lookyloo.capture_cache(tree_uuid)
     if not cache:
         status = lookyloo.get_capture_status(tree_uuid)
-        splash_up, splash_message = splash_status()
-        if not splash_up:
-            flash(f'The capture module is not reachable ({splash_message}).', 'error')
-            flash('The request will be enqueued, but capturing may take a while and require the administrator to wake up.', 'error')
         if status == CaptureStatus.UNKNOWN:
             error = lookyloo.try_error_status(tree_uuid)
             if error:
@@ -810,10 +806,6 @@ def _prepare_capture_template(user_ua: Optional[str], predefined_url: Optional[s
         if 'bot' not in ua['useragent'].lower():
             default_ua = ua
             break
-    splash_up, message = splash_status()
-    if not splash_up:
-        flash(f'The capture module is not reachable ({message}).', 'error')
-        flash('The request will be enqueued, but capturing may take a while and require the administrator to wake up.', 'error')
     return render_template('capture.html', user_agents=user_agents, default=default_ua,
                            max_depth=max_depth, personal_ua=user_ua,
                            default_public=get_config('generic', 'default_public'),

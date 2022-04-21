@@ -46,9 +46,7 @@ bootstrap-flask = "^2.0.2"
 defang = "^0.5.3"
 vt-py = "^0.14.0"
 pyeupi = "^1.1"
-scrapysplashwrapper = "^1.11.0"
 pysanejs = "^2.0"
-har2tree = "^1.11.0"
 pylookyloo = "^1.10.0"
 dnspython = "^2.2.1"
 pytaxonomies = "^1.4.1"
@@ -66,6 +64,8 @@ pyhashlookup = "^1.1.1"
 lief = "^0.12.1"
 ua-parser = "^0.10.0"
 Flask-Login = "^0.6.0"
+playwrightcapture = {git = "https://github.com/Lookyloo/PlaywrightCapture.git", rev = "main"}
+har2tree = {git = "https://github.com/Lookyloo/har2tree.git", rev = "main"}
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep']

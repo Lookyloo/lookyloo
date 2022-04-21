@@ -25,6 +25,9 @@
   "enable_bookmark": false,
   "auto_trigger_modules": false,
   "enable_mail_notification": false,
+  "tor_proxy": {
+    "server": "socks5://127.0.0.1:9050"
+  },
   "email": {
     "from": "Lookyloo <lookyloo@myorg.local>",
     "to": "Investigation Team <investigation_unit@myorg.local>",
