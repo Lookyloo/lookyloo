@@ -136,7 +136,7 @@ class AsyncCapture(AbstractManager):
                 await capture.prepare_capture(proxy=proxy)
             else:
                 await capture.prepare_capture()
-            capture.cookies = cookies
+            capture.prepare_cookies(cookies)
             capture.user_agent = ua
             if headers:
                 capture.http_headers = headers
