@@ -1241,7 +1241,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "af7e4b8fff7b37533bed380c74566a9c422fa0424aee5d8d99fb47bcb81b33ec"
+content-hash = "c8597ce0dcc50c3d20342d49c2a1be61e837282b07764c89055f68c9dd21fc39"
 
 [metadata.files]
 aiohttp = [
