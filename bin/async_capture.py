@@ -143,7 +143,7 @@ class AsyncCapture(AbstractManager):
             await capture.prepare_context()
             entries = await capture.capture_page(url, referer=referer)
         except Exception as e:
-            self.logger.critical(f'Something went terribly wrong when capturing {url} - {e}')
+            self.logger.exception(f'Something went terribly wrong when capturing {url} - {e}')
             return False, f'Something went terribly wrong when capturing {url}.'
 
         if not entries:
