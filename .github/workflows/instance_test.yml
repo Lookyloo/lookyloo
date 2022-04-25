@@ -9,12 +9,6 @@ on:
 jobs:
   splash-container:
      runs-on: ubuntu-latest
-     services:
-       splash:
-         image: scrapinghub/splash
-         ports:
-           - 8050:8050
-           - 5023:5023
 
      strategy:
        matrix:
@@ -41,6 +35,8 @@ jobs:
       - name: Install system deps
         run: |
           sudo apt install libfuzzy-dev
+          # playwright required deps.
+          sudo apt install libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libxkbcommon0 libxdamage1 libgbm1 libpango-1.0-0 libcairo2 libatspi2.0-0
           python -m pip install --upgrade pip poetry
 
       - name: Install & run lookyloo
@@ -49,6 +45,7 @@ jobs:
           cp config/generic.json.sample config/generic.json
           cp config/modules.json.sample config/modules.json
           poetry install -vvv
+          poetry run playwright install
           poetry run tools/validate_config_files.py --check
           poetry run tools/validate_config_files.py --update
           poetry run tools/3rdparty.py
