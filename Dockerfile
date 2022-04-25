@@ -1,6 +1,8 @@
-FROM ubuntu:focal
+FROM ubuntu:22.04
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
+ENV TZ=Etc/UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update
 RUN apt-get -y upgrade

@@ -662,7 +662,7 @@ websockets = "10.1"
 
 [[package]]
 name = "playwrightcapture"
-version = "0.1.2"
+version = "0.1.3"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
@@ -1241,7 +1241,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "a9fe80efebef324fa2a55c8f8eb15b6204d3c5f6a453363d4afe4e12f2139c54"
+content-hash = "3831bbddc76b6c763b275d771085dc0d7ccbf59a7f790ded14a69a272493924f"
 
 [metadata.files]
 aiohttp = [
@@ -1965,8 +1965,8 @@ playwright = [
     {file = "playwright-1.21.0-py3-none-win_amd64.whl", hash = "sha256:0cdd82d4d2ce176b596e960825a4be7b03b7637e9cb243e634e896d787160535"},
 ]
 playwrightcapture = [
-    {file = "PlaywrightCapture-0.1.2-py3-none-any.whl", hash = "sha256:a879d256e099bccdae949bca231efcbb85b601b6da23017a4d9697268b78ff49"},
-    {file = "PlaywrightCapture-0.1.2.tar.gz", hash = "sha256:7d913cb11b2db8ddd1a292e312422cb1139d363271b6dff43ab63fbadf24c570"},
+    {file = "PlaywrightCapture-0.1.3-py3-none-any.whl", hash = "sha256:d70c9e193340dd6be32d9e157ab74e15907b1fc720773a19e1979b54ddd21021"},
+    {file = "PlaywrightCapture-0.1.3.tar.gz", hash = "sha256:a8b2b9111189e7e1ba5d5065efff714036f4ab4b339eb4cc429e89e9db9a581f"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.29-py3-none-any.whl", hash = "sha256:62291dad495e665fca0bda814e342c69952086afb0f4094d0893d357e5c78752"},
