@@ -15,19 +15,10 @@ services:
     volumes:
         - ./indexing:/indexing
 
-  splash:
-    image: "scrapinghub/splash:3.5.0"
-    ports:
-        - "8050:8050"
-        - "5023:5023"
-    command: --disable-private-mode
-
   lookyloo:
     build: .
     working_dir: /lookyloo
     tty: true
-    environment:
-        - SPLASH_URL_DOCKER=http://splash:8050
     command:
         - /bin/sh
         - -c
@@ -46,4 +37,3 @@ services:
     links:
         - "redis-cache"
         - "redis-indexing"
-        - "splash"
