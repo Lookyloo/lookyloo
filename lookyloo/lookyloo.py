@@ -28,7 +28,7 @@ from .default import LookylooException, get_homedir, get_config, get_socket_path
 from .exceptions import (MissingCaptureDirectory,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile)
 from .helpers import (CaptureStatus, get_captures_dir, get_email_template,
-                      get_resources_hashes, get_splash_url, get_taxonomies,
+                      get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent)
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
@@ -48,7 +48,6 @@ class Lookyloo():
         self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
                                                          path=get_socket_path('cache'), decode_responses=True)
         self.capture_dir: Path = get_captures_dir()
-        self.splash_url: str = get_splash_url()
 
         self._priority = get_config('generic', 'priority')
 

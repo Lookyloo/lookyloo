@@ -2,7 +2,6 @@
 import hashlib
 import json
 import logging
-import os
 import pkg_resources
 
 from datetime import datetime, timedelta
@@ -10,20 +9,18 @@ from enum import IntEnum, unique
 from functools import lru_cache
 from io import BufferedIOBase
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
-from urllib.parse import urljoin, urlparse
+from typing import Any, Dict, List, Optional, Set, Union
+from urllib.parse import urlparse
 
-import requests
 
 from har2tree import CrawledTree, HostNode, URLNode
 from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
 from pytaxonomies import Taxonomies
-from requests.exceptions import HTTPError
 from ua_parser import user_agent_parser  # type: ignore
 from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
-from .default import get_homedir, safe_create_dir, get_config
+from .default import get_homedir, safe_create_dir
 
 logger = logging.getLogger('Lookyloo - Helpers')
 
@@ -135,7 +132,7 @@ def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str]]=None) -
                           'value': cookie['Content raw']
                           }
             else:
-                # Cookie from lookyloo/splash
+                # Cookie from lookyloo/playwright
                 to_add = cookie
             to_return.append(to_add)
     except Exception as e:
@@ -155,30 +152,6 @@ def uniq_domains(uniq_urls):
 def get_useragent_for_requests():
     version = pkg_resources.get_distribution('lookyloo').version
     return f'Lookyloo / {version}'
-
-
-@lru_cache(64)
-def get_splash_url() -> str:
-    if os.environ.get('SPLASH_URL_DOCKER'):
-        # In order to have a working default for the docker image, it is easier to use an environment variable
-        return os.environ['SPLASH_URL_DOCKER']
-    else:
-        return get_config('generic', 'splash_url')
-
-
-def splash_status() -> Tuple[bool, str]:
-    try:
-        splash_status = requests.get(urljoin(get_splash_url(), '_ping'))
-        splash_status.raise_for_status()
-        json_status = splash_status.json()
-        if json_status['status'] == 'ok':
-            return True, 'Splash is up'
-        else:
-            return False, str(json_status)
-    except HTTPError as http_err:
-        return False, f'HTTP error occurred: {http_err}'
-    except Exception as err:
-        return False, f'Other error occurred: {err}'
 
 
 def get_cache_directory(root: Path, identifier: str, namespace: Optional[str] = None) -> Path:

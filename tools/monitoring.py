@@ -11,7 +11,6 @@ from rich.console import Console
 from rich.padding import Padding
 
 from lookyloo.default import get_socket_path, AbstractManager
-from lookyloo.helpers import splash_status
 
 # NOTE: run with watch:
 #   watch --color tools/monitoring.py
@@ -79,12 +78,6 @@ class Monitoring():
 
 
 if __name__ == '__main__':
-
-    status, message = splash_status()
-    if status:
-        console.print(f'[green]{message}[/green]')
-    else:
-        console.print('Splash is [bold red]down[/bold red]: ', message)
 
     m = Monitoring()
     backend_up = m.backend_status

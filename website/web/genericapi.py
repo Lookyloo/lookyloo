@@ -10,7 +10,6 @@ from flask import request, send_file
 from flask_restx import Namespace, Resource, abort, fields  # type: ignore
 from werkzeug.security import check_password_hash
 
-from lookyloo.helpers import splash_status
 from lookyloo.lookyloo import Lookyloo
 
 from .helpers import build_users_table, load_user_from_request, src_request_ip
@@ -56,14 +55,6 @@ class AuthToken(Resource):
                     and check_password_hash(self.users_table[auth['username']]['password'], auth['password'])):
                 return {'authkey': self.users_table[auth['username']]['authkey']}
         return {'error': 'User/Password invalid.'}, 401
-
-
-@api.route('/json/splash_status')
-@api.doc(description='Get status of splash.')
-class SplashStatus(Resource):
-    def get(self):
-        status, info = splash_status()
-        return {'is_up': status, 'info': info}
 
 
 @api.route('/json/<string:capture_uuid>/status')
