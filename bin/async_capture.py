@@ -196,9 +196,8 @@ class AsyncCapture(AbstractManager):
             _redir.write(last_redirect)
 
         if 'cookies' in entries:
-            cookies = entries['cookies']
             with (dirpath / '0.cookies.json').open('w') as _cookies:
-                json.dump(cookies, _cookies)
+                json.dump(entries['cookies'], _cookies)
         self.redis.hset('lookup_dirs', perma_uuid, str(dirpath))
         return True, 'All good!'
 

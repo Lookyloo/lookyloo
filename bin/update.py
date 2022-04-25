@@ -78,6 +78,10 @@ def main():
     keep_going(args.yes)
     run_command('poetry install')
 
+    print('* Install or make sure the playwright browsers are installed.')
+    keep_going(args.yes)
+    run_command('poetry run playwright install')
+
     print('* Validate configuration files.')
     keep_going(args.yes)
     run_command(f'poetry run {(Path("tools") / "validate_config_files.py").as_posix()} --check')

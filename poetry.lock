@@ -353,32 +353,25 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.11.0"
+version = "1.11.1"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.11"
-develop = false
 
 [package.dependencies]
-beautifulsoup4 = "^4.11.1"
-cchardet = "^2.1.7"
-ete3 = "^3.1.2"
-filetype = "^1.0.10"
-lxml = "^4.8.0"
-numpy = "^1.22.3"
-publicsuffix2 = "^2.20191221"
-six = "^1.16.0"
-w3lib = "^1.22.0"
+beautifulsoup4 = ">=4.11.1,<5.0.0"
+cchardet = ">=2.1.7,<3.0.0"
+ete3 = ">=3.1.2,<4.0.0"
+filetype = ">=1.0.13,<2.0.0"
+lxml = ">=4.8.0,<5.0.0"
+numpy = ">=1.22.3,<2.0.0"
+publicsuffix2 = ">=2.20191221,<3.0"
+six = ">=1.16.0,<2.0.0"
+w3lib = ">=1.22.0,<2.0.0"
 
 [package.extras]
 docs = ["Sphinx (>=4.5.0,<5.0.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/Lookyloo/har2tree.git"
-reference = "main"
-resolved_reference = "dec3f08c1964ec6a91a6f0cc49ab7b43fedb190b"
 
 [[package]]
 name = "hiredis"
@@ -669,21 +662,14 @@ websockets = "10.1"
 
 [[package]]
 name = "playwrightcapture"
-version = "0.1.0"
+version = "0.1.1"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
-python-versions = "^3.8"
-develop = false
+python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
-playwright = "^1.21.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/Lookyloo/PlaywrightCapture.git"
-reference = "main"
-resolved_reference = "32546b3b8787dce6f6732a935053a2bfb2258fa1"
+playwright = ">=1.21.0,<2.0.0"
 
 [[package]]
 name = "prompt-toolkit"
@@ -760,11 +746,11 @@ python-versions = "*"
 
 [[package]]
 name = "pygments"
-version = "2.11.2"
+version = "2.12.0"
 description = "Pygments is a syntax highlighting package written in Python."
 category = "main"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.6"
 
 [[package]]
 name = "pyhashlookup"
@@ -1081,7 +1067,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.1.22"
+version = "4.2.0"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1255,7 +1241,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "e46199f336bbefbd43d47d8a6cc437af80b26db8fdea2f55429ba0f87db850fc"
+content-hash = "af7e4b8fff7b37533bed380c74566a9c422fa0424aee5d8d99fb47bcb81b33ec"
 
 [metadata.files]
 aiohttp = [
@@ -1580,7 +1566,10 @@ greenlet = [
 gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
-har2tree = []
+har2tree = [
+    {file = "har2tree-1.11.1-py3-none-any.whl", hash = "sha256:54cee4d896490b0961ebb22e1adc5d1a053f5010c0f3baf98b9cef1dc3a7d4a6"},
+    {file = "har2tree-1.11.1.tar.gz", hash = "sha256:2ec73c833b161f5adc320d411985acc2df46ede91aec3808ec39c1a2df5c308e"},
+]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
     {file = "hiredis-2.0.0-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:0adea425b764a08270820531ec2218d0508f8ae15a448568109ffcae050fee26"},
@@ -1967,7 +1956,10 @@ playwright = [
     {file = "playwright-1.21.0-py3-none-win32.whl", hash = "sha256:368d2f9702c79becb34ad5f9b3f94c73ef46265372a1006a78dfd53c562c6248"},
     {file = "playwright-1.21.0-py3-none-win_amd64.whl", hash = "sha256:0cdd82d4d2ce176b596e960825a4be7b03b7637e9cb243e634e896d787160535"},
 ]
-playwrightcapture = []
+playwrightcapture = [
+    {file = "PlaywrightCapture-0.1.1-py3-none-any.whl", hash = "sha256:8d409d6ca37eba596a28ab35b4704a5847e773c0398b92ee8074f312c9d04b2d"},
+    {file = "PlaywrightCapture-0.1.1.tar.gz", hash = "sha256:e3d1acf46fffe17855759c64d6e6d42e6b66e777f8a8db2813785f22c5edfda7"},
+]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.29-py3-none-any.whl", hash = "sha256:62291dad495e665fca0bda814e342c69952086afb0f4094d0893d357e5c78752"},
     {file = "prompt_toolkit-3.0.29.tar.gz", hash = "sha256:bd640f60e8cecd74f0dc249713d433ace2ddc62b65ee07f96d358e0b152b6ea7"},
@@ -2000,8 +1992,8 @@ pyfaup = [
     {file = "pyfaup-1.2.tar.gz", hash = "sha256:5648bc3ebd80239aec927aedfc218c3a6ff36de636cc53822bfeb70b0869b1e7"},
 ]
 pygments = [
-    {file = "Pygments-2.11.2-py3-none-any.whl", hash = "sha256:44238f1b60a76d78fc8ca0528ee429702aae011c265fe6a8dd8b63049ae41c65"},
-    {file = "Pygments-2.11.2.tar.gz", hash = "sha256:4e426f72023d88d03b2fa258de560726ce890ff3b630f88c21cbb8b2503b8c6a"},
+    {file = "Pygments-2.12.0-py3-none-any.whl", hash = "sha256:dc9c10fb40944260f6ed4c688ece0cd2048414940f1cea51b8b226318411c519"},
+    {file = "Pygments-2.12.0.tar.gz", hash = "sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb"},
 ]
 pyhashlookup = [
     {file = "pyhashlookup-1.1.1-py3-none-any.whl", hash = "sha256:e1563296524f62f02025191b85bfd36f8531ba472dab6b5ad2fcea7223b96ba6"},
@@ -2131,8 +2123,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.12-py3-none-any.whl", hash = "sha256:3a49b238d95ff1ae5c92d058b0eeb57a0a79798178ecc784adfba18d1a645e20"},
 ]
 types-redis = [
-    {file = "types-redis-4.1.22.tar.gz", hash = "sha256:b42efa5f504c713fa6c567fc13e15f0e211cffef8da0b1d78bc1abf96dc8a1d5"},
-    {file = "types_redis-4.1.22-py3-none-any.whl", hash = "sha256:c972d0761ec5ec2cbc4e6180ee014413c992cdb24b2a5e62c5717f95f400451b"},
+    {file = "types-redis-4.2.0.tar.gz", hash = "sha256:c9b61894c7621b801db44efd63f843ead93cbbcf034186d7343f7f5771e1106a"},
+    {file = "types_redis-4.2.0-py3-none-any.whl", hash = "sha256:24c0effe59b2eef030733fd352fdcee6647a66611001aa25762475c3f26fb5f1"},
 ]
 types-requests = [
     {file = "types-requests-2.27.20.tar.gz", hash = "sha256:63344573cde6c4efd44d867c0158d9fb7e6beb95721cbe9882f3f857ee8a5398"},
