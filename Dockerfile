@@ -24,11 +24,7 @@ COPY README.md .
 RUN mkdir cache user_agents scraped
 
 RUN echo LOOKYLOO_HOME="'`pwd`'" > .env
-RUN cp config/generic.json.sample config/generic.json
-RUN cp config/modules.json.sample config/modules.json
 RUN poetry install
 RUN poetry run playwright install
-RUN poetry run tools/validate_config_files.py --check
-RUN poetry run tools/validate_config_files.py --update
 RUN poetry run tools/3rdparty.py
 RUN poetry run tools/generate_sri.py

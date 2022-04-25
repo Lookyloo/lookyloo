@@ -179,7 +179,7 @@ class AsyncCapture(AbstractManager):
         if 'error' in entries:
             with (dirpath / 'error.txt').open('w') as _error:
                 json.dump(entries['error'], _error)
-            return False, entries['error']
+            return False, entries['error'] if entries['error'] else "Unknown error"
 
         # The capture went fine
         harfile = entries['har']
