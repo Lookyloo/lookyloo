@@ -145,6 +145,8 @@ class AsyncCapture(AbstractManager):
         except Exception as e:
             self.logger.exception(f'Something went terribly wrong when capturing {url} - {e}')
             return False, f'Something went terribly wrong when capturing {url}.'
+        finally:
+            await capture.cleanup()
 
         if not entries:
             # broken
