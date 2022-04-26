@@ -131,22 +131,16 @@ class AsyncCapture(AbstractManager):
 
         self.logger.info(f'Capturing {url}')
         try:
-            capture = Capture()
-            if proxy:
-                await capture.prepare_capture(proxy=proxy)
-            else:
-                await capture.prepare_capture()
-            capture.prepare_cookies(cookies)
-            capture.user_agent = ua
-            if headers:
-                capture.http_headers = headers
-            await capture.prepare_context()
-            entries = await capture.capture_page(url, referer=referer)
+            async with Capture(proxy=proxy) as capture:
+                capture.prepare_cookies(cookies)
+                capture.user_agent = ua
+                if headers:
+                    capture.http_headers = headers
+                await capture.prepare_context()
+                entries = await capture.capture_page(url, referer=referer)
         except Exception as e:
             self.logger.exception(f'Something went terribly wrong when capturing {url} - {e}')
             return False, f'Something went terribly wrong when capturing {url}.'
-        finally:
-            await capture.cleanup()
 
         if not entries:
             # broken
