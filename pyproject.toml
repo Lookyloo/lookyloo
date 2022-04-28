@@ -71,7 +71,7 @@ playwrightcapture = "^0.1.7"
 misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.942"
+mypy = "^0.950"
 ipython = "^8.2.0"
 types-redis = "^4.1.21"
 types-requests = "^2.27.19"
