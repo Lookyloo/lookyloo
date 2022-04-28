@@ -64,14 +64,14 @@ pyhashlookup = "^1.1.1"
 lief = "^0.12.1"
 ua-parser = "^0.10.0"
 Flask-Login = "^0.6.0"
-har2tree = "^1.11.3"
+har2tree = "^1.11.4"
 playwrightcapture = "^0.1.7"
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep']
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.942"
+mypy = "^0.950"
 ipython = "^8.2.0"
 types-redis = "^4.1.21"
 types-requests = "^2.27.19"
