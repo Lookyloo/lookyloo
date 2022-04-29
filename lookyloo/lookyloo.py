@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import base64
+import hashlib
 import json
 import logging
 import operator
 import smtplib
+
 from collections import defaultdict
 from datetime import date, datetime
 from email.message import EmailMessage
@@ -362,14 +364,23 @@ class Lookyloo():
                 usr_prio = self._priority['users'][user] if self._priority['users'].get(user) else self._priority['users']['_default_auth']
             return src_prio + usr_prio
 
-        priority = get_priority(source, user, authenticated)
-        perma_uuid = str(uuid4())
-        p = self.redis.pipeline()
         for key, value in query.items():
             if isinstance(value, bool):
                 query[key] = 1 if value else 0
             if isinstance(value, (list, dict)):
                 query[key] = json.dumps(value)
+
+        # dirty deduplicate
+        hash_query = hashlib.sha512(json.dumps(query).encode()).hexdigest()
+        perma_uuid = self.redis.get(f'query_hash:{hash_query}')
+        if perma_uuid:
+            return perma_uuid
+
+        perma_uuid = str(uuid4())
+        self.redis.setex(f'query_hash:{hash_query}', 300, perma_uuid)
+
+        priority = get_priority(source, user, authenticated)
+        p = self.redis.pipeline()
         if priority < -10:
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query['listing'] = 0
