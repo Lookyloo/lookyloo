@@ -367,17 +367,20 @@ class Lookyloo():
         for key, value in query.items():
             if isinstance(value, bool):
                 query[key] = 1 if value else 0
-            if isinstance(value, (list, dict)):
+            elif isinstance(value, (list, dict)):
                 query[key] = json.dumps(value)
+            elif isinstance(value, bytes):
+                query[key] = value.decode()
 
         # dirty deduplicate
         hash_query = hashlib.sha512(json.dumps(query).encode()).hexdigest()
-        perma_uuid = self.redis.get(f'query_hash:{hash_query}')
-        if perma_uuid:
-            return perma_uuid
+        # FIXME The line below should work, but it doesn't
+        # if (existing_uuid := self.redis.set(f'query_hash:{hash_query}', temp_uuid, get=True, nx=True, ex=300)):
+        if (existing_uuid := self.redis.get(f'query_hash:{hash_query}')):
+            return existing_uuid
 
         perma_uuid = str(uuid4())
-        self.redis.setex(f'query_hash:{hash_query}', 300, perma_uuid)
+        self.redis.set(f'query_hash:{hash_query}', perma_uuid, nx=True, ex=300)
 
         priority = get_priority(source, user, authenticated)
         p = self.redis.pipeline()
