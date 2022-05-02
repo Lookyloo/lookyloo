@@ -18,6 +18,8 @@ from playwrightcapture import Capture
 from lookyloo.default import AbstractManager, get_config, get_socket_path, safe_create_dir
 from lookyloo.helpers import get_captures_dir, load_cookies
 
+from lookyloo.modules import FOX
+
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)
 
@@ -30,6 +32,14 @@ class AsyncCapture(AbstractManager):
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
         self.capture_dir: Path = get_captures_dir()
         self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
+
+        self.fox = FOX(get_config('modules', 'FOX'))
+        if not self.fox.available:
+            self.logger.warning('Unable to setup the FOX module')
+
+    def thirdparty_submit(self, capture_data: Dict[str, str]) -> None:
+        if self.fox.available:
+            self.fox.capture_default_trigger(capture_data['url'], auto_trigger=True)
 
     async def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
@@ -68,6 +78,7 @@ class AsyncCapture(AbstractManager):
                             headers[header.strip()] = h_value.strip()
 
         self.logger.info(f'Capturing {to_capture["url"]} - {uuid}')
+        self.thirdparty_submit(to_capture)
         success, error_message = await self._capture(
             to_capture['url'],
             perma_uuid=uuid,

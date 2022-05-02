@@ -9,6 +9,11 @@
     "autosubmit": false,
     "allow_auto_trigger": false
   },
+  "FOX": {
+    "apikey": null,
+    "autosubmit": false,
+    "allow_auto_trigger": false
+  },
   "SaneJS": {
     "enabled": true,
     "allow_auto_trigger": true
@@ -57,6 +62,7 @@
     "UniversalWhois": "Module to query a local instance of uWhoisd: https://github.com/Lookyloo/uwhoisd",
     "UrlScan": "Module to query urlscan.io",
     "Phishtank": "Module to query Phishtank Lookup (https://github.com/Lookyloo/phishtank-lookup). URL set to none means querying the public instance.",
-    "Hashlookup": "Module to query Hashlookup (https://github.com/adulau/hashlookup-server). URL set to none means querying the public instance."
+    "Hashlookup": "Module to query Hashlookup (https://github.com/adulau/hashlookup-server). URL set to none means querying the public instance.",
+    "FOX": "Submission only interface by and for CCCS"
   }
 }
