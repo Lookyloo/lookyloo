@@ -51,7 +51,7 @@ class FOX():
             url = f'http://{url}'
         data = {'url': url}
 
-        response = self.client.post('https://ingestion.collaboration.cyber.gc.ca/v1/url', json=data)
+        response = self.client.post('https://ingestion.collaboration.cyber.gc.ca/v1/url', json=data, timeout=1)
         response.raise_for_status()
         return True
 
