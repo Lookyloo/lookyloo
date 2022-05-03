@@ -19,7 +19,7 @@ from zipfile import ZipFile
 
 from defang import defang  # type: ignore
 from har2tree import CrawledTree, HostNode, URLNode
-from PIL import Image  # type: ignore
+from PIL import Image, UnidentifiedImageError  # type: ignore
 from pymisp import MISPAttribute, MISPEvent, MISPObject
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
@@ -447,6 +447,8 @@ class Lookyloo():
         all_paths = sorted(list(capture_dir.glob(f'*.{extension}')))
         if not all_files:
             # Only get the first one in the list
+            if not all_paths:
+                return BytesIO()
             with open(all_paths[0], 'rb') as f:
                 return BytesIO(f.read())
         to_return = BytesIO()
@@ -484,6 +486,11 @@ class Lookyloo():
             # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
             self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: image too big ({e}).')
             error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
+            to_thumbnail = Image.open(error_img)
+        except UnidentifiedImageError as e:
+            # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
+            self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: image too big ({e}).')
+            error_img = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
             to_thumbnail = Image.open(error_img)
 
         to_thumbnail.thumbnail(size)

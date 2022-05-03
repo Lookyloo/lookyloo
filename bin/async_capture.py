@@ -186,24 +186,26 @@ class AsyncCapture(AbstractManager):
         if 'error' in entries:
             with (dirpath / 'error.txt').open('w') as _error:
                 json.dump(entries['error'], _error)
+
+        if 'har' not in entries:
             return False, entries['error'] if entries['error'] else "Unknown error"
 
-        # The capture went fine
-        harfile = entries['har']
-        png = entries['png']
-        html = entries['html']
-        last_redirect = entries['last_redirected_url']
-
         with (dirpath / '0.har').open('w') as _har:
-            json.dump(harfile, _har)
-        with (dirpath / '0.png').open('wb') as _img:
-            _img.write(png)
-        with (dirpath / '0.html').open('w') as _html:
-            _html.write(html)
-        with (dirpath / '0.last_redirect.txt').open('w') as _redir:
-            _redir.write(last_redirect)
+            json.dump(entries['har'], _har)
 
-        if 'cookies' in entries:
+        if 'png' in entries and entries['png']:
+            with (dirpath / '0.png').open('wb') as _img:
+                _img.write(entries['png'])
+
+        if 'html' in entries and entries['html']:
+            with (dirpath / '0.html').open('w') as _html:
+                _html.write(entries['html'])
+
+        if 'last_redirected_url' in entries and entries['last_redirected_url']:
+            with (dirpath / '0.last_redirect.txt').open('w') as _redir:
+                _redir.write(entries['last_redirected_url'])
+
+        if 'cookies' in entries and entries['cookies']:
             with (dirpath / '0.cookies.json').open('w') as _cookies:
                 json.dump(entries['cookies'], _cookies)
         self.redis.hset('lookup_dirs', perma_uuid, str(dirpath))
