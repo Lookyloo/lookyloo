@@ -109,7 +109,11 @@ class Phishtank():
 
         urls = self.client.get_urls_by_ip(ip)
         if not urls:
-            ip_storage_dir.rmdir()
+            try:
+                ip_storage_dir.rmdir()
+            except OSError:
+                # no need to print an exception.
+                pass
             return
         to_dump = {'ip': ip, 'urls': urls}
         with pt_file.open('w') as _f:
