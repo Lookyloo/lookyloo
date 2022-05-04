@@ -64,8 +64,8 @@ pyhashlookup = "^1.1.1"
 lief = "^0.12.1"
 ua-parser = "^0.10.0"
 Flask-Login = "^0.6.1"
-har2tree = "^1.11.4"
-playwrightcapture = "^0.1.11"
+har2tree = "^1.11.5"
+playwrightcapture = "^0.2.0"
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep']
