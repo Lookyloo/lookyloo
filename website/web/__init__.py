@@ -803,7 +803,7 @@ def _prepare_capture_template(user_ua: Optional[str], predefined_url: Optional[s
         user_agents = get_user_agents()
     # get most frequest UA that isn't a bot (yes, it is dirty.)
     for ua in user_agents.pop('by_frequency'):
-        if 'bot' not in ua['useragent'].lower():
+        if not any(blockedword in ua['useragent'].lower() for blockedword in ['bot', 'bing']):
             default_ua = ua
             break
     return render_template('capture.html', user_agents=user_agents, default=default_ua,
