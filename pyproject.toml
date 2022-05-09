@@ -56,7 +56,7 @@ python-magic = {version = "^0.4.22", optional = true}
 pydeep = {version = "^0.4", optional = true}
 Pillow = "^9.1.0"
 flask-restx = "^0.5.1"
-rich = "^12.3.0"
+rich = "^12.4.1"
 pyphishtanklookup = "^1.0.1"
 chardet = "^4.0.0"
 Flask-Cors = "^3.0.10"
