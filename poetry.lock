@@ -524,7 +524,7 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "jsonschema"
-version = "4.4.0"
+version = "4.5.1"
 description = "An implementation of JSON Schema validation for Python"
 category = "main"
 optional = false
@@ -938,7 +938,7 @@ tzdata = {version = "*", markers = "python_version >= \"3.6\""}
 
 [[package]]
 name = "redis"
-version = "4.2.2"
+version = "4.3.0"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
@@ -982,7 +982,7 @@ use_chardet_on_py3 = ["chardet (>=3.0.2,<5)"]
 
 [[package]]
 name = "rich"
-version = "12.3.0"
+version = "12.4.1"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
@@ -1049,7 +1049,7 @@ test = ["pytest"]
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.10.20"
+version = "4.11.0"
 description = "Typing stubs for beautifulsoup4"
 category = "dev"
 optional = false
@@ -1065,7 +1065,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-deprecated"
-version = "1.2.7"
+version = "1.2.8"
 description = "Typing stubs for Deprecated"
 category = "dev"
 optional = false
@@ -1113,7 +1113,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.8.14"
+version = "2.8.15"
 description = "Typing stubs for python-dateutil"
 category = "dev"
 optional = false
@@ -1121,7 +1121,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.2.1"
+version = "4.2.2"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1320,7 +1320,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "3ab98224d05380c6008bbe99a6a971528f244403dc079d6d3d66379515095fd2"
+content-hash = "2134bf9b32d72efd86972c4e84787095aed30d0f162b799a5c7de8febedbf092"
 
 [metadata.files]
 aiohttp = [
@@ -1750,8 +1750,8 @@ jinja2 = [
     {file = "Jinja2-3.1.2.tar.gz", hash = "sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852"},
 ]
 jsonschema = [
-    {file = "jsonschema-4.4.0-py3-none-any.whl", hash = "sha256:77281a1f71684953ee8b3d488371b162419767973789272434bbc3f29d9c8823"},
-    {file = "jsonschema-4.4.0.tar.gz", hash = "sha256:636694eb41b3535ed608fe04129f26542b59ed99808b4f688aa32dcf55317a83"},
+    {file = "jsonschema-4.5.1-py3-none-any.whl", hash = "sha256:71b5e39324422543546572954ce71c67728922c104902cb7ce252e522235b33f"},
+    {file = "jsonschema-4.5.1.tar.gz", hash = "sha256:7c6d882619340c3347a1bf7315e147e6d3dae439033ae6383d6acb908c101dfc"},
 ]
 lief = [
     {file = "lief-0.12.1-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:4fbbc9d520de87ac22210c62d22a9b088e5460f9a028741311e6f68ef8877ddd"},
@@ -2172,8 +2172,8 @@ pytz-deprecation-shim = [
     {file = "pytz_deprecation_shim-0.1.0.post0.tar.gz", hash = "sha256:af097bae1b616dde5c5744441e2ddc69e74dfdcb0c263129610d85b87445a59d"},
 ]
 redis = [
-    {file = "redis-4.2.2-py3-none-any.whl", hash = "sha256:4e95f4ec5f49e636efcf20061a5a9110c20852f607cfca6865c07aaa8a739ee2"},
-    {file = "redis-4.2.2.tar.gz", hash = "sha256:0107dc8e98a4f1d1d4aa00100e044287f77121a1e6d2085545c4b7fa94a7a27f"},
+    {file = "redis-4.3.0-py3-none-any.whl", hash = "sha256:0b1cc61af1389c6cd27a428a5425d81fbe11961bc2a4317b9c94909aed91b501"},
+    {file = "redis-4.3.0.tar.gz", hash = "sha256:240e84b967653146ad136692b945b7bc90cf82f4aab3f46a20975fb60a0e4ff9"},
 ]
 regex = [
     {file = "regex-2022.3.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ab69b4fe09e296261377d209068d52402fb85ef89dc78a9ac4a29a895f4e24a7"},
@@ -2256,8 +2256,8 @@ requests = [
     {file = "requests-2.27.1.tar.gz", hash = "sha256:68d7c56fd5a8999887728ef304a6d12edc7be74f1cfa47714fc8b414525c9a61"},
 ]
 rich = [
-    {file = "rich-12.3.0-py3-none-any.whl", hash = "sha256:0eb63013630c6ee1237e0e395d51cb23513de6b5531235e33889e8842bdf3a6f"},
-    {file = "rich-12.3.0.tar.gz", hash = "sha256:7e8700cda776337036a712ff0495b04052fb5f957c7dfb8df997f88350044b64"},
+    {file = "rich-12.4.1-py3-none-any.whl", hash = "sha256:d13c6c90c42e24eb7ce660db397e8c398edd58acb7f92a2a88a95572b838aaa4"},
+    {file = "rich-12.4.1.tar.gz", hash = "sha256:d239001c0fb7de985e21ec9a4bb542b5150350330bbc1849f835b9cbc8923b91"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
@@ -2280,16 +2280,16 @@ traitlets = [
     {file = "traitlets-5.1.1.tar.gz", hash = "sha256:059f456c5a7c1c82b98c2e8c799f39c9b8128f6d0d46941ee118daace9eb70c7"},
 ]
 types-beautifulsoup4 = [
-    {file = "types-beautifulsoup4-4.10.20.tar.gz", hash = "sha256:856ddb741576a94764392cba81b9dcf07fc0fe005fc753e487e2e9e0db2324ca"},
-    {file = "types_beautifulsoup4-4.10.20-py3-none-any.whl", hash = "sha256:0be4be522ce340ff3f5540c416adfda305bbb4d14f3fecadc2a9086c1dbd4b32"},
+    {file = "types-beautifulsoup4-4.11.0.tar.gz", hash = "sha256:043357dabdc07cd7e5f1d64ea8cf6dd370e6ac8dd5f95b81ac47badae0251198"},
+    {file = "types_beautifulsoup4-4.11.0-py3-none-any.whl", hash = "sha256:a500f1b35b9e22cd812824a048fecb891483ae15151f97a703e399ee25effa2b"},
 ]
 types-click = [
     {file = "types-click-7.1.8.tar.gz", hash = "sha256:b6604968be6401dc516311ca50708a0a28baa7a0cb840efd7412f0dbbff4e092"},
     {file = "types_click-7.1.8-py3-none-any.whl", hash = "sha256:8cb030a669e2e927461be9827375f83c16b8178c365852c060a34e24871e7e81"},
 ]
 types-deprecated = [
-    {file = "types-Deprecated-1.2.7.tar.gz", hash = "sha256:370d6d92bc1310dc93cd98bc49cd47055b602f8b740684e6236b607d9c73dae4"},
-    {file = "types_Deprecated-1.2.7-py3-none-any.whl", hash = "sha256:15935fb9d259d26200b5ce4ff050df8988745203ff9557a91130cab59c1253e9"},
+    {file = "types-Deprecated-1.2.8.tar.gz", hash = "sha256:62e1b773cafaec26e5e7c85f6f476f65aba1b5cb0857b0cc71d1eeb8c576e6a2"},
+    {file = "types_Deprecated-1.2.8-py3-none-any.whl", hash = "sha256:5adf04a18d1d0ae7d82b56cd07c2386c6639026ac5f7a9eb47f904d934697430"},
 ]
 types-flask = [
     {file = "types-Flask-1.1.6.tar.gz", hash = "sha256:aac777b3abfff9436e6b01f6d08171cf23ea6e5be71cbf773aaabb1c5763e9cf"},
@@ -2308,12 +2308,12 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-python-dateutil = [
-    {file = "types-python-dateutil-2.8.14.tar.gz", hash = "sha256:367c1ffa1a52a4b2a534c9b30b40b01f2b7f2ea47a97fd821f6c76d1c7ae3129"},
-    {file = "types_python_dateutil-2.8.14-py3-none-any.whl", hash = "sha256:6ac40f66cf23a5200bd179b78d6be52e81a7750e4f8e45d7cfaf3ddda60ff01f"},
+    {file = "types-python-dateutil-2.8.15.tar.gz", hash = "sha256:7db1e4ed4916bd128cbee3eecdee0e06cc5684da2a1cdfd57f98541cdfbe0861"},
+    {file = "types_python_dateutil-2.8.15-py3-none-any.whl", hash = "sha256:9d6f01382d5ffe1977dc29f0782a01228dfaa36da148a7f4076cbd9beba26647"},
 ]
 types-redis = [
-    {file = "types-redis-4.2.1.tar.gz", hash = "sha256:3b8a8efb2fabc349555d47a1867b4da060646574d946956ec37cc4201b7667b7"},
-    {file = "types_redis-4.2.1-py3-none-any.whl", hash = "sha256:36767c4831fe52d1369aacef930587f32f5cbe06eb9e836ab36a75914b2e55c9"},
+    {file = "types-redis-4.2.2.tar.gz", hash = "sha256:616e5331e957832321c14a4bd206b41f967657cf360f62419b21588880af3933"},
+    {file = "types_redis-4.2.2-py3-none-any.whl", hash = "sha256:8035a2631591ea2d0484f979f1424789ed757e72b56f0c5d6291a9484540e9c0"},
 ]
 types-requests = [
     {file = "types-requests-2.27.25.tar.gz", hash = "sha256:805ae7e38fd9d157153066dc4381cf585fd34dfa212f2fc1fece248c05aac571"},

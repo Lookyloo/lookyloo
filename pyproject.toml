@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lookyloo"
-version = "1.11.0"
+version = "1.11.1"
 description = "Web interface to track the trackers."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
@@ -40,7 +40,7 @@ requests = "^2.27"
 flask = "^2.0.3"
 gunicorn = "^20.1.0"
 cchardet = "^2.1.7"
-redis = {version = "^4.2.2", extras = ["hiredis"]}
+redis = {version = "^4.3.0", extras = ["hiredis"]}
 beautifulsoup4 = "^4.11.1"
 bootstrap-flask = "^2.0.2"
 defang = "^0.5.3"
@@ -56,7 +56,7 @@ python-magic = {version = "^0.4.22", optional = true}
 pydeep = {version = "^0.4", optional = true}
 Pillow = "^9.1.0"
 flask-restx = "^0.5.1"
-rich = "^12.3.0"
+rich = "^12.4.1"
 pyphishtanklookup = "^1.0.1"
 chardet = "^4.0.0"
 Flask-Cors = "^3.0.10"
@@ -73,13 +73,13 @@ misp = ['python-magic', 'pydeep']
 [tool.poetry.dev-dependencies]
 mypy = "^0.950"
 ipython = "^8.2.0"
-types-redis = "^4.1.21"
+types-redis = "^4.2.2"
 types-requests = "^2.27.19"
 types-Flask = "^1.1.6"
 types-pkg-resources = "^0.1.3"
-types-Deprecated = "^1.2.6"
-types-python-dateutil = "^2.8.11"
-types-beautifulsoup4 = "^4.10.20"
+types-Deprecated = "^1.2.8"
+types-python-dateutil = "^2.8.15"
+types-beautifulsoup4 = "^4.11.0"
 types-setuptools = "^57.4.14"
 
 [build-system]
