@@ -1065,7 +1065,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-deprecated"
-version = "1.2.7"
+version = "1.2.8"
 description = "Typing stubs for Deprecated"
 category = "dev"
 optional = false
@@ -1320,7 +1320,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "3ab98224d05380c6008bbe99a6a971528f244403dc079d6d3d66379515095fd2"
+content-hash = "4f63f27e6a2dcff28403a05b45c95918df3c602de3195b408251c327ab74ecf4"
 
 [metadata.files]
 aiohttp = [
@@ -2288,8 +2288,8 @@ types-click = [
     {file = "types_click-7.1.8-py3-none-any.whl", hash = "sha256:8cb030a669e2e927461be9827375f83c16b8178c365852c060a34e24871e7e81"},
 ]
 types-deprecated = [
-    {file = "types-Deprecated-1.2.7.tar.gz", hash = "sha256:370d6d92bc1310dc93cd98bc49cd47055b602f8b740684e6236b607d9c73dae4"},
-    {file = "types_Deprecated-1.2.7-py3-none-any.whl", hash = "sha256:15935fb9d259d26200b5ce4ff050df8988745203ff9557a91130cab59c1253e9"},
+    {file = "types-Deprecated-1.2.8.tar.gz", hash = "sha256:62e1b773cafaec26e5e7c85f6f476f65aba1b5cb0857b0cc71d1eeb8c576e6a2"},
+    {file = "types_Deprecated-1.2.8-py3-none-any.whl", hash = "sha256:5adf04a18d1d0ae7d82b56cd07c2386c6639026ac5f7a9eb47f904d934697430"},
 ]
 types-flask = [
     {file = "types-Flask-1.1.6.tar.gz", hash = "sha256:aac777b3abfff9436e6b01f6d08171cf23ea6e5be71cbf773aaabb1c5763e9cf"},
