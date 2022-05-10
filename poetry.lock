@@ -1049,7 +1049,7 @@ test = ["pytest"]
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.11.0"
+version = "4.11.1"
 description = "Typing stubs for beautifulsoup4"
 category = "dev"
 optional = false
@@ -1320,7 +1320,7 @@ misp = ["python-magic", "pydeep"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "2134bf9b32d72efd86972c4e84787095aed30d0f162b799a5c7de8febedbf092"
+content-hash = "ae48b1577f58e249f866bae4aa4ee947bbbe092cb4687a1d115003f508153062"
 
 [metadata.files]
 aiohttp = [
@@ -2280,8 +2280,8 @@ traitlets = [
     {file = "traitlets-5.1.1.tar.gz", hash = "sha256:059f456c5a7c1c82b98c2e8c799f39c9b8128f6d0d46941ee118daace9eb70c7"},
 ]
 types-beautifulsoup4 = [
-    {file = "types-beautifulsoup4-4.11.0.tar.gz", hash = "sha256:043357dabdc07cd7e5f1d64ea8cf6dd370e6ac8dd5f95b81ac47badae0251198"},
-    {file = "types_beautifulsoup4-4.11.0-py3-none-any.whl", hash = "sha256:a500f1b35b9e22cd812824a048fecb891483ae15151f97a703e399ee25effa2b"},
+    {file = "types-beautifulsoup4-4.11.1.tar.gz", hash = "sha256:16593775a5e2ac9bc80a5a316ad62c106f080178cf7d1e9691bde017725b2c39"},
+    {file = "types_beautifulsoup4-4.11.1-py3-none-any.whl", hash = "sha256:b2feb44f7060379bbec9451580ac24f6dfa7ae97652724a01a0ef92847e002d5"},
 ]
 types-click = [
     {file = "types-click-7.1.8.tar.gz", hash = "sha256:b6604968be6401dc516311ca50708a0a28baa7a0cb840efd7412f0dbbff4e092"},
