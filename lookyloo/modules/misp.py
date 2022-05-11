@@ -94,7 +94,10 @@ class MISP():
                 try:
                     # NOTE: POST the event as published publishes inline, which can tak a long time.
                     # Here, we POST as not published, and trigger the publishing in a second call.
-                    background_publish = event.published
+                    if hasattr(event, 'published'):
+                        background_publish = event.published
+                    else:
+                        background_publish = False
                     if background_publish:
                         event.published = False
                     new_event = self.client.add_event(event, pythonify=True)
