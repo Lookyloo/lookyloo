@@ -744,8 +744,8 @@ python-versions = "*"
 tests = ["pytest"]
 
 [[package]]
-name = "pydeep"
-version = "0.4"
+name = "pydeep2"
+version = "0.5.1"
 description = "Python bindings for ssdeep"
 category = "main"
 optional = true
@@ -1315,12 +1315,12 @@ docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
 
 [extras]
-misp = ["python-magic", "pydeep"]
+misp = ["python-magic", "pydeep2"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "4871a7cb8c571e95a0b63d6d3c0fee3de54e86d7be86d9b076237bebb53cb1ea"
+content-hash = "3fae72bdbdd63ad33cddc8d52454f587cb8053bcb99e6bbf8bb1246c75e822e2"
 
 [metadata.files]
 aiohttp = [
@@ -2085,8 +2085,18 @@ pure-eval = [
     {file = "pure_eval-0.2.2-py3-none-any.whl", hash = "sha256:01eaab343580944bc56080ebe0a674b39ec44a945e6d09ba7db3cb8cec289350"},
     {file = "pure_eval-0.2.2.tar.gz", hash = "sha256:2b45320af6dfaa1750f543d714b6d1c520a1688dec6fd24d339063ce0aaa9ac3"},
 ]
-pydeep = [
-    {file = "pydeep-0.4.tar.gz", hash = "sha256:22866eb422d1d5907f8076ee792da65caecb172425d27576274e2a8eacf6afc1"},
+pydeep2 = [
+    {file = "pydeep2-0.5.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e14b310b820d895a7354be7fd025de874892df249cbfb3ad8a524459e1511fd8"},
+    {file = "pydeep2-0.5.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2283893e25826b547dd1e5c71a010e86ddfd7270e2f2b8c90973c1d7984c7eb7"},
+    {file = "pydeep2-0.5.1-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0fedc1c9660cb5d0b73ad0b5f1dbffe16990e6721cbfc6454571a4b9882d0ea4"},
+    {file = "pydeep2-0.5.1-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7ca68f7d63e2ef510d410d20b223e8e97df41707fb50c4c526b6dd1d8698d9e6"},
+    {file = "pydeep2-0.5.1-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:199d05d8b4b7544509a2ba4802ead4b41dfe7859e0ecea9d9be9e41939f11660"},
+    {file = "pydeep2-0.5.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4bf00de2fe1918e4d698fe8195a5c0a3a0c3050a2e3e15583748cfd20b427153"},
+    {file = "pydeep2-0.5.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c65dc910d782fa2bc97e1b28a78d77c4bada037d14b63e3e75a1fa5918d642c5"},
+    {file = "pydeep2-0.5.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ef00ca5681a2c4ad5dc744db5f8ae5406d3f13121b38d84cc58dfb8fce4c3dc2"},
+    {file = "pydeep2-0.5.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:add24d7aa0386b285fd3e99632719714efabeb13d7b03a015b7c64d1f588f815"},
+    {file = "pydeep2-0.5.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c2063cbb053e5ce684cc45fff3e72c063b26aa85e41e6435cab0c658ad9e3e1e"},
+    {file = "pydeep2-0.5.1.tar.gz", hash = "sha256:44ce447e3253a69d3393f3cc53e3a87a48fe3ff9861793736a7bc218a1b95d77"},
 ]
 pyee = [
     {file = "pyee-8.1.0-py2.py3-none-any.whl", hash = "sha256:383973b63ad7ed5e3c0311f8b179c52981f9e7b3eaea0e9a830d13ec34dde65f"},

@@ -52,8 +52,7 @@ dnspython = "^2.2.1"
 pytaxonomies = "^1.4.1"
 pymisp = {version = "^2.4.157", extras = ["url"]}
 python-magic = {version = "^0.4.22", optional = true}
-# pydeep requires libfuzzy-dev, and is only used in the MISP export module
-pydeep = {version = "^0.4", optional = true}
+pydeep2 = {version = "^0.5.1", optional = true}
 Pillow = "^9.1.0"
 flask-restx = "^0.5.1"
 rich = "^12.4.1"
@@ -68,7 +67,7 @@ har2tree = "^1.11.5"
 playwrightcapture = "^0.2.0"
 
 [tool.poetry.extras]
-misp = ['python-magic', 'pydeep']
+misp = ['python-magic', 'pydeep2']
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.950"
