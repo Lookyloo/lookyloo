@@ -49,7 +49,7 @@ pyeupi = "^1.1"
 pysanejs = "^2.0"
 pylookyloo = "^1.10.0"
 dnspython = "^2.2.1"
-pytaxonomies = "^1.4.1"
+pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.4.157", extras = ["url"]}
 python-magic = {version = "^0.4.22", optional = true}
 pydeep2 = {version = "^0.5.1", optional = true}

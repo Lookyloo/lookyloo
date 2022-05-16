@@ -887,11 +887,11 @@ requests = ">=2.26.0,<3.0.0"
 
 [[package]]
 name = "pytaxonomies"
-version = "1.4.1"
+version = "1.5.0"
 description = "Python API for the taxonomies."
 category = "main"
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = ">=3.8,<4.0"
 
 [package.extras]
 remote = ["requests (>=2.26.0,<3.0.0)"]
@@ -1320,7 +1320,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "0a6a761e7f7f8116934b659ead01d139820546ce1fd5a7f5cea21bce69a8d818"
+content-hash = "0d74b38686bcc0ba60ca0f6ba8beeb13e0685eaf7145d2d2987cbba1c249a157"
 
 [metadata.files]
 aiohttp = [
@@ -2162,8 +2162,8 @@ pysanejs = [
     {file = "pysanejs-2.0.tar.gz", hash = "sha256:68655cd4605536625e4b61c7b86206efff952c9cd5366fd088ad553c2e50fc4a"},
 ]
 pytaxonomies = [
-    {file = "pytaxonomies-1.4.1-py3-none-any.whl", hash = "sha256:a7996a02c20148cf78e565d578d4faa38df8ad168e35d8a11011a9624b1f07ba"},
-    {file = "pytaxonomies-1.4.1.tar.gz", hash = "sha256:b4894a1dae4740ead323c0b7b7f19e4f24f9a676bb0709af0ed6f920eba79abf"},
+    {file = "pytaxonomies-1.5.0-py3-none-any.whl", hash = "sha256:435d49045bca8e819898140bb306563c9a89ef4375f1e9c33fe6435c558d1336"},
+    {file = "pytaxonomies-1.5.0.tar.gz", hash = "sha256:055cb40250b6d0072bdb6abc8c5fa845a00682e2597a6a89aa5657db866a5182"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
