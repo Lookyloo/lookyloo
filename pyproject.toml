@@ -53,7 +53,7 @@ pytaxonomies = "^1.4.1"
 pymisp = {version = "^2.4.157", extras = ["url"]}
 python-magic = {version = "^0.4.22", optional = true}
 pydeep2 = {version = "^0.5.1", optional = true}
-Pillow = "^9.1.0"
+Pillow = "^9.1.1"
 flask-restx = "^0.5.1"
 rich = "^12.4.1"
 pyphishtanklookup = "^1.0.1"
