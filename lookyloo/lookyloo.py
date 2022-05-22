@@ -19,7 +19,7 @@ from zipfile import ZipFile
 
 from defang import defang  # type: ignore
 from har2tree import CrawledTree, HostNode, URLNode
-from PIL import Image, UnidentifiedImageError  # type: ignore
+from PIL import Image, UnidentifiedImageError
 from pymisp import MISPAttribute, MISPEvent, MISPObject
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
@@ -387,7 +387,7 @@ class Lookyloo():
         if priority < -10:
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query['listing'] = 0
-        p.hmset(perma_uuid, query)
+        p.hset(perma_uuid, mapping=query)
         p.zadd('to_capture', {perma_uuid: priority})
         p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
         p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')

@@ -120,9 +120,9 @@ def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str]]=None) -
     try:
         for cookie in cookies:
             to_add: Dict[str, Union[str, bool]]
-            if 'Host raw' in cookie:
+            if 'Host raw' in cookie and isinstance(cookie['Host raw'], str):
                 # Cookie export format for Cookie Quick Manager
-                u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]  # type: ignore
+                u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]
                 to_add = {'path': cookie['Path raw'],
                           'name': cookie['Name raw'],
                           'httpOnly': cookie['HTTP only raw'] == 'true',

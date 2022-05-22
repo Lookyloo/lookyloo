@@ -35,7 +35,7 @@ class Context():
                 if filename == 'generic':
                     # 1px images, files with spaces, empty => non-relevant stuff
                     for _, type_content in file_content.items():
-                        p.hmset('known_content', {h: type_content['description'] for h in type_content['entries']})
+                        p.hset('known_content', mapping={h: type_content['description'] for h in type_content['entries']})
                 elif filename == 'malicious':
                     # User defined as malicious
                     for h, details in file_content.items():

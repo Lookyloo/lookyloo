@@ -3,6 +3,7 @@
 import csv
 import logging
 from collections import defaultdict
+from collections.abc import Mapping
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List
@@ -21,7 +22,7 @@ class Archiver(AbstractManager):
     def __init__(self, loglevel: int=logging.INFO):
         super().__init__(loglevel)
         self.script_name = 'archiver'
-        self.redis = Redis(unix_socket_path=get_socket_path('cache'))
+        self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
 
         # make sure archived captures dir exists
         self.archived_captures_dir = get_homedir() / 'archived_captures'
@@ -117,18 +118,18 @@ class Archiver(AbstractManager):
         # Initialize archives
         for index in get_captures_dir().glob('**/index'):
             with index.open('r') as _f:
-                recent_uuids: Dict[str, str] = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
+                recent_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
             if recent_uuids:
-                self.redis.hmset('lookup_dirs', recent_uuids)  # type: ignore
+                self.redis.hset('lookup_dirs', mapping=recent_uuids)
             else:
                 index.unlink()
 
         # Initialize archives
         for index in self.archived_captures_dir.glob('**/index'):
             with index.open('r') as _f:
-                archived_uuids: Dict[str, str] = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
+                archived_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
             if archived_uuids:
-                self.redis.hmset('lookup_dirs_archived', archived_uuids)  # type: ignore
+                self.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
             else:
                 index.unlink()
 

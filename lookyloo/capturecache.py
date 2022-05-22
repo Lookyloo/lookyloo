@@ -294,7 +294,7 @@ class CapturesIndex(Mapping):
 
         p = self.redis.pipeline()
         p.hset('lookup_dirs', uuid, str(capture_dir))
-        p.hmset(str(capture_dir), cache)  # type: ignore
+        p.hset(str(capture_dir), mapping=cache)  # type: ignore
         p.execute()
         return CaptureCache(cache)
 
@@ -304,7 +304,7 @@ class CapturesIndex(Mapping):
         Updates the nodes of the tree accordingly so the information is available.
         '''
 
-        def _build_cname_chain(known_cnames: Dict[str, Optional[str]], hostname) -> List[str]:
+        def _build_cname_chain(known_cnames: Dict[str, str], hostname) -> List[str]:
             '''Returns a list of CNAMEs starting from one hostname.
             The CNAMEs resolutions are made in `_resolve_dns`. A hostname can have a CNAME entry
             and the CNAME entry can have an other CNAME entry, and so on multiple times.
@@ -312,16 +312,15 @@ class CapturesIndex(Mapping):
             cnames: List[str] = []
             to_search = hostname
             while True:
-                if known_cnames.get(to_search) is None:
+                if not known_cnames.get(to_search):
                     break
-                # At this point, known_cnames[to_search] must exist and be a str
-                cnames.append(known_cnames[to_search])  # type: ignore
+                cnames.append(known_cnames[to_search])
                 to_search = known_cnames[to_search]
             return cnames
 
         cnames_path = ct.root_hartree.har.path.parent / 'cnames.json'
         ips_path = ct.root_hartree.har.path.parent / 'ips.json'
-        host_cnames: Dict[str, Optional[str]] = {}
+        host_cnames: Dict[str, str] = {}
         if cnames_path.exists():
             try:
                 with cnames_path.open() as f:
@@ -348,15 +347,14 @@ class CapturesIndex(Mapping):
                         if answer.rdtype == dns.rdatatype.RdataType.CNAME:
                             host_cnames[str(answer.name).rstrip('.')] = str(answer[0].target).rstrip('.')
                         else:
-                            host_cnames[str(answer.name).rstrip('.')] = None
+                            host_cnames[str(answer.name).rstrip('.')] = ''
 
                         if answer.rdtype in [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]:
                             host_ips[str(answer.name).rstrip('.')] = list({str(b) for b in answer})
                 except Exception:
-                    host_cnames[node.name] = None
+                    host_cnames[node.name] = ''
                     host_ips[node.name] = []
-            cnames = _build_cname_chain(host_cnames, node.name)
-            if cnames:
+            if (cnames := _build_cname_chain(host_cnames, node.name)):
                 node.add_feature('cname', cnames)
                 if cnames[-1] in host_ips:
                     node.add_feature('resolved_ips', host_ips[cnames[-1]])
