@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lookyloo"
-version = "1.11.1"
+version = "1.12.0"
 description = "Web interface to track the trackers."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
@@ -36,8 +36,8 @@ start_website = "bin.start_website:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-requests = "^2.27"
-flask = "^2.0.3"
+requests = "^2.27.1"
+flask = "^2.1.2"
 gunicorn = "^20.1.0"
 cchardet = "^2.1.7"
 redis = {version = "^4.3.1", extras = ["hiredis"]}
@@ -51,11 +51,11 @@ pylookyloo = "^1.10.0"
 dnspython = "^2.2.1"
 pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.4.157", extras = ["url"]}
-python-magic = {version = "^0.4.22", optional = true}
+python-magic = {version = "^0.4.26", optional = true}
 pydeep2 = {version = "^0.5.1", optional = true}
 Pillow = "^9.1.1"
 flask-restx = "^0.5.1"
-rich = "^12.4.3"
+rich = "^12.4.4"
 pyphishtanklookup = "^1.0.1"
 chardet = "^4.0.0"
 Flask-Cors = "^3.0.10"
@@ -63,7 +63,7 @@ pyhashlookup = "^1.1.1"
 lief = "^0.12.1"
 ua-parser = "^0.10.0"
 Flask-Login = "^0.6.1"
-har2tree = "^1.11.7"
+har2tree = "^1.12.0"
 playwrightcapture = "^0.2.2"
 
 [tool.poetry.extras]
@@ -71,7 +71,7 @@ misp = ['python-magic', 'pydeep2']
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.950"
-ipython = "^8.2.0"
+ipython = "^8.3.0"
 types-redis = "^4.2.5"
 types-requests = "^2.27.27"
 types-Flask = "^1.1.6"

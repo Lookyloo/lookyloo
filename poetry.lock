@@ -383,7 +383,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.11.7"
+version = "1.12.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -395,7 +395,7 @@ cchardet = ">=2.1.7,<3.0.0"
 ete3 = ">=3.1.2,<4.0.0"
 filetype = ">=1.0.13,<2.0.0"
 lxml = ">=4.8.0,<5.0.0"
-numpy = ">=1.22.3,<2.0.0"
+numpy = ">=1.22.4,<2.0.0"
 publicsuffix2 = ">=2.20191221,<3.0"
 six = ">=1.16.0,<2.0.0"
 w3lib = ">=1.22.0,<2.0.0"
@@ -982,7 +982,7 @@ use_chardet_on_py3 = ["chardet (>=3.0.2,<5)"]
 
 [[package]]
 name = "rich"
-version = "12.4.3"
+version = "12.4.4"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "91b738a6001f33ba9ce90ebf654bb341713feff6e5d9bcf0630598492d3d9570"
+content-hash = "ac9b62a357abd278c41e10dec023e3102cb9e3630040e3610b514a398561b326"
 
 [metadata.files]
 aiohttp = [
@@ -1683,8 +1683,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.11.7-py3-none-any.whl", hash = "sha256:9db3d21b24255f353233094771b8946fe14fa32d2c6e843a4b040fdb9fe41146"},
-    {file = "har2tree-1.11.7.tar.gz", hash = "sha256:4df82a6ec3b8832dfa12e8acfcb89a3df8c6acda60e12a276db026fb8af09a51"},
+    {file = "har2tree-1.12.0-py3-none-any.whl", hash = "sha256:3969b8d18086776663b27108c5453faf0e24af6b66bd2a2fd531b6ed36a8d925"},
+    {file = "har2tree-1.12.0.tar.gz", hash = "sha256:95c252a14d41f8126dbe33b3807be90e14ae39069014d5f93d464eefaee9747a"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -2276,8 +2276,8 @@ requests = [
     {file = "requests-2.27.1.tar.gz", hash = "sha256:68d7c56fd5a8999887728ef304a6d12edc7be74f1cfa47714fc8b414525c9a61"},
 ]
 rich = [
-    {file = "rich-12.4.3-py3-none-any.whl", hash = "sha256:26ef784599a9ab905ade34ff28904e4fbe9bce16e02c33c78b0229551104c146"},
-    {file = "rich-12.4.3.tar.gz", hash = "sha256:e7550ca19aec51b216ae4c34bfce82e94a0c79bdbf95cafbf42f343d0fb3f45a"},
+    {file = "rich-12.4.4-py3-none-any.whl", hash = "sha256:d2bbd99c320a2532ac71ff6a3164867884357da3e3301f0240090c5d2fdac7ec"},
+    {file = "rich-12.4.4.tar.gz", hash = "sha256:4c586de507202505346f3e32d1363eb9ed6932f0c2f63184dea88983ff4971e2"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
