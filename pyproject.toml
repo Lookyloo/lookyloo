@@ -56,7 +56,7 @@ pydeep2 = {version = "^0.5.1", optional = true}
 Pillow = "^9.1.1"
 flask-restx = "^0.5.1"
 rich = "^12.4.4"
-pyphishtanklookup = "^1.0.1"
+pyphishtanklookup = "^1.1"
 chardet = "^4.0.0"
 Flask-Cors = "^3.0.10"
 pyhashlookup = "^1.1.1"

@@ -854,17 +854,17 @@ diagrams = ["railroad-diagrams", "jinja2"]
 
 [[package]]
 name = "pyphishtanklookup"
-version = "1.0.1"
+version = "1.1"
 description = "Python CLI and module for PhishtankLookup"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
-requests = ">=2.26.0,<3.0.0"
+requests = ">=2.27.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.2,<5.0)"]
+docs = ["Sphinx (>=4.5.0,<5.0.0)"]
 
 [[package]]
 name = "pyrsistent"
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "74650543df5ad13bc296733f3a2c7d59e37a340fb2c3544d8a3715a69a4fa8ed"
+content-hash = "419fa1c709df94d956a8b627efeae57e4c4d1e78013b6eab5fb525ac614c62f1"
 
 [metadata.files]
 aiohttp = [
@@ -2141,8 +2141,8 @@ pyparsing = [
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 pyphishtanklookup = [
-    {file = "pyphishtanklookup-1.0.1-py3-none-any.whl", hash = "sha256:f000c088255b2d18b166c80b51457e13b1dea30538d1d1943344d70ddc711b41"},
-    {file = "pyphishtanklookup-1.0.1.tar.gz", hash = "sha256:509e4134f9f8ef843987f9a32bed872cf856c15d838d1be434485dc063ee0dc6"},
+    {file = "pyphishtanklookup-1.1-py3-none-any.whl", hash = "sha256:f273773d13764c47d164455d835c43407e3719593afc4e78847f520a5a9124f9"},
+    {file = "pyphishtanklookup-1.1.tar.gz", hash = "sha256:a16ebdc6458ab4ca71a8a12ff42492a459c28c7b5083647b8bb37757ff3c3f5a"},
 ]
 pyrsistent = [
     {file = "pyrsistent-0.18.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:df46c854f490f81210870e509818b729db4488e1f30f2a1ce1698b2295a878d1"},
