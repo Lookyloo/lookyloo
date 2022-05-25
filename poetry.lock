@@ -1148,7 +1148,7 @@ types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-setuptools"
-version = "57.4.15"
+version = "57.4.16"
 description = "Typing stubs for setuptools"
 category = "dev"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "74650543df5ad13bc296733f3a2c7d59e37a340fb2c3544d8a3715a69a4fa8ed"
+content-hash = "a5cbd729205567b7e951ff3920b6998918da3d71a4304466fe731e331de71ffa"
 
 [metadata.files]
 aiohttp = [
@@ -2344,8 +2344,8 @@ types-requests = [
     {file = "types_requests-2.27.27-py3-none-any.whl", hash = "sha256:6d8463ffe1f6edcf2e5361740a6140e7a16d427c267d83c7c1d3d1298f4e67c5"},
 ]
 types-setuptools = [
-    {file = "types-setuptools-57.4.15.tar.gz", hash = "sha256:650528ce803586029d7f153f32aed2dbaa6bb2888b233334af80d7ba63ed3c87"},
-    {file = "types_setuptools-57.4.15-py3-none-any.whl", hash = "sha256:f8f19876f714a440c4badef1b91b0648604ed443e703d29d44cd36ac93b01a77"},
+    {file = "types-setuptools-57.4.16.tar.gz", hash = "sha256:325d8db7eee39f67f78b7f000683cc81d651300060f67e6e93058e17c6951a9a"},
+    {file = "types_setuptools-57.4.16-py3-none-any.whl", hash = "sha256:93caeaae4d61d7a4e70b07831145e3eeb0102aa16bcc9b174ebdf1bea78e1bbb"},
 ]
 types-urllib3 = [
     {file = "types-urllib3-1.26.14.tar.gz", hash = "sha256:2a2578e4b36341ccd240b00fccda9826988ff0589a44ba4a664bbd69ef348d27"},
