@@ -595,7 +595,7 @@ def send_mail(tree_uuid: str):
 @app.route('/tree/<string:tree_uuid>/<string:node_uuid>', methods=['GET'])
 def tree(tree_uuid: str, node_uuid: Optional[str]=None):
     if tree_uuid == 'False':
-        flash("Unable to process your request. The domain may not exist, or splash isn't started", 'error')
+        flash("Unable to process your request. The domain may not exist, or splash isn't started", 'warning')
         return redirect(url_for('index'))
     cache = lookyloo.capture_cache(tree_uuid)
     if not cache:
@@ -603,10 +603,10 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
         if status == CaptureStatus.UNKNOWN:
             error = lookyloo.try_error_status(tree_uuid)
             if error:
-                flash(error, 'error')
+                flash(error, 'warning')
             else:
-                flash(f'Unable to find this UUID ({tree_uuid}).', 'error')
-            return redirect(url_for('index'))
+                flash(f'Unable to find this UUID ({tree_uuid}).', 'warning')
+            return index_generic()
         elif status == CaptureStatus.QUEUED:
             message = "The capture is queued, but didn't start yet."
         elif status in [CaptureStatus.ONGOING, CaptureStatus.DONE]:
@@ -616,7 +616,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
         return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid)
 
     if cache.error:
-        flash(cache.error, 'error')
+        flash(cache.error, 'warning')
 
     try:
         ct = lookyloo.get_crawled_tree(tree_uuid)
