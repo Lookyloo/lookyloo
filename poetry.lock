@@ -1105,7 +1105,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-pillow"
-version = "9.0.16"
+version = "9.0.19"
 description = "Typing stubs for Pillow"
 category = "dev"
 optional = false
@@ -1129,7 +1129,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.2.5"
+version = "4.2.6"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1137,7 +1137,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.27.27"
+version = "2.27.29"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1148,7 +1148,7 @@ types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-setuptools"
-version = "57.4.16"
+version = "57.4.17"
 description = "Typing stubs for setuptools"
 category = "dev"
 optional = false
@@ -1156,7 +1156,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-urllib3"
-version = "1.26.14"
+version = "1.26.15"
 description = "Typing stubs for urllib3"
 category = "dev"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "46ed36cbcc5580eeeae28ceb8a1789135e08ca3e73a88a21e4cec64e2d460562"
+content-hash = "a3da2b758c1d845ea147efa6e98d6ec04fbe932bdfea7261109ed425fca5a7a4"
 
 [metadata.files]
 aiohttp = [
@@ -2324,8 +2324,8 @@ types-markupsafe = [
     {file = "types_MarkupSafe-1.1.10-py3-none-any.whl", hash = "sha256:ca2bee0f4faafc45250602567ef38d533e877d2ddca13003b319c551ff5b3cc5"},
 ]
 types-pillow = [
-    {file = "types-Pillow-9.0.16.tar.gz", hash = "sha256:83385b550ed003016bd685cf47201595dce2a90cec0c430d4bf742da9ca52c91"},
-    {file = "types_Pillow-9.0.16-py3-none-any.whl", hash = "sha256:792227090a49e17e360c32a5b9f732c996b7b60dbcd2d4ee60381b8ab1650d3f"},
+    {file = "types-Pillow-9.0.19.tar.gz", hash = "sha256:bad0de01fd2b6cfdcfcab580fc4025db2b5068e6237707d8f2f4493cd4c4fe16"},
+    {file = "types_Pillow-9.0.19-py3-none-any.whl", hash = "sha256:34f8380d9e5367baa075e3ef2961c65908f6b69b9161c2b08feb8937200aa25c"},
 ]
 types-pkg-resources = [
     {file = "types-pkg_resources-0.1.3.tar.gz", hash = "sha256:834a9b8d3dbea343562fd99d5d3359a726f6bf9d3733bccd2b4f3096fbab9dae"},
@@ -2336,20 +2336,20 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.16-py3-none-any.whl", hash = "sha256:0e7286436d049d2732ba2f01552f84c52184b955552359156fc8835c10714f2a"},
 ]
 types-redis = [
-    {file = "types-redis-4.2.5.tar.gz", hash = "sha256:88f04d99f20c20c3d0129c37601f9e70c01b71f1faef473766cfa3dddbd5e5d5"},
-    {file = "types_redis-4.2.5-py3-none-any.whl", hash = "sha256:c0123db52d9b1a887cd3c7bc0d9cb03893dc3873969ffc55a99c9a9ad9d32a79"},
+    {file = "types-redis-4.2.6.tar.gz", hash = "sha256:d6adc77185cf40b300816767a64c0ee9ee0b21dc174e8e5c23b7e83d43189cb8"},
+    {file = "types_redis-4.2.6-py3-none-any.whl", hash = "sha256:1136af954ade0be33b487f440c8cbcbee29f089a83e685484ec91f363c6c69fe"},
 ]
 types-requests = [
-    {file = "types-requests-2.27.27.tar.gz", hash = "sha256:d618d9809fa32f514cf17cea8460814da671c56366fb1c908accca8bf183112b"},
-    {file = "types_requests-2.27.27-py3-none-any.whl", hash = "sha256:6d8463ffe1f6edcf2e5361740a6140e7a16d427c267d83c7c1d3d1298f4e67c5"},
+    {file = "types-requests-2.27.29.tar.gz", hash = "sha256:fb453b3a76a48eca66381cea8004feaaea12835e838196f5c7ac87c75c5c19ef"},
+    {file = "types_requests-2.27.29-py3-none-any.whl", hash = "sha256:014f4f82db7b96c41feea9adaea30e68cd64c230eeab34b70c29bebb26ec74ac"},
 ]
 types-setuptools = [
-    {file = "types-setuptools-57.4.16.tar.gz", hash = "sha256:325d8db7eee39f67f78b7f000683cc81d651300060f67e6e93058e17c6951a9a"},
-    {file = "types_setuptools-57.4.16-py3-none-any.whl", hash = "sha256:93caeaae4d61d7a4e70b07831145e3eeb0102aa16bcc9b174ebdf1bea78e1bbb"},
+    {file = "types-setuptools-57.4.17.tar.gz", hash = "sha256:9d556fcaf6808a1cead4aaa41e5c07a61f0152a875811e1239738eba4e0b7b16"},
+    {file = "types_setuptools-57.4.17-py3-none-any.whl", hash = "sha256:9c7cdaf0d55113e24ac17103bde2d434472abf1dbf444238e989fe4e798ffa26"},
 ]
 types-urllib3 = [
-    {file = "types-urllib3-1.26.14.tar.gz", hash = "sha256:2a2578e4b36341ccd240b00fccda9826988ff0589a44ba4a664bbd69ef348d27"},
-    {file = "types_urllib3-1.26.14-py3-none-any.whl", hash = "sha256:5d2388aa76395b1e3999ff789ea5b3283677dad8e9bcf3d9117ba19271fd35d9"},
+    {file = "types-urllib3-1.26.15.tar.gz", hash = "sha256:c89283541ef92e344b7f59f83ea9b5a295b16366ceee3f25ecfc5593c79f794e"},
+    {file = "types_urllib3-1.26.15-py3-none-any.whl", hash = "sha256:6011befa13f901fc934f59bb1fd6973be6f3acf4ebfce427593a27e7f492918f"},
 ]
 types-werkzeug = [
     {file = "types-Werkzeug-1.0.9.tar.gz", hash = "sha256:5cc269604c400133d452a40cee6397655f878fc460e03fde291b9e3a5eaa518c"},
