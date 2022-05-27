@@ -1105,7 +1105,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-pillow"
-version = "9.0.16"
+version = "9.0.19"
 description = "Typing stubs for Pillow"
 category = "dev"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "46ed36cbcc5580eeeae28ceb8a1789135e08ca3e73a88a21e4cec64e2d460562"
+content-hash = "7f355c3b2223de70670ab228f83bd85a095777721fe507c745dfd4496441ef9a"
 
 [metadata.files]
 aiohttp = [
@@ -2324,8 +2324,8 @@ types-markupsafe = [
     {file = "types_MarkupSafe-1.1.10-py3-none-any.whl", hash = "sha256:ca2bee0f4faafc45250602567ef38d533e877d2ddca13003b319c551ff5b3cc5"},
 ]
 types-pillow = [
-    {file = "types-Pillow-9.0.16.tar.gz", hash = "sha256:83385b550ed003016bd685cf47201595dce2a90cec0c430d4bf742da9ca52c91"},
-    {file = "types_Pillow-9.0.16-py3-none-any.whl", hash = "sha256:792227090a49e17e360c32a5b9f732c996b7b60dbcd2d4ee60381b8ab1650d3f"},
+    {file = "types-Pillow-9.0.19.tar.gz", hash = "sha256:bad0de01fd2b6cfdcfcab580fc4025db2b5068e6237707d8f2f4493cd4c4fe16"},
+    {file = "types_Pillow-9.0.19-py3-none-any.whl", hash = "sha256:34f8380d9e5367baa075e3ef2961c65908f6b69b9161c2b08feb8937200aa25c"},
 ]
 types-pkg-resources = [
     {file = "types-pkg_resources-0.1.3.tar.gz", hash = "sha256:834a9b8d3dbea343562fd99d5d3359a726f6bf9d3733bccd2b4f3096fbab9dae"},
