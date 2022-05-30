@@ -452,7 +452,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 
 [[package]]
 name = "ipython"
-version = "8.3.0"
+version = "8.4.0"
 description = "IPython: Productive Interactive Computing"
 category = "dev"
 optional = false
@@ -817,29 +817,29 @@ docs = ["Sphinx (>=4.5.0,<5.0.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.157"
+version = "2.4.159"
 description = "Python API for MISP."
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-chardet = {version = ">=4.0,<5.0", optional = true, markers = "extra == \"url\""}
+chardet = {version = ">=4.0.0,<5.0.0", optional = true, markers = "extra == \"url\""}
 deprecated = ">=1.2.13,<2.0.0"
-jsonschema = ">=4.0,<5.0"
+jsonschema = ">=4.5.1,<5.0.0"
 pyfaup = {version = ">=1.2,<2.0", optional = true, markers = "extra == \"url\""}
 python-dateutil = ">=2.8.2,<3.0.0"
-requests = ">=2.26.0,<3.0.0"
+requests = ">=2.27.1,<3.0.0"
 
 [package.extras]
-email = ["extract_msg (>=0.30.8,<0.31.0)", "RTFDE (>=0.0.2,<0.0.3)", "oletools (>=0.60,<0.61)"]
-fileobjects = ["python-magic (>=0.4.24,<0.5.0)", "pydeep2 (>=0.5,<0.6)", "lief (>=0.11.5,<0.12.0)"]
-openioc = ["beautifulsoup4 (>=4.10.0,<5.0.0)"]
-virustotal = ["validators (>=0.18.2,<0.19.0)"]
-docs = ["sphinx-autodoc-typehints (>=1.12.0,<2.0.0)", "recommonmark (>=0.7.1,<0.8.0)"]
-pdfexport = ["reportlab (>=3.6.3,<4.0.0)"]
-url = ["pyfaup (>=1.2,<2.0)", "chardet (>=4.0,<5.0)"]
-brotli = ["urllib3[brotli] (>=1.26.7,<2.0.0)"]
+email = ["extract_msg (>=0.30.13,<0.31.0)", "RTFDE (>=0.0.2,<0.0.3)", "oletools (>=0.60.1,<0.61.0)"]
+fileobjects = ["python-magic (>=0.4.26,<0.5.0)", "pydeep2 (>=0.5.1,<0.6.0)", "lief (>=0.12.1,<0.13.0)"]
+openioc = ["beautifulsoup4 (>=4.11.1,<5.0.0)"]
+virustotal = ["validators (>=0.19.0,<0.20.0)"]
+docs = ["sphinx-autodoc-typehints (>=1.18.1,<2.0.0)", "recommonmark (>=0.7.1,<0.8.0)"]
+pdfexport = ["reportlab (>=3.6.9,<4.0.0)"]
+url = ["pyfaup (>=1.2,<2.0)", "chardet (>=4.0.0,<5.0.0)"]
+brotli = ["urllib3[brotli] (>=1.26.9,<2.0.0)"]
 
 [[package]]
 name = "pyparsing"
@@ -1121,7 +1121,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.8.16"
+version = "2.8.17"
 description = "Typing stubs for python-dateutil"
 category = "dev"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "a3da2b758c1d845ea147efa6e98d6ec04fbe932bdfea7261109ed425fca5a7a4"
+content-hash = "b4247ac1ca63032fd0111b5ef117b4b465259be561b766b12755387a4ef8b2aa"
 
 [metadata.files]
 aiohttp = [
@@ -1742,8 +1742,8 @@ importlib-resources = [
     {file = "importlib_resources-5.7.1.tar.gz", hash = "sha256:b6062987dfc51f0fcb809187cffbd60f35df7acb4589091f154214af6d0d49d3"},
 ]
 ipython = [
-    {file = "ipython-8.3.0-py3-none-any.whl", hash = "sha256:341456643a764c28f670409bbd5d2518f9b82c013441084ff2c2fc999698f83b"},
-    {file = "ipython-8.3.0.tar.gz", hash = "sha256:807ae3cf43b84693c9272f70368440a9a7eaa2e7e6882dad943c32fbf7e51402"},
+    {file = "ipython-8.4.0-py3-none-any.whl", hash = "sha256:7ca74052a38fa25fe9bedf52da0be7d3fdd2fb027c3b778ea78dfe8c212937d1"},
+    {file = "ipython-8.4.0.tar.gz", hash = "sha256:f2db3a10254241d9b447232cec8b424847f338d9d36f9a577a6192c332a46abd"},
 ]
 itsdangerous = [
     {file = "itsdangerous-2.1.2-py3-none-any.whl", hash = "sha256:2c2349112351b88699d8d4b6b075022c0808887cb7ad10069318a8b0bc88db44"},
@@ -2133,8 +2133,8 @@ pylookyloo = [
     {file = "pylookyloo-1.12.0.tar.gz", hash = "sha256:a6e652e3f7ed370d5db2a044ecfd4c693eff79c3bcb78bae0ce3e8af03b1b23f"},
 ]
 pymisp = [
-    {file = "pymisp-2.4.157-py3-none-any.whl", hash = "sha256:f3977d5f275e2917b651fc4e8a43920b8e38fbe21998e9798f24fef889a62814"},
-    {file = "pymisp-2.4.157.tar.gz", hash = "sha256:b19d6d565972b391f90e8fe7050101b3b84f45f83214d3bf9b339a6490856cf2"},
+    {file = "pymisp-2.4.159-py3-none-any.whl", hash = "sha256:7af4f80180bd32411448628940b19d5fa434307e979a6a8a2d41b13fbc86f7a7"},
+    {file = "pymisp-2.4.159.tar.gz", hash = "sha256:b42ae4bb92ec2be92962957ed7b7c112fe0648ac0ad095900dc2d71df7f4e37e"},
 ]
 pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
@@ -2332,8 +2332,8 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-python-dateutil = [
-    {file = "types-python-dateutil-2.8.16.tar.gz", hash = "sha256:3aaac4c138eb6b8ecbc2550996ec25d6e45b5d32887d1e693d0842ee2fa659d2"},
-    {file = "types_python_dateutil-2.8.16-py3-none-any.whl", hash = "sha256:0e7286436d049d2732ba2f01552f84c52184b955552359156fc8835c10714f2a"},
+    {file = "types-python-dateutil-2.8.17.tar.gz", hash = "sha256:6c54265a221681dd87f61df6743bd5eab060cf1b4086ff65c1a8fd763ed6370e"},
+    {file = "types_python_dateutil-2.8.17-py3-none-any.whl", hash = "sha256:0be7435b4d382d1cd00b8c55a8a90f4e515aaad8a96f8f0bc20c22df046792e5"},
 ]
 types-redis = [
     {file = "types-redis-4.2.6.tar.gz", hash = "sha256:d6adc77185cf40b300816767a64c0ee9ee0b21dc174e8e5c23b7e83d43189cb8"},
