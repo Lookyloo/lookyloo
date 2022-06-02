@@ -938,7 +938,7 @@ tzdata = {version = "*", markers = "python_version >= \"3.6\""}
 
 [[package]]
 name = "redis"
-version = "4.3.1"
+version = "4.3.2"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "b4247ac1ca63032fd0111b5ef117b4b465259be561b766b12755387a4ef8b2aa"
+content-hash = "26f97c773540926b60508326a06ba0a9b914be4898a95eeb022691def03d68e3"
 
 [metadata.files]
 aiohttp = [
@@ -2192,8 +2192,8 @@ pytz-deprecation-shim = [
     {file = "pytz_deprecation_shim-0.1.0.post0.tar.gz", hash = "sha256:af097bae1b616dde5c5744441e2ddc69e74dfdcb0c263129610d85b87445a59d"},
 ]
 redis = [
-    {file = "redis-4.3.1-py3-none-any.whl", hash = "sha256:84316970995a7adb907a56754d2b92d88fc2d252963dc5ac34c88f0f1a22c25d"},
-    {file = "redis-4.3.1.tar.gz", hash = "sha256:94b617b4cd296e94991146f66fc5559756fbefe9493604f0312e4d3298ac63e9"},
+    {file = "redis-4.3.2-py3-none-any.whl", hash = "sha256:b30a2dc3f27cab69284829d6d423643beee88f279967c42e9014a2ffb7c2a84c"},
+    {file = "redis-4.3.2.tar.gz", hash = "sha256:b989406ea786a9d151066a683b32a437a48f043c3ffd3795ec5ad9d344ee9e8c"},
 ]
 regex = [
     {file = "regex-2022.3.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ab69b4fe09e296261377d209068d52402fb85ef89dc78a9ac4a29a895f4e24a7"},
