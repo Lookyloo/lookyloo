@@ -40,7 +40,7 @@ requests = "^2.27.1"
 flask = "^2.1.2"
 gunicorn = "^20.1.0"
 cchardet = "^2.1.7"
-redis = {version = "^4.3.1", extras = ["hiredis"]}
+redis = {version = "^4.3.3", extras = ["hiredis"]}
 beautifulsoup4 = "^4.11.1"
 bootstrap-flask = "^2.0.2"
 defang = "^0.5.3"
@@ -73,7 +73,7 @@ misp = ['python-magic', 'pydeep2']
 mypy = "^0.960"
 ipython = "^8.4.0"
 types-redis = "^4.2.6"
-types-requests = "^2.27.29"
+types-requests = "^2.27.30"
 types-Flask = "^1.1.6"
 types-pkg-resources = "^0.1.3"
 types-Deprecated = "^1.2.8"
