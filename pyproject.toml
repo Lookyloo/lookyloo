@@ -51,7 +51,7 @@ pylookyloo = "^1.12.0"
 dnspython = "^2.2.1"
 pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.4.159", extras = ["url"]}
-python-magic = {version = "^0.4.26", optional = true}
+python-magic = {version = "^0.4.27", optional = true}
 pydeep2 = {version = "^0.5.1", optional = true}
 Pillow = "^9.1.1"
 flask-restx = "^0.5.1"
