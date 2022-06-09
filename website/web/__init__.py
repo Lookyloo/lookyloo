@@ -24,7 +24,7 @@ from werkzeug.security import check_password_hash
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import (CaptureStatus, get_taxonomies,
-                              get_user_agents, load_cookies)
+                              UserAgents, load_cookies)
 from lookyloo.lookyloo import Indexing, Lookyloo
 
 from .genericapi import api as generic_api
@@ -48,6 +48,9 @@ version = pkg_resources.get_distribution('lookyloo').version
 # Auth stuff
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
+
+# User agents manager
+user_agents = UserAgents()
 
 
 @login_manager.user_loader
@@ -796,17 +799,8 @@ def search():
 
 
 def _prepare_capture_template(user_ua: Optional[str], predefined_url: Optional[str]=None):
-    user_agents: Dict[str, Any] = {}
-    if use_own_ua:
-        user_agents = get_user_agents('own_user_agents')
-    if not user_agents:
-        user_agents = get_user_agents()
-    # get most frequest UA that isn't a bot (yes, it is dirty.)
-    for ua in user_agents.pop('by_frequency'):
-        if not any(blockedword in ua['useragent'].lower() for blockedword in ['bot', 'bing']):
-            default_ua = ua
-            break
-    return render_template('capture.html', user_agents=user_agents, default=default_ua,
+    return render_template('capture.html', user_agents=user_agents.user_agents,
+                           default=user_agents.default,
                            max_depth=max_depth, personal_ua=user_ua,
                            default_public=get_config('generic', 'default_public'),
                            predefined_url_to_capture=predefined_url if predefined_url else '')

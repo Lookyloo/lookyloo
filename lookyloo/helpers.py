@@ -20,7 +20,7 @@ from ua_parser import user_agent_parser  # type: ignore
 from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
-from .default import get_homedir, safe_create_dir
+from .default import get_homedir, safe_create_dir, get_config
 
 logger = logging.getLogger('Lookyloo - Helpers')
 
@@ -85,11 +85,40 @@ def get_email_template() -> str:
         return f.read()
 
 
-def get_user_agents(directory: str='user_agents') -> Dict[str, Any]:
-    ua_files_path = sorted((get_homedir() / directory).glob('**/*.json'), reverse=True)
-    with ua_files_path[0].open() as f:
-        return json.load(f)
+class UserAgents:
 
+    def __init__(self):
+        if get_config('generic', 'use_user_agents_users'):
+            self.path = get_homedir() / 'own_user_agents'
+        else:
+            self.path = get_homedir() / 'user_agents'
+
+        ua_files_path = sorted(self.path.glob('**/*.json'), reverse=True)
+        self.most_recent_ua_path = ua_files_path[0]
+        with self.most_recent_ua_path.open() as f:
+            self.most_recent_uas = json.load(f)
+            self.by_freq = self.most_recent_uas.pop('by_frequency')
+
+    @property
+    def user_agents(self) -> Dict[str, Dict[str, List[str]]]:
+        ua_files_path = sorted(self.path.glob('**/*.json'), reverse=True)
+        if ua_files_path[0] != self.most_recent_ua_path:
+            self.most_recent_ua_path = ua_files_path[0]
+            with self.most_recent_ua_path.open() as f:
+                self.most_recent_uas = json.load(f)
+                self.by_freq = self.most_recent_uas.pop('by_frequency')
+        return self.most_recent_uas
+
+    @property
+    def default(self) -> Dict[str, str]:
+        blocked_words = ['bot', 'bing']
+        for ua in self.by_freq:
+            if ua["os"] == "Other":
+                continue
+            if any(blockedword in ua['useragent'].lower() for blockedword in blocked_words):
+                continue
+            return ua
+        raise Exception('Erros with the User agents.')
 
 def load_known_content(directory: str='known_content') -> Dict[str, Dict[str, Any]]:
     to_return: Dict[str, Dict[str, Any]] = {}

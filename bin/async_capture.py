@@ -16,7 +16,7 @@ from redis.asyncio import Redis
 from playwrightcapture import Capture
 
 from lookyloo.default import AbstractManager, get_config, get_socket_path, safe_create_dir
-from lookyloo.helpers import get_captures_dir, load_cookies
+from lookyloo.helpers import get_captures_dir, load_cookies, UserAgents
 
 from lookyloo.modules import FOX
 
@@ -31,6 +31,7 @@ class AsyncCapture(AbstractManager):
         self.script_name = 'async_capture'
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
         self.capture_dir: Path = get_captures_dir()
+        self.user_agents = UserAgents()
 
         self.fox = FOX(get_config('modules', 'FOX'))
         if not self.fox.available:
@@ -134,7 +135,8 @@ class AsyncCapture(AbstractManager):
         cookies = load_cookies(cookies_pseudofile)
         if not user_agent:
             # Catch case where the UA is broken on the UI, and the async submission.
-            ua: str = get_config('generic', 'default_user_agent')
+            self.user_agents.user_agents  # triggers an update if needed
+            ua: str = self.user_agents.default['useragent']
         else:
             ua = user_agent
 
