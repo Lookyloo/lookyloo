@@ -48,7 +48,7 @@ def validate_generic_config_file():
     # Make sure the user config file doesn't have entries missing in the sample config
     for key in generic_config.keys():
         if key not in generic_config_sample:
-            raise Exception(f'{key} is missing in the sample config file. You need to compare {user_config} with {sample_config}.')
+            logger.warning(f'{key} is missing in the sample config file, it was probably removed, you can do it too.')
 
     return True
 
