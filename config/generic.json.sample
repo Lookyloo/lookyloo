@@ -13,7 +13,6 @@
     "days": 0,
     "hours": 0
   },
-  "max_depth": 1,
   "async_capture_processes": 1,
   "use_user_agents_users": false,
   "enable_default_blur_screenshot": false,
@@ -57,7 +56,6 @@
     "default_public": "If true, the capture is public and will be visible on the index page by default (can be unticked on the capture page).",
     "users": "It is some kind of an admin accounts. Format: {username: password}",
     "time_delta_on_index": "Time interval of the capture displayed on the index",
-    "max_depth": "Maximum depth for scraping. Anything > 1 will be exponentially bigger.",
     "async_capture_processes": "Number of async_capture processes to start. This should not be higher than the number of splash instances you have running. A very high number will use *a lot* of ram.",
     "use_user_agents_users": "Only usable for medium/high use instances: use the user agents of the users of the platform",
     "enable_default_blur_screenshot": "If true, blur the screenshot by default (useful on public instances)",

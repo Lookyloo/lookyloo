@@ -105,7 +105,6 @@ lookyloo: Lookyloo = Lookyloo()
 
 time_delta_on_index = get_config('generic', 'time_delta_on_index')
 blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')
-max_depth = get_config('generic', 'max_depth')
 
 use_own_ua = get_config('generic', 'use_user_agents_users')
 enable_mail_notification = get_config('generic', 'enable_mail_notification')
@@ -801,7 +800,7 @@ def search():
 def _prepare_capture_template(user_ua: Optional[str], predefined_url: Optional[str]=None):
     return render_template('capture.html', user_agents=user_agents.user_agents,
                            default=user_agents.default,
-                           max_depth=max_depth, personal_ua=user_ua,
+                           personal_ua=user_ua,
                            default_public=get_config('generic', 'default_public'),
                            predefined_url_to_capture=predefined_url if predefined_url else '')
 
@@ -810,7 +809,8 @@ def _prepare_capture_template(user_ua: Optional[str], predefined_url: Optional[s
 def recapture(tree_uuid: str):
     cache = lookyloo.capture_cache(tree_uuid)
     if cache:
-        return _prepare_capture_template(user_ua=request.headers.get('User-Agent'), predefined_url=cache.url)
+        return _prepare_capture_template(user_ua=request.headers.get('User-Agent'),
+                                         predefined_url=cache.url)
     flash(f'Unable to find the capture {tree_uuid} in the cache.', 'error')
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 

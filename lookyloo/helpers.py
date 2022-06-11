@@ -94,7 +94,10 @@ class UserAgents:
             self.path = get_homedir() / 'user_agents'
 
         ua_files_path = sorted(self.path.glob('**/*.json'), reverse=True)
-        self.most_recent_ua_path = ua_files_path[0]
+        self._load_newest_ua_file(ua_files_path[0])
+
+    def _load_newest_ua_file(self, path: Path):
+        self.most_recent_ua_path = path
         with self.most_recent_ua_path.open() as f:
             self.most_recent_uas = json.load(f)
             self.by_freq = self.most_recent_uas.pop('by_frequency')
@@ -103,10 +106,7 @@ class UserAgents:
     def user_agents(self) -> Dict[str, Dict[str, List[str]]]:
         ua_files_path = sorted(self.path.glob('**/*.json'), reverse=True)
         if ua_files_path[0] != self.most_recent_ua_path:
-            self.most_recent_ua_path = ua_files_path[0]
-            with self.most_recent_ua_path.open() as f:
-                self.most_recent_uas = json.load(f)
-                self.by_freq = self.most_recent_uas.pop('by_frequency')
+            self._load_newest_ua_file(ua_files_path[0])
         return self.most_recent_uas
 
     @property
@@ -119,6 +119,7 @@ class UserAgents:
                 continue
             return ua
         raise Exception('Erros with the User agents.')
+
 
 def load_known_content(directory: str='known_content') -> Dict[str, Dict[str, Any]]:
     to_return: Dict[str, Dict[str, Any]] = {}

@@ -150,19 +150,6 @@
 
     <div id="collapseConfigCapture" class="collapse">
       <div class="card card-body">
-        {% if max_depth >= 2 %}
-        <div class="row mb-3">
-          <label for="depth" class="col-sm-2 col-form-label">Link Depth:</label>
-          <div class="col-sm-1">
-            <select class="form-select" name="depth" id=depth>
-              {% for depth in range(max_depth) %}
-              <option value="{{ depth + 1 }}">{{ depth + 1 }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
-        {%endif%}
-
         <div class="row mb-3">
           <label for="referer" class="col-sm-2 col-form-label">Referer:</label>
           <div class="col-sm-10">
