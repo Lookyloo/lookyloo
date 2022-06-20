@@ -1129,7 +1129,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.2.7"
+version = "4.2.8"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "81523602840566c2ba9e035233f30a0f6b8adbf4443117992d0cb467233b5938"
+content-hash = "9b4c3b87c1d002ba8578e8054c5ebcdd7924b0066af0c181656494b914c68a41"
 
 [metadata.files]
 aiohttp = [
@@ -2338,8 +2338,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.17-py3-none-any.whl", hash = "sha256:0be7435b4d382d1cd00b8c55a8a90f4e515aaad8a96f8f0bc20c22df046792e5"},
 ]
 types-redis = [
-    {file = "types-redis-4.2.7.tar.gz", hash = "sha256:eece573e8dfd51238fae1df84d3602335fbcbd3ba8b064081cc0ff8ec1f058a1"},
-    {file = "types_redis-4.2.7-py3-none-any.whl", hash = "sha256:1362d1dd69e8d6688a192c36c29b7ee61d67196df28ff40610013353023571bd"},
+    {file = "types-redis-4.2.8.tar.gz", hash = "sha256:2fe34d40bc7851db8752cda6210c4a8becd1bafd9adb5df189e11583770bf9a0"},
+    {file = "types_redis-4.2.8-py3-none-any.whl", hash = "sha256:ab0136dfd489dbd7e041dc77089dbc2239305f8e421bf92506db26b57ffaf1d3"},
 ]
 types-requests = [
     {file = "types-requests-2.27.30.tar.gz", hash = "sha256:ca8d7cc549c3d10dbcb3c69c1b53e3ffd1270089c1001a65c1e9e1017eb5e704"},
