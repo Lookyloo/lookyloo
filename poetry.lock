@@ -383,7 +383,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.12.0"
+version = "1.12.1"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -394,14 +394,14 @@ beautifulsoup4 = ">=4.11.1,<5.0.0"
 cchardet = ">=2.1.7,<3.0.0"
 ete3 = ">=3.1.2,<4.0.0"
 filetype = ">=1.0.13,<2.0.0"
-lxml = ">=4.8.0,<5.0.0"
-numpy = ">=1.22.4,<2.0.0"
+lxml = ">=4.9.0,<5.0.0"
+numpy = ">=1.23.0,<2.0.0"
 publicsuffix2 = ">=2.20191221,<3.0"
 six = ">=1.16.0,<2.0.0"
 w3lib = ">=1.22.0,<2.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.5.0,<5.0.0)"]
+docs = ["Sphinx (>=5.0.2,<6.0.0)"]
 
 [[package]]
 name = "hiredis"
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "ee3a22b0c8f1d48eb19eb69bfd8be5f5fc5eb00df605b03351da20fecf2d12b0"
+content-hash = "de3091d929210780fc831f9b07ce714aba4423baeafd85695bfc42581df2d25f"
 
 [metadata.files]
 aiohttp = [
@@ -1683,8 +1683,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.12.0-py3-none-any.whl", hash = "sha256:3969b8d18086776663b27108c5453faf0e24af6b66bd2a2fd531b6ed36a8d925"},
-    {file = "har2tree-1.12.0.tar.gz", hash = "sha256:95c252a14d41f8126dbe33b3807be90e14ae39069014d5f93d464eefaee9747a"},
+    {file = "har2tree-1.12.1-py3-none-any.whl", hash = "sha256:212f0b25a91bfe6aa6c36e17cd9cd42aecadf9c52eff7f55c2ad0890b0acbd63"},
+    {file = "har2tree-1.12.1.tar.gz", hash = "sha256:48e78aeef75fb2d90cb7bad6f5385ccdfede01e4548ebd2b8e0e2ad16f419c29"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
