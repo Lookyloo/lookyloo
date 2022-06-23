@@ -63,7 +63,7 @@ pyhashlookup = "^1.1.1"
 lief = "^0.12.1"
 ua-parser = "^0.10.0"
 Flask-Login = "^0.6.1"
-har2tree = "^1.12.1"
+har2tree = "^1.12.2"
 playwrightcapture = "^1.12.1"
 
 [tool.poetry.extras]
