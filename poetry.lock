@@ -1121,7 +1121,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.8.17"
+version = "2.8.18"
 description = "Typing stubs for python-dateutil"
 category = "dev"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "81523602840566c2ba9e035233f30a0f6b8adbf4443117992d0cb467233b5938"
+content-hash = "89c6ee772694d4a4f598507c462cdfedd8434334b7c9bf751201215d807c1f7e"
 
 [metadata.files]
 aiohttp = [
@@ -2334,8 +2334,8 @@ types-pkg-resources = [
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-python-dateutil = [
-    {file = "types-python-dateutil-2.8.17.tar.gz", hash = "sha256:6c54265a221681dd87f61df6743bd5eab060cf1b4086ff65c1a8fd763ed6370e"},
-    {file = "types_python_dateutil-2.8.17-py3-none-any.whl", hash = "sha256:0be7435b4d382d1cd00b8c55a8a90f4e515aaad8a96f8f0bc20c22df046792e5"},
+    {file = "types-python-dateutil-2.8.18.tar.gz", hash = "sha256:8695c7d7a5b1aef4002f3ab4e1247e23b1d41cd7cc1286d4594c2d8c5593c991"},
+    {file = "types_python_dateutil-2.8.18-py3-none-any.whl", hash = "sha256:fd5ed97262b76ae684695ea38ace8dd7c1bc9491aba7eb4edf6654b7ecabc870"},
 ]
 types-redis = [
     {file = "types-redis-4.2.7.tar.gz", hash = "sha256:eece573e8dfd51238fae1df84d3602335fbcbd3ba8b064081cc0ff8ec1f058a1"},
