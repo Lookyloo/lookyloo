@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lookyloo"
-version = "1.12.0"
+version = "1.13.0"
 description = "Web interface to track the trackers."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
@@ -47,7 +47,7 @@ defang = "^0.5.3"
 vt-py = "^0.14.0"
 pyeupi = "^1.1"
 pysanejs = "^2.0"
-pylookyloo = "^1.12.0"
+pylookyloo = "^1.13.0"
 dnspython = "^2.2.1"
 pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.4.159", extras = ["url"]}
@@ -63,8 +63,8 @@ pyhashlookup = "^1.1.1"
 lief = "^0.12.1"
 ua-parser = "^0.10.0"
 Flask-Login = "^0.6.1"
-har2tree = "^1.12.2"
-playwrightcapture = "^1.12.1"
+har2tree = "^1.13.0"
+playwrightcapture = "^1.13.0"
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep2']
@@ -73,13 +73,13 @@ misp = ['python-magic', 'pydeep2']
 mypy = "^0.961"
 ipython = "^8.4.0"
 types-redis = "^4.3.2"
-types-requests = "^2.27.31"
+types-requests = "^2.28.0"
 types-Flask = "^1.1.6"
 types-pkg-resources = "^0.1.3"
-types-Deprecated = "^1.2.8"
+types-Deprecated = "^1.2.9"
 types-python-dateutil = "^2.8.18"
 types-beautifulsoup4 = "^4.11.2"
-types-setuptools = "^57.4.17"
+types-setuptools = "^57.4.18"
 types-Pillow = "^9.0.20"
 
 [build-system]

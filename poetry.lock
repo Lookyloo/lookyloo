@@ -383,7 +383,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.12.2"
+version = "1.13.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -421,7 +421,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "importlib-metadata"
-version = "4.11.4"
+version = "4.12.0"
 description = "Read metadata from Python packages"
 category = "main"
 optional = false
@@ -433,7 +433,7 @@ zipp = ">=0.5"
 [package.extras]
 docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)"]
 perf = ["ipython"]
-testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "packaging", "pyfakefs", "flufl.flake8", "pytest-perf (>=0.9.2)", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)", "importlib-resources (>=1.3)"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.3)", "packaging", "pyfakefs", "flufl.flake8", "pytest-perf (>=0.9.2)", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)", "importlib-resources (>=1.3)"]
 
 [[package]]
 name = "importlib-resources"
@@ -692,7 +692,7 @@ websockets = "10.1"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.12.1"
+version = "1.13.0"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
@@ -703,7 +703,7 @@ dateparser = ">=1.1.1,<2.0.0"
 playwright = ">=1.22.0,<2.0.0"
 
 [package.extras]
-recaptcha = ["requests (>=2.27.1,<3.0.0)", "pydub (>=0.25.1,<0.26.0)", "SpeechRecognition (>=3.8.1,<4.0.0)"]
+recaptcha = ["requests (>=2.28.0,<3.0.0)", "pydub (>=0.25.1,<0.26.0)", "SpeechRecognition (>=3.8.1,<4.0.0)"]
 
 [[package]]
 name = "prompt-toolkit"
@@ -803,17 +803,17 @@ docs = ["Sphinx (>=4.3.1,<5.0.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.12.0"
+version = "1.13.0"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
-requests = ">=2.27.1,<3.0.0"
+requests = ">=2.28.0,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.5.0,<5.0.0)"]
+docs = ["Sphinx (>=5.0.2,<6.0.0)"]
 
 [[package]]
 name = "pymisp"
@@ -1065,7 +1065,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-deprecated"
-version = "1.2.8"
+version = "1.2.9"
 description = "Typing stubs for Deprecated"
 category = "dev"
 optional = false
@@ -1137,7 +1137,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.27.31"
+version = "2.28.0"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1148,7 +1148,7 @@ types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-setuptools"
-version = "57.4.17"
+version = "57.4.18"
 description = "Typing stubs for setuptools"
 category = "dev"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "c65e56d7a86d56462c72be60e152b2519f857fe2e3081933193ee16da135cd4e"
+content-hash = "b8964dec2d2a73a4359b1005b598a6163e9d245d6166f90fcab29a21d25e9599"
 
 [metadata.files]
 aiohttp = [
@@ -1683,8 +1683,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.12.2-py3-none-any.whl", hash = "sha256:3ecdcd2efdad6677aa5ff2b25fcf6a603065613448ab04dff89cadd7b64bbea2"},
-    {file = "har2tree-1.12.2.tar.gz", hash = "sha256:45f94431fdb7d2219dcc65f0a8517a1033453c2234ad70c974bbc23078eb1ab6"},
+    {file = "har2tree-1.13.0-py3-none-any.whl", hash = "sha256:3ec87dba257f5b8d4d19af59c5275cac1a22e9f789bed1c09c9f858f76b94378"},
+    {file = "har2tree-1.13.0.tar.gz", hash = "sha256:edd3daf513ced3e8e16503ebbb9ce5e3ea8247ccc68a4010a722655a77fe6082"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -1734,8 +1734,8 @@ idna = [
     {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},
 ]
 importlib-metadata = [
-    {file = "importlib_metadata-4.11.4-py3-none-any.whl", hash = "sha256:c58c8eb8a762858f49e18436ff552e83914778e50e9d2f1660535ffb364552ec"},
-    {file = "importlib_metadata-4.11.4.tar.gz", hash = "sha256:5d26852efe48c0a32b0509ffbc583fda1a2266545a78d104a6f4aff3db17d700"},
+    {file = "importlib_metadata-4.12.0-py3-none-any.whl", hash = "sha256:7401a975809ea1fdc658c3aa4f78cc2195a0e019c5cbc4c06122884e9ae80c23"},
+    {file = "importlib_metadata-4.12.0.tar.gz", hash = "sha256:637245b8bab2b6502fcbc752cc4b7a6f6243bb02b31c5c26156ad103d3d45670"},
 ]
 importlib-resources = [
     {file = "importlib_resources-5.8.0-py3-none-any.whl", hash = "sha256:7952325ffd516c05a8ad0858c74dff2c3343f136fe66a6002b2623dd1d43f223"},
@@ -2078,8 +2078,8 @@ playwright = [
     {file = "playwright-1.22.0-py3-none-win_amd64.whl", hash = "sha256:bc7827fcc037a9a6f571328c524d50bfd46db4ebdc415ab8b8efafae30c1d597"},
 ]
 playwrightcapture = [
-    {file = "PlaywrightCapture-1.12.1-py3-none-any.whl", hash = "sha256:11f4f94dc5a04c3a548bbfe209643162043c706483f78444aa87afa24a93a979"},
-    {file = "PlaywrightCapture-1.12.1.tar.gz", hash = "sha256:7799907cd6938a315b13110584347f1ce3dd2bea5ab2f271004bb71c5445ba61"},
+    {file = "PlaywrightCapture-1.13.0-py3-none-any.whl", hash = "sha256:2e156d4bb5d6f0f3f46e733479ab16a3b47d40de06d7c712f979fee0fce1778f"},
+    {file = "PlaywrightCapture-1.13.0.tar.gz", hash = "sha256:37a1a4e26a314933f1f3fe7ef4229ab1ce0312f97c5cc77c89d1795510739b0c"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.29-py3-none-any.whl", hash = "sha256:62291dad495e665fca0bda814e342c69952086afb0f4094d0893d357e5c78752"},
@@ -2131,8 +2131,8 @@ pyhashlookup = [
     {file = "pyhashlookup-1.1.1.tar.gz", hash = "sha256:3b0ecd0aab7ff803044617a1f7026fe96469f1c5e62b17891755c9bca702371e"},
 ]
 pylookyloo = [
-    {file = "pylookyloo-1.12.0-py3-none-any.whl", hash = "sha256:cf68609b5b5e779ccbb846acf2f34a31381575d760b25fa09e6f8a57689f7dfb"},
-    {file = "pylookyloo-1.12.0.tar.gz", hash = "sha256:a6e652e3f7ed370d5db2a044ecfd4c693eff79c3bcb78bae0ce3e8af03b1b23f"},
+    {file = "pylookyloo-1.13.0-py3-none-any.whl", hash = "sha256:1d54afb24f95a03400c214c7eb497936b5e244b728347a158f541cef5a908cb9"},
+    {file = "pylookyloo-1.13.0.tar.gz", hash = "sha256:0a53b1c259a7e4fc1ce908ef45d3ca6b0bafc276cc3705d7e14ed7797deb1595"},
 ]
 pymisp = [
     {file = "pymisp-2.4.159-py3-none-any.whl", hash = "sha256:7af4f80180bd32411448628940b19d5fa434307e979a6a8a2d41b13fbc86f7a7"},
@@ -2310,8 +2310,8 @@ types-click = [
     {file = "types_click-7.1.8-py3-none-any.whl", hash = "sha256:8cb030a669e2e927461be9827375f83c16b8178c365852c060a34e24871e7e81"},
 ]
 types-deprecated = [
-    {file = "types-Deprecated-1.2.8.tar.gz", hash = "sha256:62e1b773cafaec26e5e7c85f6f476f65aba1b5cb0857b0cc71d1eeb8c576e6a2"},
-    {file = "types_Deprecated-1.2.8-py3-none-any.whl", hash = "sha256:5adf04a18d1d0ae7d82b56cd07c2386c6639026ac5f7a9eb47f904d934697430"},
+    {file = "types-Deprecated-1.2.9.tar.gz", hash = "sha256:e04ce58929509865359e91dcc38720123262b4cd68fa2a8a90312d50390bb6fa"},
+    {file = "types_Deprecated-1.2.9-py3-none-any.whl", hash = "sha256:53d05621e1d75de537f5a57d93508c8df17e37c07ee60b9fb09d39e1b7586c1e"},
 ]
 types-flask = [
     {file = "types-Flask-1.1.6.tar.gz", hash = "sha256:aac777b3abfff9436e6b01f6d08171cf23ea6e5be71cbf773aaabb1c5763e9cf"},
@@ -2342,12 +2342,12 @@ types-redis = [
     {file = "types_redis-4.3.2-py3-none-any.whl", hash = "sha256:6c2772dcf9abd611dfdecf92afeb9e9128bab66ab0c9b61517fac5c6d7c5d81e"},
 ]
 types-requests = [
-    {file = "types-requests-2.27.31.tar.gz", hash = "sha256:6fab97b99fea52b9c7b466a4dd93e06bb325bc7e7420475e87831026a8dd35cc"},
-    {file = "types_requests-2.27.31-py3-none-any.whl", hash = "sha256:1b6cf6a2bf57fd8018c1b636b69762900466fafddfb62e1330e092f3d4b0966a"},
+    {file = "types-requests-2.28.0.tar.gz", hash = "sha256:9863d16dfbb3fa55dcda64fa3b989e76e8859033b26c1e1623e30465cfe294d3"},
+    {file = "types_requests-2.28.0-py3-none-any.whl", hash = "sha256:85383b4ef0535f639c3f06c5bbb6494bbf59570c4cd88bbcf540f0b2ac1b49ab"},
 ]
 types-setuptools = [
-    {file = "types-setuptools-57.4.17.tar.gz", hash = "sha256:9d556fcaf6808a1cead4aaa41e5c07a61f0152a875811e1239738eba4e0b7b16"},
-    {file = "types_setuptools-57.4.17-py3-none-any.whl", hash = "sha256:9c7cdaf0d55113e24ac17103bde2d434472abf1dbf444238e989fe4e798ffa26"},
+    {file = "types-setuptools-57.4.18.tar.gz", hash = "sha256:8ee03d823fe7fda0bd35faeae33d35cb5c25b497263e6a58b34c4cfd05f40bcf"},
+    {file = "types_setuptools-57.4.18-py3-none-any.whl", hash = "sha256:9660b8774b12cd61b448e2fd87a667c02e7ec13ce9f15171f1d49a4654c4df6a"},
 ]
 types-urllib3 = [
     {file = "types-urllib3-1.26.15.tar.gz", hash = "sha256:c89283541ef92e344b7f59f83ea9b5a295b16366ceee3f25ecfc5593c79f794e"},
