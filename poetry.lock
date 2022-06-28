@@ -707,7 +707,7 @@ recaptcha = ["requests (>=2.28.0,<3.0.0)", "pydub (>=0.25.1,<0.26.0)", "SpeechRe
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.29"
+version = "3.0.30"
 description = "Library for building powerful interactive command lines in Python"
 category = "dev"
 optional = false
@@ -938,7 +938,7 @@ tzdata = {version = "*", markers = "python_version >= \"3.6\""}
 
 [[package]]
 name = "redis"
-version = "4.3.3"
+version = "4.3.4"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "b8964dec2d2a73a4359b1005b598a6163e9d245d6166f90fcab29a21d25e9599"
+content-hash = "dec35feae6d120eab24468677897c7b942c50c1ad26e95095aea6cf5b543704c"
 
 [metadata.files]
 aiohttp = [
@@ -2082,8 +2082,8 @@ playwrightcapture = [
     {file = "PlaywrightCapture-1.13.0.tar.gz", hash = "sha256:37a1a4e26a314933f1f3fe7ef4229ab1ce0312f97c5cc77c89d1795510739b0c"},
 ]
 prompt-toolkit = [
-    {file = "prompt_toolkit-3.0.29-py3-none-any.whl", hash = "sha256:62291dad495e665fca0bda814e342c69952086afb0f4094d0893d357e5c78752"},
-    {file = "prompt_toolkit-3.0.29.tar.gz", hash = "sha256:bd640f60e8cecd74f0dc249713d433ace2ddc62b65ee07f96d358e0b152b6ea7"},
+    {file = "prompt_toolkit-3.0.30-py3-none-any.whl", hash = "sha256:d8916d3f62a7b67ab353a952ce4ced6a1d2587dfe9ef8ebc30dd7c386751f289"},
+    {file = "prompt_toolkit-3.0.30.tar.gz", hash = "sha256:859b283c50bde45f5f97829f77a4674d1c1fcd88539364f1b28a37805cfd89c0"},
 ]
 ptyprocess = [
     {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},
@@ -2194,8 +2194,8 @@ pytz-deprecation-shim = [
     {file = "pytz_deprecation_shim-0.1.0.post0.tar.gz", hash = "sha256:af097bae1b616dde5c5744441e2ddc69e74dfdcb0c263129610d85b87445a59d"},
 ]
 redis = [
-    {file = "redis-4.3.3-py3-none-any.whl", hash = "sha256:f57f8df5d238a8ecf92f499b6b21467bfee6c13d89953c27edf1e2bc673622e7"},
-    {file = "redis-4.3.3.tar.gz", hash = "sha256:2f7a57cf4af15cd543c4394bcbe2b9148db2606a37edba755368836e3a1d053e"},
+    {file = "redis-4.3.4-py3-none-any.whl", hash = "sha256:a52d5694c9eb4292770084fa8c863f79367ca19884b329ab574d5cb2036b3e54"},
+    {file = "redis-4.3.4.tar.gz", hash = "sha256:ddf27071df4adf3821c4f2ca59d67525c3a82e5f268bed97b813cb4fabf87880"},
 ]
 regex = [
     {file = "regex-2022.3.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ab69b4fe09e296261377d209068d52402fb85ef89dc78a9ac4a29a895f4e24a7"},
