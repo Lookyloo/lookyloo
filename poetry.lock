@@ -1205,7 +1205,7 @@ test = ["pytest-mock (>=3.3)", "pytest (>=4.3)"]
 
 [[package]]
 name = "ua-parser"
-version = "0.10.0"
+version = "0.15.0"
 description = "Python port of Browserscope's user agent parser"
 category = "main"
 optional = false
@@ -1328,7 +1328,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "dec35feae6d120eab24468677897c7b942c50c1ad26e95095aea6cf5b543704c"
+content-hash = "564be97ca84d8ab8ad194c39e4080586b38d53735cf45c531dd71d5cdfb8f00e"
 
 [metadata.files]
 aiohttp = [
@@ -2370,8 +2370,8 @@ tzlocal = [
     {file = "tzlocal-4.2.tar.gz", hash = "sha256:ee5842fa3a795f023514ac2d801c4a81d1743bbe642e3940143326b3a00addd7"},
 ]
 ua-parser = [
-    {file = "ua-parser-0.10.0.tar.gz", hash = "sha256:47b1782ed130d890018d983fac37c2a80799d9e0b9c532e734c67cf70f185033"},
-    {file = "ua_parser-0.10.0-py2.py3-none-any.whl", hash = "sha256:46ab2e383c01dbd2ab284991b87d624a26a08f72da4d7d413f5bfab8b9036f8a"},
+    {file = "ua-parser-0.15.0.tar.gz", hash = "sha256:e441c982ffe81aa7e31af40ac6bf1d39f8ad24f1d34a2d91baae415470b26e9b"},
+    {file = "ua_parser-0.15.0-py2.py3-none-any.whl", hash = "sha256:a93592ee96922b5f969bde9ae79662bdd41d041760280b099a6700264a1b7291"},
 ]
 urllib3 = [
     {file = "urllib3-1.26.9-py2.py3-none-any.whl", hash = "sha256:44ece4d53fb1706f667c9bd1c648f5469a2ec925fcf3a776667042d645472c14"},
