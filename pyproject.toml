@@ -36,7 +36,7 @@ start_website = "bin.start_website:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-requests = "^2.28.0"
+requests = "^2.28.1"
 flask = "^2.1.2"
 gunicorn = "^20.1.0"
 cchardet = "^2.1.7"
@@ -53,7 +53,7 @@ pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.4.159", extras = ["url"]}
 python-magic = {version = "^0.4.27", optional = true}
 pydeep2 = {version = "^0.5.1", optional = true}
-Pillow = "^9.1.1"
+Pillow = "^9.2.0"
 flask-restx = "^0.5.1"
 rich = "^12.4.4"
 pyphishtanklookup = "^1.1"
@@ -79,8 +79,8 @@ types-pkg-resources = "^0.1.3"
 types-Deprecated = "^1.2.9"
 types-python-dateutil = "^2.8.18"
 types-beautifulsoup4 = "^4.11.2"
-types-setuptools = "^57.4.18"
-types-Pillow = "^9.0.20"
+types-setuptools = "^62.6.0"
+types-Pillow = "^9.2.0"
 
 [build-system]
 requires = ["poetry_core>=1.0", "setuptools"]
