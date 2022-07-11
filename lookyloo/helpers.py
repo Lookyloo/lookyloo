@@ -139,7 +139,12 @@ def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str]]=None) -
                 logger.warning(f'Unable to load json content: {cookie_pseudofile}')
                 return []
         else:
-            cookies = json.load(cookie_pseudofile)
+            # Note: we might have an empty BytesIO, which is not False.
+            try:
+                cookies = json.load(cookie_pseudofile)
+            except json.decoder.JSONDecodeError:
+                logger.warning(f'Unable to load json content: {cookie_pseudofile}')
+                return []
     else:
         if not (get_homedir() / 'cookies.json').exists():
             return []
