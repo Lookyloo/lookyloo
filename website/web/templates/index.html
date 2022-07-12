@@ -63,9 +63,11 @@ $(document).ready(function () {
   <div class="corner-ribbon bottom-left sticky white shadow">
       <a href="https://github.com/Lookyloo/lookyloo/releases/tag/v{{version}}">Changelog</br>(v{{version}})</a>
   </div>
+  {% if show_project_page %}
   <div class="corner-ribbon top-right sticky white shadow">
     <a href="https://github.com/Lookyloo">Project page</a>
   </div>
+  {% endif %}
   <center>
     <a href="{{ url_for('capture_web') }}">
       <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
