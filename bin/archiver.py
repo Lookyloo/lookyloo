@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 import csv
+import gzip
 import logging
+import shutil
+
 from collections import defaultdict
 from collections.abc import Mapping
 from datetime import datetime, timedelta
@@ -34,6 +37,7 @@ class Archiver(AbstractManager):
         self._archive()
         self._update_all_capture_indexes()
         self._load_indexes()
+        self._compress_hars()
 
     def _update_index(self, root_dir: Path) -> None:
         current_index: Dict[str, str] = {}
@@ -72,12 +76,12 @@ class Archiver(AbstractManager):
     def _update_all_capture_indexes(self):
         '''Run that after the captures are in the proper directories'''
         # Recent captures
-        directories_to_index = {capture_dir.parent.parent for capture_dir in get_captures_dir().glob('**/uuid')}
+        directories_to_index = {capture_dir.parent.parent for capture_dir in get_captures_dir().rglob('uuid')}
         for directory_to_index in directories_to_index:
             self._update_index(directory_to_index)
 
         # Archived captures
-        directories_to_index = {capture_dir.parent.parent for capture_dir in self.archived_captures_dir.glob('**/uuid')}
+        directories_to_index = {capture_dir.parent.parent for capture_dir in self.archived_captures_dir.rglob('uuid')}
         for directory_to_index in directories_to_index:
             self._update_index(directory_to_index)
 
@@ -89,7 +93,7 @@ class Archiver(AbstractManager):
         # Format:
         # { 2020: { 12: [(directory, uuid)] } }
         to_archive: Dict[int, Dict[int, List[Path]]] = defaultdict(lambda: defaultdict(list))
-        for capture_uuid in get_captures_dir().glob('**/uuid'):
+        for capture_uuid in get_captures_dir().rglob('uuid'):
             timestamp = datetime.strptime(capture_uuid.parent.name, '%Y-%m-%dT%H:%M:%S.%f')
             if timestamp.date() >= cut_time:
                 continue
@@ -107,16 +111,27 @@ class Archiver(AbstractManager):
                 dest_dir.mkdir(parents=True, exist_ok=True)
                 for capture_path in captures:
                     p.delete(str(capture_path))
+                    (capture_path / 'tree.pickle').unlink(missing_ok=True)
                     capture_path.rename(dest_dir / capture_path.name)
         p.execute()
 
-        # Clear empty
-
         self.logger.info('Archiving done.')
+
+    def _compress_hars(self):
+        for index in self.archived_captures_dir.rglob('index'):
+            with index.open('r') as _f:
+                for uuid, dirname in csv.reader(_f):
+                    for har in (index.parent / dirname).glob('*.har'):
+                        if not har.exists():
+                            continue
+                        with har.open('rb') as f_in:
+                            with gzip.open(f'{har}.gz', 'wb') as f_out:
+                                shutil.copyfileobj(f_in, f_out)
+                        har.unlink()
 
     def _load_indexes(self):
         # Initialize archives
-        for index in get_captures_dir().glob('**/index'):
+        for index in get_captures_dir().rglob('index'):
             with index.open('r') as _f:
                 recent_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
             if recent_uuids:
@@ -125,7 +140,7 @@ class Archiver(AbstractManager):
                 index.unlink()
 
         # Initialize archives
-        for index in self.archived_captures_dir.glob('**/index'):
+        for index in self.archived_captures_dir.rglob('index'):
             with index.open('r') as _f:
                 archived_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
             if archived_uuids:

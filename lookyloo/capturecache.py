@@ -200,8 +200,7 @@ class CapturesIndex(Mapping):
                 time.sleep(5)
             return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
 
-        har_files = sorted(capture_dir.glob('*.har'))
-        pickle_file = capture_dir / 'tree.pickle'
+        har_files = sorted(capture_dir.glob('*.har*'))
         try:
             tree = CrawledTree(har_files, uuid)
             self.__resolve_dns(tree)
@@ -212,7 +211,7 @@ class CapturesIndex(Mapping):
         except RecursionError as e:
             raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
         else:
-            with pickle_file.open('wb') as _p:
+            with (capture_dir / 'tree.pickle').open('wb') as _p:
                 # Some pickles require a pretty high recursion limit, this kindof fixes it.
                 # If the capture is really broken (generally a refresh to self), the capture
                 # is discarded in the RecursionError above.
@@ -247,7 +246,7 @@ class CapturesIndex(Mapping):
                     error_to_cache = content
                 cache['error'] = f'The capture {capture_dir.name} has an error: {error_to_cache}'
 
-        if (har_files := sorted(capture_dir.glob('*.har'))):
+        if (har_files := sorted(capture_dir.glob('*.har*'))):
             try:
                 har = HarFile(har_files[0], uuid)
                 cache['title'] = har.initial_title
