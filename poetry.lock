@@ -277,6 +277,18 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "filelock"
+version = "3.7.1"
+description = "A platform independent file lock."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+docs = ["furo (>=2021.8.17b43)", "sphinx (>=4.1)", "sphinx-autodoc-typehints (>=1.12)"]
+testing = ["covdefaults (>=1.2.0)", "coverage (>=4)", "pytest (>=4)", "pytest-cov", "pytest-timeout (>=1.4.2)"]
+
+[[package]]
 name = "filetype"
 version = "1.1.0"
 description = "Infer file type and MIME type of any file/buffer. No external dependencies."
@@ -286,7 +298,7 @@ python-versions = "*"
 
 [[package]]
 name = "flask"
-version = "2.1.2"
+version = "2.1.3"
 description = "A simple framework for building complex web applications."
 category = "main"
 optional = false
@@ -355,6 +367,14 @@ description = "A list-like structure which implements collections.abc.MutableSeq
 category = "main"
 optional = false
 python-versions = ">=3.7"
+
+[[package]]
+name = "future"
+version = "0.18.2"
+description = "Clean single-source support for Python 3 and 2"
+category = "main"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "greenlet"
@@ -646,6 +666,23 @@ qa = ["flake8 (==3.8.3)", "mypy (==0.782)"]
 testing = ["docopt", "pytest (<6.0.0)"]
 
 [[package]]
+name = "passivetotal"
+version = "2.5.9"
+description = "Library for the RiskIQ PassiveTotal and Illuminate API"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+future = "*"
+python-dateutil = "*"
+requests = "*"
+tldextract = "*"
+
+[package.extras]
+pandas = ["pandas"]
+
+[[package]]
 name = "pexpect"
 version = "4.8.0"
 description = "Pexpect allows easy control of interactive console applications."
@@ -678,7 +715,7 @@ tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "pa
 
 [[package]]
 name = "playwright"
-version = "1.23.0"
+version = "1.23.1"
 description = "A high-level API to automate web browsers"
 category = "main"
 optional = false
@@ -981,6 +1018,18 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
+name = "requests-file"
+version = "1.5.1"
+description = "File transport adapter for Requests"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = ">=1.0.0"
+six = "*"
+
+[[package]]
 name = "rich"
 version = "12.5.1"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
@@ -1027,6 +1076,20 @@ pure-eval = "*"
 
 [package.extras]
 tests = ["pytest", "typeguard", "pygments", "littleutils", "cython"]
+
+[[package]]
+name = "tldextract"
+version = "3.3.1"
+description = "Accurately separates a URL's subdomain, domain, and public suffix, using the Public Suffix List (PSL). By default, this includes the public ICANN TLDs and their exceptions. You can optionally support the Public Suffix List's private domains as well."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+filelock = ">=3.0.8"
+idna = "*"
+requests = ">=2.1.0"
+requests-file = ">=1.4"
 
 [[package]]
 name = "tomli"
@@ -1137,7 +1200,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.0"
+version = "2.28.1"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1148,7 +1211,7 @@ types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-setuptools"
-version = "62.6.1"
+version = "63.2.0"
 description = "Typing stubs for setuptools"
 category = "dev"
 optional = false
@@ -1328,7 +1391,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "aacc3fc7b768656db70e2d898fadbe68a13f2915b2e58997d96385bd749f8ba6"
+content-hash = "e36f3a483a9a3869b446e0633b005628b3cf832ed1836610a7fcf6af894800df"
 
 [metadata.files]
 aiohttp = [
@@ -1540,13 +1603,17 @@ executing = [
     {file = "executing-0.8.3-py2.py3-none-any.whl", hash = "sha256:d1eef132db1b83649a3905ca6dd8897f71ac6f8cac79a7e58a1a09cf137546c9"},
     {file = "executing-0.8.3.tar.gz", hash = "sha256:c6554e21c6b060590a6d3be4b82fb78f8f0194d809de5ea7df1c093763311501"},
 ]
+filelock = [
+    {file = "filelock-3.7.1-py3-none-any.whl", hash = "sha256:37def7b658813cda163b56fc564cdc75e86d338246458c4c28ae84cabefa2404"},
+    {file = "filelock-3.7.1.tar.gz", hash = "sha256:3a0fd85166ad9dbab54c9aec96737b744106dc5f15c0b09a6744a445299fcf04"},
+]
 filetype = [
     {file = "filetype-1.1.0-py2.py3-none-any.whl", hash = "sha256:117e25a50988d1a03a32ed510f4a15353e7291e683e94c63930497dd2c66ce24"},
     {file = "filetype-1.1.0.tar.gz", hash = "sha256:afe4a00029601f66d239b72688065cc7c219dec1c927994f90b825e9e53d8f93"},
 ]
 flask = [
-    {file = "Flask-2.1.2-py3-none-any.whl", hash = "sha256:fad5b446feb0d6db6aec0c3184d16a8c1f6c3e464b511649c8918a9be100b4fe"},
-    {file = "Flask-2.1.2.tar.gz", hash = "sha256:315ded2ddf8a6281567edb27393010fe3406188bafbfe65a3339d5787d89e477"},
+    {file = "Flask-2.1.3-py3-none-any.whl", hash = "sha256:9013281a7402ad527f8fd56375164f3aa021ecfaff89bfe3825346c24f87e04c"},
+    {file = "Flask-2.1.3.tar.gz", hash = "sha256:15972e5017df0575c3d6c090ba168b6db90259e620ac8d7ea813a396bad5b6cb"},
 ]
 flask-cors = [
     {file = "Flask-Cors-3.0.10.tar.gz", hash = "sha256:b60839393f3b84a0f3746f6cdca56c1ad7426aa738b70d6c61375857823181de"},
@@ -1620,6 +1687,9 @@ frozenlist = [
     {file = "frozenlist-1.3.0-cp39-cp39-win32.whl", hash = "sha256:01a73627448b1f2145bddb6e6c2259988bb8aee0fb361776ff8604b99616cd08"},
     {file = "frozenlist-1.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:772965f773757a6026dea111a15e6e2678fbd6216180f82a48a40b27de1ee2ab"},
     {file = "frozenlist-1.3.0.tar.gz", hash = "sha256:ce6f2ba0edb7b0c1d8976565298ad2deba6f8064d2bebb6ffce2ca896eb35b0b"},
+]
+future = [
+    {file = "future-0.18.2.tar.gz", hash = "sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"},
 ]
 greenlet = [
     {file = "greenlet-1.1.2-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:58df5c2a0e293bf665a51f8a100d3e9956febfbf1d9aaf8c0677cf70218910c6"},
@@ -2005,6 +2075,10 @@ parso = [
     {file = "parso-0.8.3-py2.py3-none-any.whl", hash = "sha256:c001d4636cd3aecdaf33cbb40aebb59b094be2a74c556778ef5576c175e19e75"},
     {file = "parso-0.8.3.tar.gz", hash = "sha256:8c07be290bb59f03588915921e29e8a50002acaf2cdc5fa0e0114f91709fafa0"},
 ]
+passivetotal = [
+    {file = "passivetotal-2.5.9-py3-none-any.whl", hash = "sha256:070c408181bf294f1cf4d49bd7184a00c9419b2bac7a3405f247f786db45ed8f"},
+    {file = "passivetotal-2.5.9.tar.gz", hash = "sha256:f5f1b7843257bc1ed5ae951c48902eb809a4a632947a57d6f8ad199428b13251"},
+]
 pexpect = [
     {file = "pexpect-4.8.0-py2.py3-none-any.whl", hash = "sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937"},
     {file = "pexpect-4.8.0.tar.gz", hash = "sha256:fc65a43959d153d0114afe13997d439c22823a27cefceb5ff35c2178c6784c0c"},
@@ -2073,7 +2147,15 @@ pillow = [
     {file = "Pillow-9.2.0-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:0030fdbd926fb85844b8b92e2f9449ba89607231d3dd597a21ae72dc7fe26927"},
     {file = "Pillow-9.2.0.tar.gz", hash = "sha256:75e636fd3e0fb872693f23ccb8a5ff2cd578801251f3a4f6854c6a5d437d3c04"},
 ]
-playwright = []
+playwright = [
+    {file = "playwright-1.23.1-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:438c15c20930cbdb0a8d1d8d6e37f2d8f35e810303f10ac18f12fca0b15c2e11"},
+    {file = "playwright-1.23.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:4559648db378752072965bce139993720212328fe1a009474e3136df381216a3"},
+    {file = "playwright-1.23.1-py3-none-macosx_11_0_universal2.whl", hash = "sha256:34ec1c952e0dfe203e45e52109f490b6bd90ccecdfaa389dc551ed580c7d94b4"},
+    {file = "playwright-1.23.1-py3-none-manylinux1_x86_64.whl", hash = "sha256:c928a6c2af723f7196dc0c243d857ac96b0951360166cc5cb114ae76c42c359e"},
+    {file = "playwright-1.23.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b8573ab3aa669c951421dd4cfc4c99f3f6c3f3a2a0318c6b91c45c0f5fa2f7c3"},
+    {file = "playwright-1.23.1-py3-none-win32.whl", hash = "sha256:f337c8fc4be9b5ebd63297ae235aae4b8e0cb694adfbef88478fc78712afca09"},
+    {file = "playwright-1.23.1-py3-none-win_amd64.whl", hash = "sha256:72f2e21effda5f3f8a0a23988bc4b49b78ca6a78303159e6ee4aa514c2451ca0"},
+]
 playwrightcapture = [
     {file = "PlaywrightCapture-1.13.1-py3-none-any.whl", hash = "sha256:d2d0a8b74ab023b782e37a4d089a6835d413b8cbfa276549a7ac2a6f4afb1f1c"},
     {file = "PlaywrightCapture-1.13.1.tar.gz", hash = "sha256:dcfca2b121134a648cdc54440c3e9e9b38c9ae1a459ad70ad6a767362ce4ccfd"},
@@ -2274,6 +2356,10 @@ requests = [
     {file = "requests-2.28.1-py3-none-any.whl", hash = "sha256:8fefa2a1a1365bf5520aac41836fbee479da67864514bdb821f31ce07ce65349"},
     {file = "requests-2.28.1.tar.gz", hash = "sha256:7c5599b102feddaa661c826c56ab4fee28bfd17f5abca1ebbe3e7f19d7c97983"},
 ]
+requests-file = [
+    {file = "requests-file-1.5.1.tar.gz", hash = "sha256:07d74208d3389d01c38ab89ef403af0cfec63957d53a0081d8eca738d0247d8e"},
+    {file = "requests_file-1.5.1-py2.py3-none-any.whl", hash = "sha256:dfe5dae75c12481f68ba353183c53a65e6044c923e64c24b2209f6c7570ca953"},
+]
 rich = [
     {file = "rich-12.5.1-py3-none-any.whl", hash = "sha256:2eb4e6894cde1e017976d2975ac210ef515d7548bc595ba20e195fb9628acdeb"},
     {file = "rich-12.5.1.tar.gz", hash = "sha256:63a5c5ce3673d3d5fbbf23cd87e11ab84b6b451436f1b7f19ec54b6bc36ed7ca"},
@@ -2289,6 +2375,10 @@ soupsieve = [
 stack-data = [
     {file = "stack_data-0.3.0-py3-none-any.whl", hash = "sha256:aa1d52d14d09c7a9a12bb740e6bdfffe0f5e8f4f9218d85e7c73a8c37f7ae38d"},
     {file = "stack_data-0.3.0.tar.gz", hash = "sha256:77bec1402dcd0987e9022326473fdbcc767304892a533ed8c29888dacb7dddbc"},
+]
+tldextract = [
+    {file = "tldextract-3.3.1-py3-none-any.whl", hash = "sha256:35a0260570e214d8d3cfeeb403992fe9e2b686925f63c9b03c5933408ac2aa5a"},
+    {file = "tldextract-3.3.1.tar.gz", hash = "sha256:fe15ac3205e5a25b61689369f98cb45c7778a8f2af113d7c11559ece5195f2d6"},
 ]
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
@@ -2336,12 +2426,12 @@ types-redis = [
     {file = "types_redis-4.3.4-py3-none-any.whl", hash = "sha256:f84dfe570ac729fb51735357f807a9e59b4732ddd7050708a7a7e32782b91047"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.0.tar.gz", hash = "sha256:9863d16dfbb3fa55dcda64fa3b989e76e8859033b26c1e1623e30465cfe294d3"},
-    {file = "types_requests-2.28.0-py3-none-any.whl", hash = "sha256:85383b4ef0535f639c3f06c5bbb6494bbf59570c4cd88bbcf540f0b2ac1b49ab"},
+    {file = "types-requests-2.28.1.tar.gz", hash = "sha256:acd8ed78509d27bdf04cddcc05f7066dfde4d30dd7dba67b808cdb1141d62ffe"},
+    {file = "types_requests-2.28.1-py3-none-any.whl", hash = "sha256:b097692e124001f0ed5e4490245bb090f5e8e929819972f9ace84f9c3e146e8c"},
 ]
 types-setuptools = [
-    {file = "types-setuptools-62.6.1.tar.gz", hash = "sha256:affd968a3a7218e1c96f1806eb457f4027eac803b3caaddccf98a4e5776b1724"},
-    {file = "types_setuptools-62.6.1-py3-none-any.whl", hash = "sha256:b0341c29c7f44f7625204532b8829bd92ebb5fd48aa9f3e2052177e743e990b1"},
+    {file = "types-setuptools-63.2.0.tar.gz", hash = "sha256:fc9a6c4776a398d0f57b259ca893748342174c52a35d593d08b56f52aa99c1a4"},
+    {file = "types_setuptools-63.2.0-py3-none-any.whl", hash = "sha256:f9d0d0443dd344cad78da04320a3fb7837d4dd3f3ef4b25d3e0958edea6da812"},
 ]
 types-urllib3 = []
 types-werkzeug = [

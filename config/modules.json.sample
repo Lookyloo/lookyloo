@@ -51,6 +51,11 @@
     "url": "https://hashlookup.circl.lu/",
     "allow_auto_trigger": true
   },
+  "RiskIQ": {
+    "user": null,
+    "apikey": null,
+    "allow_auto_trigger": false
+  },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
     "autosubmit": "Automatically submits the URL to the 3rd party service.",
@@ -63,6 +68,7 @@
     "UrlScan": "Module to query urlscan.io",
     "Phishtank": "Module to query Phishtank Lookup (https://github.com/Lookyloo/phishtank-lookup). URL set to none means querying the public instance.",
     "Hashlookup": "Module to query Hashlookup (https://github.com/adulau/hashlookup-server). URL set to none means querying the public instance.",
-    "FOX": "Submission only interface by and for CCCS"
+    "FOX": "Submission only interface by and for CCCS",
+    "RiskIQ": "Module to query RiskIQ (https://community.riskiq.com/)"
   }
 }

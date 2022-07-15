@@ -189,7 +189,7 @@ def get_useragent_for_requests():
     return f'Lookyloo / {version}'
 
 
-def get_cache_directory(root: Path, identifier: str, namespace: Optional[str] = None) -> Path:
+def get_cache_directory(root: Path, identifier: str, namespace: Optional[Union[str, Path]] = None) -> Path:
     m = hashlib.md5()
     m.update(identifier.encode())
     digest = m.hexdigest()

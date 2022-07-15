@@ -34,7 +34,8 @@ from .helpers import (CaptureStatus, get_captures_dir, get_email_template,
                       uniq_domains, ParsedUserAgent)
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
-                      UrlScan, VirusTotal, Phishtank, Hashlookup)
+                      UrlScan, VirusTotal, Phishtank, Hashlookup,
+                      RiskIQ)
 
 
 class Lookyloo():
@@ -81,6 +82,10 @@ class Lookyloo():
         self.hashlookup = Hashlookup(get_config('modules', 'Hashlookup'))
         if not self.hashlookup.available:
             self.logger.warning('Unable to setup the Hashlookup module')
+
+        self.riskiq = RiskIQ(get_config('modules', 'RiskIQ'))
+        if not self.riskiq.available:
+            self.logger.warning('Unable to setup the RiskIQ module')
 
         self.logger.info('Initializing context...')
         self.context = Context()
@@ -279,6 +284,22 @@ class Lookyloo():
                 result = self.urlscan.url_result(info)
                 if 'error' not in result:
                     to_return['urlscan']['result'] = result
+        return to_return
+
+    def get_historical_lookups(self, capture_uuid: str, /, force: bool=False) -> Dict:
+        # this method is only trigered when the user wants to get more details about the capture
+        # by looking at Passive DNS systems, check if there are hits in the current capture
+        # in another one and things like that. The trigger_modules method is for getting
+        # information about the current status of the capture in other systems.
+        try:
+            ct = self.get_crawled_tree(capture_uuid)
+        except LookylooException:
+            self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_uuid}) is cached.')
+            return None
+        to_return: Dict[str, Any] = {}
+        if self.riskiq.available:
+            self.riskiq.capture_default_trigger(ct)
+            to_return['riskiq'] = self.riskiq.get_passivedns(ct.root_hartree.rendered_node.hostname)
         return to_return
 
     def hide_capture(self, capture_uuid: str, /) -> None:

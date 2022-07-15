@@ -1,0 +1,31 @@
+{% from "macros.html" import shorten_string %}
+
+<div>
+{% if riskiq %}
+  <hr>
+  <center>
+    <h1 class="display-4">RiskIQ</h1>
+  <div>
+  <h3>{{riskiq['queryValue']}}</h3>
+  <h4>{{riskiq['firstSeen']}} - {{ riskiq['lastSeen']}}</h4>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">First seen</th>
+        <th scope="col">Last seen</th>
+        <th scope="col">Resolve</th>
+        <th scope="col">Type</th>
+    </thead>
+    <tbody>
+      {% for entry in riskiq['results'] %}
+      <tr>
+        <td>{{entry['firstSeen']}}</td>
+        <td>{{entry['lastSeen']}}</td>
+        <td>{{entry['resolve']}}</td>
+        <td>{{entry['recordType']}}</td>
+      </tr>
+      {% endfor %}
+  </table>
+  </center>
+{% endif%}
+</div>

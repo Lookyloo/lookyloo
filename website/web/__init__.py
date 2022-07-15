@@ -251,6 +251,14 @@ def trigger_modules(tree_uuid: str):
     return redirect(url_for('modules', tree_uuid=tree_uuid))
 
 
+@app.route('/tree/<string:tree_uuid>/historical_lookups', methods=['GET'])
+def historical_lookups(tree_uuid: str):
+    force = True if (request.args.get('force') and request.args.get('force') == 'True') else False
+    data = lookyloo.get_historical_lookups(tree_uuid, force)
+    return render_template('historical_lookups.html', tree_uuid=tree_uuid,
+                           riskiq=data['riskiq'])
+
+
 @app.route('/tree/<string:tree_uuid>/categories_capture/', defaults={'query': ''})
 @app.route('/tree/<string:tree_uuid>/categories_capture/<string:query>', methods=['GET'])
 def categories_capture(tree_uuid: str, query: str):
