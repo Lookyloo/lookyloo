@@ -42,7 +42,6 @@ class RiskIQ():
     def get_passivedns(self, query: str) -> Dict[str, Any]:
         # The query can be IP or Hostname. For now, we only do it on domains.
         url_storage_dir = get_cache_directory(self.storage_dir_riskiq, query, 'pdns')
-        print(url_storage_dir)
         if not url_storage_dir.exists():
             return None
         cached_entries = sorted(url_storage_dir.glob('*'), reverse=True)
@@ -77,7 +76,6 @@ class RiskIQ():
             return
 
         pdns_info = self.client_dns.get_passive_dns(query=hostname)
-        print(pdns_info)
         if not pdns_info:
             return
         with riskiq_file.open('w') as _f:
