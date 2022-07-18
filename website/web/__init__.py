@@ -256,7 +256,7 @@ def historical_lookups(tree_uuid: str):
     force = True if (request.args.get('force') and request.args.get('force') == 'True') else False
     data = lookyloo.get_historical_lookups(tree_uuid, force)
     return render_template('historical_lookups.html', tree_uuid=tree_uuid,
-                           riskiq=data['riskiq'])
+                           riskiq=data.get('riskiq'))
 
 
 @app.route('/tree/<string:tree_uuid>/categories_capture/', defaults={'query': ''})

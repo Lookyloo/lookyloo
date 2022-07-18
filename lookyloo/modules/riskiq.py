@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 
 import json
+import logging
 
-from datetime import date
-from typing import Any, Dict
+from datetime import date, datetime, timedelta
+from typing import Any, Dict, Optional, Union
 
 from har2tree import CrawledTree
-from passivetotal import AccountClient, DnsRequest, WhoisRequest
+from passivetotal import AccountClient, DnsRequest, WhoisRequest  # type: ignore
+from requests import Response
 
-from ..default import ConfigError, get_homedir
+from ..default import ConfigError, get_homedir, get_config
+from ..exceptions import ModuleError
 from ..helpers import get_cache_directory
+
+
+class RiskIQError(ModuleError):
+
+    def __init__(self, response: Response):
+        self.response = response
 
 
 class RiskIQ():
@@ -19,27 +28,37 @@ class RiskIQ():
             self.available = False
             return
 
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.logger.setLevel(get_config('generic', 'loglevel'))
+
         self.available = True
         self.allow_auto_trigger = False
-        test_client = AccountClient(username=config.get('user'), api_key=config.get('apikey'))
+        test_client = AccountClient(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
 
-        # Check account is working
-        details = test_client.get_account_details()
-        if 'message' in details and details['message'] == 'invalid credentials':
-            self.available = False
-            raise ConfigError('RiskIQ not available, invalid credentials')
-            return
+        try:
+            # Check account is working
+            details = test_client.get_account_details()
+        except RiskIQError as e:
+            details = e.response.json()
+            if 'message' in details:
+                self.available = False
+                self.logger.warning(f'RiskIQ not available, {details["message"]}')
+                return
+            else:
+                raise e
 
-        self.client_dns = DnsRequest(username=config.get('user'), api_key=config.get('apikey'))
-        self.client_whois = WhoisRequest(username=config.get('user'), api_key=config.get('apikey'))
+        self.client_dns = DnsRequest(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
+        self.client_whois = WhoisRequest(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
 
         if config.get('allow_auto_trigger'):
             self.allow_auto_trigger = True
 
+        self.default_first_seen = config.get('default_first_seen_in_days', 5)
+
         self.storage_dir_riskiq = get_homedir() / 'riskiq'
         self.storage_dir_riskiq.mkdir(parents=True, exist_ok=True)
 
-    def get_passivedns(self, query: str) -> Dict[str, Any]:
+    def get_passivedns(self, query: str) -> Optional[Dict[str, Any]]:
         # The query can be IP or Hostname. For now, we only do it on domains.
         url_storage_dir = get_cache_directory(self.storage_dir_riskiq, query, 'pdns')
         if not url_storage_dir.exists():
@@ -61,12 +80,17 @@ class RiskIQ():
         self.pdns_lookup(crawled_tree.root_hartree.rendered_node.hostname, force)
         return {'success': 'Module triggered'}
 
-    def pdns_lookup(self, hostname: str, force: bool=False) -> None:
+    def pdns_lookup(self, hostname: str, force: bool=False, first_seen: Optional[Union[date, datetime]]=None) -> None:
         '''Lookup an hostname on RiskIQ Passive DNS
         Note: force means re-fetch the entry RiskIQ even if we already did it today
         '''
         if not self.available:
             raise ConfigError('RiskIQ not available, probably no API key')
+
+        if first_seen is None:
+            first_seen = date.today() - timedelta(days=self.default_first_seen)
+        if isinstance(first_seen, datetime):
+            first_seen = first_seen.date()
 
         url_storage_dir = get_cache_directory(self.storage_dir_riskiq, hostname, 'pdns')
         url_storage_dir.mkdir(parents=True, exist_ok=True)
@@ -75,8 +99,9 @@ class RiskIQ():
         if not force and riskiq_file.exists():
             return
 
-        pdns_info = self.client_dns.get_passive_dns(query=hostname)
+        pdns_info = self.client_dns.get_passive_dns(query=hostname, start=first_seen.isoformat())
         if not pdns_info:
             return
+        pdns_info['results'] = sorted(pdns_info['results'], key=lambda k: k['lastSeen'], reverse=True)
         with riskiq_file.open('w') as _f:
             json.dump(pdns_info, _f)

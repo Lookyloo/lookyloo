@@ -17,3 +17,7 @@ class MissingCaptureDirectory(LookylooException):
 
 class TreeNeedsRebuild(LookylooException):
     pass
+
+
+class ModuleError(LookylooException):
+    pass

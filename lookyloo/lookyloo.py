@@ -35,7 +35,7 @@ from .helpers import (CaptureStatus, get_captures_dir, get_email_template,
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
-                      RiskIQ)
+                      RiskIQ, RiskIQError)
 
 
 class Lookyloo():
@@ -295,11 +295,14 @@ class Lookyloo():
             ct = self.get_crawled_tree(capture_uuid)
         except LookylooException:
             self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_uuid}) is cached.')
-            return None
+            return {}
         to_return: Dict[str, Any] = {}
         if self.riskiq.available:
-            self.riskiq.capture_default_trigger(ct)
-            to_return['riskiq'] = self.riskiq.get_passivedns(ct.root_hartree.rendered_node.hostname)
+            try:
+                self.riskiq.capture_default_trigger(ct)
+                to_return['riskiq'] = self.riskiq.get_passivedns(ct.root_hartree.rendered_node.hostname)
+            except RiskIQError as e:
+                self.logger.warning(e.response.content)
         return to_return
 
     def hide_capture(self, capture_uuid: str, /) -> None:
