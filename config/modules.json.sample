@@ -55,7 +55,7 @@
     "user": null,
     "apikey": null,
     "allow_auto_trigger": false,
-    "default_first_seen_in_days": 5,
+    "default_first_seen_in_days": 5
   },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
