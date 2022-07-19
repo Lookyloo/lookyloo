@@ -183,13 +183,13 @@ class AsyncCapture(AbstractManager):
             with (dirpath / 'parent').open('w') as _parent:
                 _parent.write(parent)
 
-        if 'downloaded_file_name' in entries:
-            with(dirpath / '0.data.file_name').open('w') as _downloaded_file_name:
-                _downloaded_file_name.write(entries['downloaded_file_name'])
+        if 'downloaded_filename' in entries and entries['downloaded_filename']:
+            with(dirpath / '0.data.filename').open('w') as _downloaded_filename:
+                _downloaded_filename.write(entries['downloaded_filename'])
 
-        if 'downloaded_file' in entries:
+        if 'downloaded_file' in entries and entries['downloaded_file']:
             with(dirpath / '0.data').open('wb') as _downloaded_file:
-                _downloaded_file.write(entries['downloaded_file'].getvalue())
+                _downloaded_file.write(entries['downloaded_file'])
 
         if 'error' in entries:
             with (dirpath / 'error.txt').open('w') as _error:
