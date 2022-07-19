@@ -403,7 +403,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.13.1"
+version = "1.13.2"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -1200,7 +1200,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.1"
+version = "2.28.2"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1391,7 +1391,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "e36f3a483a9a3869b446e0633b005628b3cf832ed1836610a7fcf6af894800df"
+content-hash = "d0cf2ce7fb0aaaecd62ff8a3df02a9b1abad448c208557d08094de109aab4692"
 
 [metadata.files]
 aiohttp = [
@@ -1753,8 +1753,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.13.1-py3-none-any.whl", hash = "sha256:07a98b448d5493eb32be3fa724a29ebf00446447933655f3faa6a58bdaba92f2"},
-    {file = "har2tree-1.13.1.tar.gz", hash = "sha256:fa0f15f28cfb6841747f6dc0b522f73e09e8b2389d2235ff83424fc5ba929564"},
+    {file = "har2tree-1.13.2-py3-none-any.whl", hash = "sha256:e96db03800fe67b352c0c564c3f58ac6ce2e261fe64d15ec7f4e0b81c3a8edaa"},
+    {file = "har2tree-1.13.2.tar.gz", hash = "sha256:c05c0952ae5c9af7d9d01c7362aa23c4060e8a48b8d6daa1f44ce70a1a8cfff3"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -2426,8 +2426,8 @@ types-redis = [
     {file = "types_redis-4.3.4-py3-none-any.whl", hash = "sha256:f84dfe570ac729fb51735357f807a9e59b4732ddd7050708a7a7e32782b91047"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.1.tar.gz", hash = "sha256:acd8ed78509d27bdf04cddcc05f7066dfde4d30dd7dba67b808cdb1141d62ffe"},
-    {file = "types_requests-2.28.1-py3-none-any.whl", hash = "sha256:b097692e124001f0ed5e4490245bb090f5e8e929819972f9ace84f9c3e146e8c"},
+    {file = "types-requests-2.28.2.tar.gz", hash = "sha256:398f88cd9302c796cb63d1021af2a1fb7ae507741a3d508edf8e0746d8c16a04"},
+    {file = "types_requests-2.28.2-py3-none-any.whl", hash = "sha256:c164696bfdce0123901165c5f097a6cc4f6326268c65815d4b6a57eacfec5e81"},
 ]
 types-setuptools = [
     {file = "types-setuptools-63.2.0.tar.gz", hash = "sha256:fc9a6c4776a398d0f57b259ca893748342174c52a35d593d08b56f52aa99c1a4"},

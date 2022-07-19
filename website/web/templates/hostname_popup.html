@@ -80,9 +80,10 @@
         Download all Hashes as text
     </a>
   </center>
+  </br>
   <div>
   {% if hostnode.cname %}
-    <h4>CNAMEs:</h3>
+    <h5>CNAME(s) for this domain:</h5>
     <ul>
     {% for cname in hostnode.cname %}
       <li>{{ cname }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=cname)}}">whois</a>){% endif %}</li>
@@ -90,7 +91,7 @@
     </ul>
   {% endif %}
   {% if hostnode.resolved_ips %}
-    <h4>IPs:</h3>
+    <h5>Domain IPs from a standalone DNS lookup:</h5>
     <ul>
     {% for ip in hostnode.resolved_ips %}
       <li>{{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}</li>
@@ -121,6 +122,22 @@
           </svg>
         </button>
       </div>
+      {% if url['url_object'].ip_address %}
+      <div>
+        IP from HAR: <b>{{ url['url_object'].ip_address }}</b>
+        {% if uwhois_available %}(<a href="{{ url_for('whois', query=url['url_object'].ip_address)}}">whois</a>){% endif %}
+      </div>
+      {% endif %}
+      {% if url['url_object'].security_details %}
+      <div>TLS certificate details:
+        <ul>
+        {% for k, v in url['url_object'].security_details.items() %}
+          <li><b>{{k}}</b>: {{v}}</li>
+        {% endfor%}
+        </ul>
+      </div>
+      {% endif %}
+      <div></div>
       <ul class="list-group">
 
         <li class="list-group-item">
