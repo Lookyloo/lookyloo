@@ -715,7 +715,7 @@ tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "pa
 
 [[package]]
 name = "playwright"
-version = "1.23.1"
+version = "1.24.0"
 description = "A high-level API to automate web browsers"
 category = "main"
 optional = false
@@ -729,7 +729,7 @@ websockets = "10.1"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.13.2"
+version = "1.13.3"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
@@ -737,7 +737,7 @@ python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
 dateparser = ">=1.1.1,<2.0.0"
-playwright = ">=1.23.1,<2.0.0"
+playwright = ">=1.24.0,<2.0.0"
 
 [package.extras]
 recaptcha = ["requests (>=2.28.1,<3.0.0)", "pydub (>=0.25.1,<0.26.0)", "SpeechRecognition (>=3.8.1,<4.0.0)"]
@@ -1112,7 +1112,7 @@ test = ["pre-commit", "pytest"]
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.11.3"
+version = "4.11.4"
 description = "Typing stubs for beautifulsoup4"
 category = "dev"
 optional = false
@@ -1192,7 +1192,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.3.6"
+version = "4.3.10"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1200,7 +1200,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.2"
+version = "2.28.3"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1211,7 +1211,7 @@ types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-setuptools"
-version = "63.2.0"
+version = "63.2.1"
 description = "Typing stubs for setuptools"
 category = "dev"
 optional = false
@@ -1391,7 +1391,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "405873f218abae8fc65b9aeb66fe297ac8d1c380058602392937323752a82071"
+content-hash = "a7400fa80a80b3fcacc50c4dbeb7bf09589987a3e3999d48a93e643856f24c18"
 
 [metadata.files]
 aiohttp = [
@@ -2148,17 +2148,17 @@ pillow = [
     {file = "Pillow-9.2.0.tar.gz", hash = "sha256:75e636fd3e0fb872693f23ccb8a5ff2cd578801251f3a4f6854c6a5d437d3c04"},
 ]
 playwright = [
-    {file = "playwright-1.23.1-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:438c15c20930cbdb0a8d1d8d6e37f2d8f35e810303f10ac18f12fca0b15c2e11"},
-    {file = "playwright-1.23.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:4559648db378752072965bce139993720212328fe1a009474e3136df381216a3"},
-    {file = "playwright-1.23.1-py3-none-macosx_11_0_universal2.whl", hash = "sha256:34ec1c952e0dfe203e45e52109f490b6bd90ccecdfaa389dc551ed580c7d94b4"},
-    {file = "playwright-1.23.1-py3-none-manylinux1_x86_64.whl", hash = "sha256:c928a6c2af723f7196dc0c243d857ac96b0951360166cc5cb114ae76c42c359e"},
-    {file = "playwright-1.23.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b8573ab3aa669c951421dd4cfc4c99f3f6c3f3a2a0318c6b91c45c0f5fa2f7c3"},
-    {file = "playwright-1.23.1-py3-none-win32.whl", hash = "sha256:f337c8fc4be9b5ebd63297ae235aae4b8e0cb694adfbef88478fc78712afca09"},
-    {file = "playwright-1.23.1-py3-none-win_amd64.whl", hash = "sha256:72f2e21effda5f3f8a0a23988bc4b49b78ca6a78303159e6ee4aa514c2451ca0"},
+    {file = "playwright-1.24.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:942c938a8fc8d5daa01cf4e2ca7dfd4cad9216e3e0af88992c083dd324f9210e"},
+    {file = "playwright-1.24.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:fbc74dd91c0c00d282d340b6d08d22010279cbe84052afe0f0854dc1e3a51315"},
+    {file = "playwright-1.24.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:976e59736502e28efe7bddb77fc9f01d3ccad9bf556c82e4208c194eea8c1eeb"},
+    {file = "playwright-1.24.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:9caf9680f1791df94d0be2bfc9fcdc793efcb1986564c76f10accac13cc23bd4"},
+    {file = "playwright-1.24.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2060bdf6b3137f45e1cd5e1b7d70081cca82381b09251868aebfc01542e68a2d"},
+    {file = "playwright-1.24.0-py3-none-win32.whl", hash = "sha256:f496bb2ddd36698c85ff9ad3183953d0583afa952b35a1c74096e158b4735651"},
+    {file = "playwright-1.24.0-py3-none-win_amd64.whl", hash = "sha256:e4b876c05e773fd4d179cf15942bd7ac33fa7a0884d939485ade15695c70bfd4"},
 ]
 playwrightcapture = [
-    {file = "PlaywrightCapture-1.13.2-py3-none-any.whl", hash = "sha256:30323e4d37d537fb5f40e32ba4ab28e23112cdc1dfa343be15fdaa79f8008315"},
-    {file = "PlaywrightCapture-1.13.2.tar.gz", hash = "sha256:dab6376f7c32f1796426849fefd03018ea2717561dc22b402ddfba59276aa024"},
+    {file = "PlaywrightCapture-1.13.3-py3-none-any.whl", hash = "sha256:ebb9bd21847826a1d725bcbd9c948d90da6379817b9a0b91ef35cbff630da04e"},
+    {file = "PlaywrightCapture-1.13.3.tar.gz", hash = "sha256:140c0bdb65b027027a2d062884fae8b2feb42fd0c547dad70ce6b16a87a1e12c"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.30-py3-none-any.whl", hash = "sha256:d8916d3f62a7b67ab353a952ce4ced6a1d2587dfe9ef8ebc30dd7c386751f289"},
@@ -2389,8 +2389,8 @@ traitlets = [
     {file = "traitlets-5.3.0.tar.gz", hash = "sha256:0bb9f1f9f017aa8ec187d8b1b2a7a6626a2a1d877116baba52a129bfa124f8e2"},
 ]
 types-beautifulsoup4 = [
-    {file = "types-beautifulsoup4-4.11.3.tar.gz", hash = "sha256:8cf2b1de3a6c7c71afbd94be5ae5b1575af6a864610cd5a1bcf6b5782cbb73ab"},
-    {file = "types_beautifulsoup4-4.11.3-py3-none-any.whl", hash = "sha256:4d4b4d88099d1d738e4dc88de86acc953235629a29830a269d76cdf073325c35"},
+    {file = "types-beautifulsoup4-4.11.4.tar.gz", hash = "sha256:50111f84c2a42a0ff890acfa0f3a79f627e2852456ff4df32fd54cf42fd197de"},
+    {file = "types_beautifulsoup4-4.11.4-py3-none-any.whl", hash = "sha256:461aead477fa4e110d2e135509f1bee847f3cada404cb6f969eb66d330a792b9"},
 ]
 types-click = [
     {file = "types-click-7.1.8.tar.gz", hash = "sha256:b6604968be6401dc516311ca50708a0a28baa7a0cb840efd7412f0dbbff4e092"},
@@ -2422,16 +2422,16 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.19-py3-none-any.whl", hash = "sha256:6284df1e4783d8fc6e587f0317a81333856b872a6669a282f8a325342bce7fa8"},
 ]
 types-redis = [
-    {file = "types-redis-4.3.6.tar.gz", hash = "sha256:079713f14f6adc886561e02d6ca9aa6857db8cbbc0c56f6c36eacfd547b66f7c"},
-    {file = "types_redis-4.3.6-py3-none-any.whl", hash = "sha256:2e943cb3476ca0d7a45b97955448541e053f6fec24bedd3d482883891e0c5822"},
+    {file = "types-redis-4.3.10.tar.gz", hash = "sha256:3bac2a7ffb62c1623c7d1bf9642eafd4f13792895739c666f1e4ac218ad77789"},
+    {file = "types_redis-4.3.10-py3-none-any.whl", hash = "sha256:0f4497cb918346b0872ac38aa56a96ca1b0c5769fce9f5d654b21ce143c0d92b"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.2.tar.gz", hash = "sha256:398f88cd9302c796cb63d1021af2a1fb7ae507741a3d508edf8e0746d8c16a04"},
-    {file = "types_requests-2.28.2-py3-none-any.whl", hash = "sha256:c164696bfdce0123901165c5f097a6cc4f6326268c65815d4b6a57eacfec5e81"},
+    {file = "types-requests-2.28.3.tar.gz", hash = "sha256:fb9ea69311766967f9e91861211ec7449f6484025b766ea709689c0dbb29d7ba"},
+    {file = "types_requests-2.28.3-py3-none-any.whl", hash = "sha256:66f0e427708588d4dac2f365a0b2c1ad8f31780429fd8ad193fec93139b22112"},
 ]
 types-setuptools = [
-    {file = "types-setuptools-63.2.0.tar.gz", hash = "sha256:fc9a6c4776a398d0f57b259ca893748342174c52a35d593d08b56f52aa99c1a4"},
-    {file = "types_setuptools-63.2.0-py3-none-any.whl", hash = "sha256:f9d0d0443dd344cad78da04320a3fb7837d4dd3f3ef4b25d3e0958edea6da812"},
+    {file = "types-setuptools-63.2.1.tar.gz", hash = "sha256:2957a40addfca5c7125fd8d386a9efda5379098c6e66a08e02257fd1cea42131"},
+    {file = "types_setuptools-63.2.1-py3-none-any.whl", hash = "sha256:eca7cbdd8db15e0ec37174a7dcfc9c8cbc87106f453066340e31729ec853cd63"},
 ]
 types-urllib3 = []
 types-werkzeug = [

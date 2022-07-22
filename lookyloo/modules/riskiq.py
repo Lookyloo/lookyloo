@@ -33,19 +33,19 @@ class RiskIQ():
 
         self.available = True
         self.allow_auto_trigger = False
-        test_client = AccountClient(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
 
         try:
-            # Check account is working
+            # Check if account is working
+            test_client = AccountClient(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
             details = test_client.get_account_details()
         except RiskIQError as e:
-            details = e.response.json()
-            if 'message' in details:
-                self.available = False
-                self.logger.warning(f'RiskIQ not available, {details["message"]}')
-                return
-            else:
-                raise e
+            self.available = False
+            if hasattr(e, 'response'):
+                details = e.response.json()
+                if 'message' in details:
+                    self.logger.warning(f'RiskIQ not available, {details["message"]}')
+            self.logger.warning(f'RiskIQ not available: {e}')
+            return
 
         self.client_dns = DnsRequest(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
         self.client_whois = WhoisRequest(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
