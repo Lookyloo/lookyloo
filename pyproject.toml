@@ -66,6 +66,7 @@ Flask-Login = "^0.6.1"
 har2tree = "^1.13.2"
 playwrightcapture = "^1.13.3"
 passivetotal = "^2.5.9"
+werkzeug = "2.1.2"
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep2']
