@@ -46,6 +46,10 @@ class RiskIQ():
                     self.logger.warning(f'RiskIQ not available, {details["message"]}')
             self.logger.warning(f'RiskIQ not available: {e}')
             return
+        except Exception as e:
+            self.available = False
+            self.logger.warning(f'RiskIQ not available: {e}')
+            return
 
         self.client_dns = DnsRequest(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
         self.client_whois = WhoisRequest(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
