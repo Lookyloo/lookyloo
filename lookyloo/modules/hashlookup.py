@@ -7,6 +7,7 @@ from har2tree import CrawledTree
 from pyhashlookup import Hashlookup
 
 from ..default import ConfigError
+from ..helpers import get_useragent_for_requests
 
 
 class HashlookupModule():
@@ -21,9 +22,9 @@ class HashlookupModule():
         self.available = True
         self.allow_auto_trigger = False
         if config.get('url'):
-            self.client = Hashlookup(config['url'])
+            self.client = Hashlookup(config['url'], useragent=get_useragent_for_requests())
         else:
-            self.client = Hashlookup()
+            self.client = Hashlookup(useragent=get_useragent_for_requests())
 
         if config.get('allow_auto_trigger'):
             self.allow_auto_trigger = True

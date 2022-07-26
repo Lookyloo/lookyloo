@@ -270,7 +270,7 @@ python-versions = "*"
 
 [[package]]
 name = "executing"
-version = "0.8.3"
+version = "0.9.0"
 description = "Get the currently executing AST node of a frame, and other information"
 category = "dev"
 optional = false
@@ -329,7 +329,7 @@ Six = "*"
 
 [[package]]
 name = "flask-login"
-version = "0.6.1"
+version = "0.6.2"
 description = "User authentication and session management for Flask."
 category = "main"
 optional = false
@@ -825,18 +825,18 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyhashlookup"
-version = "1.1.1"
+version = "1.2.0"
 description = "Python CLI and module for CIRCL hash lookup"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
-dnspython = ">=2.1.0,<3.0.0"
-requests = ">=2.26.0,<3.0.0"
+dnspython = ">=2.2.1,<3.0.0"
+requests = ">=2.28.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.3.1,<5.0.0)"]
+docs = ["Sphinx (>=5.1.0,<6.0.0)"]
 
 [[package]]
 name = "pylookyloo"
@@ -1200,7 +1200,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.3"
+version = "2.28.4"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1219,7 +1219,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-urllib3"
-version = "1.26.16"
+version = "1.26.17"
 description = "Typing stubs for urllib3"
 category = "dev"
 optional = false
@@ -1276,7 +1276,7 @@ python-versions = "*"
 
 [[package]]
 name = "urllib3"
-version = "1.26.10"
+version = "1.26.11"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
 optional = false
@@ -1391,7 +1391,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "89069a2c0d4f89770a972d5767b93ae907883230746c62b11a5ace9914b026fb"
+content-hash = "6b633ee7a492093a8bfe2d2880feb8962471b075acd43685236572cae24b5113"
 
 [metadata.files]
 aiohttp = [
@@ -1600,8 +1600,8 @@ ete3 = [
     {file = "ete3-3.1.2.tar.gz", hash = "sha256:4fc987b8c529889d6608fab1101f1455cb5cbd42722788de6aea9c7d0a8e59e9"},
 ]
 executing = [
-    {file = "executing-0.8.3-py2.py3-none-any.whl", hash = "sha256:d1eef132db1b83649a3905ca6dd8897f71ac6f8cac79a7e58a1a09cf137546c9"},
-    {file = "executing-0.8.3.tar.gz", hash = "sha256:c6554e21c6b060590a6d3be4b82fb78f8f0194d809de5ea7df1c093763311501"},
+    {file = "executing-0.9.0-py2.py3-none-any.whl", hash = "sha256:d07e9a46c85dd507055f7c4c208689faef1bf6a671ae81e91787f307808bacfb"},
+    {file = "executing-0.9.0.tar.gz", hash = "sha256:ade7276b4b108df69b8480064264db856335585efe170833601f30bcaaed7bc7"},
 ]
 filelock = [
     {file = "filelock-3.7.1-py3-none-any.whl", hash = "sha256:37def7b658813cda163b56fc564cdc75e86d338246458c4c28ae84cabefa2404"},
@@ -1620,8 +1620,8 @@ flask-cors = [
     {file = "Flask_Cors-3.0.10-py2.py3-none-any.whl", hash = "sha256:74efc975af1194fc7891ff5cd85b0f7478be4f7f59fe158102e91abb72bb4438"},
 ]
 flask-login = [
-    {file = "Flask-Login-0.6.1.tar.gz", hash = "sha256:1306d474a270a036d6fd14f45640c4d77355e4f1c67ca4331b372d3448997b8c"},
-    {file = "Flask_Login-0.6.1-py3-none-any.whl", hash = "sha256:b9a4287a2d0067a7a482a23e40075e0d670f371974633fe890222dece4e02a74"},
+    {file = "Flask-Login-0.6.2.tar.gz", hash = "sha256:c0a7baa9fdc448cdd3dd6f0939df72eec5177b2f7abe6cb82fc934d29caac9c3"},
+    {file = "Flask_Login-0.6.2-py3-none-any.whl", hash = "sha256:1ef79843f5eddd0f143c2cd994c1b05ac83c0401dc6234c143495af9a939613f"},
 ]
 flask-restx = [
     {file = "flask-restx-0.5.1.tar.gz", hash = "sha256:63c69a61999a34f1774eaccc6fc8c7f504b1aad7d56a8ec672264e52d9ac05f4"},
@@ -2206,8 +2206,8 @@ pygments = [
     {file = "Pygments-2.12.0.tar.gz", hash = "sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb"},
 ]
 pyhashlookup = [
-    {file = "pyhashlookup-1.1.1-py3-none-any.whl", hash = "sha256:e1563296524f62f02025191b85bfd36f8531ba472dab6b5ad2fcea7223b96ba6"},
-    {file = "pyhashlookup-1.1.1.tar.gz", hash = "sha256:3b0ecd0aab7ff803044617a1f7026fe96469f1c5e62b17891755c9bca702371e"},
+    {file = "pyhashlookup-1.2.0-py3-none-any.whl", hash = "sha256:219a16381330b9ca6d9f36f514583bc0cfdb04ff44fd6a8d5e9be18e3497979c"},
+    {file = "pyhashlookup-1.2.0.tar.gz", hash = "sha256:44922f88f716865c4ea7c0204dc063706d7b7a629bce214ca9999bce96a7c027"},
 ]
 pylookyloo = [
     {file = "pylookyloo-1.13.0-py3-none-any.whl", hash = "sha256:1d54afb24f95a03400c214c7eb497936b5e244b728347a158f541cef5a908cb9"},
@@ -2426,14 +2426,17 @@ types-redis = [
     {file = "types_redis-4.3.11-py3-none-any.whl", hash = "sha256:ba4612407a758353aa4fe5e1e4b804126e1160dbd6797840223958b1b5dda34d"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.3.tar.gz", hash = "sha256:fb9ea69311766967f9e91861211ec7449f6484025b766ea709689c0dbb29d7ba"},
-    {file = "types_requests-2.28.3-py3-none-any.whl", hash = "sha256:66f0e427708588d4dac2f365a0b2c1ad8f31780429fd8ad193fec93139b22112"},
+    {file = "types-requests-2.28.4.tar.gz", hash = "sha256:1b9bedd60e789db62b73a4a5e5f5a78c3106e535ad69faba97b0bbdb1ea36b8f"},
+    {file = "types_requests-2.28.4-py3-none-any.whl", hash = "sha256:3ded964449fbd695ab0f8570828e2fa7cb120c3ebe8cac520e7db5834d2c8e75"},
 ]
 types-setuptools = [
     {file = "types-setuptools-63.2.1.tar.gz", hash = "sha256:2957a40addfca5c7125fd8d386a9efda5379098c6e66a08e02257fd1cea42131"},
     {file = "types_setuptools-63.2.1-py3-none-any.whl", hash = "sha256:eca7cbdd8db15e0ec37174a7dcfc9c8cbc87106f453066340e31729ec853cd63"},
 ]
-types-urllib3 = []
+types-urllib3 = [
+    {file = "types-urllib3-1.26.17.tar.gz", hash = "sha256:73fd274524c3fc7cd8cd9ceb0cb67ed99b45f9cb2831013e46d50c1451044800"},
+    {file = "types_urllib3-1.26.17-py3-none-any.whl", hash = "sha256:0d027fcd27dbb3cb532453b4d977e05bc1e13aefd70519866af211b3003d895d"},
+]
 types-werkzeug = [
     {file = "types-Werkzeug-1.0.9.tar.gz", hash = "sha256:5cc269604c400133d452a40cee6397655f878fc460e03fde291b9e3a5eaa518c"},
     {file = "types_Werkzeug-1.0.9-py3-none-any.whl", hash = "sha256:194bd5715a13c598f05c63e8a739328657590943bce941e8a3619a6b5d4a54ec"},
@@ -2454,7 +2457,10 @@ ua-parser = [
     {file = "ua-parser-0.15.0.tar.gz", hash = "sha256:e441c982ffe81aa7e31af40ac6bf1d39f8ad24f1d34a2d91baae415470b26e9b"},
     {file = "ua_parser-0.15.0-py2.py3-none-any.whl", hash = "sha256:a93592ee96922b5f969bde9ae79662bdd41d041760280b099a6700264a1b7291"},
 ]
-urllib3 = []
+urllib3 = [
+    {file = "urllib3-1.26.11-py2.py3-none-any.whl", hash = "sha256:c33ccba33c819596124764c23a97d25f32b28433ba0dedeb77d873a38722c9bc"},
+    {file = "urllib3-1.26.11.tar.gz", hash = "sha256:ea6e8fb210b19d950fab93b60c9009226c63a28808bc8386e05301e25883ac0a"},
+]
 vt-py = [
     {file = "vt-py-0.14.0.tar.gz", hash = "sha256:f3e9341cfa344ec3b3b582e29255af7055a61c907c2f28e2a402e363bdf4c40b"},
     {file = "vt_py-0.14.0-py3-none-any.whl", hash = "sha256:0841b54da3f3e0ba80d1086e2e4e4d3dfb5282db42bfe991d67a6e946d9e9cf9"},
