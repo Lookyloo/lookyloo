@@ -270,7 +270,7 @@ python-versions = "*"
 
 [[package]]
 name = "executing"
-version = "0.9.0"
+version = "0.9.1"
 description = "Get the currently executing AST node of a frame, and other information"
 category = "dev"
 optional = false
@@ -729,7 +729,7 @@ websockets = "10.1"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.13.3"
+version = "1.13.4"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
@@ -1200,7 +1200,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.4"
+version = "2.28.5"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1391,7 +1391,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "6b633ee7a492093a8bfe2d2880feb8962471b075acd43685236572cae24b5113"
+content-hash = "f3f02419df2a7962424ef429c83526964b734bc6524abaa4ce6b207884a30779"
 
 [metadata.files]
 aiohttp = [
@@ -1600,8 +1600,8 @@ ete3 = [
     {file = "ete3-3.1.2.tar.gz", hash = "sha256:4fc987b8c529889d6608fab1101f1455cb5cbd42722788de6aea9c7d0a8e59e9"},
 ]
 executing = [
-    {file = "executing-0.9.0-py2.py3-none-any.whl", hash = "sha256:d07e9a46c85dd507055f7c4c208689faef1bf6a671ae81e91787f307808bacfb"},
-    {file = "executing-0.9.0.tar.gz", hash = "sha256:ade7276b4b108df69b8480064264db856335585efe170833601f30bcaaed7bc7"},
+    {file = "executing-0.9.1-py2.py3-none-any.whl", hash = "sha256:4ce4d6082d99361c0231fc31ac1a0f56979363cc6819de0b1410784f99e49105"},
+    {file = "executing-0.9.1.tar.gz", hash = "sha256:ea278e2cf90cbbacd24f1080dd1f0ac25b71b2e21f50ab439b7ba45dd3195587"},
 ]
 filelock = [
     {file = "filelock-3.7.1-py3-none-any.whl", hash = "sha256:37def7b658813cda163b56fc564cdc75e86d338246458c4c28ae84cabefa2404"},
@@ -2157,8 +2157,8 @@ playwright = [
     {file = "playwright-1.24.0-py3-none-win_amd64.whl", hash = "sha256:e4b876c05e773fd4d179cf15942bd7ac33fa7a0884d939485ade15695c70bfd4"},
 ]
 playwrightcapture = [
-    {file = "PlaywrightCapture-1.13.3-py3-none-any.whl", hash = "sha256:ebb9bd21847826a1d725bcbd9c948d90da6379817b9a0b91ef35cbff630da04e"},
-    {file = "PlaywrightCapture-1.13.3.tar.gz", hash = "sha256:140c0bdb65b027027a2d062884fae8b2feb42fd0c547dad70ce6b16a87a1e12c"},
+    {file = "PlaywrightCapture-1.13.4-py3-none-any.whl", hash = "sha256:0992c845f971d7339a62ad40610496c85756150b2af488d87b2906d9b47a9b78"},
+    {file = "PlaywrightCapture-1.13.4.tar.gz", hash = "sha256:f6569e785e0e8b42240627e36036b2aaab6ede5ae95237d3e990a35172967874"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.30-py3-none-any.whl", hash = "sha256:d8916d3f62a7b67ab353a952ce4ced6a1d2587dfe9ef8ebc30dd7c386751f289"},
@@ -2426,8 +2426,8 @@ types-redis = [
     {file = "types_redis-4.3.11-py3-none-any.whl", hash = "sha256:ba4612407a758353aa4fe5e1e4b804126e1160dbd6797840223958b1b5dda34d"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.4.tar.gz", hash = "sha256:1b9bedd60e789db62b73a4a5e5f5a78c3106e535ad69faba97b0bbdb1ea36b8f"},
-    {file = "types_requests-2.28.4-py3-none-any.whl", hash = "sha256:3ded964449fbd695ab0f8570828e2fa7cb120c3ebe8cac520e7db5834d2c8e75"},
+    {file = "types-requests-2.28.5.tar.gz", hash = "sha256:ac618bfefcb3742eaf97c961e13e9e5a226e545eda4a3dbe293b898d40933ad1"},
+    {file = "types_requests-2.28.5-py3-none-any.whl", hash = "sha256:98ab647ae88b5e2c41d6d20cfcb5117da1bea561110000b6fdeeea07b3e89877"},
 ]
 types-setuptools = [
     {file = "types-setuptools-63.2.1.tar.gz", hash = "sha256:2957a40addfca5c7125fd8d386a9efda5379098c6e66a08e02257fd1cea42131"},
