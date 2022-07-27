@@ -605,7 +605,7 @@ def send_mail(tree_uuid: str):
 @app.route('/tree/<string:tree_uuid>/<string:node_uuid>', methods=['GET'])
 def tree(tree_uuid: str, node_uuid: Optional[str]=None):
     if tree_uuid == 'False':
-        flash("Unable to process your request. The domain may not exist, or splash isn't started", 'warning')
+        flash("Unable to process your request.", 'warning')
         return redirect(url_for('index'))
     cache = lookyloo.capture_cache(tree_uuid)
     if not cache:

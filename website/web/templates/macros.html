@@ -185,9 +185,7 @@
 {# Lists of other captures loading the same content... #}
 <div class="collapse" id="captureslist_{{ identifier_for_toggle }}">
   <div class="card card-body">
-    {% if total_captures > 20 %}
-      Note that only 20 captures are displayed here.
-    {% endif %}
+    Note that only the most recent captures are displayed here.
     {% if other_captures['different_url']|length > 0 %}
     {# ... on other URLs #}
     <div>

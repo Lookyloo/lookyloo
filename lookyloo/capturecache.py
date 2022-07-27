@@ -10,7 +10,7 @@ from collections.abc import Mapping
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Set
 
 import dns.rdatatype
 import dns.resolver
@@ -96,6 +96,10 @@ class CapturesIndex(Mapping):
         self.contextualizer = contextualizer
         self.__cache: Dict[str, CaptureCache] = {}
         self._quick_init()
+
+    @property
+    def cached_captures(self) -> Set[str]:
+        return set(self.__cache.keys())
 
     def __getitem__(self, uuid: str) -> CaptureCache:
         if uuid in self.__cache:

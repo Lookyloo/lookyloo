@@ -210,7 +210,7 @@
             across all the captures on this lookyloo instance, in <b>{{ url['body_hash_details']['hash_domains_freq'] }}</b> unique domains.
             </br>
 
-            {# other captures related wit the same dontent #}
+            {# other captures related with the same content #}
             {% if 'other_captures' in url['body_hash_details'] %}
               {{ indexed_hash(url['body_hash_details']['other_captures'], url['url_object'].uuid) }}
             {% endif %}
