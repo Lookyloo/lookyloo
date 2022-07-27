@@ -78,12 +78,16 @@ class Archiver(AbstractManager):
         # Recent captures
         directories_to_index = {capture_dir.parent.parent for capture_dir in get_captures_dir().rglob('uuid')}
         for directory_to_index in directories_to_index:
+            self.logger.info(f'Updating index for {directory_to_index}')
             self._update_index(directory_to_index)
+        self.logger.info('Recent indexes updated')
 
         # Archived captures
         directories_to_index = {capture_dir.parent.parent for capture_dir in self.archived_captures_dir.rglob('uuid')}
         for directory_to_index in directories_to_index:
+            self.logger.info(f'Updating index for {directory_to_index}')
             self._update_index(directory_to_index)
+        self.logger.info('Archived indexes updated')
 
     def _archive(self):
         archive_interval = timedelta(days=get_config('generic', 'archive'))
@@ -118,6 +122,7 @@ class Archiver(AbstractManager):
         self.logger.info('Archiving done.')
 
     def _compress_hars(self):
+        self.logger.info('Compressing archived captures')
         for index in self.archived_captures_dir.rglob('index'):
             with index.open('r') as _f:
                 for uuid, dirname in csv.reader(_f):
@@ -128,6 +133,7 @@ class Archiver(AbstractManager):
                             with gzip.open(f'{har}.gz', 'wb') as f_out:
                                 shutil.copyfileobj(f_in, f_out)
                         har.unlink()
+        self.logger.info('Archived captures compressed')
 
     def _load_indexes(self):
         # Initialize archives
@@ -138,6 +144,7 @@ class Archiver(AbstractManager):
                 self.redis.hset('lookup_dirs', mapping=recent_uuids)
             else:
                 index.unlink()
+        self.logger.info('Recent indexes loaded')
 
         # Initialize archives
         for index in self.archived_captures_dir.rglob('index'):
@@ -145,8 +152,10 @@ class Archiver(AbstractManager):
                 archived_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
             if archived_uuids:
                 self.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
+                self.redis.hdel('lookup_dirs', *archived_uuids.keys())
             else:
                 index.unlink()
+        self.logger.info('Archived indexes loaded')
 
 
 def main():
