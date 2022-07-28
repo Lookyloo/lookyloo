@@ -74,7 +74,16 @@ class Monitoring():
 
     @property
     def tree_cache(self):
-        return self.redis_cache.hgetall('tree_cache')
+        to_return = {}
+        for pid_name, value in self.redis_cache.hgetall('tree_cache').items():
+            pid, name = pid_name.split('|', 1)
+            try:
+                os.kill(int(pid), 0)
+            except OSError:
+                self.redis_cache.hdel('tree_cache', pid_name)
+                continue
+            to_return[pid_name] = value
+        return to_return
 
 
 if __name__ == '__main__':
