@@ -185,12 +185,12 @@
 {# Lists of other captures loading the same content... #}
 <div class="collapse" id="captureslist_{{ identifier_for_toggle }}">
   <div class="card card-body">
-    Note that only the most recent captures are displayed here.
+    Note that only the most recent 20 captures are displayed here.
     {% if other_captures['different_url']|length > 0 %}
     {# ... on other URLs #}
     <div>
       <p>The following captures get the same file from a <b>different URL</b></p>
-      {{ other_captures_table(other_captures['different_url']) }}
+      {{ other_captures_table(other_captures['different_url'], 20) }}
     </div>
     {% endif %}
     </br>
@@ -198,7 +198,7 @@
     {# ... on the same URL #}
     <div>
       <p>The following captures get the same file from the <b>same URL</b></p>
-      {{ other_captures_table(other_captures['same_url']) }}
+      {{ other_captures_table(other_captures['same_url'], 20) }}
     </div>
     {% endif %}
   </div>
@@ -206,7 +206,7 @@
 {% endif %}
 {% endmacro %}
 
-{% macro other_captures_table(entries) %}
+{% macro other_captures_table(entries, max_entries) %}
 <div class="table-responsive">
   <table id="table_other_captures" class="table">
   <thead>
@@ -217,7 +217,7 @@
     </tr>
   </thead>
   <tbody>
-  {% for capture_uuid, urlnode_uuid, title, timestamp, hostname in entries %}
+  {% for capture_uuid, urlnode_uuid, title, timestamp, hostname in entries[:max_entries] %}
   <tr>
     <td>
       <a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}', '{{ urlnode_uuid }}')">{{ title }}</a>

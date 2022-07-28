@@ -345,7 +345,7 @@ class Lookyloo():
         return self.redis.get(f'error_{capture_uuid}')
 
     def capture_cache(self, capture_uuid: str, /) -> Optional[CaptureCache]:
-        """Get the cache from redis."""
+        """Get the cache from redis, rebuild the tree if the internal UUID changed => slow"""
         try:
             return self._captures_index[capture_uuid]
         except MissingCaptureDirectory as e:
@@ -641,6 +641,9 @@ class Lookyloo():
                     captures_list['same_url'].append((h_capture_uuid, url_uuid, cache.title, cache.timestamp.isoformat(), url_hostname))
                 else:
                     captures_list['different_url'].append((h_capture_uuid, url_uuid, cache.title, cache.timestamp.isoformat(), url_hostname))
+        # Sort by timestamp by default
+        captures_list['same_url'].sort(key=lambda y: y[3])
+        captures_list['different_url'].sort(key=lambda y: y[3])
         return total_captures, captures_list
 
     def get_ressource(self, tree_uuid: str, /, urlnode_uuid: str, h: Optional[str]) -> Optional[Tuple[str, BytesIO, str]]:
