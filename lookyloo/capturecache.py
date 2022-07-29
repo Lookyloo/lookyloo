@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import pickle
 import sys
 import time
@@ -109,7 +110,7 @@ class CapturesIndex(Mapping):
                 return self.__cache[uuid]
             del self.__cache[uuid]
         capture_dir = self._get_capture_dir(uuid)
-        cached = self.redis.hgetall(str(capture_dir))
+        cached = self.redis.hgetall(capture_dir)
         if cached:
             cc = CaptureCache(cached)
             # NOTE: checking for pickle to exist may be a bad idea here.
@@ -118,13 +119,8 @@ class CapturesIndex(Mapping):
                     and not cc.incomplete_redirects):
                 self.__cache[uuid] = cc
                 return self.__cache[uuid]
-        # The tree isn't cached yet
-        try:
-            tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
-        except TreeNeedsRebuild:
-            tree = self._create_pickle(capture_dir)
-            self.indexing.new_internal_uuids(tree)
-        self.__cache[uuid] = self._set_capture_cache(capture_dir, tree)
+
+        self.__cache[uuid] = self._set_capture_cache(capture_dir)
         return self.__cache[uuid]
 
     def __iter__(self):
@@ -167,13 +163,12 @@ class CapturesIndex(Mapping):
                 continue
             self.__cache[cc.uuid] = cc
 
-    def _get_capture_dir(self, uuid: str) -> Path:
+    def _get_capture_dir(self, uuid: str) -> str:
         # Try to get from the recent captures cache in redis
         capture_dir = self.redis.hget('lookup_dirs', uuid)
         if capture_dir:
-            to_return = Path(capture_dir)
-            if to_return.exists():
-                return to_return
+            if os.path.exists(capture_dir):
+                return capture_dir
             # The capture was either removed or archived, cleaning up
             self.redis.hdel('lookup_dirs', uuid)
             self.redis.delete(capture_dir)
@@ -181,9 +176,8 @@ class CapturesIndex(Mapping):
         # Try to get from the archived captures cache in redis
         capture_dir = self.redis.hget('lookup_dirs_archived', uuid)
         if capture_dir:
-            to_return = Path(capture_dir)
-            if to_return.exists():
-                return to_return
+            if os.path.exists(capture_dir):
+                return capture_dir
             # The capture was removed, remove the UUID
             self.redis.hdel('lookup_dirs_archived', uuid)
             self.redis.delete(capture_dir)
@@ -232,13 +226,14 @@ class CapturesIndex(Mapping):
             lock_file.unlink(missing_ok=True)
         return tree
 
-    def _set_capture_cache(self, capture_dir: Path, tree: CrawledTree) -> CaptureCache:
+    def _set_capture_cache(self, capture_dir_str: str) -> CaptureCache:
         '''Populate the redis cache for a capture. Mostly used on the index page.
         NOTE: Doesn't require the pickle.'''
+        capture_dir = Path(capture_dir_str)
         with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
-        cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': str(capture_dir)}
+        cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': capture_dir_str}
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
             with (capture_dir / 'error.txt').open() as _error:
@@ -259,7 +254,12 @@ class CapturesIndex(Mapping):
                 cache['timestamp'] = har.initial_start_time
                 cache['url'] = har.root_url
                 if har.initial_redirects and har.need_tree_redirects:
-                    # get redirects
+                    # get redirects, needs the full tree
+                    try:
+                        tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
+                    except TreeNeedsRebuild:
+                        tree = self._create_pickle(capture_dir)
+                        self.indexing.new_internal_uuids(tree)
                     cache['redirects'] = json.dumps(tree.redirects)
                     cache['incomplete_redirects'] = 0
                 else:
@@ -291,12 +291,12 @@ class CapturesIndex(Mapping):
 
         p = self.redis.pipeline()
         # if capture_dir.is_relative_to(get_captures_dir()):  # Requires python 3.9
-        if str(capture_dir).startswith(str(get_captures_dir())):
-            p.hset('lookup_dirs', uuid, str(capture_dir))
+        if capture_dir_str.startswith(str(get_captures_dir())):
+            p.hset('lookup_dirs', uuid, capture_dir_str)
         else:
-            p.hset('lookup_dirs_archived', uuid, str(capture_dir))
+            p.hset('lookup_dirs_archived', uuid, capture_dir_str)
 
-        p.hset(str(capture_dir), mapping=cache)  # type: ignore
+        p.hset(capture_dir_str, mapping=cache)  # type: ignore
         p.execute()
         return CaptureCache(cache)
 
