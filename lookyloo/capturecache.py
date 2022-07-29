@@ -234,6 +234,12 @@ class CapturesIndex(Mapping):
         with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
+        try:
+            tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
+        except TreeNeedsRebuild:
+            tree = self._create_pickle(capture_dir)
+            self.indexing.new_internal_uuids(tree)
+
         cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': capture_dir_str}
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
@@ -254,19 +260,8 @@ class CapturesIndex(Mapping):
                 cache['title'] = har.initial_title
                 cache['timestamp'] = har.initial_start_time
                 cache['url'] = har.root_url
-                if har.initial_redirects and har.need_tree_redirects:
-                    # get redirects, needs the full tree
-                    try:
-                        tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
-                    except TreeNeedsRebuild:
-                        tree = self._create_pickle(capture_dir)
-                        self.indexing.new_internal_uuids(tree)
-                    cache['redirects'] = json.dumps(tree.redirects)
-                    cache['incomplete_redirects'] = 0
-                else:
-                    cache['redirects'] = json.dumps(har.initial_redirects)
-                    cache['incomplete_redirects'] = 0
-
+                cache['redirects'] = json.dumps(tree.redirects)
+                cache['incomplete_redirects'] = 0
             except Har2TreeError as e:
                 cache['error'] = str(e)
         else:
