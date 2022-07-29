@@ -131,6 +131,7 @@ class CapturesIndex(Mapping):
 
     def reload_cache(self, uuid: str) -> None:
         if uuid in self.__cache:
+            self.redis.hdel(self.__cache[uuid].capture_dir)
             del self.__cache[uuid]
 
     def remove_pickle(self, uuid: str) -> None:
