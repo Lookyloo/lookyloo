@@ -290,7 +290,8 @@ class CapturesIndex(Mapping):
                 cache['parent'] = f.read().strip()
 
         p = self.redis.pipeline()
-        if capture_dir.is_relative_to(get_captures_dir()):
+        # if capture_dir.is_relative_to(get_captures_dir()):  # Requires python 3.9
+        if str(capture_dir).startswith(str(get_captures_dir())):
             p.hset('lookup_dirs', uuid, str(capture_dir))
         else:
             p.hset('lookup_dirs_archived', uuid, str(capture_dir))
