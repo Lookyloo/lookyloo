@@ -968,7 +968,20 @@ class Lookyloo():
         stats: Dict[int, Dict[int, Dict[str, Any]]] = {}
         weeks_stats: Dict[int, Dict] = {}
 
-        for cache in self.sorted_capture_cache():
+        # Load the archived captures from redis
+        archived: List[CaptureCache] = []
+        p = self.redis.pipeline()
+        for directory in self.redis.hvals('lookup_dirs_archived'):
+            p.hgetall(directory)
+        for cache in p.execute():
+            if not cache:
+                continue
+            try:
+                archived.append(CaptureCache(cache))
+            except Exception:
+                continue
+
+        for cache in self.sorted_capture_cache() + archived:
             date_submission: datetime = cache.timestamp
 
             if date_submission.year not in stats:

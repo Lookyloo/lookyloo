@@ -117,6 +117,7 @@ class CapturesIndex(Mapping):
                     and not cc.incomplete_redirects):
                 self.__cache[uuid] = cc
                 return self.__cache[uuid]
+        # The tree isn't cached yet
         try:
             tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
         except TreeNeedsRebuild:
@@ -230,7 +231,7 @@ class CapturesIndex(Mapping):
             lock_file.unlink(missing_ok=True)
         return tree
 
-    def _set_capture_cache(self, capture_dir: Path, tree: Optional[CrawledTree]=None) -> CaptureCache:
+    def _set_capture_cache(self, capture_dir: Path, tree: CrawledTree) -> CaptureCache:
         '''Populate the redis cache for a capture. Mostly used on the index page.
         NOTE: Doesn't require the pickle.'''
         with (capture_dir / 'uuid').open() as f:
@@ -257,17 +258,9 @@ class CapturesIndex(Mapping):
                 cache['timestamp'] = har.initial_start_time
                 cache['url'] = har.root_url
                 if har.initial_redirects and har.need_tree_redirects:
-                    if not tree:
-                        # try to load tree from disk
-                        tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
                     # get redirects
-                    if tree:
-                        cache['redirects'] = json.dumps(tree.redirects)
-                        cache['incomplete_redirects'] = 0
-                    else:
-                        # Pickle not available
-                        cache['redirects'] = json.dumps(har.initial_redirects)
-                        cache['incomplete_redirects'] = 1
+                    cache['redirects'] = json.dumps(tree.redirects)
+                    cache['incomplete_redirects'] = 0
                 else:
                     cache['redirects'] = json.dumps(har.initial_redirects)
                     cache['incomplete_redirects'] = 0
