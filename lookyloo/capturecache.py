@@ -18,6 +18,7 @@ from har2tree import CrawledTree, Har2TreeError, HarFile
 from redis import Redis
 
 from .context import Context
+from .helpers import get_captures_dir
 from .indexing import Indexing
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
@@ -289,7 +290,11 @@ class CapturesIndex(Mapping):
                 cache['parent'] = f.read().strip()
 
         p = self.redis.pipeline()
-        p.hset('lookup_dirs', uuid, str(capture_dir))
+        if capture_dir.is_relative_to(get_captures_dir()):
+            p.hset('lookup_dirs', uuid, str(capture_dir))
+        else:
+            p.hset('lookup_dirs_archived', uuid, str(capture_dir))
+
         p.hset(str(capture_dir), mapping=cache)  # type: ignore
         p.execute()
         return CaptureCache(cache)

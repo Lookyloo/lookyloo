@@ -978,8 +978,8 @@ class Lookyloo():
                 continue
             try:
                 archived.append(CaptureCache(cache))
-            except Exception:
-                continue
+            except LookylooException as e:
+                self.logger.warning(f'Unable load cache for {cache.get("uuid")} - {e}.')
 
         for cache in self.sorted_capture_cache() + archived:
             date_submission: datetime = cache.timestamp
