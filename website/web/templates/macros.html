@@ -258,55 +258,62 @@
 {% endif %}
 {% endmacro %}
 
-{% macro popup_icons(lookup_dict, urlnode, tree_uuid) %}
+{% macro popup_icons_request(urlnode, tree_uuid) %}
 <div>
-{% for key, icon_info in lookup_dict.items() %}
-  {% if urlnode[key] %}
-    {% if key == "request_cookie" %}
+  {% if urlnode.request_cookie %}
+    {% set icon_info = get_icon("request_cookie") %}
     <a href="{{ url_for('urlnode_request_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"
        title="Download all the cookies in the request to the server">
-     <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
-          width="21" height="21"/>
+       <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
+         width="21" height="21"/>
     </a>
-    {% elif key == "response_cookie"%}
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro popup_icons_response(urlnode, tree_uuid) %}
+<div>
+  {% if urlnode.response_cookie %}
+    {% set icon_info = get_icon("response_cookie") %}
     <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"
        title="Download all the cookies in the response from the server">
       <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
            width="21" height="21"/>
     </a>
-    {% elif key in ["js", "exe", "css", "font", "html", "json", "image", "video",
-                    "unknown_mimetype", "text", "unset_mimetype", "octet-stream", "livestream"]
-                    and not urlnode.empty_response %}
-      <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}">
-        <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
-             width="21" height="21"
-        {% if key == "image" %}
-             data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> </br>Click to download.'
-        {% else %}
-             data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="{{icon_info['tooltip']}} <br/>Click to download."
-        {% endif %}
-        />
-      </a>
-    {% elif key != "redirect" %}
-    <img src="{{ url_for('static', filename=icon_info['icon']) }}"
-         alt="{{ icon_info['tooltip'] }}" title="{{ icon_info['tooltip'] }}" width="21" height="21"/>
-    {%endif%}
+  {% endif %}
+
+  {% if urlnode.generic_type in ["js", "exe", "css", "font", "html", "json", "image", "video",
+                                 "unknown_mimetype", "text", "unset_mimetype", "octet-stream",
+                                 "livestream"] %}
+    {% set icon_info = get_icon(urlnode.generic_type) %}
+    <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}">
+      <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
+           width="21" height="21"
+      {% if urlnode.generic_type == "image" %}
+           data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+           title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> </br>Click to download.'
+      {% else %}
+           data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+           title="{{icon_info['tooltip']}} <br/>Click to download."
+      {% endif %}
+      />
+    </a>
   {%endif%}
-{% endfor %}
 </div>
 
 <div>
-{% if "redirect" in lookup_dict and urlnode["redirect"] %}
+{% if urlnode["redirect"] %}
+  {% set icon_info = get_icon('redirect') %}
   {% for child in urlnode.children if child.name == urlnode.redirect_url %}
   <div title='{{ urlnode.redirect_url }}'>
     <b>Redirect to</b>: {{ shorten_string(urlnode.redirect_url, 50) }}
     <a href="#/" role="button" onclick="whereAmI('{{ child.hostnode_uuid }}')" title="See the node the URL redirects to.">
-      <img src="{{ url_for('static', filename=lookup_dict['redirect']['icon']) }}" alt="{{ lookup_dict['redirect']['tooltip'] }}" width="21" height="21"/>
+      <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}" width="21" height="21"/>
     </a>
   </div>
   {% else %}
-  <img src="{{ url_for('static', filename=lookup_dict['redirect']['icon']) }}"
-       alt="{{ lookup_dict['redirect']['tooltip'] }}" title="{{ lookup_dict['redirect']['tooltip'] }}"
+  <img src="{{ url_for('static', filename=icon_info['icon']) }}"
+       alt="{{ icon_info['tooltip'] }}" title="{{ icon_info['tooltip'] }}"
        width="21" height="21"/>
   {% endfor %}
 {%endif%}

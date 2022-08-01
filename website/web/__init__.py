@@ -9,7 +9,7 @@ import time
 import filetype
 from datetime import date, datetime, timedelta, timezone
 from io import BytesIO, StringIO
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, TypedDict
 from urllib.parse import quote_plus, unquote_plus, urlparse
 
 import flask_login  # type: ignore
@@ -161,6 +161,38 @@ def get_sri(directory: str, filename: str) -> str:
 app.jinja_env.globals.update(get_sri=get_sri)
 
 
+class Icon(TypedDict):
+    icon: str
+    tooltip: str
+
+
+def get_icon(icon_id: str) -> Optional[Icon]:
+    available_icons: Dict[str, Icon] = {
+        'js': {'icon': "javascript.png", 'tooltip': 'The content of the response is a javascript'},
+        'exe': {'icon': "exe.png", 'tooltip': 'The content of the response is an executable'},
+        'css': {'icon': "css.png", 'tooltip': 'The content of the response is a CSS'},
+        'font': {'icon': "font.png", 'tooltip': 'The content of the response is a font'},
+        'html': {'icon': "html.png", 'tooltip': 'The content of the response is a HTML document'},
+        'json': {'icon': "json.png", 'tooltip': 'The content of the response is a Json'},
+        'text': {'icon': "json.png", 'tooltip': 'The content of the response is a text'},  # FIXME: Need new icon
+        'iframe': {'icon': "ifr.png", 'tooltip': 'This content is loaded from an Iframe'},
+        'image': {'icon': "img.png", 'tooltip': 'The content of the response is an image'},
+        'unset_mimetype': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is not set'},
+        'octet-stream': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is a binary blob'},
+        'unknown_mimetype': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is of an unknown type'},
+        'video': {'icon': "video.png", 'tooltip': 'The content of the response is a video'},
+        'livestream': {'icon': "video.png", 'tooltip': 'The content of the response is a livestream'},
+        'response_cookie': {'icon': "cookie_received.png", 'tooltip': 'There are cookies in the response'},
+        'request_cookie': {'icon': "cookie_read.png", 'tooltip': 'There are cookies in the request'},
+        'redirect': {'icon': "redirect.png", 'tooltip': 'The request is redirected'},
+        'redirect_to_nothing': {'icon': "cookie_in_url.png", 'tooltip': 'The request is redirected to an URL we do not have in the capture'}
+    }
+    return available_icons.get(icon_id)
+
+
+app.jinja_env.globals.update(get_icon=get_icon)
+
+
 # ##### Generic/configuration methods #####
 
 @app.after_request
@@ -202,30 +234,6 @@ def urls_hostnode(tree_uuid: str, node_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>', methods=['GET'])
 def hostnode_popup(tree_uuid: str, node_uuid: str):
-    keys_response = {
-        'js': {'icon': "javascript.png", 'tooltip': 'The content of the response is a javascript'},
-        'exe': {'icon': "exe.png", 'tooltip': 'The content of the response is an executable'},
-        'css': {'icon': "css.png", 'tooltip': 'The content of the response is a CSS'},
-        'font': {'icon': "font.png", 'tooltip': 'The content of the response is a font'},
-        'html': {'icon': "html.png", 'tooltip': 'The content of the response is a HTML document'},
-        'json': {'icon': "json.png", 'tooltip': 'The content of the response is a Json'},
-        'text': {'icon': "json.png", 'tooltip': 'The content of the response is a text'},  # FIXME: Need new icon
-        'iframe': {'icon': "ifr.png", 'tooltip': 'This content is loaded from an Iframe'},
-        'image': {'icon': "img.png", 'tooltip': 'The content of the response is an image'},
-        'unset_mimetype': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is not set'},
-        'octet-stream': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is a binary blob'},
-        'unknown_mimetype': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is of an unknown type'},
-        'video': {'icon': "video.png", 'tooltip': 'The content of the response is a video'},
-        'livestream': {'icon': "video.png", 'tooltip': 'The content of the response is a livestream'},
-        'response_cookie': {'icon': "cookie_received.png", 'tooltip': 'There are cookies in the response'},
-        # redirect has to be last
-        'redirect': {'icon': "redirect.png", 'tooltip': 'The request is redirected'},
-        'redirect_to_nothing': {'icon': "cookie_in_url.png", 'tooltip': 'The request is redirected to an URL we do not have in the capture'}
-    }
-    keys_request = {
-        'request_cookie': {'icon': "cookie_read.png", 'tooltip': 'There are cookies in the request'}
-    }
-
     try:
         hostnode, urls = lookyloo.get_hostnode_investigator(tree_uuid, node_uuid)
     except IndexError:
@@ -236,8 +244,6 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
                            hostnode_uuid=node_uuid,
                            hostnode=hostnode,
                            urls=urls,
-                           keys_response=keys_response,
-                           keys_request=keys_request,
                            enable_context_by_users=enable_context_by_users,
                            uwhois_available=lookyloo.uwhois.available)
 
@@ -693,6 +699,12 @@ def mark_as_legitimate(tree_uuid: str):
     else:
         lookyloo.add_to_legitimate(tree_uuid)
     return jsonify({'message': 'Legitimate entry added.'})
+
+
+@app.route('/tree/<string:tree_uuid>/body_hashes', methods=['GET'])
+def tree_body_hashes(tree_uuid: str):
+    body_hashes = lookyloo.get_all_body_hashes(tree_uuid)
+    return render_template('tree_body_hashes.html', tree_uuid=tree_uuid, body_hashes=body_hashes)
 
 
 # ##### helpers #####
