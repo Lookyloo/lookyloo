@@ -3,7 +3,8 @@
 {% from "macros.html" import ressource_legitimacy_details %}
 {% from "macros.html" import indexed_hash %}
 {% from "macros.html" import indexed_cookies %}
-{% from "macros.html" import popup_icons %}
+{% from "macros.html" import popup_icons_request %}
+{% from "macros.html" import popup_icons_response %}
 {% from "macros.html" import shorten_string %}
 {% from "macros.html" import other_captures_table %}
 {% from "macros.html" import get_ressource_button %}
@@ -142,7 +143,7 @@
 
         <li class="list-group-item">
           <p class="h4">Request</p>
-          {{ popup_icons(keys_request, url['url_object'], tree_uuid) }}
+          {{ popup_icons_request(url['url_object'], tree_uuid) }}
 
           {% if url['url_object'].posted_data %}
           <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
@@ -179,7 +180,7 @@
                 <span>Load time: {{ url['url_object'].time.total_seconds() }}s</span>
             </small>
           </p>
-          {{ popup_icons(keys_response, url['url_object'], tree_uuid) }}
+          {{ popup_icons_response(url['url_object'], tree_uuid) }}
 
           {% if url['url_object'].rendered_html %}
           <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">

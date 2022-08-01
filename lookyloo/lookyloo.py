@@ -570,6 +570,18 @@ class Lookyloo():
             break
         return details, body_content
 
+    def get_all_body_hashes(self, capture_uuid: str, /) -> Dict[str, Dict[str, Union[URLNode, int]]]:
+        ct = self.get_crawled_tree(capture_uuid)
+        to_return: Dict[str, Dict[str, Union[URLNode, int]]] = defaultdict()
+        for node in ct.root_hartree.url_tree.traverse():
+            if node.empty_response or node.body_hash in to_return:
+                # If we have the same hash more than once, skip
+                continue
+            total_captures, details = self.indexing.get_body_hash_captures(node.body_hash, limit=-1)
+            # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
+            to_return[node.body_hash] = {'node': node, 'total_captures': total_captures}
+        return to_return
+
     def get_latest_url_capture(self, url: str, /) -> Optional[CaptureCache]:
         '''Get the most recent capture with this URL'''
         captures = self.sorted_capture_cache(self.indexing.get_captures_url(url))

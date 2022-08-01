@@ -59,7 +59,6 @@ table td p {
     font-smooth: auto;
     color: white;
     background: black;
-    z-index: 1;
     border: 2px solid;
     border-color: white;
     padding-top: 2px;

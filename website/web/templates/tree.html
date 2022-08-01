@@ -82,6 +82,13 @@
   });
   </script>
   <script>
+  $('#bodyHashesModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
   $('#mispPushModal').on('show.bs.modal', function(e) {
       var button = $(e.relatedTarget);
       var modal = $(this);
@@ -212,6 +219,10 @@
             <li>
               <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#statsModal" role="button">Tree Statistics</a>
+            </li>
+            <li>
+              <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button">Tree ressources</a>
             </li>
             <li>
               <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
@@ -445,6 +456,23 @@
           </div>
           <div class="modal-body">
               ... loading statistics ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="bodyHashesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="bodyHashesModalLabel">Ressources in tree</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading ressources ...
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

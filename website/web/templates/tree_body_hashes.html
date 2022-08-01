@@ -1,0 +1,67 @@
+<script type="text/javascript">
+    $('#bodyHashesTable')
+        .on('order.dt', () =>  {
+            $(function () {
+              $('[data-bs-toggle="tooltip"]').tooltip()
+            })
+        })
+        .on('search.dt', () => {
+            $(function () {
+              $('[data-bs-toggle="tooltip"]').tooltip()
+            })
+        })
+        .on('page.dt', () => {
+            $(function () {
+              $('[data-bs-toggle="tooltip"]').tooltip()
+            })
+        })
+        .DataTable( {
+          "order": [[ 1, "desc" ]],
+          "pageLength": 50
+        });
+</script>
+
+{% if from_popup %}
+<script type="text/javascript">
+    function openTreeInNewTab(treeUUID) {
+        window.opener.openTreeInNewTab(treeUUID);
+    };
+</script>
+{% endif %}
+
+<div class="table-responsive">
+<table id="bodyHashesTable" class="table">
+<thead>
+ <tr>
+   <th>File type</th>
+   <th>Captures total</th>
+   <th>Hash (sha512)</th>
+ </tr>
+</thead>
+<tbody>
+  {% for body_hash, info in body_hashes.items() %}
+  {% set icon_info = get_icon(info['node'].generic_type) %}
+  <tr>
+    <td>
+        <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=info['node'].uuid) }}">
+          <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
+             width="21" height="21"
+          {% if info['node'].generic_type == "image" %}
+             data-bs-toggle="tooltip" data-bs-placement="left" data-bs-html="true" data-container="#bodyHashesTable"
+             title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=info['node'].uuid) }}"/> </br>Click to download.'
+          {% else %}
+             data-bs-toggle="tooltip" data-bs-placement="left" data-bs-html="true" data-container="#bodyHashesTable"
+             title="{{icon_info['tooltip']}} <br/>Click to download."
+          {% endif %}
+          />
+        </a>
+    </td>
+    <td>{{ info['total_captures'] }}</td>
+    <td>
+        <a href="{{ url_for('body_hash_details', body_hash=body_hash) }}">{{body_hash}}</a>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+</div>
