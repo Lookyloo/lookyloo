@@ -317,14 +317,19 @@ class Lookyloo():
     def update_tree_cache_info(self, process_id: int, classname: str) -> None:
         self.redis.hset('tree_cache', f'{process_id}|{classname}', str(self._captures_index.lru_cache_status()))
 
-    def sorted_capture_cache(self, capture_uuids: Optional[Iterable[str]]=None) -> List[CaptureCache]:
-        '''Get all the captures in the cache, sorted by timestamp (new -> old).'''
+    def sorted_capture_cache(self, capture_uuids: Optional[Iterable[str]]=None, cached_captures_only: bool=True) -> List[CaptureCache]:
+        '''Get all the captures in the cache, sorted by timestamp (new -> old).
+        By default, this method will only return the captures that are currently cached.'''
         if capture_uuids is None:
             # Sort all recent captures
             capture_uuids = self.redis.hkeys('lookup_dirs')
         if not capture_uuids:
             # No captures at all on the instance
             return []
+
+        if cached_captures_only:
+            # Do not try to build pickles
+            capture_uuids = set(capture_uuids) & self._captures_index.cached_captures
 
         all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids if self.capture_cache(uuid)]
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
