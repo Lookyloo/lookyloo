@@ -866,6 +866,9 @@ def capture_web():
         if request.form.get('referer'):
             capture_query['referer'] = request.form['referer']
 
+        if request.form.get('dnt'):
+            capture_query['dnt'] = request.form['dnt']
+
         if request.form.get('headers'):
             capture_query['headers'] = request.form['headers']
 
