@@ -76,6 +76,8 @@ class AsyncCapture(AbstractManager):
                             header, h_value = splitted
                             if header and h_value:
                                 headers[header.strip()] = h_value.strip()
+            if to_capture.get('dnt'):
+                headers['DNT'] = to_capture['dnt']
 
             self.logger.info(f'Capturing {to_capture["url"]} - {uuid}')
             self.thirdparty_submit(to_capture)
@@ -105,7 +107,8 @@ class AsyncCapture(AbstractManager):
 
     async def _capture(self, url: str, *, perma_uuid: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
                        listing: bool=True, user_agent: Optional[str]=None,
-                       referer: Optional[str]=None, headers: Optional[Dict[str, str]]=None,
+                       referer: Optional[str]=None,
+                       headers: Optional[Dict[str, str]]=None,
                        proxy: Optional[Union[str, Dict]]=None, os: Optional[str]=None,
                        browser: Optional[str]=None, parent: Optional[str]=None) -> Tuple[bool, str]:
         '''Launch a capture'''

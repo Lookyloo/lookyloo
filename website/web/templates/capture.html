@@ -151,9 +151,21 @@
     <div id="collapseConfigCapture" class="collapse">
       <div class="card card-body">
         <div class="row mb-3">
-          <label for="referer" class="col-sm-2 col-form-label">Referer:</label>
+          <label for="referer" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer">Referer</a>:</label>
           <div class="col-sm-10">
             <input type="text" class="form-control" name="referer" id=referer placeholder="Pass referer of the URL">
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label for="dnt" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/DNT">Do not Track</a>:</label>
+          <div class="col-sm-10">
+            <select class="form-select" name="dnt" id="dnt" aria-label="Select a value for the Do Not Track HTTP Header">
+              <option value="" selected>Select a value for the DNT header (header not set otherwise)</button>
+              <option value="0">0 (The user prefers to allow tracking on the target site.)</option>
+              <option value="1">1 (The user prefers not to be tracked on the target site.)</option>
+              <option value="null">null (The user has not specified a preference about tracking.)</option>
+            </select>
           </div>
         </div>
 
@@ -172,9 +184,17 @@
         </div>
 
         <div class="row mb-3">
-          <label for="cookies" class="col-sm-6 col-form-label">Cookies (JSON export from the Firefox plugin Cookie Quick Manager)</label>
-          <div class="col-sm-4">
+          <label for="cookies" class="col-sm-2 col-form-label">Cookies:</label>
+          <div class="col-sm-10">
             <input type="file" class="form-control-file" id="cookies" name="cookies">
+            <div>The file can either be the JSON export from the Firefox plugin <a href="https://addons.mozilla.org/en-US/firefox/addon/cookie-quick-manager/">Cookie Quick Manager</a> <b>or</b> from an other Lookyloo capture.</div>
+            <div class="alert alert-danger" role="alert">
+              The cookies will be stored on the lookyloo instance and potentially
+              accessed by third parties (either because the Lookyloo instance is public,
+              or people other than you have access to the instance).
+              If that's the case, please make sure none of them can be used to login as yourself
+              on websites.
+            </div>
           </div>
         </div>
       </div>
