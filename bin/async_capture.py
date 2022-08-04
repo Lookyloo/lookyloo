@@ -89,9 +89,11 @@ class AsyncCapture(AbstractManager):
                 with open(tmp_f.name, "wb") as f:
                     f.write(to_capture[b'document'])
                 url = f'file://{tmp_f.name}'
-            else:
+            elif to_capture.get(b'url'):
                 url = to_capture[b'url'].decode()
                 self.thirdparty_submit(url)
+            else:
+                self.logger.warning(f'Invalid capture {to_capture}.')
 
             self.logger.info(f'Capturing {url} - {uuid}')
             success, error_message = await self._capture(
