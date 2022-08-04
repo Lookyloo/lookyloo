@@ -39,20 +39,45 @@
       </div>
     </div>
 
-    <div class="row input-group mb-3">
-      <label for="url" class="col-sm-1 col-form-label">URL:</label>
-      <input type="text" class="form-control col-auto" name="url" id=singleCaptureField
-             placeholder="URL to capture" value="{{predefined_url_to_capture}}" required>
-      <textarea class="form-control col-auto d-none" placeholder="URLs to capture, one per line"
-                name="urls" id=multipleCapturesField></textarea>
-      <span class="col-sm-2 input-group-text">
-        <div class="form-check">
-          <input class="form-check-input" name="multipleCaptures" id="multipleCaptures" type="checkbox"
-                 value="" aria-label="tick to enable multiple captures">
-          <label for="multipleCaptures" class="form-check-label">Multiple captures</label>
+    <nav>
+      <div class="nav nav-tabs" id="submission-type" role="tablist">
+        <button class="nav-link active" id="nav-url-tab" data-bs-toggle="tab" data-bs-target="#nav-url" type="button" role="tab" aria-current="nav-url" aria-selected="true" href="#">URL(s)</button>
+        <button class="nav-link" id="nav-doc-tab" data-bs-toggle="tab" data-bs-target="#nav-doc" type="button" role="tab" aria-current="nav-doc" aria-selected="false" href="#">Document</button>
+      </div>
+    </nav>
+
+    <div class="tab-content" id="nav-tabContent">
+      </br>
+      <div class="tab-pane fade show active" id="nav-url" role="tabpanel" aria-labelledby="nav-url-tab">
+        <div class="row input-group mb-3">
+          <label for="url" class="col-sm-1 col-form-label">URL:</label>
+          <input type="text" class="form-control col-auto" name="url" id=singleCaptureField
+                 placeholder="URL to capture" value="{{predefined_url_to_capture}}">
+
+          <textarea class="form-control col-auto d-none" placeholder="URLs to capture, one per line"
+                    name="urls" id=multipleCapturesField></textarea>
+
+          <span class="col-sm-2 input-group-text">
+            <div class="form-check">
+              <input class="form-check-input" name="multipleCaptures" id="multipleCaptures" type="checkbox"
+                     value="" aria-label="tick to enable multiple captures">
+              <label for="multipleCaptures" class="form-check-label">Multiple captures</label>
+            </div>
+          </span>
         </div>
-      </span>
+      </div>
+
+      <div class="tab-pane fade" id="nav-doc" role="tabpanel" aria-labelledby="nav-doc-tab">
+        <div class="row mb-3">
+          <label for="document" class="col-sm-1 col-form-label">Document:</label>
+          <div class="col-sm-10">
+            <input type="file" class="form-control-file" id="document" name="document">
+            <div>Instead of a URL, you can upload a file. Preferably an HTML document, but it can be anything supported by a browser.</div>
+          </div>
+        </div>
+      </div>
     </div>
+    <div class="dropdown-divider"></div>
 
     <div>
       <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfigBrowser"
@@ -228,16 +253,12 @@
         if (document.getElementById('multipleCaptures').checked == true) {
             document.getElementById('singleCaptureField').value = '';
             $("#singleCaptureField").addClass("d-none");
-            $("#singleCaptureField").removeAttr("required");
             $("#multipleCapturesField").removeClass("d-none");
-            $("#multipleCapturesField").attr("required", true);
         }
         else {
             document.getElementById('multipleCapturesField').value = '';
             $("#singleCaptureField").removeClass("d-none");
-            $("#singleCaptureField").attr("required", true);
             $("#multipleCapturesField").addClass("d-none");
-            $("#multipleCapturesField").removeAttr("required");
         }
       })
   </script>

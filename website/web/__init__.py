@@ -6,7 +6,9 @@ import json
 import logging
 import os
 import time
-import filetype
+
+import filetype  # type: ignore
+
 from datetime import date, datetime, timedelta, timezone
 from io import BytesIO, StringIO
 from typing import Any, Dict, List, Optional, Union, TypedDict
@@ -489,16 +491,20 @@ def image(tree_uuid: str):
     return send_file(to_return, mimetype='image/png',
                      as_attachment=True, attachment_filename='image.png')
 
+
 @app.route('/tree/<string:tree_uuid>/data', methods=['GET'])
 def data(tree_uuid: str):
     filename, data = lookyloo.get_data(tree_uuid)
-    if len(filename) != 0:
-        if filetype.guess_mime(data.getvalue()) is None:
-            mime = 'application/octet-stream'
-        else:
-            mime = filetype.guess_mime(data.getvalue())
-        return send_file(data, mimetype= mime,
-                         as_attachment=True, attachment_filename=filename)
+    if len(filename) == 0:
+        # TODO: return something saying it is not a valid request
+        return
+
+    if filetype.guess_mime(data.getvalue()) is None:
+        mime = 'application/octet-stream'
+    else:
+        mime = filetype.guess_mime(data.getvalue())
+    return send_file(data, mimetype=mime,
+                     as_attachment=True, attachment_filename=filename)
 
 
 @app.route('/tree/<string:tree_uuid>/thumbnail/', defaults={'width': 64}, methods=['GET'])
@@ -856,7 +862,11 @@ def capture_web():
     else:
         user = src_request_ip(request)
 
-    if request.method == 'POST' and (request.form.get('url') or request.form.get('urls')):
+    if request.method == 'POST':
+        if not (request.form.get('url') or request.form.get('urls') or 'document' in request.files):
+            flash('Invalid submission: please submit at least a URL or a document.', 'error')
+            return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
+
         capture_query: Dict[str, Union[str, bytes, int, bool]] = {}
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
@@ -902,7 +912,7 @@ def capture_web():
             perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
             time.sleep(2)
             return redirect(url_for('tree', tree_uuid=perma_uuid))
-        else:
+        elif request.form.get('urls'):
             # bulk query
             bulk_captures = []
             for url in request.form['urls'].split('\n'):
@@ -912,6 +922,13 @@ def capture_web():
                 bulk_captures.append((new_capture_uuid, url))
 
             return render_template('bulk_captures.html', bulk_captures=bulk_captures)
+        elif 'document' in request.files:
+            # File upload
+            capture_query['document'] = request.files['document'].stream.read()
+            capture_query['document_name'] = request.files['document'].filename
+            perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+            time.sleep(2)
+            return redirect(url_for('tree', tree_uuid=perma_uuid))
     elif request.method == 'GET' and request.args.get('url'):
         url = unquote_plus(request.args['url']).strip()
         capture_query = {'url': url}

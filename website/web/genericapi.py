@@ -326,7 +326,9 @@ class CaptureCookies(Resource):
 # Just text
 
 submit_fields_post = api.model('SubmitFieldsPost', {
-    'url': fields.Url(description="The URL to capture", required=True),
+    'url': fields.Url(description="The URL to capture"),
+    'document': fields.String(description="A base64 encoded document, it can be anything a browser can display."),
+    'document_name': fields.String(description="The name of the document."),
     'listing': fields.Integer(description="Display the capture on the index", min=0, max=1, example=1),
     'user_agent': fields.String(description="User agent to use for the capture", example=''),
     'referer': fields.String(description="Referer to pass to the capture", example=''),
@@ -376,6 +378,8 @@ class SubmitCapture(Resource):
         else:
             user = src_request_ip(request)
         to_query: Dict = request.get_json(force=True)
+        if 'document' in to_query:
+            to_query['document'] = base64.b64decode(to_query['document'])
         perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
         return perma_uuid
 
