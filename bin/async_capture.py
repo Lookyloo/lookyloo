@@ -138,7 +138,9 @@ class AsyncCapture(AbstractManager):
             url = f'http://{url}'
         splitted_url = urlsplit(url)
         if self.only_global_lookups:
-            if splitted_url.netloc:
+            if url.startswith('data') or url.startswith('file'):
+                pass
+            elif splitted_url.netloc:
                 if splitted_url.hostname and splitted_url.hostname.split('.')[-1] != 'onion':
                     try:
                         ip = socket.gethostbyname(splitted_url.hostname)
