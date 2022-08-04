@@ -129,14 +129,14 @@ def load_known_content(directory: str='known_content') -> Dict[str, Dict[str, An
     return to_return
 
 
-def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str]]=None) -> List[Dict[str, Union[str, bool]]]:
+def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str, bytes]]=None) -> List[Dict[str, Union[str, bool]]]:
     cookies: List[Dict[str, Union[str, bool]]]
     if cookie_pseudofile:
-        if isinstance(cookie_pseudofile, str):
+        if isinstance(cookie_pseudofile, (str, bytes)):
             try:
                 cookies = json.loads(cookie_pseudofile)
             except json.decoder.JSONDecodeError:
-                logger.warning(f'Unable to load json content: {cookie_pseudofile}')
+                logger.warning(f'Unable to load json content: {cookie_pseudofile!r}')
                 return []
         else:
             # Note: we might have an empty BytesIO, which is not False.

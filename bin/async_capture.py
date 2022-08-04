@@ -4,10 +4,13 @@ import asyncio
 import ipaddress
 import json
 import logging
+import os
 import socket
+
 from datetime import datetime
 from io import BufferedIOBase
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional, Tuple, Union
 from urllib.parse import urlsplit
 
@@ -37,18 +40,18 @@ class AsyncCapture(AbstractManager):
         if not self.fox.available:
             self.logger.warning('Unable to setup the FOX module')
 
-    def thirdparty_submit(self, capture_data: Dict[str, str]) -> None:
+    def thirdparty_submit(self, url: str) -> None:
         if self.fox.available:
-            self.fox.capture_default_trigger(capture_data['url'], auto_trigger=True)
+            self.fox.capture_default_trigger(url, auto_trigger=True)
 
     async def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
-        value: List[Tuple[str, float]] = await self.redis.zpopmax('to_capture')
+        value: List[Tuple[bytes, float]] = await self.redis.zpopmax('to_capture')
         if not value or not value[0]:
             # The queue was consumed by an other process.
             return
-        uuid, _score = value[0]
-        queue: Optional[str] = await self.redis.get(f'{uuid}_mgmt')
+        uuid = value[0][0].decode()
+        queue: Optional[bytes] = await self.redis.get(f'{uuid}_mgmt')
         await self.redis.sadd('ongoing', uuid)
 
         async with self.redis.pipeline() as lazy_cleanup:
@@ -57,55 +60,70 @@ class AsyncCapture(AbstractManager):
                 # queue shouldn't be none, but if it is, just ignore.
                 await lazy_cleanup.zincrby('queues', -1, queue)
 
-            to_capture: Dict[str, str] = await self.redis.hgetall(uuid)
+            to_capture: Dict[bytes, bytes] = await self.redis.hgetall(uuid)
 
             if get_config('generic', 'default_public'):
                 # By default, the captures are on the index, unless the user mark them as un-listed
-                listing = False if ('listing' in to_capture and to_capture['listing'].lower() in ['false', '0', '']) else True
+                listing = False if ('listing' in to_capture and to_capture[b'listing'].lower() in [b'false', b'0', b'']) else True
             else:
                 # By default, the captures are not on the index, unless the user mark them as listed
-                listing = True if ('listing' in to_capture and to_capture['listing'].lower() in ['true', '1']) else False
+                listing = True if ('listing' in to_capture and to_capture[b'listing'].lower() in [b'true', b'1']) else False
 
             # Turn the freetext for the headers into a dict
-            headers = {}
-            if 'headers' in to_capture:
-                for header_line in to_capture['headers'].splitlines():
+            headers: Dict[str, str] = {}
+            if b'headers' in to_capture:
+                for header_line in to_capture[b'headers'].decode().splitlines():
                     if header_line and ':' in header_line:
                         splitted = header_line.split(':', 1)
                         if splitted and len(splitted) == 2:
                             header, h_value = splitted
                             if header and h_value:
                                 headers[header.strip()] = h_value.strip()
-            if to_capture.get('dnt'):
-                headers['DNT'] = to_capture['dnt']
+            if to_capture.get(b'dnt'):
+                headers['DNT'] = to_capture[b'dnt'].decode()
 
-            self.logger.info(f'Capturing {to_capture["url"]} - {uuid}')
-            self.thirdparty_submit(to_capture)
-            success, error_message = await self._capture(
-                to_capture['url'],
-                perma_uuid=uuid,
-                cookies_pseudofile=to_capture.get('cookies', None),
-                listing=listing,
-                user_agent=to_capture.get('user_agent', None),
-                referer=to_capture.get('referer', None),
-                headers=headers if headers else None,
-                proxy=to_capture.get('proxy', None),
-                os=to_capture.get('os', None),
-                browser=to_capture.get('browser', None),
-                parent=to_capture.get('parent', None)
-            )
-            if success:
-                self.logger.info(f'Successfully captured {to_capture["url"]} - {uuid}')
+            if to_capture.get(b'document'):
+                # we do not have a URL yet.
+                document_name = Path(to_capture[b'document_name'].decode()).name
+                tmp_f = NamedTemporaryFile(suffix=document_name, delete=False)
+                with open(tmp_f.name, "wb") as f:
+                    f.write(to_capture[b'document'])
+                url = f'file://{tmp_f.name}'
             else:
-                self.logger.warning(f'Unable to capture {to_capture["url"]} - {uuid}: {error_message}')
-                await lazy_cleanup.setex(f'error_{uuid}', 36000, f'{error_message} - {to_capture["url"]} - {uuid}')
+                url = to_capture[b'url'].decode()
+                self.thirdparty_submit(url)
+
+            self.logger.info(f'Capturing {url} - {uuid}')
+            success, error_message = await self._capture(
+                url,
+                perma_uuid=uuid,
+                cookies_pseudofile=to_capture.get(b'cookies', None),
+                listing=listing,
+                user_agent=to_capture[b'user_agent'].decode() if to_capture.get(b'user_agent') else None,
+                referer=to_capture[b'referer'].decode() if to_capture.get(b'referer') else None,
+                headers=headers if headers else None,
+                proxy=to_capture[b'proxy'].decode() if to_capture.get(b'proxy') else None,
+                os=to_capture[b'os'].decode() if to_capture.get(b'os') else None,
+                browser=to_capture[b'browser'].decode() if to_capture.get(b'browser') else None,
+                parent=to_capture[b'parent'].decode() if to_capture.get(b'parent') else None
+            )
+
+            if to_capture.get(b'document'):
+                os.unlink(tmp_f.name)
+
+            if success:
+                self.logger.info(f'Successfully captured {url} - {uuid}')
+            else:
+                self.logger.warning(f'Unable to capture {url} - {uuid}: {error_message}')
+                await lazy_cleanup.setex(f'error_{uuid}', 36000, f'{error_message} - {url} - {uuid}')
             await lazy_cleanup.srem('ongoing', uuid)
             await lazy_cleanup.delete(uuid)
             # make sure to expire the key if nothing was processed for a while (= queues empty)
             await lazy_cleanup.expire('queues', 600)
             await lazy_cleanup.execute()
 
-    async def _capture(self, url: str, *, perma_uuid: str, cookies_pseudofile: Optional[Union[BufferedIOBase, str]]=None,
+    async def _capture(self, url: str, *, perma_uuid: str,
+                       cookies_pseudofile: Optional[Union[BufferedIOBase, str, bytes]]=None,
                        listing: bool=True, user_agent: Optional[str]=None,
                        referer: Optional[str]=None,
                        headers: Optional[Dict[str, str]]=None,
@@ -114,7 +132,7 @@ class AsyncCapture(AbstractManager):
         '''Launch a capture'''
         url = url.strip()
         url = refang(url)
-        if not url.startswith('http'):
+        if not url.startswith('data') and not url.startswith('http') and not url.startswith('file'):
             url = f'http://{url}'
         splitted_url = urlsplit(url)
         if self.only_global_lookups:
@@ -187,11 +205,11 @@ class AsyncCapture(AbstractManager):
                 _parent.write(parent)
 
         if 'downloaded_filename' in entries and entries['downloaded_filename']:
-            with(dirpath / '0.data.filename').open('w') as _downloaded_filename:
+            with (dirpath / '0.data.filename').open('w') as _downloaded_filename:
                 _downloaded_filename.write(entries['downloaded_filename'])
 
         if 'downloaded_file' in entries and entries['downloaded_file']:
-            with(dirpath / '0.data').open('wb') as _downloaded_file:
+            with (dirpath / '0.data').open('wb') as _downloaded_file:
                 _downloaded_file.write(entries['downloaded_file'])
 
         if 'error' in entries:
@@ -223,7 +241,7 @@ class AsyncCapture(AbstractManager):
         return True, 'All good!'
 
     async def _to_run_forever_async(self):
-        self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
+        self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))
         while await self.redis.exists('to_capture'):
             await self.process_capture_queue()
             if self.shutdown_requested():

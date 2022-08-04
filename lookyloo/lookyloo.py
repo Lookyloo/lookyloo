@@ -5,6 +5,7 @@ import hashlib
 import json
 import logging
 import operator
+import pickle
 import smtplib
 
 from collections import defaultdict
@@ -398,11 +399,9 @@ class Lookyloo():
                 query[key] = 1 if value else 0
             elif isinstance(value, (list, dict)):
                 query[key] = json.dumps(value)
-            elif isinstance(value, bytes):
-                query[key] = value.decode()
 
         # dirty deduplicate
-        hash_query = hashlib.sha512(json.dumps(query).encode()).hexdigest()
+        hash_query = hashlib.sha512(pickle.dumps(query)).hexdigest()
         # FIXME The line below should work, but it doesn't
         # if (existing_uuid := self.redis.set(f'query_hash:{hash_query}', temp_uuid, get=True, nx=True, ex=300)):
         if (existing_uuid := self.redis.get(f'query_hash:{hash_query}')):

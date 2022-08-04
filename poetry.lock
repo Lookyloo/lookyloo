@@ -403,7 +403,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.13.3"
+version = "1.13.4"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -1220,7 +1220,7 @@ types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-setuptools"
-version = "63.2.2"
+version = "63.2.3"
 description = "Typing stubs for setuptools"
 category = "dev"
 optional = false
@@ -1228,7 +1228,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-urllib3"
-version = "1.26.21"
+version = "1.26.22"
 description = "Typing stubs for urllib3"
 category = "dev"
 optional = false
@@ -1400,7 +1400,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "e610c176898413ec199ccfaa7f8a0afbfd6b1603dc869dad2d9662d83ba52c52"
+content-hash = "c5dbbe94d98ae4aaf7dd387149e2bad53ac098e8b6e951b2b87a4aacad4dc3be"
 
 [metadata.files]
 aiohttp = [
@@ -1762,8 +1762,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.13.3-py3-none-any.whl", hash = "sha256:1cb921d3dfd9048244edcfc1aa01e5f0884248bf0cc39aafa18165eaed393db9"},
-    {file = "har2tree-1.13.3.tar.gz", hash = "sha256:7481696e9c4f2907d4df391027e4c4ee01b03f4a588a726dc1904035c0d959af"},
+    {file = "har2tree-1.13.4-py3-none-any.whl", hash = "sha256:08b8758718215a7094f7784f3c98e336bbc567c4c3cd3ef8a96c9e136f9d1821"},
+    {file = "har2tree-1.13.4.tar.gz", hash = "sha256:767cd9c6c28b6486ce1dad956f6041e37f939ca9842729be83bcd2df1df910c1"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -2446,12 +2446,12 @@ types-requests = [
     {file = "types_requests-2.28.7-py3-none-any.whl", hash = "sha256:38015d310d13cf7d4d712d2507178349e13fd5dab85259dab7d9a9884c2c9c2a"},
 ]
 types-setuptools = [
-    {file = "types-setuptools-63.2.2.tar.gz", hash = "sha256:a9aa0c01d5f3443cd544026d5ffc97b95ddadf731dab13419c393d43fd8617c0"},
-    {file = "types_setuptools-63.2.2-py3-none-any.whl", hash = "sha256:a370df7a1e0dc856af9d998234f6e2ab04f30f25b8e1410f6db65910979f6252"},
+    {file = "types-setuptools-63.2.3.tar.gz", hash = "sha256:c0f5d452976e390527276fc4a6aa97cc1a38f4edb904f787441e70a472c37d44"},
+    {file = "types_setuptools-63.2.3-py3-none-any.whl", hash = "sha256:58f4b41db8b0dbd8222514872e48cbe4b3cb5a90e1ff4b6733e94fe83aaf0f79"},
 ]
 types-urllib3 = [
-    {file = "types-urllib3-1.26.21.tar.gz", hash = "sha256:2f7fb7ae6a1884241e588c7becd5f005ce1e03f6eface8a3f65e378c2adf9516"},
-    {file = "types_urllib3-1.26.21-py3-none-any.whl", hash = "sha256:2f960d8681002a37385263c372882fd12c676e10b127553738a2b6064e4438d1"},
+    {file = "types-urllib3-1.26.22.tar.gz", hash = "sha256:b05af90e73889e688094008a97ca95788db8bf3736e2776fd43fb6b171485d94"},
+    {file = "types_urllib3-1.26.22-py3-none-any.whl", hash = "sha256:09a8783e1002472e8d1e1f3792d4c5cca1fffebb9b48ee1512aae6d16fe186bc"},
 ]
 types-werkzeug = [
     {file = "types-Werkzeug-1.0.9.tar.gz", hash = "sha256:5cc269604c400133d452a40cee6397655f878fc460e03fde291b9e3a5eaa518c"},
