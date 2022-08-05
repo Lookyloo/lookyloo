@@ -148,11 +148,11 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "chardet"
-version = "4.0.0"
-description = "Universal encoding detector for Python 2 and 3"
+version = "5.0.0"
+description = "Universal encoding detector for Python 3"
 category = "main"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = ">=3.6"
 
 [[package]]
 name = "charset-normalizer"
@@ -779,6 +779,18 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "publicsuffixlist"
+version = "0.7.13"
+description = "publicsuffixlist implement"
+category = "main"
+optional = false
+python-versions = ">=2.6"
+
+[package.extras]
+readme = ["pandoc"]
+update = ["requests"]
+
+[[package]]
 name = "pure-eval"
 version = "0.2.2"
 description = "Safely evaluate AST nodes without side effects"
@@ -863,29 +875,30 @@ docs = ["Sphinx (>=5.0.2,<6.0.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.159"
+version = "2.4.160"
 description = "Python API for MISP."
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-chardet = {version = ">=4.0.0,<5.0.0", optional = true, markers = "extra == \"url\""}
+chardet = {version = ">=5.0.0,<6.0.0", optional = true, markers = "extra == \"url\""}
 deprecated = ">=1.2.13,<2.0.0"
-jsonschema = ">=4.5.1,<5.0.0"
+jsonschema = ">=4.9.1,<5.0.0"
+publicsuffixlist = ">=0.7.13,<0.8.0"
 pyfaup = {version = ">=1.2,<2.0", optional = true, markers = "extra == \"url\""}
 python-dateutil = ">=2.8.2,<3.0.0"
-requests = ">=2.27.1,<3.0.0"
+requests = ">=2.28.1,<3.0.0"
 
 [package.extras]
-email = ["extract_msg (>=0.30.13,<0.31.0)", "RTFDE (>=0.0.2,<0.0.3)", "oletools (>=0.60.1,<0.61.0)"]
-fileobjects = ["python-magic (>=0.4.26,<0.5.0)", "pydeep2 (>=0.5.1,<0.6.0)", "lief (>=0.12.1,<0.13.0)"]
+email = ["extract_msg (>=0.36.1,<0.37.0)", "RTFDE (>=0.0.2,<0.0.3)", "oletools (>=0.60.1,<0.61.0)"]
+fileobjects = ["python-magic (>=0.4.27,<0.5.0)", "pydeep2 (>=0.5.1,<0.6.0)", "lief (>=0.12.1,<0.13.0)"]
 openioc = ["beautifulsoup4 (>=4.11.1,<5.0.0)"]
-virustotal = ["validators (>=0.19.0,<0.20.0)"]
-docs = ["sphinx-autodoc-typehints (>=1.18.1,<2.0.0)", "recommonmark (>=0.7.1,<0.8.0)"]
-pdfexport = ["reportlab (>=3.6.9,<4.0.0)"]
-url = ["pyfaup (>=1.2,<2.0)", "chardet (>=4.0.0,<5.0.0)"]
-brotli = ["urllib3[brotli] (>=1.26.9,<2.0.0)"]
+virustotal = ["validators (>=0.20.0,<0.21.0)"]
+docs = ["sphinx-autodoc-typehints (>=1.19.1,<2.0.0)", "recommonmark (>=0.7.1,<0.8.0)"]
+pdfexport = ["reportlab (>=3.6.11,<4.0.0)"]
+url = ["pyfaup (>=1.2,<2.0)", "chardet (>=5.0.0,<6.0.0)"]
+brotli = ["urllib3[brotli] (>=1.26.11,<2.0.0)"]
 
 [[package]]
 name = "pyparsing"
@@ -1209,7 +1222,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.7"
+version = "2.28.8"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1220,7 +1233,7 @@ types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-setuptools"
-version = "63.2.3"
+version = "63.4.0"
 description = "Typing stubs for setuptools"
 category = "dev"
 optional = false
@@ -1400,7 +1413,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "c5dbbe94d98ae4aaf7dd387149e2bad53ac098e8b6e951b2b87a4aacad4dc3be"
+content-hash = "0143fa20c4e9857d00f92f64d05a0906c55fe88ce79e79187b056383c65c4bdb"
 
 [metadata.files]
 aiohttp = [
@@ -1567,8 +1580,8 @@ certifi = [
     {file = "certifi-2022.6.15.tar.gz", hash = "sha256:84c85a9078b11105f04f3036a9482ae10e4621616db313fe045dd24743a0820d"},
 ]
 chardet = [
-    {file = "chardet-4.0.0-py2.py3-none-any.whl", hash = "sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5"},
-    {file = "chardet-4.0.0.tar.gz", hash = "sha256:0d6f53a15db4120f2b08c94f11e7d93d2c911ee118b6b30a04ec3ee8310179fa"},
+    {file = "chardet-5.0.0-py3-none-any.whl", hash = "sha256:d3e64f022d254183001eccc5db4040520c0f23b1a3f33d6413e099eb7f126557"},
+    {file = "chardet-5.0.0.tar.gz", hash = "sha256:0368df2bfd78b5fc20572bb4e9bb7fb53e2c094f60ae9993339e8671d0afb8aa"},
 ]
 charset-normalizer = [
     {file = "charset-normalizer-2.1.0.tar.gz", hash = "sha256:575e708016ff3a5e3681541cb9d79312c416835686d054a23accb873b254f413"},
@@ -2185,6 +2198,10 @@ publicsuffix2 = [
     {file = "publicsuffix2-2.20191221-py2.py3-none-any.whl", hash = "sha256:786b5e36205b88758bd3518725ec8cfe7a8173f5269354641f581c6b80a99893"},
     {file = "publicsuffix2-2.20191221.tar.gz", hash = "sha256:00f8cc31aa8d0d5592a5ced19cccba7de428ebca985db26ac852d920ddd6fe7b"},
 ]
+publicsuffixlist = [
+    {file = "publicsuffixlist-0.7.13-py2.py3-none-any.whl", hash = "sha256:60abb0720c00b635149a7654445fb700822fcbf5187be8f51f7be174a291560e"},
+    {file = "publicsuffixlist-0.7.13.tar.gz", hash = "sha256:07409a5821a1f662b694c7390bdd50539528eb9d1e626811ca5e1447366b185f"},
+]
 pure-eval = [
     {file = "pure_eval-0.2.2-py3-none-any.whl", hash = "sha256:01eaab343580944bc56080ebe0a674b39ec44a945e6d09ba7db3cb8cec289350"},
     {file = "pure_eval-0.2.2.tar.gz", hash = "sha256:2b45320af6dfaa1750f543d714b6d1c520a1688dec6fd24d339063ce0aaa9ac3"},
@@ -2227,8 +2244,8 @@ pylookyloo = [
     {file = "pylookyloo-1.13.0.tar.gz", hash = "sha256:0a53b1c259a7e4fc1ce908ef45d3ca6b0bafc276cc3705d7e14ed7797deb1595"},
 ]
 pymisp = [
-    {file = "pymisp-2.4.159-py3-none-any.whl", hash = "sha256:7af4f80180bd32411448628940b19d5fa434307e979a6a8a2d41b13fbc86f7a7"},
-    {file = "pymisp-2.4.159.tar.gz", hash = "sha256:b42ae4bb92ec2be92962957ed7b7c112fe0648ac0ad095900dc2d71df7f4e37e"},
+    {file = "pymisp-2.4.160-py3-none-any.whl", hash = "sha256:ba4b2a0a1333e9c757cf31965e8e0f0592eee2f05418f591e6f592ec2c19f2a2"},
+    {file = "pymisp-2.4.160.tar.gz", hash = "sha256:018c6d384af2bde151f09893c04399982c9048109c7d54ffd07ff7688e9ba506"},
 ]
 pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
@@ -2442,12 +2459,12 @@ types-redis = [
     {file = "types_redis-4.3.13-py3-none-any.whl", hash = "sha256:cc2209ecfab2ad6df1e3eec730c06f9b2dec77f4164eb86e04dad455a651b394"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.7.tar.gz", hash = "sha256:36385618d4bd2ee3211d4d2e78b44f067ceb5984865c0f253f3c9ecb964526cf"},
-    {file = "types_requests-2.28.7-py3-none-any.whl", hash = "sha256:38015d310d13cf7d4d712d2507178349e13fd5dab85259dab7d9a9884c2c9c2a"},
+    {file = "types-requests-2.28.8.tar.gz", hash = "sha256:7a9f7b152d594a1c18dd4932cdd2596b8efbeedfd73caa4e4abb3755805b4685"},
+    {file = "types_requests-2.28.8-py3-none-any.whl", hash = "sha256:b0421f9f2d0dd0f8df2c75f974686517ca67473f05b466232d4c6384d765ad7a"},
 ]
 types-setuptools = [
-    {file = "types-setuptools-63.2.3.tar.gz", hash = "sha256:c0f5d452976e390527276fc4a6aa97cc1a38f4edb904f787441e70a472c37d44"},
-    {file = "types_setuptools-63.2.3-py3-none-any.whl", hash = "sha256:58f4b41db8b0dbd8222514872e48cbe4b3cb5a90e1ff4b6733e94fe83aaf0f79"},
+    {file = "types-setuptools-63.4.0.tar.gz", hash = "sha256:f954044034066cd3d8ceccc87e2d5cebe7a96c9f87996f61c3c6a92cd56cc8a4"},
+    {file = "types_setuptools-63.4.0-py3-none-any.whl", hash = "sha256:f568830d82b48783a0df00646bc84effeddb4886bf0f19708fbbadeb552b6ece"},
 ]
 types-urllib3 = [
     {file = "types-urllib3-1.26.22.tar.gz", hash = "sha256:b05af90e73889e688094008a97ca95788db8bf3736e2776fd43fb6b171485d94"},
