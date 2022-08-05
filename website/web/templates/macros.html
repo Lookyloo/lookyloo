@@ -146,7 +146,7 @@
 {% if details and details[0] == False %}
   <img src="/static/bomb.svg" title="Known malicious content in the response." width="21" height="21"/>
 {%endif%}
-<b>Body size</b>: {{ sizeof_fmt(ressource_size) }}
+<b>Body size</b> (in the HTTP response): {{ sizeof_fmt(ressource_size) }}
 {% if details %}
   {% if details[0] %}
   - This file is known <b>legitimate</b> on the following domains: {{ ', '.join(details[1]) }}.
