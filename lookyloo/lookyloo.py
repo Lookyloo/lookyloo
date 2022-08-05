@@ -24,6 +24,7 @@ from PIL import Image, UnidentifiedImageError
 from pymisp import MISPAttribute, MISPEvent, MISPObject
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
+from werkzeug.utils import secure_filename
 
 from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
@@ -399,6 +400,9 @@ class Lookyloo():
                 query[key] = 1 if value else 0
             elif isinstance(value, (list, dict)):
                 query[key] = json.dumps(value)
+
+        if 'document_name' in query:
+            query['document_name'] = secure_filename(query['document_name'])
 
         # dirty deduplicate
         hash_query = hashlib.sha512(pickle.dumps(query)).hexdigest()
