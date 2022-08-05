@@ -94,6 +94,8 @@ class AsyncCapture(AbstractManager):
                 self.thirdparty_submit(url)
             else:
                 self.logger.warning(f'Invalid capture {to_capture}.')
+                await lazy_cleanup.execute()
+                return
 
             self.logger.info(f'Capturing {url} - {uuid}')
             success, error_message = await self._capture(
