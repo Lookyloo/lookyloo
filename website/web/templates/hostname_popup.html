@@ -186,6 +186,7 @@
           <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
               Download rendered HTML page
           </a>
+          ({{ sizeof_fmt(url['url_object'].rendered_html.getbuffer().nbytes)}})
           </br>
           <a href="{{ url_for('urlnode_urls_in_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
               Download URLs in rendered HTML page
