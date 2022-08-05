@@ -50,14 +50,13 @@ pysanejs = "^2.0.1"
 pylookyloo = "^1.14.1"
 dnspython = "^2.2.1"
 pytaxonomies = "^1.5.0"
-pymisp = {version = "^2.4.159", extras = ["url"]}
+pymisp = {version = "^2.4.160", extras = ["url"]}
 python-magic = {version = "^0.4.27", optional = true}
 pydeep2 = {version = "^0.5.1", optional = true}
 Pillow = "^9.2.0"
 flask-restx = "^0.5.1"
 rich = "^12.5.1"
 pyphishtanklookup = "^1.1"
-chardet = "^4.0.0"
 Flask-Cors = "^3.0.10"
 pyhashlookup = "^1.2.0"
 lief = "^0.12.1"
