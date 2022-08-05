@@ -898,7 +898,9 @@ def capture_web():
         elif request.form.get('urls'):
             # bulk query
             bulk_captures = []
-            for url in request.form['urls'].split('\n'):
+            for url in request.form['urls'].strip().split('\n'):
+                if not url:
+                    continue
                 query = capture_query.copy()
                 query['url'] = url
                 new_capture_uuid = lookyloo.enqueue_capture(query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
@@ -912,6 +914,8 @@ def capture_web():
             perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
             time.sleep(2)
             return redirect(url_for('tree', tree_uuid=perma_uuid))
+        else:
+            flash('Invalid submission: please submit at least a URL or a document.', 'error')
     elif request.method == 'GET' and request.args.get('url'):
         url = unquote_plus(request.args['url']).strip()
         capture_query = {'url': url}
