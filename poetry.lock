@@ -403,7 +403,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.13.4"
+version = "1.14.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -738,7 +738,7 @@ websockets = "10.1"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.13.4"
+version = "1.14.0"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
@@ -746,7 +746,7 @@ python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
 dateparser = ">=1.1.1,<2.0.0"
-playwright = ">=1.24.0,<2.0.0"
+playwright = ">=1.24.1,<2.0.0"
 
 [package.extras]
 recaptcha = ["requests (>=2.28.1,<3.0.0)", "pydub (>=0.25.1,<0.26.0)", "SpeechRecognition (>=3.8.1,<4.0.0)"]
@@ -861,17 +861,17 @@ docs = ["Sphinx (>=5.1.0,<6.0.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.13.0"
+version = "1.14.0"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
-requests = ">=2.28.0,<3.0.0"
+requests = ">=2.28.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=5.0.2,<6.0.0)"]
+docs = ["Sphinx (>=5.1.1,<6.0.0)"]
 
 [[package]]
 name = "pymisp"
@@ -1413,7 +1413,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "0143fa20c4e9857d00f92f64d05a0906c55fe88ce79e79187b056383c65c4bdb"
+content-hash = "b76b96e5203251125103e67a71e361e4fcd1fdf6f9979a3bb3fc556e4b37bbdf"
 
 [metadata.files]
 aiohttp = [
@@ -1775,8 +1775,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.13.4-py3-none-any.whl", hash = "sha256:08b8758718215a7094f7784f3c98e336bbc567c4c3cd3ef8a96c9e136f9d1821"},
-    {file = "har2tree-1.13.4.tar.gz", hash = "sha256:767cd9c6c28b6486ce1dad956f6041e37f939ca9842729be83bcd2df1df910c1"},
+    {file = "har2tree-1.14.0-py3-none-any.whl", hash = "sha256:ed200f22afe0faa84f3c83c06d2fb789c934ac228cc9c43af7cd68377f10111d"},
+    {file = "har2tree-1.14.0.tar.gz", hash = "sha256:4a299e77073a2378c694457657b3243c420a03c5271f5daee20e1d5cc87bb6bb"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -2183,8 +2183,8 @@ playwright = [
     {file = "playwright-1.24.1-py3-none-win_amd64.whl", hash = "sha256:7355d00cd2cb24265779b1cd9b18d9dcac17eea4a558d57ce20df650fc766f53"},
 ]
 playwrightcapture = [
-    {file = "PlaywrightCapture-1.13.4-py3-none-any.whl", hash = "sha256:0992c845f971d7339a62ad40610496c85756150b2af488d87b2906d9b47a9b78"},
-    {file = "PlaywrightCapture-1.13.4.tar.gz", hash = "sha256:f6569e785e0e8b42240627e36036b2aaab6ede5ae95237d3e990a35172967874"},
+    {file = "PlaywrightCapture-1.14.0-py3-none-any.whl", hash = "sha256:490df4f16f057c2b1c169aaf037d5906981c1ab2d545b17fe54d89be61b61436"},
+    {file = "PlaywrightCapture-1.14.0.tar.gz", hash = "sha256:22e01bbb41581e7ead3a783177fead523b216030b609a19313223381468e11fb"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.30-py3-none-any.whl", hash = "sha256:d8916d3f62a7b67ab353a952ce4ced6a1d2587dfe9ef8ebc30dd7c386751f289"},
@@ -2240,8 +2240,8 @@ pyhashlookup = [
     {file = "pyhashlookup-1.2.0.tar.gz", hash = "sha256:44922f88f716865c4ea7c0204dc063706d7b7a629bce214ca9999bce96a7c027"},
 ]
 pylookyloo = [
-    {file = "pylookyloo-1.13.0-py3-none-any.whl", hash = "sha256:1d54afb24f95a03400c214c7eb497936b5e244b728347a158f541cef5a908cb9"},
-    {file = "pylookyloo-1.13.0.tar.gz", hash = "sha256:0a53b1c259a7e4fc1ce908ef45d3ca6b0bafc276cc3705d7e14ed7797deb1595"},
+    {file = "pylookyloo-1.14.0-py3-none-any.whl", hash = "sha256:505eac79d3022163688b90b31ba9ee3af5c2cdab6678673290eb9c4d7e6d2495"},
+    {file = "pylookyloo-1.14.0.tar.gz", hash = "sha256:927f4b1b9ae1ff03101506e5e5dd1a2de78ec762b4af534830d318290aa51617"},
 ]
 pymisp = [
     {file = "pymisp-2.4.160-py3-none-any.whl", hash = "sha256:ba4b2a0a1333e9c757cf31965e8e0f0592eee2f05418f591e6f592ec2c19f2a2"},
