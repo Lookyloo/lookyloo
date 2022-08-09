@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import time
+import filetype
 from datetime import date, datetime, timedelta, timezone
 from io import BytesIO, StringIO
 from typing import Any, Dict, List, Optional, Union
@@ -481,6 +482,17 @@ def image(tree_uuid: str):
         to_return = lookyloo.get_screenshot(tree_uuid)
     return send_file(to_return, mimetype='image/png',
                      as_attachment=True, attachment_filename='image.png')
+
+@app.route('/tree/<string:tree_uuid>/data', methods=['GET'])
+def data(tree_uuid: str):
+    filename, data = lookyloo.get_data(tree_uuid)
+    if len(filename) == 0:
+        if filetype.guess_mime(data.getvalue()) is None:
+            mime = 'application/octet-stream'
+        else:
+            mime = filetype.guess_mime(data.getvalue())
+        return send_file(data, mimetype= mime,
+                         as_attachment=True, attachment_filename=filename)
 
 
 @app.route('/tree/<string:tree_uuid>/thumbnail/', defaults={'width': 64}, methods=['GET'])

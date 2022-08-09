@@ -181,6 +181,11 @@
           </p>
           {{ popup_icons(keys_response, url['url_object'], tree_uuid) }}
 
+          {% if url['url_object'].has_dl_file %}
+          <a href="{{ url_for('get_data', tree_uuid=tree_uuid }}">
+              Download file
+          </a>
+
           {% if url['url_object'].rendered_html %}
           <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
               Download rendered HTML page

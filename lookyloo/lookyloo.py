@@ -490,6 +490,10 @@ class Lookyloo():
         '''Get rendered HTML'''
         return self._get_raw(capture_uuid, 'html', all_html)
 
+    def get_data(self, capture_uuid: str, /) -> Tuple[str, BytesIO]:
+        '''Get the data'''
+        return self._get_raw(capture_uuid, 'data.filename', False).getvalue().decode(), self._get_raw(capture_uuid, 'data', False)
+
     def get_cookies(self, capture_uuid: str, /, all_cookies: bool=False) -> BytesIO:
         '''Get the cookie(s)'''
         return self._get_raw(capture_uuid, 'cookies.json', all_cookies)
@@ -889,6 +893,17 @@ class Lookyloo():
                 'url_path': url.name.split('/', 3)[-1],
                 'url_object': url,
             }
+
+            if url.empty_response:
+                if ct.root_hartree.rendered_node == url:
+                    # check if a file is available
+                    filename, data = self.lookyloo.get_data(self.uuid)
+                    if filename:
+                        # we have a file to download
+                        url.add_feature('has_dl_file', True)
+
+
+
 
             if not url.empty_response:
                 # Index lookup
