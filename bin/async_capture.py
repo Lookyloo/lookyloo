@@ -64,10 +64,10 @@ class AsyncCapture(AbstractManager):
 
             if get_config('generic', 'default_public'):
                 # By default, the captures are on the index, unless the user mark them as un-listed
-                listing = False if ('listing' in to_capture and to_capture[b'listing'].lower() in [b'false', b'0', b'']) else True
+                listing = False if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'false', b'0', b'']) else True
             else:
                 # By default, the captures are not on the index, unless the user mark them as listed
-                listing = True if ('listing' in to_capture and to_capture[b'listing'].lower() in [b'true', b'1']) else False
+                listing = True if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'true', b'1']) else False
 
             # Turn the freetext for the headers into a dict
             headers: Dict[str, str] = {}
