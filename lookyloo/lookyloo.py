@@ -399,11 +399,12 @@ class Lookyloo():
             if isinstance(value, bool):
                 query[key] = 1 if value else 0
             elif isinstance(value, (list, dict)):
-                query[key] = json.dumps(value)
+                query[key] = json.dumps(value) if value else None
 
         if 'document_name' in query:
             query['document_name'] = secure_filename(query['document_name'])
 
+        query = {k: v for k, v in query.items() if v is not None}  # Remove the none, it makes redis unhappy
         # dirty deduplicate
         hash_query = hashlib.sha512(pickle.dumps(query)).hexdigest()
         # FIXME The line below should work, but it doesn't
