@@ -486,7 +486,7 @@ def image(tree_uuid: str):
 @app.route('/tree/<string:tree_uuid>/data', methods=['GET'])
 def data(tree_uuid: str):
     filename, data = lookyloo.get_data(tree_uuid)
-    if len(filename) == 0:
+    if len(filename) != 0:
         if filetype.guess_mime(data.getvalue()) is None:
             mime = 'application/octet-stream'
         else:

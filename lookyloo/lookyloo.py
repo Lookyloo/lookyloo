@@ -897,10 +897,12 @@ class Lookyloo():
             if url.empty_response:
                 if ct.root_hartree.rendered_node == url:
                     # check if a file is available
-                    filename, data = self.lookyloo.get_data(self.uuid)
+                    filename, data = self.get_data(capture_uuid)
                     if filename:
                         # we have a file to download
                         url.add_feature('has_dl_file', True)
+                        url.add_feature('downloaded_filename', filename)
+                        url.add_feature('downloaded_filesize', data.getbuffer().nbytes)
 
 
 
