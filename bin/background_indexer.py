@@ -66,7 +66,7 @@ class BackgroundIndexer(AbstractManager):
 
     def _check_indexes(self):
         index_redis = self.lookyloo.indexing.redis
-        for cache in self.lookyloo.sorted_capture_cache():
+        for cache in self.lookyloo.sorted_capture_cache(cached_captures_only=False):
             if self.lookyloo.is_public_instance and cache.no_index:
                 # Capture unindexed
                 continue
