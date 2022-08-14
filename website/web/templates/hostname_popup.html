@@ -183,10 +183,9 @@
           {{ popup_icons_response(url['url_object'], tree_uuid) }}
 
           {% if url['url_object'].has_dl_file %}
-          <a href="{{ url_for('data', tree_uuid=tree_uuid)}}">
+            <a href="{{ url_for('data', tree_uuid=tree_uuid)}}">
               Download {{url['url_object'].downloaded_filename}}
-          </a>
-          ({{sizeof_fmt(url['url_object'].downloaded_filesize)}})
+            </a> ({{sizeof_fmt(url['url_object'].downloaded_filesize)}})
           {% else %}
             {% if url['url_object'].rendered_html %}
             <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">

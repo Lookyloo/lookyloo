@@ -925,9 +925,6 @@ class Lookyloo():
                         url.add_feature('downloaded_filename', filename)
                         url.add_feature('downloaded_filesize', data.getbuffer().nbytes)
 
-
-
-
             if not url.empty_response:
                 # Index lookup
                 # %%% Full body %%%
