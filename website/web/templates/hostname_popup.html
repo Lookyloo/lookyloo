@@ -182,24 +182,29 @@
           </p>
           {{ popup_icons_response(url['url_object'], tree_uuid) }}
 
-          {% if url['url_object'].rendered_html %}
-          <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-              Download rendered HTML page
-          </a>
-          ({{ sizeof_fmt(url['url_object'].rendered_html.getbuffer().nbytes)}})
-          </br>
-          <a href="{{ url_for('urlnode_urls_in_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-              Download URLs in rendered HTML page
-          </a>
-          {% endif %}
-
-          <div>
-          {% if url['url_object'].empty_response %}
-          Empty body.
+          {% if url['url_object'].has_dl_file %}
+            <a href="{{ url_for('data', tree_uuid=tree_uuid)}}">
+              Download {{url['url_object'].downloaded_filename}}
+            </a> ({{sizeof_fmt(url['url_object'].downloaded_filesize)}})
           {% else %}
-          {{ ressource_legitimacy_details(url['legitimacy'], url['url_object'].body.getbuffer().nbytes) }}
+            {% if url['url_object'].rendered_html %}
+            <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
+                Download rendered HTML page
+            </a>({{ sizeof_fmt(url['url_object'].rendered_html.getbuffer().nbytes)}})
+            </br>
+            <a href="{{ url_for('urlnode_urls_in_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
+                Download URLs in rendered HTML page
+            </a>
+            {% endif %}
+            <div>
+            {% if url['url_object'].empty_response %}
+            Empty body.
+            {% else %}
+            {{ ressource_legitimacy_details(url['legitimacy'], url['url_object'].body.getbuffer().nbytes) }}
+            {% endif %}
+            </div>
           {%endif%}
-          </div>
+
 
           {% if url['known_content'] %}
             {{ known_content_details(url['known_content']) }}

@@ -66,6 +66,7 @@ har2tree = "^1.14.1"
 playwrightcapture = "^1.14.0"
 passivetotal = "^2.5.9"
 werkzeug = "2.1.2"
+filetype = "^1.1.0"
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep2']
