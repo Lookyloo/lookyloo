@@ -215,10 +215,10 @@
           <div>
             This file can be found <b>{{ url['body_hash_details']['hash_freq'] }}</b> times
             across all the captures on this lookyloo instance, in <b>{{ url['body_hash_details']['hash_domains_freq'] }}</b> unique domains.
-            </br>
 
             {# other captures related with the same content #}
             {% if 'other_captures' in url['body_hash_details'] %}
+              </br>
               {{ indexed_hash(url['body_hash_details']['other_captures'], url['url_object'].uuid) }}
             {% endif %}
             {# Link to list of captures with the same hash #}
@@ -230,6 +230,7 @@
           </div>
           {% endif %}
           {% if enable_context_by_users %}
+            </br>
             {{ context_form(tree_uuid, url['url_object'].uuid, hostnode_uuid, url['url_object'].body_hash, 'hostnode_popup') }}
           {% endif %}
 
