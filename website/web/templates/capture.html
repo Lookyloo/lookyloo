@@ -95,18 +95,28 @@
         <div class="row mb-3">
           <div class="col-sm-10">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="personal_ua"></input>
-              <label for="personal_ua" class="form-check-label">Use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser:</br>
+              <input class="form-check-input" type="radio" id="personal_ua_select" name="user_agent_select"></input>
+              <label for="personal_ua_select" class="form-check-label">
+                  Use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser:</br>
                   {{ personal_ua }}
               </label>
+              <input class="visually-hidden" type="text" id="personal_ua" name="personal_ua" value="{{ personal_ua }}" disabled></input>
             </div>
           </div>
         </div>
         <div class="dropdown-divider"></div>
-        <div><b>Or</b> pick the user agent of your choice:</div>
         </br>
         {% endif %}
 
+        <div class="row mb-3">
+          <div class="col-sm-10">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" id="predefined_ua_select" name="user_agent_select" checked></input>
+              <label for="predefined_ua_select" class="form-check-label">Pick the <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your choice:</label>
+            </div>
+          </div>
+        </div>
+        <div class="prefed_selector">
         <div class="row mb-3">
           <label for="os" class="col-sm-2 col-form-label">Operating System:</label>
           <div class="col-sm-10">
@@ -149,14 +159,21 @@
         </div>
         {% endfor%}
       {% endfor%}
+        </div>
         <div class="dropdown-divider"></div>
-        <div><b>Or</b> type the user-agent of your choice:</div>
-        </br>
+        <div class="row mb-3">
+          <div class="col-sm-10">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" id="freetext_ua_select" name="user_agent_select"></input>
+              <label for="freetext_ua_select" class="form-check-label">Type the <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your choice:</label>
+            </div>
+          </div>
+        </div>
         <div class="row mb-3">
           <label for="freetext_ua" class="col-sm-2 col-form-label">User-Agent:</label>
           <div class="col-sm-10">
               <input type="text" class="form-control" name="freetext_ua" id="freetext_ua"
-                     placeholder="String to use as a User-Agent for the capture">
+                     placeholder="String to use as a User-Agent for the capture" disabled>
           </div>
         </div>
       </div>
@@ -262,5 +279,29 @@
         }
       })
   </script>
+  <script>
+      $('#personal_ua_select').on('click', function(e) {
+        $('#freetext_ua').prop("disabled", true);
+        $('#personal_ua').prop("disabled", false);
+        $('#os').prop("disabled", true);
+        $('select[name="browser"]').prop("disabled", true);
+        $('select[name="user_agent"]').prop("disabled", true);
+      });
+      $('#predefined_ua_select').on('click', function(e) {
+        $('#freetext_ua').prop("disabled", true);
+        $('#personal_ua').prop("disabled", true);
+        $('#os').prop("disabled", false);
+        $('select[name="browser"]:visible').prop("disabled", false);
+        $('select[name="user_agent"]:visible').prop("disabled", false);
+      });
+      $('#freetext_ua_select').on('click', function(e) {
+        $('#freetext_ua').prop("disabled", false);
+        $('#personal_ua').prop("disabled", true);
+        $('#os').prop("disabled", true);
+        $('select[name="browser"]').prop("disabled", true);
+        $('select[name="user_agent"]').prop("disabled", true);
+      });
+  </script>
+
 
 {% endblock %}
