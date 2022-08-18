@@ -16,7 +16,7 @@ from urllib.parse import urlsplit
 
 from defang import refang  # type: ignore
 from redis.asyncio import Redis
-from playwrightcapture import Capture
+from playwrightcapture import Capture, PlaywrightCaptureException
 
 from lookyloo.default import AbstractManager, get_config, get_socket_path, safe_create_dir
 from lookyloo.helpers import get_captures_dir, load_cookies, UserAgents
@@ -50,53 +50,46 @@ class AsyncCapture(AbstractManager):
         if not value or not value[0]:
             # The queue was consumed by an other process.
             return
-        uuid = value[0][0].decode()
-        queue: Optional[bytes] = await self.redis.get(f'{uuid}_mgmt')
+        uuid: str = value[0][0].decode()
+        queue: Optional[bytes] = await self.redis.getdel(f'{uuid}_mgmt')
         await self.redis.sadd('ongoing', uuid)
 
-        async with self.redis.pipeline() as lazy_cleanup:
-            await lazy_cleanup.delete(f'{uuid}_mgmt')
-            if queue:
-                # queue shouldn't be none, but if it is, just ignore.
-                await lazy_cleanup.zincrby('queues', -1, queue)
+        to_capture: Dict[bytes, bytes] = await self.redis.hgetall(uuid)
 
-            to_capture: Dict[bytes, bytes] = await self.redis.hgetall(uuid)
+        if get_config('generic', 'default_public'):
+            # By default, the captures are on the index, unless the user mark them as un-listed
+            listing = False if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'false', b'0', b'']) else True
+        else:
+            # By default, the captures are not on the index, unless the user mark them as listed
+            listing = True if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'true', b'1']) else False
 
-            if get_config('generic', 'default_public'):
-                # By default, the captures are on the index, unless the user mark them as un-listed
-                listing = False if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'false', b'0', b'']) else True
-            else:
-                # By default, the captures are not on the index, unless the user mark them as listed
-                listing = True if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'true', b'1']) else False
+        # Turn the freetext for the headers into a dict
+        headers: Dict[str, str] = {}
+        if b'headers' in to_capture:
+            for header_line in to_capture[b'headers'].decode().splitlines():
+                if header_line and ':' in header_line:
+                    splitted = header_line.split(':', 1)
+                    if splitted and len(splitted) == 2:
+                        header, h_value = splitted
+                        if header and h_value:
+                            headers[header.strip()] = h_value.strip()
+        if to_capture.get(b'dnt'):
+            headers['DNT'] = to_capture[b'dnt'].decode()
 
-            # Turn the freetext for the headers into a dict
-            headers: Dict[str, str] = {}
-            if b'headers' in to_capture:
-                for header_line in to_capture[b'headers'].decode().splitlines():
-                    if header_line and ':' in header_line:
-                        splitted = header_line.split(':', 1)
-                        if splitted and len(splitted) == 2:
-                            header, h_value = splitted
-                            if header and h_value:
-                                headers[header.strip()] = h_value.strip()
-            if to_capture.get(b'dnt'):
-                headers['DNT'] = to_capture[b'dnt'].decode()
+        if to_capture.get(b'document'):
+            # we do not have a URL yet.
+            document_name = Path(to_capture[b'document_name'].decode()).name
+            tmp_f = NamedTemporaryFile(suffix=document_name, delete=False)
+            with open(tmp_f.name, "wb") as f:
+                f.write(to_capture[b'document'])
+            url = f'file://{tmp_f.name}'
+        elif to_capture.get(b'url'):
+            url = to_capture[b'url'].decode()
+            self.thirdparty_submit(url)
+        else:
+            self.logger.warning(f'Invalid capture {to_capture}.')
 
-            if to_capture.get(b'document'):
-                # we do not have a URL yet.
-                document_name = Path(to_capture[b'document_name'].decode()).name
-                tmp_f = NamedTemporaryFile(suffix=document_name, delete=False)
-                with open(tmp_f.name, "wb") as f:
-                    f.write(to_capture[b'document'])
-                url = f'file://{tmp_f.name}'
-            elif to_capture.get(b'url'):
-                url = to_capture[b'url'].decode()
-                self.thirdparty_submit(url)
-            else:
-                self.logger.warning(f'Invalid capture {to_capture}.')
-                await lazy_cleanup.execute()
-                return
-
+        if url:
             self.logger.info(f'Capturing {url} - {uuid}')
             success, error_message = await self._capture(
                 url,
@@ -109,6 +102,8 @@ class AsyncCapture(AbstractManager):
                 proxy=to_capture[b'proxy'].decode() if to_capture.get(b'proxy') else None,
                 os=to_capture[b'os'].decode() if to_capture.get(b'os') else None,
                 browser=to_capture[b'browser'].decode() if to_capture.get(b'browser') else None,
+                browser_engine=to_capture[b'browser_engine'].decode() if to_capture.get(b'browser_engine') else None,
+                device_name=to_capture[b'device_name'].decode() if to_capture.get(b'device_name') else None,
                 parent=to_capture[b'parent'].decode() if to_capture.get(b'parent') else None
             )
 
@@ -119,7 +114,11 @@ class AsyncCapture(AbstractManager):
                 self.logger.info(f'Successfully captured {url} - {uuid}')
             else:
                 self.logger.warning(f'Unable to capture {url} - {uuid}: {error_message}')
-                await lazy_cleanup.setex(f'error_{uuid}', 36000, f'{error_message} - {url} - {uuid}')
+                await self.redis.setex(f'error_{uuid}', 36000, f'{error_message} - {url} - {uuid}')
+
+        async with self.redis.pipeline() as lazy_cleanup:
+            if queue and await self.redis.zscore('queues', queue):
+                await lazy_cleanup.zincrby('queues', -1, queue)
             await lazy_cleanup.srem('ongoing', uuid)
             await lazy_cleanup.delete(uuid)
             # make sure to expire the key if nothing was processed for a while (= queues empty)
@@ -132,7 +131,10 @@ class AsyncCapture(AbstractManager):
                        referer: Optional[str]=None,
                        headers: Optional[Dict[str, str]]=None,
                        proxy: Optional[Union[str, Dict]]=None, os: Optional[str]=None,
-                       browser: Optional[str]=None, parent: Optional[str]=None) -> Tuple[bool, str]:
+                       browser: Optional[str]=None, parent: Optional[str]=None,
+                       browser_engine: Optional[str]=None,
+                       device_name: Optional[str]=None,
+                       viewport: Optional[Dict[str, int]]=None) -> Tuple[bool, str]:
         '''Launch a capture'''
         url = url.strip()
         url = refang(url)
@@ -159,23 +161,29 @@ class AsyncCapture(AbstractManager):
                 and splitted_url.hostname.split('.')[-1] == 'onion'):
             proxy = get_config('generic', 'tor_proxy')
 
-        cookies = load_cookies(cookies_pseudofile)
         if not user_agent:
             # Catch case where the UA is broken on the UI, and the async submission.
-            self.user_agents.user_agents  # triggers an update if needed
-            ua: str = self.user_agents.default['useragent']
-        else:
-            ua = user_agent
+            self.user_agents.user_agents  # triggers an update of the default UAs
 
         self.logger.info(f'Capturing {url}')
         try:
-            async with Capture(proxy=proxy) as capture:
-                capture.prepare_cookies(cookies)
-                capture.user_agent = ua
+            async with Capture(browser=browser_engine, device_name=device_name, proxy=proxy) as capture:
                 if headers:
-                    capture.http_headers = headers
-                await capture.prepare_context()
+                    capture.headers = headers
+                if cookies_pseudofile:
+                    # required by Mypy: https://github.com/python/mypy/issues/3004
+                    capture.cookies = load_cookies(cookies_pseudofile)  # type: ignore
+                if viewport:
+                    # required by Mypy: https://github.com/python/mypy/issues/3004
+                    capture.viewport = viewport  # type: ignore
+                if not device_name:
+                    capture.user_agent = user_agent if user_agent else self.user_agents.default['useragent']
+                await capture.initialize_context()
                 entries = await capture.capture_page(url, referer=referer)
+        except PlaywrightCaptureException as e:
+            self.logger.exception(f'Invalid parameters for the capture of {url} - {e}')
+            return False, 'Invalid parameters for the capture of {url} - {e}'
+
         except Exception as e:
             self.logger.exception(f'Something went terribly wrong when capturing {url} - {e}')
             return False, f'Something went terribly wrong when capturing {url}.'

@@ -299,6 +299,14 @@ class InstanceStats(Resource):
         return lookyloo.get_stats()
 
 
+@api.route('/json/devices')
+@api.doc(description='Get the list of devices pre-configured on the platform')
+class Devices(Resource):
+
+    def get(self):
+        return lookyloo.get_playwright_devices()
+
+
 @api.route('/json/<string:capture_uuid>/stats')
 @api.doc(description='Get the statistics of the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
@@ -331,8 +339,10 @@ submit_fields_post = api.model('SubmitFieldsPost', {
     'document_name': fields.String(description="The name of the document."),
     'listing': fields.Integer(description="Display the capture on the index", min=0, max=1, example=1),
     'user_agent': fields.String(description="User agent to use for the capture", example=''),
+    'browser_name': fields.String(description="Use this browser. Must be chromium, firefox or webkit.", example=''),
+    'device_name': fields.String(description="Use the pre-configured settings for this device. Get a list from /json/devices.", example=''),
     'referer': fields.String(description="Referer to pass to the capture", example=''),
-    'headers': fields.String(description="Referer to pass to the capture", example='Accept-Language: en-US;q=0.5, fr-FR;q=0.4'),
+    'headers': fields.String(description="Headers to pass to the capture", example='Accept-Language: en-US;q=0.5, fr-FR;q=0.4'),
     'proxy': fields.Url(description="Proxy to use for the capture. Format: [scheme]://[username]:[password]@[hostname]:[port]", example=''),
     'cookies': fields.String(description="JSON export of a list of cookies as exported from an other capture", example='')
 })
@@ -344,6 +354,8 @@ class SubmitCapture(Resource):
     @api.param('url', 'The URL to capture', required=True)
     @api.param('listing', 'Display the capture on the index', default=1)
     @api.param('user_agent', 'User agent to use for the capture')
+    @api.param('browser_name', 'Use this browser. Must be chromium, firefox or webkit.')
+    @api.param('device_name', 'Use the pre-configured settings for this device')
     @api.param('referer', 'Referer to pass to the capture')
     @api.param('proxy', 'Proxy to use for the the capture')
     @api.produces(['text/text'])
@@ -360,6 +372,10 @@ class SubmitCapture(Resource):
                     'listing': False if 'listing' in request.args and request.args['listing'] in [0, '0'] else True}
         if request.args.get('user_agent'):
             to_query['user_agent'] = request.args['user_agent']
+        if request.args.get('browser_name'):
+            to_query['browser_name'] = request.args['browser_name']
+        if request.args.get('device_name'):
+            to_query['device_name'] = request.args['device_name']
         if request.args.get('referer'):
             to_query['referer'] = request.args['referer']
         if request.args.get('headers'):

@@ -21,6 +21,7 @@ from zipfile import ZipFile
 from defang import defang  # type: ignore
 from har2tree import CrawledTree, HostNode, URLNode
 from PIL import Image, UnidentifiedImageError
+from playwrightcapture import get_devices
 from pymisp import MISPAttribute, MISPEvent, MISPObject
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
@@ -873,6 +874,9 @@ class Lookyloo():
         else:
             ct = self.get_crawled_tree(tree_uuid)
             return {node.name for node in ct.root_hartree.url_tree.traverse()}
+
+    def get_playwright_devices(self):
+        return get_devices()
 
     def get_hostnode_investigator(self, capture_uuid: str, /, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
         '''Gather all the informations needed to display the Hostnode investigator popup.'''
