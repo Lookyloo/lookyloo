@@ -324,8 +324,9 @@ class Lookyloo():
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''
         if capture_uuids is None:
-            # Sort all recent captures
+            # Call from the index, we want all the recent captures
             capture_uuids = self.redis.hkeys('lookup_dirs')
+            cached_captures_only = False
         if not capture_uuids:
             # No captures at all on the instance
             return []
