@@ -19,7 +19,7 @@ from redis.asyncio import Redis
 from playwrightcapture import Capture, PlaywrightCaptureException
 
 from lookyloo.default import AbstractManager, get_config, get_socket_path, safe_create_dir
-from lookyloo.helpers import get_captures_dir, load_cookies, UserAgents
+from lookyloo.helpers import get_captures_dir, load_cookies, UserAgents, ParsedUserAgent
 
 from lookyloo.modules import FOX
 
@@ -165,6 +165,19 @@ class AsyncCapture(AbstractManager):
             # Catch case where the UA is broken on the UI, and the async submission.
             self.user_agents.user_agents  # triggers an update of the default UAs
 
+        capture_ua = user_agent if user_agent else self.user_agents.default['useragent']
+        if not browser_engine:
+            # Automatically pick a browser
+            parsed_ua = ParsedUserAgent(capture_ua)
+            if not parsed_ua.browser:
+                browser_engine = 'webkit'
+            elif parsed_ua.browser.lower().startswith('chrom'):
+                browser_engine = 'chromium'
+            elif parsed_ua.browser.lower().startswith('firefox'):
+                browser_engine = 'firefox'
+            else:
+                browser_engine = 'webkit'
+
         self.logger.info(f'Capturing {url}')
         try:
             async with Capture(browser=browser_engine, device_name=device_name, proxy=proxy) as capture:
@@ -177,7 +190,7 @@ class AsyncCapture(AbstractManager):
                     # required by Mypy: https://github.com/python/mypy/issues/3004
                     capture.viewport = viewport  # type: ignore
                 if not device_name:
-                    capture.user_agent = user_agent if user_agent else self.user_agents.default['useragent']
+                    capture.user_agent = capture_ua
                 await capture.initialize_context()
                 entries = await capture.capture_page(url, referer=referer)
         except PlaywrightCaptureException as e:

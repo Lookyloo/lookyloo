@@ -881,8 +881,6 @@ def capture_web():
             capture_query['os'] = request.form['os']
             capture_query['browser'] = request.form['browser']
 
-        capture_query['depth'] = request.form['depth'] if request.form.get('depth') else 1
-
         capture_query['listing'] = True if request.form.get('listing') else False
 
         if request.form.get('referer'):

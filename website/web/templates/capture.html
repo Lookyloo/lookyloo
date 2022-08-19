@@ -105,7 +105,6 @@
           </div>
         </div>
         <div class="dropdown-divider"></div>
-        </br>
         {% endif %}
 
         <div class="row mb-3">
@@ -116,49 +115,49 @@
             </div>
           </div>
         </div>
-        <div class="prefed_selector">
-        <div class="row mb-3">
-          <label for="os" class="col-sm-2 col-form-label">Operating System:</label>
-          <div class="col-sm-10">
-            <select class="form-select" name="os" id="os">
-              {% for os in user_agents.keys() %}
-              <!-- Select the default os -->
-              <option value="{{ os }}" {% if os==default['os'] %}selected{% endif %}>{{ os }}</option>
-              {% endfor%}
-            </select>
+        <div id="prefed_selector">
+          <div class="row mb-3">
+            <label for="os" class="col-sm-2 col-form-label">Operating System:</label>
+            <div class="col-sm-10">
+              <select class="form-select" name="os" id="os">
+                {% for os in user_agents.keys() %}
+                <!-- Select the default os -->
+                <option value="{{ os }}" {% if os==default['os'] %}selected{% endif %}>{{ os }}</option>
+                {% endfor%}
+              </select>
+            </div>
           </div>
-        </div>
 
-      {% for os, browsers in user_agents.items() %}
-        <!-- Hide the browsers that aren't part of the default os -->
-        <div id="{{os.replace(' ', '_')}}" class="style-sub-1 row mb-3" {% if not os==default['os'] %}style="display: none;"{%endif%}>
-          <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
-          <div class="col-sm-10">
-            <!-- Disable all the selects not related to the default os -->
-            <select class="form-select" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
-            {% for browser in browsers.keys()%}
-            <!-- Select the default browser -->
-            <option value="{{ browser }}" {% if browser==default['browser'] %}selected{% endif %}>{{ browser }}</option>
+          {% for os, browsers in user_agents.items() %}
+            <!-- Hide the browsers that aren't part of the default os -->
+            <div id="{{os.replace(' ', '_')}}" class="style-sub-1 row mb-3" {% if not os==default['os'] %}style="display: none;"{%endif%}>
+              <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
+              <div class="col-sm-10">
+                <!-- Disable all the selects not related to the default os -->
+                <select class="form-select" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
+                {% for browser in browsers.keys()%}
+                <!-- Select the default browser -->
+                <option value="{{ browser }}" {% if browser==default['browser'] %}selected{% endif %}>{{ browser }}</option>
+                {% endfor%}
+                </select>
+              </div>
+            </div>
+            {% for browser, user_agents in browsers.items()%}
+            <!-- Hide the user agents that aren't part of the default OS and browsers that aren't part of the default os -->
+            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 row mb-3" {% if not os==default['os'] or not browser==default['browser']%} style="display: none;"{%endif%}>
+              <label for="user_agent" class="col-sm-2 col-form-label">User-Agent:</label>
+              <div class="col-sm-10">
+                <!-- Disable all the selects, unless it is in default os and browser -->
+                <select class="form-select" name="user_agent" {% if not os==default['os'] or not browser==default['browser']  %}disabled{%endif%}>
+                  {% for user_agent in user_agents %}
+                  <!-- Select the default ua -->
+                  <option value="{{ user_agent }}" {% if user_agent==default['useragent'] %}selected{% endif %}>{{ user_agent }}</option>
+                  {% endfor%}
+                </select>
+              </div>
+            </div>
             {% endfor%}
-            </select>
-          </div>
-        </div>
-        {% for browser, user_agents in browsers.items()%}
-        <!-- Hide the user agents that aren't part of the default OS and browsers that aren't part of the default os -->
-        <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 row mb-3" {% if not os==default['os'] or not browser==default['browser']%} style="display: none;"{%endif%}>
-          <label for="user_agent" class="col-sm-2 col-form-label">User-Agent:</label>
-          <div class="col-sm-10">
-            <!-- Disable all the selects, unless it is in default os and browser -->
-            <select class="form-select" name="user_agent" {% if not os==default['os'] or not browser==default['browser']  %}disabled{%endif%}>
-              {% for user_agent in user_agents %}
-              <!-- Select the default ua -->
-              <option value="{{ user_agent }}" {% if user_agent==default['useragent'] %}selected{% endif %}>{{ user_agent }}</option>
-              {% endfor%}
-            </select>
-          </div>
-        </div>
-        {% endfor%}
-      {% endfor%}
+          {% endfor%}
         </div>
         <div class="dropdown-divider"></div>
         <div class="row mb-3">
@@ -192,6 +191,8 @@
 
     <div id="collapseConfigCapture" class="collapse">
       <div class="card card-body">
+
+        <!-- Referer -->
         <div class="row mb-3">
           <label for="referer" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer">Referer</a>:</label>
           <div class="col-sm-10">
