@@ -193,7 +193,7 @@ optional = false
 python-versions = "*"
 
 [package.extras]
-test = ["flake8 (==3.7.8)", "hypothesis (==3.55.3)"]
+test = ["hypothesis (==3.55.3)", "flake8 (==3.7.8)"]
 
 [[package]]
 name = "dateparser"
@@ -210,9 +210,9 @@ regex = "<2019.02.19 || >2019.02.19,<2021.8.27 || >2021.8.27,<2022.3.15"
 tzlocal = "*"
 
 [package.extras]
-calendars = ["convertdate", "hijri-converter", "convertdate"]
-fasttext = ["fasttext"]
 langdetect = ["langdetect"]
+fasttext = ["fasttext"]
+calendars = ["convertdate", "hijri-converter", "convertdate"]
 
 [[package]]
 name = "decorator"
@@ -253,12 +253,12 @@ optional = false
 python-versions = ">=3.6,<4.0"
 
 [package.extras]
-dnssec = ["cryptography (>=2.6,<37.0)"]
-curio = ["curio (>=1.2,<2.0)", "sniffio (>=1.1,<2.0)"]
-doh = ["h2 (>=4.1.0)", "httpx (>=0.21.1)", "requests (>=2.23.0,<3.0.0)", "requests-toolbelt (>=0.9.1,<0.10.0)"]
-idna = ["idna (>=2.1,<4.0)"]
-trio = ["trio (>=0.14,<0.20)"]
 wmi = ["wmi (>=1.5.1,<2.0.0)"]
+trio = ["trio (>=0.14,<0.20)"]
+curio = ["sniffio (>=1.1,<2.0)", "curio (>=1.2,<2.0)"]
+doh = ["requests-toolbelt (>=0.9.1,<0.10.0)", "requests (>=2.23.0,<3.0.0)", "httpx (>=0.21.1)", "h2 (>=4.1.0)"]
+idna = ["idna (>=2.1,<4.0)"]
+dnssec = ["cryptography (>=2.6,<37.0)"]
 
 [[package]]
 name = "ete3"
@@ -356,9 +356,9 @@ six = ">=1.3.0"
 werkzeug = "!=2.0.0"
 
 [package.extras]
-dev = ["blinker", "Faker (==2.0.0)", "mock (==3.0.5)", "pytest-benchmark (==3.2.2)", "pytest-cov (==2.7.1)", "pytest-flask (==0.15.1)", "pytest-mock (==1.10.4)", "pytest-profiling (==1.7.0)", "tzlocal", "invoke (==1.3.0)", "readme-renderer (==24.0)", "twine (==1.15.0)", "tox", "pytest (==4.6.5)", "pytest (==5.4.1)", "ossaudit", "black"]
-doc = ["alabaster (==0.7.12)", "Sphinx (==2.1.2)", "sphinx-issues (==1.2.0)"]
-test = ["blinker", "Faker (==2.0.0)", "mock (==3.0.5)", "pytest-benchmark (==3.2.2)", "pytest-cov (==2.7.1)", "pytest-flask (==0.15.1)", "pytest-mock (==1.10.4)", "pytest-profiling (==1.7.0)", "tzlocal", "invoke (==1.3.0)", "readme-renderer (==24.0)", "twine (==1.15.0)", "pytest (==4.6.5)", "pytest (==5.4.1)", "ossaudit"]
+test = ["ossaudit", "pytest (==5.4.1)", "pytest (==4.6.5)", "twine (==1.15.0)", "readme-renderer (==24.0)", "invoke (==1.3.0)", "tzlocal", "pytest-profiling (==1.7.0)", "pytest-mock (==1.10.4)", "pytest-flask (==0.15.1)", "pytest-cov (==2.7.1)", "pytest-benchmark (==3.2.2)", "mock (==3.0.5)", "Faker (==2.0.0)", "blinker"]
+doc = ["sphinx-issues (==1.2.0)", "Sphinx (==2.1.2)", "alabaster (==0.7.12)"]
+dev = ["black", "ossaudit", "pytest (==5.4.1)", "pytest (==4.6.5)", "tox", "twine (==1.15.0)", "readme-renderer (==24.0)", "invoke (==1.3.0)", "tzlocal", "pytest-profiling (==1.7.0)", "pytest-mock (==1.10.4)", "pytest-flask (==0.15.1)", "pytest-cov (==2.7.1)", "pytest-benchmark (==3.2.2)", "mock (==3.0.5)", "Faker (==2.0.0)", "blinker"]
 
 [[package]]
 name = "frozenlist"
@@ -557,8 +557,8 @@ pkgutil-resolve-name = {version = ">=1.3.10", markers = "python_version < \"3.9\
 pyrsistent = ">=0.14.0,<0.17.0 || >0.17.0,<0.17.1 || >0.17.1,<0.17.2 || >0.17.2"
 
 [package.extras]
-format-nongpl = ["webcolors (>=1.11)", "uri-template", "rfc3986-validator (>0.1.0)", "rfc3339-validator", "jsonpointer (>1.13)", "isoduration", "idna", "fqdn"]
-format = ["webcolors (>=1.11)", "uri-template", "rfc3987", "rfc3339-validator", "jsonpointer (>1.13)", "isoduration", "idna", "fqdn"]
+format = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3987", "uri-template", "webcolors (>=1.11)"]
+format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "uri-template", "webcolors (>=1.11)"]
 
 [[package]]
 name = "lief"
@@ -623,9 +623,9 @@ tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 typing-extensions = ">=3.10"
 
 [package.extras]
-dmypy = ["psutil (>=4.0)"]
-python2 = ["typed-ast (>=1.4.0,<2)"]
 reports = ["lxml"]
+python2 = ["typed-ast (>=1.4.0,<2)"]
+dmypy = ["psutil (>=4.0)"]
 
 [[package]]
 name = "mypy-extensions"
@@ -663,8 +663,8 @@ optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-qa = ["flake8 (==3.8.3)", "mypy (==0.782)"]
-testing = ["docopt", "pytest (<6.0.0)"]
+testing = ["pytest (<6.0.0)", "docopt"]
+qa = ["mypy (==0.782)", "flake8 (==3.8.3)"]
 
 [[package]]
 name = "passivetotal"
@@ -956,8 +956,8 @@ optional = false
 python-versions = ">=3.8,<4.0"
 
 [package.extras]
+webui = ["Flask-WTF (>=0.15.1,<0.16.0)", "Flask-Bootstrap (>=3.3.7.1,<4.0.0.0)", "Flask (>=2.0,<3.0)", "flask-nav (>=0.6,<0.7)"]
 remote = ["requests (>=2.26.0,<3.0.0)"]
-webui = ["flask-nav (>=0.6,<0.7)", "Flask (>=2.0,<3.0)", "Flask-Bootstrap (>=3.3.7.1,<4.0.0.0)", "Flask-WTF (>=0.15.1,<0.16.0)"]
 
 [[package]]
 name = "python-dateutil"
@@ -1217,7 +1217,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.3.16"
+version = "4.3.17"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1413,7 +1413,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "b813c16a36c8bfd612488d2fdfce36b34234e03fae997dc56a6613672c31d9b4"
+content-hash = "85bee77424d7f6e5420db8e9aef8db06090661bc7fd7c539ab581e4e10baede9"
 
 [metadata.files]
 aiohttp = [
@@ -1887,7 +1887,6 @@ lxml = [
     {file = "lxml-4.9.1-cp27-cp27m-win_amd64.whl", hash = "sha256:4cfbe42c686f33944e12f45a27d25a492cc0e43e1dc1da5d6a87cbcaf2e95627"},
     {file = "lxml-4.9.1-cp27-cp27mu-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:dad7b164905d3e534883281c050180afcf1e230c3d4a54e8038aa5cfcf312b84"},
     {file = "lxml-4.9.1-cp27-cp27mu-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:a614e4afed58c14254e67862456d212c4dcceebab2eaa44d627c2ca04bf86837"},
-    {file = "lxml-4.9.1-cp310-cp310-macosx_10_15_universal2.whl", hash = "sha256:49a866923e69bc7da45a0565636243707c22752fc38f6b9d5c8428a86121022c"},
     {file = "lxml-4.9.1-cp310-cp310-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_24_i686.whl", hash = "sha256:f9ced82717c7ec65a67667bb05865ffe38af0e835cdd78728f1209c8fffe0cad"},
     {file = "lxml-4.9.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_24_aarch64.whl", hash = "sha256:d9fc0bf3ff86c17348dfc5d322f627d78273eba545db865c3cd14b3f19e57fa5"},
     {file = "lxml-4.9.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl", hash = "sha256:e5f66bdf0976ec667fc4594d2812a00b07ed14d1b44259d19a41ae3fff99f2b8"},
@@ -2484,8 +2483,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.19-py3-none-any.whl", hash = "sha256:6284df1e4783d8fc6e587f0317a81333856b872a6669a282f8a325342bce7fa8"},
 ]
 types-redis = [
-    {file = "types-redis-4.3.16.tar.gz", hash = "sha256:ed53e35eac4303ef70cf7f5c205e210f2238b7fdd9306b7f8676669c1070943e"},
-    {file = "types_redis-4.3.16-py3-none-any.whl", hash = "sha256:41da87dc80f39573a71873e4265f181d9628b0a2a862e850ecc896a0cd6cacd2"},
+    {file = "types-redis-4.3.17.tar.gz", hash = "sha256:03b023c08acf344f4f0821cc1c7e4dbecb7b17bc5483927c3e73d80f7fe1768e"},
+    {file = "types_redis-4.3.17-py3-none-any.whl", hash = "sha256:a34c4e7aafa4b2fb9090d3a7f3ad0ac969089c7b4a05c21dff593a0c37405916"},
 ]
 types-requests = [
     {file = "types-requests-2.28.9.tar.gz", hash = "sha256:feaf581bd580497a47fe845d506fa3b91b484cf706ff27774e87659837de9962"},
