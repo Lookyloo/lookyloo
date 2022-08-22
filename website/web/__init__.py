@@ -842,6 +842,7 @@ def _prepare_capture_template(user_ua: Optional[str], predefined_url: Optional[s
                            default=user_agents.default,
                            personal_ua=user_ua,
                            default_public=get_config('generic', 'default_public'),
+                           devices=lookyloo.get_playwright_devices(),
                            predefined_url_to_capture=predefined_url if predefined_url else '')
 
 
@@ -872,7 +873,9 @@ def capture_web():
         if 'cookies' in request.files and request.files['cookies'].filename:
             capture_query['cookies'] = request.files['cookies'].stream.read()
 
-        if request.form.get('freetext_ua'):
+        if request.form.get('device_name'):
+            capture_query['device_name'] = request.form['device_name']
+        elif request.form.get('freetext_ua'):
             capture_query['user_agent'] = request.form['freetext_ua']
         elif request.form.get('personal_ua') and request.headers.get('User-Agent'):
             capture_query['user_agent'] = request.headers['User-Agent']

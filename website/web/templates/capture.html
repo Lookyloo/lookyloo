@@ -39,6 +39,7 @@
       </div>
     </div>
 
+    <!-- Submission type -->
     <nav>
       <div class="nav nav-tabs" id="submission-type" role="tablist">
         <button class="nav-link active" id="nav-url-tab" data-bs-toggle="tab" data-bs-target="#nav-url" type="button" role="tab" aria-current="nav-url" aria-selected="true" href="#">URL(s)</button>
@@ -78,6 +79,7 @@
       </div>
     </div>
     <div class="dropdown-divider"></div>
+    <!-- End of Submission type -->
 
     <div>
       <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfigBrowser"
@@ -117,18 +119,30 @@
         </div>
         <div id="prefed_selector">
           <div class="row mb-3">
-            <label for="os" class="col-sm-2 col-form-label">Operating System:</label>
+            <label for="os-type" class="col-sm-2 col-form-label">OS type:</label>
             <div class="col-sm-10">
-              <select class="form-select" name="os" id="os">
-                {% for os in user_agents.keys() %}
-                <!-- Select the default os -->
-                <option value="{{ os }}" {% if os==default['os'] %}selected{% endif %}>{{ os }}</option>
-                {% endfor%}
+              <select class="form-select" name="os-type" id="os-type">
+                <option value="desktop"selected>Desktop</option>
+                <option value="mobile">Mobile</option>
               </select>
             </div>
           </div>
 
-          {% for os, browsers in user_agents.items() %}
+          <!-- Desktops -->
+          <div id="desktops-list">
+            <div class="row mb-3">
+              <label for="os" class="col-sm-2 col-form-label">Operating System:</label>
+              <div class="col-sm-10">
+                <select class="form-select" name="os" id="os">
+                  {% for os in user_agents.keys() %}
+                  <!-- Select the default os -->
+                  <option value="{{ os }}" {% if os==default['os'] %}selected{% endif %}>{{ os }}</option>
+                  {% endfor%}
+                </select>
+              </div>
+            </div>
+
+            {% for os, browsers in user_agents.items() %}
             <!-- Hide the browsers that aren't part of the default os -->
             <div id="{{os.replace(' ', '_')}}" class="style-sub-1 row mb-3" {% if not os==default['os'] %}style="display: none;"{%endif%}>
               <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
@@ -157,8 +171,26 @@
               </div>
             </div>
             {% endfor%}
-          {% endfor%}
+            {% endfor%}
+          </div>
         </div>
+        <!-- End of Desktops -->
+
+        <!-- Mobiles -->
+        <div id="mobiles-list" style="display:none">
+          <div class="row mb-3">
+            <label for="os" class="col-sm-2 col-form-label">Device name:</label>
+            <div class="col-sm-10">
+              <select class="form-select" name="device_name" id="device-name-mobile" disabled>
+                {% for device_name in devices['mobile']['default'].keys() %}
+                <option value="{{ device_name }}">{{ device_name }}</option>
+                {%endfor%}
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- End of Mobiles -->
+
         <div class="dropdown-divider"></div>
         <div class="row mb-3">
           <div class="col-sm-10">
@@ -282,26 +314,57 @@
   </script>
   <script>
       $('#personal_ua_select').on('click', function(e) {
-        $('#freetext_ua').prop("disabled", true);
         $('#personal_ua').prop("disabled", false);
-        $('#os').prop("disabled", true);
-        $('select[name="browser"]').prop("disabled", true);
-        $('select[name="user_agent"]').prop("disabled", true);
+
+        $('#freetext_ua').prop("disabled", true);
+        disablePredefinedUA();
       });
+
       $('#predefined_ua_select').on('click', function(e) {
+        $('#os-type').val('desktop').trigger('change');
+
         $('#freetext_ua').prop("disabled", true);
         $('#personal_ua').prop("disabled", true);
-        $('#os').prop("disabled", false);
-        $('select[name="browser"]:visible').prop("disabled", false);
-        $('select[name="user_agent"]:visible').prop("disabled", false);
       });
+
       $('#freetext_ua_select').on('click', function(e) {
         $('#freetext_ua').prop("disabled", false);
+
         $('#personal_ua').prop("disabled", true);
+        disablePredefinedUA();
+      });
+
+      const disablePredefinedUA = function() {
+        $('#os-type').prop("disabled", true);
+        $('#device-name-mobile').prop("disabled", true);
         $('#os').prop("disabled", true);
         $('select[name="browser"]').prop("disabled", true);
         $('select[name="user_agent"]').prop("disabled", true);
-      });
+      };
+
+      $('#os-type').on('change', function() {
+          $('#os-type').prop("disabled", false);
+          if ( this.value == "mobile")
+          {
+            $("#mobiles-list").show();
+            $('#device-name-mobile').prop("disabled", false);
+
+            $("#desktops-list").hide();
+            $('#os').prop("disabled", true);
+            $('select[name="browser"]').prop("disabled", true);
+            $('select[name="user_agent"]').prop("disabled", true);
+          }
+          else
+          {
+            $("#desktops-list").show();
+            $('#os').prop("disabled", false);
+            $('select[name="browser"]:visible').prop("disabled", false);
+            $('select[name="user_agent"]:visible').prop("disabled", false);
+
+            $("#mobiles-list").hide();
+            $('#device-name-mobile').prop("disabled", true);
+          }
+        });
   </script>
 
 

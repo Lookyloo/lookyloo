@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 
 
 from har2tree import CrawledTree, HostNode, URLNode
+from playwrightcapture import get_devices
 from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
 from pytaxonomies import Taxonomies
 from ua_parser import user_agent_parser  # type: ignore
@@ -95,12 +96,32 @@ class UserAgents:
 
         ua_files_path = sorted(self.path.glob('**/*.json'), reverse=True)
         self._load_newest_ua_file(ua_files_path[0])
+        self._load_playwright_devices()
 
     def _load_newest_ua_file(self, path: Path):
         self.most_recent_ua_path = path
         with self.most_recent_ua_path.open() as f:
             self.most_recent_uas = json.load(f)
             self.by_freq = self.most_recent_uas.pop('by_frequency')
+
+    def _load_playwright_devices(self):
+        self.playwright_devices = get_devices()
+        # Only get default and desktop for now.
+        for device_name, details in self.playwright_devices['desktop']['default'].items():
+            parsed_ua = ParsedUserAgent(details['user_agent'])
+            if not parsed_ua.platform or not parsed_ua.browser:
+                continue
+            platform_key = parsed_ua.platform
+            if parsed_ua.platform_version:
+                platform_key = f'{platform_key} {parsed_ua.platform_version}'
+            browser_key = parsed_ua.browser
+            if parsed_ua.version:
+                browser_key = f'{browser_key} {parsed_ua.version}'
+            if platform_key not in self.most_recent_uas:
+                self.most_recent_uas[platform_key] = {}
+            if browser_key not in self.most_recent_uas[platform_key]:
+                self.most_recent_uas[platform_key][browser_key] = []
+            self.most_recent_uas[platform_key][browser_key].append(parsed_ua.string)
 
     @property
     def user_agents(self) -> Dict[str, Dict[str, List[str]]]:
@@ -111,14 +132,19 @@ class UserAgents:
 
     @property
     def default(self) -> Dict[str, str]:
-        blocked_words = ['bot', 'bing']
-        for ua in self.by_freq:
-            if ua["os"] == "Other":
-                continue
-            if any(blockedword in ua['useragent'].lower() for blockedword in blocked_words):
-                continue
-            return ua
-        raise Exception('Erros with the User agents.')
+        '''The default useragent for desktop chrome from playwright'''
+        parsed_ua = ParsedUserAgent(self.playwright_devices['desktop']['default']['Desktop Chrome']['user_agent'])
+        platform_key = parsed_ua.platform
+        if parsed_ua.platform_version:
+            platform_key = f'{platform_key} {parsed_ua.platform_version}'
+        browser_key = parsed_ua.browser
+        if parsed_ua.version:
+            browser_key = f'{browser_key} {parsed_ua.version}'
+        if not platform_key or not browser_key:
+            raise Exception(f'Unable to get valid default user agent from playwright: {parsed_ua}')
+        return {'os': platform_key,
+                'browser': browser_key,
+                'useragent': parsed_ua.string}
 
 
 def load_known_content(directory: str='known_content') -> Dict[str, Dict[str, Any]]:
@@ -211,13 +237,23 @@ class ParsedUserAgent(UserAgent):
         return self._details['os'].get('family')
 
     @property
+    def platform_version(self) -> Optional[str]:
+        return self._aggregate_version(self._details['os'])
+
+    @property
     def browser(self):
         return self._details['user_agent'].get('family')
 
     @property
     def version(self):
+        return self._aggregate_version(self._details['user_agent'])
+
+    def _aggregate_version(self, details: Dict[str, str]) -> Optional[str]:
         return '.'.join(
             part
-            for key in ('major', 'minor', 'patch')
-            if (part := self._details['user_agent'][key]) is not None
+            for key in ('major', 'minor', 'patch', 'patch_minor')
+            if (part := details.get(key)) is not None
         )
+
+    def __str__(self):
+        return f'OS: {self.platform} - Browser: {self.browser} {self.version} - UA: {self.string}'

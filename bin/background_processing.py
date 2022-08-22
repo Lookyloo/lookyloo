@@ -49,13 +49,19 @@ class Processing(AbstractManager):
             parsed_ua = ParsedUserAgent(ua)
             if not parsed_ua.platform or not parsed_ua.browser:
                 continue
-            if parsed_ua.platform not in to_store:
-                to_store[parsed_ua.platform] = {}
-            if f'{parsed_ua.browser} {parsed_ua.version}' not in to_store[parsed_ua.platform]:
-                to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'] = []
-            to_store[parsed_ua.platform][f'{parsed_ua.browser} {parsed_ua.version}'].append(parsed_ua.string)
-            to_store['by_frequency'].append({'os': parsed_ua.platform,
-                                             'browser': f'{parsed_ua.browser} {parsed_ua.version}',
+            platform_key = parsed_ua.platform
+            if parsed_ua.platform_version:
+                platform_key = f'{platform_key} {parsed_ua.platform_version}'
+            browser_key = parsed_ua.browser
+            if parsed_ua.version:
+                browser_key = f'{browser_key} {parsed_ua.version}'
+            if platform_key not in to_store:
+                to_store[platform_key] = {}
+            if browser_key not in to_store[platform_key]:
+                to_store[platform_key][browser_key] = []
+            to_store[platform_key][browser_key].append(parsed_ua.string)
+            to_store['by_frequency'].append({'os': platform_key,
+                                             'browser': browser_key,
                                              'useragent': parsed_ua.string})
         with self_generated_ua_file.open('w') as f:
             json.dump(to_store, f, indent=2)

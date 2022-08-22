@@ -87,7 +87,7 @@ class AsyncCapture(AbstractManager):
             url = to_capture[b'url'].decode()
             self.thirdparty_submit(url)
         else:
-            self.logger.warning(f'Invalid capture {to_capture}.')
+            self.logger.warning(f'Invalid capture (no URL provided): {to_capture}.')
             url = ''
 
         if url:
