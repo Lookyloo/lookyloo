@@ -157,17 +157,21 @@ if (parent_uuid != null) {
 };
 
 
-function openTreeInNewTab(capture_uuid, hostnode_uuid=null) {
-    let url = `/tree/${capture_uuid}`;
-    if (hostnode_uuid != null) {
-        url += `/${hostnode_uuid}`;
-    }
+function openURLInNewTab(url) {
     let win = window.open(url, '_blank');
     if (win == null) {
         return false;
     }
     win.focus();
     return true;
+}
+
+function openTreeInNewTab(capture_uuid, hostnode_uuid=null) {
+    let url = `/tree/${capture_uuid}`;
+    if (hostnode_uuid != null) {
+        url += `/${hostnode_uuid}`;
+    }
+    openURLInNewTab(url);
 }
 
 function open_hostnode_popup(hostnode_uuid) {

@@ -14,6 +14,11 @@
     "autosubmit": false,
     "allow_auto_trigger": false
   },
+  "Pandora": {
+    "url": "http://127.0.0.1:6100",
+    "autosubmit": false,
+    "allow_auto_trigger": false
+  },
   "SaneJS": {
     "enabled": true,
     "allow_auto_trigger": true
@@ -70,6 +75,7 @@
     "Phishtank": "Module to query Phishtank Lookup (https://github.com/Lookyloo/phishtank-lookup). URL set to none means querying the public instance.",
     "Hashlookup": "Module to query Hashlookup (https://github.com/adulau/hashlookup-server). URL set to none means querying the public instance.",
     "FOX": "Submission only interface by and for CCCS",
+    "Pandora": "Submission only interface for https://github.com/pandora-analysis/",
     "RiskIQ": "Module to query RiskIQ (https://community.riskiq.com/)"
   }
 }

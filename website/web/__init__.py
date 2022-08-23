@@ -246,6 +246,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str):
                            hostnode_uuid=node_uuid,
                            hostnode=hostnode,
                            urls=urls,
+                           has_pandora=lookyloo.pandora.available,
                            enable_context_by_users=enable_context_by_users,
                            uwhois_available=lookyloo.uwhois.available)
 
@@ -711,6 +712,13 @@ def mark_as_legitimate(tree_uuid: str):
 def tree_body_hashes(tree_uuid: str):
     body_hashes = lookyloo.get_all_body_hashes(tree_uuid)
     return render_template('tree_body_hashes.html', tree_uuid=tree_uuid, body_hashes=body_hashes)
+
+
+@app.route('/tree/<string:tree_uuid>/pandora', methods=['GET'])
+def pandora_submit(tree_uuid: str):
+    filename, content = lookyloo.get_data(tree_uuid)
+    response = lookyloo.pandora.submit_file(content, filename)
+    return jsonify(response)
 
 
 # ##### helpers #####

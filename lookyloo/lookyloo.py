@@ -38,7 +38,7 @@ from .helpers import (CaptureStatus, get_captures_dir, get_email_template,
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
-                      RiskIQ, RiskIQError)
+                      RiskIQ, RiskIQError, Pandora)
 
 
 class Lookyloo():
@@ -89,6 +89,10 @@ class Lookyloo():
         self.riskiq = RiskIQ(get_config('modules', 'RiskIQ'))
         if not self.riskiq.available:
             self.logger.warning('Unable to setup the RiskIQ module')
+
+        self.pandora = Pandora(get_config('modules', 'Pandora'))
+        if not self.pandora.available:
+            self.logger.warning('Unable to setup the Pandora module')
 
         self.logger.info('Initializing context...')
         self.context = Context()

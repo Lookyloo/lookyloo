@@ -904,6 +904,20 @@ url = ["pyfaup (>=1.2,<2.0)", "chardet (>=5.0.0,<6.0.0)"]
 brotli = ["urllib3[brotli] (>=1.26.11,<2.0.0)"]
 
 [[package]]
+name = "pypandora"
+version = "1.0.2"
+description = "Python CLI and module for pandora"
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+
+[package.dependencies]
+requests = ">=2.28.1,<3.0.0"
+
+[package.extras]
+docs = ["Sphinx (>=5.1.1,<6.0.0)"]
+
+[[package]]
 name = "pyparsing"
 version = "3.0.9"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -1217,7 +1231,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.3.16"
+version = "4.3.17"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1413,7 +1427,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "b813c16a36c8bfd612488d2fdfce36b34234e03fae997dc56a6613672c31d9b4"
+content-hash = "0dcbbf79ed17ddfa5f0f66c8ffa0b0b6025527aa287761d1730a992be6b42dab"
 
 [metadata.files]
 aiohttp = [
@@ -2276,6 +2290,10 @@ pymisp = [
     {file = "pymisp-2.4.160.1-py3-none-any.whl", hash = "sha256:3499dc55819e874eeecd7d1b10229cb957600a52452ca5360db3b32f21714718"},
     {file = "pymisp-2.4.160.1.tar.gz", hash = "sha256:d6cf306100d7c936951db9cb1bff53276a94d75b3ff5ae4c35a952f001169021"},
 ]
+pypandora = [
+    {file = "pypandora-1.0.2-py3-none-any.whl", hash = "sha256:520801d7e6488ae474e6e1e713db52e12a220749ace68361f863ab1de3f29a96"},
+    {file = "pypandora-1.0.2.tar.gz", hash = "sha256:d8603d68cdd41e5ce9f2b5fcd9a7db0e25bbf3d6bcb99b26d90bfc28ecac81cd"},
+]
 pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
@@ -2484,8 +2502,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.19-py3-none-any.whl", hash = "sha256:6284df1e4783d8fc6e587f0317a81333856b872a6669a282f8a325342bce7fa8"},
 ]
 types-redis = [
-    {file = "types-redis-4.3.16.tar.gz", hash = "sha256:ed53e35eac4303ef70cf7f5c205e210f2238b7fdd9306b7f8676669c1070943e"},
-    {file = "types_redis-4.3.16-py3-none-any.whl", hash = "sha256:41da87dc80f39573a71873e4265f181d9628b0a2a862e850ecc896a0cd6cacd2"},
+    {file = "types-redis-4.3.17.tar.gz", hash = "sha256:03b023c08acf344f4f0821cc1c7e4dbecb7b17bc5483927c3e73d80f7fe1768e"},
+    {file = "types_redis-4.3.17-py3-none-any.whl", hash = "sha256:a34c4e7aafa4b2fb9090d3a7f3ad0ac969089c7b4a05c21dff593a0c37405916"},
 ]
 types-requests = [
     {file = "types-requests-2.28.9.tar.gz", hash = "sha256:feaf581bd580497a47fe845d506fa3b91b484cf706ff27774e87659837de9962"},
