@@ -876,7 +876,8 @@ class Lookyloo():
             ct = self.get_crawled_tree(tree_uuid)
             return {node.name for node in ct.root_hartree.url_tree.traverse()}
 
-    def get_playwright_devices(self):
+    def get_playwright_devices(self) -> Dict:
+        """Get the preconfigured devices from Playwright"""
         return get_devices()
 
     def get_hostnode_investigator(self, capture_uuid: str, /, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:

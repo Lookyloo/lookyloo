@@ -9,7 +9,7 @@ from typing import Any, Dict
 from redis import Redis
 
 from lookyloo.default import AbstractManager, get_config, get_homedir, get_socket_path, safe_create_dir
-from lookyloo.helpers import ParsedUserAgent
+from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)
@@ -58,13 +58,13 @@ class Processing(AbstractManager):
             if platform_key not in to_store:
                 to_store[platform_key] = {}
             if browser_key not in to_store[platform_key]:
-                to_store[platform_key][browser_key] = []
-            to_store[platform_key][browser_key].append(parsed_ua.string)
+                to_store[platform_key][browser_key] = set()
+            to_store[platform_key][browser_key].add(parsed_ua.string)
             to_store['by_frequency'].append({'os': platform_key,
                                              'browser': browser_key,
                                              'useragent': parsed_ua.string})
         with self_generated_ua_file.open('w') as f:
-            json.dump(to_store, f, indent=2)
+            json.dump(to_store, f, indent=2, default=serialize_to_json)
 
         # Remove the UA / IP mapping.
         redis.delete(f'user_agents|{yesterday.isoformat()}')

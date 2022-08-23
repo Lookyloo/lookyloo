@@ -134,7 +134,7 @@
               <label for="os" class="col-sm-2 col-form-label">Operating System:</label>
               <div class="col-sm-10">
                 <select class="form-select" name="os" id="os">
-                  {% for os in user_agents.keys() %}
+                  {% for os in user_agents.keys()|sort(reverse=True) %}
                   <!-- Select the default os -->
                   <option value="{{ os }}" {% if os==default['os'] %}selected{% endif %}>{{ os }}</option>
                   {% endfor%}
@@ -149,14 +149,14 @@
               <div class="col-sm-10">
                 <!-- Disable all the selects not related to the default os -->
                 <select class="form-select" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
-                {% for browser in browsers.keys()%}
+                {% for browser in browsers.keys()|sort(reverse=True) %}
                 <!-- Select the default browser -->
                 <option value="{{ browser }}" {% if browser==default['browser'] %}selected{% endif %}>{{ browser }}</option>
                 {% endfor%}
                 </select>
               </div>
             </div>
-            {% for browser, user_agents in browsers.items()%}
+            {% for browser, user_agents in browsers.items() %}
             <!-- Hide the user agents that aren't part of the default OS and browsers that aren't part of the default os -->
             <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 row mb-3" {% if not os==default['os'] or not browser==default['browser']%} style="display: none;"{%endif%}>
               <label for="user_agent" class="col-sm-2 col-form-label">User-Agent:</label>

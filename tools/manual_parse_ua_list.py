@@ -14,7 +14,7 @@ except ImportError:
     HAS_CF = False
 
 from lookyloo.default import get_homedir, safe_create_dir
-from lookyloo.helpers import ParsedUserAgent
+from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 
 
 def update_user_agents() -> None:
@@ -65,8 +65,8 @@ def ua_parser(html_content: str) -> Dict[str, Any]:
         if platform_key not in to_store:
             to_store[platform_key] = {}
         if browser_key not in to_store[platform_key]:
-            to_store[platform_key][browser_key] = []
-        to_store[platform_key][browser_key].append(parsed_ua.string)
+            to_store[platform_key][browser_key] = set()
+        to_store[platform_key][browser_key].add(parsed_ua.string)
         to_store['by_frequency'].append({'os': platform_key,
                                          'browser': browser_key,
                                          'useragent': parsed_ua.string})
@@ -85,7 +85,7 @@ def main():
         to_store = ua_parser(f.read())
 
     with open(ua_file_name, 'w') as f:
-        json.dump(to_store, f, indent=2)
+        json.dump(to_store, f, indent=2, default=serialize_to_json)
 
 
 if __name__ == '__main__':

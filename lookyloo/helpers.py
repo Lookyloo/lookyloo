@@ -38,7 +38,7 @@ class CaptureStatus(IntEnum):
 # json.dumps(..., default=dump_to_json)
 def serialize_to_json(obj: Union[Set]) -> Union[List]:
     if isinstance(obj, set):
-        return list(obj)
+        return sorted(obj)
 
 
 def get_resources_hashes(har2tree_container: Union[CrawledTree, HostNode, URLNode]) -> Set[str]:
@@ -96,13 +96,13 @@ class UserAgents:
 
         ua_files_path = sorted(self.path.glob('**/*.json'), reverse=True)
         self._load_newest_ua_file(ua_files_path[0])
-        self._load_playwright_devices()
 
     def _load_newest_ua_file(self, path: Path):
         self.most_recent_ua_path = path
         with self.most_recent_ua_path.open() as f:
             self.most_recent_uas = json.load(f)
             self.by_freq = self.most_recent_uas.pop('by_frequency')
+        self._load_playwright_devices()
 
     def _load_playwright_devices(self):
         self.playwright_devices = get_devices()
@@ -121,7 +121,10 @@ class UserAgents:
                 self.most_recent_uas[platform_key] = {}
             if browser_key not in self.most_recent_uas[platform_key]:
                 self.most_recent_uas[platform_key][browser_key] = []
-            self.most_recent_uas[platform_key][browser_key].append(parsed_ua.string)
+            if parsed_ua.string in self.most_recent_uas[platform_key][browser_key]:
+                self.most_recent_uas[platform_key][browser_key].remove(parsed_ua.string)
+            # We want that one at the top of the list.
+            self.most_recent_uas[platform_key][browser_key].insert(0, parsed_ua.string)
 
     @property
     def user_agents(self) -> Dict[str, Dict[str, List[str]]]:
