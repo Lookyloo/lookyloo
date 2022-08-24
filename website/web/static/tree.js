@@ -691,7 +691,7 @@ function update(root, computed_node_width=0) {
                                 .text('This node has only known content');
                         })
                         .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
-              } else if (d.data.all_empty) {
+              } else if (d.data.all_empty && !d.data.contains_rendered_urlnode) {
                 // set empty
                 d3.select(this).append("svg").append('rect')
                     .attr('x', selected_node_bbox.width - 22 - http_icon_size)

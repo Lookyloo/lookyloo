@@ -521,20 +521,25 @@ class Lookyloo():
         '''Get the thumbnail of the rendered page. Always crop to a square.'''
         to_return = BytesIO()
         size = width, width
-        try:
-            s = self.get_screenshot(capture_uuid)
-            orig_screenshot = Image.open(s)
-            to_thumbnail = orig_screenshot.crop((0, 0, orig_screenshot.width, orig_screenshot.width))
-        except Image.DecompressionBombError as e:
-            # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
-            self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: image too big ({e}).')
-            error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
-            to_thumbnail = Image.open(error_img)
-        except UnidentifiedImageError as e:
-            # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
-            self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: image too big ({e}).')
-            error_img = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
-            to_thumbnail = Image.open(error_img)
+        filename, data = self.get_data(capture_uuid)
+        if filename:
+            download_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'download.png'
+            to_thumbnail = Image.open(download_img)
+        else:
+            try:
+                s = self.get_screenshot(capture_uuid)
+                orig_screenshot = Image.open(s)
+                to_thumbnail = orig_screenshot.crop((0, 0, orig_screenshot.width, orig_screenshot.width))
+            except Image.DecompressionBombError as e:
+                # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
+                self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: image too big ({e}).')
+                error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
+                to_thumbnail = Image.open(error_img)
+            except UnidentifiedImageError as e:
+                # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
+                self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: {e}.')
+                error_img = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
+                to_thumbnail = Image.open(error_img)
 
         to_thumbnail.thumbnail(size)
         to_thumbnail.save(to_return, 'png')
