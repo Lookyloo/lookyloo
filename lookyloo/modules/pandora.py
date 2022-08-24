@@ -20,6 +20,7 @@ class Pandora():
             return
 
         self.client = PyPandora(root_url=config['url'], useragent=get_useragent_for_requests())
+
         if not self.client.is_up:
             self.available = False
             return
