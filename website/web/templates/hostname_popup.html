@@ -69,7 +69,10 @@
       })
       .then(response => response.json())
       .then(data => {
-        openURLInNewTab(data.link)
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(data.link);
+        }
+        openURLInNewTab(data.link);
       })
       .catch((error) => {
           throw new Error(error);
