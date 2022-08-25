@@ -403,7 +403,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.14.3"
+version = "1.15.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -1427,7 +1427,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "7eda63da4c3b4d62b1752e0f33f2b820e9773e9720c68609f661867f9ddfb6b6"
+content-hash = "90003c57a955fc53cd2489298f39a52b0ccacfc1d5943dc786cfb3e0fd58b00c"
 
 [metadata.files]
 aiohttp = [
@@ -1789,8 +1789,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.14.3-py3-none-any.whl", hash = "sha256:0d59af3523608eaaada54b2c3880c141230b276f0dd5d3e2d02b1377e7b0562e"},
-    {file = "har2tree-1.14.3.tar.gz", hash = "sha256:937b755cef81a93fc3f3f46b984c93692dcc34bbf0bfe79d796b6454648e3b53"},
+    {file = "har2tree-1.15.0-py3-none-any.whl", hash = "sha256:440f1bec7f9cd8990a9d49444704820d69762bd1d111882fbb9ee8b89e0745f3"},
+    {file = "har2tree-1.15.0.tar.gz", hash = "sha256:fb240040a58e380a382f173ae8a260e71f81eeae6a2f208128619666a859bcff"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
