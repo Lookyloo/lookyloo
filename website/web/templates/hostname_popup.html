@@ -211,6 +211,7 @@
             {% if has_pandora %}
             <div> Downloaded file: <b>{{url['url_object'].downloaded_filename}}</b> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})</div>
             <button id="pandora_submit_button" type="button" class="btn btn-primary" onclick="submit_pandora()">Submit to Pandora</button>
+            <div>After clicking on the button above, a link to the report on Pandora will be copied in your clipboard.</div>
             {% else %}
             <a href="{{ url_for('data', tree_uuid=tree_uuid)}}">
               Download {{url['url_object'].downloaded_filename}}
