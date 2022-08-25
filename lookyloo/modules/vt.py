@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import logging
 import time
 from datetime import date
 from typing import Any, Dict, Optional
@@ -9,13 +10,15 @@ import vt  # type: ignore
 from har2tree import CrawledTree
 from vt.error import APIError  # type: ignore
 
-from ..default import ConfigError, get_homedir
+from ..default import ConfigError, get_homedir, get_config
 from ..helpers import get_cache_directory
 
 
 class VirusTotal():
 
     def __init__(self, config: Dict[str, Any]):
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.logger.setLevel(get_config('generic', 'loglevel'))
         if not config.get('apikey'):
             self.available = False
             return
@@ -93,6 +96,10 @@ class VirusTotal():
                 if not self.autosubmit:
                     break
                 if not scan_requested and e.code == 'NotFoundError':
-                    self.client.scan_url(url)
-                    scan_requested = True
+                    try:
+                        self.client.scan_url(url)
+                        scan_requested = True
+                    except APIError as e:
+                        self.logger.warning(f'Unable to trigger VirusTotal on {url}: {e}')
+                        break
             time.sleep(5)
