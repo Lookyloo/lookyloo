@@ -582,35 +582,63 @@ function update(root, computed_node_width=0) {
                 const thumbnail_size = 64;
                 if (d.data.contains_rendered_urlnode) {
                   center_node = d.data.uuid;
-                  d3.select(this).append("svg").append('rect')
-                      .attr('x', selected_node_bbox.width/3)
-                      .attr('y', node_height - 3)
-                      .attr('width', thumbnail_size)
-                      .attr('height', thumbnail_size)
-                      .attr('fill', 'white')
-                      .attr('stroke', 'black');
+                  if (d.data.downloaded_filename) {
+                    d3.select(this).append("svg").append('rect')
+                        .attr('x', selected_node_bbox.width/3)
+                        .attr('y', node_height - 3)
+                        .attr('width', thumbnail_size)
+                        .attr('height', thumbnail_size)
+                        .attr('fill', 'white')
+                        .attr('stroke', 'black');
 
-                  d3.select(this).append('image')
-                      .attr('x', selected_node_bbox.width/3)
-                      .attr('y', node_height - 3)
-                      .attr('id', 'screenshot_thumbnail')
-                      .attr("width", thumbnail_size)
-                      .attr("height", thumbnail_size)
-                      .attr("xlink:href", `data:image/png;base64,${screenshot_thumbnail}`)
-                      .attr('cursor', 'pointer')
-                      .on('mouseover', (event, d) => {
-                          d3.select('#tooltip')
-                            .style('opacity', 1)
-                            .style('left', `${event.pageX + 10}px`)
-                            .style('top', `${event.pageY + 10}px`)
-                            .text('Contains the URL rendered in the browser.');
-                      })
-                      .on('click', (event, d) => {
-                          $("#screenshotModal").modal('toggle');
-                      })
-                      .on('mouseout', (event, d) => {
-                          d3.select('#tooltip').style('opacity', 0)
-                      });
+                    d3.select(this).append('image')
+                        .attr('x', selected_node_bbox.width/3)
+                        .attr('y', node_height - 3)
+                        .attr('id', 'screenshot_thumbnail')
+                        .attr("width", thumbnail_size)
+                        .attr("height", thumbnail_size)
+                        .attr("xlink:href", '/static/download.svg')
+                        .on('mouseover', (event, d) => {
+                            d3.select('#tooltip')
+                              .style('opacity', 1)
+                              .style('left', `${event.pageX + 10}px`)
+                              .style('top', `${event.pageY + 10}px`)
+                              .text(`Contains the downloaded file (${d.data.downloaded_filename}).`);
+                        })
+                        .on('mouseout', (event, d) => {
+                            d3.select('#tooltip').style('opacity', 0)
+                        });
+                  } else {
+                    d3.select(this).append("svg").append('rect')
+                        .attr('x', selected_node_bbox.width/3)
+                        .attr('y', node_height - 3)
+                        .attr('width', thumbnail_size)
+                        .attr('height', thumbnail_size)
+                        .attr('fill', 'white')
+                        .attr('stroke', 'black');
+
+                    d3.select(this).append('image')
+                        .attr('x', selected_node_bbox.width/3)
+                        .attr('y', node_height - 3)
+                        .attr('id', 'screenshot_thumbnail')
+                        .attr("width", thumbnail_size)
+                        .attr("height", thumbnail_size)
+                        .attr("xlink:href", `data:image/png;base64,${screenshot_thumbnail}`)
+                        .attr('cursor', 'pointer')
+                        .on('mouseover', (event, d) => {
+                            d3.select('#tooltip')
+                              .style('opacity', 1)
+                              .style('left', `${event.pageX + 10}px`)
+                              .style('top', `${event.pageY + 10}px`)
+                              .text('Contains the URL rendered in the browser.');
+                        })
+                        .on('click', (event, d) => {
+                            $("#screenshotModal").modal('toggle');
+                        })
+                        .on('mouseout', (event, d) => {
+                            d3.select('#tooltip').style('opacity', 0)
+                        });
+                  }
                 };
 
                 const http_icon_size = 24;

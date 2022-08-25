@@ -403,7 +403,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.14.2"
+version = "1.14.3"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -738,7 +738,7 @@ websockets = "10.1"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.14.3"
+version = "1.14.4"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
@@ -746,7 +746,7 @@ python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
 dateparser = ">=1.1.1,<2.0.0"
-playwright = ">=1.25.1,<2.0.0"
+playwright = ">=1.25.2,<2.0.0"
 
 [package.extras]
 recaptcha = ["SpeechRecognition (>=3.8.1,<4.0.0)", "pydub (>=0.25.1,<0.26.0)", "requests (>=2.28.1,<3.0.0)"]
@@ -1427,7 +1427,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "35dd47ad4e1c44d02655af2d5074d27fabc5cf442e338c219e86064aed7f601f"
+content-hash = "7eda63da4c3b4d62b1752e0f33f2b820e9773e9720c68609f661867f9ddfb6b6"
 
 [metadata.files]
 aiohttp = [
@@ -1789,8 +1789,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.14.2-py3-none-any.whl", hash = "sha256:6d0068a8ebdbda0ba011f99fbdcf64e703b248b955fcf6c0d7a6d01f39897784"},
-    {file = "har2tree-1.14.2.tar.gz", hash = "sha256:4f066bae7ee5737b51b96f77d87646f09992b1e2c2baac58af9b536033cb53b8"},
+    {file = "har2tree-1.14.3-py3-none-any.whl", hash = "sha256:0d59af3523608eaaada54b2c3880c141230b276f0dd5d3e2d02b1377e7b0562e"},
+    {file = "har2tree-1.14.3.tar.gz", hash = "sha256:937b755cef81a93fc3f3f46b984c93692dcc34bbf0bfe79d796b6454648e3b53"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -1901,7 +1901,6 @@ lxml = [
     {file = "lxml-4.9.1-cp27-cp27m-win_amd64.whl", hash = "sha256:4cfbe42c686f33944e12f45a27d25a492cc0e43e1dc1da5d6a87cbcaf2e95627"},
     {file = "lxml-4.9.1-cp27-cp27mu-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:dad7b164905d3e534883281c050180afcf1e230c3d4a54e8038aa5cfcf312b84"},
     {file = "lxml-4.9.1-cp27-cp27mu-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:a614e4afed58c14254e67862456d212c4dcceebab2eaa44d627c2ca04bf86837"},
-    {file = "lxml-4.9.1-cp310-cp310-macosx_10_15_universal2.whl", hash = "sha256:49a866923e69bc7da45a0565636243707c22752fc38f6b9d5c8428a86121022c"},
     {file = "lxml-4.9.1-cp310-cp310-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_24_i686.whl", hash = "sha256:f9ced82717c7ec65a67667bb05865ffe38af0e835cdd78728f1209c8fffe0cad"},
     {file = "lxml-4.9.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_24_aarch64.whl", hash = "sha256:d9fc0bf3ff86c17348dfc5d322f627d78273eba545db865c3cd14b3f19e57fa5"},
     {file = "lxml-4.9.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl", hash = "sha256:e5f66bdf0976ec667fc4594d2812a00b07ed14d1b44259d19a41ae3fff99f2b8"},
@@ -2226,8 +2225,8 @@ playwright = [
     {file = "playwright-1.25.2-py3-none-win_amd64.whl", hash = "sha256:68ae739f82b78717123eb9d1b28b4619f0b368b88ef73c633681e267680697cd"},
 ]
 playwrightcapture = [
-    {file = "PlaywrightCapture-1.14.3-py3-none-any.whl", hash = "sha256:5068f58726ebff1f7928e9793f3c91ead97ba1b096f05021261d126c9ce7fb9e"},
-    {file = "PlaywrightCapture-1.14.3.tar.gz", hash = "sha256:7243b908caa16b9e50c662eb01f558a578fd4acb0541fbde7103714ef51219b5"},
+    {file = "PlaywrightCapture-1.14.4-py3-none-any.whl", hash = "sha256:8f7e5ce27ff54920a5839dfee7a04c4a0b0fc2c6750cdd1771e607a6d1f8894a"},
+    {file = "PlaywrightCapture-1.14.4.tar.gz", hash = "sha256:230e5d538bc51bd724fb808f5321436f743a0a1d379d1de1e8d3d42b020f2091"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.30-py3-none-any.whl", hash = "sha256:d8916d3f62a7b67ab353a952ce4ced6a1d2587dfe9ef8ebc30dd7c386751f289"},

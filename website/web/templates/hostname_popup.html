@@ -204,13 +204,14 @@
           </p>
           {{ popup_icons_response(url['url_object'], tree_uuid) }}
 
-          {% if url['url_object'].has_dl_file %}
+          {% if url['url_object'].downloaded_filename %}
             {% if has_pandora %}
+            <div> Downloaded file: <b>{{url['url_object'].downloaded_filename}}</b> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})</div>
             <button id="pandora_submit_button" type="button" class="btn btn-primary" onclick="submit_pandora()">Submit to Pandora</button>
             {% else %}
             <a href="{{ url_for('data', tree_uuid=tree_uuid)}}">
               Download {{url['url_object'].downloaded_filename}}
-            </a> ({{sizeof_fmt(url['url_object'].downloaded_filesize)}})
+            </a> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})
             {% endif%}
 
           {% else %}
