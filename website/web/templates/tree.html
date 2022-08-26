@@ -229,18 +229,15 @@
                  data-bs-toggle="modal" data-bs-target="#modulesModal" role="button">Third Party Reports</a>
             </li>
             {% if current_user.is_authenticated %}
-            <?-- This bloc will be available for everyone soon-->
             <li>
               <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
                  data-bs-toggle="modal" data-bs-target="#historyModal" role="button">Historical lookups</a>
             </li>
             {% endif %}
-            {% if current_user.is_authenticated %}
             <li>
               <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button">Hashlookup hits</a>
             </li>
-            {% endif %}
           </ul>
         </div>
         <div class="vr"></div>
