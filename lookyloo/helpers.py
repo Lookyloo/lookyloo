@@ -2,11 +2,11 @@
 import hashlib
 import json
 import logging
-import pkg_resources
 
 from datetime import datetime, timedelta
 from enum import IntEnum, unique
 from functools import lru_cache
+from importlib.metadata import version
 from io import BufferedIOBase
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
@@ -214,8 +214,7 @@ def uniq_domains(uniq_urls):
 
 @lru_cache(64)
 def get_useragent_for_requests():
-    version = pkg_resources.get_distribution('lookyloo').version
-    return f'Lookyloo / {version}'
+    return f'Lookyloo / {version("lookyloo")}'
 
 
 def get_cache_directory(root: Path, identifier: str, namespace: Optional[Union[str, Path]] = None) -> Path:

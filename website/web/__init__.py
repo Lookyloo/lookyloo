@@ -10,12 +10,12 @@ import time
 import filetype  # type: ignore
 
 from datetime import date, datetime, timedelta, timezone
+from importlib.metadata import version
 from io import BytesIO, StringIO
 from typing import Any, Dict, List, Optional, Union, TypedDict
 from urllib.parse import quote_plus, unquote_plus, urlparse
 
 import flask_login  # type: ignore
-import pkg_resources
 from flask import (Flask, Response, flash, jsonify, redirect, render_template,
                    request, send_file, url_for)
 from flask_bootstrap import Bootstrap5  # type: ignore
@@ -46,7 +46,7 @@ app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.debug = False
 
-version = pkg_resources.get_distribution('lookyloo').version
+pkg_version = version('lookyloo')
 
 # Auth stuff
 login_manager = flask_login.LoginManager()
@@ -753,7 +753,7 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: Opti
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
     return render_template('index.html', titles=titles, public_domain=lookyloo.public_domain,
                            show_project_page=get_config('generic', 'show_project_page'),
-                           version=version)
+                           version=pkg_version)
 
 
 def get_index_params(request):
@@ -1156,6 +1156,6 @@ api = Api(app, title='Lookyloo API',
           description='API to submit captures and query a lookyloo instance.',
           doc='/doc/',
           authorizations=authorizations,
-          version=version)
+          version=pkg_version)
 
 api.add_namespace(generic_api)
