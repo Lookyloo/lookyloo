@@ -853,7 +853,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyhashlookup"
-version = "1.2.0"
+version = "1.2.1"
 description = "Python CLI and module for CIRCL hash lookup"
 category = "main"
 optional = false
@@ -864,7 +864,7 @@ dnspython = ">=2.2.1,<3.0.0"
 requests = ">=2.28.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=5.1.0,<6.0.0)"]
+docs = ["Sphinx (>=5.1.1,<6.0.0)"]
 
 [[package]]
 name = "pylookyloo"
@@ -1436,7 +1436,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "5918be2a2f192b2e3b565f715acd3492690ae388adc88ecbe938c4a7b7878a5d"
+content-hash = "4fbcdcc99256883b7c2792ac2d7a452be5cb89ecaeea2536b612fd61d92f6364"
 
 [metadata.files]
 aiohttp = [
@@ -2287,8 +2287,8 @@ Pygments = [
     {file = "Pygments-2.13.0.tar.gz", hash = "sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1"},
 ]
 pyhashlookup = [
-    {file = "pyhashlookup-1.2.0-py3-none-any.whl", hash = "sha256:219a16381330b9ca6d9f36f514583bc0cfdb04ff44fd6a8d5e9be18e3497979c"},
-    {file = "pyhashlookup-1.2.0.tar.gz", hash = "sha256:44922f88f716865c4ea7c0204dc063706d7b7a629bce214ca9999bce96a7c027"},
+    {file = "pyhashlookup-1.2.1-py3-none-any.whl", hash = "sha256:48953eda102b8b57916afae968838629b73642e826f5316d0ea3176e508ac36a"},
+    {file = "pyhashlookup-1.2.1.tar.gz", hash = "sha256:eb514cc1a5559a013a8882e101849fa52a37641f2a7d9dc21c0d266b37607aa5"},
 ]
 pylookyloo = [
     {file = "pylookyloo-1.15.0-py3-none-any.whl", hash = "sha256:ab717f8d05d8165cdfae8d47b13928de3f72b6322294dcff7881e757c343127f"},
