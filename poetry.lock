@@ -905,7 +905,7 @@ virustotal = ["validators (>=0.20.0,<0.21.0)"]
 
 [[package]]
 name = "pypandora"
-version = "1.0.3"
+version = "1.1.0"
 description = "Python CLI and module for pandora"
 category = "main"
 optional = false
@@ -1427,7 +1427,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "e92064ff3b4999a748eaef519f27c879c62a56c8212f1b6118d15ae329caf44b"
+content-hash = "ea8edba2c22e2e1eefddb851ee5a377d116075446bf74d3c7fd6bb219d74078e"
 
 [metadata.files]
 aiohttp = [
@@ -2290,8 +2290,8 @@ pymisp = [
     {file = "pymisp-2.4.160.1.tar.gz", hash = "sha256:d6cf306100d7c936951db9cb1bff53276a94d75b3ff5ae4c35a952f001169021"},
 ]
 pypandora = [
-    {file = "pypandora-1.0.3-py3-none-any.whl", hash = "sha256:e70314e43b72a361cde1a30f2dd6e1312827d6fb33254cea0b925370066aead1"},
-    {file = "pypandora-1.0.3.tar.gz", hash = "sha256:5c94c9b396316ff6546173f970ee05372be50f2c309ae52dbf76a37b45f205da"},
+    {file = "pypandora-1.1.0-py3-none-any.whl", hash = "sha256:107486253545d87011ceb68e1d957c310122a0c07a096a53b6d8d6ae3bde90c8"},
+    {file = "pypandora-1.1.0.tar.gz", hash = "sha256:c9cfc091d382b6c7099979f9372cb7fdb275c23dd23eddf6b6d57571ba2269ca"},
 ]
 pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
