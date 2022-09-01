@@ -96,6 +96,11 @@ class UserAgents:
 
         ua_files_path = sorted(self.path.glob('**/*.json'), reverse=True)
         self._load_newest_ua_file(ua_files_path[0])
+        # This call *must* be here because otherwise, we get the devices from within the async
+        # process and as we already have a playwright context, it fails.
+        # it is not a problem to have it here because the devices do not change
+        # until we have a new version playwright, and restart everything anyway.
+        self.playwright_devices = get_devices()
 
     def _load_newest_ua_file(self, path: Path):
         self.most_recent_ua_path = path
@@ -105,7 +110,6 @@ class UserAgents:
         self._load_playwright_devices()
 
     def _load_playwright_devices(self):
-        self.playwright_devices = get_devices()
         # Only get default and desktop for now.
         for device_name, details in self.playwright_devices['desktop']['default'].items():
             parsed_ua = ParsedUserAgent(details['user_agent'])
