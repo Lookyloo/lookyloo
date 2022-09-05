@@ -742,22 +742,24 @@ websockets = "10.1"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.15.0"
+version = "1.15.1"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
+beautifulsoup4 = ">=4.11.1,<5.0.0"
 dateparser = ">=1.1.1,<2.0.0"
 playwright = ">=1.25.2,<2.0.0"
+w3lib = ">=2.0.1,<3.0.0"
 
 [package.extras]
 recaptcha = ["SpeechRecognition (>=3.8.1,<4.0.0)", "pydub (>=0.25.1,<0.26.0)", "requests (>=2.28.1,<3.0.0)"]
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.30"
+version = "3.0.31"
 description = "Library for building powerful interactive command lines in Python"
 category = "dev"
 optional = false
@@ -1248,7 +1250,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.3.19"
+version = "4.3.20"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1436,7 +1438,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "4fbcdcc99256883b7c2792ac2d7a452be5cb89ecaeea2536b612fd61d92f6364"
+content-hash = "983f3b5fa84cd3b985d1d1de30f95a16f863c02e6ab8a9fa98bd6ce40f92fde2"
 
 [metadata.files]
 aiohttp = [
@@ -2234,12 +2236,12 @@ playwright = [
     {file = "playwright-1.25.2-py3-none-win_amd64.whl", hash = "sha256:68ae739f82b78717123eb9d1b28b4619f0b368b88ef73c633681e267680697cd"},
 ]
 playwrightcapture = [
-    {file = "PlaywrightCapture-1.15.0-py3-none-any.whl", hash = "sha256:c7ba68ab3d8d989c8ca0550ec8a4ae252ba36df4a8f5b5643ea6639570abe433"},
-    {file = "PlaywrightCapture-1.15.0.tar.gz", hash = "sha256:8cbdec2bc5987c0f361c237bae04d0332a298c486f7a2a0917203f0e1a70905a"},
+    {file = "PlaywrightCapture-1.15.1.tar.gz", hash = "sha256:af8efda02e0cf7df32dd4d5d3b72bd04fae0a0e22521195989205fe40f9dfb59"},
+    {file = "playwrightcapture-1.15.1-py3-none-any.whl", hash = "sha256:7ea84dc4590ad2bd0d26dc2e6019ca6873c676f9b901eb13dbfef69c916e5e5c"},
 ]
 prompt-toolkit = [
-    {file = "prompt_toolkit-3.0.30-py3-none-any.whl", hash = "sha256:d8916d3f62a7b67ab353a952ce4ced6a1d2587dfe9ef8ebc30dd7c386751f289"},
-    {file = "prompt_toolkit-3.0.30.tar.gz", hash = "sha256:859b283c50bde45f5f97829f77a4674d1c1fcd88539364f1b28a37805cfd89c0"},
+    {file = "prompt_toolkit-3.0.31-py3-none-any.whl", hash = "sha256:9696f386133df0fc8ca5af4895afe5d78f5fcfe5258111c2a79a1c3e41ffa96d"},
+    {file = "prompt_toolkit-3.0.31.tar.gz", hash = "sha256:9ada952c9d1787f52ff6d5f3484d0b4df8952787c087edf6a1f7c2cb1ea88148"},
 ]
 ptyprocess = [
     {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},
@@ -2514,8 +2516,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.19-py3-none-any.whl", hash = "sha256:6284df1e4783d8fc6e587f0317a81333856b872a6669a282f8a325342bce7fa8"},
 ]
 types-redis = [
-    {file = "types-redis-4.3.19.tar.gz", hash = "sha256:c881ffb94bd47dca21ed503328544a56bb315851575eebb27fb371bff735844a"},
-    {file = "types_redis-4.3.19-py3-none-any.whl", hash = "sha256:c74262197487a65e3f02db37d3f0e0f3bb2d5d370f7e6ba390814e865a45e56e"},
+    {file = "types-redis-4.3.20.tar.gz", hash = "sha256:74ed02945470ddea2dd21447c185dabb3169e5a5328d26b25cf3547d949b8e04"},
+    {file = "types_redis-4.3.20-py3-none-any.whl", hash = "sha256:b22e0f5a18b98b6a197dd403daed52a22cb76f50e3cbd7ddc539196af52ec23e"},
 ]
 types-requests = [
     {file = "types-requests-2.28.9.tar.gz", hash = "sha256:feaf581bd580497a47fe845d506fa3b91b484cf706ff27774e87659837de9962"},
