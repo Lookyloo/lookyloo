@@ -11,7 +11,7 @@ from datetime import datetime
 from io import BufferedIOBase
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, Literal
 from urllib.parse import urlsplit
 
 from defang import refang  # type: ignore
@@ -103,7 +103,7 @@ class AsyncCapture(AbstractManager):
                 proxy=to_capture[b'proxy'].decode() if to_capture.get(b'proxy') else None,
                 os=to_capture[b'os'].decode() if to_capture.get(b'os') else None,
                 browser=to_capture[b'browser'].decode() if to_capture.get(b'browser') else None,
-                browser_engine=to_capture[b'browser_engine'].decode() if to_capture.get(b'browser_engine') else None,
+                browser_engine=to_capture[b'browser_engine'].decode() if to_capture.get(b'browser_engine') else None,  # type: ignore
                 device_name=to_capture[b'device_name'].decode() if to_capture.get(b'device_name') else None,
                 parent=to_capture[b'parent'].decode() if to_capture.get(b'parent') else None
             )
@@ -133,7 +133,7 @@ class AsyncCapture(AbstractManager):
                        headers: Optional[Dict[str, str]]=None,
                        proxy: Optional[Union[str, Dict]]=None, os: Optional[str]=None,
                        browser: Optional[str]=None, parent: Optional[str]=None,
-                       browser_engine: Optional[str]=None,
+                       browser_engine: Optional[Literal['chromium', 'firefox', 'webkit']]=None,
                        device_name: Optional[str]=None,
                        viewport: Optional[Dict[str, int]]=None) -> Tuple[bool, str]:
         '''Launch a capture'''
