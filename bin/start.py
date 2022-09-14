@@ -13,20 +13,20 @@ def main():
     p.check_returncode()
     print('done.')
     print('Start archiving process...')
-    Popen(['archiver'])
+    #Popen(['archiver'])
     print('done.')
     print('Start asynchronous ingestor...')
-    for _ in range(get_config('generic', 'async_capture_processes')):
-        Popen(['async_capture'])
+    #for _ in range(get_config('generic', 'async_capture_processes')):
+    #    Popen(['async_capture'])
     print('done.')
     print('Start background indexer...')
-    Popen(['background_indexer'])
+    #Popen(['background_indexer'])
     print('done.')
     print('Start background processing...')
-    Popen(['processing'])
+    # Popen(['processing'])
     print('done.')
     print('Start website...')
-    Popen(['start_website'])
+    #Popen(['start_website'])
     print('done.')
 
 

@@ -15,17 +15,16 @@ from io import BytesIO
 from pathlib import Path
 from typing import (Any, Dict, Iterable, List, MutableMapping, Optional, Set,
                     Tuple, Union)
-from uuid import uuid4
 from zipfile import ZipFile
 
 from defang import defang  # type: ignore
 from har2tree import CrawledTree, HostNode, URLNode
+from lacuscore import LacusCore
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
 from pymisp import MISPAttribute, MISPEvent, MISPObject
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
-from werkzeug.utils import secure_filename
 
 from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
@@ -100,6 +99,8 @@ class Lookyloo():
         self.logger.info('Initializing index...')
         self._captures_index = CapturesIndex(self.redis, self.context)
         self.logger.info('Index initialized.')
+
+        self.lacus = LacusCore(self.redis, get_config('generic', 'tor_proxy'))
 
     @property
     def redis(self):
@@ -407,9 +408,6 @@ class Lookyloo():
             elif isinstance(value, (list, dict)):
                 query[key] = json.dumps(value) if value else None
 
-        if 'document_name' in query:
-            query['document_name'] = secure_filename(query['document_name'])
-
         query = {k: v for k, v in query.items() if v is not None}  # Remove the none, it makes redis unhappy
         # dirty deduplicate
         hash_query = hashlib.sha512(pickle.dumps(query)).hexdigest()
@@ -418,16 +416,40 @@ class Lookyloo():
         if (existing_uuid := self.redis.get(f'query_hash:{hash_query}')):
             return existing_uuid
 
-        perma_uuid = str(uuid4())
-        self.redis.set(f'query_hash:{hash_query}', perma_uuid, nx=True, ex=300)
-
         priority = get_priority(source, user, authenticated)
+
+        # NOTE: Lookyloo' capture can pass a do not track header independently from the default headers, merging it here
+        headers = query.pop('headers', '')
+        if 'dnt' in query:
+            headers += f'\nDNT: {query.pop("dnt")}'
+            headers = headers.strip()
+
+        perma_uuid = self.lacus.enqueue(
+            url=query.pop('url', None),
+            document_name=query.pop('document_name', None),
+            document=query.pop('document', None),
+            depth=query.pop('depth', 0),
+            browser=query.pop('browser', None),
+            device_name=query.pop('device_name', None),
+            user_agent=query.pop('user_agent', None),
+            proxy=query.pop('proxy', None),
+            general_timeout_in_sec=query.pop('general_timeout_in_sec', None),
+            cookies=query.pop('cookies', None),
+            headers=headers if headers else None,
+            http_credentials=query.pop('http_credentials', None),
+            viewport=query.pop('viewport', None),
+            referer=query.pop('referer', None),
+            rendered_hostname_only=query.pop('rendered_hostname_only', True),
+            # force=query.pop('force', False),
+            # recapture_interval=query.pop('recapture_interval', 300),
+            priority=priority
+        )
+
         p = self.redis.pipeline()
         if priority < -10:
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query['listing'] = 0
-        p.hset(perma_uuid, mapping=query)
-        p.zadd('to_capture', {perma_uuid: priority})
+        p.hset(perma_uuid, mapping=query)  # This will add the remaining entries that are lookyloo specific
         p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
         p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
         p.execute()
