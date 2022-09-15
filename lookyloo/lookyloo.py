@@ -450,6 +450,7 @@ class Lookyloo():
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query['listing'] = 0
         p.hset(perma_uuid, mapping=query)  # This will add the remaining entries that are lookyloo specific
+        p.zadd('to_capture', {perma_uuid: priority})
         p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
         p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
         p.execute()
