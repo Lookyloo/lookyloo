@@ -33,7 +33,7 @@ from .exceptions import (MissingCaptureDirectory,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile)
 from .helpers import (CaptureStatus, get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
-                      uniq_domains, ParsedUserAgent)
+                      uniq_domains, ParsedUserAgent, load_cookies, UserAgents)
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -46,6 +46,7 @@ class Lookyloo():
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.indexing = Indexing()
+        self.user_agents = UserAgents()
         self.is_public_instance = get_config('generic', 'public_instance')
         self.public_domain = get_config('generic', 'public_domain')
         self.taxonomies = get_taxonomies()
@@ -424,6 +425,16 @@ class Lookyloo():
             headers += f'\nDNT: {query.pop("dnt")}'
             headers = headers.strip()
 
+        # NOTE: Lookyloo can get the cookies in somewhat weird formats, mornalizing them
+        cookies = load_cookies(query.pop('cookies', None))
+
+        # NOTE: Make sure we have a useragent
+        user_agent = query.pop('user_agent', None)
+        if not user_agent:
+            # Catch case where the UA is broken on the UI, and the async submission.
+            self.user_agents.user_agents  # triggers an update of the default UAs
+        capture_ua = user_agent if user_agent else self.user_agents.default['useragent']
+
         perma_uuid = self.lacus.enqueue(
             url=query.pop('url', None),
             document_name=query.pop('document_name', None),
@@ -431,10 +442,10 @@ class Lookyloo():
             depth=query.pop('depth', 0),
             browser=query.pop('browser', None),
             device_name=query.pop('device_name', None),
-            user_agent=query.pop('user_agent', None),
+            user_agent=capture_ua,
             proxy=query.pop('proxy', None),
             general_timeout_in_sec=query.pop('general_timeout_in_sec', None),
-            cookies=query.pop('cookies', None),
+            cookies=cookies if cookies else None,
             headers=headers if headers else None,
             http_credentials=query.pop('http_credentials', None),
             viewport=query.pop('viewport', None),

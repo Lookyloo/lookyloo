@@ -13,7 +13,7 @@ from redis.asyncio import Redis
 from redis import Redis as RedisSync
 
 from lookyloo.default import AbstractManager, get_config, get_socket_path, safe_create_dir
-from lookyloo.helpers import get_captures_dir, UserAgents, CaptureStatus
+from lookyloo.helpers import get_captures_dir, CaptureStatus
 
 from lookyloo.modules import FOX
 
@@ -28,7 +28,6 @@ class AsyncCapture(AbstractManager):
         self.script_name = 'async_capture'
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
         self.capture_dir: Path = get_captures_dir()
-        self.user_agents = UserAgents()
         self.redis_sync: RedisSync = RedisSync(unix_socket_path=get_socket_path('cache'))
         self.lacus = LacusCore(self.redis_sync)
 
@@ -59,7 +58,7 @@ class AsyncCapture(AbstractManager):
             # By default, the captures are not on the index, unless the user mark them as listed
             listing = True if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'true', b'1']) else False
 
-        await self.lacus.capture(uuid)
+        status, result = await self.lacus.capture(uuid)
 
         while True:
             entries = self.lacus.get_capture(uuid, decode=True)
@@ -78,67 +77,63 @@ class AsyncCapture(AbstractManager):
                 self.logger.warning(f'{entries["status"]} is not a valid status')
                 break
 
-        if not entries:
-            # broken
-            self.logger.critical(f'Something went terribly wrong when capturing {uuid}.')
-        else:
-            now = datetime.now()
-            dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / now.isoformat()
-            safe_create_dir(dirpath)
+        now = datetime.now()
+        dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / now.isoformat()
+        safe_create_dir(dirpath)
 
-            if b'os' in to_capture or b'browser' in to_capture:
-                meta: Dict[str, str] = {}
-                if b'os' in to_capture:
-                    meta['os'] = to_capture[b'os'].decode()
-                if b'browser' in to_capture:
-                    meta['browser'] = to_capture[b'browser'].decode()
-                with (dirpath / 'meta').open('w') as _meta:
-                    json.dump(meta, _meta)
+        if b'os' in to_capture or b'browser' in to_capture:
+            meta: Dict[str, str] = {}
+            if b'os' in to_capture:
+                meta['os'] = to_capture[b'os'].decode()
+            if b'browser' in to_capture:
+                meta['browser'] = to_capture[b'browser'].decode()
+            with (dirpath / 'meta').open('w') as _meta:
+                json.dump(meta, _meta)
 
-            # Write UUID
-            with (dirpath / 'uuid').open('w') as _uuid:
-                _uuid.write(uuid)
+        # Write UUID
+        with (dirpath / 'uuid').open('w') as _uuid:
+            _uuid.write(uuid)
 
-            # Write no_index marker (optional)
-            if not listing:
-                (dirpath / 'no_index').touch()
+        # Write no_index marker (optional)
+        if not listing:
+            (dirpath / 'no_index').touch()
 
-            # Write parent UUID (optional)
-            if b'parent' in to_capture:
-                with (dirpath / 'parent').open('w') as _parent:
-                    _parent.write(to_capture[b'parent'].decode())
+        # Write parent UUID (optional)
+        if b'parent' in to_capture:
+            with (dirpath / 'parent').open('w') as _parent:
+                _parent.write(to_capture[b'parent'].decode())
 
-            if 'downloaded_filename' in entries and entries['downloaded_filename']:
-                with (dirpath / '0.data.filename').open('w') as _downloaded_filename:
-                    _downloaded_filename.write(entries['downloaded_filename'])
+        if 'downloaded_filename' in entries and entries['downloaded_filename']:
+            with (dirpath / '0.data.filename').open('w') as _downloaded_filename:
+                _downloaded_filename.write(entries['downloaded_filename'])
 
-            if 'downloaded_file' in entries and entries['downloaded_file']:
-                with (dirpath / '0.data').open('wb') as _downloaded_file:
-                    _downloaded_file.write(entries['downloaded_file'])
+        if 'downloaded_file' in entries and entries['downloaded_file']:
+            with (dirpath / '0.data').open('wb') as _downloaded_file:
+                _downloaded_file.write(entries['downloaded_file'])
 
-            if 'error' in entries:
-                with (dirpath / 'error.txt').open('w') as _error:
-                    json.dump(entries['error'], _error)
+        if 'error' in entries:
+            with (dirpath / 'error.txt').open('w') as _error:
+                json.dump(entries['error'], _error)
 
-            with (dirpath / '0.har').open('w') as _har:
-                json.dump(entries['har'], _har)
+        with (dirpath / '0.har').open('w') as _har:
+            json.dump(entries['har'], _har)
 
-            if 'png' in entries and entries['png']:
-                with (dirpath / '0.png').open('wb') as _img:
-                    _img.write(entries['png'])
+        if 'png' in entries and entries['png']:
+            with (dirpath / '0.png').open('wb') as _img:
+                _img.write(entries['png'])
 
-            if 'html' in entries and entries['html']:
-                with (dirpath / '0.html').open('w') as _html:
-                    _html.write(entries['html'])
+        if 'html' in entries and entries['html']:
+            with (dirpath / '0.html').open('w') as _html:
+                _html.write(entries['html'])
 
-            if 'last_redirected_url' in entries and entries['last_redirected_url']:
-                with (dirpath / '0.last_redirect.txt').open('w') as _redir:
-                    _redir.write(entries['last_redirected_url'])
+        if 'last_redirected_url' in entries and entries['last_redirected_url']:
+            with (dirpath / '0.last_redirect.txt').open('w') as _redir:
+                _redir.write(entries['last_redirected_url'])
 
-            if 'cookies' in entries and entries['cookies']:
-                with (dirpath / '0.cookies.json').open('w') as _cookies:
-                    json.dump(entries['cookies'], _cookies)
-            await self.redis.hset('lookup_dirs', uuid, str(dirpath))
+        if 'cookies' in entries and entries['cookies']:
+            with (dirpath / '0.cookies.json').open('w') as _cookies:
+                json.dump(entries['cookies'], _cookies)
+        await self.redis.hset('lookup_dirs', uuid, str(dirpath))
 
         async with self.redis.pipeline() as lazy_cleanup:
             if queue and await self.redis.zscore('queues', queue):
