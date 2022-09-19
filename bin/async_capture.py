@@ -115,8 +115,9 @@ class AsyncCapture(AbstractManager):
             with (dirpath / 'error.txt').open('w') as _error:
                 json.dump(entries['error'], _error)
 
-        with (dirpath / '0.har').open('w') as _har:
-            json.dump(entries['har'], _har)
+        if 'har' in entries:
+            with (dirpath / '0.har').open('w') as _har:
+                json.dump(entries['har'], _har)
 
         if 'png' in entries and entries['png']:
             with (dirpath / '0.png').open('wb') as _img:
@@ -133,9 +134,9 @@ class AsyncCapture(AbstractManager):
         if 'cookies' in entries and entries['cookies']:
             with (dirpath / '0.cookies.json').open('w') as _cookies:
                 json.dump(entries['cookies'], _cookies)
-        await self.redis.hset('lookup_dirs', uuid, str(dirpath))
 
         async with self.redis.pipeline() as lazy_cleanup:
+            await lazy_cleanup.hset('lookup_dirs', uuid, str(dirpath))
             if queue and await self.redis.zscore('queues', queue):
                 await lazy_cleanup.zincrby('queues', -1, queue)
             await lazy_cleanup.srem('ongoing', uuid)
