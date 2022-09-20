@@ -140,7 +140,7 @@ python-versions = "*"
 
 [[package]]
 name = "certifi"
-version = "2022.6.15.2"
+version = "2022.9.14"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
@@ -436,7 +436,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "idna"
-version = "3.3"
+version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
 category = "main"
 optional = false
@@ -562,6 +562,21 @@ pyrsistent = ">=0.14.0,<0.17.0 || >0.17.0,<0.17.1 || >0.17.1,<0.17.2 || >0.17.2"
 [package.extras]
 format = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3987", "uri-template", "webcolors (>=1.11)"]
 format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "uri-template", "webcolors (>=1.11)"]
+
+[[package]]
+name = "lacuscore"
+version = "0.2.0"
+description = "Core of Lacus, usable as a module"
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+
+[package.dependencies]
+playwrightcapture = ">=1.15.2,<2.0.0"
+requests = ">=2.28.1,<3.0.0"
+
+[package.extras]
+docs = ["Sphinx (>=5.1.1,<6.0.0)"]
 
 [[package]]
 name = "lief"
@@ -741,7 +756,7 @@ websockets = "10.1"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.15.1"
+version = "1.15.2"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
@@ -1437,7 +1452,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "46db3fd177fb45d82947eb86e58fd45d5c7396b712852b76e22d0ad9901abc3a"
+content-hash = "90f66d42b27d094218cd3400cde9ca71c9b21ab0107a63b9fe3cffb4758ba47e"
 
 [metadata.files]
 aiohttp = [
@@ -1600,8 +1615,8 @@ cchardet = [
     {file = "cchardet-2.1.7.tar.gz", hash = "sha256:c428b6336545053c2589f6caf24ea32276c6664cb86db817e03a94c60afa0eaf"},
 ]
 certifi = [
-    {file = "certifi-2022.6.15.2-py3-none-any.whl", hash = "sha256:0aa1a42fbd57645fabeb6290a7687c21755b0344ecaeaa05f4e9f6207ae2e9a8"},
-    {file = "certifi-2022.6.15.2.tar.gz", hash = "sha256:aa08c101214127b9b0472ca6338315113c9487d45376fd3e669201b477c71003"},
+    {file = "certifi-2022.9.14-py3-none-any.whl", hash = "sha256:e232343de1ab72c2aa521b625c80f699e356830fd0e2c620b465b304b17b0516"},
+    {file = "certifi-2022.9.14.tar.gz", hash = "sha256:36973885b9542e6bd01dea287b2b4b3b21236307c56324fcc3f1160f2d655ed5"},
 ]
 chardet = [
     {file = "chardet-5.0.0-py3-none-any.whl", hash = "sha256:d3e64f022d254183001eccc5db4040520c0f23b1a3f33d6413e099eb7f126557"},
@@ -1846,8 +1861,8 @@ hiredis = [
     {file = "hiredis-2.0.0.tar.gz", hash = "sha256:81d6d8e39695f2c37954d1011c0480ef7cf444d4e3ae24bc5e89ee5de360139a"},
 ]
 idna = [
-    {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
-    {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},
+    {file = "idna-3.4-py3-none-any.whl", hash = "sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"},
+    {file = "idna-3.4.tar.gz", hash = "sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-4.12.0-py3-none-any.whl", hash = "sha256:7401a975809ea1fdc658c3aa4f78cc2195a0e019c5cbc4c06122884e9ae80c23"},
@@ -1876,6 +1891,10 @@ Jinja2 = [
 jsonschema = [
     {file = "jsonschema-4.16.0-py3-none-any.whl", hash = "sha256:9e74b8f9738d6a946d70705dc692b74b5429cd0960d58e79ffecfc43b2221eb9"},
     {file = "jsonschema-4.16.0.tar.gz", hash = "sha256:165059f076eff6971bae5b742fc029a7b4ef3f9bcf04c14e4776a7605de14b23"},
+]
+lacuscore = [
+    {file = "lacuscore-0.2.0-py3-none-any.whl", hash = "sha256:3ab0bb52f82a834dc24f9fbeefd39b9dd7694953f73b1e0621e9e876ea827a4c"},
+    {file = "lacuscore-0.2.0.tar.gz", hash = "sha256:9b7f54b4ce9deba3c8b6f7566e523de1523ba560095a0567da0ffe45baa4417b"},
 ]
 lief = [
     {file = "lief-0.12.1-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:4fbbc9d520de87ac22210c62d22a9b088e5460f9a028741311e6f68ef8877ddd"},
@@ -2235,8 +2254,8 @@ playwright = [
     {file = "playwright-1.25.2-py3-none-win_amd64.whl", hash = "sha256:68ae739f82b78717123eb9d1b28b4619f0b368b88ef73c633681e267680697cd"},
 ]
 playwrightcapture = [
-    {file = "PlaywrightCapture-1.15.1.tar.gz", hash = "sha256:af8efda02e0cf7df32dd4d5d3b72bd04fae0a0e22521195989205fe40f9dfb59"},
-    {file = "playwrightcapture-1.15.1-py3-none-any.whl", hash = "sha256:7ea84dc4590ad2bd0d26dc2e6019ca6873c676f9b901eb13dbfef69c916e5e5c"},
+    {file = "PlaywrightCapture-1.15.2.tar.gz", hash = "sha256:a8a00dd779b7bf0dee18fbe3c19314de3c7dd2387a42f26c0784474b8b2e485f"},
+    {file = "playwrightcapture-1.15.2-py3-none-any.whl", hash = "sha256:297aaf265a2646bf9e58632f2322dd5b89bd1874491f1dd0f275eaebe34ebc11"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.31-py3-none-any.whl", hash = "sha256:9696f386133df0fc8ca5af4895afe5d78f5fcfe5258111c2a79a1c3e41ffa96d"},

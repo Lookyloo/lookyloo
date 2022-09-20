@@ -4,7 +4,6 @@ import json
 import logging
 
 from datetime import datetime, timedelta
-from enum import IntEnum, unique
 from functools import lru_cache
 from importlib.metadata import version
 from io import BufferedIOBase
@@ -24,14 +23,6 @@ from werkzeug.utils import cached_property
 from .default import get_homedir, safe_create_dir, get_config
 
 logger = logging.getLogger('Lookyloo - Helpers')
-
-
-@unique
-class CaptureStatus(IntEnum):
-    UNKNOWN = -1
-    QUEUED = 0
-    DONE = 1
-    ONGOING = 2
 
 
 # This method is used in json.dump or json.dumps calls as the default parameter:
