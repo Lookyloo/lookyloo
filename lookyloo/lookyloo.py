@@ -19,7 +19,7 @@ from zipfile import ZipFile
 
 from defang import defang  # type: ignore
 from har2tree import CrawledTree, HostNode, URLNode
-from lacuscore import LacusCore
+from lacuscore import LacusCore, CaptureStatus
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
 from pymisp import MISPAttribute, MISPEvent, MISPObject
@@ -31,7 +31,7 @@ from .context import Context
 from .default import LookylooException, get_homedir, get_config, get_socket_path
 from .exceptions import (MissingCaptureDirectory,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile)
-from .helpers import (CaptureStatus, get_captures_dir, get_email_template,
+from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, load_cookies, UserAgents)
 from .indexing import Indexing
@@ -101,7 +101,8 @@ class Lookyloo():
         self._captures_index = CapturesIndex(self.redis, self.context)
         self.logger.info('Index initialized.')
 
-        self.lacus = LacusCore(self.redis, get_config('generic', 'tor_proxy'))
+        self.lacus = LacusCore(self.redis, get_config('generic', 'tor_proxy'),
+                               get_config('generic', 'only_global_lookups'))
 
     @property
     def redis(self):
@@ -347,13 +348,12 @@ class Lookyloo():
 
     def get_capture_status(self, capture_uuid: str, /) -> CaptureStatus:
         '''Returns the status (queued, ongoing, done, or UUID unknown)'''
-        if self.redis.zrank('to_capture', capture_uuid) is not None:
-            return CaptureStatus.QUEUED
-        elif self.redis.hexists('lookup_dirs', capture_uuid):
+        if self.redis.hexists('lookup_dirs', capture_uuid):
             return CaptureStatus.DONE
         elif self.redis.sismember('ongoing', capture_uuid):
+            # Post-processing on lookyloo's side
             return CaptureStatus.ONGOING
-        return CaptureStatus.UNKNOWN
+        return self.lacus.get_capture_status(capture_uuid)
 
     def try_error_status(self, capture_uuid: str, /) -> Optional[str]:
         '''If it is not possible to do the capture, we store the error for a short amount of time'''
@@ -461,7 +461,6 @@ class Lookyloo():
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query['listing'] = 0
         p.hset(perma_uuid, mapping=query)  # This will add the remaining entries that are lookyloo specific
-        p.zadd('to_capture', {perma_uuid: priority})
         p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
         p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
         p.execute()

@@ -6,14 +6,13 @@ import logging
 
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Set
 
-from lacuscore import LacusCore
-from redis.asyncio import Redis
-from redis import Redis as RedisSync
+from lacuscore import LacusCore, CaptureStatus
+from redis import Redis
 
 from lookyloo.default import AbstractManager, get_config, get_socket_path, safe_create_dir
-from lookyloo.helpers import get_captures_dir, CaptureStatus
+from lookyloo.helpers import get_captures_dir
 
 from lookyloo.modules import FOX
 
@@ -28,8 +27,9 @@ class AsyncCapture(AbstractManager):
         self.script_name = 'async_capture'
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
         self.capture_dir: Path = get_captures_dir()
-        self.redis_sync: RedisSync = RedisSync(unix_socket_path=get_socket_path('cache'))
-        self.lacus = LacusCore(self.redis_sync)
+        self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))
+        self.lacus = LacusCore(self.redis)
+        self.captures: Set[asyncio.Task] = set()
 
         self.fox = FOX(get_config('modules', 'FOX'))
         if not self.fox.available:
@@ -41,15 +41,13 @@ class AsyncCapture(AbstractManager):
 
     async def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
-        value: List[Tuple[bytes, float]] = await self.redis.zpopmax('to_capture')
-        if not value or not value[0]:
-            # The queue was consumed by an other process.
+        uuid = await self.lacus.consume_queue()
+        if not uuid:
             return
-        uuid: str = value[0][0].decode()
-        queue: Optional[bytes] = await self.redis.getdel(f'{uuid}_mgmt')
-        await self.redis.sadd('ongoing', uuid)
+        self.redis.sadd('ongoing', uuid)
+        queue: Optional[bytes] = self.redis.getdel(f'{uuid}_mgmt')
 
-        to_capture: Dict[bytes, bytes] = await self.redis.hgetall(uuid)
+        to_capture: Dict[bytes, bytes] = self.redis.hgetall(uuid)
 
         if get_config('generic', 'default_public'):
             # By default, the captures are on the index, unless the user mark them as un-listed
@@ -58,19 +56,17 @@ class AsyncCapture(AbstractManager):
             # By default, the captures are not on the index, unless the user mark them as listed
             listing = True if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'true', b'1']) else False
 
-        status, result = await self.lacus.capture(uuid)
-
         while True:
             entries = self.lacus.get_capture(uuid, decode=True)
-            if entries['status'] == CaptureStatus.DONE.value:
+            if entries['status'] == CaptureStatus.DONE:
                 break
-            elif entries['status'] == CaptureStatus.UNKNOWN.value:
+            elif entries['status'] == CaptureStatus.UNKNOWN:
                 self.logger.warning(f'Unable to find {uuid}.')
                 break
-            elif entries['status'] == CaptureStatus.QUEUED.value:
+            elif entries['status'] == CaptureStatus.QUEUED:
                 self.logger.info(f'{uuid} is in the queue.')
                 await asyncio.sleep(5)
-            elif entries['status'] == CaptureStatus.ONGOING.value:
+            elif entries['status'] == CaptureStatus.ONGOING:
                 self.logger.info(f'{uuid} is ongoing.')
                 await asyncio.sleep(5)
             else:
@@ -135,23 +131,22 @@ class AsyncCapture(AbstractManager):
             with (dirpath / '0.cookies.json').open('w') as _cookies:
                 json.dump(entries['cookies'], _cookies)
 
-        async with self.redis.pipeline() as lazy_cleanup:
-            await lazy_cleanup.hset('lookup_dirs', uuid, str(dirpath))
-            if queue and await self.redis.zscore('queues', queue):
-                await lazy_cleanup.zincrby('queues', -1, queue)
-            await lazy_cleanup.srem('ongoing', uuid)
-            await lazy_cleanup.delete(uuid)
+        with self.redis.pipeline() as lazy_cleanup:
+            lazy_cleanup.hset('lookup_dirs', uuid, str(dirpath))
+            if queue and self.redis.zscore('queues', queue):
+                lazy_cleanup.zincrby('queues', -1, queue)
+            lazy_cleanup.srem('ongoing', uuid)
+            lazy_cleanup.delete(uuid)
             # make sure to expire the key if nothing was processed for a while (= queues empty)
-            await lazy_cleanup.expire('queues', 600)
-            await lazy_cleanup.execute()
+            lazy_cleanup.expire('queues', 600)
+            lazy_cleanup.execute()
 
     async def _to_run_forever_async(self):
-        self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))
-        while await self.redis.exists('to_capture'):
-            await self.process_capture_queue()
-            if self.shutdown_requested():
-                break
-        await self.redis.close()
+        capture = asyncio.create_task(self.process_capture_queue())
+        capture.add_done_callback(self.captures.discard)
+        self.captures.add(capture)
+        while len(self.captures) >= get_config('generic', 'async_capture_processes'):
+            await asyncio.sleep(1)
 
 
 def main():

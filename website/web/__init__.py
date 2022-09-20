@@ -21,13 +21,13 @@ from flask import (Flask, Response, flash, jsonify, redirect, render_template,
 from flask_bootstrap import Bootstrap5  # type: ignore
 from flask_cors import CORS  # type: ignore
 from flask_restx import Api  # type: ignore
+from lacuscore import CaptureStatus
 from pymisp import MISPEvent, MISPServerError
 from werkzeug.security import check_password_hash
 
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
-from lookyloo.helpers import (CaptureStatus, get_taxonomies,
-                              UserAgents, load_cookies)
+from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
 from lookyloo.lookyloo import Indexing, Lookyloo
 
 from .genericapi import api as generic_api
