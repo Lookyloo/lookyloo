@@ -495,7 +495,8 @@ class Lookyloo():
 
         p = self.redis.pipeline()
         p.sadd('to_capture', perma_uuid)
-        p.hset(perma_uuid, mapping=query)  # This will add the remaining entries that are lookyloo specific
+        if query:
+            p.hset(perma_uuid, mapping=query)  # This will add the remaining entries that are lookyloo specific
         p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
         p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
         p.execute()
