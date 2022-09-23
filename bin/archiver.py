@@ -49,8 +49,9 @@ class Archiver(AbstractManager):
             try:
                 with index_file.open('r') as _f:
                     current_index = {uuid: dirname for uuid, dirname in csv.reader(_f) if (index_file.parent / dirname) in existing_captures}
-            except Exception:
+            except Exception as e:
                 # the index file is broken, it will be recreated.
+                self.logger.warning(f'Index for {root_dir} broken, recreating it: {e}')
                 pass
             if not current_index:
                 index_file.unlink()
