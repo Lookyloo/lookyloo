@@ -26,7 +26,7 @@
     "index.css": "2hAsQwCClHQ7b6VthbKYIkUPam4Ef6wbSxa3+nK0UuqCHezvPMr3aqpz16gD0lyYop55VEd/dhzZJLA4WMAplQ==",
     "insecure.svg": "iyoot+eMuRI7SITBdjslYS2WWFntz9VGi0doPoZBi/ZGPGDhm/Sd8SaJPiNCSKht/6dYPqgb90LQJ6a4YrhcFA==",
     "javascript.png": "sQcLDBrB+fEEt3PPoOwFh0g/RVkhDNrhuBMo0WMzf9IKNnZusYx+J59k8HGkAHFGDbytDwe6Tq6LIVgg/B6nqw==",
-    "jquery.min.js": "894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==",
+    "jquery.min.js": "aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==",
     "json.png": "nE6ROpXE5iovHyd5oh8cnA4ozTa5bZjn1A6b+10b1Hb59O1NcMdcrv8Rqge3CAtSqJDKnrYbMChCT1j48yMwQw==",
     "loader.gif": "ZZKD5vLSKBWKeUpa2KI9qheUJ49iTI/UULmVU/AX28fBfH00K3lLc2v5pVJZ4qXG1BbB13LTXzRKKU35H2XfNg==",
     "lookyloo.jpeg": "i6wBj8CsIM5YAQLEMQfhs3CNOSKkErF8AMqqM6ZygSwCyQgv9CU8xt94veMZhM/ufBWoz7kAXmR+yywmxsTxug==",

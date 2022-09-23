@@ -5,7 +5,7 @@ import requests
 from lookyloo.default import get_homedir
 
 d3js_version = '7'
-jquery_version = "3.6.0"
+jquery_version = "3.6.1"
 datatables_version = "1.12.1"
 
 
