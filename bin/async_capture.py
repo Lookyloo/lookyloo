@@ -6,9 +6,10 @@ import logging
 
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional, Set
+from typing import Dict, Optional, Set, Union
 
-from lacuscore import LacusCore, CaptureStatus
+from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore
+from pylacus import PyLacus, CaptureStatus as CaptureStatusPy
 from redis import Redis
 
 from lookyloo.default import AbstractManager, get_config, get_socket_path, safe_create_dir
@@ -28,7 +29,25 @@ class AsyncCapture(AbstractManager):
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
         self.capture_dir: Path = get_captures_dir()
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))
-        self.lacus = LacusCore(self.redis)
+
+        self.lacus: Union[PyLacus, LacusCore]
+        has_remote_lacus = False
+        if get_config('generic', 'remote_lacus'):
+            remote_lacus_config = get_config('generic', 'remote_lacus')
+            if remote_lacus_config.get('enable'):
+                self.logger.info("Remote lacus enabled, trying to set it up...")
+                remote_lacus_url = remote_lacus_config.get('url')
+                self.lacus = PyLacus(remote_lacus_url)
+                if self.lacus.is_up:
+                    has_remote_lacus = True
+                    self.logger.info(f"Remote lacus enabled to {remote_lacus_url}.")
+                else:
+                    self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}.")
+
+        if not has_remote_lacus:
+            self.lacus = LacusCore(self.redis, get_config('generic', 'tor_proxy'),
+                                   get_config('generic', 'only_global_lookups'))
+
         self.captures: Set[asyncio.Task] = set()
 
         self.fox = FOX(get_config('modules', 'FOX'))
@@ -41,9 +60,30 @@ class AsyncCapture(AbstractManager):
 
     async def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
-        uuid = await self.lacus.consume_queue()
-        if not uuid:
-            return
+        if isinstance(self.lacus, LacusCore):
+            uuid = await self.lacus.consume_queue()
+            if not uuid:
+                # Nothing to capture right now.
+                return
+            # Capture is done, doing lookyloo post processing now.
+            entries = self.lacus.get_capture(uuid, decode=True)
+            if entries['status'] != CaptureStatusCore.DONE:
+                self.logger.warning(f'The capture {uuid} is reported as not done ({entries["status"]}) when it should.')
+                self.redis.srem('to_capture', uuid)
+                return
+        else:
+            # Find a capture that is done
+            for uuid_b in self.redis.smembers('to_capture'):
+                uuid = uuid_b.decode()
+                if not uuid:
+                    return
+                entries = self.lacus.get_capture(uuid)
+                if entries['status'] == CaptureStatusPy.DONE:
+                    break
+            else:
+                # Nothing to capture right now.
+                return
+
         self.redis.sadd('ongoing', uuid)
         queue: Optional[bytes] = self.redis.getdel(f'{uuid}_mgmt')
 
@@ -55,23 +95,6 @@ class AsyncCapture(AbstractManager):
         else:
             # By default, the captures are not on the index, unless the user mark them as listed
             listing = True if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'true', b'1']) else False
-
-        while True:
-            entries = self.lacus.get_capture(uuid, decode=True)
-            if entries['status'] == CaptureStatus.DONE:
-                break
-            elif entries['status'] == CaptureStatus.UNKNOWN:
-                self.logger.warning(f'Unable to find {uuid}.')
-                break
-            elif entries['status'] == CaptureStatus.QUEUED:
-                self.logger.info(f'{uuid} is in the queue.')
-                await asyncio.sleep(5)
-            elif entries['status'] == CaptureStatus.ONGOING:
-                self.logger.info(f'{uuid} is ongoing.')
-                await asyncio.sleep(5)
-            else:
-                self.logger.warning(f'{entries["status"]} is not a valid status')
-                break
 
         now = datetime.now()
         dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / now.isoformat()
@@ -135,6 +158,7 @@ class AsyncCapture(AbstractManager):
             lazy_cleanup.hset('lookup_dirs', uuid, str(dirpath))
             if queue and self.redis.zscore('queues', queue):
                 lazy_cleanup.zincrby('queues', -1, queue)
+            lazy_cleanup.srem('to_capture', uuid)
             lazy_cleanup.srem('ongoing', uuid)
             lazy_cleanup.delete(uuid)
             # make sure to expire the key if nothing was processed for a while (= queues empty)
