@@ -19,9 +19,18 @@ from zipfile import ZipFile
 
 from defang import defang  # type: ignore
 from har2tree import CrawledTree, HostNode, URLNode
-from lacuscore import LacusCore, CaptureStatus
+from lacuscore import (LacusCore,
+                       CaptureStatus as CaptureStatusCore)
+#                       CaptureResponse as CaptureResponseCore,
+#                       CaptureResponseJson as CaptureResponseJsonCore,
+#                       CaptureSettings as CaptureSettingsCore)
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
+from pylacus import (PyLacus,
+                     CaptureStatus as CaptureStatusPy)
+#                     CaptureResponse as CaptureResponsePy,
+#                     CaptureResponseJson as CaptureResponseJsonPy,
+#                     CaptureSettings as CaptureSettingsPy)
 from pymisp import MISPAttribute, MISPEvent, MISPObject
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
@@ -101,8 +110,23 @@ class Lookyloo():
         self._captures_index = CapturesIndex(self.redis, self.context)
         self.logger.info('Index initialized.')
 
-        self.lacus = LacusCore(self.redis, get_config('generic', 'tor_proxy'),
-                               get_config('generic', 'only_global_lookups'))
+        has_remote_lacus = False
+        self.lacus: Union[PyLacus, LacusCore]
+        if get_config('generic', 'remote_lacus'):
+            remote_lacus_config = get_config('generic', 'remote_lacus')
+            if remote_lacus_config.get('enable'):
+                self.logger.info("Remote lacus enabled, trying to set it up...")
+                remote_lacus_url = remote_lacus_config.get('url')
+                self.lacus = PyLacus(remote_lacus_url)
+                if self.lacus.is_up:
+                    has_remote_lacus = True
+                    self.logger.info(f"Remote lacus enabled to {remote_lacus_url}.")
+                else:
+                    self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}.")
+
+        if not has_remote_lacus:
+            self.lacus = LacusCore(self.redis, get_config('generic', 'tor_proxy'),
+                                   get_config('generic', 'only_global_lookups'))
 
     @property
     def redis(self):
@@ -346,14 +370,18 @@ class Lookyloo():
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 
-    def get_capture_status(self, capture_uuid: str, /) -> CaptureStatus:
+    def get_capture_status(self, capture_uuid: str, /) -> Union[CaptureStatusCore, CaptureStatusPy]:
         '''Returns the status (queued, ongoing, done, or UUID unknown)'''
         if self.redis.hexists('lookup_dirs', capture_uuid):
-            return CaptureStatus.DONE
+            return CaptureStatusCore.DONE
         elif self.redis.sismember('ongoing', capture_uuid):
             # Post-processing on lookyloo's side
-            return CaptureStatus.ONGOING
-        return self.lacus.get_capture_status(capture_uuid)
+            return CaptureStatusCore.ONGOING
+        lacus_status = self.lacus.get_capture_status(capture_uuid)
+        if lacus_status == CaptureStatusCore.UNKNOWN and self.redis.sismember('to_capture'):
+            # If we do the query before lacus picks it up, we will tell to the user that the UUID doesn't exists.
+            return CaptureStatusCore.ENQUEUED
+        return lacus_status
 
     def try_error_status(self, capture_uuid: str, /) -> Optional[str]:
         '''If it is not possible to do the capture, we store the error for a short amount of time'''
@@ -368,7 +396,7 @@ class Lookyloo():
             self.logger.warning(e)
             return None
         except MissingUUID:
-            if self.get_capture_status(capture_uuid) not in [CaptureStatus.QUEUED, CaptureStatus.ONGOING]:
+            if self.get_capture_status(capture_uuid) not in [CaptureStatusCore.QUEUED, CaptureStatusCore.ONGOING]:
                 self.logger.warning(f'Unable to find {capture_uuid} (not in the cache and/or missing capture directory).')
             return None
         except LookylooException as e:
@@ -386,6 +414,27 @@ class Lookyloo():
         except TreeNeedsRebuild:
             self._captures_index.reload_cache(capture_uuid)
             return self._captures_index[capture_uuid].tree
+
+    def _prepare_lacus_query(self, query: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        query = {k: v for k, v in query.items() if v is not None}  # Remove the none, it makes redis unhappy
+        # NOTE: Lookyloo' capture can pass a do not track header independently from the default headers, merging it here
+        headers = query.pop('headers', '')
+        if 'dnt' in query:
+            headers += f'\nDNT: {query.pop("dnt")}'
+            headers = headers.strip()
+        if headers:
+            query['headers'] = headers
+
+        # NOTE: Lookyloo can get the cookies in somewhat weird formats, mornalizing them
+        query['cookies'] = load_cookies(query.pop('cookies', None))
+
+        # NOTE: Make sure we have a useragent
+        user_agent = query.pop('user_agent', None)
+        if not user_agent:
+            # Catch case where the UA is broken on the UI, and the async submission.
+            self.user_agents.user_agents  # triggers an update of the default UAs
+        query['user_agent'] = user_agent if user_agent else self.user_agents.default['useragent']
+        return query
 
     def enqueue_capture(self, query: MutableMapping[str, Any], source: str, user: str, authenticated: bool) -> str:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
@@ -409,7 +458,7 @@ class Lookyloo():
             elif isinstance(value, (list, dict)):
                 query[key] = json.dumps(value) if value else None
 
-        query = {k: v for k, v in query.items() if v is not None}  # Remove the none, it makes redis unhappy
+        query = self._prepare_lacus_query(query)
         # dirty deduplicate
         hash_query = hashlib.sha512(pickle.dumps(query)).hexdigest()
         # FIXME The line below should work, but it doesn't
@@ -419,22 +468,6 @@ class Lookyloo():
 
         priority = get_priority(source, user, authenticated)
 
-        # NOTE: Lookyloo' capture can pass a do not track header independently from the default headers, merging it here
-        headers = query.pop('headers', '')
-        if 'dnt' in query:
-            headers += f'\nDNT: {query.pop("dnt")}'
-            headers = headers.strip()
-
-        # NOTE: Lookyloo can get the cookies in somewhat weird formats, mornalizing them
-        cookies = load_cookies(query.pop('cookies', None))
-
-        # NOTE: Make sure we have a useragent
-        user_agent = query.pop('user_agent', None)
-        if not user_agent:
-            # Catch case where the UA is broken on the UI, and the async submission.
-            self.user_agents.user_agents  # triggers an update of the default UAs
-        capture_ua = user_agent if user_agent else self.user_agents.default['useragent']
-
         perma_uuid = self.lacus.enqueue(
             url=query.pop('url', None),
             document_name=query.pop('document_name', None),
@@ -442,11 +475,11 @@ class Lookyloo():
             depth=query.pop('depth', 0),
             browser=query.pop('browser', None),
             device_name=query.pop('device_name', None),
-            user_agent=capture_ua,
+            user_agent=query.pop('user_agent', None),
             proxy=query.pop('proxy', None),
             general_timeout_in_sec=query.pop('general_timeout_in_sec', None),
-            cookies=cookies if cookies else None,
-            headers=headers if headers else None,
+            cookies=query.pop('cookies', None),
+            headers=query.pop('headers', None),
             http_credentials=query.pop('http_credentials', None),
             viewport=query.pop('viewport', None),
             referer=query.pop('referer', None),
@@ -456,10 +489,12 @@ class Lookyloo():
             priority=priority
         )
 
-        p = self.redis.pipeline()
         if priority < -10:
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query['listing'] = 0
+
+        p = self.redis.pipeline()
+        p.sadd('to_capture', perma_uuid)
         p.hset(perma_uuid, mapping=query)  # This will add the remaining entries that are lookyloo specific
         p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
         p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
