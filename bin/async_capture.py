@@ -66,6 +66,7 @@ class AsyncCapture(AbstractManager):
             uuid = await self.lacus.consume_queue()
             if not uuid:
                 # Nothing to capture right now.
+                self.unset_running()
                 return
             # Capture is done, doing lookyloo post processing now.
             entries = self.lacus.get_capture(uuid, decode=True)
@@ -73,6 +74,7 @@ class AsyncCapture(AbstractManager):
                 self.logger.warning(f'The capture {uuid} is reported as not done ({entries["status"]}) when it should.')
                 self.redis.zrem('to_capture', uuid)
                 self.redis.delete(uuid)
+                self.unset_running()
                 return
         else:
             # Find a capture that is done
@@ -85,6 +87,7 @@ class AsyncCapture(AbstractManager):
                     break
             else:
                 # Nothing to capture right now.
+                self.unset_running()
                 return
 
         self.redis.sadd('ongoing', uuid)
