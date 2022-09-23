@@ -406,7 +406,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.15.5"
+version = "1.15.6"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -565,7 +565,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "0.3.2"
+version = "0.3.3"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
@@ -884,7 +884,7 @@ docs = ["Sphinx (>=5.1.1,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "0.3.0"
+version = "0.3.1"
 description = "Python CLI and module for lacus"
 category = "main"
 optional = false
@@ -1466,7 +1466,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "cc56bc4ed12c17532c2f04f915528eb977b842919a4442c57b2224ad6e82af1f"
+content-hash = "940bddd616758e6283f0221ae9dcddc40b7fbcd44cb1a2f72be44c3ebb48e735"
 
 [metadata.files]
 aiohttp = [
@@ -1842,8 +1842,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.15.5-py3-none-any.whl", hash = "sha256:f88828f334040cf11e9711ac3219c50763725ce2ce06dcbd8b65cdd1179eff14"},
-    {file = "har2tree-1.15.5.tar.gz", hash = "sha256:33230635161a36cf43b6c277a54951765e655d3331a11e4ab7ff28e003d4bcda"},
+    {file = "har2tree-1.15.6-py3-none-any.whl", hash = "sha256:8e7aa5bfe44a455568c658f5b98815c1f383f6898fea654ae92f8bfad6f72232"},
+    {file = "har2tree-1.15.6.tar.gz", hash = "sha256:362eac8df6551df2c8b3d497ddf43d80eec88c10b3990b1f577717a529c406a0"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -1921,8 +1921,8 @@ jsonschema = [
     {file = "jsonschema-4.16.0.tar.gz", hash = "sha256:165059f076eff6971bae5b742fc029a7b4ef3f9bcf04c14e4776a7605de14b23"},
 ]
 lacuscore = [
-    {file = "lacuscore-0.3.2-py3-none-any.whl", hash = "sha256:a6e6372ba117703f0d413cdb1251974a748aadb188530b27bd1d259b41c34889"},
-    {file = "lacuscore-0.3.2.tar.gz", hash = "sha256:242a30f48ea0790144d587de44764623835b4c3292197e69c2205c789b98d2bf"},
+    {file = "lacuscore-0.3.3-py3-none-any.whl", hash = "sha256:0bac18842532b0299a1df933ef731d532e69db637791e0229a7d973d58cf2a54"},
+    {file = "lacuscore-0.3.3.tar.gz", hash = "sha256:c04ebc443bc360214bd23fd61b8eded68d74d7b3ba3e07293005b48467811d62"},
 ]
 lief = [
     {file = "lief-0.12.1-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:4fbbc9d520de87ac22210c62d22a9b088e5460f9a028741311e6f68ef8877ddd"},
@@ -2339,8 +2339,8 @@ pyhashlookup = [
     {file = "pyhashlookup-1.2.1.tar.gz", hash = "sha256:eb514cc1a5559a013a8882e101849fa52a37641f2a7d9dc21c0d266b37607aa5"},
 ]
 pylacus = [
-    {file = "pylacus-0.3.0-py3-none-any.whl", hash = "sha256:dc6bf01d42728a2bc013a473c9187b710831f3dd054ad306ba50048dcf592d8a"},
-    {file = "pylacus-0.3.0.tar.gz", hash = "sha256:d57976124996b4868b542a5a14b8d4336a4305059e186fe833513f09e4a640ca"},
+    {file = "pylacus-0.3.1-py3-none-any.whl", hash = "sha256:1947cde8d8413c4c2587ba39291b9687e305fc649bf43a72a0ff9712d829a688"},
+    {file = "pylacus-0.3.1.tar.gz", hash = "sha256:4d90b8615e2043795ef43654b4561d62926b52fd041e86517b02886d472f3070"},
 ]
 pylookyloo = [
     {file = "pylookyloo-1.15.0-py3-none-any.whl", hash = "sha256:ab717f8d05d8165cdfae8d47b13928de3f72b6322294dcff7881e757c343127f"},
