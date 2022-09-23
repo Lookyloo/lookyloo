@@ -61,21 +61,14 @@ class AsyncCapture(AbstractManager):
     async def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
         self.set_running()
-        uuid: Optional[str]
+        uuid: Optional[str] = None
         if isinstance(self.lacus, LacusCore):
-            uuid = await self.lacus.consume_queue()
-            if not uuid:
-                # Nothing to capture right now.
-                self.unset_running()
-                return
-            # Capture is done, doing lookyloo post processing now.
-            entries = self.lacus.get_capture(uuid, decode=True)
-            if entries['status'] != CaptureStatusCore.DONE:
-                self.logger.warning(f'The capture {uuid} is reported as not done ({entries["status"]}) when it should.')
-                self.redis.zrem('to_capture', uuid)
-                self.redis.delete(uuid)
-                self.unset_running()
-                return
+            if uuid := await self.lacus.consume_queue():
+                entries = self.lacus.get_capture(uuid, decode=True)
+                if entries['status'] != CaptureStatusCore.DONE:
+                    self.logger.warning(f'The capture {uuid} is reported as not done ({entries["status"]}) when it should.')
+                    self.redis.zrem('to_capture', uuid)
+                    self.redis.delete(uuid)
         else:
             # Find a capture that is done
             for uuid_b in self.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf'):
@@ -85,10 +78,10 @@ class AsyncCapture(AbstractManager):
                 entries = self.lacus.get_capture(uuid)
                 if entries['status'] == CaptureStatusPy.DONE:
                     break
-            else:
-                # Nothing to capture right now.
-                self.unset_running()
-                return
+
+        if uuid is None:
+            self.unset_running()
+            return
 
         self.redis.sadd('ongoing', uuid)
         queue: Optional[bytes] = self.redis.getdel(f'{uuid}_mgmt')
