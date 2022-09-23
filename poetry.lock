@@ -800,7 +800,7 @@ python-versions = "*"
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.7.14"
+version = "0.8.0"
 description = "publicsuffixlist implement"
 category = "main"
 optional = false
@@ -912,7 +912,7 @@ docs = ["Sphinx (>=5.1.1,<6.0.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.160.1"
+version = "2.4.162"
 description = "Python API for MISP."
 category = "main"
 optional = false
@@ -921,16 +921,16 @@ python-versions = ">=3.7,<4.0"
 [package.dependencies]
 chardet = {version = ">=5.0.0,<6.0.0", optional = true, markers = "extra == \"url\""}
 deprecated = ">=1.2.13,<2.0.0"
-jsonschema = ">=4.9.1,<5.0.0"
-publicsuffixlist = ">=0.7.13,<0.8.0"
+jsonschema = ">=4.16.0,<5.0.0"
+publicsuffixlist = ">=0.8.0,<0.9.0"
 pyfaup = {version = ">=1.2,<2.0", optional = true, markers = "extra == \"url\""}
 python-dateutil = ">=2.8.2,<3.0.0"
 requests = ">=2.28.1,<3.0.0"
 
 [package.extras]
-brotli = ["urllib3[brotli] (>=1.26.11,<2.0.0)"]
+brotli = ["urllib3[brotli] (>=1.26.12,<2.0.0)"]
 docs = ["recommonmark (>=0.7.1,<0.8.0)", "sphinx-autodoc-typehints (>=1.19.2,<2.0.0)"]
-email = ["RTFDE (>=0.0.2,<0.0.3)", "extract_msg (>=0.36.1,<0.37.0)", "oletools (>=0.60.1,<0.61.0)"]
+email = ["RTFDE (>=0.0.2,<0.0.3)", "extract_msg (>=0.36.3,<0.37.0)", "oletools (>=0.60.1,<0.61.0)"]
 fileobjects = ["lief (>=0.12.1,<0.13.0)", "pydeep2 (>=0.5.1,<0.6.0)", "python-magic (>=0.4.27,<0.5.0)"]
 openioc = ["beautifulsoup4 (>=4.11.1,<5.0.0)"]
 pdfexport = ["reportlab (>=3.6.11,<4.0.0)"]
@@ -1466,7 +1466,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "710b187fbe2cbf0e3b86ff81c1cac1c800ceb59781395201c10d689636d1a98f"
+content-hash = "cc56bc4ed12c17532c2f04f915528eb977b842919a4442c57b2224ad6e82af1f"
 
 [metadata.files]
 aiohttp = [
@@ -2298,8 +2298,8 @@ publicsuffix2 = [
     {file = "publicsuffix2-2.20191221.tar.gz", hash = "sha256:00f8cc31aa8d0d5592a5ced19cccba7de428ebca985db26ac852d920ddd6fe7b"},
 ]
 publicsuffixlist = [
-    {file = "publicsuffixlist-0.7.14-py2.py3-none-any.whl", hash = "sha256:cc2b74179184a27d9e23b09913d5035b8b040f9e4bfbe47bacf688c15371487f"},
-    {file = "publicsuffixlist-0.7.14.tar.gz", hash = "sha256:3b24ad28a7d96b966187b5cbb9f217b06d07ed294cfbfc2a9ca5afcced70cdd5"},
+    {file = "publicsuffixlist-0.8.0-py2.py3-none-any.whl", hash = "sha256:f09af48a481bb20f1279a4a154e4be261d5f064813359222322cb28b22a6f792"},
+    {file = "publicsuffixlist-0.8.0.tar.gz", hash = "sha256:3e652ecef032aa5ffc7a8b2f7253d8f1700103c87a1f21cefbb47c3034e98d2d"},
 ]
 pure-eval = [
     {file = "pure_eval-0.2.2-py3-none-any.whl", hash = "sha256:01eaab343580944bc56080ebe0a674b39ec44a945e6d09ba7db3cb8cec289350"},
@@ -2347,8 +2347,8 @@ pylookyloo = [
     {file = "pylookyloo-1.15.0.tar.gz", hash = "sha256:e504aff52ab07a898f1b04cd9ba7d55af40fa6eb7988a96ababc65f1481d23cb"},
 ]
 pymisp = [
-    {file = "pymisp-2.4.160.1-py3-none-any.whl", hash = "sha256:3499dc55819e874eeecd7d1b10229cb957600a52452ca5360db3b32f21714718"},
-    {file = "pymisp-2.4.160.1.tar.gz", hash = "sha256:d6cf306100d7c936951db9cb1bff53276a94d75b3ff5ae4c35a952f001169021"},
+    {file = "pymisp-2.4.162-py3-none-any.whl", hash = "sha256:c20c81fad6310e62f67be93ad1397267903950dbbf250b86724832aa927a06fd"},
+    {file = "pymisp-2.4.162.tar.gz", hash = "sha256:d97de477ebd99aa56ccaac2dae469f323306902c38d27a8a0506acab6cfa7f6c"},
 ]
 pypandora = [
     {file = "pypandora-1.1.2-py3-none-any.whl", hash = "sha256:6523c0ba2bc10bcc26f379ecec65e39b57c26666be8ab399ad1d22594cedfaed"},

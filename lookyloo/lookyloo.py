@@ -378,7 +378,7 @@ class Lookyloo():
             # Post-processing on lookyloo's side
             return CaptureStatusCore.ONGOING
         lacus_status = self.lacus.get_capture_status(capture_uuid)
-        if lacus_status == CaptureStatusCore.UNKNOWN and self.redis.sismember('to_capture'):
+        if lacus_status == CaptureStatusCore.UNKNOWN and self.redis.sismember('to_capture', capture_uuid):
             # If we do the query before lacus picks it up, we will tell to the user that the UUID doesn't exists.
             return CaptureStatusCore.QUEUED
         return lacus_status
