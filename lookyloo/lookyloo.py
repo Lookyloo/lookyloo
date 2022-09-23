@@ -494,7 +494,7 @@ class Lookyloo():
             query['listing'] = 0
 
         p = self.redis.pipeline()
-        p.sadd('to_capture', perma_uuid)
+        p.zadd('to_capture', {perma_uuid: priority})
         if query:
             p.hset(perma_uuid, mapping=query)  # This will add the remaining entries that are lookyloo specific
         p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
