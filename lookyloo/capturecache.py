@@ -237,8 +237,12 @@ class CapturesIndex(Mapping):
         try:
             tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
         except TreeNeedsRebuild:
-            tree = self._create_pickle(capture_dir)
-            self.indexing.new_internal_uuids(tree)
+            try:
+                tree = self._create_pickle(capture_dir)
+                self.indexing.new_internal_uuids(tree)
+            except NoValidHarFile:
+                # We may not have a HAR file, the reason will be in the error file.
+                pass
 
         cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': capture_dir_str}
         if (capture_dir / 'error.txt').exists():
@@ -265,7 +269,8 @@ class CapturesIndex(Mapping):
             except Har2TreeError as e:
                 cache['error'] = str(e)
         else:
-            cache['error'] = f'No har files in {capture_dir.name}'
+            if 'error' not in cache:
+                cache['error'] = f'No har files in {capture_dir.name}'
 
         if (cache.get('error')
                 and isinstance(cache['error'], str)
