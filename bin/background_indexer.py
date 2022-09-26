@@ -30,7 +30,7 @@ class BackgroundIndexer(AbstractManager):
 
     def _build_missing_pickles(self):
         for uuid_path in sorted(self.lookyloo.capture_dir.glob('**/uuid'), reverse=True):
-            if (uuid_path.parent / 'tree.pickle').exists():
+            if (uuid_path.parent / 'tree.pickle').exists() or not list(uuid_path.parent.rglob('*.har')):
                 continue
             lock_file = uuid_path.parent / 'lock'
             if lock_file.exists():
