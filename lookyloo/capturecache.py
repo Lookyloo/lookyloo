@@ -30,9 +30,14 @@ class CaptureCache():
                  'error', 'incomplete_redirects', 'no_index', 'categories', 'parent')
 
     def __init__(self, cache_entry: Dict[str, Any]):
-        __default_cache_keys: Tuple[str, str, str, str, str, str] = ('uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir')
+        __default_cache_keys: Tuple[str, str, str, str, str, str] = ('uuid', 'title', 'timestamp',
+                                                                     'url', 'redirects', 'capture_dir')
+        if 'uuid' not in cache_entry or 'capture_dir' not in cache_entry:
+            raise LookylooException(f'The capture is deeply broken: {cache_entry}')
+        self.uuid: str = cache_entry['uuid']
+        self.capture_dir: Path = Path(cache_entry['capture_dir'])
+
         if all(key in cache_entry.keys() for key in __default_cache_keys):
-            self.uuid: str = cache_entry['uuid']
             self.title: str = cache_entry['title']
             try:
                 self.timestamp: datetime = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')
@@ -41,7 +46,6 @@ class CaptureCache():
                 self.timestamp = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
             self.url: str = cache_entry['url']
             self.redirects: List[str] = json.loads(cache_entry['redirects'])
-            self.capture_dir: Path = Path(cache_entry['capture_dir'])
             if not self.capture_dir.exists():
                 raise MissingCaptureDirectory(f'The capture {self.uuid} does not exists in {self.capture_dir}.')
         elif not cache_entry.get('error'):
@@ -85,7 +89,10 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int) -> CrawledTree:
                 remove_pickle_tree(capture_dir)
             except Exception:
                 remove_pickle_tree(capture_dir)
-    raise TreeNeedsRebuild()
+    if list(capture_dir.rglob('*.har')):
+        raise TreeNeedsRebuild('We have HAR files and need to rebuild the tree.')
+    # The tree doesn't need to be rebuilt if there are no HAR files.
+    raise NoValidHarFile("Couldn't find HAR files")
 
 
 class CapturesIndex(Mapping):
@@ -160,7 +167,7 @@ class CapturesIndex(Mapping):
             try:
                 cc = CaptureCache(cache)
             except LookylooException as e:
-                self.logger.warning(e)
+                self.logger.warning(f'Unable to initialize the cache: {e}')
                 continue
             self.__cache[cc.uuid] = cc
 
@@ -201,14 +208,17 @@ class CapturesIndex(Mapping):
                 time.sleep(5)
             return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
 
-        har_files = sorted(capture_dir.glob('*.har*'))
+        har_files = sorted(capture_dir.glob('*.har'))
         try:
             tree = CrawledTree(har_files, uuid)
             self.__resolve_dns(tree)
             if self.contextualizer:
                 self.contextualizer.contextualize_tree(tree)
         except Har2TreeError as e:
-            raise NoValidHarFile(e)
+            # unable to use the HAR files, get them out of the way
+            for har_file in har_files:
+                har_file.rename(har_file.with_suffix('.broken'))
+            raise NoValidHarFile(f'We got har files, but they are broken: {e}')
         except RecursionError as e:
             raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
         else:
@@ -241,8 +251,7 @@ class CapturesIndex(Mapping):
                 tree = self._create_pickle(capture_dir)
                 self.indexing.new_internal_uuids(tree)
             except NoValidHarFile:
-                # We may not have a HAR file, the reason will be in the error file.
-                pass
+                self.logger.warning('Unable to rebuild the tree, the HAR files are broken.')
 
         cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': capture_dir_str}
         if (capture_dir / 'error.txt').exists():
@@ -258,7 +267,7 @@ class CapturesIndex(Mapping):
                     error_to_cache = content
                 cache['error'] = f'The capture {capture_dir.name} has an error: {error_to_cache}'
 
-        if (har_files := sorted(capture_dir.glob('*.har*'))):
+        if (har_files := sorted(capture_dir.rglob('*.har'))):
             try:
                 har = HarFile(har_files[0], uuid)
                 cache['title'] = har.initial_title

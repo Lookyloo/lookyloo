@@ -59,6 +59,8 @@ class BackgroundIndexer(AbstractManager):
             except MissingUUID:
                 self.logger.warning(f'Unable to find {uuid}. That should not happen.')
             except NoValidHarFile as e:
+                self.logger.critical(f'There are no HAR files in the capture {uuid}: {uuid_path.parent.name} - {e}')
+            except Exception as e:
                 self.logger.critical(f'Unable to build pickle for {uuid}: {uuid_path.parent.name} - {e}')
                 # The capture is not working, moving it away.
                 self.lookyloo.redis.hdel('lookup_dirs', uuid)

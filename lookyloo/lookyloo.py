@@ -366,7 +366,7 @@ class Lookyloo():
             # Do not try to build pickles
             capture_uuids = set(capture_uuids) & self._captures_index.cached_captures
 
-        all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids if self.capture_cache(uuid)]
+        all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids if self.capture_cache(uuid) and hasattr(self._captures_index[uuid], 'timestamp')]
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 
@@ -393,14 +393,14 @@ class Lookyloo():
             return self._captures_index[capture_uuid]
         except MissingCaptureDirectory as e:
             # The UUID is in the captures but the directory is not on the disk.
-            self.logger.warning(e)
+            self.logger.warning(f'Missing Directory: {e}')
             return None
         except MissingUUID:
             if self.get_capture_status(capture_uuid) not in [CaptureStatusCore.QUEUED, CaptureStatusCore.ONGOING]:
                 self.logger.warning(f'Unable to find {capture_uuid} (not in the cache and/or missing capture directory).')
             return None
         except LookylooException as e:
-            self.logger.warning(e)
+            self.logger.warning(f'Lookyloo Exception: {e}')
             return None
         except Exception as e:
             self.logger.exception(e)

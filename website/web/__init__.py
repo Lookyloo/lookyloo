@@ -650,9 +650,6 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
             message = "The capture is ongoing."
         return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid)
 
-    if cache.error:
-        flash(cache.error, 'warning')
-
     try:
         ct = lookyloo.get_crawled_tree(tree_uuid)
         b64_thumbnail = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=True)
@@ -674,6 +671,8 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                 except IndexError as e:
                     print(e)
                     pass
+        if cache.error:
+            flash(cache.error, 'warning')
         return render_template('tree.html', tree_json=ct.to_json(),
                                info=info,
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
@@ -691,8 +690,9 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                parent_uuid=cache.parent,
                                has_redirects=True if cache.redirects else False)
 
-    except NoValidHarFile as e:
-        return render_template('error.html', error_message=e)
+    except NoValidHarFile:
+        flash(f'Unable to build a tree for {tree_uuid}: {cache.error}.', 'warning')
+        return index_generic()
     finally:
         lookyloo.update_tree_cache_info(os.getpid(), 'website')
 
