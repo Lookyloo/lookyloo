@@ -391,6 +391,9 @@ class Lookyloo():
         """Get the cache from redis, rebuild the tree if the internal UUID changed => slow"""
         try:
             return self._captures_index[capture_uuid]
+        except NoValidHarFile:
+            self.logger.debug('No HAR files, it is just a broken capture.')
+            return None
         except MissingCaptureDirectory as e:
             # The UUID is in the captures but the directory is not on the disk.
             self.logger.warning(f'Missing Directory: {e}')
