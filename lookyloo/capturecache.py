@@ -246,6 +246,8 @@ class CapturesIndex(Mapping):
 
         try:
             tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
+        except NoValidHarFile:
+            self.logger.warning('Unable to rebuild the tree, the HAR files are broken.')
         except TreeNeedsRebuild:
             try:
                 tree = self._create_pickle(capture_dir)
