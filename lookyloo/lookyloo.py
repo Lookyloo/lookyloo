@@ -551,6 +551,8 @@ class Lookyloo():
         '''Get file(s) from the capture directory'''
         try:
             capture_dir = self._captures_index[capture_uuid].capture_dir
+        except NoValidHarFile:
+            return BytesIO(f'Capture {capture_uuid} has no HAR entries, which means it is broken.'.encode())
         except MissingUUID:
             return BytesIO(f'Capture {capture_uuid} not unavailable, try again later.'.encode())
         except MissingCaptureDirectory:
