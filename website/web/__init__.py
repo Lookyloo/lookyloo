@@ -857,7 +857,7 @@ def _prepare_capture_template(user_ua: Optional[str], predefined_url: Optional[s
 @app.route('/recapture/<string:tree_uuid>', methods=['GET'])
 def recapture(tree_uuid: str):
     cache = lookyloo.capture_cache(tree_uuid)
-    if cache:
+    if cache and hasattr(cache, 'url'):
         return _prepare_capture_template(user_ua=request.headers.get('User-Agent'),
                                          predefined_url=cache.url)
     flash(f'Unable to find the capture {tree_uuid} in the cache.', 'error')
