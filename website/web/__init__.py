@@ -470,7 +470,7 @@ def modules(tree_uuid: str):
 @app.route('/tree/<string:tree_uuid>/redirects', methods=['GET'])
 def redirects(tree_uuid: str):
     cache = lookyloo.capture_cache(tree_uuid)
-    if not cache:
+    if not cache or not hasattr(cache, 'redirects'):
         return Response('Not available.', mimetype='text/text')
     if not cache.redirects:
         return Response('No redirects.', mimetype='text/text')
