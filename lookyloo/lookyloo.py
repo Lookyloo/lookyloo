@@ -483,7 +483,8 @@ class Lookyloo():
             priority=priority
         )
 
-        if self.redis.zscore('to_capture', perma_uuid) is None:
+        if (not self.redis.hexists('lookup_dirs', perma_uuid)  # already captured
+                and self.redis.zscore('to_capture', perma_uuid) is None):  # capture ongoing
             if priority < -10:
                 # Someone is probably abusing the system with useless URLs, remove them from the index
                 query['listing'] = 0
