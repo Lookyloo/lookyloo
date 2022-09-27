@@ -733,7 +733,7 @@ class Lookyloo():
         total_captures, details = self.indexing.get_body_hash_captures(blob_hash, url, filter_capture_uuid=capture_uuid, limit=-1, prefered_uuids=self._captures_index.cached_captures)
         for h_capture_uuid, url_uuid, url_hostname, same_url in details:
             cache = self.capture_cache(h_capture_uuid)
-            if cache:
+            if cache and hasattr(cache, 'title'):
                 if same_url:
                     captures_list['same_url'].append((h_capture_uuid, url_uuid, cache.title, cache.timestamp.isoformat(), url_hostname))
                 else:
