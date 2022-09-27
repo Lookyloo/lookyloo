@@ -390,7 +390,7 @@ class Lookyloo():
         try:
             return self._captures_index[capture_uuid]
         except NoValidHarFile:
-            self.logger.debug('No HAR files, it is just a broken capture.')
+            self.logger.debug('No HAR files, {capture_uuid} is a broken capture.')
             return None
         except MissingCaptureDirectory as e:
             # The UUID is in the captures but the directory is not on the disk.
@@ -466,7 +466,7 @@ class Lookyloo():
             url=query.pop('url', None),
             document_name=query.pop('document_name', None),
             document=query.pop('document', None),
-            depth=query.pop('depth', 0),
+            # depth=query.pop('depth', 0),
             browser=query.pop('browser', None),
             device_name=query.pop('device_name', None),
             user_agent=query.pop('user_agent', None),
