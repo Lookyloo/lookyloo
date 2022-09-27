@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 import base64
-import hashlib
 import json
 import logging
 import operator
-import pickle
 import smtplib
 
 from collections import defaultdict
@@ -462,15 +460,8 @@ class Lookyloo():
                 query[key] = json.dumps(value) if value else None
 
         query = self._prepare_lacus_query(query)
-        # dirty deduplicate
-        hash_query = hashlib.sha512(pickle.dumps(query)).hexdigest()
-        # FIXME The line below should work, but it doesn't
-        # if (existing_uuid := self.redis.set(f'query_hash:{hash_query}', temp_uuid, get=True, nx=True, ex=300)):
-        if (existing_uuid := self.redis.get(f'query_hash:{hash_query}')):
-            return existing_uuid
 
         priority = get_priority(source, user, authenticated)
-
         perma_uuid = self.lacus.enqueue(
             url=query.pop('url', None),
             document_name=query.pop('document_name', None),
@@ -492,17 +483,18 @@ class Lookyloo():
             priority=priority
         )
 
-        if priority < -10:
-            # Someone is probably abusing the system with useless URLs, remove them from the index
-            query['listing'] = 0
+        if self.redis.zscore('to_capture', perma_uuid) is None:
+            if priority < -10:
+                # Someone is probably abusing the system with useless URLs, remove them from the index
+                query['listing'] = 0
 
-        p = self.redis.pipeline()
-        p.zadd('to_capture', {perma_uuid: priority})
-        if query:
-            p.hset(perma_uuid, mapping=query)  # This will add the remaining entries that are lookyloo specific
-        p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
-        p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
-        p.execute()
+            p = self.redis.pipeline()
+            p.zadd('to_capture', {perma_uuid: priority})
+            if query:
+                p.hset(perma_uuid, mapping=query)  # This will add the remaining entries that are lookyloo specific
+            p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
+            p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
+            p.execute()
         return perma_uuid
 
     def send_mail(self, capture_uuid: str, /, email: str='', comment: str='') -> None:

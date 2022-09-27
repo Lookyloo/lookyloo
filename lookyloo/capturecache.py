@@ -247,13 +247,13 @@ class CapturesIndex(Mapping):
         try:
             tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
         except NoValidHarFile:
-            self.logger.warning('Unable to rebuild the tree, the HAR files are broken.')
+            self.logger.debug('Unable to rebuild the tree, the HAR files are broken.')
         except TreeNeedsRebuild:
             try:
                 tree = self._create_pickle(capture_dir)
                 self.indexing.new_internal_uuids(tree)
             except NoValidHarFile:
-                self.logger.warning('Unable to rebuild the tree, the HAR files are broken.')
+                self.logger.info('Unable to rebuild the tree, the HAR files are broken.')
 
         cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': capture_dir_str}
         if (capture_dir / 'error.txt').exists():
@@ -285,8 +285,9 @@ class CapturesIndex(Mapping):
 
         if (cache.get('error')
                 and isinstance(cache['error'], str)
-                and 'HTTP Error' not in cache['error']):
-            self.logger.warning(cache['error'])
+                and 'HTTP Error' not in cache['error']
+                and "No har files in" not in cache['error']):
+            self.logger.info(cache['error'])
 
         if (capture_dir / 'categories').exists():
             with (capture_dir / 'categories').open() as _categories:
