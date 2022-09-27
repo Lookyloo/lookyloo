@@ -78,6 +78,10 @@ class AsyncCapture(AbstractManager):
                 entries = self.lacus.get_capture(uuid)
                 if entries['status'] == CaptureStatusPy.DONE:
                     break
+            else:
+                # No captures are ready
+                uuid = None
+
         if uuid is None:
             self.unset_running()
             return
