@@ -77,16 +77,18 @@ class Archiver(AbstractManager):
     def _update_all_capture_indexes(self):
         '''Run that after the captures are in the proper directories'''
         # Recent captures
+        self.logger.info('Update recent indexes')
         directories_to_index = {capture_dir.parent.parent for capture_dir in get_captures_dir().rglob('uuid')}
         for directory_to_index in directories_to_index:
-            self.logger.info(f'Updating index for {directory_to_index}')
+            self.logger.debug(f'Updating index for {directory_to_index}')
             self._update_index(directory_to_index)
         self.logger.info('Recent indexes updated')
 
         # Archived captures
+        self.logger.info('Update archives indexes')
         directories_to_index = {capture_dir.parent.parent for capture_dir in self.archived_captures_dir.rglob('uuid')}
         for directory_to_index in directories_to_index:
-            self.logger.info(f'Updating index for {directory_to_index}')
+            self.logger.debug(f'Updating index for {directory_to_index}')
             self._update_index(directory_to_index)
         self.logger.info('Archived indexes updated')
 

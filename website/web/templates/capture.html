@@ -53,7 +53,7 @@
         <div class="row input-group mb-3">
           <label for="url" class="col-sm-1 col-form-label">URL:</label>
           <input type="text" class="form-control col-auto" name="url" id=singleCaptureField
-                 placeholder="URL to capture" value="{{predefined_url_to_capture}}">
+                 placeholder="URL to capture" value="{{predefined_url_to_capture}}" required>
 
           <textarea class="form-control col-auto d-none" placeholder="URLs to capture, one per line"
                     name="urls" id=multipleCapturesField></textarea>
@@ -299,16 +299,34 @@
           integrity="{{get_sri('static', 'capture.js')}}"
           crossorigin="anonymous"></script>
   <script>
+  $('#nav-url-tab').on('click', function(e) {
+    document.getElementById("singleCaptureField").required = true;
+    document.getElementById("document").required = false;
+    $("#singleCaptureField").removeClass("d-none");
+    document.getElementById('multipleCaptures').checked = false;
+    $("#multipleCapturesField").addClass("d-none");
+  });
+  $('#nav-doc-tab').on('click', function(e) {
+    document.getElementById("document").required = true;
+    document.getElementById("multipleCapturesField").required = false;
+    document.getElementById("singleCaptureField").required = false;
+  });
+  </script>
+  <script>
       $('#multipleCaptures').on('click', function(e) {
         if (document.getElementById('multipleCaptures').checked == true) {
             document.getElementById('singleCaptureField').value = '';
             $("#singleCaptureField").addClass("d-none");
+            document.getElementById("singleCaptureField").required = false;
             $("#multipleCapturesField").removeClass("d-none");
+            document.getElementById("multipleCapturesField").required = true;
         }
         else {
             document.getElementById('multipleCapturesField').value = '';
             $("#singleCaptureField").removeClass("d-none");
+            document.getElementById("singleCaptureField").required = true;
             $("#multipleCapturesField").addClass("d-none");
+            document.getElementById("multipleCapturesField").required = false;
         }
       })
   </script>
