@@ -129,7 +129,7 @@ class Archiver(AbstractManager):
         for index in self.archived_captures_dir.rglob('index'):
             with index.open('r') as _f:
                 for uuid, dirname in csv.reader(_f):
-                    for har in (index.parent / dirname).glob('*.har'):
+                    for har in (index.parent / dirname).rglob('*.har'):
                         if not har.exists():
                             continue
                         with har.open('rb') as f_in:

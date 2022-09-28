@@ -89,7 +89,7 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int) -> CrawledTree:
                 remove_pickle_tree(capture_dir)
             except Exception:
                 remove_pickle_tree(capture_dir)
-    if list(capture_dir.rglob('*.har')):
+    if list(capture_dir.rglob('*.har')) or list(capture_dir.rglob('*.har.gz')):
         raise TreeNeedsRebuild('We have HAR files and need to rebuild the tree.')
     # The tree doesn't need to be rebuilt if there are no HAR files.
     raise NoValidHarFile("Couldn't find HAR files")
@@ -208,7 +208,8 @@ class CapturesIndex(Mapping):
                 time.sleep(5)
             return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
 
-        har_files = sorted(capture_dir.glob('*.har'))
+        if not (har_files := sorted(capture_dir.glob('*.har'))):
+            har_files = sorted(capture_dir.glob('*.har.gz'))
         try:
             tree = CrawledTree(har_files, uuid)
             self.__resolve_dns(tree)
@@ -269,7 +270,9 @@ class CapturesIndex(Mapping):
                     error_to_cache = content
                 cache['error'] = f'The capture {capture_dir.name} has an error: {error_to_cache}'
 
-        if (har_files := sorted(capture_dir.rglob('*.har'))):
+        if not (har_files := sorted(capture_dir.rglob('*.har'))):
+            har_files = sorted(capture_dir.rglob('*.har.gz'))
+        if har_files:
             try:
                 har = HarFile(har_files[0], uuid)
                 cache['title'] = har.initial_title
