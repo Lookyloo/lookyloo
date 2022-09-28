@@ -72,7 +72,7 @@ class CaptureHostnames(Resource):
     def get(self, capture_uuid: str):
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
-            return {'error': 'UUID missing in cache, try again later.'}, 400
+            return {'error': 'UUID missing in cache, try again later and check the status first.'}, 400
         to_return: Dict[str, Any] = {'response': {'hostnames': list(lookyloo.get_hostnames(capture_uuid))}}
         return to_return
 
@@ -84,7 +84,7 @@ class CaptureURLs(Resource):
     def get(self, capture_uuid: str):
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
-            return {'error': 'UUID missing in cache, try again later.'}, 400
+            return {'error': 'UUID missing in cache, try again later and check the status first.'}, 400
         to_return: Dict[str, Any] = {'response': {'urls': list(lookyloo.get_urls(capture_uuid))}}
         return to_return
 
@@ -104,7 +104,7 @@ class CaptureHashes(Resource):
     def get(self, capture_uuid: str):
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
-            return {'error': 'UUID missing in cache, try again later.'}, 400
+            return {'error': 'UUID missing in cache, try again later and check the status first.'}, 400
 
         algorithm = request.args['algorithm'].lower() if request.args.get('algorithm') else 'sha512'
         hashes_only = False if 'hashes_only' in request.args and request.args['hashes_only'] in [0, '0'] else True
@@ -125,7 +125,7 @@ class CaptureRedirects(Resource):
     def get(self, capture_uuid: str):
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
-            return {'error': 'UUID missing in cache, try again later.'}, 400
+            return {'error': 'UUID missing in cache, try again later and check the status first.'}, 400
 
         to_return: Dict[str, Any] = {'response': {'url': cache.url, 'redirects': []}}
         if not cache.redirects:
