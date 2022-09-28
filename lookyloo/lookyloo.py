@@ -602,8 +602,8 @@ class Lookyloo():
             error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
             to_thumbnail = Image.open(error_img)
         except UnidentifiedImageError as e:
-            # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
-            self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: {e}.')
+            # The capture probably doesn't have a screenshot at all, no need to log that as a warning.
+            self.logger.debug(f'Unable to generate the screenshot thumbnail of {capture_uuid}: {e}.')
             error_img = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
             to_thumbnail = Image.open(error_img)
 
