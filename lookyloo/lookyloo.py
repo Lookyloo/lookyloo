@@ -376,9 +376,13 @@ class Lookyloo():
             # Post-processing on lookyloo's side
             return CaptureStatusCore.ONGOING
         lacus_status = self.lacus.get_capture_status(capture_uuid)
-        if lacus_status == CaptureStatusCore.UNKNOWN and self.redis.zscore('to_capture', capture_uuid) is not None:
+        if (lacus_status == CaptureStatusCore.UNKNOWN
+                and self.redis.zscore('to_capture', capture_uuid) is not None):
             # If we do the query before lacus picks it up, we will tell to the user that the UUID doesn't exists.
             return CaptureStatusCore.QUEUED
+        elif lacus_status == CaptureStatusCore.DONE:
+            # Done on lacus side, but not processed by Lookyloo yet (it would be in lookup_dirs)
+            return CaptureStatusCore.ONGOING
         return lacus_status
 
     def try_error_status(self, capture_uuid: str, /) -> Optional[str]:
