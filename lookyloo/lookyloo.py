@@ -1084,6 +1084,8 @@ class Lookyloo():
                 self.logger.warning(f'Unable load cache for {cache.get("uuid")} - {e}.')
 
         for cache in self.sorted_capture_cache() + archived:
+            if not hasattr(cache, 'timestamp'):
+                continue
             date_submission: datetime = cache.timestamp
 
             if date_submission.year not in stats:
