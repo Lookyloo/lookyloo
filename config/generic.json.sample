@@ -24,7 +24,7 @@
   "enable_mail_notification": false,
   "remote_lacus": {
     "enable": false,
-    "url": null
+    "url": ""
   },
   "tor_proxy": {
     "server": "socks5://127.0.0.1:9050"
