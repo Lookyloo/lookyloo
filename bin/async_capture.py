@@ -71,15 +71,20 @@ class AsyncCapture(AbstractManager):
                     self.redis.delete(uuid)
         else:
             # Find a capture that is done
-            for uuid_b in self.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf'):
-                uuid = uuid_b.decode()
-                if not uuid:
-                    break
-                entries = self.lacus.get_capture(uuid)
-                if entries['status'] == CaptureStatusPy.DONE:
-                    break
-            else:
-                # No captures are ready
+            try:
+                for uuid_b in self.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf'):
+                    uuid = uuid_b.decode()
+                    if not uuid:
+                        break
+                    entries = self.lacus.get_capture(uuid)
+                    if entries['status'] == CaptureStatusPy.DONE:
+                        self.logger.info(f'Got the capture for {uuid} from Lacus')
+                        break
+                else:
+                    # No captures are ready
+                    uuid = None
+            except Exception as e:
+                self.logger.critical(f'Error when getting captures from lacus, will retry later: {e}')
                 uuid = None
 
         if uuid is None:
@@ -167,6 +172,7 @@ class AsyncCapture(AbstractManager):
         lazy_cleanup.expire('queues', 600)
         lazy_cleanup.execute()
         self.unset_running()
+        self.logger.info(f'Done with {uuid}')
 
     async def _to_run_forever_async(self):
         capture = asyncio.create_task(self.process_capture_queue())
