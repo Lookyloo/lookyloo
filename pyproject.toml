@@ -44,22 +44,22 @@ redis = {version = "^4.3.4", extras = ["hiredis"]}
 beautifulsoup4 = "^4.11.1"
 bootstrap-flask = "^2.1.0"
 defang = "^0.5.3"
-vt-py = "^0.17.0"
+vt-py = "^0.17.1"
 pyeupi = "^1.1"
 pysanejs = "^2.0.1"
 pylookyloo = "^1.15.0"
 dnspython = "^2.2.1"
 pytaxonomies = "^1.5.0"
-pymisp = {version = "^2.4.162", extras = ["url"]}
+pymisp = {version = "^2.4.162.1", extras = ["url"]}
 python-magic = {version = "^0.4.27", optional = true}
 pydeep2 = {version = "^0.5.1", optional = true}
 Pillow = "^9.2.0"
 flask-restx = "^0.5.1"
-rich = "^12.5.1"
+rich = "^12.6.0"
 pyphishtanklookup = "^1.1"
 Flask-Cors = "^3.0.10"
 pyhashlookup = "^1.2.1"
-lief = "^0.12.1"
+lief = "^0.12.2"
 ua-parser = "^0.16.1"
 Flask-Login = "^0.6.2"
 har2tree = "^1.15.6"
