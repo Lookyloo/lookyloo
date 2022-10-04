@@ -68,7 +68,7 @@ werkzeug = "2.1.2"
 filetype = "^1.1.0"
 pypandora = "^1.1.2"
 lacuscore = "^0.4.1"
-pylacus = "^0.3.1"
+pylacus = "^0.3.2"
 
 [tool.poetry.extras]
 misp = ['python-magic', 'pydeep2']
