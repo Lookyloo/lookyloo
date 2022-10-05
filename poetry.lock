@@ -568,7 +568,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "0.4.2"
+version = "0.4.3"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
@@ -1170,7 +1170,7 @@ tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
 name = "tldextract"
-version = "3.3.1"
+version = "3.4.0"
 description = "Accurately separates a URL's subdomain, domain, and public suffix, using the Public Suffix List (PSL). By default, this includes the public ICANN TLDs and their exceptions. You can optionally support the Public Suffix List's private domains as well."
 category = "main"
 optional = false
@@ -1471,7 +1471,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "353734979fcbce0c2feafbe0b43f37fda5847ad0b45d8604a6a2b5280003c504"
+content-hash = "d28d902fff0efc6e5966e6e38fe999a7f9474ff35616cadfaa4b33c441255c0c"
 
 [metadata.files]
 aiohttp = [
@@ -1926,8 +1926,8 @@ jsonschema = [
     {file = "jsonschema-4.16.0.tar.gz", hash = "sha256:165059f076eff6971bae5b742fc029a7b4ef3f9bcf04c14e4776a7605de14b23"},
 ]
 lacuscore = [
-    {file = "lacuscore-0.4.2-py3-none-any.whl", hash = "sha256:ba4c9d23e0b5f2eb7deae56d6389a1188155d28fc92f39fd1f4d062474aa1ab7"},
-    {file = "lacuscore-0.4.2.tar.gz", hash = "sha256:60fcd3c312457111c0e521a98e7ec39d720afa305a5d155f2b51e340a0272988"},
+    {file = "lacuscore-0.4.3-py3-none-any.whl", hash = "sha256:b7532b5158695aa1daeab9b80780c17653c0c430c624e2d8354d2071c1c137f3"},
+    {file = "lacuscore-0.4.3.tar.gz", hash = "sha256:2502e57eab88a2dedec6e1647715e1281dffa739be074407d16587c1779a3e6a"},
 ]
 lief = [
     {file = "lief-0.12.2-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:cdadaab4b9ec756e1d1f0324acd6e280ae849d251e66f836da455df592deaf9e"},
@@ -2524,8 +2524,8 @@ stack-data = [
     {file = "stack_data-0.5.1.tar.gz", hash = "sha256:95eb784942e861a3d80efd549ff9af6cf847d88343a12eb681d7157cfcb6e32b"},
 ]
 tldextract = [
-    {file = "tldextract-3.3.1-py3-none-any.whl", hash = "sha256:35a0260570e214d8d3cfeeb403992fe9e2b686925f63c9b03c5933408ac2aa5a"},
-    {file = "tldextract-3.3.1.tar.gz", hash = "sha256:fe15ac3205e5a25b61689369f98cb45c7778a8f2af113d7c11559ece5195f2d6"},
+    {file = "tldextract-3.4.0-py3-none-any.whl", hash = "sha256:47aa4d8f1a4da79a44529c9a2ddc518663b25d371b805194ec5ce2a5f615ccd2"},
+    {file = "tldextract-3.4.0.tar.gz", hash = "sha256:78aef13ac1459d519b457a03f1f74c1bf1c2808122a6bcc0e6840f81ba55ad73"},
 ]
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
