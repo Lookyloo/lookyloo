@@ -439,6 +439,14 @@ class Lookyloo():
             # Catch case where the UA is broken on the UI, and the async submission.
             self.user_agents.user_agents  # triggers an update of the default UAs
         query['user_agent'] = user_agent if user_agent else self.user_agents.default['useragent']
+
+        # NOTE: the document must be base64 encoded
+        document = query.pop('document', None)
+        if document:
+            if isinstance(document, bytes):
+                query['document'] = base64.b64encode(document).decode()
+            else:
+                query['document'] = document
         return query
 
     def enqueue_capture(self, query: MutableMapping[str, Any], source: str, user: str, authenticated: bool) -> str:

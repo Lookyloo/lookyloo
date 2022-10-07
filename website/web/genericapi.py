@@ -394,8 +394,6 @@ class SubmitCapture(Resource):
         else:
             user = src_request_ip(request)
         to_query: Dict = request.get_json(force=True)
-        if 'document' in to_query:
-            to_query['document'] = base64.b64decode(to_query['document'])
         perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
         return perma_uuid
 

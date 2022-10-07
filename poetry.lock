@@ -568,7 +568,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "0.4.3"
+version = "0.4.4"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
@@ -576,7 +576,7 @@ python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = ">=1.15.5,<2.0.0"
+playwrightcapture = ">=1.15.6,<2.0.0"
 requests = ">=2.28.1,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
 
@@ -761,7 +761,7 @@ websockets = "10.1"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.15.5"
+version = "1.15.6"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
@@ -770,6 +770,7 @@ python-versions = ">=3.8,<4.0"
 [package.dependencies]
 beautifulsoup4 = ">=4.11.1,<5.0.0"
 dateparser = ">=1.1.1,<2.0.0"
+lxml = ">=4.9.1,<5.0.0"
 playwright = ">=1.26.1,<2.0.0"
 w3lib = ">=2.0.1,<3.0.0"
 
@@ -889,7 +890,7 @@ docs = ["Sphinx (>=5.1.1,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "0.3.2"
+version = "0.4.0"
 description = "Python CLI and module for lacus"
 category = "main"
 optional = false
@@ -1291,7 +1292,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.11.1"
+version = "2.28.11.2"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1318,7 +1319,7 @@ python-versions = "*"
 
 [[package]]
 name = "typing-extensions"
-version = "4.3.0"
+version = "4.4.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
 category = "main"
 optional = false
@@ -1471,7 +1472,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "d28d902fff0efc6e5966e6e38fe999a7f9474ff35616cadfaa4b33c441255c0c"
+content-hash = "1e6fc313fdee45ebcd52830dc3e7414b611bc099aa1b3b98fc4f751db79fef89"
 
 [metadata.files]
 aiohttp = [
@@ -1926,8 +1927,8 @@ jsonschema = [
     {file = "jsonschema-4.16.0.tar.gz", hash = "sha256:165059f076eff6971bae5b742fc029a7b4ef3f9bcf04c14e4776a7605de14b23"},
 ]
 lacuscore = [
-    {file = "lacuscore-0.4.3-py3-none-any.whl", hash = "sha256:b7532b5158695aa1daeab9b80780c17653c0c430c624e2d8354d2071c1c137f3"},
-    {file = "lacuscore-0.4.3.tar.gz", hash = "sha256:2502e57eab88a2dedec6e1647715e1281dffa739be074407d16587c1779a3e6a"},
+    {file = "lacuscore-0.4.4-py3-none-any.whl", hash = "sha256:a028e306710f58816dad31ce8174329b3f397a4e7d9d415fb1a3c0fa4422a870"},
+    {file = "lacuscore-0.4.4.tar.gz", hash = "sha256:5ff95d1f0829262eedeada09bffd08229df23f533dee28e1314be1588296a6ec"},
 ]
 lief = [
     {file = "lief-0.12.2-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:cdadaab4b9ec756e1d1f0324acd6e280ae849d251e66f836da455df592deaf9e"},
@@ -2288,8 +2289,8 @@ playwright = [
     {file = "playwright-1.26.1-py3-none-win_amd64.whl", hash = "sha256:9dfbb664a0d3865ec3db4cd636dab755c7bf5eeadcaf1d6abe9ab8c9c26c431f"},
 ]
 playwrightcapture = [
-    {file = "PlaywrightCapture-1.15.5.tar.gz", hash = "sha256:41af4cedaacd020035819271ecde25b165b3f341285bf1543f79368e378b1344"},
-    {file = "playwrightcapture-1.15.5-py3-none-any.whl", hash = "sha256:88359ab7523d490c3b02659c94b791d469231eb7e76453d71f7bffbf1a0276bd"},
+    {file = "PlaywrightCapture-1.15.6.tar.gz", hash = "sha256:5458b7955d7329a744411dd26d186e2f2c2e063bcb9308e26c1bd71d0e0b8c86"},
+    {file = "playwrightcapture-1.15.6-py3-none-any.whl", hash = "sha256:c066878bcbca68599479ba686889f6a1a953c71e1a6e5847057c8ebb89ee8d55"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.31-py3-none-any.whl", hash = "sha256:9696f386133df0fc8ca5af4895afe5d78f5fcfe5258111c2a79a1c3e41ffa96d"},
@@ -2345,8 +2346,8 @@ pyhashlookup = [
     {file = "pyhashlookup-1.2.1.tar.gz", hash = "sha256:eb514cc1a5559a013a8882e101849fa52a37641f2a7d9dc21c0d266b37607aa5"},
 ]
 pylacus = [
-    {file = "pylacus-0.3.2-py3-none-any.whl", hash = "sha256:ee4fae66639a0504e12aacb2a75f8a16fca456ba69e1062a6f97b042d078e154"},
-    {file = "pylacus-0.3.2.tar.gz", hash = "sha256:0a6cf11a24759df6b2c520929b1a3b6e00c0c4afb50811510786aec5f8513c4f"},
+    {file = "pylacus-0.4.0-py3-none-any.whl", hash = "sha256:7d64ad2d27937f10219a5aefa826a1ff3be222986ccaf5371ee2f975551d01e9"},
+    {file = "pylacus-0.4.0.tar.gz", hash = "sha256:f3b4acc956ff953a96f1d142ffc854ac94da2f7536944d9a2aa4dd171c73db41"},
 ]
 pylookyloo = [
     {file = "pylookyloo-1.15.0-py3-none-any.whl", hash = "sha256:ab717f8d05d8165cdfae8d47b13928de3f72b6322294dcff7881e757c343127f"},
@@ -2576,8 +2577,8 @@ types-redis = [
     {file = "types_redis-4.3.21.1-py3-none-any.whl", hash = "sha256:65b8c842f406932218f8ce636f75e5a03cb6b382d3922cb3e5f87e127e6d434d"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.11.1.tar.gz", hash = "sha256:02b1806c5b9904edcd87fa29236164aea0e6cdc4d93ea020cd615ef65cb43d65"},
-    {file = "types_requests-2.28.11.1-py3-none-any.whl", hash = "sha256:1ff2c1301f6fe58b5d1c66cdf631ca19734cb3b1a4bbadc878d75557d183291a"},
+    {file = "types-requests-2.28.11.2.tar.gz", hash = "sha256:fdcd7bd148139fb8eef72cf4a41ac7273872cad9e6ada14b11ff5dfdeee60ed3"},
+    {file = "types_requests-2.28.11.2-py3-none-any.whl", hash = "sha256:14941f8023a80b16441b3b46caffcbfce5265fd14555844d6029697824b5a2ef"},
 ]
 types-urllib3 = [
     {file = "types-urllib3-1.26.25.tar.gz", hash = "sha256:5aef0e663724eef924afa8b320b62ffef2c1736c1fa6caecfc9bc6c8ae2c3def"},
@@ -2588,8 +2589,8 @@ types-Werkzeug = [
     {file = "types_Werkzeug-1.0.9-py3-none-any.whl", hash = "sha256:194bd5715a13c598f05c63e8a739328657590943bce941e8a3619a6b5d4a54ec"},
 ]
 typing-extensions = [
-    {file = "typing_extensions-4.3.0-py3-none-any.whl", hash = "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02"},
-    {file = "typing_extensions-4.3.0.tar.gz", hash = "sha256:e6d2677a32f47fc7eb2795db1dd15c1f34eff616bcaf2cfb5e997f854fa1c4a6"},
+    {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
+    {file = "typing_extensions-4.4.0.tar.gz", hash = "sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa"},
 ]
 tzdata = [
     {file = "tzdata-2022.4-py2.py3-none-any.whl", hash = "sha256:74da81ecf2b3887c94e53fc1d466d4362aaf8b26fc87cda18f22004544694583"},
