@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{matrix.python-version}}
-          cache: 'pip'
+          cache: 'poetry'
 
       - name: Install and setup redis
         run: |
