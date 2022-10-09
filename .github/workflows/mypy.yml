@@ -16,6 +16,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Install poetry
+      run: pipx install poetry
+
     - name: Set up Python ${{matrix.python-version}}
       uses: actions/setup-python@v4
       with:
@@ -25,7 +29,6 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt install libfuzzy-dev
-        python -m pip install --upgrade pip poetry
         poetry install
         echo LOOKYLOO_HOME="`pwd`" >> .env
         poetry run tools/3rdparty.py
