@@ -127,19 +127,25 @@ class CaptureRedirects(Resource):
         if not cache:
             return {'error': 'UUID missing in cache, try again later and check the status first.'}, 400
 
-        to_return: Dict[str, Any] = {'response': {'url': cache.url, 'redirects': []}}
-        if not cache.redirects:
-            to_return['response']['info'] = 'No redirects'
-            return to_return
-        if cache.incomplete_redirects:
-            # Trigger tree build, get all redirects
-            lookyloo.get_crawled_tree(capture_uuid)
-            cache = lookyloo.capture_cache(capture_uuid)
-            if cache:
+        to_return: Dict[str, Any] = {}
+        try:
+            to_return = {'response': {'url': cache.url, 'redirects': []}}
+            if not cache.redirects:
+                to_return['response']['info'] = 'No redirects'
+                return to_return
+            if cache.incomplete_redirects:
+                # Trigger tree build, get all redirects
+                lookyloo.get_crawled_tree(capture_uuid)
+                cache = lookyloo.capture_cache(capture_uuid)
+                if cache:
+                    to_return['response']['redirects'] = cache.redirects
+            else:
                 to_return['response']['redirects'] = cache.redirects
-        else:
-            to_return['response']['redirects'] = cache.redirects
-
+        except Exception as e:
+            if cache and hasattr(cache, 'error'):
+                to_return['error'] = cache.error
+            else:
+                to_return['error'] = str(e)
         return to_return
 
 
