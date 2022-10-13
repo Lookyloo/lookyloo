@@ -82,7 +82,7 @@ python-versions = ">=3.5"
 dev = ["cloudpickle", "coverage[toml] (>=5.0.2)", "furo", "hypothesis", "mypy (>=0.900,!=0.940)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "sphinx", "sphinx-notfound-page", "zope.interface"]
 docs = ["furo", "sphinx", "sphinx-notfound-page", "zope.interface"]
 tests = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "zope.interface"]
-tests_no_zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
+tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
 
 [[package]]
 name = "backcall"
@@ -163,7 +163,7 @@ optional = false
 python-versions = ">=3.6.0"
 
 [package.extras]
-unicode_backport = ["unicodedata2"]
+unicode-backport = ["unicodedata2"]
 
 [[package]]
 name = "click"
@@ -509,7 +509,7 @@ notebook = ["ipywidgets", "notebook"]
 parallel = ["ipyparallel"]
 qtconsole = ["qtconsole"]
 test = ["pytest (<7.1)", "pytest-asyncio", "testpath"]
-test_extra = ["curio", "matplotlib (!=3.2.0)", "nbformat", "numpy (>=1.19)", "pandas", "pytest (<7.1)", "pytest-asyncio", "testpath", "trio"]
+test-extra = ["curio", "matplotlib (!=3.2.0)", "nbformat", "numpy (>=1.19)", "pandas", "pytest (<7.1)", "pytest-asyncio", "testpath", "trio"]
 
 [[package]]
 name = "itsdangerous"
@@ -568,7 +568,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "0.4.5"
+version = "0.5.0"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
@@ -576,7 +576,7 @@ python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = ">=1.15.7,<2.0.0"
+playwrightcapture = ">=1.15.8,<2.0.0"
 requests = ">=2.28.1,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
 
@@ -760,7 +760,7 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.15.7"
+version = "1.15.8"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
@@ -1093,7 +1093,7 @@ urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
 socks = ["PySocks (>=1.5.6,!=1.5.7)"]
-use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
+use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "requests-file"
@@ -1463,7 +1463,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "6401fbdc1b28dc1e38e9253ff351655ea04ee83818641cc72a03777f10251bed"
+content-hash = "6e4a6f5ae088f47912b4d9b39c3e3f27faa73dab77564185856c45300467f70e"
 
 [metadata.files]
 aiohttp = [
@@ -1918,8 +1918,8 @@ jsonschema = [
     {file = "jsonschema-4.16.0.tar.gz", hash = "sha256:165059f076eff6971bae5b742fc029a7b4ef3f9bcf04c14e4776a7605de14b23"},
 ]
 lacuscore = [
-    {file = "lacuscore-0.4.5-py3-none-any.whl", hash = "sha256:a576b8d94bf091603df5d4ba75f0c4a35f5e9fc554d951949c609638f45ba4de"},
-    {file = "lacuscore-0.4.5.tar.gz", hash = "sha256:006669e53d35f53b80d759349bc71a7793d6f3e84a9ccc3a22670a248d748443"},
+    {file = "lacuscore-0.5.0-py3-none-any.whl", hash = "sha256:b941aaae4cb565160457ac9a0bdf85897b764a54a96dede603a27d2defdac6fa"},
+    {file = "lacuscore-0.5.0.tar.gz", hash = "sha256:156f6f45b0ad4b7083cbf7878ae0b2e634a233f8e380a304d71e4ae53ff60350"},
 ]
 lief = [
     {file = "lief-0.12.2-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:cdadaab4b9ec756e1d1f0324acd6e280ae849d251e66f836da455df592deaf9e"},
@@ -2217,8 +2217,8 @@ Pillow = [
     {file = "Pillow-9.2.0-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:37ff6b522a26d0538b753f0b4e8e164fdada12db6c6f00f62145d732d8a3152e"},
     {file = "Pillow-9.2.0-cp310-cp310-win32.whl", hash = "sha256:c79698d4cd9318d9481d89a77e2d3fcaeff5486be641e60a4b49f3d2ecca4e28"},
     {file = "Pillow-9.2.0-cp310-cp310-win_amd64.whl", hash = "sha256:254164c57bab4b459f14c64e93df11eff5ded575192c294a0c49270f22c5d93d"},
-    {file = "Pillow-9.2.0-cp311-cp311-macosx_10_10_universal2.whl", hash = "sha256:408673ed75594933714482501fe97e055a42996087eeca7e5d06e33218d05aa8"},
-    {file = "Pillow-9.2.0-cp311-cp311-macosx_11_0_universal2.whl", hash = "sha256:727dd1389bc5cb9827cbd1f9d40d2c2a1a0c9b32dd2261db522d22a604a6eec9"},
+    {file = "Pillow-9.2.0-cp311-cp311-macosx_10_10_x86_64.whl", hash = "sha256:adabc0bce035467fb537ef3e5e74f2847c8af217ee0be0455d4fec8adc0462fc"},
+    {file = "Pillow-9.2.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:336b9036127eab855beec9662ac3ea13a4544a523ae273cbf108b228ecac8437"},
     {file = "Pillow-9.2.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:50dff9cc21826d2977ef2d2a205504034e3a4563ca6f5db739b0d1026658e004"},
     {file = "Pillow-9.2.0-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:cb6259196a589123d755380b65127ddc60f4c64b21fc3bb46ce3a6ea663659b0"},
     {file = "Pillow-9.2.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7b0554af24df2bf96618dac71ddada02420f946be943b181108cac55a7a2dcd4"},
@@ -2280,8 +2280,8 @@ playwright = [
     {file = "playwright-1.27.0-py3-none-win_amd64.whl", hash = "sha256:8cbeab451099cf0d52d9e80baf970363f900c8cc85ecf4d7dcde76a86c47880a"},
 ]
 playwrightcapture = [
-    {file = "PlaywrightCapture-1.15.7.tar.gz", hash = "sha256:a9df3c02d61ef8b39520feef12421847bfcd54acfc10cc462be5cc0369280761"},
-    {file = "playwrightcapture-1.15.7-py3-none-any.whl", hash = "sha256:905738896dda8d6c92c8689f71a7f97b6db38a61845b8ac4a2fee24bdb093ec8"},
+    {file = "PlaywrightCapture-1.15.8.tar.gz", hash = "sha256:b5618aa84d7b5eb235e33c88491f6a02d7e4e23ff4493ce7084fc095f832e12d"},
+    {file = "playwrightcapture-1.15.8-py3-none-any.whl", hash = "sha256:364ad125eda5b9a70f87ad7f11f4ffa0c96b280179631387862c00d003cbd606"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.31-py3-none-any.whl", hash = "sha256:9696f386133df0fc8ca5af4895afe5d78f5fcfe5258111c2a79a1c3e41ffa96d"},
