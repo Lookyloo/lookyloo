@@ -197,7 +197,7 @@ test = ["flake8 (==3.7.8)", "hypothesis (==3.55.3)"]
 
 [[package]]
 name = "dateparser"
-version = "1.1.1"
+version = "1.1.2"
 description = "Date parsing library designed to parse dates from HTML pages"
 category = "main"
 optional = false
@@ -806,7 +806,7 @@ python-versions = "*"
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.9.0"
+version = "0.9.1"
 description = "publicsuffixlist implement"
 category = "main"
 optional = false
@@ -1285,7 +1285,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.3.21.2"
+version = "4.3.21.3"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1449,7 +1449,7 @@ multidict = ">=4.0"
 
 [[package]]
 name = "zipp"
-version = "3.9.0"
+version = "3.10.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "main"
 optional = false
@@ -1465,7 +1465,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "c50007f8bd6cd6485bf524a6c8e2638e9d7ead98a48fc05efbb22bdf63a0a7d3"
+content-hash = "806dd290d676ce5be1d6090e0cc4b31654f2566126434b926901a083a4353397"
 
 [metadata.files]
 aiohttp = [
@@ -1667,8 +1667,8 @@ commonmark = [
     {file = "commonmark-0.9.1.tar.gz", hash = "sha256:452f9dc859be7f06631ddcb328b6919c67984aca654e5fefb3914d54691aed60"},
 ]
 dateparser = [
-    {file = "dateparser-1.1.1-py2.py3-none-any.whl", hash = "sha256:9600874312ff28a41f96ec7ccdc73be1d1c44435719da47fea3339d55ff5a628"},
-    {file = "dateparser-1.1.1.tar.gz", hash = "sha256:038196b1f12c7397e38aad3d61588833257f6f552baa63a1499e6987fa8d42d9"},
+    {file = "dateparser-1.1.2-py2.py3-none-any.whl", hash = "sha256:d31659dc806a7d88e2b510b2c74f68b525ae531f145c62a57a99bd616b7f90cf"},
+    {file = "dateparser-1.1.2.tar.gz", hash = "sha256:3821bf191f95b2658c4abd91571c09821ce7a2bc179bf6cefd8b4515c3ccf9ef"},
 ]
 decorator = [
     {file = "decorator-5.1.1-py3-none-any.whl", hash = "sha256:b8c3f85900b9dc423225913c5aace94729fe1fa9763b38939a95226f02d37186"},
@@ -2277,8 +2277,8 @@ publicsuffix2 = [
     {file = "publicsuffix2-2.20191221.tar.gz", hash = "sha256:00f8cc31aa8d0d5592a5ced19cccba7de428ebca985db26ac852d920ddd6fe7b"},
 ]
 publicsuffixlist = [
-    {file = "publicsuffixlist-0.9.0-py2.py3-none-any.whl", hash = "sha256:ac8e738cc814ad427fec9884265b7eddf1e7ded68e53798abe02c704b4ae6a71"},
-    {file = "publicsuffixlist-0.9.0.tar.gz", hash = "sha256:b9a15705324751995461992b82f0633d3eedfbcd57067a274c582f57a907ac1a"},
+    {file = "publicsuffixlist-0.9.1-py2.py3-none-any.whl", hash = "sha256:2882fab94c2ff0c1eecb1206487ccdda8d09d04e1e3b4d64bd00fae0987c0939"},
+    {file = "publicsuffixlist-0.9.1.tar.gz", hash = "sha256:0c3acbac87ce2e3b230e2123076c76278f827d4e6e78a536a01b7f9143466f36"},
 ]
 pure-eval = [
     {file = "pure_eval-0.2.2-py3-none-any.whl", hash = "sha256:01eaab343580944bc56080ebe0a674b39ec44a945e6d09ba7db3cb8cec289350"},
@@ -2545,8 +2545,8 @@ types-python-dateutil = [
     {file = "types_python_dateutil-2.8.19.2-py3-none-any.whl", hash = "sha256:3f4dbe465e7e0c6581db11fd7a4855d1355b78712b3f292bd399cd332247e9c0"},
 ]
 types-redis = [
-    {file = "types-redis-4.3.21.2.tar.gz", hash = "sha256:ab542249a47d3903b94162e6395ae6be0cc0f562fd184ed51a0a34d8a7021a39"},
-    {file = "types_redis-4.3.21.2-py3-none-any.whl", hash = "sha256:eda5fd9e80f453143902db5547ca6506a3af44476ad080db7d18840da532ab19"},
+    {file = "types-redis-4.3.21.3.tar.gz", hash = "sha256:2e1f184056188c8754ded0b5173dc01824d2bfe41975fe318068a68beedfb62c"},
+    {file = "types_redis-4.3.21.3-py3-none-any.whl", hash = "sha256:77ee5b8ca3a779e09807348c7f0b33c0f38a46096cd6c8a2e0176b28b3784b34"},
 ]
 types-requests = [
     {file = "types-requests-2.28.11.2.tar.gz", hash = "sha256:fdcd7bd148139fb8eef72cf4a41ac7273872cad9e6ada14b11ff5dfdeee60ed3"},
@@ -2728,6 +2728,6 @@ yarl = [
     {file = "yarl-1.8.1.tar.gz", hash = "sha256:af887845b8c2e060eb5605ff72b6f2dd2aab7a761379373fd89d314f4752abbf"},
 ]
 zipp = [
-    {file = "zipp-3.9.0-py3-none-any.whl", hash = "sha256:972cfa31bc2fedd3fa838a51e9bc7e64b7fb725a8c00e7431554311f180e9980"},
-    {file = "zipp-3.9.0.tar.gz", hash = "sha256:3a7af91c3db40ec72dd9d154ae18e008c69efe8ca88dde4f9a731bb82fe2f9eb"},
+    {file = "zipp-3.10.0-py3-none-any.whl", hash = "sha256:4fcb6f278987a6605757302a6e40e896257570d11c51628968ccb2a47e80c6c1"},
+    {file = "zipp-3.10.0.tar.gz", hash = "sha256:7a7262fd930bd3e36c50b9a64897aec3fafff3dfdeec9623ae22b40e93f99bb8"},
 ]
