@@ -48,6 +48,7 @@ jobs:
           echo LOOKYLOO_HOME="'`pwd`'" > .env
           cp config/generic.json.sample config/generic.json
           cp config/modules.json.sample config/modules.json
+          poetry run pip install -U numpy
           poetry install -vvv
           poetry run playwright install
           poetry run tools/validate_config_files.py --check
