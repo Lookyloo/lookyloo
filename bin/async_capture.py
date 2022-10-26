@@ -8,8 +8,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Set, Union
 
-from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore
-from pylacus import PyLacus, CaptureStatus as CaptureStatusPy
+from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
+from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 from redis import Redis
 
 from lookyloo.default import AbstractManager, get_config, get_socket_path, safe_create_dir
@@ -62,6 +62,7 @@ class AsyncCapture(AbstractManager):
         '''Process a query from the capture queue'''
         self.set_running()
         uuid: Optional[str] = None
+        entries: Union[CaptureResponseCore, CaptureResponsePy]
         if isinstance(self.lacus, LacusCore):
             if uuid := await self.lacus.consume_queue():
                 entries = self.lacus.get_capture(uuid, decode=True)
