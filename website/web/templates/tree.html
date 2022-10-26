@@ -53,6 +53,7 @@
       modal.find('.modal-body').load(button.data("remote"));
   });
   $('.modulesForceRefresh').on('click',function(){
+      $('#modulesModal .modal-body').text("Reloading modules, please wait...")
       $('#modulesModal .modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}", function(){
         $('#modulesModal').modal({show:true});
       });
