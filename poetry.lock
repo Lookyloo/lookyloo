@@ -568,7 +568,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.0.0"
+version = "1.0.1"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
@@ -576,7 +576,7 @@ python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = ">=1.16.0,<2.0.0"
+playwrightcapture = ">=1.16.1,<2.0.0"
 redis = {version = ">=4.3.4,<5.0.0", extras = ["hiredis"]}
 requests = ">=2.28.1,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
@@ -761,7 +761,7 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.16.0"
+version = "1.16.1"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
@@ -769,7 +769,7 @@ python-versions = ">=3.8,<4.0"
 
 [package.dependencies]
 beautifulsoup4 = ">=4.11.1,<5.0.0"
-dateparser = ">=1.1.1,<2.0.0"
+dateparser = ">=1.1.2,<2.0.0"
 lxml = ">=4.9.1,<5.0.0"
 playwright = ">=1.27.1,<2.0.0"
 w3lib = ">=2.0.1,<3.0.0"
@@ -1465,7 +1465,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "806dd290d676ce5be1d6090e0cc4b31654f2566126434b926901a083a4353397"
+content-hash = "a9011010de5c8d77c21c6cfb7c3f09406110ed0a11c1af718cfcf5f8df683aea"
 
 [metadata.files]
 aiohttp = [
@@ -1920,8 +1920,8 @@ jsonschema = [
     {file = "jsonschema-4.16.0.tar.gz", hash = "sha256:165059f076eff6971bae5b742fc029a7b4ef3f9bcf04c14e4776a7605de14b23"},
 ]
 lacuscore = [
-    {file = "lacuscore-1.0.0-py3-none-any.whl", hash = "sha256:78a8d2fb9443fa1cf2863fee77ad140979b75a6e362efa0af6c5b2638ff7607f"},
-    {file = "lacuscore-1.0.0.tar.gz", hash = "sha256:c9a26f7da677c1a1504a60049a32f71b285e8bd9c04bcd5bd6e71c94546c8d67"},
+    {file = "lacuscore-1.0.1-py3-none-any.whl", hash = "sha256:36391197766b46cc86effc0559ce32e8cccb519c2d318539d5414d582be6d4f0"},
+    {file = "lacuscore-1.0.1.tar.gz", hash = "sha256:21433f58c642b8eca818aed1d6c3cc55efe00802f9528de85a5a6edeb2be94b6"},
 ]
 lief = [
     {file = "lief-0.12.2-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:cdadaab4b9ec756e1d1f0324acd6e280ae849d251e66f836da455df592deaf9e"},
@@ -2166,6 +2166,27 @@ numpy = [
     {file = "numpy-1.23.4-cp310-cp310-win32.whl", hash = "sha256:2341f4ab6dba0834b685cce16dad5f9b6606ea8a00e6da154f5dbded70fdc4dd"},
     {file = "numpy-1.23.4-cp310-cp310-win_amd64.whl", hash = "sha256:d331afac87c92373826af83d2b2b435f57b17a5c74e6268b79355b970626e329"},
     {file = "numpy-1.23.4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:488a66cb667359534bc70028d653ba1cf307bae88eab5929cd707c761ff037db"},
+    {file = "numpy-1.23.4-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:ce03305dd694c4873b9429274fd41fc7eb4e0e4dea07e0af97a933b079a5814f"},
+    {file = "numpy-1.23.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8981d9b5619569899666170c7c9748920f4a5005bf79c72c07d08c8a035757b0"},
+    {file = "numpy-1.23.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7a70a7d3ce4c0e9284e92285cba91a4a3f5214d87ee0e95928f3614a256a1488"},
+    {file = "numpy-1.23.4-cp311-cp311-win32.whl", hash = "sha256:5e13030f8793e9ee42f9c7d5777465a560eb78fa7e11b1c053427f2ccab90c79"},
+    {file = "numpy-1.23.4-cp311-cp311-win_amd64.whl", hash = "sha256:7607b598217745cc40f751da38ffd03512d33ec06f3523fb0b5f82e09f6f676d"},
+    {file = "numpy-1.23.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:7ab46e4e7ec63c8a5e6dbf5c1b9e1c92ba23a7ebecc86c336cb7bf3bd2fb10e5"},
+    {file = "numpy-1.23.4-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:a8aae2fb3180940011b4862b2dd3756616841c53db9734b27bb93813cd79fce6"},
+    {file = "numpy-1.23.4-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8c053d7557a8f022ec823196d242464b6955a7e7e5015b719e76003f63f82d0f"},
+    {file = "numpy-1.23.4-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a0882323e0ca4245eb0a3d0a74f88ce581cc33aedcfa396e415e5bba7bf05f68"},
+    {file = "numpy-1.23.4-cp38-cp38-win32.whl", hash = "sha256:dada341ebb79619fe00a291185bba370c9803b1e1d7051610e01ed809ef3a4ba"},
+    {file = "numpy-1.23.4-cp38-cp38-win_amd64.whl", hash = "sha256:0fe563fc8ed9dc4474cbf70742673fc4391d70f4363f917599a7fa99f042d5a8"},
+    {file = "numpy-1.23.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:c67b833dbccefe97cdd3f52798d430b9d3430396af7cdb2a0c32954c3ef73894"},
+    {file = "numpy-1.23.4-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:f76025acc8e2114bb664294a07ede0727aa75d63a06d2fae96bf29a81747e4a7"},
+    {file = "numpy-1.23.4-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:12ac457b63ec8ded85d85c1e17d85efd3c2b0967ca39560b307a35a6703a4735"},
+    {file = "numpy-1.23.4-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:95de7dc7dc47a312f6feddd3da2500826defdccbc41608d0031276a24181a2c0"},
+    {file = "numpy-1.23.4-cp39-cp39-win32.whl", hash = "sha256:f2f390aa4da44454db40a1f0201401f9036e8d578a25f01a6e237cea238337ef"},
+    {file = "numpy-1.23.4-cp39-cp39-win_amd64.whl", hash = "sha256:f260da502d7441a45695199b4e7fd8ca87db659ba1c78f2bbf31f934fe76ae0e"},
+    {file = "numpy-1.23.4-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:61be02e3bf810b60ab74e81d6d0d36246dbfb644a462458bb53b595791251911"},
+    {file = "numpy-1.23.4-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:296d17aed51161dbad3c67ed6d164e51fcd18dbcd5dd4f9d0a9c6055dce30810"},
+    {file = "numpy-1.23.4-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:4d52914c88b4930dafb6c48ba5115a96cbab40f45740239d9f4159c4ba779962"},
+    {file = "numpy-1.23.4.tar.gz", hash = "sha256:ed2cc92af0efad20198638c69bb0fc2870a58dabfba6eb722c933b48556c686c"},
 ]
 packaging = [
     {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
@@ -2198,8 +2219,8 @@ pillow = [
     {file = "Pillow-9.2.0-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:37ff6b522a26d0538b753f0b4e8e164fdada12db6c6f00f62145d732d8a3152e"},
     {file = "Pillow-9.2.0-cp310-cp310-win32.whl", hash = "sha256:c79698d4cd9318d9481d89a77e2d3fcaeff5486be641e60a4b49f3d2ecca4e28"},
     {file = "Pillow-9.2.0-cp310-cp310-win_amd64.whl", hash = "sha256:254164c57bab4b459f14c64e93df11eff5ded575192c294a0c49270f22c5d93d"},
-    {file = "Pillow-9.2.0-cp311-cp311-macosx_10_10_universal2.whl", hash = "sha256:408673ed75594933714482501fe97e055a42996087eeca7e5d06e33218d05aa8"},
-    {file = "Pillow-9.2.0-cp311-cp311-macosx_11_0_universal2.whl", hash = "sha256:727dd1389bc5cb9827cbd1f9d40d2c2a1a0c9b32dd2261db522d22a604a6eec9"},
+    {file = "Pillow-9.2.0-cp311-cp311-macosx_10_10_x86_64.whl", hash = "sha256:adabc0bce035467fb537ef3e5e74f2847c8af217ee0be0455d4fec8adc0462fc"},
+    {file = "Pillow-9.2.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:336b9036127eab855beec9662ac3ea13a4544a523ae273cbf108b228ecac8437"},
     {file = "Pillow-9.2.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:50dff9cc21826d2977ef2d2a205504034e3a4563ca6f5db739b0d1026658e004"},
     {file = "Pillow-9.2.0-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:cb6259196a589123d755380b65127ddc60f4c64b21fc3bb46ce3a6ea663659b0"},
     {file = "Pillow-9.2.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7b0554af24df2bf96618dac71ddada02420f946be943b181108cac55a7a2dcd4"},
@@ -2261,8 +2282,8 @@ playwright = [
     {file = "playwright-1.27.1-py3-none-win_amd64.whl", hash = "sha256:fc8ce323cf116e27902f327cee1cba6fc0c5400e9281df8e53d3355de88336ba"},
 ]
 playwrightcapture = [
-    {file = "playwrightcapture-1.16.0-py3-none-any.whl", hash = "sha256:b34c9db0f05dea7d11b128ad7dcc9adcd9213a2c8e6847d99711443cd946f82d"},
-    {file = "playwrightcapture-1.16.0.tar.gz", hash = "sha256:c3b95da957a649aa04ce3024a7c3b488821f7d03c6789358ad3705de81ae5821"},
+    {file = "playwrightcapture-1.16.1-py3-none-any.whl", hash = "sha256:8a017c56bfdf36010cdcf13ee7edbed8b30acc1785a3c6801ed60ea53af1126c"},
+    {file = "playwrightcapture-1.16.1.tar.gz", hash = "sha256:2764b6c8252f29497bdb3406c708b043b06de45ac6b5d986d40d4b95571b8850"},
 ]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.31-py3-none-any.whl", hash = "sha256:9696f386133df0fc8ca5af4895afe5d78f5fcfe5258111c2a79a1c3e41ffa96d"},
