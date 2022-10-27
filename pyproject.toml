@@ -67,7 +67,7 @@ passivetotal = "^2.5.9"
 werkzeug = "2.1.2"
 filetype = "^1.1.0"
 pypandora = "^1.1.2"
-lacuscore = "^1.1.0"
+lacuscore = "^1.1.1"
 pylacus = "^1.1.0"
 
 [tool.poetry.extras]
