@@ -30,7 +30,6 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt install libfuzzy-dev
-        poetry run pip install -U numpy
         poetry install
         echo LOOKYLOO_HOME="`pwd`" >> .env
         poetry run tools/3rdparty.py
