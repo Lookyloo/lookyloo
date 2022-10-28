@@ -571,7 +571,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.1.1"
+version = "1.1.2"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
@@ -956,7 +956,7 @@ virustotal = ["validators (>=0.20.0,<0.21.0)"]
 
 [[package]]
 name = "pypandora"
-version = "1.1.2"
+version = "1.2.0"
 description = "Python CLI and module for pandora"
 category = "main"
 optional = false
@@ -966,7 +966,7 @@ python-versions = ">=3.8,<4.0"
 requests = ">=2.28.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=5.1.1,<6.0.0)"]
+docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pyparsing"
@@ -1476,7 +1476,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "7b37a5eaf62e9f1e0cc99e77699dbd402f38a7ccf1ede62318975307ae24b7c8"
+content-hash = "77650148d8eec3bbcb65ed2263508e350fa6c656382cd4e70046ce7f326b7dd7"
 
 [metadata.files]
 aiohttp = [
@@ -1931,8 +1931,8 @@ jsonschema = [
     {file = "jsonschema-4.16.0.tar.gz", hash = "sha256:165059f076eff6971bae5b742fc029a7b4ef3f9bcf04c14e4776a7605de14b23"},
 ]
 lacuscore = [
-    {file = "lacuscore-1.1.1-py3-none-any.whl", hash = "sha256:bef70fd371863fc4641360903d94c84608597d3155018ceae8b11e002b741af2"},
-    {file = "lacuscore-1.1.1.tar.gz", hash = "sha256:a94d5f7876b6b01b5a3593a8bd4af35e8dcd644e64351f150b3a590df70e7895"},
+    {file = "lacuscore-1.1.2-py3-none-any.whl", hash = "sha256:876d3ccb743bb4d43421d1670762af2f54c6b82dfdec9b5a4c37109dbabd02c6"},
+    {file = "lacuscore-1.1.2.tar.gz", hash = "sha256:ed83c8f4cb31e24ec0e39ce85fcd9dd675c0ae96bf9aaededf7c21469be6b1ad"},
 ]
 lief = [
     {file = "lief-0.12.2-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:cdadaab4b9ec756e1d1f0324acd6e280ae849d251e66f836da455df592deaf9e"},
@@ -2369,8 +2369,8 @@ pymisp = [
     {file = "pymisp-2.4.162.1.tar.gz", hash = "sha256:4e5721dfae5ed54ca7c967d913c1adbadf0e495f2db4b340a43523f06493601e"},
 ]
 pypandora = [
-    {file = "pypandora-1.1.2-py3-none-any.whl", hash = "sha256:6523c0ba2bc10bcc26f379ecec65e39b57c26666be8ab399ad1d22594cedfaed"},
-    {file = "pypandora-1.1.2.tar.gz", hash = "sha256:49f911588f8c9be225d07727d0aa49905be83e73e811d5e16e9b0ce5d524915b"},
+    {file = "pypandora-1.2.0-py3-none-any.whl", hash = "sha256:f50286f71721def21210e14300aff7682079da7a1c6c125234242e06259c3c97"},
+    {file = "pypandora-1.2.0.tar.gz", hash = "sha256:28dc9baf65d7ae13a7a5bec9498dbba0d13b1addf348c285d51f79183c0968df"},
 ]
 pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},

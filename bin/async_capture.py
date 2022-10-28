@@ -3,10 +3,12 @@
 import asyncio
 import json
 import logging
+import signal
+import time
 
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional, Set, Union
+from typing import Dict, Optional, Union
 
 from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
 from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
@@ -48,7 +50,7 @@ class AsyncCapture(AbstractManager):
             self.lacus = LacusCore(self.redis, get_config('generic', 'tor_proxy'),
                                    get_config('generic', 'only_global_lookups'))
 
-        self.captures: Set[asyncio.Task] = set()
+        self.captures: Dict[asyncio.Task, float] = {}
 
         self.fox = FOX(get_config('modules', 'FOX'))
         if not self.fox.available:
@@ -79,7 +81,10 @@ class AsyncCapture(AbstractManager):
                         break
                     entries = self.lacus.get_capture(uuid)
                     if entries['status'] == CaptureStatusPy.DONE:
-                        self.logger.info(f'Got the capture for {uuid} from Lacus')
+                        log = f'Got the capture for {uuid} from Lacus'
+                        if runtime := entries.get('runtime'):
+                            log = f'{log} - Runtime: {runtime}'
+                        self.logger.info(log)
                         break
                 else:
                     # No captures are ready
@@ -175,17 +180,44 @@ class AsyncCapture(AbstractManager):
         self.unset_running()
         self.logger.info(f'Done with {uuid}')
 
+    async def cancel_old_captures(self):
+        cancelled_tasks = []
+        for task, timestamp in self.captures.items():
+            if time.time() - timestamp >= get_config('generic', 'max_capture_time'):
+                task.cancel()
+                cancelled_tasks.append(task)
+                self.logger.warning('A capture has been going for too long, canceling it.')
+        if cancelled_tasks:
+            await asyncio.gather(*cancelled_tasks, return_exceptions=True)
+
     async def _to_run_forever_async(self):
+        await self.cancel_old_captures()
+        if self.force_stop:
+            return
         capture = asyncio.create_task(self.process_capture_queue())
-        capture.add_done_callback(self.captures.discard)
-        self.captures.add(capture)
+        self.captures[capture] = time.time()
+        capture.add_done_callback(self.captures.pop)
         while len(self.captures) >= get_config('generic', 'async_capture_processes'):
+            await self.cancel_old_captures()
             await asyncio.sleep(1)
+
+    async def _wait_to_finish(self):
+        while self.captures:
+            self.logger.info(f'Waiting for {len(self.captures)} capture(s) to finish...')
+            await asyncio.sleep(5)
+        self.logger.info('No more captures')
 
 
 def main():
     m = AsyncCapture()
-    asyncio.run(m.run_async(sleep_in_sec=1))
+
+    loop = asyncio.new_event_loop()
+    loop.add_signal_handler(signal.SIGTERM, lambda: loop.create_task(m.stop_async()))
+
+    try:
+        loop.run_until_complete(m.run_async(sleep_in_sec=1))
+    finally:
+        loop.close()
 
 
 if __name__ == '__main__':
