@@ -50,7 +50,7 @@ python-versions = "*"
 
 [[package]]
 name = "asttokens"
-version = "2.0.8"
+version = "2.1.0"
 description = "Annotate AST trees with source code positions"
 category = "dev"
 optional = false
@@ -915,7 +915,7 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.15.0"
+version = "1.16.0"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
@@ -925,7 +925,7 @@ python-versions = ">=3.8,<4.0"
 requests = ">=2.28.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=5.1.1,<6.0.0)"]
+docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pymisp"
@@ -1476,7 +1476,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "77650148d8eec3bbcb65ed2263508e350fa6c656382cd4e70046ce7f326b7dd7"
+content-hash = "f55d4edd45657aa15ab8565c1335fd251528741118ace8168eb9be1045fbaaa0"
 
 [metadata.files]
 aiohttp = [
@@ -1581,8 +1581,8 @@ appnope = [
     {file = "appnope-0.1.3.tar.gz", hash = "sha256:02bd91c4de869fbb1e1c50aafc4098827a7a54ab2f39d9dcba6c9547ed920e24"},
 ]
 asttokens = [
-    {file = "asttokens-2.0.8-py2.py3-none-any.whl", hash = "sha256:e3305297c744ae53ffa032c45dc347286165e4ffce6875dc662b205db0623d86"},
-    {file = "asttokens-2.0.8.tar.gz", hash = "sha256:c61e16246ecfb2cde2958406b4c8ebc043c9e6d73aaa83c941673b35e5d3a76b"},
+    {file = "asttokens-2.1.0-py2.py3-none-any.whl", hash = "sha256:1b28ed85e254b724439afc783d4bee767f780b936c3fe8b3275332f42cf5f561"},
+    {file = "asttokens-2.1.0.tar.gz", hash = "sha256:4aa76401a151c8cc572d906aad7aea2a841780834a19d780f4321c0fe1b54635"},
 ]
 async-timeout = [
     {file = "async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},
@@ -2361,8 +2361,8 @@ pylacus = [
     {file = "pylacus-1.1.0.tar.gz", hash = "sha256:90ca603bf58d19197f4776fffc58b9b98f34d12916457a026ff2cddbaa42fb6f"},
 ]
 pylookyloo = [
-    {file = "pylookyloo-1.15.0-py3-none-any.whl", hash = "sha256:ab717f8d05d8165cdfae8d47b13928de3f72b6322294dcff7881e757c343127f"},
-    {file = "pylookyloo-1.15.0.tar.gz", hash = "sha256:e504aff52ab07a898f1b04cd9ba7d55af40fa6eb7988a96ababc65f1481d23cb"},
+    {file = "pylookyloo-1.16.0-py3-none-any.whl", hash = "sha256:2c39e26eae61144e6bb986fbcb58604e9804b4d6b2fe1ff844d8b429db2628d2"},
+    {file = "pylookyloo-1.16.0.tar.gz", hash = "sha256:cfd07e8765d2d9b83f9bcb1509e1d31a70be625b3cde80fe8d42b276d4af2162"},
 ]
 pymisp = [
     {file = "pymisp-2.4.162.1-py3-none-any.whl", hash = "sha256:e1a5fc186b047a94698fd70faa6de8e40fba95a69132d58671c16f2d44f408a9"},
