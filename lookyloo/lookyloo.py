@@ -9,10 +9,12 @@ import smtplib
 from collections import defaultdict
 from datetime import date, datetime
 from email.message import EmailMessage
+from functools import cached_property
 from io import BytesIO
 from pathlib import Path
 from typing import (Any, Dict, Iterable, List, MutableMapping, Optional, Set,
                     Tuple, Union)
+from uuid import uuid4
 from zipfile import ZipFile
 
 from defang import defang  # type: ignore
@@ -108,27 +110,36 @@ class Lookyloo():
         self._captures_index = CapturesIndex(self.redis, self.context)
         self.logger.info('Index initialized.')
 
+        # init lacus
+        self.lacus
+
+    @property
+    def redis(self):
+        return Redis(connection_pool=self.redis_pool)
+
+    @cached_property
+    def lacus(self):
         has_remote_lacus = False
-        self.lacus: Union[PyLacus, LacusCore]
+        self._lacus: Union[PyLacus, LacusCore]
         if get_config('generic', 'remote_lacus'):
             remote_lacus_config = get_config('generic', 'remote_lacus')
             if remote_lacus_config.get('enable'):
                 self.logger.info("Remote lacus enabled, trying to set it up...")
                 remote_lacus_url = remote_lacus_config.get('url')
-                self.lacus = PyLacus(remote_lacus_url)
-                if self.lacus.is_up:
+                self._lacus = PyLacus(remote_lacus_url)
+                if self._lacus.is_up:
                     has_remote_lacus = True
                     self.logger.info(f"Remote lacus enabled to {remote_lacus_url}.")
                 else:
                     self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}.")
+                    raise LookylooException('Remote lacus is enabled but unreachable.')
 
         if not has_remote_lacus:
-            self.lacus = LacusCore(self.redis, get_config('generic', 'tor_proxy'),
-                                   get_config('generic', 'only_global_lookups'))
-
-    @property
-    def redis(self):
-        return Redis(connection_pool=self.redis_pool)
+            # We need a redis connector that doesn't decode.
+            redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))
+            self._lacus = LacusCore(redis, get_config('generic', 'tor_proxy'),
+                                    get_config('generic', 'only_global_lookups'))
+        return self._lacus
 
     def add_context(self, capture_uuid: str, /, urlnode_uuid: str, *, ressource_hash: str,
                     legitimate: bool, malicious: bool, details: Dict[str, Dict[str, str]]):
@@ -375,7 +386,15 @@ class Lookyloo():
         elif self.redis.sismember('ongoing', capture_uuid):
             # Post-processing on lookyloo's side
             return CaptureStatusCore.ONGOING
-        lacus_status = self.lacus.get_capture_status(capture_uuid)
+        try:
+            lacus_status = self.lacus.get_capture_status(capture_uuid)
+        except Exception as e:
+            self.logger.warning(f'Unable to get the status for {capture_uuid} from lacus: {e}')
+            if self.redis.zscore('to_capture', capture_uuid) is not None:
+                return CaptureStatusCore.QUEUED
+            else:
+                return CaptureStatusCore.UNKNOWN
+
         if (lacus_status == CaptureStatusCore.UNKNOWN
                 and self.redis.zscore('to_capture', capture_uuid) is not None):
             # If we do the query before lacus picks it up, we will tell to the user that the UUID doesn't exists.
@@ -473,41 +492,57 @@ class Lookyloo():
 
         query = self._prepare_lacus_query(query)
 
-        priority = get_priority(source, user, authenticated)
-        perma_uuid = self.lacus.enqueue(
-            url=query.pop('url', None),
-            document_name=query.pop('document_name', None),
-            document=query.pop('document', None),
-            # depth=query.pop('depth', 0),
-            browser=query.pop('browser', None),
-            device_name=query.pop('device_name', None),
-            user_agent=query.pop('user_agent', None),
-            proxy=query.pop('proxy', None),
-            general_timeout_in_sec=query.pop('general_timeout_in_sec', None),
-            cookies=query.pop('cookies', None),
-            headers=query.pop('headers', None),
-            http_credentials=query.pop('http_credentials', None),
-            viewport=query.pop('viewport', None),
-            referer=query.pop('referer', None),
-            rendered_hostname_only=query.pop('rendered_hostname_only', True),
-            # force=query.pop('force', False),
-            # recapture_interval=query.pop('recapture_interval', 300),
-            priority=priority
-        )
+        query['priority'] = get_priority(source, user, authenticated)
+        if query['priority'] < -10:
+            # Someone is probably abusing the system with useless URLs, remove them from the index
+            query['listing'] = 0
+        try:
+            perma_uuid = self.lacus.enqueue(
+                url=query.get('url', None),
+                document_name=query.get('document_name', None),
+                document=query.get('document', None),
+                # depth=query.get('depth', 0),
+                browser=query.get('browser', None),
+                device_name=query.get('device_name', None),
+                user_agent=query.get('user_agent', None),
+                proxy=query.get('proxy', None),
+                general_timeout_in_sec=query.get('general_timeout_in_sec', None),
+                cookies=query.get('cookies', None),
+                headers=query.get('headers', None),
+                http_credentials=query.get('http_credentials', None),
+                viewport=query.get('viewport', None),
+                referer=query.get('referer', None),
+                rendered_hostname_only=query.get('rendered_hostname_only', True),
+                # force=query.get('force', False),
+                # recapture_interval=query.get('recapture_interval', 300),
+                priority=query.get('priority', 0)
+            )
+        except Exception as e:
+            self.logger.critical(f'Unable to enqueue capture: {e}')
+            perma_uuid = str(uuid4())
+            query['not_queued'] = 1
+        finally:
+            if (not self.redis.hexists('lookup_dirs', perma_uuid)  # already captured
+                    and self.redis.zscore('to_capture', perma_uuid) is None):  # capture ongoing
 
-        if (not self.redis.hexists('lookup_dirs', perma_uuid)  # already captured
-                and self.redis.zscore('to_capture', perma_uuid) is None):  # capture ongoing
-            if priority < -10:
-                # Someone is probably abusing the system with useless URLs, remove them from the index
-                query['listing'] = 0
+                # Make the settings redis compatible
+                mapping_capture: Dict[str, Union[bytes, float, int, str]] = {}
+                for key, value in query.items():
+                    if isinstance(value, bool):
+                        mapping_capture[key] = 1 if value else 0
+                    elif isinstance(value, (list, dict)):
+                        if value:
+                            mapping_capture[key] = json.dumps(value)
+                    elif value is not None:
+                        mapping_capture[key] = value
 
-            p = self.redis.pipeline()
-            p.zadd('to_capture', {perma_uuid: priority})
-            if query:
-                p.hset(perma_uuid, mapping=query)  # This will add the remaining entries that are lookyloo specific
-            p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
-            p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
-            p.execute()
+                p = self.redis.pipeline()
+                p.zadd('to_capture', {perma_uuid: query['priority']})
+                p.hset(perma_uuid, mapping=mapping_capture)
+                p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
+                p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
+                p.execute()
+
         return perma_uuid
 
     def send_mail(self, capture_uuid: str, /, email: str='', comment: str='') -> None:

@@ -67,6 +67,8 @@ class Monitoring():
         to_return = []
         for uuid, rank in captures_uuid:
             capture_params = self.redis_cache.hgetall(uuid)
+            if 'document' in capture_params:
+                capture_params.pop('document')
             if capture_params:
                 to_return.append((uuid, rank, capture_params))
 

@@ -571,7 +571,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.1.2"
+version = "1.1.3"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
@@ -901,7 +901,7 @@ docs = ["Sphinx (>=5.1.1,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.1.0"
+version = "1.1.1"
 description = "Python CLI and module for lacus"
 category = "main"
 optional = false
@@ -1045,7 +1045,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "pytz"
-version = "2022.5"
+version = "2022.6"
 description = "World timezone definitions, modern and historical"
 category = "main"
 optional = false
@@ -1476,7 +1476,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.12"
-content-hash = "f274187b6e2cc2fd68d671405f24ddbadf6a362e68cea4eb5093fdce7ae9c55e"
+content-hash = "5adbb7f2a6e81f21a199fc3f9bd1e4594dcc6a1dece1282f892edc5e95c4ba06"
 
 [metadata.files]
 aiohttp = [
@@ -1931,8 +1931,8 @@ jsonschema = [
     {file = "jsonschema-4.16.0.tar.gz", hash = "sha256:165059f076eff6971bae5b742fc029a7b4ef3f9bcf04c14e4776a7605de14b23"},
 ]
 lacuscore = [
-    {file = "lacuscore-1.1.2-py3-none-any.whl", hash = "sha256:876d3ccb743bb4d43421d1670762af2f54c6b82dfdec9b5a4c37109dbabd02c6"},
-    {file = "lacuscore-1.1.2.tar.gz", hash = "sha256:ed83c8f4cb31e24ec0e39ce85fcd9dd675c0ae96bf9aaededf7c21469be6b1ad"},
+    {file = "lacuscore-1.1.3-py3-none-any.whl", hash = "sha256:8e9cd36083723423b6ecc2bac2da4cd97a35a92e8b3bab8907d583323e732a97"},
+    {file = "lacuscore-1.1.3.tar.gz", hash = "sha256:e02ea9fa594ce32ee5094917c08d8e20cdc0b2bf5dd939cbacf6b02103c4028e"},
 ]
 lief = [
     {file = "lief-0.12.2-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:cdadaab4b9ec756e1d1f0324acd6e280ae849d251e66f836da455df592deaf9e"},
@@ -2358,8 +2358,8 @@ pyhashlookup = [
     {file = "pyhashlookup-1.2.1.tar.gz", hash = "sha256:eb514cc1a5559a013a8882e101849fa52a37641f2a7d9dc21c0d266b37607aa5"},
 ]
 pylacus = [
-    {file = "pylacus-1.1.0-py3-none-any.whl", hash = "sha256:880ce273fe35a554a35d6812e899e69b2f360fa5041822b136fbaf8f336a44d3"},
-    {file = "pylacus-1.1.0.tar.gz", hash = "sha256:90ca603bf58d19197f4776fffc58b9b98f34d12916457a026ff2cddbaa42fb6f"},
+    {file = "pylacus-1.1.1-py3-none-any.whl", hash = "sha256:61eab358c20b0fbb1915a91f82d5dc8ee3b8f22de7e23dfe2206af937e4d3728"},
+    {file = "pylacus-1.1.1.tar.gz", hash = "sha256:4eca75827ba977fb6dbeef587cf2a08324e4e4cdbc30a8762c695099be27a9dc"},
 ]
 pylookyloo = [
     {file = "pylookyloo-1.16.0-py3-none-any.whl", hash = "sha256:2c39e26eae61144e6bb986fbcb58604e9804b4d6b2fe1ff844d8b429db2628d2"},
@@ -2422,8 +2422,8 @@ python-magic = [
     {file = "python_magic-0.4.27-py2.py3-none-any.whl", hash = "sha256:c212960ad306f700aa0d01e5d7a325d20548ff97eb9920dcd29513174f0294d3"},
 ]
 pytz = [
-    {file = "pytz-2022.5-py2.py3-none-any.whl", hash = "sha256:335ab46900b1465e714b4fda4963d87363264eb662aab5e65da039c25f1f5b22"},
-    {file = "pytz-2022.5.tar.gz", hash = "sha256:c4d88f472f54d615e9cd582a5004d1e5f624854a6a27a6211591c251f22a6914"},
+    {file = "pytz-2022.6-py2.py3-none-any.whl", hash = "sha256:222439474e9c98fced559f1709d89e6c9cbf8d79c794ff3eb9f8800064291427"},
+    {file = "pytz-2022.6.tar.gz", hash = "sha256:e89512406b793ca39f5971bc999cc538ce125c0e51c27941bef4568b460095e2"},
 ]
 pytz-deprecation-shim = [
     {file = "pytz_deprecation_shim-0.1.0.post0-py2.py3-none-any.whl", hash = "sha256:8314c9692a636c8eb3bda879b9f119e350e93223ae83e70e80c31675a0fdc1a6"},

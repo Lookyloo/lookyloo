@@ -11,10 +11,10 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
-from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
-from redis import Redis
+from pylacus import CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 
-from lookyloo.default import AbstractManager, get_config, get_socket_path, safe_create_dir
+from lookyloo.lookyloo import Lookyloo
+from lookyloo.default import AbstractManager, get_config, safe_create_dir
 from lookyloo.helpers import get_captures_dir
 
 from lookyloo.modules import FOX
@@ -30,25 +30,7 @@ class AsyncCapture(AbstractManager):
         self.script_name = 'async_capture'
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
         self.capture_dir: Path = get_captures_dir()
-        self.redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))
-
-        self.lacus: Union[PyLacus, LacusCore]
-        has_remote_lacus = False
-        if get_config('generic', 'remote_lacus'):
-            remote_lacus_config = get_config('generic', 'remote_lacus')
-            if remote_lacus_config.get('enable'):
-                self.logger.info("Remote lacus enabled, trying to set it up...")
-                remote_lacus_url = remote_lacus_config.get('url')
-                self.lacus = PyLacus(remote_lacus_url)
-                if self.lacus.is_up:
-                    has_remote_lacus = True
-                    self.logger.info(f"Remote lacus enabled to {remote_lacus_url}.")
-                else:
-                    self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}.")
-
-        if not has_remote_lacus:
-            self.lacus = LacusCore(self.redis, get_config('generic', 'tor_proxy'),
-                                   get_config('generic', 'only_global_lookups'))
+        self.lookyloo = Lookyloo()
 
         self.captures: Dict[asyncio.Task, float] = {}
 
@@ -65,21 +47,20 @@ class AsyncCapture(AbstractManager):
         self.set_running()
         uuid: Optional[str] = None
         entries: Union[CaptureResponseCore, CaptureResponsePy]
-        if isinstance(self.lacus, LacusCore):
-            if uuid := await self.lacus.consume_queue():
-                entries = self.lacus.get_capture(uuid, decode=True)
+        if isinstance(self.lookyloo.lacus, LacusCore):
+            if uuid := await self.lookyloo.lacus.consume_queue():
+                entries = self.lookyloo.lacus.get_capture(uuid, decode=True)
                 if entries['status'] != CaptureStatusCore.DONE:
                     self.logger.warning(f'The capture {uuid} is reported as not done ({entries["status"]}) when it should.')
-                    self.redis.zrem('to_capture', uuid)
-                    self.redis.delete(uuid)
+                    self.lookyloo.redis.zrem('to_capture', uuid)
+                    self.lookyloo.redis.delete(uuid)
         else:
             # Find a capture that is done
             try:
-                for uuid_b in self.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf'):
-                    uuid = uuid_b.decode()
+                for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf'):
                     if not uuid:
                         break
-                    entries = self.lacus.get_capture(uuid)
+                    entries = self.lookyloo.lacus.get_capture(uuid)
                     if entries['status'] == CaptureStatusPy.DONE:
                         log = f'Got the capture for {uuid} from Lacus'
                         if runtime := entries.get('runtime'):
@@ -92,33 +73,34 @@ class AsyncCapture(AbstractManager):
             except Exception as e:
                 self.logger.critical(f'Error when getting captures from lacus, will retry later: {e}')
                 uuid = None
+                await asyncio.sleep(10)
 
         if uuid is None:
             self.unset_running()
             return
 
-        self.redis.sadd('ongoing', uuid)
-        queue: Optional[bytes] = self.redis.getdel(f'{uuid}_mgmt')
+        self.lookyloo.redis.sadd('ongoing', uuid)
+        queue: Optional[str] = self.lookyloo.redis.getdel(f'{uuid}_mgmt')
 
-        to_capture: Dict[bytes, bytes] = self.redis.hgetall(uuid)
+        to_capture: Dict[str, str] = self.lookyloo.redis.hgetall(uuid)
 
         if get_config('generic', 'default_public'):
             # By default, the captures are on the index, unless the user mark them as un-listed
-            listing = False if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'false', b'0', b'']) else True
+            listing = False if ('listing' in to_capture and to_capture['listing'].lower() in ['false', '0', '']) else True
         else:
             # By default, the captures are not on the index, unless the user mark them as listed
-            listing = True if (b'listing' in to_capture and to_capture[b'listing'].lower() in [b'true', b'1']) else False
+            listing = True if ('listing' in to_capture and to_capture['listing'].lower() in ['true', '1']) else False
 
         now = datetime.now()
         dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / now.isoformat()
         safe_create_dir(dirpath)
 
-        if b'os' in to_capture or b'browser' in to_capture:
+        if 'os' in to_capture or 'browser' in to_capture:
             meta: Dict[str, str] = {}
-            if b'os' in to_capture:
-                meta['os'] = to_capture[b'os'].decode()
-            if b'browser' in to_capture:
-                meta['browser'] = to_capture[b'browser'].decode()
+            if 'os' in to_capture:
+                meta['os'] = to_capture['os']
+            if 'browser' in to_capture:
+                meta['browser'] = to_capture['browser']
             with (dirpath / 'meta').open('w') as _meta:
                 json.dump(meta, _meta)
 
@@ -131,9 +113,9 @@ class AsyncCapture(AbstractManager):
             (dirpath / 'no_index').touch()
 
         # Write parent UUID (optional)
-        if b'parent' in to_capture:
+        if 'parent' in to_capture:
             with (dirpath / 'parent').open('w') as _parent:
-                _parent.write(to_capture[b'parent'].decode())
+                _parent.write(to_capture['parent'])
 
         if 'downloaded_filename' in entries and entries['downloaded_filename']:
             with (dirpath / '0.data.filename').open('w') as _downloaded_filename:
@@ -167,9 +149,9 @@ class AsyncCapture(AbstractManager):
             with (dirpath / '0.cookies.json').open('w') as _cookies:
                 json.dump(entries['cookies'], _cookies)
 
-        lazy_cleanup = self.redis.pipeline()
+        lazy_cleanup = self.lookyloo.redis.pipeline()
         lazy_cleanup.hset('lookup_dirs', uuid, str(dirpath))
-        if queue and self.redis.zscore('queues', queue):
+        if queue and self.lookyloo.redis.zscore('queues', queue):
             lazy_cleanup.zincrby('queues', -1, queue)
         lazy_cleanup.zrem('to_capture', uuid)
         lazy_cleanup.srem('ongoing', uuid)
