@@ -1222,49 +1222,9 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "types-click"
-version = "7.1.8"
-description = "Typing stubs for click"
-category = "dev"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "types-deprecated"
 version = "1.2.9"
 description = "Typing stubs for Deprecated"
-category = "dev"
-optional = false
-python-versions = "*"
-
-[[package]]
-name = "types-flask"
-version = "1.1.6"
-description = "Typing stubs for Flask"
-category = "dev"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-types-click = "*"
-types-Jinja2 = "*"
-types-Werkzeug = "*"
-
-[[package]]
-name = "types-jinja2"
-version = "2.11.9"
-description = "Typing stubs for Jinja2"
-category = "dev"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-types-MarkupSafe = "*"
-
-[[package]]
-name = "types-markupsafe"
-version = "1.1.10"
-description = "Typing stubs for MarkupSafe"
 category = "dev"
 optional = false
 python-versions = "*"
@@ -1316,14 +1276,6 @@ types-urllib3 = "<1.27"
 name = "types-urllib3"
 version = "1.26.25.1"
 description = "Typing stubs for urllib3"
-category = "dev"
-optional = false
-python-versions = "*"
-
-[[package]]
-name = "types-werkzeug"
-version = "1.0.9"
-description = "Typing stubs for Werkzeug"
 category = "dev"
 optional = false
 python-versions = "*"
@@ -1478,7 +1430,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.12"
-content-hash = "008be70c0174b1ea15d7e0f1620fc753328b62f4474e8a110d122a4e469cb38b"
+content-hash = "5296fbbca081592972274f79474be532a1d12865fdc576741a5308b9802f01a5"
 
 [metadata.files]
 aiohttp = [
@@ -2559,25 +2511,9 @@ types-beautifulsoup4 = [
     {file = "types-beautifulsoup4-4.11.6.tar.gz", hash = "sha256:2670dd71995df464041e2941fa9bbb694795271e3dedd7262b4766649a1cbe82"},
     {file = "types_beautifulsoup4-4.11.6-py3-none-any.whl", hash = "sha256:ac9dd1383481201ea07f27c5a43e7b1ee71caf9c720b7ae951db15d60d126e80"},
 ]
-types-click = [
-    {file = "types-click-7.1.8.tar.gz", hash = "sha256:b6604968be6401dc516311ca50708a0a28baa7a0cb840efd7412f0dbbff4e092"},
-    {file = "types_click-7.1.8-py3-none-any.whl", hash = "sha256:8cb030a669e2e927461be9827375f83c16b8178c365852c060a34e24871e7e81"},
-]
 types-deprecated = [
     {file = "types-Deprecated-1.2.9.tar.gz", hash = "sha256:e04ce58929509865359e91dcc38720123262b4cd68fa2a8a90312d50390bb6fa"},
     {file = "types_Deprecated-1.2.9-py3-none-any.whl", hash = "sha256:53d05621e1d75de537f5a57d93508c8df17e37c07ee60b9fb09d39e1b7586c1e"},
-]
-types-flask = [
-    {file = "types-Flask-1.1.6.tar.gz", hash = "sha256:aac777b3abfff9436e6b01f6d08171cf23ea6e5be71cbf773aaabb1c5763e9cf"},
-    {file = "types_Flask-1.1.6-py3-none-any.whl", hash = "sha256:6ab8a9a5e258b76539d652f6341408867298550b19b81f0e41e916825fc39087"},
-]
-types-jinja2 = [
-    {file = "types-Jinja2-2.11.9.tar.gz", hash = "sha256:dbdc74a40aba7aed520b7e4d89e8f0fe4286518494208b35123bcf084d4b8c81"},
-    {file = "types_Jinja2-2.11.9-py3-none-any.whl", hash = "sha256:60a1e21e8296979db32f9374d8a239af4cb541ff66447bb915d8ad398f9c63b2"},
-]
-types-markupsafe = [
-    {file = "types-MarkupSafe-1.1.10.tar.gz", hash = "sha256:85b3a872683d02aea3a5ac2a8ef590193c344092032f58457287fbf8e06711b1"},
-    {file = "types_MarkupSafe-1.1.10-py3-none-any.whl", hash = "sha256:ca2bee0f4faafc45250602567ef38d533e877d2ddca13003b319c551ff5b3cc5"},
 ]
 types-pillow = [
     {file = "types-Pillow-9.3.0.0.tar.gz", hash = "sha256:0851a1b3ff002253a7af8f7eaf74d79fb761430933bd1aeb73d853a17f2a0a9d"},
@@ -2602,10 +2538,6 @@ types-requests = [
 types-urllib3 = [
     {file = "types-urllib3-1.26.25.1.tar.gz", hash = "sha256:a948584944b2412c9a74b9cf64f6c48caf8652cb88b38361316f6d15d8a184cd"},
     {file = "types_urllib3-1.26.25.1-py3-none-any.whl", hash = "sha256:f6422596cc9ee5fdf68f9d547f541096a20c2dcfd587e37c804c9ea720bf5cb2"},
-]
-types-werkzeug = [
-    {file = "types-Werkzeug-1.0.9.tar.gz", hash = "sha256:5cc269604c400133d452a40cee6397655f878fc460e03fde291b9e3a5eaa518c"},
-    {file = "types_Werkzeug-1.0.9-py3-none-any.whl", hash = "sha256:194bd5715a13c598f05c63e8a739328657590943bce941e8a3619a6b5d4a54ec"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},

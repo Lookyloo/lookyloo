@@ -3,7 +3,7 @@
 import base64
 import hashlib
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import flask_login  # type: ignore
 from flask import request, send_file
@@ -41,15 +41,15 @@ class AuthToken(Resource):
     @api.param('username', 'Your username')
     @api.param('password', 'Your password')
     def get(self):
-        username = request.args['username'] if request.args.get('username') else False
-        password = request.args['password'] if request.args.get('password') else False
-        if username in self.users_table and check_password_hash(self.users_table[username]['password'], password):
+        username: Optional[str] = request.args['username'] if request.args.get('username') else None
+        password: Optional[str] = request.args['password'] if request.args.get('password') else None
+        if username and password and username in self.users_table and check_password_hash(self.users_table[username]['password'], password):
             return {'authkey': self.users_table[username]['authkey']}
         return {'error': 'User/Password invalid.'}, 401
 
     @api.doc(body=token_request_fields)
     def post(self):
-        auth: Dict = request.get_json(force=True)
+        auth: Dict = request.get_json(force=True)  # type: ignore
         if 'username' in auth and 'password' in auth:  # Expected keys in json
             if (auth['username'] in self.users_table
                     and check_password_hash(self.users_table[auth['username']]['password'], auth['password'])):
@@ -208,7 +208,7 @@ class MISPPush(Resource):
 
     @api.doc(body=misp_push_fields)
     def post(self, capture_uuid: str):
-        parameters: Dict = request.get_json(force=True)
+        parameters: Dict = request.get_json(force=True)  # type: ignore
         with_parents = True if parameters.get('with_parents') else False
         allow_duplicates = True if parameters.get('allow_duplicates') else False
 
@@ -246,7 +246,7 @@ trigger_modules_fields = api.model('TriggerModulesFields', {
 class TriggerModules(Resource):
     @api.doc(body=trigger_modules_fields)
     def post(self, capture_uuid: str):
-        parameters: Dict = request.get_json(force=True)
+        parameters: Dict = request.get_json(force=True)  # type: ignore
         force = True if parameters.get('force') else False
         return lookyloo.trigger_modules(capture_uuid, force=force)
 
@@ -276,7 +276,7 @@ class URLInfo(Resource):
 
     @api.doc(body=url_info_fields)
     def post(self):
-        to_query: Dict = request.get_json(force=True)
+        to_query: Dict = request.get_json(force=True)  # type: ignore
         occurrences = lookyloo.get_url_occurrences(to_query.pop('url'), **to_query)
         return occurrences
 
@@ -293,7 +293,7 @@ class HostnameInfo(Resource):
 
     @api.doc(body=hostname_info_fields)
     def post(self):
-        to_query: Dict = request.get_json(force=True)
+        to_query: Dict = request.get_json(force=True)  # type: ignore
         occurrences = lookyloo.get_hostname_occurrences(to_query.pop('hostname'), **to_query)
         return occurrences
 
@@ -399,7 +399,7 @@ class SubmitCapture(Resource):
             user = flask_login.current_user.get_id()
         else:
             user = src_request_ip(request)
-        to_query: Dict = request.get_json(force=True)
+        to_query: Dict = request.get_json(force=True)  # type: ignore
         perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
         return perma_uuid
 

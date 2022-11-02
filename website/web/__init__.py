@@ -224,14 +224,14 @@ def after_request(response):
 def hashes_hostnode(tree_uuid: str, node_uuid: str):
     hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
     return send_file(BytesIO('\n'.join(hashes).encode()),
-                     mimetype='test/plain', as_attachment=True, attachment_filename=f'hashes.{node_uuid}.txt')
+                     mimetype='test/plain', as_attachment=True, download_name=f'hashes.{node_uuid}.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>/text', methods=['GET'])
 def urls_hostnode(tree_uuid: str, node_uuid: str):
     hostnode = lookyloo.get_hostnode_from_tree(tree_uuid, node_uuid)
     return send_file(BytesIO('\n'.join(url.name for url in hostnode.urls).encode()),
-                     mimetype='test/plain', as_attachment=True, attachment_filename=f'urls.{node_uuid}.txt')
+                     mimetype='test/plain', as_attachment=True, download_name=f'urls.{node_uuid}.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>', methods=['GET'])
@@ -479,7 +479,7 @@ def redirects(tree_uuid: str):
     else:
         to_return = BytesIO('\n'.join([cache.url] + cache.redirects).encode())
     return send_file(to_return, mimetype='text/text',
-                     as_attachment=True, attachment_filename='redirects.txt')
+                     as_attachment=True, download_name='redirects.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
@@ -490,7 +490,7 @@ def image(tree_uuid: str):
     else:
         to_return = lookyloo.get_screenshot(tree_uuid)
     return send_file(to_return, mimetype='image/png',
-                     as_attachment=True, attachment_filename='image.png')
+                     as_attachment=True, download_name='image.png')
 
 
 @app.route('/tree/<string:tree_uuid>/data', methods=['GET'])
@@ -505,7 +505,7 @@ def data(tree_uuid: str):
     else:
         mime = filetype.guess_mime(data.getvalue())
     return send_file(data, mimetype=mime,
-                     as_attachment=True, attachment_filename=filename)
+                     as_attachment=True, download_name=filename)
 
 
 @app.route('/tree/<string:tree_uuid>/thumbnail/', defaults={'width': 64}, methods=['GET'])
@@ -519,28 +519,28 @@ def thumbnail(tree_uuid: str, width: int):
 def html(tree_uuid: str):
     to_return = lookyloo.get_html(tree_uuid)
     return send_file(to_return, mimetype='text/html',
-                     as_attachment=True, attachment_filename='page.html')
+                     as_attachment=True, download_name='page.html')
 
 
 @app.route('/tree/<string:tree_uuid>/cookies', methods=['GET'])
 def cookies(tree_uuid: str):
     to_return = lookyloo.get_cookies(tree_uuid)
     return send_file(to_return, mimetype='application/json',
-                     as_attachment=True, attachment_filename='cookies.json')
+                     as_attachment=True, download_name='cookies.json')
 
 
 @app.route('/tree/<string:tree_uuid>/hashes', methods=['GET'])
 def hashes_tree(tree_uuid: str):
     hashes = lookyloo.get_hashes(tree_uuid)
     return send_file(BytesIO('\n'.join(hashes).encode()),
-                     mimetype='test/plain', as_attachment=True, attachment_filename='hashes.txt')
+                     mimetype='test/plain', as_attachment=True, download_name='hashes.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/export', methods=['GET'])
 def export(tree_uuid: str):
     to_return = lookyloo.get_capture(tree_uuid)
     return send_file(to_return, mimetype='application/zip',
-                     as_attachment=True, attachment_filename='capture.zip')
+                     as_attachment=True, download_name='capture.zip')
 
 
 @app.route('/tree/<string:tree_uuid>/urls_rendered_page', methods=['GET'])
@@ -701,7 +701,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
 @flask_login.login_required
 def mark_as_legitimate(tree_uuid: str):
     if request.data:
-        legitimate_entries: Dict = request.get_json(force=True)
+        legitimate_entries: Dict = request.get_json(force=True)  # type: ignore
         lookyloo.add_to_legitimate(tree_uuid, **legitimate_entries)
     else:
         lookyloo.add_to_legitimate(tree_uuid)
@@ -936,7 +936,10 @@ def capture_web():
         elif 'document' in request.files:
             # File upload
             capture_query['document'] = request.files['document'].stream.read()
-            capture_query['document_name'] = request.files['document'].filename
+            if request.files['document'].filename:
+                capture_query['document_name'] = request.files['document'].filename
+            else:
+                capture_query['document_name'] = 'unknown_name.bin'
             perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
             time.sleep(2)
             return redirect(url_for('tree', tree_uuid=perma_uuid))
@@ -988,7 +991,7 @@ def statsfull():
 def whois(query: str):
     to_return = lookyloo.uwhois.whois(query)
     return send_file(BytesIO(to_return.encode()),
-                     mimetype='test/plain', as_attachment=True, attachment_filename=f'whois.{query}.txt')
+                     mimetype='test/plain', as_attachment=True, download_name=f'whois.{query}.txt')
 
 
 # ##### Methods related to a specific URLNode #####
@@ -1000,7 +1003,7 @@ def urlnode_request_cookies(tree_uuid: str, node_uuid: str):
         return
 
     return send_file(BytesIO(json.dumps(urlnode.request_cookie, indent=2).encode()),
-                     mimetype='text/plain', as_attachment=True, attachment_filename='request_cookies.txt')
+                     mimetype='text/plain', as_attachment=True, download_name='request_cookies.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/response_cookies', methods=['GET'])
@@ -1010,7 +1013,7 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
         return
 
     return send_file(BytesIO(json.dumps(urlnode.response_cookie, indent=2).encode()),
-                     mimetype='text/plain', as_attachment=True, attachment_filename='response_cookies.txt')
+                     mimetype='text/plain', as_attachment=True, download_name='response_cookies.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/urls_in_rendered_content', methods=['GET'])
@@ -1027,7 +1030,7 @@ def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str):
     to_return = StringIO()
     to_return.writelines([f'{u}\n' for u in not_loaded_urls])
     return send_file(BytesIO(to_return.getvalue().encode()), mimetype='text/plain',
-                     as_attachment=True, attachment_filename='urls_in_rendered_content.txt')
+                     as_attachment=True, download_name='urls_in_rendered_content.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/rendered_content', methods=['GET'])
@@ -1036,7 +1039,7 @@ def urlnode_rendered_content(tree_uuid: str, node_uuid: str):
     if not urlnode.rendered_html:
         return
     return send_file(BytesIO(urlnode.rendered_html.getvalue()), mimetype='text/plain',
-                     as_attachment=True, attachment_filename='rendered_content.txt')
+                     as_attachment=True, download_name='rendered_content.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/posted_data', methods=['GET'])
@@ -1061,10 +1064,10 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str):
 
     if is_blob:
         return send_file(to_return, mimetype='application/octet-stream',
-                         as_attachment=True, attachment_filename='posted_data.bin')
+                         as_attachment=True, download_name='posted_data.bin')
     else:
         return send_file(to_return, mimetype='text/plain',
-                         as_attachment=True, attachment_filename='posted_data.txt')
+                         as_attachment=True, download_name='posted_data.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource', methods=['POST', 'GET'])
@@ -1083,7 +1086,7 @@ def get_ressource(tree_uuid: str, node_uuid: str):
         to_return = BytesIO(b'Unknown Hash')
         filename = 'file.txt'
         mimetype = 'text/text'
-    return send_file(to_return, mimetype=mimetype, as_attachment=True, attachment_filename=filename)
+    return send_file(to_return, mimetype=mimetype, as_attachment=True, download_name=filename)
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource_preview', methods=['GET'])
@@ -1095,7 +1098,7 @@ def get_ressource_preview(tree_uuid: str, node_uuid: str, h_ressource: Optional[
     filename, r, mimetype = ressource
     if mimetype.startswith('image'):
         return send_file(r, mimetype=mimetype,
-                         as_attachment=True, attachment_filename=filename)
+                         as_attachment=True, download_name=filename)
     return Response('No preview available.', mimetype='text/text')
 
 
@@ -1103,7 +1106,7 @@ def get_ressource_preview(tree_uuid: str, node_uuid: str, h_ressource: Optional[
 def hashes_urlnode(tree_uuid: str, node_uuid: str):
     hashes = lookyloo.get_hashes(tree_uuid, urlnode_uuid=node_uuid)
     return send_file(BytesIO('\n'.join(hashes).encode()),
-                     mimetype='test/plain', as_attachment=True, attachment_filename='hashes.txt')
+                     mimetype='test/plain', as_attachment=True, download_name='hashes.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/add_context', methods=['POST'])
