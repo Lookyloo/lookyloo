@@ -570,7 +570,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.1.4"
+version = "1.1.5"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
@@ -1430,7 +1430,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.12"
-content-hash = "556648716515b68d5bad7c39ae024ced9b26304cd6c6a24e1d6fa3eb45c4e1e9"
+content-hash = "bcd8852192006a7b7991f94611078303e2abdb8692915b5cd08bdc7cd015634f"
 
 [metadata.files]
 aiohttp = [
@@ -1885,8 +1885,8 @@ jsonschema = [
     {file = "jsonschema-4.17.0.tar.gz", hash = "sha256:5bfcf2bca16a087ade17e02b282d34af7ccd749ef76241e7f9bd7c0cb8a9424d"},
 ]
 lacuscore = [
-    {file = "lacuscore-1.1.4-py3-none-any.whl", hash = "sha256:e6032c7ddebf688b84dc80f967b39542102c535797ce50b174d971bd6cc2b4c4"},
-    {file = "lacuscore-1.1.4.tar.gz", hash = "sha256:1d4f6075f9fde74274fdb7dfc54448e9035a37bb0ce7bdff0e1aad4bfd243851"},
+    {file = "lacuscore-1.1.5-py3-none-any.whl", hash = "sha256:500587675c4a3a930b18f6fe74c88eca91f1303504750cda8dcc754842d7acfa"},
+    {file = "lacuscore-1.1.5.tar.gz", hash = "sha256:01d89c553da2745df45027538e1793fba9b6b6730527f7bf387bf0bd22c033a0"},
 ]
 lief = [
     {file = "lief-0.12.3-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:6d18aafa2028587c98f6d4387bec94346e92f2b5a8a5002f70b1cf35b1c045cc"},
