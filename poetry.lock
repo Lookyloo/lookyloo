@@ -929,7 +929,7 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.162.2"
+version = "2.4.165"
 description = "Python API for MISP."
 category = "main"
 optional = false
@@ -947,7 +947,7 @@ requests = ">=2.28.1,<3.0.0"
 [package.extras]
 brotli = ["urllib3[brotli] (>=1.26.12,<2.0.0)"]
 docs = ["recommonmark (>=0.7.1,<0.8.0)", "sphinx-autodoc-typehints (>=1.19.5,<2.0.0)"]
-email = ["RTFDE (>=0.0.2,<0.0.3)", "extract_msg (>=0.36.4,<0.37.0)", "oletools (>=0.60.1,<0.61.0)"]
+email = ["RTFDE (>=0.0.2,<0.0.3)", "extract_msg (>=0.36.5,<0.37.0)", "oletools (>=0.60.1,<0.61.0)"]
 fileobjects = ["lief (>=0.12.3,<0.13.0)", "pydeep2 (>=0.5.1,<0.6.0)", "python-magic (>=0.4.27,<0.5.0)"]
 openioc = ["beautifulsoup4 (>=4.11.1,<5.0.0)"]
 pdfexport = ["reportlab (>=3.6.12,<4.0.0)"]
@@ -1216,7 +1216,7 @@ test = ["pre-commit", "pytest"]
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.11.6"
+version = "4.11.6.1"
 description = "Typing stubs for beautifulsoup4"
 category = "dev"
 optional = false
@@ -1232,7 +1232,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-pillow"
-version = "9.3.0.0"
+version = "9.3.0.1"
 description = "Typing stubs for Pillow"
 category = "dev"
 optional = false
@@ -1248,7 +1248,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.8.19.2"
+version = "2.8.19.3"
 description = "Typing stubs for python-dateutil"
 category = "dev"
 optional = false
@@ -1256,7 +1256,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.3.21.3"
+version = "4.3.21.4"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1264,7 +1264,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.11.2"
+version = "2.28.11.4"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
@@ -1275,7 +1275,7 @@ types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-urllib3"
-version = "1.26.25.1"
+version = "1.26.25.3"
 description = "Typing stubs for urllib3"
 category = "dev"
 optional = false
@@ -1431,7 +1431,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.12"
-content-hash = "963cef780d8a8bf0874fe551eb0c09acce395f043e82f7cb0f1785b58298a386"
+content-hash = "9fda9f9672f0fbad74e948786c7d5bd895df9f61c01ccdfde79d95a72b895dbc"
 
 [metadata.files]
 aiohttp = [
@@ -2346,8 +2346,8 @@ pylookyloo = [
     {file = "pylookyloo-1.16.0.tar.gz", hash = "sha256:cfd07e8765d2d9b83f9bcb1509e1d31a70be625b3cde80fe8d42b276d4af2162"},
 ]
 pymisp = [
-    {file = "pymisp-2.4.162.2-py3-none-any.whl", hash = "sha256:0e3edb3366766d52ec2151d9c96eed18505bd13684ed1d04e931fb679a916e09"},
-    {file = "pymisp-2.4.162.2.tar.gz", hash = "sha256:6c097b099543f44614fc7ffaea79a66c1e48b0b503fb3d0534308016f02edadc"},
+    {file = "pymisp-2.4.165-py3-none-any.whl", hash = "sha256:000e191416c40837bcb2ba6b3c77b698c2cae09315c607e546a6b6a255b69723"},
+    {file = "pymisp-2.4.165.tar.gz", hash = "sha256:daea4ac414ea0d9873743b4517e20947206c11a277340c6aa5f51ffab6af5802"},
 ]
 pypandora = [
     {file = "pypandora-1.2.0-py3-none-any.whl", hash = "sha256:f50286f71721def21210e14300aff7682079da7a1c6c125234242e06259c3c97"},
@@ -2530,36 +2530,36 @@ traitlets = [
     {file = "traitlets-5.5.0.tar.gz", hash = "sha256:b122f9ff2f2f6c1709dab289a05555be011c87828e911c0cf4074b85cb780a79"},
 ]
 types-beautifulsoup4 = [
-    {file = "types-beautifulsoup4-4.11.6.tar.gz", hash = "sha256:2670dd71995df464041e2941fa9bbb694795271e3dedd7262b4766649a1cbe82"},
-    {file = "types_beautifulsoup4-4.11.6-py3-none-any.whl", hash = "sha256:ac9dd1383481201ea07f27c5a43e7b1ee71caf9c720b7ae951db15d60d126e80"},
+    {file = "types-beautifulsoup4-4.11.6.1.tar.gz", hash = "sha256:d46be8f409ddccb6daaa9d118484185e70bcf552085c39c6d05b157cd1462e04"},
+    {file = "types_beautifulsoup4-4.11.6.1-py3-none-any.whl", hash = "sha256:c1f803367a2b07ad4fdac40ddbea557010dc4ddd1ee92d801f317eb02e2e3c72"},
 ]
 types-deprecated = [
     {file = "types-Deprecated-1.2.9.tar.gz", hash = "sha256:e04ce58929509865359e91dcc38720123262b4cd68fa2a8a90312d50390bb6fa"},
     {file = "types_Deprecated-1.2.9-py3-none-any.whl", hash = "sha256:53d05621e1d75de537f5a57d93508c8df17e37c07ee60b9fb09d39e1b7586c1e"},
 ]
 types-pillow = [
-    {file = "types-Pillow-9.3.0.0.tar.gz", hash = "sha256:0851a1b3ff002253a7af8f7eaf74d79fb761430933bd1aeb73d853a17f2a0a9d"},
-    {file = "types_Pillow-9.3.0.0-py3-none-any.whl", hash = "sha256:df09de7e557706c16fb30db887327c7f1c81e8ebc703d9d4739bfda7cad0e733"},
+    {file = "types-Pillow-9.3.0.1.tar.gz", hash = "sha256:f3b7cada3fa496c78d75253c6b1f07a843d625f42e5639b320a72acaff6f7cfb"},
+    {file = "types_Pillow-9.3.0.1-py3-none-any.whl", hash = "sha256:79837755fe9659f29efd1016e9903ac4a500e0c73260483f07296bd6ca47668b"},
 ]
 types-pkg-resources = [
     {file = "types-pkg_resources-0.1.3.tar.gz", hash = "sha256:834a9b8d3dbea343562fd99d5d3359a726f6bf9d3733bccd2b4f3096fbab9dae"},
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
 types-python-dateutil = [
-    {file = "types-python-dateutil-2.8.19.2.tar.gz", hash = "sha256:e6e32ce18f37765b08c46622287bc8d8136dc0c562d9ad5b8fd158c59963d7a7"},
-    {file = "types_python_dateutil-2.8.19.2-py3-none-any.whl", hash = "sha256:3f4dbe465e7e0c6581db11fd7a4855d1355b78712b3f292bd399cd332247e9c0"},
+    {file = "types-python-dateutil-2.8.19.3.tar.gz", hash = "sha256:a313284df5ed3fd078303262edc0efde28998cd08e5061ef1ccc0bb5fef4d2da"},
+    {file = "types_python_dateutil-2.8.19.3-py3-none-any.whl", hash = "sha256:ce6af1bdf0aca6b7dc8815a664f0e8b55da91ff7851102cf87c87178e7c8e7ec"},
 ]
 types-redis = [
-    {file = "types-redis-4.3.21.3.tar.gz", hash = "sha256:2e1f184056188c8754ded0b5173dc01824d2bfe41975fe318068a68beedfb62c"},
-    {file = "types_redis-4.3.21.3-py3-none-any.whl", hash = "sha256:77ee5b8ca3a779e09807348c7f0b33c0f38a46096cd6c8a2e0176b28b3784b34"},
+    {file = "types-redis-4.3.21.4.tar.gz", hash = "sha256:3955c5682f926a1aaee13ed5bc0a37521115b0b8ffd6cd457facf517999abe93"},
+    {file = "types_redis-4.3.21.4-py3-none-any.whl", hash = "sha256:cf8a94ac9efbeb6459fd1aa05dbb977fc59c1022ebe8f72bc0bae57df136105d"},
 ]
 types-requests = [
-    {file = "types-requests-2.28.11.2.tar.gz", hash = "sha256:fdcd7bd148139fb8eef72cf4a41ac7273872cad9e6ada14b11ff5dfdeee60ed3"},
-    {file = "types_requests-2.28.11.2-py3-none-any.whl", hash = "sha256:14941f8023a80b16441b3b46caffcbfce5265fd14555844d6029697824b5a2ef"},
+    {file = "types-requests-2.28.11.4.tar.gz", hash = "sha256:d4f342b0df432262e9e326d17638eeae96a5881e78e7a6aae46d33870d73952e"},
+    {file = "types_requests-2.28.11.4-py3-none-any.whl", hash = "sha256:bdb1f9811e53d0642c8347b09137363eb25e1a516819e190da187c29595a1df3"},
 ]
 types-urllib3 = [
-    {file = "types-urllib3-1.26.25.1.tar.gz", hash = "sha256:a948584944b2412c9a74b9cf64f6c48caf8652cb88b38361316f6d15d8a184cd"},
-    {file = "types_urllib3-1.26.25.1-py3-none-any.whl", hash = "sha256:f6422596cc9ee5fdf68f9d547f541096a20c2dcfd587e37c804c9ea720bf5cb2"},
+    {file = "types-urllib3-1.26.25.3.tar.gz", hash = "sha256:1807b87b8ee1ae0226813ba2c52330eff20fb2bf6359b1de24df08eb3090e442"},
+    {file = "types_urllib3-1.26.25.3-py3-none-any.whl", hash = "sha256:a188c24fc61a99658c8c324c8dd7419f5b91a0d89df004e5f576869122c1db55"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
