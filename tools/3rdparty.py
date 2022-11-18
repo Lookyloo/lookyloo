@@ -6,7 +6,7 @@ from lookyloo.default import get_homedir
 
 d3js_version = '7'
 jquery_version = "3.6.1"
-datatables_version = "1.12.1"
+datatables_version = "1.13.1"
 
 
 if __name__ == '__main__':
@@ -18,7 +18,7 @@ if __name__ == '__main__':
         print(f'Downloaded d3js v{d3js_version}.')
 
     jquery = requests.get(f'https://code.jquery.com/jquery-{jquery_version}.min.js')
-    with (dest_dir / f'jquery.min.js').open('wb') as f:
+    with (dest_dir / 'jquery.min.js').open('wb') as f:
         f.write(jquery.content)
         print(f'Downloaded jquery v{jquery_version}.')
 
