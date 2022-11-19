@@ -1,0 +1,73 @@
+{% extends "main.html" %}
+{% from 'bootstrap5/utils.html' import render_messages %}
+{% block title %}Submit an existing capture{% endblock %}
+
+{% block card %}
+<meta property="og:title" content="Lookyloo" />
+<meta property="og:type" content="website"/>
+<meta
+  property="og:description"
+  content="Lookyloo lets you upload a HAR file (or an existing capture) to view it on a tree."
+/>
+<meta
+  property="og:image"
+  content="https://{{public_domain}}{{ url_for('static', filename='lookyloo.jpeg') }}"
+/>
+<meta
+  property="og:url"
+  content="https://{{public_domain}}"
+/>
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <center>
+    <a href="{{ url_for('index') }}" title="Go back to index">
+      <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
+           alt="Lookyloo" width="25%">
+    </a>
+  </center>
+  {{ render_messages(container=True, dismissible=True) }}
+  <form role="form" action="{{ url_for('submit_capture') }}" method=post enctype=multipart/form-data>
+    <div class="row mb-3">
+      <div class="col-sm-10">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="listing" {% if default_public %}checked="true"{% endif %}></input>
+          <label for="listing" class="form-check-label">Display results on public page</label>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="har_file" class="col-sm-2 col-form-label">HTTP Archive (HAR) file:</label>
+      <div class="col-sm-10">
+        <input type="file" class="form-control-file" id="har_file" name="har_file" required>
+        <div><b>[Experimental]</b> It can be any file in <a href="https://en.wikipedia.org/wiki/HAR_(file_format)">HTTP Archive format</a>, from any source (browser or any other tool)</div>
+        <div class="alert alert-danger" role="info">
+            This feature is experimantal and it may not work for some reason. If it is the case, please
+            <a href="https://github.com/Lookyloo/lookyloo/issues">open an issue on github</a> and attach the HAR file so we can investigate.
+        </div>
+      </div>
+    </div>
+
+    <div class="dropdown-divider"></div>
+
+    <center>
+      <b>
+      {% if default_public %}
+        By default, the capture is public. If you do not want that, untick the box at the top of the form.
+      {% else %}
+        By default, the capture is private (not visible on the index page). If you want it to be public tick the box at the top of the form.
+      {% endif %}
+      </b>
+      </br>
+      </br>
+      <button type="submit" class="new-capture-button btn-primary" id="btn-looking">Render capture!</button>
+    </center>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+{% endblock %}

@@ -14,6 +14,7 @@ from importlib.metadata import version
 from io import BytesIO, StringIO
 from typing import Any, Dict, List, Optional, Union, TypedDict
 from urllib.parse import quote_plus, unquote_plus, urlparse
+from uuid import uuid4
 
 import flask_login  # type: ignore
 from flask import (Flask, Response, flash, jsonify, redirect, render_template,
@@ -863,6 +864,28 @@ def recapture(tree_uuid: str):
     flash(f'Unable to find the capture {tree_uuid} in the cache.', 'error')
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
+
+# ################## Submit existing capture ##################
+
+@app.route('/submit_capture', methods=['GET', 'POST'])
+def submit_capture():
+
+    if request.method == 'POST':
+        if 'har_file' not in request.files:
+            flash('Invalid submission: please submit at least an HAR file.', 'error')
+        else:
+            uuid = str(uuid4())
+            har = json.loads(request.files['har_file'].stream.read())
+            listing = True if request.form.get('listing') else False
+            lookyloo.store_capture(uuid, is_public=listing, har=har)
+            return redirect(url_for('tree', tree_uuid=uuid))
+
+    return render_template('submit_capture.html',
+                           default_public=get_config('generic', 'default_public'),
+                           public_domain=lookyloo.public_domain)
+
+
+# #############################################################
 
 @app.route('/capture', methods=['GET', 'POST'])
 def capture_web():

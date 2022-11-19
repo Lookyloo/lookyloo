@@ -37,7 +37,7 @@ from redis.connection import UnixDomainSocketConnection
 
 from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
-from .default import LookylooException, get_homedir, get_config, get_socket_path
+from .default import LookylooException, get_homedir, get_config, get_socket_path, safe_create_dir
 from .exceptions import (MissingCaptureDirectory,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile)
 from .helpers import (get_captures_dir, get_email_template,
@@ -1182,3 +1182,72 @@ class Lookyloo():
                 year_stats['yearly_redirects'] += month_stats['redirects']
             statistics['years'].append(year_stats)
         return statistics
+
+    def store_capture(self, uuid: str, is_public: bool,
+                      os: Optional[str]=None, browser: Optional[str]=None,
+                      parent: Optional[str]=None,
+                      downloaded_filename: Optional[str]=None, downloaded_file: Optional[bytes]=None,
+                      error: Optional[str]=None, har: Optional[Dict[str, Any]]=None,
+                      png: Optional[bytes]=None, html: Optional[str]=None,
+                      last_redirected_url: Optional[str]=None,
+                      cookies: Optional[List[Dict[str, str]]]=None
+                      ) -> None:
+
+        now = datetime.now()
+        dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / now.isoformat()
+        safe_create_dir(dirpath)
+
+        if os or browser:
+            meta: Dict[str, str] = {}
+            if os:
+                meta['os'] = os
+            if browser:
+                meta['browser'] = browser
+            with (dirpath / 'meta').open('w') as _meta:
+                json.dump(meta, _meta)
+
+        # Write UUID
+        with (dirpath / 'uuid').open('w') as _uuid:
+            _uuid.write(uuid)
+
+        # Write no_index marker (optional)
+        if not is_public:
+            (dirpath / 'no_index').touch()
+
+        # Write parent UUID (optional)
+        if parent:
+            with (dirpath / 'parent').open('w') as _parent:
+                _parent.write(parent)
+
+        if downloaded_filename:
+            with (dirpath / '0.data.filename').open('w') as _downloaded_filename:
+                _downloaded_filename.write(downloaded_filename)
+
+        if downloaded_file:
+            with (dirpath / '0.data').open('wb') as _downloaded_file:
+                _downloaded_file.write(downloaded_file)
+
+        if error:
+            with (dirpath / 'error.txt').open('w') as _error:
+                json.dump(error, _error)
+
+        if har:
+            with (dirpath / '0.har').open('w') as _har:
+                json.dump(har, _har)
+
+        if png:
+            with (dirpath / '0.png').open('wb') as _img:
+                _img.write(png)
+
+        if html:
+            with (dirpath / '0.html').open('w') as _html:
+                _html.write(html)
+
+        if last_redirected_url:
+            with (dirpath / '0.last_redirect.txt').open('w') as _redir:
+                _redir.write(last_redirected_url)
+
+        if cookies:
+            with (dirpath / '0.cookies.json').open('w') as _cookies:
+                json.dump(cookies, _cookies)
+        self.redis.hset('lookup_dirs', uuid, str(dirpath))

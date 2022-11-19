@@ -91,66 +91,19 @@ class AsyncCapture(AbstractManager):
             # By default, the captures are not on the index, unless the user mark them as listed
             listing = True if ('listing' in to_capture and to_capture['listing'].lower() in ['true', '1']) else False
 
-        now = datetime.now()
-        dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / now.isoformat()
-        safe_create_dir(dirpath)
-
-        if 'os' in to_capture or 'browser' in to_capture:
-            meta: Dict[str, str] = {}
-            if 'os' in to_capture:
-                meta['os'] = to_capture['os']
-            if 'browser' in to_capture:
-                meta['browser'] = to_capture['browser']
-            with (dirpath / 'meta').open('w') as _meta:
-                json.dump(meta, _meta)
-
-        # Write UUID
-        with (dirpath / 'uuid').open('w') as _uuid:
-            _uuid.write(uuid)
-
-        # Write no_index marker (optional)
-        if not listing:
-            (dirpath / 'no_index').touch()
-
-        # Write parent UUID (optional)
-        if 'parent' in to_capture:
-            with (dirpath / 'parent').open('w') as _parent:
-                _parent.write(to_capture['parent'])
-
-        if 'downloaded_filename' in entries and entries['downloaded_filename']:
-            with (dirpath / '0.data.filename').open('w') as _downloaded_filename:
-                _downloaded_filename.write(entries['downloaded_filename'])
-
-        if 'downloaded_file' in entries and entries['downloaded_file']:
-            with (dirpath / '0.data').open('wb') as _downloaded_file:
-                _downloaded_file.write(entries['downloaded_file'])
-
-        if 'error' in entries:
-            with (dirpath / 'error.txt').open('w') as _error:
-                json.dump(entries['error'], _error)
-
-        if 'har' in entries:
-            with (dirpath / '0.har').open('w') as _har:
-                json.dump(entries['har'], _har)
-
-        if 'png' in entries and entries['png']:
-            with (dirpath / '0.png').open('wb') as _img:
-                _img.write(entries['png'])
-
-        if 'html' in entries and entries['html']:
-            with (dirpath / '0.html').open('w') as _html:
-                _html.write(entries['html'])
-
-        if 'last_redirected_url' in entries and entries['last_redirected_url']:
-            with (dirpath / '0.last_redirect.txt').open('w') as _redir:
-                _redir.write(entries['last_redirected_url'])
-
-        if 'cookies' in entries and entries['cookies']:
-            with (dirpath / '0.cookies.json').open('w') as _cookies:
-                json.dump(entries['cookies'], _cookies)
+        self.lookyloo.store_capture(
+            uuid, listing,
+            os=to_capture.get('os'), browser=to_capture.get('os'),
+            parent=to_capture.get('parent'),
+            downloaded_filename=entries.get('downloaded_filename'),
+            downloaded_file=entries.get('downloaded_file'),
+            error=entries.get('error'), har=entries.get('har'),
+            png=entries.get('png'), html=entries.get('html'),
+            last_redirected_url=entries.get('last_redirected_url'),
+            cookies=entries.get('cookies')  # type: ignore
+        )
 
         lazy_cleanup = self.lookyloo.redis.pipeline()
-        lazy_cleanup.hset('lookup_dirs', uuid, str(dirpath))
         if queue and self.lookyloo.redis.zscore('queues', queue):
             lazy_cleanup.zincrby('queues', -1, queue)
         lazy_cleanup.zrem('to_capture', uuid)

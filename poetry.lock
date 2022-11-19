@@ -409,7 +409,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.16.0"
+version = "1.16.1"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -419,7 +419,7 @@ python-versions = ">=3.8,<3.12"
 beautifulsoup4 = ">=4.11.1,<5.0.0"
 cchardet = ">=2.1.7,<3.0.0"
 ete3 = ">=3.1.2,<4.0.0"
-filetype = ">=1.1.0,<2.0.0"
+filetype = ">=1.2.0,<2.0.0"
 lxml = ">=4.9.1,<5.0.0"
 numpy = [
     {version = "1.23.3", markers = "python_version < \"3.10\""},
@@ -1341,7 +1341,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.17.2"
+version = "0.17.3"
 description = "The official Python client library for VirusTotal"
 category = "main"
 optional = false
@@ -1435,7 +1435,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.12"
-content-hash = "74152635ad2079a51fbc1bad596897c61ca2a05b199059cb96e0d5a3dd8d0928"
+content-hash = "6faef544e363edbfb356b99c5ec94eb36b17c7dbe09cd818528221b2cec4097d"
 
 [metadata.files]
 aiohttp = [
@@ -1832,8 +1832,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.16.0-py3-none-any.whl", hash = "sha256:f006eb79c4200671193573af22bfded7e3a37c9ffd410b7c1290d6003b0494cb"},
-    {file = "har2tree-1.16.0.tar.gz", hash = "sha256:6e52299b20b94ea9afe3d687524551a416c60cb9cf90ddfed31b2ad4f13ec6b0"},
+    {file = "har2tree-1.16.1-py3-none-any.whl", hash = "sha256:b970fa0de4f6cc9fe4235c433563727a0c9d692cfd441b77fffdb8f28eb69481"},
+    {file = "har2tree-1.16.1.tar.gz", hash = "sha256:17543d06e90020e96c6bd1ce3bcc37870413ba3d8ee9a6bbad44bec7b8556959"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -2592,8 +2592,8 @@ urllib3 = [
     {file = "urllib3-1.26.12.tar.gz", hash = "sha256:3fa96cf423e6987997fc326ae8df396db2a8b7c667747d47ddd8ecba91f4a74e"},
 ]
 vt-py = [
-    {file = "vt-py-0.17.2.tar.gz", hash = "sha256:ef8b7da02771111bdbb32d7f02db6e14ed81a17625cdfc0337847ed6842396f1"},
-    {file = "vt_py-0.17.2-py3-none-any.whl", hash = "sha256:b154fb2130f88fb2fd46a1f1472739b3eb028886fc3254bacbe65c9225e66ab5"},
+    {file = "vt-py-0.17.3.tar.gz", hash = "sha256:2f96fe86c7213dda9e45ab06bf18f7843f9513c1a073b1606fe238ea624a5b32"},
+    {file = "vt_py-0.17.3-py3-none-any.whl", hash = "sha256:c6cb4e134dcf12683de97993ef7e1daedd7e548acfdc5dc6b730db92c3207610"},
 ]
 w3lib = [
     {file = "w3lib-2.0.1-py3-none-any.whl", hash = "sha256:c5d966f86ae3fb546854478c769250c3ccb7581515b3221bcd2f864440000188"},
