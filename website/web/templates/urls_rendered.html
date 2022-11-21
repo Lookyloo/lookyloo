@@ -1,12 +1,12 @@
 <div>
   <h4>Select below the URLs you want to capture.</h4>
-	<div class="dropdown-divider"></div>
+	<hr>
 	<button type="button" class="btn btn-secondary" id="toggleSelection"
 					onclick="checkAllBoxes('url')"
 					title="(un)select all URLs">
 		Toggle selection
 	</button>
-	<div class="dropdown-divider"></div>
+	<hr>
   <form role="form" action="{{ url_for('bulk_captures', base_tree_uuid=base_tree_uuid) }}" method=post enctype=multipart/form-data>
     {% for url in urls %}
     <div class="form-check">

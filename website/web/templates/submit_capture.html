@@ -39,18 +39,49 @@
       </div>
     </div>
     <div class="row mb-3">
+      <label for="full_capture" class="col-sm-2 col-form-label">Full capture from another Lookyloo instance:</label>
+      <div class="col-sm-10">
+        <input type="file" class="form-control-file" id="full_capture" name="full_capture">
+        <div>The capture must be a zipfile as you can get when calling /export on an existing capture.</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="row mb-3">
       <label for="har_file" class="col-sm-2 col-form-label">HTTP Archive (HAR) file:</label>
       <div class="col-sm-10">
-        <input type="file" class="form-control-file" id="har_file" name="har_file" required>
+        <input type="file" class="form-control-file" id="har_file" name="har_file">
         <div><b>[Experimental]</b> It can be any file in <a href="https://en.wikipedia.org/wiki/HAR_(file_format)">HTTP Archive format</a>, from any source (browser or any other tool)</div>
-        <div class="alert alert-danger" role="info">
+        <div class="alert alert-info" role="alert">
             This feature is experimantal and it may not work for some reason. If it is the case, please
             <a href="https://github.com/Lookyloo/lookyloo/issues">open an issue on github</a> and attach the HAR file so we can investigate.
         </div>
       </div>
     </div>
+    <div class="row mb-3">
+      <label for="landing_page" class="col-sm-2 col-form-label">Landing page:</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="landing_page" name="landing_page">
+        <div>The URL in the bowser at the end of the capture, it cannot always be guessed from the HAR file.</div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="screenshot_file" class="col-sm-2 col-form-label">Screenshot file:</label>
+      <div class="col-sm-10">
+        <input type="file" class="form-control-file" id="screenshot_file" name="screenshot_file">
+        <div>A screenshot of the rendered page.</div>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="html_file" class="col-sm-2 col-form-label">Rendered HTML file:</label>
+      <div class="col-sm-10">
+        <input type="file" class="form-control-file" id="html_file" name="html_file">
+        <div>The page rendered by the browser at the end of the capture, it is not in the HAR file.</div>
+      </div>
+    </div>
 
-    <div class="dropdown-divider"></div>
+    <hr>
 
     <center>
       <b>
@@ -62,7 +93,7 @@
       </b>
       </br>
       </br>
-      <button type="submit" class="new-capture-button btn-primary" id="btn-looking">Render capture!</button>
+      <button type="submit" class="new-capture-button btn btn-primary" id="btn-looking">Render capture!</button>
     </center>
   </form>
 </div>

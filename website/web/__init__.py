@@ -15,6 +15,7 @@ from io import BytesIO, StringIO
 from typing import Any, Dict, List, Optional, Union, TypedDict
 from urllib.parse import quote_plus, unquote_plus, urlparse
 from uuid import uuid4
+from zipfile import ZipFile
 
 import flask_login  # type: ignore
 from flask import (Flask, Response, flash, jsonify, redirect, render_template,
@@ -871,14 +872,57 @@ def recapture(tree_uuid: str):
 def submit_capture():
 
     if request.method == 'POST':
-        if 'har_file' not in request.files:
-            flash('Invalid submission: please submit at least an HAR file.', 'error')
-        else:
-            uuid = str(uuid4())
+        listing = True if request.form.get('listing') else False
+        uuid = str(uuid4())  # NOTE: new UUID, because we do not want duplicates
+        har: Optional[Dict[str, Any]] = None
+        html: Optional[str] = None
+        last_redirected_url: Optional[str] = None
+        screenshot: Optional[bytes] = None
+        if 'har_file' in request.files and request.files['har_file']:
             har = json.loads(request.files['har_file'].stream.read())
-            listing = True if request.form.get('listing') else False
-            lookyloo.store_capture(uuid, is_public=listing, har=har)
+            last_redirected_url = request.form.get('landing_page')
+            if 'screenshot_file' in request.files:
+                screenshot = request.files['screenshot_file'].stream.read()
+            if 'html_file' in request.files:
+                html = request.files['html_file'].stream.read().decode()
+            lookyloo.store_capture(uuid, is_public=listing, har=har,
+                                   last_redirected_url=last_redirected_url,
+                                   png=screenshot, html=html)
             return redirect(url_for('tree', tree_uuid=uuid))
+        elif 'full_capture' in request.files and request.files['full_capture']:
+            # it *only* accepts a lookyloo export.
+            cookies: Optional[List[Dict[str, str]]] = None
+            has_error = False
+            with ZipFile(BytesIO(request.files['full_capture'].stream.read()), 'r') as lookyloo_capture:
+                for filename in lookyloo_capture.namelist():
+                    if filename.endswith('0.har'):
+                        har = json.loads(lookyloo_capture.read(filename))
+                    elif filename.endswith('0.html'):
+                        html = lookyloo_capture.read(filename).decode()
+                    elif filename.endswith('0.last_redirect.txt'):
+                        last_redirected_url = lookyloo_capture.read(filename).decode()
+                    elif filename.endswith('0.png'):
+                        screenshot = lookyloo_capture.read(filename)
+                    elif filename.endswith('0.cookies.json'):
+                        # Not required
+                        cookies = json.loads(lookyloo_capture.read(filename))
+                if not har or not html or not last_redirected_url or not screenshot:
+                    has_error = True
+                    if not har:
+                        flash('Invalid submission: missing HAR file', 'error')
+                    if not html:
+                        flash('Invalid submission: missing HTML file', 'error')
+                    if not last_redirected_url:
+                        flash('Invalid submission: missing landing page', 'error')
+                    if not screenshot:
+                        flash('Invalid submission: missing screenshot', 'error')
+            if not has_error:
+                lookyloo.store_capture(uuid, is_public=listing, har=har,
+                                       last_redirected_url=last_redirected_url,
+                                       png=screenshot, html=html, cookies=cookies)
+                return redirect(url_for('tree', tree_uuid=uuid))
+        else:
+            flash('Invalid submission: please submit at least an HAR file.', 'error')
 
     return render_template('submit_capture.html',
                            default_public=get_config('generic', 'default_public'),
