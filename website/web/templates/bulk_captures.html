@@ -14,6 +14,35 @@
         "paging": false
     });
 </script>
+<script>
+  async function update_status() {
+    let capture_status = document.getElementsByClassName('capture_status');
+    let keep_going = false;
+    for (let i = 0; i < capture_status.length; i++) {
+      await fetch(`/json/${capture_status[i].id}/status`)
+        .then(response => response.json())
+        .then(cs => {
+          if ((cs.status_code == 0) || (cs.status_code == 2)) {
+            capture_status[i].innerHTML = "Capture ongoing, please wait...";
+          }
+          else if (cs.status_code == 1){
+            capture_status[i].innerHTML = "Capture done.";
+          }
+          else {
+            capture_status[i].innerHTML = "Unknown capture.";
+          };
+          if (cs.status_code != 1) {
+            keep_going = true;
+          };
+         });
+    };
+    if (!keep_going) {
+        window.clearInterval(update_status_interval);
+    };
+  }
+
+  let update_status_interval = window.setInterval(update_status, 5000);
+</script>
 {% endblock %}
 
 
@@ -29,6 +58,7 @@
      <tr>
        <th>URL</th>
        <th>Link</th>
+       <th>Status</th>
      </tr>
     </thead>
     <tbody>
@@ -38,6 +68,7 @@
           {{ captured_url }}
         </td>
         <td><a href="{{ url_for('tree', tree_uuid=uuid) }}">Show capture</a></td>
+        <td id="{{uuid}}" class="capture_status">Please wait...</td>
       </tr>
       {% endfor %}
     </tbody>
