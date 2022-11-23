@@ -3,16 +3,16 @@
 import argparse
 import hashlib
 import logging
+import logging.config
 import platform
 import shlex
 import subprocess
 import sys
 from pathlib import Path
 
-from lookyloo.default import get_homedir
+from lookyloo.default import get_homedir, get_config
 
-logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-                    level=logging.INFO)
+logging.config.dictConfig(get_config('logging'))
 
 
 def compute_hash_self():

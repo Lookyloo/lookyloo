@@ -123,8 +123,6 @@ enable_bookmark = get_config('generic', 'enable_bookmark')
 auto_trigger_modules = get_config('generic', 'auto_trigger_modules')
 hide_captures_with_error = get_config('generic', 'hide_captures_with_error')
 
-logging.basicConfig(level=get_config('generic', 'loglevel'))
-
 
 # ##### Global methods passed to jinja
 

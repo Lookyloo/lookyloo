@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
 import asyncio
-import json
 import logging
+import logging.config
 import signal
 import time
 
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Union
 
@@ -14,13 +13,12 @@ from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResp
 from pylacus import CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 
 from lookyloo.lookyloo import Lookyloo
-from lookyloo.default import AbstractManager, get_config, safe_create_dir
+from lookyloo.default import AbstractManager, get_config
 from lookyloo.helpers import get_captures_dir
 
 from lookyloo.modules import FOX
 
-logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-                    level=logging.INFO)
+logging.config.dictConfig(get_config('logging'))
 
 
 class AsyncCapture(AbstractManager):

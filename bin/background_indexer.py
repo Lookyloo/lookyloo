@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 
 import logging
+import logging.config
 import os
 from datetime import datetime, timedelta
 import shutil
 
-from lookyloo.default import AbstractManager
+from lookyloo.default import AbstractManager, get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.lookyloo import Lookyloo
 
-logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-                    level=logging.INFO)
+
+logging.config.dictConfig(get_config('logging'))
 
 
 class BackgroundIndexer(AbstractManager):

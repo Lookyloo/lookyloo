@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import logging
+import logging.config
 from subprocess import Popen
 
 from lookyloo.default import get_config, get_homedir, AbstractManager
 
-logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-                    level=logging.INFO)
+logging.config.dictConfig(get_config('logging'))
 
 
 class Website(AbstractManager):

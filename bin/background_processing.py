@@ -2,6 +2,7 @@
 
 import json
 import logging
+import logging.config
 from collections import Counter
 from datetime import date, timedelta
 from typing import Any, Dict
@@ -10,8 +11,7 @@ from lookyloo.lookyloo import Lookyloo
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 
-logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
-                    level=logging.INFO)
+logging.config.dictConfig(get_config('logging'))
 
 
 class Processing(AbstractManager):
