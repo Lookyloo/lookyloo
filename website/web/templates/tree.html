@@ -251,11 +251,10 @@
             <li>
               <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button">Re-Capture URL</a>
             </li>
-            {% if has_redirects %}
             <li>
-              <a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">Download Redirects list</a>
+              <a href="#downloadModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#downloadModal" role="button">Download capture elements</a>
             </li>
-            {% endif %}
             {% if enable_mail_notification %}
             <li>
               <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button">Contact Local Administrator</a>
@@ -582,6 +581,45 @@
           </br>
           <div class="modal-body">
               ... loading results historical context ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="downloadModalLabel">
+                  Download specific elements of the capture.
+              </h4>
+              </br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          </br>
+          <div class="modal-body">
+          <ul>
+            <li>
+              <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">Download screenshot</a>
+            </li>
+            <li>
+              <a href="{{ url_for('cookies', tree_uuid=tree_uuid) }}" role="button">Download cookiejar</a>
+            </li>
+            <li>
+              <a href="{{ url_for('hashes_tree', tree_uuid=tree_uuid) }}" role="button">Download hashes for all the resources</a>
+            </li>
+            <li>
+              <a href="{{ url_for('export', tree_uuid=tree_uuid) }}" role="button">Download full capture</a>
+            </li>
+            {% if has_redirects %}
+            <li>
+              <a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">Download redirects</a>
+            </li>
+            {% endif %}
+          </ul>
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
