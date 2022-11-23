@@ -4,6 +4,7 @@ import calendar
 import http
 import json
 import logging
+import logging.config
 import os
 import time
 
@@ -36,6 +37,8 @@ from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load)
 from .proxied import ReverseProxied
+
+logging.config.dictConfig(get_config('logging'))
 
 app: Flask = Flask(__name__)
 app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore
