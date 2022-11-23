@@ -33,10 +33,10 @@ class Indexing():
     def new_internal_uuids(self, crawled_tree: CrawledTree) -> None:
         # only trigger this method if the capture was already indexed.
         if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
-            self.logger.info(f'Cookies index: update internal UUIDs for {crawled_tree.uuid}')
+            self.logger.debug(f'Cookies index: update internal UUIDs for {crawled_tree.uuid}')
             self._reindex_cookies_capture(crawled_tree)
         if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
-            self.logger.info(f'Body hashes index: update internal UUIDs for {crawled_tree.uuid}')
+            self.logger.debug(f'Body hashes index: update internal UUIDs for {crawled_tree.uuid}')
             self._reindex_body_hashes_capture(crawled_tree)
 
     # ###### Cookies ######
