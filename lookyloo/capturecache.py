@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import contextlib
 import json
 import logging
 import os
 import pickle
+import signal
 import sys
 import time
 
@@ -105,6 +107,7 @@ class CapturesIndex(Mapping):
         self.contextualizer = contextualizer
         self.__cache: Dict[str, CaptureCache] = {}
         self._quick_init()
+        self.timeout = get_config('generic', 'max_tree_create_time')
 
     @property
     def cached_captures(self) -> Set[str]:
@@ -211,7 +214,8 @@ class CapturesIndex(Mapping):
         if not (har_files := sorted(capture_dir.glob('*.har'))):
             har_files = sorted(capture_dir.glob('*.har.gz'))
         try:
-            tree = CrawledTree(har_files, uuid)
+            with self._timeout_context():
+                tree = CrawledTree(har_files, uuid)
             self.__resolve_dns(tree)
             if self.contextualizer:
                 self.contextualizer.contextualize_tree(tree)
@@ -220,6 +224,11 @@ class CapturesIndex(Mapping):
             for har_file in har_files:
                 har_file.rename(har_file.with_suffix('.broken'))
             raise NoValidHarFile(f'We got har files, but they are broken: {e}')
+        except TimeoutError:
+            self.logger.warning(f'Unable to rebuild the tree for {capture_dir}, the tree took too long.')
+            for har_file in har_files:
+                har_file.rename(har_file.with_suffix('.broken'))
+            raise NoValidHarFile(f'We got har files, but creating a tree took more than {self.timeout}s.')
         except RecursionError as e:
             raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
         else:
@@ -238,6 +247,25 @@ class CapturesIndex(Mapping):
             lock_file.unlink(missing_ok=True)
         return tree
 
+    @staticmethod
+    def _raise_timeout(_, __):
+        raise TimeoutError
+
+    @contextlib.contextmanager
+    def _timeout_context(self):
+        if self.timeout != 0:
+            # Register a function to raise a TimeoutError on the signal.
+            signal.signal(signal.SIGALRM, self._raise_timeout)
+            signal.alarm(self.timeout)
+            try:
+                yield
+            except TimeoutError as e:
+                raise e
+            finally:
+                signal.signal(signal.SIGALRM, signal.SIG_IGN)
+        else:
+            yield
+
     def _set_capture_cache(self, capture_dir_str: str) -> CaptureCache:
         '''Populate the redis cache for a capture. Mostly used on the index page.
         NOTE: Doesn't require the pickle.'''
@@ -254,7 +282,7 @@ class CapturesIndex(Mapping):
                 tree = self._create_pickle(capture_dir)
                 self.indexing.new_internal_uuids(tree)
             except NoValidHarFile:
-                self.logger.info('Unable to rebuild the tree, the HAR files are broken.')
+                self.logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are broken.')
 
         cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': capture_dir_str}
         if (capture_dir / 'error.txt').exists():
