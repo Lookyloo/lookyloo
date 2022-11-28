@@ -409,7 +409,7 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.16.3"
+version = "1.16.4"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
@@ -481,7 +481,7 @@ testing = ["flake8 (<5)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-chec
 
 [[package]]
 name = "ipython"
-version = "8.6.0"
+version = "8.7.0"
 description = "IPython: Productive Interactive Computing"
 category = "dev"
 optional = false
@@ -496,7 +496,7 @@ jedi = ">=0.16"
 matplotlib-inline = "*"
 pexpect = {version = ">4.3", markers = "sys_platform != \"win32\""}
 pickleshare = "*"
-prompt-toolkit = ">3.0.1,<3.1.0"
+prompt-toolkit = ">=3.0.11,<3.1.0"
 pygments = ">=2.4.0"
 stack-data = "*"
 traitlets = ">=5"
@@ -1355,11 +1355,11 @@ test = ["pytest", "pytest-asyncio", "pytest-httpserver"]
 
 [[package]]
 name = "w3lib"
-version = "2.0.1"
+version = "2.1.0"
 description = "Library of web-related functions"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [[package]]
 name = "wcwidth"
@@ -1435,7 +1435,7 @@ misp = ["python-magic", "pydeep2"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.12"
-content-hash = "04ed75937df83ea4e46ac5da1d805d124a6d774aacc4327ba65185efe55f3434"
+content-hash = "2b0473f08fcafa0e3c9942252bd53ca8b0ec03b5ea4b43d9021947664b63d152"
 
 [metadata.files]
 aiohttp = [
@@ -1832,8 +1832,8 @@ gunicorn = [
     {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 har2tree = [
-    {file = "har2tree-1.16.3-py3-none-any.whl", hash = "sha256:119e5bc5e6a5d39c96027def8b6b39939e64941079f2ab1d438e3bff377b5627"},
-    {file = "har2tree-1.16.3.tar.gz", hash = "sha256:b0e5663e18c5f4394c69d47b856b5fae8aa0ec15e02f3ddc8eecacbd6f36ef1a"},
+    {file = "har2tree-1.16.4-py3-none-any.whl", hash = "sha256:2bc2862e5e9f5ea3d990d03adaf2bc3bb0fa202127383b0687904b26f1d280a2"},
+    {file = "har2tree-1.16.4.tar.gz", hash = "sha256:a7c0f99e3babc94340e1c56f27ca344b9dc620c27bcd63cc4397f3fa41f98f06"},
 ]
 hiredis = [
     {file = "hiredis-2.0.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:b4c8b0bc5841e578d5fb32a16e0c305359b987b850a06964bd5a62739d688048"},
@@ -1891,8 +1891,8 @@ importlib-resources = [
     {file = "importlib_resources-5.10.0.tar.gz", hash = "sha256:c01b1b94210d9849f286b86bb51bcea7cd56dde0600d8db721d7b81330711668"},
 ]
 ipython = [
-    {file = "ipython-8.6.0-py3-none-any.whl", hash = "sha256:91ef03016bcf72dd17190f863476e7c799c6126ec7e8be97719d1bc9a78a59a4"},
-    {file = "ipython-8.6.0.tar.gz", hash = "sha256:7c959e3dedbf7ed81f9b9d8833df252c430610e2a4a6464ec13cd20975ce20a5"},
+    {file = "ipython-8.7.0-py3-none-any.whl", hash = "sha256:352042ddcb019f7c04e48171b4dd78e4c4bb67bf97030d170e154aac42b656d9"},
+    {file = "ipython-8.7.0.tar.gz", hash = "sha256:882899fe78d5417a0aa07f995db298fa28b58faeba2112d2e3a4c95fe14bb738"},
 ]
 itsdangerous = [
     {file = "itsdangerous-2.1.2-py3-none-any.whl", hash = "sha256:2c2349112351b88699d8d4b6b075022c0808887cb7ad10069318a8b0bc88db44"},
@@ -2631,8 +2631,8 @@ vt-py = [
     {file = "vt_py-0.17.3-py3-none-any.whl", hash = "sha256:c6cb4e134dcf12683de97993ef7e1daedd7e548acfdc5dc6b730db92c3207610"},
 ]
 w3lib = [
-    {file = "w3lib-2.0.1-py3-none-any.whl", hash = "sha256:c5d966f86ae3fb546854478c769250c3ccb7581515b3221bcd2f864440000188"},
-    {file = "w3lib-2.0.1.tar.gz", hash = "sha256:13df15f8c17b163de0fd5faa892c1ad143e190dfcbdb98534bb975eb37c6c7d6"},
+    {file = "w3lib-2.1.0-py3-none-any.whl", hash = "sha256:26f94b2297b39365943cd5bfbfb83b35396b739ac68b5da8bbd37a6cef8a3856"},
+    {file = "w3lib-2.1.0.tar.gz", hash = "sha256:5e1b389406b1d23951e9db763be6324de4917ba1f6a8bf6e9036ed996dc15206"},
 ]
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},
