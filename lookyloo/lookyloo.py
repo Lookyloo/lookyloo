@@ -421,7 +421,7 @@ class Lookyloo():
             return None
         except MissingUUID:
             if self.get_capture_status(capture_uuid) not in [CaptureStatusCore.QUEUED, CaptureStatusCore.ONGOING]:
-                self.logger.warning(f'Unable to find {capture_uuid} (not in the cache and/or missing capture directory).')
+                self.logger.info(f'Unable to find {capture_uuid} (not in the cache and/or missing capture directory).')
             return None
         except LookylooException as e:
             self.logger.warning(f'Lookyloo Exception: {e}')
