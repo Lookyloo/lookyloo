@@ -10,6 +10,8 @@ from flask import request, send_file
 from flask_restx import Namespace, Resource, abort, fields  # type: ignore
 from werkzeug.security import check_password_hash
 
+from lacuscore import CaptureStatus as CaptureStatusCore
+from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo.lookyloo import Lookyloo
 
 from .helpers import build_users_table, load_user_from_request, src_request_ip
@@ -61,8 +63,17 @@ class AuthToken(Resource):
 @api.doc(description='Get the status of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureStatusQuery(Resource):
+
+    @api.param('with_error', 'Add the error message of the capture (if there is one)')
     def get(self, capture_uuid: str):
-        return {'status_code': lookyloo.get_capture_status(capture_uuid)}
+        with_error: bool = True if request.args.get('with_error') else False
+        status_code = lookyloo.get_capture_status(capture_uuid)
+        to_return: Dict[str, Any] = {'status_code': status_code}
+        if status_code in [CaptureStatusCore.DONE, CaptureStatusPy.DONE] and with_error:
+            cache = lookyloo.capture_cache(capture_uuid)
+            if cache and cache.error:
+                to_return['error'] = cache.error
+        return to_return
 
 
 @api.route('/json/<string:capture_uuid>/hostnames')

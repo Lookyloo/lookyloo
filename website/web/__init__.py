@@ -639,11 +639,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
     if not cache:
         status = lookyloo.get_capture_status(tree_uuid)
         if status == CaptureStatus.UNKNOWN:
-            error = lookyloo.try_error_status(tree_uuid)
-            if error:
-                flash(error, 'warning')
-            else:
-                flash(f'Unable to find this UUID ({tree_uuid}).', 'warning')
+            flash(f'Unable to find this UUID ({tree_uuid}).', 'warning')
             return index_generic()
         elif status == CaptureStatus.QUEUED:
             message = "The capture is queued, but didn't start yet."

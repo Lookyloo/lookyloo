@@ -404,10 +404,6 @@ class Lookyloo():
             return CaptureStatusCore.ONGOING
         return lacus_status
 
-    def try_error_status(self, capture_uuid: str, /) -> Optional[str]:
-        '''If it is not possible to do the capture, we store the error for a short amount of time'''
-        return self.redis.get(f'error_{capture_uuid}')
-
     def capture_cache(self, capture_uuid: str, /) -> Optional[CaptureCache]:
         """Get the cache from redis, rebuild the tree if the internal UUID changed => slow"""
         try:

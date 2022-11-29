@@ -17,9 +17,10 @@
 <script>
   async function update_status() {
     let capture_status = document.getElementsByClassName('capture_status');
+    let capture_error = document.getElementsByClassName('capture_error');
     let keep_going = false;
     for (let i = 0; i < capture_status.length; i++) {
-      await fetch(`/json/${capture_status[i].id}/status`)
+      await fetch(`/json/${capture_status[i].id}/status?with_error=1`)
         .then(response => response.json())
         .then(cs => {
           if ((cs.status_code == 0) || (cs.status_code == 2)) {
@@ -27,6 +28,9 @@
           }
           else if (cs.status_code == 1){
             capture_status[i].innerHTML = "Capture done.";
+            if ('error' in cs ){
+                capture_error[i].innerHTML = cs.error;
+            }
           }
           else {
             capture_status[i].innerHTML = "Unknown capture.";
@@ -59,6 +63,7 @@
        <th>URL</th>
        <th>Link</th>
        <th>Status</th>
+       <th>Error message</th>
      </tr>
     </thead>
     <tbody>
@@ -69,6 +74,7 @@
         </td>
         <td><a href="{{ url_for('tree', tree_uuid=uuid) }}">Show capture</a></td>
         <td id="{{uuid}}" class="capture_status">Please wait...</td>
+        <td id="{{uuid}}" class="capture_error"></td>
       </tr>
       {% endfor %}
     </tbody>
