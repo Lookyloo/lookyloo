@@ -1,6 +1,7 @@
 {% extends "main.html" %}
 
 {% from 'bootstrap5/utils.html' import render_messages %}
+{% from "macros.html" import shorten_string %}
 
 {% block title %}Captures{% endblock %}
 
@@ -70,7 +71,7 @@
       {% for uuid, captured_url in bulk_captures %}
       <tr>
         <td>
-          {{ captured_url }}
+          {{ shorten_string(captured_url, 50, with_title=True) }}
         </td>
         <td><a href="{{ url_for('tree', tree_uuid=uuid) }}">Show capture</a></td>
         <td id="{{uuid}}" class="capture_status">Please wait...</td>
