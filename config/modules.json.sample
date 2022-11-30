@@ -51,6 +51,11 @@
     "url": "https://phishtankapi.circl.lu/",
     "allow_auto_trigger": true
   },
+  "URLhaus": {
+    "enabled": false,
+    "url": "https://urlhaus-api.abuse.ch/v1/",
+    "allow_auto_trigger": true
+  },
   "Hashlookup": {
     "enabled": false,
     "url": "https://hashlookup.circl.lu/",
@@ -73,6 +78,7 @@
     "UniversalWhois": "Module to query a local instance of uWhoisd: https://github.com/Lookyloo/uwhoisd",
     "UrlScan": "Module to query urlscan.io",
     "Phishtank": "Module to query Phishtank Lookup (https://github.com/Lookyloo/phishtank-lookup). URL set to none means querying the public instance.",
+    "URLhaus": "Module to query URL Haus.",
     "Hashlookup": "Module to query Hashlookup (https://github.com/adulau/hashlookup-server). URL set to none means querying the public instance.",
     "FOX": "Submission only interface by and for CCCS",
     "Pandora": "Submission only interface for https://github.com/pandora-analysis/",

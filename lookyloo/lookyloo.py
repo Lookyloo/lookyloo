@@ -46,7 +46,7 @@ from .helpers import (get_captures_dir, get_email_template,
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
-                      RiskIQ, RiskIQError, Pandora)
+                      RiskIQ, RiskIQError, Pandora, URLhaus)
 
 
 class Lookyloo():
@@ -102,6 +102,10 @@ class Lookyloo():
         self.pandora = Pandora(get_config('modules', 'Pandora'))
         if not self.pandora.available:
             self.logger.warning('Unable to setup the Pandora module')
+
+        self.urlhaus = URLhaus(get_config('modules', 'URLhaus'))
+        if not self.urlhaus.available:
+            self.logger.warning('Unable to setup the URLhaus module')
 
         self.logger.info('Initializing context...')
         self.context = Context()
@@ -274,7 +278,8 @@ class Lookyloo():
         self.uwhois.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
         self.hashlookup.capture_default_trigger(ct, auto_trigger=auto_trigger)
 
-        to_return: Dict[str, Dict] = {'PhishingInitiative': {}, 'VirusTotal': {}, 'UrlScan': {}}
+        to_return: Dict[str, Dict] = {'PhishingInitiative': {}, 'VirusTotal': {}, 'UrlScan': {},
+                                      'URLhaus': {}}
         capture_cache = self.capture_cache(capture_uuid)
 
         to_return['PhishingInitiative'] = self.pi.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
@@ -284,6 +289,7 @@ class Lookyloo():
             visibility='unlisted' if (capture_cache and capture_cache.no_index) else 'public',
             force=force, auto_trigger=auto_trigger)
         to_return['Phishtank'] = self.phishtank.capture_default_trigger(ct, auto_trigger=auto_trigger)
+        to_return['URLhaus'] = self.urlhaus.capture_default_trigger(ct, auto_trigger=auto_trigger)
         return to_return
 
     def get_modules_responses(self, capture_uuid: str, /) -> Optional[Dict[str, Any]]:
@@ -318,6 +324,14 @@ class Lookyloo():
             ips_hits = self.phishtank.lookup_ips_capture(ct)
             if ips_hits:
                 to_return['phishtank']['ips_hits'] = ips_hits
+        if self.urlhaus.available:
+            to_return['urlhaus'] = {'urls': {}}
+            if ct.redirects:
+                for redirect in ct.redirects:
+                    to_return['urlhaus']['urls'][redirect] = self.urlhaus.get_url_lookup(redirect)
+            else:
+                to_return['urlhaus']['urls'][ct.root_hartree.har.root_url] = self.urlhaus.get_url_lookup(ct.root_hartree.har.root_url)
+
         if self.urlscan.available:
             info = self.get_info(capture_uuid)
             to_return['urlscan'] = {'submission': {}, 'result': {}}

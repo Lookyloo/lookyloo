@@ -442,6 +442,13 @@ def modules(tree_uuid: str):
                     full_report['url'],
                     full_report['phish_detail_url']))
 
+    urlhaus_short_result: Dict[str, List] = {'urls': []}
+    if 'urlhaus' in modules_responses:
+        # TODO: make a short result
+        uh = modules_responses.pop('urlhaus')
+        for url, results in uh['urls'].items():
+            urlhaus_short_result['urls'].append(results)
+
     urlscan_to_display: Dict = {}
     if 'urlscan' in modules_responses and modules_responses.get('urlscan'):
         urlscan = modules_responses.pop('urlscan')
@@ -467,7 +474,8 @@ def modules(tree_uuid: str):
                 pass
     return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result,
                            pi=pi_short_result, urlscan=urlscan_to_display,
-                           phishtank=phishtank_short_result)
+                           phishtank=phishtank_short_result,
+                           urlhaus=urlhaus_short_result)
 
 
 @app.route('/tree/<string:tree_uuid>/redirects', methods=['GET'])

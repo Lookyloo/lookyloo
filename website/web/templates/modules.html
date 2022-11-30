@@ -53,6 +53,23 @@
   </div>
 </center>
 {% endif%}
+{% if urlhaus and urlhaus.get('urls') %}
+<hr>
+<center>
+  <h1 class="display-4">URL Haus</h1>
+  <div>
+    {% if urlhaus.get('urls') %}
+    <p class="lead">URL Haus knows the URLs below</p>
+    <dl class="row">
+    {% for entry in urlhaus['urls'] %}
+    <dt class="col-sm-7">{{ shorten_string(entry['url'], 150) }}</dt>
+    <dd class="col-sm-3"><a href="{{ entry['urlhaus_reference'] }}">View on URL Haus</a></li></dd>
+    {% endfor %}
+    </dl>
+    {% endif%}
+  </div>
+</center>
+{% endif%}
 {% if vt %}
   <hr>
   <center><h1 class="display-4">Virus Total</h1></center>
