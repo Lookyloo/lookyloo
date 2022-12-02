@@ -467,7 +467,8 @@ class Lookyloo():
         if not user_agent:
             # Catch case where the UA is broken on the UI, and the async submission.
             self.user_agents.user_agents  # triggers an update of the default UAs
-        query['user_agent'] = user_agent if user_agent else self.user_agents.default['useragent']
+        if 'device_name' not in query:
+            query['user_agent'] = user_agent if user_agent else self.user_agents.default['useragent']
 
         # NOTE: the document must be base64 encoded
         document = query.pop('document', None)
