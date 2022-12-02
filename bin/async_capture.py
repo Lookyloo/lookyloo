@@ -91,7 +91,7 @@ class AsyncCapture(AbstractManager):
 
         self.lookyloo.store_capture(
             uuid, listing,
-            os=to_capture.get('os'), browser=to_capture.get('os'),
+            os=to_capture.get('os'), browser=to_capture.get('browser'),
             parent=to_capture.get('parent'),
             downloaded_filename=entries.get('downloaded_filename'),
             downloaded_file=entries.get('downloaded_file'),
