@@ -447,7 +447,8 @@ def modules(tree_uuid: str):
         # TODO: make a short result
         uh = modules_responses.pop('urlhaus')
         for url, results in uh['urls'].items():
-            urlhaus_short_result['urls'].append(results)
+            if results:
+                urlhaus_short_result['urls'].append(results)
 
     urlscan_to_display: Dict = {}
     if 'urlscan' in modules_responses and modules_responses.get('urlscan'):

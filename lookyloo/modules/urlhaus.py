@@ -76,7 +76,9 @@ class URLhaus():
             return
 
         url_information = self.__url_result(url)
-        if not url_information:
+        if (not url_information
+            or ('query_status' in url_information
+                and url_information['query_status'] == 'no_results')):
             url_storage_dir.rmdir()
             return
 
