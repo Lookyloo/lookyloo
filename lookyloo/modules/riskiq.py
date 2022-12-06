@@ -105,6 +105,11 @@ class RiskIQ():
 
         pdns_info = self.client_dns.get_passive_dns(query=hostname, start=first_seen.isoformat())
         if not pdns_info:
+            try:
+                url_storage_dir.rmdir()
+            except OSError:
+                # Not empty.
+                pass
             return
         pdns_info['results'] = sorted(pdns_info['results'], key=lambda k: k['lastSeen'], reverse=True)
         with riskiq_file.open('w') as _f:

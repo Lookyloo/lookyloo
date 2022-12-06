@@ -79,7 +79,11 @@ class URLhaus():
         if (not url_information
             or ('query_status' in url_information
                 and url_information['query_status'] == 'no_results')):
-            url_storage_dir.rmdir()
+            try:
+                url_storage_dir.rmdir()
+            except OSError:
+                # Not empty.
+                pass
             return
 
         with uh_file.open('w') as _f:
