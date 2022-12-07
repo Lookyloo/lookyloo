@@ -427,7 +427,12 @@ class Lookyloo():
     def capture_cache(self, capture_uuid: str, /) -> Optional[CaptureCache]:
         """Get the cache from redis, rebuild the tree if the internal UUID changed => slow"""
         try:
-            return self._captures_index[capture_uuid]
+            cache = self._captures_index[capture_uuid]
+            # 2022-12-07: New cache format, store the user agent and referers. Re-cache if needed
+            if cache and not cache.user_agent:
+                self._captures_index.reload_cache(capture_uuid)
+                cache = self._captures_index[capture_uuid]
+            return cache
         except NoValidHarFile:
             self.logger.debug('No HAR files, {capture_uuid} is a broken capture.')
             return None

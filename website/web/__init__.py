@@ -662,7 +662,6 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
         ct = lookyloo.get_crawled_tree(tree_uuid)
         b64_thumbnail = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=True)
         screenshot_size = lookyloo.get_screenshot(tree_uuid).getbuffer().nbytes
-        info = lookyloo.get_info(tree_uuid)
         meta = lookyloo.get_meta(tree_uuid)
         hostnode_to_highlight = None
         if node_uuid:
@@ -682,7 +681,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
         if cache.error:
             flash(cache.error, 'warning')
         return render_template('tree.html', tree_json=ct.to_json(),
-                               info=info,
+                               info=cache,
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
                                screenshot_thumbnail=b64_thumbnail, page_title=cache.title,
                                screenshot_size=screenshot_size,
