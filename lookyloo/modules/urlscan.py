@@ -3,12 +3,15 @@
 import json
 import logging
 from datetime import date
-from typing import Any, Dict
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 import requests
 
 from ..default import ConfigError, get_config, get_homedir
 from ..helpers import get_useragent_for_requests, get_cache_directory
+
+if TYPE_CHECKING:
+    from ..capturecache import CaptureCache
 
 
 class UrlScan():
@@ -50,10 +53,10 @@ class UrlScan():
         self.storage_dir_urlscan = get_homedir() / 'urlscan'
         self.storage_dir_urlscan.mkdir(parents=True, exist_ok=True)
 
-    def get_url_submission(self, capture_info: Dict[str, Any]) -> Dict[str, Any]:
+    def get_url_submission(self, capture_info: 'CaptureCache') -> Dict[str, Any]:
         url_storage_dir = get_cache_directory(
             self.storage_dir_urlscan,
-            f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}',
+            f'{capture_info.url}{capture_info.user_agent}{capture_info.referer}',
             'submit')
         if not url_storage_dir.exists():
             return {}
@@ -64,7 +67,7 @@ class UrlScan():
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, capture_info: Dict[str, Any], /, visibility: str, *, force: bool=False, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, capture_info: 'CaptureCache', /, visibility: str, *, force: bool=False, auto_trigger: bool=False) -> Dict:
         '''Run the module on the initial URL'''
         if not self.available:
             return {'error': 'Module not available'}
@@ -78,8 +81,8 @@ class UrlScan():
         self.url_submit(capture_info, visibility, force)
         return {'success': 'Module triggered'}
 
-    def __submit_url(self, url: str, useragent: str, referer: str, visibility: str) -> Dict:
-        data = {'customagent': useragent, 'referer': referer}
+    def __submit_url(self, url: str, useragent: Optional[str], referer: Optional[str], visibility: str) -> Dict:
+        data = {'customagent': useragent if useragent else '', 'referer': referer if referer else ''}
 
         if not url.startswith('http'):
             url = f'http://{url}'
@@ -104,7 +107,7 @@ class UrlScan():
         response.raise_for_status()
         return response.json()
 
-    def url_submit(self, capture_info: Dict[str, Any], visibility: str, force: bool=False) -> Dict:
+    def url_submit(self, capture_info: 'CaptureCache', visibility: str, force: bool=False) -> Dict:
         '''Lookup an URL on urlscan.io
         Note: force means 2 things:
             * (re)scan of the URL
@@ -117,7 +120,7 @@ class UrlScan():
 
         url_storage_dir = get_cache_directory(
             self.storage_dir_urlscan,
-            f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}',
+            f'{capture_info.url}{capture_info.user_agent}{capture_info.referer}',
             'submit')
         url_storage_dir.mkdir(parents=True, exist_ok=True)
         urlscan_file_submit = url_storage_dir / date.today().isoformat()
@@ -129,9 +132,9 @@ class UrlScan():
         elif self.autosubmit:
             # submit is allowed and we either force it, or it's just allowed
             try:
-                response = self.__submit_url(capture_info['url'],
-                                             capture_info['user_agent'],
-                                             capture_info['referer'],
+                response = self.__submit_url(capture_info.url,
+                                             capture_info.user_agent,
+                                             capture_info.referer,
                                              visibility)
             except requests.exceptions.HTTPError as e:
                 return {'error': e}
@@ -142,14 +145,14 @@ class UrlScan():
             return response
         return {'error': 'Submitting is not allowed by the configuration'}
 
-    def url_result(self, capture_info: Dict[str, Any]):
+    def url_result(self, capture_info: 'CaptureCache'):
         '''Get the result from a submission.'''
         submission = self.get_url_submission(capture_info)
         if submission and 'uuid' in submission:
             uuid = submission['uuid']
             url_storage_dir_response = get_cache_directory(
                 self.storage_dir_urlscan,
-                f'{capture_info["url"]}{capture_info["user_agent"]}{capture_info["referer"]}',
+                f'{capture_info.url}{capture_info.user_agent}{capture_info.referer}',
                 'response')
             url_storage_dir_response.mkdir(parents=True, exist_ok=True)
             if (url_storage_dir_response / f'{uuid}.json').exists():

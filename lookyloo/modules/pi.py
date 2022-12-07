@@ -2,14 +2,17 @@
 
 import json
 import time
-from datetime import date
-from typing import Any, Dict, Optional
 
-from har2tree import CrawledTree
+from datetime import date
+from typing import Any, Dict, Optional, TYPE_CHECKING
+
 from pyeupi import PyEUPI
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory
+
+if TYPE_CHECKING:
+    from ..capturecache import CaptureCache
 
 
 class PhishingInitiative():
@@ -44,18 +47,18 @@ class PhishingInitiative():
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, cache: 'CaptureCache', /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}
         if auto_trigger and not self.allow_auto_trigger:
             return {'error': 'Auto trigger not allowed on module'}
 
-        if crawled_tree.redirects:
-            for redirect in crawled_tree.redirects:
+        if cache.redirects:
+            for redirect in cache.redirects:
                 self.url_lookup(redirect, force)
         else:
-            self.url_lookup(crawled_tree.root_hartree.har.root_url, force)
+            self.url_lookup(cache.url, force)
         return {'success': 'Module triggered'}
 
     def url_lookup(self, url: str, force: bool=False) -> None:

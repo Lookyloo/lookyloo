@@ -29,7 +29,8 @@ from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, Tr
 
 class CaptureCache():
     __slots__ = ('uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir',
-                 'error', 'incomplete_redirects', 'no_index', 'categories', 'parent')
+                 'error', 'incomplete_redirects', 'no_index', 'categories', 'parent',
+                 'user_agent', 'referer')
 
     def __init__(self, cache_entry: Dict[str, Any]):
         __default_cache_keys: Tuple[str, str, str, str, str, str] = ('uuid', 'title', 'timestamp',
@@ -61,6 +62,8 @@ class CaptureCache():
         self.no_index: bool = True if cache_entry.get('no_index') in [1, '1'] else False
         self.categories: List[str] = json.loads(cache_entry['categories']) if cache_entry.get('categories') else []
         self.parent: Optional[str] = cache_entry.get('parent')
+        self.user_agent: Optional[str] = cache_entry.get('user_agent')
+        self.referer: Optional[str] = cache_entry.get('referer')
 
     @property
     def tree(self) -> CrawledTree:
@@ -308,6 +311,11 @@ class CapturesIndex(Mapping):
                 cache['url'] = har.root_url
                 cache['redirects'] = json.dumps(tree.redirects)
                 cache['incomplete_redirects'] = 0
+                if har.root_referrer:
+                    cache['referer'] = har.root_referrer
+                if har.root_user_agent:
+                    # NOTE: This should always be the case (?)
+                    cache['user_agent'] = har.root_user_agent
             except Har2TreeError as e:
                 cache['error'] = str(e)
         else:

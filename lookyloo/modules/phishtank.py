@@ -2,13 +2,15 @@
 
 import json
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional, List, TYPE_CHECKING
 
-from har2tree import CrawledTree
 from pyphishtanklookup import PhishtankLookup
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory
+
+if TYPE_CHECKING:
+    from ..capturecache import CaptureCache
 
 
 class Phishtank():
@@ -42,8 +44,8 @@ class Phishtank():
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def lookup_ips_capture(self, crawled_tree: CrawledTree) -> Dict[str, List[Dict[str, Any]]]:
-        with (crawled_tree.root_hartree.har.path.parent / 'ips.json').open() as f:
+    def lookup_ips_capture(self, cache: 'CaptureCache') -> Dict[str, List[Dict[str, Any]]]:
+        with (cache.capture_dir / 'ips.json').open() as f:
             ips_dump = json.load(f)
         to_return: Dict[str, List[Dict[str, Any]]] = {}
         for ip in {ip for ips_list in ips_dump.values() for ip in ips_list}:
@@ -68,7 +70,7 @@ class Phishtank():
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, cache: 'CaptureCache', /, *, auto_trigger: bool=False) -> Dict:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}
@@ -76,18 +78,18 @@ class Phishtank():
             return {'error': 'Auto trigger not allowed on module'}
 
         # Quit if the capture is more than 70h old, the data in phishtank expire around that time.
-        if crawled_tree.start_time <= datetime.now(timezone.utc) - timedelta(hours=70):
+        if cache.timestamp <= datetime.now(timezone.utc) - timedelta(hours=70):
             return {'error': 'Capture to old, the response will be irrelevant.'}
 
         # Check URLs up to the redirect
-        if crawled_tree.redirects:
-            for redirect in crawled_tree.redirects:
+        if cache.redirects:
+            for redirect in cache.redirects:
                 self.url_lookup(redirect)
         else:
-            self.url_lookup(crawled_tree.root_hartree.har.root_url)
+            self.url_lookup(cache.url)
 
         # Check all the IPs in the ips file of the capture
-        with (crawled_tree.root_hartree.har.path.parent / 'ips.json').open() as f:
+        with (cache.capture_dir / 'ips.json').open() as f:
             ips_dump = json.load(f)
         for ip in {ip for ips_list in ips_dump.values() for ip in ips_list}:
             self.ip_lookup(ip)

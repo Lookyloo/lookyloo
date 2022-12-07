@@ -12,6 +12,7 @@ from pymisp.tools import FileObject, URLObject
 
 from ..default import get_config, get_homedir
 from ..helpers import get_public_suffix_list
+
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 

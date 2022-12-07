@@ -2,14 +2,15 @@
 
 import json
 from datetime import date
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 import requests
 
-from har2tree import CrawledTree
-
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory
+
+if TYPE_CHECKING:
+    from ..capturecache import CaptureCache
 
 
 class URLhaus():
@@ -45,7 +46,7 @@ class URLhaus():
         response.raise_for_status()
         return response.json()
 
-    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, cache: 'CaptureCache', /, *, auto_trigger: bool=False) -> Dict:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}
@@ -53,11 +54,11 @@ class URLhaus():
             return {'error': 'Auto trigger not allowed on module'}
 
         # Check URLs up to the redirect
-        if crawled_tree.redirects:
-            for redirect in crawled_tree.redirects:
+        if cache.redirects:
+            for redirect in cache.redirects:
                 self.url_lookup(redirect)
         else:
-            self.url_lookup(crawled_tree.root_hartree.har.root_url)
+            self.url_lookup(cache.url)
 
         return {'success': 'Module triggered'}
 

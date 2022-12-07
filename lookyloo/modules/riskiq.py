@@ -4,15 +4,18 @@ import json
 import logging
 
 from datetime import date, datetime, timedelta
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
+from urllib.parse import urlparse
 
-from har2tree import CrawledTree
 from passivetotal import AccountClient, DnsRequest, WhoisRequest  # type: ignore
 from requests import Response
 
 from ..default import ConfigError, get_homedir, get_config
 from ..exceptions import ModuleError
 from ..helpers import get_cache_directory
+
+if TYPE_CHECKING:
+    from ..capturecache import CaptureCache
 
 
 class RiskIQError(ModuleError):
@@ -74,14 +77,22 @@ class RiskIQ():
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, cache: 'CaptureCache', /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}
         if auto_trigger and not self.allow_auto_trigger:
             return {'error': 'Auto trigger not allowed on module'}
 
-        self.pdns_lookup(crawled_tree.root_hartree.rendered_node.hostname, force)
+        if cache.redirects:
+            hostname = urlparse(cache.redirects[-1]).hostname
+        else:
+            hostname = urlparse(cache.url).hostname
+
+        if not hostname:
+            return {'error': 'No hostname found.'}
+
+        self.pdns_lookup(hostname, force)
         return {'success': 'Module triggered'}
 
     def pdns_lookup(self, hostname: str, force: bool=False, first_seen: Optional[Union[date, datetime]]=None) -> None:

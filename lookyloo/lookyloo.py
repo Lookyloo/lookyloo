@@ -14,6 +14,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import (Any, Dict, Iterable, List, MutableMapping, Optional, Set,
                     Tuple, Union)
+from urllib.parse import urlparse
 from uuid import uuid4
 from zipfile import ZipFile
 
@@ -190,10 +191,14 @@ class Lookyloo():
 
     def get_info(self, capture_uuid: str, /) -> Dict[str, Any]:
         '''Get basic information about the capture.'''
-        ct = self.get_crawled_tree(capture_uuid)
-        to_return = {'url': ct.root_url, 'title': ct.root_hartree.har.initial_title,
-                     'capture_time': ct.start_time.isoformat(), 'user_agent': ct.user_agent,
-                     'referer': ct.referer if ct.referer else ''}
+        cache = self.capture_cache(capture_uuid)
+        if not cache:
+            # NOTE: Return an exception?
+            return {}
+        to_return = {'url': cache.url, 'title': cache.title,
+                     'capture_time': cache.timestamp.isoformat(),
+                     'user_agent': cache.user_agent,
+                     'referer': cache.referer if cache.referer else ''}
         return to_return
 
     def get_meta(self, capture_uuid: str, /) -> Dict[str, str]:
@@ -280,65 +285,62 @@ class Lookyloo():
 
         to_return: Dict[str, Dict] = {'PhishingInitiative': {}, 'VirusTotal': {}, 'UrlScan': {},
                                       'URLhaus': {}}
-        capture_cache = self.capture_cache(capture_uuid)
-
-        to_return['PhishingInitiative'] = self.pi.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
-        to_return['VirusTotal'] = self.vt.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
-        to_return['UrlScan'] = self.urlscan.capture_default_trigger(
-            self.get_info(capture_uuid),
-            visibility='unlisted' if (capture_cache and capture_cache.no_index) else 'public',
-            force=force, auto_trigger=auto_trigger)
-        to_return['Phishtank'] = self.phishtank.capture_default_trigger(ct, auto_trigger=auto_trigger)
-        to_return['URLhaus'] = self.urlhaus.capture_default_trigger(ct, auto_trigger=auto_trigger)
+        if cache := self.capture_cache(capture_uuid):
+            to_return['PhishingInitiative'] = self.pi.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
+            to_return['VirusTotal'] = self.vt.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
+            to_return['UrlScan'] = self.urlscan.capture_default_trigger(
+                cache,
+                visibility='unlisted' if (cache and cache.no_index) else 'public',
+                force=force, auto_trigger=auto_trigger)
+            to_return['Phishtank'] = self.phishtank.capture_default_trigger(cache, auto_trigger=auto_trigger)
+            to_return['URLhaus'] = self.urlhaus.capture_default_trigger(cache, auto_trigger=auto_trigger)
         return to_return
 
     def get_modules_responses(self, capture_uuid: str, /) -> Optional[Dict[str, Any]]:
         '''Get the responses of the modules from the cached responses on the disk'''
-        try:
-            ct = self.get_crawled_tree(capture_uuid)
-        except LookylooException:
-            self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_uuid}) is cached.')
+        cache = self.capture_cache(capture_uuid)
+        if not cache:
+            self.logger.warning(f'Unable to get the modules responses unless the capture {capture_uuid} is cached')
             return None
         to_return: Dict[str, Any] = {}
         if self.vt.available:
             to_return['vt'] = {}
-            if ct.redirects:
-                for redirect in ct.redirects:
+            if cache.redirects:
+                for redirect in cache.redirects:
                     to_return['vt'][redirect] = self.vt.get_url_lookup(redirect)
             else:
-                to_return['vt'][ct.root_hartree.har.root_url] = self.vt.get_url_lookup(ct.root_hartree.har.root_url)
+                to_return['vt'][cache.url] = self.vt.get_url_lookup(cache.url)
         if self.pi.available:
             to_return['pi'] = {}
-            if ct.redirects:
-                for redirect in ct.redirects:
+            if cache.redirects:
+                for redirect in cache.redirects:
                     to_return['pi'][redirect] = self.pi.get_url_lookup(redirect)
             else:
-                to_return['pi'][ct.root_hartree.har.root_url] = self.pi.get_url_lookup(ct.root_hartree.har.root_url)
+                to_return['pi'][cache.url] = self.pi.get_url_lookup(cache.url)
         if self.phishtank.available:
             to_return['phishtank'] = {'urls': {}, 'ips_hits': {}}
-            if ct.redirects:
-                for redirect in ct.redirects:
+            if cache.redirects:
+                for redirect in cache.redirects:
                     to_return['phishtank']['urls'][redirect] = self.phishtank.get_url_lookup(redirect)
             else:
-                to_return['phishtank']['urls'][ct.root_hartree.har.root_url] = self.phishtank.get_url_lookup(ct.root_hartree.har.root_url)
-            ips_hits = self.phishtank.lookup_ips_capture(ct)
+                to_return['phishtank']['urls'][cache.url] = self.phishtank.get_url_lookup(cache.url)
+            ips_hits = self.phishtank.lookup_ips_capture(cache)
             if ips_hits:
                 to_return['phishtank']['ips_hits'] = ips_hits
         if self.urlhaus.available:
             to_return['urlhaus'] = {'urls': {}}
-            if ct.redirects:
-                for redirect in ct.redirects:
+            if cache.redirects:
+                for redirect in cache.redirects:
                     to_return['urlhaus']['urls'][redirect] = self.urlhaus.get_url_lookup(redirect)
             else:
-                to_return['urlhaus']['urls'][ct.root_hartree.har.root_url] = self.urlhaus.get_url_lookup(ct.root_hartree.har.root_url)
+                to_return['urlhaus']['urls'][cache.url] = self.urlhaus.get_url_lookup(cache.url)
 
         if self.urlscan.available:
-            info = self.get_info(capture_uuid)
             to_return['urlscan'] = {'submission': {}, 'result': {}}
-            to_return['urlscan']['submission'] = self.urlscan.get_url_submission(info)
+            to_return['urlscan']['submission'] = self.urlscan.get_url_submission(cache)
             if to_return['urlscan']['submission'] and 'uuid' in to_return['urlscan']['submission']:
                 # The submission was done, try to get the results
-                result = self.urlscan.url_result(info)
+                result = self.urlscan.url_result(cache)
                 if 'error' not in result:
                     to_return['urlscan']['result'] = result
         return to_return
@@ -348,16 +350,20 @@ class Lookyloo():
         # by looking at Passive DNS systems, check if there are hits in the current capture
         # in another one and things like that. The trigger_modules method is for getting
         # information about the current status of the capture in other systems.
-        try:
-            ct = self.get_crawled_tree(capture_uuid)
-        except LookylooException:
-            self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_uuid}) is cached.')
+        cache = self.capture_cache(capture_uuid)
+        if not cache:
+            self.logger.warning(f'Unable to get the modules responses unless the capture {capture_uuid} is cached')
             return {}
         to_return: Dict[str, Any] = {}
         if self.riskiq.available:
             try:
-                self.riskiq.capture_default_trigger(ct)
-                to_return['riskiq'] = self.riskiq.get_passivedns(ct.root_hartree.rendered_node.hostname)
+                self.riskiq.capture_default_trigger(cache)
+                if cache.redirects:
+                    hostname = urlparse(cache.redirects[-1]).hostname
+                else:
+                    hostname = urlparse(cache.url).hostname
+                if hostname:
+                    to_return['riskiq'] = self.riskiq.get_passivedns(hostname)
             except RiskIQError as e:
                 self.logger.warning(e.response.content)
         return to_return
@@ -843,12 +849,13 @@ class Lookyloo():
         return vt_obj
 
     def __misp_add_urlscan_to_event(self, capture_uuid: str, visibility: str) -> Optional[MISPAttribute]:
-        response = self.urlscan.url_submit(self.get_info(capture_uuid), visibility)
-        if 'result' in response:
-            attribute = MISPAttribute()
-            attribute.value = response['result']
-            attribute.type = 'link'
-            return attribute
+        if cache := self.capture_cache(capture_uuid):
+            response = self.urlscan.url_submit(cache, visibility)
+            if 'result' in response:
+                attribute = MISPAttribute()
+                attribute.value = response['result']
+                attribute.type = 'link'
+                return attribute
         return None
 
     def misp_export(self, capture_uuid: str, /, with_parent: bool=False) -> Union[List[MISPEvent], Dict[str, str]]:
