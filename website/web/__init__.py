@@ -644,7 +644,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
     if tree_uuid == 'False':
         flash("Unable to process your request.", 'warning')
         return redirect(url_for('index'))
-    cache = lookyloo.capture_cache(tree_uuid)
+    cache = lookyloo.capture_cache(tree_uuid, force_update=True)
     if not cache:
         status = lookyloo.get_capture_status(tree_uuid)
         if status == CaptureStatus.UNKNOWN:
@@ -737,7 +737,7 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: Opti
         # We want to filter the captures on the index
         cut_time = (datetime.now() - timedelta(**time_delta_on_index)).replace(tzinfo=timezone.utc)
 
-    for cached in lookyloo.sorted_capture_cache():
+    for cached in lookyloo.sorted_capture_cache(index_cut_time=cut_time):
         if cut_time and cached.timestamp < cut_time:
             continue
 

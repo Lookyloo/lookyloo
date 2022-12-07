@@ -7,7 +7,7 @@ import operator
 import smtplib
 
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from email.message import EmailMessage
 from functools import cached_property
 from io import BytesIO
@@ -380,13 +380,22 @@ class Lookyloo():
     def update_tree_cache_info(self, process_id: int, classname: str) -> None:
         self.redis.hset('tree_cache', f'{process_id}|{classname}', str(self._captures_index.lru_cache_status()))
 
-    def sorted_capture_cache(self, capture_uuids: Optional[Iterable[str]]=None, cached_captures_only: bool=True) -> List[CaptureCache]:
+    def sorted_capture_cache(self, capture_uuids: Optional[Iterable[str]]=None, cached_captures_only: bool=True, index_cut_time: Optional[datetime]=None) -> List[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''
         if capture_uuids is None:
-            # Call from the index, we want all the recent captures
-            capture_uuids = self.redis.hkeys('lookup_dirs')
+            all_captures = self.redis.hgetall('lookup_dirs')
+            if index_cut_time is None:
+                capture_uuids = list(all_captures.keys())
+            else:
+                capture_uuids = []
+                for uuid, directory in self.redis.hgetall('lookup_dirs').items():
+                    date_str = directory.rsplit('/', 1)[1]
+                    if datetime.fromisoformat(date_str).replace(tzinfo=timezone.utc) < index_cut_time:
+                        continue
+                    capture_uuids.append(uuid)
             cached_captures_only = False
+
         if not capture_uuids:
             # No captures at all on the instance
             return []
@@ -424,14 +433,18 @@ class Lookyloo():
             return CaptureStatusCore.ONGOING
         return lacus_status
 
-    def capture_cache(self, capture_uuid: str, /) -> Optional[CaptureCache]:
+    def capture_cache(self, capture_uuid: str, /, *, force_update: bool = False) -> Optional[CaptureCache]:
         """Get the cache from redis, rebuild the tree if the internal UUID changed => slow"""
         try:
             cache = self._captures_index[capture_uuid]
-            # 2022-12-07: New cache format, store the user agent and referers. Re-cache if needed
-            if cache and not cache.user_agent and not cache.error:
-                self._captures_index.reload_cache(capture_uuid)
-                cache = self._captures_index[capture_uuid]
+            if cache and force_update:
+                needs_update = False
+                if not cache.user_agent and not cache.error:
+                    # 2022-12-07: New cache format, store the user agent and referers.
+                    needs_update = True
+                if needs_update:
+                    self._captures_index.reload_cache(capture_uuid)
+                    cache = self._captures_index[capture_uuid]
             return cache
         except NoValidHarFile:
             self.logger.debug('No HAR files, {capture_uuid} is a broken capture.')
