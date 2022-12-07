@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import csv
 import argparse
 import logging
 
 from lookyloo.lookyloo import Indexing, Lookyloo
+from lookyloo.helpers import get_captures_dir
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s:%(message)s',
                     level=logging.INFO)
@@ -22,6 +24,13 @@ def main():
 
     indexing = Indexing()
     indexing.clear_indexes()
+
+    # Initialize lookup_dirs key
+    for index in get_captures_dir().rglob('index'):
+        with index.open('r') as _f:
+            recent_uuids = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
+        if recent_uuids:
+            lookyloo.redis.hset('lookup_dirs', mapping=recent_uuids)
 
     # This call will rebuild all the caches as needed.
     lookyloo.sorted_capture_cache()
