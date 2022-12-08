@@ -578,15 +578,17 @@ def bulk_captures(base_tree_uuid: str):
         user = src_request_ip(request)
     selected_urls = request.form.getlist('url')
     urls = lookyloo.get_urls_rendered_page(base_tree_uuid)
-    ct = lookyloo.get_crawled_tree(base_tree_uuid)
     cache = lookyloo.capture_cache(base_tree_uuid)
+    if not cache:
+        flash('Unable to find capture {base_tree_uuid} in cache.', 'error')
+        return redirect(url_for('tree', tree_uuid=base_tree_uuid))
     cookies = load_cookies(lookyloo.get_cookies(base_tree_uuid))
     bulk_captures = []
     for url in [urls[int(selected_id) - 1] for selected_id in selected_urls]:
         capture = {'url': url,
                    'cookies': cookies,
-                   'referer': ct.redirects[-1] if ct.redirects else ct.root_url,
-                   'user_agent': ct.user_agent,
+                   'referer': cache.redirects[-1] if cache.redirects else cache.url,
+                   'user_agent': cache.user_agent,
                    'parent': base_tree_uuid,
                    'listing': False if cache and cache.no_index else True
                    }
@@ -1092,11 +1094,11 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
 def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str):
     # Note: we could simplify it with lookyloo.get_urls_rendered_page, but if at somepoint,
     # we have multiple page rendered on one tree, it will be a problem.
-    ct = lookyloo.get_crawled_tree(tree_uuid)
-    urlnode = ct.root_hartree.get_url_node_by_uuid(node_uuid)
-    if not urlnode.rendered_html:
+    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
+    if not hasattr(urlnode, 'rendered_html') or not urlnode.rendered_html:
         return
 
+    ct = lookyloo.get_crawled_tree(tree_uuid)
     not_loaded_urls = sorted(set(urlnode.urls_in_rendered_page)
                              - set(ct.root_hartree.all_url_requests.keys()))
     to_return = StringIO()

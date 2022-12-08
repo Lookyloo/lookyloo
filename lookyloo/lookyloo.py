@@ -702,7 +702,7 @@ class Lookyloo():
         '''Get all the files related to this capture.'''
         return self._get_raw(capture_uuid)
 
-    def get_urls_rendered_page(self, capture_uuid: str, /):
+    def get_urls_rendered_page(self, capture_uuid: str, /) -> List[str]:
         ct = self.get_crawled_tree(capture_uuid)
         return sorted(set(ct.root_hartree.rendered_node.urls_in_rendered_page)
                       - set(ct.root_hartree.all_url_requests.keys()))
