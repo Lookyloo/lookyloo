@@ -203,14 +203,18 @@ class Lookyloo():
 
     def get_meta(self, capture_uuid: str, /) -> Dict[str, str]:
         '''Get the meta informations from a capture (mostly, details about the User Agent used.)'''
-        metafile = self._captures_index[capture_uuid].capture_dir / 'meta'
+        cache = self.capture_cache(capture_uuid)
+        if not cache:
+            return {}
+        metafile = cache.capture_dir / 'meta'
         if metafile.exists():
             with metafile.open('r') as f:
                 return json.load(f)
 
+        if not cache.user_agent:
+            return {}
         meta = {}
-        ct = self.get_crawled_tree(capture_uuid)
-        ua = ParsedUserAgent(ct.root_hartree.user_agent)
+        ua = ParsedUserAgent(cache.user_agent)
         meta['user_agent'] = ua.string
         if ua.platform:
             meta['os'] = ua.platform
