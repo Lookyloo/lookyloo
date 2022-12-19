@@ -286,6 +286,7 @@ class CapturesIndex(Mapping):
                 self.indexing.new_internal_uuids(tree)
             except NoValidHarFile:
                 self.logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are broken.')
+                tree = None
 
         cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': capture_dir_str}
         if (capture_dir / 'error.txt').exists():
@@ -309,7 +310,7 @@ class CapturesIndex(Mapping):
                 cache['title'] = har.initial_title
                 cache['timestamp'] = har.initial_start_time
                 cache['url'] = har.root_url
-                cache['redirects'] = json.dumps(tree.redirects)
+                cache['redirects'] = json.dumps(tree.redirects) if tree else ''
                 cache['incomplete_redirects'] = 0
                 cache['user_agent'] = har.root_user_agent if har.root_user_agent else 'No User Agent.'
                 if har.root_referrer:
