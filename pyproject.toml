@@ -65,7 +65,7 @@ passivetotal = "^2.5.9"
 werkzeug = "^2.2.2"
 filetype = "^1.2.0"
 pypandora = "^1.2.0"
-lacuscore = "^1.1.11"
+lacuscore = "^1.1.12"
 pylacus = "^1.1.1"
 
 [tool.poetry.group.dev.dependencies]
