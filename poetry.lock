@@ -1666,21 +1666,21 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.16.9"
+version = "1.16.10"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.16.9-py3-none-any.whl", hash = "sha256:0b8024783b8cacbfe8f7b268105753b0ec817fa88ccdbd3e34ec0b0d8ff190d8"},
-    {file = "playwrightcapture-1.16.9.tar.gz", hash = "sha256:0dfb9f818cc9a69156ae458366dd9895f2de02f84c6647d1074fd36a1e7c711e"},
+    {file = "playwrightcapture-1.16.10-py3-none-any.whl", hash = "sha256:7fc67f9ba93c8fb7a4947257cf9f797e2279a0f2839e57ffb2e505f38ec90f28"},
+    {file = "playwrightcapture-1.16.10.tar.gz", hash = "sha256:ab537b257056a30733a6ff0ce12d57244edb6d3c1d488ff43d5c1ba312677978"},
 ]
 
 [package.dependencies]
 beautifulsoup4 = ">=4.11.1,<5.0.0"
 dateparser = ">=1.1.4,<2.0.0"
 lxml = ">=4.9.2,<5.0.0"
-playwright = ">=1.28.0,<2.0.0"
+playwright = ">=1.29.0,<2.0.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
 requests = {version = ">=2.28.1,<3.0.0", optional = true, markers = "extra == \"recaptcha\""}
 SpeechRecognition = {version = ">=3.9.0,<4.0.0", optional = true, markers = "extra == \"recaptcha\""}
@@ -1867,6 +1867,24 @@ requests = ">=2.28.1,<3.0.0"
 
 [package.extras]
 docs = ["Sphinx (>=5.1.1,<6.0.0)"]
+
+[[package]]
+name = "pyipasnhistory"
+version = "2.1.2"
+description = "Python client for IP ASN History"
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "pyipasnhistory-2.1.2-py3-none-any.whl", hash = "sha256:7743de1bb7e735f9b907a3cff8ab189a1d8b5517b56b64f151fc4793b2863e35"},
+    {file = "pyipasnhistory-2.1.2.tar.gz", hash = "sha256:10aed86bfbaedc8a119cdd5f59eca646938eb266c717f10394ba9fc2199f0281"},
+]
+
+[package.dependencies]
+requests = ">=2.28.1,<3.0.0"
+
+[package.extras]
+docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
@@ -2822,4 +2840,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "306d1dd17105d19461515493ba490a2b08522208ebee5c92e3850a7149687ac5"
+content-hash = "6da977b7d29f6753c86bc1be143c03d34b2774ed3e1bdff0c0f2c2f533a3d7c8"

@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union, Set
 import dns.rdatatype
 import dns.resolver
 from har2tree import CrawledTree, Har2TreeError, HarFile
+from pyipasnhistory import IPASNHistory
 from redis import Redis
 
 from .context import Context
@@ -111,6 +112,14 @@ class CapturesIndex(Mapping):
         self.__cache: Dict[str, CaptureCache] = {}
         self._quick_init()
         self.timeout = get_config('generic', 'max_tree_create_time')
+        try:
+            self.ipasnhistory: Optional[IPASNHistory] = IPASNHistory()
+            if not self.ipasnhistory.is_up:
+                self.ipasnhistory = None
+        except Exception as e:
+            # Unable to setup IPASN History
+            print(e)
+            self.ipasnhistory = None
 
     @property
     def cached_captures(self) -> Set[str]:
@@ -374,6 +383,8 @@ class CapturesIndex(Mapping):
 
         cnames_path = ct.root_hartree.har.path.parent / 'cnames.json'
         ips_path = ct.root_hartree.har.path.parent / 'ips.json'
+        ipasn_path = ct.root_hartree.har.path.parent / 'ipasn.json'
+
         host_cnames: Dict[str, str] = {}
         if cnames_path.exists():
             try:
@@ -391,6 +402,15 @@ class CapturesIndex(Mapping):
             except json.decoder.JSONDecodeError:
                 # The json is broken, delete and re-trigger the requests
                 host_ips = {}
+
+        ipasn: Dict[str, Dict[str, str]] = {}
+        if ipasn_path.exists():
+            try:
+                with ipasn_path.open() as f:
+                    ipasn = json.load(f)
+            except json.decoder.JSONDecodeError:
+                # The json is broken, delete and re-trigger the requests
+                ipasn = {}
 
         for node in ct.root_hartree.hostname_tree.traverse():
             if node.name not in host_cnames or node.name not in host_ips:
@@ -415,8 +435,39 @@ class CapturesIndex(Mapping):
             elif node.name in host_ips:
                 node.add_feature('resolved_ips', host_ips[node.name])
 
+        if self.ipasnhistory:
+            # Throw all the IPs to IPASN History for query later.
+            if ips := [{'ip': ip} for ips_sublist in host_ips.values() for ip in ips_sublist if ip and ip not in ipasn]:
+                try:
+                    self.ipasnhistory.mass_cache(ips)
+                except Exception as e:
+                    self.logger.warning(f'Unable to submit IPs to IPASNHistory: {e}')
+                else:
+                    time.sleep(2)
+                    ipasn_responses = self.ipasnhistory.mass_query(ips)
+                    if 'responses' in ipasn_responses:
+                        for response in ipasn_responses['responses']:
+                            ip = response['meta']['ip']
+                            r = list(response['response'].values())[0]
+                            if ip not in ipasn and r:
+                                ipasn[ip] = r
+            if ipasn:
+                # retraverse tree to populate it with the features
+                for node in ct.root_hartree.hostname_tree.traverse():
+                    if not hasattr(node, 'resolved_ips'):
+                        continue
+                    ipasn_entries = {}
+                    for ip in node.resolved_ips:
+                        if ip not in ipasn:
+                            continue
+                        ipasn_entries[ip] = ipasn[ip]
+                    if ipasn_entries:
+                        node.add_feature('ipasn', ipasn_entries)
+
         with cnames_path.open('w') as f:
             json.dump(host_cnames, f)
         with ips_path.open('w') as f:
             json.dump(host_ips, f)
+        with ipasn_path.open('w') as f:
+            json.dump(ipasn, f)
         return ct

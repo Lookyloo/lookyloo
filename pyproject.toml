@@ -67,6 +67,7 @@ filetype = "^1.2.0"
 pypandora = "^1.2.0"
 lacuscore = "^1.1.14"
 pylacus = "^1.1.1"
+pyipasnhistory = "^2.1.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^0.991"
