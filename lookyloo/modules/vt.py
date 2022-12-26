@@ -81,7 +81,13 @@ class VirusTotal():
 
         scan_requested = False
         if self.autosubmit and force:
-            self.client.scan_url(url)
+            try:
+                self.client.scan_url(url)
+            except APIError as e:
+                if e.code == 'QuotaExceededError':
+                    self.logger.warning('VirusTotal quota exceeded, sry.')
+                    return
+                self.logger.exception('Something went poorly withi this query.')
             scan_requested = True
 
         if not force and vt_file.exists():
