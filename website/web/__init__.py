@@ -1062,10 +1062,13 @@ def statsfull():
 
 
 @app.route('/whois/<string:query>', methods=['GET'])
-def whois(query: str):
-    to_return = lookyloo.uwhois.whois(query)
-    return send_file(BytesIO(to_return.encode()),
-                     mimetype='test/plain', as_attachment=True, download_name=f'whois.{query}.txt')
+@app.route('/whois/<string:query>/<int:email_only>', methods=['GET'])
+def whois(query: str, email_only: int=0):
+    to_return = lookyloo.uwhois.whois(query, bool(email_only))
+    if isinstance(to_return, str):
+        return send_file(BytesIO(to_return.encode()),
+                         mimetype='test/plain', as_attachment=True, download_name=f'whois.{query}.txt')
+    return jsonify(to_return)
 
 
 # ##### Methods related to a specific URLNode #####

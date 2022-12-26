@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import logging
+import re
 import socket
-from typing import Any, Dict
+
+from typing import Any, Dict, overload, Literal, List, Union
 
 from har2tree import CrawledTree, Har2TreeError, HostNode
 
@@ -35,9 +37,11 @@ class UniversalWhois():
 
     def query_whois_hostnode(self, hostnode: HostNode) -> None:
         if hasattr(hostnode, 'resolved_ips'):
+            ip: str
             for ip in hostnode.resolved_ips:
                 self.whois(ip)
         if hasattr(hostnode, 'cnames'):
+            cname: str
             for cname in hostnode.cnames:
                 self.whois(cname)
         self.whois(hostnode.name)
@@ -58,7 +62,19 @@ class UniversalWhois():
             for n in hostnode.get_ancestors():
                 self.query_whois_hostnode(n)
 
-    def whois(self, query: str) -> str:
+    @overload
+    def whois(self, query: str, contact_email_only: Literal[True]) -> List[str]:
+        ...
+
+    @overload
+    def whois(self, query: str, contact_email_only: Literal[False]) -> str:
+        ...
+
+    @overload
+    def whois(self, query: str, contact_email_only: bool=False) -> Union[str, List[str]]:
+        ...
+
+    def whois(self, query: str, contact_email_only: bool=False) -> Union[str, List[str]]:
         if not self.available:
             return ''
         bytes_whois = b''
@@ -70,5 +86,7 @@ class UniversalWhois():
                 if not data:
                     break
                 bytes_whois += data
-        to_return = bytes_whois.decode()
-        return to_return
+        if not contact_email_only:
+            return bytes_whois.decode()
+        emails = list(set(re.findall(rb'[\w\.-]+@[\w\.-]+', bytes_whois)))
+        return [e.decode() for e in sorted(emails)]
