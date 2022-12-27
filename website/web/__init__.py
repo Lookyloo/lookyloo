@@ -678,7 +678,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                     if hostnode:
                         hostnode_to_highlight = hostnode.uuid
                 except IndexError as e:
-                    print(e)
+                    logging.info(f'Invalid uuid ({e}): {node_uuid}')
                     pass
         if cache.error:
             flash(cache.error, 'warning')
