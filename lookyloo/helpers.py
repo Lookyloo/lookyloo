@@ -195,7 +195,7 @@ def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str, bytes]]=
                 to_add = cookie
             to_return.append(to_add)
     except Exception as e:
-        print(f'Unable to load the cookie file: {e}')
+        logger.warning(f'Unable to load the cookie file: {e} - {cookies}')
     return to_return
 
 

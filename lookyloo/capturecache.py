@@ -118,7 +118,7 @@ class CapturesIndex(Mapping):
                 self.ipasnhistory = None
         except Exception as e:
             # Unable to setup IPASN History
-            print(e)
+            self.logger.warning(f'Unable to setup IPASN History: {e}')
             self.ipasnhistory = None
 
     @property
