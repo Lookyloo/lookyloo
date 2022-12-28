@@ -766,14 +766,14 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.16.8"
+version = "1.17.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "har2tree-1.16.8-py3-none-any.whl", hash = "sha256:92de93d6ec7dd736b4cb52507c48159ca7f0969af947cb2d3c9881b12de4a752"},
-    {file = "har2tree-1.16.8.tar.gz", hash = "sha256:15e855567c36d293de156dc50baf94f0a59ff921c5fad5acb5833879d1cc27e3"},
+    {file = "har2tree-1.17.0-py3-none-any.whl", hash = "sha256:05014583acb51e8e8daf8735cf50a5058652984b55a75e8a9fdf9abbb81edebb"},
+    {file = "har2tree-1.17.0.tar.gz", hash = "sha256:4d177756ddd62ac140543260ca5ea82384a90fcbe3cdcaab2ed18b88324f23fe"},
 ]
 
 [package.dependencies]
@@ -1055,14 +1055,14 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.1.16"
+version = "1.2.0"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.1.16-py3-none-any.whl", hash = "sha256:50f5eadfef6e8757d245ccf4f460e93143c872e160410bf5b42eea96ab3889a4"},
-    {file = "lacuscore-1.1.16.tar.gz", hash = "sha256:f85ed0bdc316d48492a755d4f3102c61e8463c327ae595b6b96033b36f2026d7"},
+    {file = "lacuscore-1.2.0-py3-none-any.whl", hash = "sha256:731806a0f912894eafc43ac17beab4ed8762c1385211e2d8389194ef5156a375"},
+    {file = "lacuscore-1.2.0.tar.gz", hash = "sha256:ea28f1ec19de58213f34c56ddfe336ba62c121d10ee9baa83f94196363e7e1f8"},
 ]
 
 [package.dependencies]
@@ -2470,14 +2470,14 @@ files = [
 
 [[package]]
 name = "types-redis"
-version = "4.3.21.6"
+version = "4.3.21.7"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.3.21.6.tar.gz", hash = "sha256:f7969f73a0f79e9e7895f053a06d8b429fb7b5d4fe1269b8ee40463388f653ad"},
-    {file = "types_redis-4.3.21.6-py3-none-any.whl", hash = "sha256:615e5a9142993789ffc22ee54435769b600da3e528bb51cf38430e5cd82af306"},
+    {file = "types-redis-4.3.21.7.tar.gz", hash = "sha256:f9baac41fcafb0b8ec655893feebc5d8bd189da05062d03b4566a16c092fc08c"},
+    {file = "types_redis-4.3.21.7-py3-none-any.whl", hash = "sha256:834e816a84fc570aa96551a9252b0df164ac671bc09e4708e2f8e2b129449ef1"},
 ]
 
 [[package]]
@@ -2840,4 +2840,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "b80ee178367056b09c4a5469e9abbbb536483b87b3c3e2f7b4c93e38213b4e06"
+content-hash = "e98200d292a800da64c9d14d258efb642bf6ca09637382f30b20eb2c4d69595e"
