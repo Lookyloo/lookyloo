@@ -80,6 +80,9 @@ $(document).ready(function () {
     <a href="{{ url_for('capture_web') }}">
       <button class="new-capture-button btn btn-primary">Start a new capture</button>
     </a>
+    <a href="{{ url_for('submit_capture') }}">
+      <button class="new-capture-button btn btn-primary">Submit capture</button>
+    </a>
     <br><br>
     {{ render_messages(container=True, dismissible=True) }}
   </center>
