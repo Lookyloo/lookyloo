@@ -49,7 +49,11 @@ class CaptureCache():
                 # If the microsecond is missing (0), it fails
                 self.timestamp = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
             self.url: str = cache_entry['url']
-            self.redirects: List[str] = json.loads(cache_entry['redirects'])
+            if cache_entry.get('redirects'):
+                self.redirects: List[str] = json.loads(cache_entry['redirects'])
+            else:
+                self.logger.info(f'No redirects in cache for {self.uuid}')
+                self.redirects = []
             if not self.capture_dir.exists():
                 raise MissingCaptureDirectory(f'The capture {self.uuid} does not exists in {self.capture_dir}.')
         elif not cache_entry.get('error'):
