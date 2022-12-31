@@ -31,9 +31,11 @@ from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, Tr
 class CaptureCache():
     __slots__ = ('uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir',
                  'error', 'incomplete_redirects', 'no_index', 'categories', 'parent',
-                 'user_agent', 'referer')
+                 'user_agent', 'referer', 'logger')
 
     def __init__(self, cache_entry: Dict[str, Any]):
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.logger.setLevel(get_config('generic', 'loglevel'))
         __default_cache_keys: Tuple[str, str, str, str, str, str] = ('uuid', 'title', 'timestamp',
                                                                      'url', 'redirects', 'capture_dir')
         if 'uuid' not in cache_entry or 'capture_dir' not in cache_entry:
