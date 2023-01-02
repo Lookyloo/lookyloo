@@ -51,7 +51,7 @@ pylookyloo = "^1.17.0"
 dnspython = "^2.2.1"
 pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.4.167", extras = ["url", "fileobjects"]}
-Pillow = "^9.3.0"
+Pillow = "^9.4.0"
 flask-restx = "^1.0.3"
 rich = "^12.6.0"
 pyphishtanklookup = "^1.1"
