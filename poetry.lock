@@ -1892,21 +1892,21 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.1.1"
+version = "1.2.0"
 description = "Python CLI and module for lacus"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylacus-1.1.1-py3-none-any.whl", hash = "sha256:61eab358c20b0fbb1915a91f82d5dc8ee3b8f22de7e23dfe2206af937e4d3728"},
-    {file = "pylacus-1.1.1.tar.gz", hash = "sha256:4eca75827ba977fb6dbeef587cf2a08324e4e4cdbc30a8762c695099be27a9dc"},
+    {file = "pylacus-1.2.0-py3-none-any.whl", hash = "sha256:174e3cae131831812a54c613e16595b557f53da1d5c1c89002ed5ce08370121d"},
+    {file = "pylacus-1.2.0.tar.gz", hash = "sha256:32611257d0847059db8019ffb4b655528cff6807ced17feddf99d5b1fd7d186f"},
 ]
 
 [package.dependencies]
 requests = ">=2.28.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=5.3.0,<6.0.0)"]
+docs = ["Sphinx (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pylookyloo"
@@ -2849,4 +2849,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "865ba71ccefe8ec43defb4e67470a991d5d310f1fb3c08823167eb9eb731382d"
+content-hash = "0b4a75885eb3131f325c995f396a36812d4741fb35f9c7e240442a029762940c"
