@@ -54,7 +54,7 @@ pymisp = {version = "^2.4.167", extras = ["url", "fileobjects"]}
 Pillow = "^9.4.0"
 flask-restx = "^1.0.3"
 rich = "^13.0.0"
-pyphishtanklookup = "^1.1"
+pyphishtanklookup = "^1.2"
 Flask-Cors = "^3.0.10"
 pyhashlookup = "^1.2.1"
 lief = "^0.12.3"

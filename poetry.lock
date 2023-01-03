@@ -1980,21 +1980,21 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pyphishtanklookup"
-version = "1.1"
+version = "1.2"
 description = "Python CLI and module for PhishtankLookup"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pyphishtanklookup-1.1-py3-none-any.whl", hash = "sha256:f273773d13764c47d164455d835c43407e3719593afc4e78847f520a5a9124f9"},
-    {file = "pyphishtanklookup-1.1.tar.gz", hash = "sha256:a16ebdc6458ab4ca71a8a12ff42492a459c28c7b5083647b8bb37757ff3c3f5a"},
+    {file = "pyphishtanklookup-1.2-py3-none-any.whl", hash = "sha256:11135b357f5cb18e1e97f7f7f5f5c6b82e605d270787447932e7579ffc4485de"},
+    {file = "pyphishtanklookup-1.2.tar.gz", hash = "sha256:b460bab68a5edef390815865752676b209ff075e157c50d3bfcbcf06b571e72d"},
 ]
 
 [package.dependencies]
-requests = ">=2.27.1,<3.0.0"
+requests = ">=2.28.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=4.5.0,<5.0.0)"]
+docs = ["Sphinx (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pyrsistent"
@@ -2849,4 +2849,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "0b4a75885eb3131f325c995f396a36812d4741fb35f9c7e240442a029762940c"
+content-hash = "f0a03ed4923b7fed99626b10271e93a6980de2c9a74eaa5415e72ac11cb373ae"
