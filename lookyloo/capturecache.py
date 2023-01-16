@@ -442,8 +442,18 @@ class CapturesIndex(Mapping):
                         if name_to_cache not in host_ips:
                             host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
                         else:
-                            host_ips[name_to_cache]['v4'] = set(host_ips[name_to_cache]['v4'])
-                            host_ips[name_to_cache]['v6'] = set(host_ips[name_to_cache]['v6'])
+                            if 'v4' in host_ips[name_to_cache] and 'v6' in host_ips[name_to_cache]:
+                                host_ips[name_to_cache]['v4'] = set(host_ips[name_to_cache]['v4'])
+                                host_ips[name_to_cache]['v6'] = set(host_ips[name_to_cache]['v6'])
+                            else:
+                                # old format
+                                old_ips = host_ips[name_to_cache]
+                                host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
+                                for ip in old_ips:
+                                    if '.' in ip:
+                                        host_ips[name_to_cache]['v4'].add(ip)
+                                    elif ':' in ip:
+                                        host_ips[name_to_cache]['v6'].add(ip)
 
                         if answer.rdtype == dns.rdatatype.RdataType.CNAME:
                             host_cnames[name_to_cache] = str(answer[0].target).rstrip('.')
