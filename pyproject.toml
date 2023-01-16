@@ -52,7 +52,7 @@ dnspython = "^2.2.1"
 pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.4.167", extras = ["url", "fileobjects"]}
 Pillow = "^9.4.0"
-flask-restx = "^1.0.3"
+flask-restx = "^1.0.5"
 rich = "^13.0.1"
 pyphishtanklookup = "^1.2"
 Flask-Cors = "^3.0.10"
