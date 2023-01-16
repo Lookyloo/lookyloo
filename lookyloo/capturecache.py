@@ -107,6 +107,13 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int) -> CrawledTree:
     raise NoValidHarFile("Couldn't find HAR files")
 
 
+def serialize_sets(obj):
+    if isinstance(obj, set):
+        return list(obj)
+
+    return obj
+
+
 class CapturesIndex(Mapping):
 
     def __init__(self, redis: Redis, contextualizer: Optional[Context]=None):
@@ -400,7 +407,7 @@ class CapturesIndex(Mapping):
                 # The json is broken, delete and re-trigger the requests
                 host_cnames = {}
 
-        host_ips: Dict[str, List[str]] = {}
+        host_ips: Dict[str, Dict[str, Set[str]]] = {}
         if ips_path.exists():
             try:
                 with ips_path.open() as f:
@@ -418,22 +425,33 @@ class CapturesIndex(Mapping):
                 # The json is broken, delete and re-trigger the requests
                 ipasn = {}
 
+        _all_ips = set()
         for node in ct.root_hartree.hostname_tree.traverse():
             if node.name not in host_cnames or node.name not in host_ips:
                 # Resolve and cache
                 try:
-                    response = dns.resolver.resolve(node.name, search=True)
-                    for answer in response.response.answer:
-                        if answer.rdtype == dns.rdatatype.RdataType.CNAME:
-                            host_cnames[str(answer.name).rstrip('.')] = str(answer[0].target).rstrip('.')
-                        else:
-                            host_cnames[str(answer.name).rstrip('.')] = ''
+                    for query_type in [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]:
+                        response = dns.resolver.resolve(node.name, query_type, search=True, raise_on_no_answer=False)
+                        for answer in response.response.answer:
+                            name_to_cache = str(answer.name).rstrip('.')
+                            if name_to_cache not in host_ips:
+                                host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
 
-                        if answer.rdtype in [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]:
-                            host_ips[str(answer.name).rstrip('.')] = list({str(b) for b in answer})
-                except Exception:
+                            if answer.rdtype == dns.rdatatype.RdataType.CNAME:
+                                host_cnames[name_to_cache] = str(answer[0].target).rstrip('.')
+                            else:
+                                host_cnames[name_to_cache] = ''
+
+                            if answer.rdtype == dns.rdatatype.RdataType.A:
+                                _all_ips.update({str(b) for b in answer})
+                                host_ips[name_to_cache]['v4'].update({str(b) for b in answer})
+                            elif answer.rdtype == dns.rdatatype.RdataType.AAAA:
+                                _all_ips.update({str(b) for b in answer})
+                                host_ips[name_to_cache]['v6'].update({str(b) for b in answer})
+                except Exception as e:
+                    self.logger.exception(f'Unable to resolve DNS: {e}')
                     host_cnames[node.name] = ''
-                    host_ips[node.name] = []
+                    host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
             if (cnames := _build_cname_chain(host_cnames, node.name)):
                 node.add_feature('cname', cnames)
                 if cnames[-1] in host_ips:
@@ -443,7 +461,7 @@ class CapturesIndex(Mapping):
 
         if self.ipasnhistory:
             # Throw all the IPs to IPASN History for query later.
-            if ips := [{'ip': ip} for ips_sublist in host_ips.values() for ip in ips_sublist if ip and ip not in ipasn]:
+            if ips := [{'ip': ip} for ip in _all_ips]:
                 try:
                     self.ipasnhistory.mass_cache(ips)
                 except Exception as e:
@@ -463,7 +481,12 @@ class CapturesIndex(Mapping):
                     if not hasattr(node, 'resolved_ips'):
                         continue
                     ipasn_entries = {}
-                    for ip in node.resolved_ips:
+                    if 'v4' in node.resolved_ips and 'v6' in node.resolved_ips:
+                        _all_ips = node.resolved_ips['v4'] + node.resolved_ips['v6']
+                    else:
+                        # old format
+                        _all_ips = node.resolved_ips
+                    for ip in _all_ips:
                         if ip not in ipasn:
                             continue
                         ipasn_entries[ip] = ipasn[ip]
@@ -473,7 +496,7 @@ class CapturesIndex(Mapping):
         with cnames_path.open('w') as f:
             json.dump(host_cnames, f)
         with ips_path.open('w') as f:
-            json.dump(host_ips, f)
+            json.dump(host_ips, f, default=serialize_sets)
         with ipasn_path.open('w') as f:
             json.dump(ipasn, f)
         return ct

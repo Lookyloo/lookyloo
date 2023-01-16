@@ -118,6 +118,22 @@
   {% endif %}
   {% if hostnode.resolved_ips %}
     <h5>Domain IPs from a standalone DNS lookup:</h5>
+    {% if 'v4' in hostnode.resolved_ips and 'v6' in hostnode.resolved_ips%}
+    <ul>
+        {% for ip in hostnode.resolved_ips['v4'] %}
+          <li>
+              {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
+              {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
+          </li>
+        {% endfor %}
+        {% for ip in hostnode.resolved_ips['v6'] %}
+          <li>
+              {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
+              {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
+          </li>
+        {% endfor %}
+    </ul>
+    {%else%}
     <ul>
     {% for ip in hostnode.resolved_ips %}
       <li>
@@ -126,6 +142,7 @@
       </li>
     {% endfor %}
     </ul>
+    {% endif %}
   {% endif %}
   </div>
   {# Start list of URLs #}
