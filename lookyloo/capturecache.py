@@ -482,7 +482,7 @@ class CapturesIndex(Mapping):
                         continue
                     ipasn_entries = {}
                     if 'v4' in node.resolved_ips and 'v6' in node.resolved_ips:
-                        _all_ips = node.resolved_ips['v4'] + node.resolved_ips['v6']
+                        _all_ips = node.resolved_ips['v4'] | node.resolved_ips['v6']
                     else:
                         # old format
                         _all_ips = node.resolved_ips
