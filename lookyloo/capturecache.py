@@ -428,30 +428,32 @@ class CapturesIndex(Mapping):
         _all_ips = set()
         for node in ct.root_hartree.hostname_tree.traverse():
             if node.name not in host_cnames or node.name not in host_ips:
+                host_cnames[node.name] = ''
+                host_ips[node.name] = {'v4': set(), 'v6': set()}
                 # Resolve and cache
-                try:
-                    for query_type in [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]:
+                for query_type in [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]:
+                    try:
                         response = dns.resolver.resolve(node.name, query_type, search=True, raise_on_no_answer=False)
-                        for answer in response.response.answer:
-                            name_to_cache = str(answer.name).rstrip('.')
-                            if name_to_cache not in host_ips:
-                                host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
+                    except Exception as e:
+                        self.logger.warning(f'Unable to resolve DNS: {e}')
+                        continue
+                    for answer in response.response.answer:
+                        name_to_cache = str(answer.name).rstrip('.')
+                        if name_to_cache not in host_ips:
+                            host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
 
-                            if answer.rdtype == dns.rdatatype.RdataType.CNAME:
-                                host_cnames[name_to_cache] = str(answer[0].target).rstrip('.')
-                            else:
-                                host_cnames[name_to_cache] = ''
+                        if answer.rdtype == dns.rdatatype.RdataType.CNAME:
+                            host_cnames[name_to_cache] = str(answer[0].target).rstrip('.')
+                        else:
+                            host_cnames[name_to_cache] = ''
 
-                            if answer.rdtype == dns.rdatatype.RdataType.A:
-                                _all_ips.update({str(b) for b in answer})
-                                host_ips[name_to_cache]['v4'].update({str(b) for b in answer})
-                            elif answer.rdtype == dns.rdatatype.RdataType.AAAA:
-                                _all_ips.update({str(b) for b in answer})
-                                host_ips[name_to_cache]['v6'].update({str(b) for b in answer})
-                except Exception as e:
-                    self.logger.exception(f'Unable to resolve DNS: {e}')
-                    host_cnames[node.name] = ''
-                    host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
+                        if answer.rdtype == dns.rdatatype.RdataType.A:
+                            _all_ips.update({str(b) for b in answer})
+                            host_ips[name_to_cache]['v4'].update({str(b) for b in answer})
+                        elif answer.rdtype == dns.rdatatype.RdataType.AAAA:
+                            _all_ips.update({str(b) for b in answer})
+                            host_ips[name_to_cache]['v6'].update({str(b) for b in answer})
+
             if (cnames := _build_cname_chain(host_cnames, node.name)):
                 node.add_feature('cname', cnames)
                 if cnames[-1] in host_ips:
