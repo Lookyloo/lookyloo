@@ -441,6 +441,9 @@ class CapturesIndex(Mapping):
                         name_to_cache = str(answer.name).rstrip('.')
                         if name_to_cache not in host_ips:
                             host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
+                        else:
+                            host_ips[name_to_cache]['v4'] = set(host_ips[name_to_cache]['v4'])
+                            host_ips[name_to_cache]['v6'] = set(host_ips[name_to_cache]['v6'])
 
                         if answer.rdtype == dns.rdatatype.RdataType.CNAME:
                             host_cnames[name_to_cache] = str(answer[0].target).rstrip('.')
@@ -448,11 +451,11 @@ class CapturesIndex(Mapping):
                             host_cnames[name_to_cache] = ''
 
                         if answer.rdtype == dns.rdatatype.RdataType.A:
-                            _all_ips.update({str(b) for b in answer})
-                            host_ips[name_to_cache]['v4'].update({str(b) for b in answer})
+                            _all_ips |= {str(b) for b in answer}
+                            host_ips[name_to_cache]['v4'] |= {str(b) for b in answer}
                         elif answer.rdtype == dns.rdatatype.RdataType.AAAA:
-                            _all_ips.update({str(b) for b in answer})
-                            host_ips[name_to_cache]['v6'].update({str(b) for b in answer})
+                            _all_ips |= {str(b) for b in answer}
+                            host_ips[name_to_cache]['v6'] |= {str(b) for b in answer}
 
             if (cnames := _build_cname_chain(host_cnames, node.name)):
                 node.add_feature('cname', cnames)
