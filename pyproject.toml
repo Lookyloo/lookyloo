@@ -48,7 +48,7 @@ vt-py = "^0.17.3"
 pyeupi = "^1.1"
 pysanejs = "^2.0.1"
 pylookyloo = "^1.17.0"
-dnspython = "^2.2.1"
+dnspython = "^2.3.0"
 pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.4.167", extras = ["url", "fileobjects"]}
 Pillow = "^9.4.0"
