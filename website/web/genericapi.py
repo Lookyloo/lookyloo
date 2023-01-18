@@ -13,6 +13,7 @@ from werkzeug.security import check_password_hash
 from lacuscore import CaptureStatus as CaptureStatusCore
 from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo.lookyloo import Lookyloo
+from lookyloo.comparator import Comparator
 
 from .helpers import build_users_table, load_user_from_request, src_request_ip
 
@@ -20,6 +21,7 @@ api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
 
 lookyloo: Lookyloo = Lookyloo()
+comaprator: Comparator = Comparator()
 
 
 def api_auth_check(method):
@@ -435,6 +437,25 @@ class CaptureExport(Resource):
     @api.produces(['application/zip'])
     def get(self, capture_uuid: str):
         return send_file(lookyloo.get_capture(capture_uuid), mimetype='application/zip')
+
+
+# Compare captures (WiP)
+
+compare_captures_fields = api.model('CompareCapturesFields', {
+    'capture_one': fields.String(description="The first capture to compare.", required=True),
+    'capture_two': fields.String(description="The second capture to compare.", required=True),
+})
+
+
+@api.route('/json/compare_captures')
+@api.doc(description='Compare two captures (WiP)')
+class CompareCaptures(Resource):
+    @api.doc(body=compare_captures_fields)
+    def post(self):
+        parameters: Dict = request.get_json(force=True)  # type: ignore
+        result = comaprator.compare_captures(parameters.get('capture_one'), parameters.get('capture_two'))
+        print(result)
+        return result
 
 
 # Admin stuff
