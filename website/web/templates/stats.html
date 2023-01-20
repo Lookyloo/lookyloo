@@ -74,8 +74,8 @@
 
 {% block scripts %}
 {{ super() }}
-<script src='{{ url_for('static', filename='d3.v7.min.js') }}'
-        integrity="{{get_sri('static', 'd3.v7.min.js')}}"
+<script src='{{ url_for('static', filename='d3.min.js') }}'
+        integrity="{{get_sri('static', 'd3.min.js')}}"
         crossorigin="anonymous"></script>
 <script src='{{ url_for('static', filename='stats_graph.js') }}'
         integrity="{{get_sri('static', 'stats_graph.js')}}"

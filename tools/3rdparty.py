@@ -4,16 +4,15 @@ import requests
 
 from lookyloo.default import get_homedir
 
-d3js_version = '7'
+d3js_version = '7.8.2'
 jquery_version = "3.6.3"
 datatables_version = "1.13.1"
-
 
 if __name__ == '__main__':
     dest_dir = get_homedir() / 'website' / 'web' / 'static'
 
-    d3 = requests.get(f'https://d3js.org/d3.v{d3js_version}.min.js')
-    with (dest_dir / f'd3.v{d3js_version}.min.js').open('wb') as f:
+    d3 = requests.get(f'https://cdn.jsdelivr.net/npm/d3@{d3js_version}/dist/d3.min.js')
+    with (dest_dir / 'd3.min.js').open('wb') as f:
         f.write(d3.content)
         print(f'Downloaded d3js v{d3js_version}.')
 
