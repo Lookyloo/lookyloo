@@ -408,21 +408,6 @@ files = [
 ]
 
 [[package]]
-name = "commonmark"
-version = "0.9.1"
-description = "Python parser for the CommonMark Markdown spec"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "commonmark-0.9.1-py2.py3-none-any.whl", hash = "sha256:da2f38c92590f83de410ba1a3cbceafbc74fee9def35f9251ba9a971d6d66fd9"},
-    {file = "commonmark-0.9.1.tar.gz", hash = "sha256:452f9dc859be7f06631ddcb328b6919c67984aca654e5fefb3914d54691aed60"},
-]
-
-[package.extras]
-test = ["flake8 (==3.7.8)", "hypothesis (==3.55.3)"]
-
-[[package]]
 name = "cryptography"
 version = "39.0.0"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
@@ -1321,6 +1306,31 @@ htmlsoup = ["BeautifulSoup4"]
 source = ["Cython (>=0.29.7)"]
 
 [[package]]
+name = "markdown-it-py"
+version = "2.1.0"
+description = "Python port of markdown-it. Markdown parsing, done right!"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "markdown-it-py-2.1.0.tar.gz", hash = "sha256:cf7e59fed14b5ae17c0006eff14a2d9a00ed5f3a846148153899a0224e2c07da"},
+    {file = "markdown_it_py-2.1.0-py3-none-any.whl", hash = "sha256:93de681e5c021a432c63147656fe21790bc01231e0cd2da73626f1aa3ac0fe27"},
+]
+
+[package.dependencies]
+mdurl = ">=0.1,<1.0"
+
+[package.extras]
+benchmarking = ["psutil", "pytest", "pytest-benchmark (>=3.2,<4.0)"]
+code-style = ["pre-commit (==2.6)"]
+compare = ["commonmark (>=0.9.1,<0.10.0)", "markdown (>=3.3.6,<3.4.0)", "mistletoe (>=0.8.1,<0.9.0)", "mistune (>=2.0.2,<2.1.0)", "panflute (>=2.1.3,<2.2.0)"]
+linkify = ["linkify-it-py (>=1.0,<2.0)"]
+plugins = ["mdit-py-plugins"]
+profiling = ["gprof2dot"]
+rtd = ["attrs", "myst-parser", "pyyaml", "sphinx", "sphinx-copybutton", "sphinx-design", "sphinx_book_theme"]
+testing = ["coverage", "pytest", "pytest-cov", "pytest-regressions"]
+
+[[package]]
 name = "markupsafe"
 version = "2.1.2"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -1394,6 +1404,18 @@ files = [
 
 [package.dependencies]
 traitlets = "*"
+
+[[package]]
+name = "mdurl"
+version = "0.1.2"
+description = "Markdown URL utilities"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
+    {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
+]
 
 [[package]]
 name = "multidict"
@@ -1697,6 +1719,13 @@ files = [
     {file = "Pillow-9.4.0-1-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:b8c2f6eb0df979ee99433d8b3f6d193d9590f735cf12274c108bd954e30ca858"},
     {file = "Pillow-9.4.0-1-pp38-pypy38_pp73-macosx_10_10_x86_64.whl", hash = "sha256:b70756ec9417c34e097f987b4d8c510975216ad26ba6e57ccb53bc758f490dab"},
     {file = "Pillow-9.4.0-1-pp39-pypy39_pp73-macosx_10_10_x86_64.whl", hash = "sha256:43521ce2c4b865d385e78579a082b6ad1166ebed2b1a2293c3be1d68dd7ca3b9"},
+    {file = "Pillow-9.4.0-2-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:9d9a62576b68cd90f7075876f4e8444487db5eeea0e4df3ba298ee38a8d067b0"},
+    {file = "Pillow-9.4.0-2-cp311-cp311-macosx_10_10_x86_64.whl", hash = "sha256:87708d78a14d56a990fbf4f9cb350b7d89ee8988705e58e39bdf4d82c149210f"},
+    {file = "Pillow-9.4.0-2-cp37-cp37m-macosx_10_10_x86_64.whl", hash = "sha256:8a2b5874d17e72dfb80d917213abd55d7e1ed2479f38f001f264f7ce7bae757c"},
+    {file = "Pillow-9.4.0-2-cp38-cp38-macosx_10_10_x86_64.whl", hash = "sha256:83125753a60cfc8c412de5896d10a0a405e0bd88d0470ad82e0869ddf0cb3848"},
+    {file = "Pillow-9.4.0-2-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:9e5f94742033898bfe84c93c831a6f552bb629448d4072dd312306bab3bd96f1"},
+    {file = "Pillow-9.4.0-2-pp38-pypy38_pp73-macosx_10_10_x86_64.whl", hash = "sha256:013016af6b3a12a2f40b704677f8b51f72cb007dac785a9933d5c86a72a7fe33"},
+    {file = "Pillow-9.4.0-2-pp39-pypy39_pp73-macosx_10_10_x86_64.whl", hash = "sha256:99d92d148dd03fd19d16175b6d355cc1b01faf80dae93c6c3eb4163709edc0a9"},
     {file = "Pillow-9.4.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:2968c58feca624bb6c8502f9564dd187d0e1389964898f5e9e1fbc8533169157"},
     {file = "Pillow-9.4.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c5c1362c14aee73f50143d74389b2c158707b4abce2cb055b7ad37ce60738d47"},
     {file = "Pillow-9.4.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bd752c5ff1b4a870b7661234694f24b1d2b9076b8bf337321a814c612665f343"},
@@ -2056,21 +2085,21 @@ docs = ["Sphinx (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.17.0"
+version = "1.17.2"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylookyloo-1.17.0-py3-none-any.whl", hash = "sha256:4cfa2f0acef984bd379df890adf9f2d7a7ae164a98b0ca117ce4c8816326c872"},
-    {file = "pylookyloo-1.17.0.tar.gz", hash = "sha256:05ef87d66566e41630ba6029cdb2b32968b214da6872202895e0aa5691de0653"},
+    {file = "pylookyloo-1.17.2-py3-none-any.whl", hash = "sha256:c5b53c5b93c35a84151613f830223050493f3da8b0065c026ea07a0109bccab9"},
+    {file = "pylookyloo-1.17.2.tar.gz", hash = "sha256:22bfb4788700e7936677269e3917d6d6f20fc4feef7960f7cebfca4f3f0ad268"},
 ]
 
 [package.dependencies]
-requests = ">=2.28.1,<3.0.0"
+requests = ">=2.28.2,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=5.3.0,<6.0.0)"]
+docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
 name = "pymisp"
@@ -2422,18 +2451,18 @@ six = "*"
 
 [[package]]
 name = "rich"
-version = "13.1.0"
+version = "13.2.0"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "rich-13.1.0-py3-none-any.whl", hash = "sha256:f846bff22a43e8508aebf3f0f2410ce1c6f4cde429098bd58d91fde038c57299"},
-    {file = "rich-13.1.0.tar.gz", hash = "sha256:81c73a30b144bbcdedc13f4ea0b6ffd7fdc3b0d3cc259a9402309c8e4aee1964"},
+    {file = "rich-13.2.0-py3-none-any.whl", hash = "sha256:7c963f0d03819221e9ac561e1bc866e3f95a02248c1234daa48954e6d381c003"},
+    {file = "rich-13.2.0.tar.gz", hash = "sha256:f1a00cdd3eebf999a15d85ec498bfe0b1a77efe9b34f645768a54132ef444ac5"},
 ]
 
 [package.dependencies]
-commonmark = ">=0.9.0,<0.10.0"
+markdown-it-py = ">=2.1.0,<3.0.0"
 pygments = ">=2.6.0,<3.0.0"
 typing-extensions = {version = ">=4.0.0,<5.0", markers = "python_version < \"3.9\""}
 
@@ -2564,14 +2593,14 @@ test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.11.6.3"
+version = "4.11.6.4"
 description = "Typing stubs for beautifulsoup4"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-beautifulsoup4-4.11.6.3.tar.gz", hash = "sha256:484b44ea011ddedc06832f37c5346d2015c822ed9d573cc671a160bb92fbc80d"},
-    {file = "types_beautifulsoup4-4.11.6.3-py3-none-any.whl", hash = "sha256:0b1fd98478824ff60da96f609a08339fdac4e289956c8698638923ae5e4310b9"},
+    {file = "types-beautifulsoup4-4.11.6.4.tar.gz", hash = "sha256:53236c05d035449cc2021ad5d252db8b1ff23dbe280af060f177e6cdb4fcd468"},
+    {file = "types_beautifulsoup4-4.11.6.4-py3-none-any.whl", hash = "sha256:25067e323d8757ebcf6b5177513b8242b9fa2610781e306541279454e536d24b"},
 ]
 
 [package.dependencies]
@@ -2603,14 +2632,14 @@ files = [
 
 [[package]]
 name = "types-pillow"
-version = "9.4.0.4"
+version = "9.4.0.5"
 description = "Typing stubs for Pillow"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-Pillow-9.4.0.4.tar.gz", hash = "sha256:10777665863957ec7160ee38cdf1b3167d3cea983d94944c221d384d28621328"},
-    {file = "types_Pillow-9.4.0.4-py3-none-any.whl", hash = "sha256:4bbfafb3d13a8d368c24c64dc46033eac76a0957abd3cf1bc0f2af27fe7de24f"},
+    {file = "types-Pillow-9.4.0.5.tar.gz", hash = "sha256:941cefaac2f5297d7d2a9989633c95b4063112690dc21c965d46bd5a7fff3c76"},
+    {file = "types_Pillow-9.4.0.5-py3-none-any.whl", hash = "sha256:a1d2b3e070b4d852af04f76f018d12bd51abb4abca3b725d91b35e01cda7a2de"},
 ]
 
 [[package]]
@@ -2627,14 +2656,14 @@ files = [
 
 [[package]]
 name = "types-pyopenssl"
-version = "23.0.0.1"
+version = "23.0.0.2"
 description = "Typing stubs for pyOpenSSL"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-pyOpenSSL-23.0.0.1.tar.gz", hash = "sha256:cb317e92f75e8b01d1ad4e89cac92062e8eed563205b9762c1ddd82603a056c4"},
-    {file = "types_pyOpenSSL-23.0.0.1-py3-none-any.whl", hash = "sha256:09c2dbbfb743282ba3d71c24a4e90f8b5f2c90f21771ff43ca46de6c4896bf77"},
+    {file = "types-pyOpenSSL-23.0.0.2.tar.gz", hash = "sha256:2e95f9a667d5eeb0af699196f857f7d23d5b4d642437bd37355bc13a87e9f4ae"},
+    {file = "types_pyOpenSSL-23.0.0.2-py3-none-any.whl", hash = "sha256:ea7e5d06f9190a1cb013ad4b13d48896e5cd1e785c04491f38b206d1bc4b8dc1"},
 ]
 
 [package.dependencies]
@@ -2654,14 +2683,14 @@ files = [
 
 [[package]]
 name = "types-redis"
-version = "4.4.0.2"
+version = "4.4.0.3"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.4.0.2.tar.gz", hash = "sha256:c6068a1f1c9d663413cfb6130d17c9c192b1d95f6285b8f6dd75468a39197fbf"},
-    {file = "types_redis-4.4.0.2-py3-none-any.whl", hash = "sha256:2dc67246f3a55c65b8096d610ad403cbc9f564532cbde04583dad6874b7ebed3"},
+    {file = "types-redis-4.4.0.3.tar.gz", hash = "sha256:99fc86307fb19b775a0ad5de91d2fc0ccdb9a2be7ac790f4553911d2f2abdf61"},
+    {file = "types_redis-4.4.0.3-py3-none-any.whl", hash = "sha256:fc25550bc108908a32bb47cfdecde8d2155b6b7e40688af99a4bacbd7e3e857e"},
 ]
 
 [package.dependencies]
@@ -2807,6 +2836,7 @@ category = "dev"
 optional = false
 python-versions = "*"
 files = [
+    {file = "wcwidth-0.2.6-py2.py3-none-any.whl", hash = "sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e"},
     {file = "wcwidth-0.2.6.tar.gz", hash = "sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0"},
 ]
 
@@ -3027,4 +3057,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "fd4da31427b4a1d44134b300eb581a8901d6e0fb26732992b1da118addf9d077"
+content-hash = "1ee4e43760dca2524a48f66272a35c8c74c5777f45f447d72bc575683d9dadc8"
