@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 
 from har2tree import CrawledTree, HostNode, URLNode
 from playwrightcapture import get_devices
-from publicsuffix2 import PublicSuffixList, fetch  # type: ignore
+from publicsuffixlist import PublicSuffixList  # type: ignore
 from pytaxonomies import Taxonomies
 from ua_parser import user_agent_parser  # type: ignore
 from werkzeug.user_agent import UserAgent
@@ -56,12 +56,8 @@ def get_taxonomies():
 @lru_cache(64)
 def get_public_suffix_list():
     """Initialize Public Suffix List"""
-    try:
-        psl_file = fetch()
-        psl = PublicSuffixList(psl_file=psl_file)
-    except Exception:
-        psl = PublicSuffixList()
-    return psl
+    # TODO (?): fetch the list
+    return PublicSuffixList()
 
 
 @lru_cache(64)
