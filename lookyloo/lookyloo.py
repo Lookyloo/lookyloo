@@ -757,9 +757,9 @@ class Lookyloo():
             return captures[0]
         return None
 
-    def get_url_occurrences(self, url: str, /, limit: int=20) -> List[Dict]:
+    def get_url_occurrences(self, url: str, /, limit: int=20, cached_captures_only: bool=True) -> List[Dict]:
         '''Get the most recent captures and URL nodes where the URL has been seen.'''
-        captures = self.sorted_capture_cache(self.indexing.get_captures_url(url))
+        captures = self.sorted_capture_cache(self.indexing.get_captures_url(url), cached_captures_only=cached_captures_only)
 
         to_return: List[Dict] = []
         for capture in captures[:limit]:
@@ -777,9 +777,9 @@ class Lookyloo():
             to_return.append(to_append)
         return to_return
 
-    def get_hostname_occurrences(self, hostname: str, /, with_urls_occurrences: bool=False, limit: int=20) -> List[Dict]:
+    def get_hostname_occurrences(self, hostname: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> List[Dict]:
         '''Get the most recent captures and URL nodes where the hostname has been seen.'''
-        captures = self.sorted_capture_cache(self.indexing.get_captures_hostname(hostname))
+        captures = self.sorted_capture_cache(self.indexing.get_captures_hostname(hostname), cached_captures_only=cached_captures_only)
 
         to_return: List[Dict] = []
         for capture in captures[:limit]:

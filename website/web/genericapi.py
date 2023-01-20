@@ -280,6 +280,7 @@ class HashInfo(Resource):
 url_info_fields = api.model('URLInfoFields', {
     'url': fields.String(description="The URL to search", required=True),
     'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
+    'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
 })
 
 
@@ -297,6 +298,7 @@ class URLInfo(Resource):
 hostname_info_fields = api.model('HostnameInfoFields', {
     'hostname': fields.String(description="The hostname to search", required=True),
     'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
+    'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
 })
 
 
