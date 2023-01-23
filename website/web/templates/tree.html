@@ -1,5 +1,6 @@
 {% extends "main.html" %}
 
+{% from 'bootstrap5/utils.html' import render_icon %}
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% from "macros.html" import shorten_string %}
 
@@ -192,6 +193,12 @@
         <li>
           <a href="{{ url_for('index') }}" role="button">Homepage</a>
         </li>
+        {% if enable_mail_notification %}
+        <hr/>
+        <li>
+          <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious</br>capture</a>
+        </li>
+        {% endif %}
       </ul>
     </div>
   </div>
@@ -255,11 +262,6 @@
               <a href="#downloadModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#downloadModal" role="button">Download capture elements</a>
             </li>
-            {% if enable_mail_notification %}
-            <li>
-              <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button">Contact Local Administrator</a>
-            </li>
-            {% endif %}
           </ul>
         </div>
         {%if enable_categorization or (current_user.is_authenticated and misp_push) or enable_bookmark or enable_context_by_users %}
