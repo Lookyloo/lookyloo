@@ -1151,25 +1151,25 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.2.3"
+version = "1.2.4"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.2.3-py3-none-any.whl", hash = "sha256:fe896cc458ec43a8a53513f7a4e0363edc336b1ec64b04ac3fa1835cf50c3957"},
-    {file = "lacuscore-1.2.3.tar.gz", hash = "sha256:9a456082462486652cead0b6f0d80541d0011fb2f2dc6c52e051b7039047849d"},
+    {file = "lacuscore-1.2.4-py3-none-any.whl", hash = "sha256:81037e1eb6991a71c2586848034a182a7b03bf928a8d03fd798bd9f6a28bc2b4"},
+    {file = "lacuscore-1.2.4.tar.gz", hash = "sha256:dcaf894c44ed5e6ca09cd9d17a3a7bb8ba45f271be048ec59378beb60068cc34"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.17.2,<2.0.0", extras = ["recaptcha"]}
-redis = {version = ">=4.4.1,<5.0.0", extras = ["hiredis"]}
-requests = ">=2.28.1,<3.0.0"
+playwrightcapture = {version = ">=1.17.3,<2.0.0", extras = ["recaptcha"]}
+redis = {version = ">=4.4.2,<5.0.0", extras = ["hiredis"]}
+requests = ">=2.28.2,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
 
 [package.extras]
-docs = ["Sphinx (>=6.1.2,<7.0.0)"]
+docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
 name = "lief"
@@ -1181,11 +1181,13 @@ python-versions = ">=3.6"
 files = [
     {file = "lief-0.12.3-cp310-cp310-macosx_10_14_arm64.whl", hash = "sha256:66724f337e6a36cea1a9380f13b59923f276c49ca837becae2e7be93a2e245d9"},
     {file = "lief-0.12.3-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:6d18aafa2028587c98f6d4387bec94346e92f2b5a8a5002f70b1cf35b1c045cc"},
+    {file = "lief-0.12.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:d4f69d125caaa8d5ddb574f29cc83101e165ebea1a9f18ad042eb3544081a797"},
     {file = "lief-0.12.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c078d6230279ffd3bca717c79664fb8368666f610b577deb24b374607936e9c1"},
     {file = "lief-0.12.3-cp310-cp310-win32.whl", hash = "sha256:e3a6af926532d0aac9e7501946134513d63217bacba666e6f7f5a0b7e15ba236"},
     {file = "lief-0.12.3-cp310-cp310-win_amd64.whl", hash = "sha256:0750b72e3aa161e1fb0e2e7f571121ae05d2428aafd742ff05a7656ad2288447"},
     {file = "lief-0.12.3-cp311-cp311-macosx_10_14_arm64.whl", hash = "sha256:b5c123cb99a7879d754c059e299198b34e7e30e3b64cf22e8962013db0099f47"},
     {file = "lief-0.12.3-cp311-cp311-macosx_10_14_x86_64.whl", hash = "sha256:8bc58fa26a830df6178e36f112cb2bbdd65deff593f066d2d51434ff78386ba5"},
+    {file = "lief-0.12.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:74ac6143ac6ccd813c9b068d9c5f1f9d55c8813c8b407387eb57de01c3db2d74"},
     {file = "lief-0.12.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:04eb6b70d646fb5bd6183575928ee23715550f161f2832cbcd8c6ff2071fb408"},
     {file = "lief-0.12.3-cp311-cp311-win32.whl", hash = "sha256:7e2d0a53c403769b04adcf8df92e83c5e25f9103a052aa7f17b0a9cf057735fb"},
     {file = "lief-0.12.3-cp311-cp311-win_amd64.whl", hash = "sha256:7f6395c12ee1bc4a5162f567cba96d0c72dfb660e7902e84d4f3029daf14fe33"},
@@ -1205,6 +1207,7 @@ files = [
     {file = "lief-0.12.3-cp38-cp38-win_amd64.whl", hash = "sha256:b00667257b43e93d94166c959055b6147d46d302598f3ee55c194b40414c89cc"},
     {file = "lief-0.12.3-cp39-cp39-macosx_10_14_arm64.whl", hash = "sha256:e6a1b5b389090d524621c2455795e1262f62dc9381bedd96f0cd72b878c4066d"},
     {file = "lief-0.12.3-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:ae773196df814202c0c51056163a1478941b299512b09660a3c37be3c7fac81e"},
+    {file = "lief-0.12.3-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:66ddf88917ec7b00752687c476bb2771dc8ec19bd7e4c0dcff1f8ef774cad4e9"},
     {file = "lief-0.12.3-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:4a47f410032c63ac3be051d963d0337d6b47f0e94bfe8e946ab4b6c428f4d0f8"},
     {file = "lief-0.12.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dbd11367c2259bd1131a6c8755dcde33314324de5ea029227bfbc7d3755871e6"},
     {file = "lief-0.12.3-cp39-cp39-win32.whl", hash = "sha256:2ce53e311918c3e5b54c815ef420a747208d2a88200c41cd476f3dd1eb876bcf"},
@@ -1831,28 +1834,28 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.17.2"
+version = "1.17.3"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.17.2-py3-none-any.whl", hash = "sha256:03e29bdaafbd8cfe68b75e467a519e135556d879e7455edb3c8023a79917d8d0"},
-    {file = "playwrightcapture-1.17.2.tar.gz", hash = "sha256:8d637e1d6255bdcaaf30d7f2530ff7ec765c6c491590125f72d1c140d6fcee9b"},
+    {file = "playwrightcapture-1.17.3-py3-none-any.whl", hash = "sha256:6d98dba95460f23db723e98c81a14e12142055c1bbbaba7b18e2a2feb8db774b"},
+    {file = "playwrightcapture-1.17.3.tar.gz", hash = "sha256:060e06f0a90550a8db9dc6021be0a71ba7525964db1f61c1dbf11e71b35e3ad7"},
 ]
 
 [package.dependencies]
 beautifulsoup4 = ">=4.11.1,<5.0.0"
-dateparser = ">=1.1.5,<2.0.0"
+dateparser = ">=1.1.6,<2.0.0"
 lxml = ">=4.9.2,<5.0.0"
 playwright = ">=1.29.1,<2.0.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
-requests = {version = ">=2.28.1,<3.0.0", optional = true, markers = "extra == \"recaptcha\""}
+requests = {version = ">=2.28.2,<3.0.0", optional = true, markers = "extra == \"recaptcha\""}
 SpeechRecognition = {version = ">=3.9.0,<4.0.0", optional = true, markers = "extra == \"recaptcha\""}
 w3lib = ">=2.1.1,<3.0.0"
 
 [package.extras]
-recaptcha = ["SpeechRecognition (>=3.9.0,<4.0.0)", "pydub (>=0.25.1,<0.26.0)", "requests (>=2.28.1,<3.0.0)"]
+recaptcha = ["SpeechRecognition (>=3.9.0,<4.0.0)", "pydub (>=0.25.1,<0.26.0)", "requests (>=2.28.2,<3.0.0)"]
 
 [[package]]
 name = "prompt-toolkit"
@@ -3045,4 +3048,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "88242fcbcceeffb0a38b63a8724bc222ec56045f57f5b94614f772dbcd717f3f"
+content-hash = "f01547f017f4591977c309c8a3eaf6dac7e240ad7373b46237966ea5baf3f961"
