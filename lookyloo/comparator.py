@@ -91,6 +91,13 @@ class Comparator():
             to_return['final_url'] = {'message': 'The landing page is the same.',
                                       'details': one.tree.root_hartree.har.final_redirect}
 
+        if one.tree.root_hartree.rendered_node.response['status'] != two.tree.root_hartree.rendered_node.response['status']:
+            to_return['final_status_code'] = {'message': 'The status code of the rendered page is different.',
+                                              'details': [one.tree.root_hartree.rendered_node.response['status'], two.tree.root_hartree.rendered_node.response['status']]}
+        else:
+            to_return['final_status_code'] = {'message': 'The status code of the rendered page is the same.',
+                                              'details': one.tree.root_hartree.rendered_node.response['status']}
+
         to_return['redirects'] = {'length': {}, 'nodes': []}
         if len(one.tree.redirects) != len(two.tree.redirects):
             to_return['redirects']['length'] = {'message': 'The captures have a different amount of redirects',
