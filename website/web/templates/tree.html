@@ -169,18 +169,16 @@
       </a>
     </div>
     <hr/>
-    <center>
-      <div>
-        <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#menu_vertical_content">
-            <span class="if-collapsed">
-              <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-down" alt="Maximize menu" height="25" width="25" title="Expand">
-            </span>
-            <span class="if-not-collapsed">
-              <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize menu" height="25" width="25" title="Collapse">
-            </span>
-        </button>
-      </div>
-    </center>
+    <div class="mx-auto" style="width: 52px;">
+      <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#menu_vertical_content">
+          <span class="if-collapsed">
+            <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-down" alt="Maximize menu" height="25" width="25" title="Expand">
+          </span>
+          <span class="if-not-collapsed">
+            <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize menu" height="25" width="25" title="Collapse">
+          </span>
+      </button>
+    </div>
     <hr/>
     <div id=menu_vertical_content class="collapse show">
       <ul class="list-group list-group-flush">
@@ -206,8 +204,8 @@
 
 <div id="menu_container_horizontal" class="tree-panel-container">
   <div id=menu_horizontal class="d-flex">
-    <div class="flex-shrink-1">
-      <button type="button" class="btn btn-link mr-3 align-self-center" data-bs-toggle="collapse" data-bs-target="#menu_horizontal_content">
+    <div class="flex-shrink-1 align-self-center">
+      <button type="button" class="btn btn-link mr-3" data-bs-toggle="collapse" data-bs-target="#menu_horizontal_content">
         <span class="if-collapsed">
           <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-right" alt="Maximize menu" height="25" width="25" title="Expand">
         </span>
