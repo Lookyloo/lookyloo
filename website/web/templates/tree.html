@@ -183,19 +183,19 @@
     </center>
     <hr/>
     <div id=menu_vertical_content class="collapse show">
-      <ul class="list-unstyled components">
-        <li>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
           <a href="#detailsModal" data-bs-toggle="modal" data-bs-target="#detailsModal" role="button">Capture Details</a>
         </li>
-        <li>
+        <li class="list-group-item">
           <a href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button">Lookyloo Manual</a>
         </li>
-        <li>
+        <li class="list-group-item">
           <a href="{{ url_for('index') }}" role="button">Homepage</a>
         </li>
         {% if enable_mail_notification %}
         <hr/>
-        <li>
+        <li class="list-group-item">
           <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious</br>capture</a>
         </li>
         {% endif %}
@@ -217,82 +217,88 @@
       </button>
     </div>
     <div id="menu_horizontal_content" class="collapse show flex-grow-1 ms-3 container">
-      <div class="hstack gap-3">
+        <div class="hstack gap-3">
+          <div class="vr"></div>
+          <div class="col-md">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">
+                <a href="#screenshotModal" data-bs-toggle="modal"
+                   data-bs-target="#screenshotModal" role="button">Page Screenshot</a>
+              </li>
+              <li class="list-group-item">
+                <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
+                   data-bs-toggle="modal" data-bs-target="#statsModal" role="button">Statistics</a>
+              </li>
+              <li class="list-group-item">
+                <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
+                   data-bs-toggle="modal" data-bs-target="#modulesModal" role="button">Third Party Reports</a>
+              </li>
+              <li class="list-group-item">
+                <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
+                   data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button">Hashlookup hits</a>
+              </li>
+            </ul>
+          </div>
         <div class="vr"></div>
-        <div class="col-sm">
-          <ul class="list-unstyled components">
-            <li>
-              <a href="#screenshotModal" data-bs-toggle="modal" data-bs-target="#screenshotModal" role="button">Page Screenshot</a>
+        <div class="col-md">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button">Subsequent Captures</a>
             </li>
-            <li>
-              <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#statsModal" role="button">Tree Statistics</a>
+            <li class="list-group-item">
+              <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button">Re-Capture</a>
             </li>
-            <li>
+            <li class="list-group-item">
+              <a href="#downloadModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#downloadModal" role="button">Download elements</a>
+            </li>
+            <li class="list-group-item">
               <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button">Tree ressources</a>
+                 data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button">Ressources Capture</a>
             </li>
-            <li>
-              <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
-                 data-bs-toggle="modal" data-bs-target="#modulesModal" role="button">Third Party Reports</a>
-            </li>
-            {% if current_user.is_authenticated %}
-            <li>
+          </ul>
+        </div>
+        {% if current_user.is_authenticated %}
+        <div class="vr"></div>
+        <div class="col-md">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
               <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
                  data-bs-toggle="modal" data-bs-target="#historyModal" role="button">Historical lookups</a>
             </li>
-            {% endif %}
-            <li>
-              <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button">Hashlookup hits</a>
-            </li>
-          </ul>
-        </div>
-        <div class="vr"></div>
-        <div class="col-sm">
-          <ul class="list-unstyled components">
-            <li>
-              <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button">Run Subsequent Captures</a>
-            </li>
-            <li>
-              <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button">Re-Capture URL</a>
-            </li>
-            <li>
-              <a href="#downloadModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#downloadModal" role="button">Download capture elements</a>
-            </li>
-          </ul>
-        </div>
-        {%if enable_categorization or (current_user.is_authenticated and misp_push) or enable_bookmark or enable_context_by_users %}
-        <div class="vr"></div>
-        <div class="col-sm">
-          <ul class="list-unstyled components">
-            {% if enable_categorization %}
-            <li>
-              <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
-            </li>
-            {% endif %}
-            {% if current_user.is_authenticated and misp_push%}
-            <li>
+            {% if misp_push%}
+            <li class="list-group-item">
               <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
             </li>
             {% endif %}
-            {% if current_user.is_authenticated and misp_lookup%}
-            <li>
+            {% if misp_lookup%}
+            <li class="list-group-item">
               <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
             </li>
             {% endif %}
+          </ul>
+        </div>
+        {% endif %}
+        {%if enable_categorization or enable_bookmark or enable_context_by_users %}
+        <div class="vr"></div>
+        <div class="col-md">
+          <ul class="list-group list-group-flush">
+            {% if enable_categorization %}
+            <li class="list-group-item">
+              <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
+            </li>
+            {% endif %}
             {% if enable_bookmark %}
-            <li>
+            <li class="list-group-item">
               <a href="#/" role="button" onclick="UnbookmarkAllNodes();">Unbookmark all nodes</a>
             </li>
             {% endif %}
             {% if enable_context_by_users %}
-            <li>
+            <li class="list-group-item">
               <a href="#/" role="button" onclick="MarkAsKnown('{{ tree_uuid }}');">Mark all the captures' entries as known</a>
             </li>
             {% endif %}

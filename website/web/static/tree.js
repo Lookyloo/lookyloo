@@ -3,7 +3,7 @@
 
 // Set the dimensions and margins of the diagram
 let margin = {
-    top: 170,
+    top: document.getElementById('menu_horizontal_content').clientHeight + 10,
     right: 200,
     bottom: 10,
     left: 90
