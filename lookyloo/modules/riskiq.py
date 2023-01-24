@@ -83,6 +83,8 @@ class RiskIQ():
             return {'error': 'Module not available'}
         if auto_trigger and not self.allow_auto_trigger:
             return {'error': 'Auto trigger not allowed on module'}
+        if cache.url.startswith('file'):
+            return {'error': 'RiskIQ does not support files.'}
 
         if cache.redirects:
             hostname = urlparse(cache.redirects[-1]).hostname

@@ -60,6 +60,8 @@ class FOX():
         '''
         if not self.available:
             raise ConfigError('FOX not available, probably no API key')
+        if url.startswith('file'):
+            return {'error': 'FOX does not support files.'}
 
         if self.autosubmit:
             # submit is allowed and we either force it, or it's just allowed

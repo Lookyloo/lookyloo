@@ -118,6 +118,9 @@ class UrlScan():
         if not self.available:
             raise ConfigError('UrlScan not available, probably no API key')
 
+        if capture_info.url.startswith('file'):
+            return {'error': 'URLScan does not support files.'}
+
         url_storage_dir = get_cache_directory(
             self.storage_dir_urlscan,
             f'{capture_info.url}{capture_info.user_agent}{capture_info.referer}',

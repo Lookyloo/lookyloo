@@ -166,14 +166,18 @@ class MISP():
         directly to a MISP instance and it will create an event.'''
         public_domain = get_config('generic', 'public_domain')
         event = MISPEvent()
-        event.info = f'Lookyloo Capture ({cache.url})'
+        if cache.url.startswith('file'):
+            filename = cache.url.rsplit('/', 1)[-1]
+            event.info = f'Lookyloo Capture ({filename})'
+        else:
+            event.info = f'Lookyloo Capture ({cache.url})'
+            initial_url = URLObject(cache.url)
+            initial_url.comment = 'Submitted URL'
+            self.__misp_add_ips_to_URLObject(initial_url, cache.tree.root_hartree.hostname_tree)
+
         lookyloo_link: MISPAttribute = event.add_attribute('link', f'https://{public_domain}/tree/{cache.uuid}')  # type: ignore
         if not is_public_instance:
             lookyloo_link.distribution = 0
-
-        initial_url = URLObject(cache.url)
-        initial_url.comment = 'Submitted URL'
-        self.__misp_add_ips_to_URLObject(initial_url, cache.tree.root_hartree.hostname_tree)
 
         redirects: List[URLObject] = []
         for nb, url in enumerate(cache.redirects):
@@ -183,6 +187,7 @@ class MISP():
             obj.comment = f'Redirect {nb}'
             self.__misp_add_ips_to_URLObject(obj, cache.tree.root_hartree.hostname_tree)
             redirects.append(obj)
+
         if redirects:
             redirects[-1].comment = f'Last redirect ({nb})'
 
