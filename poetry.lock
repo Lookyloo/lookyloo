@@ -1151,19 +1151,19 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.2.4"
+version = "1.2.5"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.2.4-py3-none-any.whl", hash = "sha256:81037e1eb6991a71c2586848034a182a7b03bf928a8d03fd798bd9f6a28bc2b4"},
-    {file = "lacuscore-1.2.4.tar.gz", hash = "sha256:dcaf894c44ed5e6ca09cd9d17a3a7bb8ba45f271be048ec59378beb60068cc34"},
+    {file = "lacuscore-1.2.5-py3-none-any.whl", hash = "sha256:f9a6596a4ef82c54e6607cda66dbb214fe599a897a30265ab5559de657ec01bf"},
+    {file = "lacuscore-1.2.5.tar.gz", hash = "sha256:e2285d8b3e543a195e6d1dbb5cb8b2eef8ac34a924657beb8b6542c16f667d7f"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.17.3,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.17.4,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=4.4.2,<5.0.0", extras = ["hiredis"]}
 requests = ">=2.28.2,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
@@ -1809,19 +1809,19 @@ files = [
 
 [[package]]
 name = "playwright"
-version = "1.29.1"
+version = "1.30.0"
 description = "A high-level API to automate web browsers"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "playwright-1.29.1-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:f9c1d16089448933f885ebd5af0878e3f0dab1d3f30d39a6b75c80b388658623"},
-    {file = "playwright-1.29.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:a5a5223466e552e5d1e09695acfa0f48037222a2ae8d0df5bf0e185205d923e8"},
-    {file = "playwright-1.29.1-py3-none-macosx_11_0_universal2.whl", hash = "sha256:c607282065628761ef6b218879b5aa2eef463c5d763512e4e12b6211acac0408"},
-    {file = "playwright-1.29.1-py3-none-manylinux1_x86_64.whl", hash = "sha256:f6388479558db9b80ec609dfcc06a4bbbecfc62e5b61e3b89142abf26aacfc61"},
-    {file = "playwright-1.29.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5f81bf95c5d315a879ccd761d7131e48ec02f5c1c593eb927214fa78801e7236"},
-    {file = "playwright-1.29.1-py3-none-win32.whl", hash = "sha256:83a132b4b074e3b23cb6b93b9527cd36dfd8b37abbfce5b239cbe88822d9939a"},
-    {file = "playwright-1.29.1-py3-none-win_amd64.whl", hash = "sha256:4cc60189e77db718924c58fbee46af25c77ef5509665999f2ca960225a1f49df"},
+    {file = "playwright-1.30.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:2ea5d88880fbfa69f05ab758ddd66310079828d6c5c8efe497485c341d147a4e"},
+    {file = "playwright-1.30.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:228e07e1b2ef0790ec6d258897c50b83b0e8055b318fa2d33fcb86a8c5ba3525"},
+    {file = "playwright-1.30.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:115f5d77a21597200428411186ec72e10fed1cc4d7de3e6e705c415b781d344a"},
+    {file = "playwright-1.30.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:24bb8fe1d7ae60ec971668812c0c6c21b2b12d320ff24da59cbb544a6a15a53c"},
+    {file = "playwright-1.30.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:62032a1da59524a7f8d8cb4ed998cf793310b67693d3df94d00ceb13b5a9eced"},
+    {file = "playwright-1.30.0-py3-none-win32.whl", hash = "sha256:07249da8375fa7d52cbcdbfc36f5773f91fa8305aa340215db173101d289e210"},
+    {file = "playwright-1.30.0-py3-none-win_amd64.whl", hash = "sha256:198c1d816e802c4c9bc048232ec344f4bdfe3229e73a3a28a8eac33c46dab201"},
 ]
 
 [package.dependencies]
@@ -1831,21 +1831,21 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.17.3"
+version = "1.17.4"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.17.3-py3-none-any.whl", hash = "sha256:6d98dba95460f23db723e98c81a14e12142055c1bbbaba7b18e2a2feb8db774b"},
-    {file = "playwrightcapture-1.17.3.tar.gz", hash = "sha256:060e06f0a90550a8db9dc6021be0a71ba7525964db1f61c1dbf11e71b35e3ad7"},
+    {file = "playwrightcapture-1.17.4-py3-none-any.whl", hash = "sha256:082a3e9d8827092aa297f0878a8b5eaf2169fe7330d373edcc3305534e8ad6fb"},
+    {file = "playwrightcapture-1.17.4.tar.gz", hash = "sha256:d4ab9ff4604caed92b53909dd9fecdf934b67a675c400e1cb10786ee0d0ca048"},
 ]
 
 [package.dependencies]
 beautifulsoup4 = ">=4.11.1,<5.0.0"
 dateparser = ">=1.1.6,<2.0.0"
 lxml = ">=4.9.2,<5.0.0"
-playwright = ">=1.29.1,<2.0.0"
+playwright = ">=1.30.0,<2.0.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
 requests = {version = ">=2.28.2,<3.0.0", optional = true, markers = "extra == \"recaptcha\""}
 SpeechRecognition = {version = ">=3.9.0,<4.0.0", optional = true, markers = "extra == \"recaptcha\""}
@@ -3045,4 +3045,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "ab69e7bbaa587fcb345da9d9467bf1cc44279ba561d4885b743bdb139bdf8d3c"
+content-hash = "4eee70377153466cb6f088c547a6099bd456b21517833c00b5a42435987ca08d"
