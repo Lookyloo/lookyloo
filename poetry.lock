@@ -1040,14 +1040,14 @@ testing = ["flake8 (<5)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-chec
 
 [[package]]
 name = "ipython"
-version = "8.8.0"
+version = "8.9.0"
 description = "IPython: Productive Interactive Computing"
 category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ipython-8.8.0-py3-none-any.whl", hash = "sha256:da01e6df1501e6e7c32b5084212ddadd4ee2471602e2cf3e0190f4de6b0ea481"},
-    {file = "ipython-8.8.0.tar.gz", hash = "sha256:f3bf2c08505ad2c3f4ed5c46ae0331a8547d36bf4b21a451e8ae80c0791db95b"},
+    {file = "ipython-8.9.0-py3-none-any.whl", hash = "sha256:9c207b0ef2d276d1bfcfeb9a62804336abbe4b170574ea061500952319b1d78c"},
+    {file = "ipython-8.9.0.tar.gz", hash = "sha256:71618e82e6d59487bea059626e7c79fb4a5b760d1510d02fab1160db6fdfa1f7"},
 ]
 
 [package.dependencies]
@@ -1059,7 +1059,7 @@ jedi = ">=0.16"
 matplotlib-inline = "*"
 pexpect = {version = ">4.3", markers = "sys_platform != \"win32\""}
 pickleshare = "*"
-prompt-toolkit = ">=3.0.11,<3.1.0"
+prompt-toolkit = ">=3.0.30,<3.1.0"
 pygments = ">=2.4.0"
 stack-data = "*"
 traitlets = ">=5"
@@ -2439,34 +2439,34 @@ six = "*"
 
 [[package]]
 name = "rich"
-version = "13.2.0"
+version = "13.3.1"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "rich-13.2.0-py3-none-any.whl", hash = "sha256:7c963f0d03819221e9ac561e1bc866e3f95a02248c1234daa48954e6d381c003"},
-    {file = "rich-13.2.0.tar.gz", hash = "sha256:f1a00cdd3eebf999a15d85ec498bfe0b1a77efe9b34f645768a54132ef444ac5"},
+    {file = "rich-13.3.1-py3-none-any.whl", hash = "sha256:8aa57747f3fc3e977684f0176a88e789be314a99f99b43b75d1e9cb5dc6db9e9"},
+    {file = "rich-13.3.1.tar.gz", hash = "sha256:125d96d20c92b946b983d0d392b84ff945461e5a06d3867e9f9e575f8697b67f"},
 ]
 
 [package.dependencies]
 markdown-it-py = ">=2.1.0,<3.0.0"
-pygments = ">=2.6.0,<3.0.0"
+pygments = ">=2.14.0,<3.0.0"
 typing-extensions = {version = ">=4.0.0,<5.0", markers = "python_version < \"3.9\""}
 
 [package.extras]
-jupyter = ["ipywidgets (>=7.5.1,<8.0.0)"]
+jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "setuptools"
-version = "66.1.1"
+version = "67.0.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "setuptools-66.1.1-py3-none-any.whl", hash = "sha256:6f590d76b713d5de4e49fe4fbca24474469f53c83632d5d0fd056f7ff7e8112b"},
-    {file = "setuptools-66.1.1.tar.gz", hash = "sha256:ac4008d396bc9cd983ea483cb7139c0240a07bbc74ffb6232fceffedc6cf03a8"},
+    {file = "setuptools-67.0.0-py3-none-any.whl", hash = "sha256:9d790961ba6219e9ff7d9557622d2fe136816a264dd01d5997cfc057d804853d"},
+    {file = "setuptools-67.0.0.tar.gz", hash = "sha256:883131c5b6efa70b9101c7ef30b2b7b780a4283d5fc1616383cdf22c83cbefe6"},
 ]
 
 [package.extras]
@@ -2565,14 +2565,14 @@ files = [
 
 [[package]]
 name = "traitlets"
-version = "5.8.1"
+version = "5.9.0"
 description = "Traitlets Python configuration system"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "traitlets-5.8.1-py3-none-any.whl", hash = "sha256:a1ca5df6414f8b5760f7c5f256e326ee21b581742114545b462b35ffe3f04861"},
-    {file = "traitlets-5.8.1.tar.gz", hash = "sha256:32500888f5ff7bbf3b9267ea31748fa657aaf34d56d85e60f91dda7dc7f5785b"},
+    {file = "traitlets-5.9.0-py3-none-any.whl", hash = "sha256:9e6ec080259b9a5940c797d58b613b5e31441c2257b87c2e795c5228ae80d2d8"},
+    {file = "traitlets-5.9.0.tar.gz", hash = "sha256:f6cde21a9c68cf756af02035f72d5a723bf607e862e7be33ece505abf4a3bad9"},
 ]
 
 [package.extras]
@@ -2671,14 +2671,14 @@ files = [
 
 [[package]]
 name = "types-redis"
-version = "4.4.0.3"
+version = "4.4.0.4"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.4.0.3.tar.gz", hash = "sha256:99fc86307fb19b775a0ad5de91d2fc0ccdb9a2be7ac790f4553911d2f2abdf61"},
-    {file = "types_redis-4.4.0.3-py3-none-any.whl", hash = "sha256:fc25550bc108908a32bb47cfdecde8d2155b6b7e40688af99a4bacbd7e3e857e"},
+    {file = "types-redis-4.4.0.4.tar.gz", hash = "sha256:b70829ca3401d3153d628e28d860070eff1b36b2fa3e5af3e583c1d167383cab"},
+    {file = "types_redis-4.4.0.4-py3-none-any.whl", hash = "sha256:802e893ad3f88e03d3a2feb0d23a715d60b0bb330bc598a52f1de237fc2547a5"},
 ]
 
 [package.dependencies]
@@ -2788,14 +2788,14 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.17.3"
+version = "0.17.4"
 description = "The official Python client library for VirusTotal"
 category = "main"
 optional = false
 python-versions = ">=3.6.0"
 files = [
-    {file = "vt-py-0.17.3.tar.gz", hash = "sha256:2f96fe86c7213dda9e45ab06bf18f7843f9513c1a073b1606fe238ea624a5b32"},
-    {file = "vt_py-0.17.3-py3-none-any.whl", hash = "sha256:c6cb4e134dcf12683de97993ef7e1daedd7e548acfdc5dc6b730db92c3207610"},
+    {file = "vt-py-0.17.4.tar.gz", hash = "sha256:26e82857068c85b65925f14bdcdb03b423dda98ca30c9cc208842135e12d1211"},
+    {file = "vt_py-0.17.4-py3-none-any.whl", hash = "sha256:8aca503a86ec89d249ef3e01a0801604299af38d69dcef5670e6ebc2377a00e7"},
 ]
 
 [package.dependencies]
@@ -3028,21 +3028,21 @@ multidict = ">=4.0"
 
 [[package]]
 name = "zipp"
-version = "3.11.0"
+version = "3.12.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "zipp-3.11.0-py3-none-any.whl", hash = "sha256:83a28fcb75844b5c0cdaf5aa4003c2d728c77e05f5aeabe8e95e56727005fbaa"},
-    {file = "zipp-3.11.0.tar.gz", hash = "sha256:a7a22e05929290a67401440b39690ae6563279bced5f314609d9d03798f56766"},
+    {file = "zipp-3.12.0-py3-none-any.whl", hash = "sha256:9eb0a4c5feab9b08871db0d672745b53450d7f26992fd1e4653aa43345e97b86"},
+    {file = "zipp-3.12.0.tar.gz", hash = "sha256:73efd63936398aac78fd92b6f4865190119d6c91b531532e798977ea8dd402eb"},
 ]
 
 [package.extras]
-docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)"]
+docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
 testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "4eee70377153466cb6f088c547a6099bd456b21517833c00b5a42435987ca08d"
+content-hash = "8293af95fac74b0570dd387cd1c5f5147aa222b7e391faf61233cea807cffa80"
