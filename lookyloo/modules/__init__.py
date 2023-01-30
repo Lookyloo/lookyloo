@@ -12,3 +12,4 @@ from .phishtank import Phishtank  # noqa
 from .hashlookup import HashlookupModule as Hashlookup  # noqa
 from .riskiq import RiskIQ, RiskIQError  # noqa
 from .urlhaus import URLhaus  # noqa
+from .cloudflare import Cloudflare  # noqa

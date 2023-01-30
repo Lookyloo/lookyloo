@@ -26,6 +26,7 @@ from .helpers import get_captures_dir
 from .indexing import Indexing
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
+from .modules import Cloudflare
 
 
 class CaptureCache():
@@ -133,6 +134,13 @@ class CapturesIndex(Mapping):
             # Unable to setup IPASN History
             self.logger.warning(f'Unable to setup IPASN History: {e}')
             self.ipasnhistory = None
+        try:
+            self.cloudflare: Optional[Cloudflare] = Cloudflare()
+            if not self.cloudflare.available:
+                self.cloudflare = None
+        except Exception as e:
+            self.logger.warning(f'Unable to setup Cloudflare: {e}')
+            self.cloudflare = None
 
     @property
     def cached_captures(self) -> Set[str]:
@@ -474,6 +482,9 @@ class CapturesIndex(Mapping):
             elif node.name in host_ips:
                 node.add_feature('resolved_ips', host_ips[node.name])
 
+        if self.cloudflare:
+            cflare_hits = self.cloudflare.ips_lookup(_all_ips)
+
         if self.ipasnhistory:
             # Throw all the IPs to IPASN History for query later.
             if ips := [{'ip': ip} for ip in _all_ips]:
@@ -490,23 +501,29 @@ class CapturesIndex(Mapping):
                             r = list(response['response'].values())[0]
                             if ip not in ipasn and r:
                                 ipasn[ip] = r
-            if ipasn:
-                # retraverse tree to populate it with the features
-                for node in ct.root_hartree.hostname_tree.traverse():
-                    if not hasattr(node, 'resolved_ips'):
-                        continue
-                    ipasn_entries = {}
-                    if 'v4' in node.resolved_ips and 'v6' in node.resolved_ips:
-                        _all_ips = node.resolved_ips['v4'] | node.resolved_ips['v6']
-                    else:
-                        # old format
-                        _all_ips = node.resolved_ips
-                    for ip in _all_ips:
-                        if ip not in ipasn:
-                            continue
+
+        if ipasn or cflare_hits:
+            # retraverse tree to populate it with the features
+            for node in ct.root_hartree.hostname_tree.traverse():
+                if not hasattr(node, 'resolved_ips'):
+                    continue
+                ipasn_entries = {}
+                cflare_entries = {}
+                if 'v4' in node.resolved_ips and 'v6' in node.resolved_ips:
+                    _all_ips = set(node.resolved_ips['v4']) | set(node.resolved_ips['v6'])
+                else:
+                    # old format
+                    _all_ips = node.resolved_ips
+                for ip in _all_ips:
+                    if ip in ipasn:
                         ipasn_entries[ip] = ipasn[ip]
-                    if ipasn_entries:
-                        node.add_feature('ipasn', ipasn_entries)
+                    if ip in cflare_hits:
+                        cflare_entries[ip] = True
+
+                if ipasn_entries:
+                    node.add_feature('ipasn', ipasn_entries)
+                if cflare_entries:
+                    node.add_feature('cloudflare', cflare_entries)
 
         with cnames_path.open('w') as f:
             json.dump(host_cnames, f)
