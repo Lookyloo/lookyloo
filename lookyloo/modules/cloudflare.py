@@ -2,11 +2,9 @@
 
 import ipaddress
 import logging
-from typing import Dict, List
+from typing import Dict, Set
 
 import requests
-
-from har2tree import CrawledTree
 
 from ..default import ConfigError, get_config
 
@@ -41,17 +39,7 @@ class Cloudflare():
         self.v4_list = [ipaddress.ip_network(net) for net in ipv4_list.split('\n')]
         self.v6_list = [ipaddress.ip_network(net) for net in ipv6_list.split('\n')]
 
-    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, auto_trigger: bool=False) -> Dict:
-        '''Run the module on all the nodes up to the final redirect'''
-        if not self.available:
-            return {'error': 'Module not available'}
-        if auto_trigger and not self.allow_auto_trigger:
-            return {'error': 'Auto trigger not allowed on module'}
-
-        # TODO: trigger something?
-        return {'success': 'Module triggered'}
-
-    def ips_lookup(self, ips: List[str]) -> Dict[str, bool]:
+    def ips_lookup(self, ips: Set[str]) -> Dict[str, bool]:
         '''Lookup a list of IPs. True means it is a known Cloudflare IP'''
         if not self.available:
             raise ConfigError('Hashlookup not available, probably not enabled.')
