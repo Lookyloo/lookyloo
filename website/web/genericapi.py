@@ -21,7 +21,7 @@ api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
 
 lookyloo: Lookyloo = Lookyloo()
-comaprator: Comparator = Comparator()
+comparator: Comparator = Comparator()
 
 
 def api_auth_check(method):
@@ -444,19 +444,18 @@ class CaptureExport(Resource):
 # Compare captures (WiP)
 
 compare_captures_fields = api.model('CompareCapturesFields', {
-    'capture_one': fields.String(description="The first capture to compare.", required=True),
-    'capture_two': fields.String(description="The second capture to compare.", required=True),
+    'capture_left': fields.String(description="Left capture to compare.", required=True),
+    'capture_right': fields.String(description="Right capture to compare.", required=True),
 })
 
 
 @api.route('/json/compare_captures')
-@api.doc(description='Compare two captures (WiP)')
+@api.doc(description='Compare two captures')
 class CompareCaptures(Resource):
     @api.doc(body=compare_captures_fields)
     def post(self):
         parameters: Dict = request.get_json(force=True)  # type: ignore
-        result = comaprator.compare_captures(parameters.get('capture_one'), parameters.get('capture_two'))
-        print(result)
+        result = comparator.compare_captures(parameters.get('capture_left'), parameters.get('capture_right'))
         return result
 
 
