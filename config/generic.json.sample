@@ -35,7 +35,8 @@
     "subject": "Capture from Lookyloo to review",
     "smtp_host": "localhost",
     "smtp_port": "25",
-    "confirm_message": "Message the users need to confirm before they submit a notification."
+    "confirm_message": "Message the users need to confirm before they submit a notification.",
+    "defang_urls": true
   },
   "priority": {
     "sources": {

@@ -590,18 +590,24 @@ class Lookyloo():
         if not get_config('generic', 'enable_mail_notification'):
             return
 
+        email_config = get_config('generic', 'email')
         redirects = ''
         initial_url = ''
         cache = self.capture_cache(capture_uuid)
         if cache:
-            initial_url = defang(cache.url, colon=True, all_dots=True)
+            if email_config['defang_urls']:
+                initial_url = defang(cache.url, colon=True, all_dots=True)
+            else:
+                initial_url = cache.url
             if cache.redirects:
                 redirects = "Redirects:\n"
-                redirects += defang('\n'.join(cache.redirects), colon=True, all_dots=True)
+                if email_config['defang_urls']:
+                    redirects += defang('\n'.join(cache.redirects), colon=True, all_dots=True)
+                else:
+                    redirects += '\n'.join(cache.redirects)
             else:
                 redirects = "No redirects."
 
-        email_config = get_config('generic', 'email')
         msg = EmailMessage()
         msg['From'] = email_config['from']
         if email:
