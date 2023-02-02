@@ -585,6 +585,35 @@ class Lookyloo():
 
         return perma_uuid
 
+    def takedown_details(self, hostnode: HostNode) -> Dict[str, Any]:
+        if not self.uwhois.available:
+            self.logger.warning('UWhois module not enabled, unable to use this method')
+            raise LookylooException('UWhois module not enabled, unable to use this method')
+        to_return = {'hostname': hostnode.name,
+                     'contacts': self.uwhois.whois(hostnode.name, contact_email_only=True),  # List of emails from whois
+                     'ips': {},  # ip: [list of contacts from whois]
+                     'asns': {},  # ASN: [list of contacts from whois]
+                     }
+        to_return['ips'] = {ip: self.uwhois.whois(ip, contact_email_only=True) for ip in hostnode.resolved_ips['v4'] | hostnode.resolved_ips['v6']}
+        to_return['asns'] = {asn['asn']: self.uwhois.whois(f'AS{asn["asn"]}', contact_email_only=True) for asn in hostnode.ipasn.values()}
+
+        # URLs specific details
+
+        # # IPFS
+        for url in hostnode.urls:
+            for h in url.response['headers']:
+                if h['name'].lower().startswith('x-ipfs'):
+                    # got an ipfs thing
+                    if 'urls' not in to_return:
+                        to_return['urls'] = {'ipfs': {}}
+                    if url.name not in to_return['urls']['ipfs']:
+                        to_return['urls']['ipfs'][url.name] = ['abuse@ipfs.io']
+                    else:
+                        to_return['urls']['ipfs'][url.name].append('abuse@ipfs.io')
+                    break
+
+        return to_return
+
     def send_mail(self, capture_uuid: str, /, email: str='', comment: str='') -> None:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):

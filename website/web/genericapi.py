@@ -459,6 +459,34 @@ class CompareCaptures(Resource):
         return result
 
 
+# Get information for takedown
+
+takedown_fields = api.model('TakedownFields', {
+    'capture_uuid': fields.String(description="The UUID of the capture.", required=True),
+})
+
+
+@api.route('/json/takedown')
+@api.doc(description='Get information for triggering a takedown request')
+class Takedown(Resource):
+    @api.doc(body=takedown_fields)
+    def post(self):
+        parameters: Dict = request.get_json(force=True)  # type: ignore
+        capture_uuid = parameters.get('capture_uuid')
+        if not capture_uuid:
+            return {'error': f'Invalid UUID: {capture_uuid}'}
+
+        capture = lookyloo.get_crawled_tree(capture_uuid)
+        if not capture:
+            return {'error': f'Unknown capture {capture_uuid}'}
+        rendered_hostnode = lookyloo.get_hostnode_from_tree(capture_uuid, capture.root_hartree.rendered_node.hostnode_uuid)
+        result = []
+        for node in reversed(rendered_hostnode.get_ancestors()):
+            result.append(lookyloo.takedown_details(node))
+        result.append(lookyloo.takedown_details(rendered_hostnode))
+        return result
+
+
 # Admin stuff
 
 @api.route('/admin/rebuild_all')
