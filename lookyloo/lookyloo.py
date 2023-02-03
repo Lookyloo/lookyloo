@@ -593,9 +593,16 @@ class Lookyloo():
                      'contacts': self.uwhois.whois(hostnode.name, contact_email_only=True),  # List of emails from whois
                      'ips': {},  # ip: [list of contacts from whois]
                      'asns': {},  # ASN: [list of contacts from whois]
+                     'all_emails': set()
                      }
         to_return['ips'] = {ip: self.uwhois.whois(ip, contact_email_only=True) for ip in hostnode.resolved_ips['v4'] | hostnode.resolved_ips['v6']}
         to_return['asns'] = {asn['asn']: self.uwhois.whois(f'AS{asn["asn"]}', contact_email_only=True) for asn in hostnode.ipasn.values()}
+
+        for emails in to_return['ips'].values():
+            to_return['all_emails'] |= set(emails)
+
+        for emails in to_return['asns'].values():
+            to_return['all_emails'] |= set(emails)
 
         # URLs specific details
 
@@ -604,6 +611,7 @@ class Lookyloo():
             for h in url.response['headers']:
                 if h['name'].lower().startswith('x-ipfs'):
                     # got an ipfs thing
+                    to_return['all_emails'].add('abuse@ipfs.io')
                     if 'urls' not in to_return:
                         to_return['urls'] = {'ipfs': {}}
                     if url.name not in to_return['urls']['ipfs']:
@@ -612,6 +620,7 @@ class Lookyloo():
                         to_return['urls']['ipfs'][url.name].append('abuse@ipfs.io')
                     break
 
+        to_return['all_emails'] = list(to_return['all_emails'])
         return to_return
 
     def send_mail(self, capture_uuid: str, /, email: str='', comment: str='') -> None:
