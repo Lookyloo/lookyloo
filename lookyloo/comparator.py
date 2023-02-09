@@ -46,12 +46,13 @@ class Comparator():
             to_return['url'] = {'message': 'The nodes have the same URL.',
                                 'details': left.name}
         # IP in HAR
-        if left.ip_address != right.ip_address:
-            to_return['ip'] = {'message': 'The nodes load content from different IPs.',
-                               'details': [str(left.ip_address), str(right.ip_address)]}
-        else:
-            to_return['ip'] = {'message': 'The nodes load content from the same IP.',
-                               'details': str(left.ip_address)}
+        if hasattr(left, 'ip_address') and hasattr(right, 'ip_address'):
+            if left.ip_address != right.ip_address:
+                to_return['ip'] = {'message': 'The nodes load content from different IPs.',
+                                   'details': [str(left.ip_address), str(right.ip_address)]}
+            else:
+                to_return['ip'] = {'message': 'The nodes load content from the same IP.',
+                                   'details': str(left.ip_address)}
 
         # IPs in hostnode + ASNs
         return to_return
