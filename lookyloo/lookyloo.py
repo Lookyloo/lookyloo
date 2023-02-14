@@ -33,6 +33,7 @@ from pylacus import (PyLacus,
 #                     CaptureResponseJson as CaptureResponseJsonPy,
 #                     CaptureSettings as CaptureSettingsPy)
 from pymisp import MISPAttribute, MISPEvent, MISPObject
+from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
@@ -59,6 +60,9 @@ class Lookyloo():
         self.user_agents = UserAgents()
         self.is_public_instance = get_config('generic', 'public_instance')
         self.public_domain = get_config('generic', 'public_domain')
+
+        self.securitytxt = PySecurityTXT()
+
         self.taxonomies = get_taxonomies()
 
         self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
@@ -597,6 +601,19 @@ class Lookyloo():
                      }
         to_return['ips'] = {ip: self.uwhois.whois(ip, contact_email_only=True) for ip in hostnode.resolved_ips['v4'] | hostnode.resolved_ips['v6']}
         to_return['asns'] = {asn['asn']: self.uwhois.whois(f'AS{asn["asn"]}', contact_email_only=True) for asn in hostnode.ipasn.values()}
+
+        # try to get contact from security.txt file
+        try:
+            txtfile = self.securitytxt.get(hostnode.name)
+            parsed = self.securitytxt.parse(txtfile)
+            to_return['securitytxt'] = parsed
+            if 'contact' in parsed:
+                if isinstance(parsed['contact'], str):
+                    to_return['all_emails'].add(parsed['contact'].lstrip('mailto:'))
+                else:
+                    to_return['all_emails'] |= {contact.lstrip('mailto:') for contact in parsed['contact'] if contact.startswith('mailto:')}
+        except SecurityTXTNotAvailable as e:
+            self.logger.info(e)
 
         for emails in to_return['ips'].values():
             to_return['all_emails'] |= set(emails)
