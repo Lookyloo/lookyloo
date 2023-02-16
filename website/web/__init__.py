@@ -710,7 +710,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
 @flask_login.login_required
 def mark_as_legitimate(tree_uuid: str):
     if request.data:
-        legitimate_entries: Dict = request.get_json(force=True)  # type: ignore
+        legitimate_entries: Dict = request.get_json(force=True)
         lookyloo.add_to_legitimate(tree_uuid, **legitimate_entries)
     else:
         lookyloo.add_to_legitimate(tree_uuid)

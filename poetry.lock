@@ -687,14 +687,14 @@ files = [
 
 [[package]]
 name = "flask"
-version = "2.2.2"
+version = "2.2.3"
 description = "A simple framework for building complex web applications."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "Flask-2.2.2-py3-none-any.whl", hash = "sha256:b9c46cc36662a7949f34b52d8ec7bb59c0d74ba08ba6cb9ce9adc1d8676d9526"},
-    {file = "Flask-2.2.2.tar.gz", hash = "sha256:642c450d19c4ad482f96729bd2a8f6d32554aa1e231f4f6b4e7e5264b16cca2b"},
+    {file = "Flask-2.2.3-py3-none-any.whl", hash = "sha256:c0bec9477df1cb867e5a67c9e1ab758de9cb4a3e52dd70681f59fa40a62b3f2d"},
+    {file = "Flask-2.2.3.tar.gz", hash = "sha256:7eb373984bf1c770023fce9db164ed0c3353cd0b53f130f4693da0ca756a2e6d"},
 ]
 
 [package.dependencies]
@@ -1246,20 +1246,20 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.2.5"
+version = "1.2.6"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.2.5-py3-none-any.whl", hash = "sha256:f9a6596a4ef82c54e6607cda66dbb214fe599a897a30265ab5559de657ec01bf"},
-    {file = "lacuscore-1.2.5.tar.gz", hash = "sha256:e2285d8b3e543a195e6d1dbb5cb8b2eef8ac34a924657beb8b6542c16f667d7f"},
+    {file = "lacuscore-1.2.6-py3-none-any.whl", hash = "sha256:56100f673e652db60f350f6e0eae007446fc227f422f61484b5a9e5937d670e7"},
+    {file = "lacuscore-1.2.6.tar.gz", hash = "sha256:2dad31566b941ed3a4d866c2f3acd56ac14b6ed2495765ce655a73c89df36067"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.17.4,<2.0.0", extras = ["recaptcha"]}
-redis = {version = ">=4.4.2,<5.0.0", extras = ["hiredis"]}
+playwrightcapture = {version = ">=1.17.5,<2.0.0", extras = ["recaptcha"]}
+redis = {version = ">=4.5.1,<5.0.0", extras = ["hiredis"]}
 requests = ">=2.28.2,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
 
@@ -1922,19 +1922,19 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.17.4"
+version = "1.17.5"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.17.4-py3-none-any.whl", hash = "sha256:082a3e9d8827092aa297f0878a8b5eaf2169fe7330d373edcc3305534e8ad6fb"},
-    {file = "playwrightcapture-1.17.4.tar.gz", hash = "sha256:d4ab9ff4604caed92b53909dd9fecdf934b67a675c400e1cb10786ee0d0ca048"},
+    {file = "playwrightcapture-1.17.5-py3-none-any.whl", hash = "sha256:ac0ef81a25b4444e2bb70581345b6a7b72bdaa9680730161c768a6c48cae30d3"},
+    {file = "playwrightcapture-1.17.5.tar.gz", hash = "sha256:e5acd6bfa463d68d23a9fdb670b3e11f1cbd49e84cc4b876900b441f79f72786"},
 ]
 
 [package.dependencies]
-beautifulsoup4 = ">=4.11.1,<5.0.0"
-dateparser = ">=1.1.6,<2.0.0"
+beautifulsoup4 = ">=4.11.2,<5.0.0"
+dateparser = ">=1.1.7,<2.0.0"
 lxml = ">=4.9.2,<5.0.0"
 playwright = ">=1.30.0,<2.0.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
@@ -2568,14 +2568,14 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "setuptools"
-version = "67.3.1"
+version = "67.3.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "setuptools-67.3.1-py3-none-any.whl", hash = "sha256:23c86b4e44432bfd8899384afc08872ec166a24f48a3f99f293b0a557e6a6b5d"},
-    {file = "setuptools-67.3.1.tar.gz", hash = "sha256:daec07fd848d80676694d6bf69c009d28910aeece68a38dbe88b7e1bb6dba12e"},
+    {file = "setuptools-67.3.2-py3-none-any.whl", hash = "sha256:bb6d8e508de562768f2027902929f8523932fcd1fb784e6d573d2cafac995a48"},
+    {file = "setuptools-67.3.2.tar.gz", hash = "sha256:95f00380ef2ffa41d9bba85d95b27689d923c93dfbafed4aecd7cf988a25e012"},
 ]
 
 [package.extras]
@@ -2597,14 +2597,14 @@ files = [
 
 [[package]]
 name = "soupsieve"
-version = "2.3.2.post1"
+version = "2.4"
 description = "A modern CSS selector implementation for Beautiful Soup."
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "soupsieve-2.3.2.post1-py3-none-any.whl", hash = "sha256:3b2503d3c7084a42b1ebd08116e5f81aadfaea95863628c80a3b774a11b7c759"},
-    {file = "soupsieve-2.3.2.post1.tar.gz", hash = "sha256:fc53893b3da2c33de295667a0e19f078c14bf86544af307354de5fcf12a3f30d"},
+    {file = "soupsieve-2.4-py3-none-any.whl", hash = "sha256:49e5368c2cda80ee7e84da9dbe3e110b70a4575f196efb74e51b94549d921955"},
+    {file = "soupsieve-2.4.tar.gz", hash = "sha256:e28dba9ca6c7c00173e34e4ba57448f0688bb681b7c5e8bf4971daafc093d69a"},
 ]
 
 [[package]]
@@ -2690,14 +2690,14 @@ test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.11.6.5"
+version = "4.11.6.6"
 description = "Typing stubs for beautifulsoup4"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-beautifulsoup4-4.11.6.5.tar.gz", hash = "sha256:20917aa320d54e82e426dfb28b5c09bac2f5794c06728bc8aa5d8a6eb8f475dd"},
-    {file = "types_beautifulsoup4-4.11.6.5-py3-none-any.whl", hash = "sha256:c8f540eed6d27afc4b344a124fa6c31b153366a1863b43f64915c23040c3ab0a"},
+    {file = "types-beautifulsoup4-4.11.6.6.tar.gz", hash = "sha256:3eae9907ee46794a4e310f4dae63e5b4229e575d8c2e34955a57d1c0a774345a"},
+    {file = "types_beautifulsoup4-4.11.6.6-py3-none-any.whl", hash = "sha256:470b924035652f1a92b3c143f6cad2fc3b3eaf7dab89d04eb4833025110c0894"},
 ]
 
 [package.dependencies]
@@ -2729,14 +2729,14 @@ files = [
 
 [[package]]
 name = "types-pillow"
-version = "9.4.0.10"
+version = "9.4.0.12"
 description = "Typing stubs for Pillow"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-Pillow-9.4.0.10.tar.gz", hash = "sha256:341c2345610bba452d1724757c7b997a60f593cf003c101ba239db003a0ae389"},
-    {file = "types_Pillow-9.4.0.10-py3-none-any.whl", hash = "sha256:302ce81cfb61aacc8983a3a2ec682cbef66522a2fe8e640f648ac2e3d6f6af53"},
+    {file = "types-Pillow-9.4.0.12.tar.gz", hash = "sha256:e0074149d5f06d3593c118acc83e353f8542bcc73576ffefb6568eaab5671348"},
+    {file = "types_Pillow-9.4.0.12-py3-none-any.whl", hash = "sha256:b4aaa86b43f53e4d552d2c0381068015121e8990b0369df7c5e3b36fa6266984"},
 ]
 
 [[package]]
@@ -2768,26 +2768,26 @@ cryptography = ">=35.0.0"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.8.19.6"
+version = "2.8.19.7"
 description = "Typing stubs for python-dateutil"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-python-dateutil-2.8.19.6.tar.gz", hash = "sha256:4a6f4cc19ce4ba1a08670871e297bf3802f55d4f129e6aa2443f540b6cf803d2"},
-    {file = "types_python_dateutil-2.8.19.6-py3-none-any.whl", hash = "sha256:cfb7d31021c6bce6f3362c69af6e3abb48fe3e08854f02487e844ff910deec2a"},
+    {file = "types-python-dateutil-2.8.19.7.tar.gz", hash = "sha256:7af5a5d1b80ab1dfa0ba4d879facb382e836a62c2d408c2a509be4680fd8b1c8"},
+    {file = "types_python_dateutil-2.8.19.7-py3-none-any.whl", hash = "sha256:669751e1e6d4f3dbbff471231740e7ecdae2135b604383e477fe31fd56223967"},
 ]
 
 [[package]]
 name = "types-redis"
-version = "4.5.1.0"
+version = "4.5.1.1"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.5.1.0.tar.gz", hash = "sha256:6f6fb1cfeee3708112dec3609a042774f96f2cfcb4709d267c11f51a6976da0a"},
-    {file = "types_redis-4.5.1.0-py3-none-any.whl", hash = "sha256:dac6ea398c57a53213b70727be7c8e3a788ded3c3880e94bf74e85c22aa63c7e"},
+    {file = "types-redis-4.5.1.1.tar.gz", hash = "sha256:c072e4824855f46d0a968509c3e0fa4789fc13b62d472064527bad3d1815aeed"},
+    {file = "types_redis-4.5.1.1-py3-none-any.whl", hash = "sha256:081dfeec730df6e3f32ccbdafe3198873b7c02516c22d79cc2a40efdd69a3963"},
 ]
 
 [package.dependencies]
@@ -2796,14 +2796,14 @@ types-pyOpenSSL = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.28.11.12"
+version = "2.28.11.13"
 description = "Typing stubs for requests"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-requests-2.28.11.12.tar.gz", hash = "sha256:fd530aab3fc4f05ee36406af168f0836e6f00f1ee51a0b96b7311f82cb675230"},
-    {file = "types_requests-2.28.11.12-py3-none-any.whl", hash = "sha256:dbc2933635860e553ffc59f5e264264981358baffe6342b925e3eb8261f866ee"},
+    {file = "types-requests-2.28.11.13.tar.gz", hash = "sha256:3fd332842e8759ea5f7eb7789df8aa772ba155216ccf10ef4aa3b0e5b42e1b46"},
+    {file = "types_requests-2.28.11.13-py3-none-any.whl", hash = "sha256:94896f6f8e9f3db11e422c6e3e4abbc5d7ccace853eac74b23bdd65eeee3cdee"},
 ]
 
 [package.dependencies]
@@ -2811,26 +2811,26 @@ types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-urllib3"
-version = "1.26.25.5"
+version = "1.26.25.6"
 description = "Typing stubs for urllib3"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-urllib3-1.26.25.5.tar.gz", hash = "sha256:5630e578246d170d91ebe3901788cd28d53c4e044dc2e2488e3b0d55fb6895d8"},
-    {file = "types_urllib3-1.26.25.5-py3-none-any.whl", hash = "sha256:e8f25c8bb85cde658c72ee931e56e7abd28803c26032441eea9ff4a4df2b0c31"},
+    {file = "types-urllib3-1.26.25.6.tar.gz", hash = "sha256:35586727cbd7751acccf2c0f34a88baffc092f435ab62458f10776466590f2d5"},
+    {file = "types_urllib3-1.26.25.6-py3-none-any.whl", hash = "sha256:a6c23c41bd03e542eaee5423a018f833077b51c4bf9ceb5aa544e12b812d5604"},
 ]
 
 [[package]]
 name = "typing-extensions"
-version = "4.4.0"
+version = "4.5.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
-    {file = "typing_extensions-4.4.0.tar.gz", hash = "sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa"},
+    {file = "typing_extensions-4.5.0-py3-none-any.whl", hash = "sha256:fb33085c39dd998ac16d1431ebc293a8b3eedd00fd4a32de0ff79002c19511b4"},
+    {file = "typing_extensions-4.5.0.tar.gz", hash = "sha256:5cb5f4a79139d699607b3ef622a1dedafa84e115ab0024e0d9c044a9479ca7cb"},
 ]
 
 [[package]]
@@ -2939,14 +2939,14 @@ files = [
 
 [[package]]
 name = "werkzeug"
-version = "2.2.2"
+version = "2.2.3"
 description = "The comprehensive WSGI web application library."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "Werkzeug-2.2.2-py3-none-any.whl", hash = "sha256:f979ab81f58d7318e064e99c4506445d60135ac5cd2e177a2de0089bfd4c9bd5"},
-    {file = "Werkzeug-2.2.2.tar.gz", hash = "sha256:7ea2d48322cc7c0f8b3a215ed73eabd7b5d75d0b50e31ab006286ccff9e00b8f"},
+    {file = "Werkzeug-2.2.3-py3-none-any.whl", hash = "sha256:56433961bc1f12533306c624f3be5e744389ac61d722175d543e1751285da612"},
+    {file = "Werkzeug-2.2.3.tar.gz", hash = "sha256:2e1ccc9417d4da358b9de6f174e3ac094391ea1d4fbef2d667865d819dfd0afe"},
 ]
 
 [package.dependencies]
@@ -3154,4 +3154,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "ca355203c844da25e61b9a5e211482af3c58b025403b9a3983bbadc56ebed75b"
+content-hash = "285b2397c5290dc131f2725f25697db4d3d963988f53eb49cac57c2aff1470d4"
