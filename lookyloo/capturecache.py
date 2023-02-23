@@ -482,6 +482,7 @@ class CapturesIndex(Mapping):
             elif node.name in host_ips:
                 node.add_feature('resolved_ips', host_ips[node.name])
 
+        cflare_hits = {}
         if self.cloudflare:
             cflare_hits = self.cloudflare.ips_lookup(_all_ips)
 

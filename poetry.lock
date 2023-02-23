@@ -2902,14 +2902,14 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.17.4"
+version = "0.17.5"
 description = "The official Python client library for VirusTotal"
 category = "main"
 optional = false
 python-versions = ">=3.6.0"
 files = [
-    {file = "vt-py-0.17.4.tar.gz", hash = "sha256:26e82857068c85b65925f14bdcdb03b423dda98ca30c9cc208842135e12d1211"},
-    {file = "vt_py-0.17.4-py3-none-any.whl", hash = "sha256:8aca503a86ec89d249ef3e01a0801604299af38d69dcef5670e6ebc2377a00e7"},
+    {file = "vt-py-0.17.5.tar.gz", hash = "sha256:b21fd1fc70be0d21f0f7e5ba45e3fe3a2201132d6d073bb8265c88ad1dcb695a"},
+    {file = "vt_py-0.17.5-py3-none-any.whl", hash = "sha256:aaa7bc825e01ee75ee5146b7e8c0f259adaf67308120770cd539834c9406063e"},
 ]
 
 [package.dependencies]
@@ -3159,4 +3159,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "40b1e8ab90ca4b086e038cde7d1ab44566079916edeee252c5c765f2c88db6b7"
+content-hash = "cb5328d141e3bafc70de74d7a715b842271da5c19c0fb4e9996907f3e5751959"
