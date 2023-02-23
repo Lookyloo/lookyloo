@@ -633,8 +633,12 @@ def monitor(tree_uuid: str):
     collection: str = request.form['collection'] if request.form.get('collection') else ''
     frequency: str = request.form['frequency'] if request.form.get('frequency') else 'daily'
     cache = lookyloo.capture_cache(tree_uuid)
-    monitoring_uuid = lookyloo.monitoring.monitor({'url': cache.url}, frequency=frequency, collection=collection)
-    flash(f"Sent to monitoring: {monitoring_uuid}", 'success')
+    if cache:
+        monitoring_uuid = lookyloo.monitoring.monitor({'url': cache.url, 'user_agent': cache.user_agent},
+                                                      frequency=frequency, collection=collection)
+        flash(f"Sent to monitoring: {monitoring_uuid}", 'success')
+    else:
+        flash(f"Unable to send to monitoring, uuid {tree_uuid} not found in cache.", 'error')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 

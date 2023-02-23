@@ -462,9 +462,12 @@ class CompareCaptures(Resource):
             result = comparator.compare_captures(left_uuid, right_uuid)
         except MissingUUID as e:
             # UUID non-existent, or capture still ongoing.
-            status_left = lookyloo.get_capture_status(left_uuid)
-            status_right = lookyloo.get_capture_status(right_uuid)
-            return {'error': e, 'details': {left_uuid: status_left, right_uuid: status_right}}
+            if left_uuid and right_uuid:
+                status_left = lookyloo.get_capture_status(left_uuid)
+                status_right = lookyloo.get_capture_status(right_uuid)
+                return {'error': e, 'details': {left_uuid: status_left, right_uuid: status_right}}
+            else:
+                return {'error': e, 'details': 'Invalid request (left/right UUIDs missing.)'}
         return result
 
 
