@@ -621,6 +621,23 @@ def cache_tree(tree_uuid: str):
     return redirect(url_for('index'))
 
 
+@app.route('/tree/<string:tree_uuid>/monitor', methods=['POST', 'GET'])
+def monitor(tree_uuid: str):
+    if not lookyloo.monitoring_enabled:
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
+    if request.form.get('name') or not request.form.get('confirm'):
+        # got a bot.
+        logging.info(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
+        return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
+
+    collection: str = request.form['collection'] if request.form.get('collection') else ''
+    frequency: str = request.form['frequency'] if request.form.get('frequency') else 'daily'
+    cache = lookyloo.capture_cache(tree_uuid)
+    monitoring_uuid = lookyloo.monitoring.monitor({'url': cache.url}, frequency=frequency, collection=collection)
+    flash(f"Sent to monitoring: {monitoring_uuid}", 'success')
+    return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+
 @app.route('/tree/<string:tree_uuid>/send_mail', methods=['POST', 'GET'])
 def send_mail(tree_uuid: str):
     if not enable_mail_notification:
@@ -688,6 +705,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                screenshot_thumbnail=b64_thumbnail, page_title=cache.title,
                                screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
+                               enable_monitoring=lookyloo.monitoring_enabled,
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,

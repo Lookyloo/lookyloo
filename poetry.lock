@@ -2186,6 +2186,28 @@ requests = ">=2.28.2,<3.0.0"
 docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
+name = "pylookyloomonitoring"
+version = "0.1.0"
+description = "Python API to connect to lookyloo monitoring"
+category = "main"
+optional = false
+python-versions = "^3.8"
+files = []
+develop = false
+
+[package.dependencies]
+requests = "^2.28.2"
+
+[package.extras]
+docs = ["Sphinx (>=6.1.3,<7.0.0)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/Lookyloo/PyLookylooMonitoring.git"
+reference = "HEAD"
+resolved_reference = "99edb224dce7126c0ed8aabb4628e04d93e1580a"
+
+[[package]]
 name = "pymisp"
 version = "2.4.168"
 description = "Python API for MISP."
@@ -3159,4 +3181,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "cb5328d141e3bafc70de74d7a715b842271da5c19c0fb4e9996907f3e5751959"
+content-hash = "37b91a1a0b9b1409a2206b80d029d5c5684850c56f839bb24b09d14b0f639c6f"

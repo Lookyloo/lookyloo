@@ -34,6 +34,7 @@ from pylacus import (PyLacus,
 #                     CaptureSettings as CaptureSettingsPy)
 from pymisp import MISPAttribute, MISPEvent, MISPObject
 from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable
+from pylookyloomonitoring import PyLookylooMonitoring
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
@@ -44,7 +45,8 @@ from .exceptions import (MissingCaptureDirectory,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile)
 from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
-                      uniq_domains, ParsedUserAgent, load_cookies, UserAgents)
+                      uniq_domains, ParsedUserAgent, load_cookies, UserAgents,
+                      get_useragent_for_requests)
 from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -111,6 +113,14 @@ class Lookyloo():
         self.urlhaus = URLhaus(get_config('modules', 'URLhaus'))
         if not self.urlhaus.available:
             self.logger.warning('Unable to setup the URLhaus module')
+
+        self.monitoring_enabled = False
+        if monitoring_config := get_config('generic', 'monitoring'):
+            print(monitoring_config)
+            if monitoring_config['enable']:
+                self.monitoring = PyLookylooMonitoring(monitoring_config['url'], get_useragent_for_requests())
+                if self.monitoring.is_up:
+                    self.monitoring_enabled = True
 
         self.logger.info('Initializing context...')
         self.context = Context()

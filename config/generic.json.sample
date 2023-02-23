@@ -26,6 +26,10 @@
     "enable": false,
     "url": ""
   },
+  "monitoring": {
+    "enable": false,
+    "url": "https://127.0.0.1:5200"
+  },
   "tor_proxy": {
     "server": "socks5://127.0.0.1:9050"
   },
@@ -74,6 +78,7 @@
     "auto_trigger_modules": "Automatically trigger the modules when the tree is loaded and when the capture is cached",
     "enable_mail_notification": "Allow users to notify a pre-configured email address about a specific capture",
     "remote_lacus": "By default, lookyloo will do the capture locally. Enabling this feature means you have a dedicated Lacus instance somewhere",
+    "monitoring": "Enable connection to a remote monitoring instance",
     "tor_proxy": "URL to connect to a SOCKS 5 proxy for tor",
     "email": "Configuration for sending email notifications.",
     "priority": "Define the priority of a new capture. A capture from the web interface has priority over a capture from the API, same for authenticated user vs. anonymous.",

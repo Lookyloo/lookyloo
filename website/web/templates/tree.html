@@ -191,6 +191,12 @@
         <li class="list-group-item">
           <a href="{{ url_for('index') }}" role="button">Homepage</a>
         </li>
+        {% if enable_monitoring %}
+        <hr/>
+        <li class="list-group-item">
+          <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor</br>capture</a>
+        </li>
+        {% endif %}
         {% if enable_mail_notification %}
         <hr/>
         <li class="list-group-item">
@@ -681,6 +687,50 @@
 </div>
 {% endif %}
 
+{% if enable_monitoring %}
+<div class="modal fade" id="monitoringModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <form role="form" action="{{ tree_uuid }}/monitor" method=post enctype=multipart/form-data>
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="monitorModalLabel">Monitor capture</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>The capture will be submitted to the monitoring interface.</p>
+            <div class="mb-3">
+              <label for=frequency" class="form-label">Frequency</label>
+              <select name="frequency" id="frequency" class="form-select" aria-label="Select a frequency for the monitoring">
+                <option value="hourly" selected>Hourly</option>
+                <option value="daily">Daily</option>
+              </select>
+
+              <!-- boat fields -->
+              <label class="boatymcboat form-label" for="name">Your Name</label>
+              <input class="boatymcboat" autocomplete="off" type="text" id="name" name="name"
+                     placeholder="Your fav boat name here">
+            </div>
+            <div class="mb-3">
+              <label for="collection" class="form-label">Collection</label>
+              <input type="text" class="form-control" name="collection" id="collection" placeholder="Name of the collection">
+            </div>
+            <div class="mb-3 form-check">
+                <input class="form-check-input" type="checkbox" name="confirm" onchange="document.getElementById('btn-notification').disabled = !this.checked;"></input>
+                <label for="force_push" class="form-check-label">{{ confirm_message }}</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+              <button type="submit" class="btn btn-success" id="btn-notification" disabled=true>Send to monitoring</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div class="modal fade" id="urlsInPageModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
 {% if enable_mail_notification %}
 <div class="modal fade" id="emailModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">

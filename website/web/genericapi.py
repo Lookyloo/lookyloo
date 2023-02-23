@@ -14,6 +14,7 @@ from lacuscore import CaptureStatus as CaptureStatusCore
 from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo.lookyloo import Lookyloo
 from lookyloo.comparator import Comparator
+from lookyloo.exceptions import MissingUUID
 
 from .helpers import build_users_table, load_user_from_request, src_request_ip
 
@@ -455,7 +456,15 @@ class CompareCaptures(Resource):
     @api.doc(body=compare_captures_fields)
     def post(self):
         parameters: Dict = request.get_json(force=True)
-        result = comparator.compare_captures(parameters.get('capture_left'), parameters.get('capture_right'))
+        left_uuid = parameters.get('capture_left')
+        right_uuid = parameters.get('capture_right')
+        try:
+            result = comparator.compare_captures(left_uuid, right_uuid)
+        except MissingUUID as e:
+            # UUID non-existent, or capture still ongoing.
+            status_left = lookyloo.get_capture_status(left_uuid)
+            status_right = lookyloo.get_capture_status(right_uuid)
+            return {'error': e, 'details': {left_uuid: status_left, right_uuid: status_right}}
         return result
 
 
