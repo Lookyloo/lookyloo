@@ -116,7 +116,6 @@ class Lookyloo():
 
         self.monitoring_enabled = False
         if monitoring_config := get_config('generic', 'monitoring'):
-            print(monitoring_config)
             if monitoring_config['enable']:
                 self.monitoring = PyLookylooMonitoring(monitoring_config['url'], get_useragent_for_requests())
                 if self.monitoring.is_up:
