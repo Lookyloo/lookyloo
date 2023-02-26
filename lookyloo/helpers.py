@@ -2,6 +2,7 @@
 import hashlib
 import json
 import logging
+import os
 
 from datetime import datetime, timedelta
 from functools import lru_cache
@@ -215,6 +216,46 @@ def get_cache_directory(root: Path, identifier: str, namespace: Optional[Union[s
     if namespace:
         root = root / namespace
     return root / digest[0] / digest[1] / digest[2] / digest
+
+
+def is_locked(locked_dir_path: Path, /) -> bool:
+    """Check if a capture directory is locked, if the lock is recent enough,
+    and if the locking process is still running.
+
+    :param locked_dir_path: Path of the directory.
+    """
+    lock_file = locked_dir_path / 'lock'
+    if not lock_file.exists():
+        # No lock file
+        return False
+
+    try:
+        with lock_file.open('r') as f:
+            content = f.read()
+            if ';' in content:
+                ts, pid = content.split(';')
+                try:
+                    os.kill(int(pid), 0)
+                except OSError:
+                    logger.info(f'Lock by dead script {lock_file}, removing it.')
+                    lock_file.unlink(missing_ok=True)
+                    return False
+            else:
+                # Old format
+                ts = content
+
+        lock_ts = datetime.fromisoformat(ts)
+        if lock_ts < datetime.now() - timedelta(minutes=30):
+            # Clear old locks. They shouldn't be there, but it's gonna happen.
+            logger.info(f'Old lock ({lock_ts.isoformat()}) {lock_file}, removing it.')
+            lock_file.unlink(missing_ok=True)
+            return False
+    except Exception as e:
+        logger.critical(f'Lock found, but uanble to open it: {e}.')
+        return False
+
+    # The lockfile is here for a good reason.
+    return True
 
 
 class ParsedUserAgent(UserAgent):

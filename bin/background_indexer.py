@@ -3,12 +3,12 @@
 import logging
 import logging.config
 import os
-from datetime import datetime, timedelta
 import shutil
 
 from lookyloo.default import AbstractManager, get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.lookyloo import Lookyloo
+from lookyloo.helpers import is_locked
 
 
 logging.config.dictConfig(get_config('logging'))
@@ -35,17 +35,8 @@ class BackgroundIndexer(AbstractManager):
                     or not list(uuid_path.parent.rglob('*.har'))
                     or not list(uuid_path.parent.rglob('*.har.gz'))):
                 continue
-            lock_file = uuid_path.parent / 'lock'
-            if lock_file.exists():
-                try:
-                    with lock_file.open('r') as f:
-                        lock_ts = datetime.fromisoformat(f.read())
-                    if lock_ts < datetime.now() - timedelta(minutes=5):
-                        # Clear old locks. They shouldn't be there, but it's gonna happen.
-                        self.logger.info(f'Old lock found {lock_file}, removing it.')
-                        lock_file.unlink(missing_ok=True)
-                except Exception as e:
-                    self.logger.info(f'Error while reading lock {lock_file}: {e}')
+
+            if is_locked(uuid_path.parent):
                 continue
 
             with uuid_path.open() as f:

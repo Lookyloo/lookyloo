@@ -22,7 +22,7 @@ from pyipasnhistory import IPASNHistory
 from redis import Redis
 
 from .context import Context
-from .helpers import get_captures_dir
+from .helpers import get_captures_dir, is_locked
 from .indexing import Indexing
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
@@ -237,10 +237,10 @@ class CapturesIndex(Mapping):
         if try_make_file(lock_file):
             # Lock created, we can process
             with lock_file.open('w') as f:
-                f.write(datetime.now().isoformat())
+                f.write(f"{datetime.now().isoformat()};{os.getpid()}")
         else:
             # The pickle is being created somewhere else, wait until it's done.
-            while lock_file.exists():
+            while is_locked(capture_dir):
                 time.sleep(5)
             return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
 
