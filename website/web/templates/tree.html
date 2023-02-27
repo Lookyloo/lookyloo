@@ -131,6 +131,16 @@
     $.get("{{ url_for('trigger_modules', tree_uuid=tree_uuid, auto_trigger=True) }}")
   </script>
   {% endif%}
+  {% if enable_monitoring %}
+  <script>
+    const today = new Date()
+    let tomorrow =  new Date()
+    tomorrow.setDate(today.getDate() + 1)
+    document.getElementById('expire_at').min = tomorrow.toISOString().split('T')[0];
+    document.getElementById('expire_at').value = tomorrow.toISOString().split('T')[0];
+  </script>
+  {% endif%}
+
 {% endblock %}
 
 
@@ -194,7 +204,7 @@
         {% if enable_monitoring %}
         <hr/>
         <li class="list-group-item">
-          <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor</br>capture</a>
+          <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor capture</a>
         </li>
         {% endif %}
         {% if enable_mail_notification %}
@@ -697,10 +707,18 @@
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
+            {% if monitoring_settings["force_expire"] %}
+            <div class="alert alert-warning" role="alert">
+              The monitoring instance is configured to automatically expire what you want to
+              monitor after <b>{{monitoring_settings["max_captures"]}} captures</b>.
+              </br>
+              Keep that in mind when you select the frequency.
+            </div>
+            {% endif %}
             <p>The capture will be submitted to the monitoring interface.</p>
             <div class="mb-3">
-              <label for=frequency" class="form-label">Frequency</label>
-              <select name="frequency" id="frequency" class="form-select" aria-label="Select a frequency for the monitoring">
+              <label for=frequency" class="form-label">Frequency (must be higher than {{monitoring_settings["min_frequency"]}} seconds)</label>
+              <select name="frequency" id="frequency" class="form-select" aria-label="Select a frequency for the monitoring" required>
                 <option value="hourly" selected>Hourly</option>
                 <option value="daily">Daily</option>
               </select>
@@ -709,6 +727,17 @@
               <label class="boatymcboat form-label" for="name">Your Name</label>
               <input class="boatymcboat" autocomplete="off" type="text" id="name" name="name"
                      placeholder="Your fav boat name here">
+              <!-- end -->
+            </div>
+            <div class="mb-3">
+              <label for="expire_at" class="form-label">Expire</label>
+              <input type="date" class="form-control" name="expire_at" id="expire_at"
+                     value="" />
+              {% if monitoring_settings["force_expire"] %}
+              <div class="alert alert-warning" role="alert">
+                The expire date will be ignored if the max amount of captures ({{monitoring_settings["max_captures"]}}) is reached first.
+              </div>
+              {% endif %}
             </div>
             <div class="mb-3">
               <label for="collection" class="form-label">Collection</label>

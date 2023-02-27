@@ -632,11 +632,16 @@ def monitor(tree_uuid: str):
 
     collection: str = request.form['collection'] if request.form.get('collection') else ''
     frequency: str = request.form['frequency'] if request.form.get('frequency') else 'daily'
+    expire_at: float = datetime.fromisoformat(request.form['expire_at']).timestamp() if request.form.get('expire_at') else ''
     cache = lookyloo.capture_cache(tree_uuid)
     if cache:
-        monitoring_uuid = lookyloo.monitoring.monitor({'url': cache.url, 'user_agent': cache.user_agent},
-                                                      frequency=frequency, collection=collection)
-        flash(f"Sent to monitoring: {monitoring_uuid}", 'success')
+        monitoring_uuid = lookyloo.monitoring.monitor({'url': cache.url, 'user_agent': cache.user_agent, 'listing': 0},
+                                                      frequency=frequency, collection=collection, expire_at=expire_at)
+        flash(f"Sent to monitoring ({monitoring_uuid}).", 'success')
+        if collection:
+            flash(f"See monitored captures in the same collection here: {lookyloo.monitoring.root_url}/monitored/{collection}.", 'success')
+        else:
+            flash(f"Comparison available as soon as we have more than one capture: {lookyloo.monitoring.root_url}/changes_tracking/{collection}.", 'success')
     else:
         flash(f"Unable to send to monitoring, uuid {tree_uuid} not found in cache.", 'error')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
@@ -703,6 +708,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                     pass
         if cache.error:
             flash(cache.error, 'warning')
+
         return render_template('tree.html', tree_json=ct.to_json(),
                                info=cache,
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
@@ -710,6 +716,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_monitoring=lookyloo.monitoring_enabled,
+                               monitoring_settings=lookyloo.monitoring_settings if lookyloo.monitoring_enabled else {},
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,

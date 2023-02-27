@@ -120,6 +120,7 @@ class Lookyloo():
                 self.monitoring = PyLookylooMonitoring(monitoring_config['url'], get_useragent_for_requests())
                 if self.monitoring.is_up:
                     self.monitoring_enabled = True
+                    self.monitoring_settings = self.monitoring.instance_settings()
 
         self.logger.info('Initializing context...')
         self.context = Context()
