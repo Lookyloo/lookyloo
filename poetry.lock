@@ -958,18 +958,18 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.17.2"
+version = "1.18.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "har2tree-1.17.2-py3-none-any.whl", hash = "sha256:b73cef5fe97ec677c595ee7887cfe076f3a04c076d78bc0bf41025f0f267397c"},
-    {file = "har2tree-1.17.2.tar.gz", hash = "sha256:3b6fe85965f6e39a738c7929da9ce9c2778d76422b71fb5e0594aff4c438ca34"},
+    {file = "har2tree-1.18.0-py3-none-any.whl", hash = "sha256:36beb72ce84181dd00fd17c1b6eaeeada0c46367f7e0e2210943b57b8066fa65"},
+    {file = "har2tree-1.18.0.tar.gz", hash = "sha256:7c429a340f911a0a3addb3e7cd024fcca34e19661f31fb74e63a39582100a7a4"},
 ]
 
 [package.dependencies]
-beautifulsoup4 = ">=4.11.1,<5.0.0"
+beautifulsoup4 = ">=4.11.2,<5.0.0"
 charset-normalizer = ">=2,<4"
 ete3 = ">=3.1.2,<4.0.0"
 filetype = ">=1.2.0,<2.0.0"
@@ -978,7 +978,7 @@ numpy = [
     {version = "1.23.3", markers = "python_version < \"3.10\""},
     {version = ">=1.23.4,<2.0.0", markers = "python_version >= \"3.10\""},
 ]
-publicsuffixlist = ">=0.9.2,<0.10.0"
+publicsuffixlist = ">=0.9.3,<0.10.0"
 six = ">=1.16.0,<2.0.0"
 w3lib = ">=2.1.1,<3.0.0"
 
@@ -1137,14 +1137,14 @@ testing = ["flake8 (<5)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-chec
 
 [[package]]
 name = "ipython"
-version = "8.10.0"
+version = "8.11.0"
 description = "IPython: Productive Interactive Computing"
 category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ipython-8.10.0-py3-none-any.whl", hash = "sha256:b38c31e8fc7eff642fc7c597061fff462537cf2314e3225a19c906b7b0d8a345"},
-    {file = "ipython-8.10.0.tar.gz", hash = "sha256:b13a1d6c1f5818bd388db53b7107d17454129a70de2b87481d555daede5eb49e"},
+    {file = "ipython-8.11.0-py3-none-any.whl", hash = "sha256:5b54478e459155a326bf5f42ee4f29df76258c0279c36f21d71ddb560f88b156"},
+    {file = "ipython-8.11.0.tar.gz", hash = "sha256:735cede4099dbc903ee540307b9171fbfef4aa75cfcacc5a273b2cda2f02be04"},
 ]
 
 [package.dependencies]
@@ -1156,7 +1156,7 @@ jedi = ">=0.16"
 matplotlib-inline = "*"
 pexpect = {version = ">4.3", markers = "sys_platform != \"win32\""}
 pickleshare = "*"
-prompt-toolkit = ">=3.0.30,<3.1.0"
+prompt-toolkit = ">=3.0.30,<3.0.37 || >3.0.37,<3.1.0"
 pygments = ">=2.4.0"
 stack-data = "*"
 traitlets = ">=5"
@@ -1248,19 +1248,19 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.2.7"
+version = "1.3.0"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.2.7-py3-none-any.whl", hash = "sha256:e4dc9ab6f28b801f82048cd2fc3964c00d5dfe302c67063abb1aeb35a8123fd1"},
-    {file = "lacuscore-1.2.7.tar.gz", hash = "sha256:464e363f72013c9cc94df79338470085b0d4b5d8b28be035f88a71bcbb18900b"},
+    {file = "lacuscore-1.3.0-py3-none-any.whl", hash = "sha256:a31488b0aceb3b0477757ddf1932ee23cea912a3fa54c37d35bb2eaf575599c5"},
+    {file = "lacuscore-1.3.0.tar.gz", hash = "sha256:f42be2926c4118362617b7de824c8c4597b1453a238b8670a3e7b1513fd5c408"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.17.6,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.18.0,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=4.5.1,<5.0.0", extras = ["hiredis"]}
 requests = ">=2.28.2,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
@@ -1905,19 +1905,19 @@ files = [
 
 [[package]]
 name = "playwright"
-version = "1.31.0"
+version = "1.31.1"
 description = "A high-level API to automate web browsers"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "playwright-1.31.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:4073eab6856c0897219a8db9244e7911db23f087a0fd6dac0bad8ec67688476f"},
-    {file = "playwright-1.31.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:1a5e8142e3ab32a3011f9169b0981ce5784b8fa7a5404378978831bca89bd1b9"},
-    {file = "playwright-1.31.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:4ba1ec9b751c3ef24b0d98c63c93e3012a6abf5da2c1e027c5177f26c69549aa"},
-    {file = "playwright-1.31.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:2d443d0757b1d2f5c222a9bbfd549b9dc89ca0d761a3c159162482763bb2bebd"},
-    {file = "playwright-1.31.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:529421030d43f5f5802556186e00af97d50f7bfce6bc53313f54ed98627e63f6"},
-    {file = "playwright-1.31.0-py3-none-win32.whl", hash = "sha256:847b89b19d5bb4d12dfc4603dc3e293ca479c8448251b08d49d053b997801003"},
-    {file = "playwright-1.31.0-py3-none-win_amd64.whl", hash = "sha256:93303193eccf85dc26adadff2593205d9906b11a908718e23c1695b2114e30ff"},
+    {file = "playwright-1.31.1-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:225ff39ff29219caab242a562e6a5efa486d4659ac10d16421ad5904c7f23b25"},
+    {file = "playwright-1.31.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:c51029b8837f3533277718ff003a6fc1b512e7879ef4880306c69048345d04ac"},
+    {file = "playwright-1.31.1-py3-none-macosx_11_0_universal2.whl", hash = "sha256:d74ee6b7de96ddaf3af91a90d6160beda68b281b1027b8afec46945062c25aec"},
+    {file = "playwright-1.31.1-py3-none-manylinux1_x86_64.whl", hash = "sha256:12c73e6a10ba8a1ddac4849a6f06c753e38de60bec6db5f50f7580ade5772d97"},
+    {file = "playwright-1.31.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f032c87b918a0b348b15065d5a67693cd70f39861ea65b8c9f0b63c991bf1a75"},
+    {file = "playwright-1.31.1-py3-none-win32.whl", hash = "sha256:5a3eefb7bbe5fb90c89b31ac52a6d78dde94cf82d5fbe0a999789a37d414a92f"},
+    {file = "playwright-1.31.1-py3-none-win_amd64.whl", hash = "sha256:5cb681c1bfc05e49dfe5299b9bf2f51300e60ed077d47c927c8f056938972565"},
 ]
 
 [package.dependencies]
@@ -1927,21 +1927,21 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.17.6"
+version = "1.18.0"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.17.6-py3-none-any.whl", hash = "sha256:465381f537db3e029dee73f7443f6f6018e95c8717312f8d5e04ed986bf83fe5"},
-    {file = "playwrightcapture-1.17.6.tar.gz", hash = "sha256:3b11f3666ed455e167bc3c674499bf6b9cad1693bb7afff978eb47ede68d2c72"},
+    {file = "playwrightcapture-1.18.0-py3-none-any.whl", hash = "sha256:2f382eddc4d2228114685af24dae45f174681acbe2dff641d3a93ade5cce6f63"},
+    {file = "playwrightcapture-1.18.0.tar.gz", hash = "sha256:eba2b3e98de4394bc5c11ad9aa11998653574b29ffa1d839d656df47fe6f4e17"},
 ]
 
 [package.dependencies]
 beautifulsoup4 = ">=4.11.2,<5.0.0"
 dateparser = ">=1.1.7,<2.0.0"
 lxml = ">=4.9.2,<5.0.0"
-playwright = ">=1.31.0,<2.0.0"
+playwright = ">=1.31.1,<2.0.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
 requests = {version = ">=2.28.2,<3.0.0", optional = true, markers = "extra == \"recaptcha\""}
 SpeechRecognition = {version = ">=3.9.0,<4.0.0", optional = true, markers = "extra == \"recaptcha\""}
@@ -1952,14 +1952,14 @@ recaptcha = ["SpeechRecognition (>=3.9.0,<4.0.0)", "pydub (>=0.25.1,<0.26.0)", "
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.37"
+version = "3.0.38"
 description = "Library for building powerful interactive command lines in Python"
 category = "dev"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "prompt_toolkit-3.0.37-py3-none-any.whl", hash = "sha256:6a2948ec427dfcc7c983027b1044b355db6aaa8be374f54ad2015471f7d81c5b"},
-    {file = "prompt_toolkit-3.0.37.tar.gz", hash = "sha256:d5d73d4b5eb1a92ba884a88962b157f49b71e06c4348b417dd622b25cdd3800b"},
+    {file = "prompt_toolkit-3.0.38-py3-none-any.whl", hash = "sha256:45ea77a2f7c60418850331366c81cf6b5b9cf4c7fd34616f733c5427e6abbb1f"},
+    {file = "prompt_toolkit-3.0.38.tar.gz", hash = "sha256:23ac5d50538a9a38c8bde05fecb47d0b403ecd0662857a86f886f798563d5b9b"},
 ]
 
 [package.dependencies]
@@ -2151,21 +2151,21 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.2.0"
+version = "1.3.0"
 description = "Python CLI and module for lacus"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylacus-1.2.0-py3-none-any.whl", hash = "sha256:174e3cae131831812a54c613e16595b557f53da1d5c1c89002ed5ce08370121d"},
-    {file = "pylacus-1.2.0.tar.gz", hash = "sha256:32611257d0847059db8019ffb4b655528cff6807ced17feddf99d5b1fd7d186f"},
+    {file = "pylacus-1.3.0-py3-none-any.whl", hash = "sha256:8e66eae59c176a5ae352e541f23305e4f3daed11830ebd6d0899bfef60d0178b"},
+    {file = "pylacus-1.3.0.tar.gz", hash = "sha256:083bdfc63a5945f1ab0826db00911c1886f5b6a0c609a332bed48d14c329eaac"},
 ]
 
 [package.dependencies]
-requests = ">=2.28.1,<3.0.0"
+requests = ">=2.28.2,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=6.0.0,<7.0.0)"]
+docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
 name = "pylookyloo"
@@ -2205,21 +2205,21 @@ docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.168"
+version = "2.4.168.1"
 description = "Python API for MISP."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pymisp-2.4.168-py3-none-any.whl", hash = "sha256:b89d68f5fe041089fb22dae4321c8d0ee3ca44dff01f016a7056848fed09daec"},
-    {file = "pymisp-2.4.168.tar.gz", hash = "sha256:4e88263348e7c558d255b47a636dbf6b85fdc73ad45b0ab22df064875cc1b020"},
+    {file = "pymisp-2.4.168.1-py3-none-any.whl", hash = "sha256:ba69aa40fd49b9a2674c75b5db03e46dca88268d8e2efa1b88f6b71ff8223d57"},
+    {file = "pymisp-2.4.168.1.tar.gz", hash = "sha256:70b77dddd55212eb40afff6f1890f20c746ca3ec45d955dc7a832ea7ceff3a2f"},
 ]
 
 [package.dependencies]
 deprecated = ">=1.2.13,<2.0.0"
 jsonschema = ">=4.17.3,<5.0.0"
 lief = {version = ">=0.12.3,<0.13.0", optional = true, markers = "extra == \"fileobjects\""}
-publicsuffixlist = ">=0.9.2,<0.10.0"
+publicsuffixlist = ">=0.9.3,<0.10.0"
 pydeep2 = {version = ">=0.5.1,<0.6.0", optional = true, markers = "extra == \"fileobjects\""}
 pyfaup = {version = ">=1.2,<2.0", optional = true, markers = "extra == \"url\""}
 python-dateutil = ">=2.8.2,<3.0.0"
@@ -2228,10 +2228,10 @@ requests = ">=2.28.2,<3.0.0"
 
 [package.extras]
 brotli = ["urllib3[brotli] (>=1.26.14,<2.0.0)"]
-docs = ["recommonmark (>=0.7.1,<0.8.0)", "sphinx-autodoc-typehints (>=1.21.7,<2.0.0)"]
-email = ["RTFDE (>=0.0.2,<0.0.3)", "extract_msg (>=0.39.0,<0.40.0)", "oletools (>=0.60.1,<0.61.0)"]
+docs = ["recommonmark (>=0.7.1,<0.8.0)", "sphinx-autodoc-typehints (>=1.22,<2.0)"]
+email = ["RTFDE (>=0.0.2,<0.0.3)", "extract_msg (>=0.39.2,<0.40.0)", "oletools (>=0.60.1,<0.61.0)"]
 fileobjects = ["lief (>=0.12.3,<0.13.0)", "pydeep2 (>=0.5.1,<0.6.0)", "python-magic (>=0.4.27,<0.5.0)"]
-openioc = ["beautifulsoup4 (>=4.11.1,<5.0.0)"]
+openioc = ["beautifulsoup4 (>=4.11.2,<5.0.0)"]
 pdfexport = ["reportlab (>=3.6.12,<4.0.0)"]
 url = ["pyfaup (>=1.2,<2.0)"]
 virustotal = ["validators (>=0.20.0,<0.21.0)"]
@@ -3188,4 +3188,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "474a54f3a20dfd68e0ad42046a100ec0676e0429d4160c8db2483a2eb084fa9b"
+content-hash = "dfaa00c814e1f5349de919d5eebcb9e1d0a823f56f9017f5b9a5f844ac9e7e15"

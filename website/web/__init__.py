@@ -632,10 +632,10 @@ def monitor(tree_uuid: str):
 
     collection: str = request.form['collection'] if request.form.get('collection') else ''
     frequency: str = request.form['frequency'] if request.form.get('frequency') else 'daily'
-    expire_at: float = datetime.fromisoformat(request.form['expire_at']).timestamp() if request.form.get('expire_at') else ''
+    expire_at: Optional[float] = datetime.fromisoformat(request.form['expire_at']).timestamp() if request.form.get('expire_at') else None
     cache = lookyloo.capture_cache(tree_uuid)
     if cache:
-        monitoring_uuid = lookyloo.monitoring.monitor({'url': cache.url, 'user_agent': cache.user_agent, 'listing': 0},
+        monitoring_uuid = lookyloo.monitoring.monitor({'url': cache.url, 'user_agent': cache.user_agent, 'listing': False},
                                                       frequency=frequency, collection=collection, expire_at=expire_at)
         flash(f"Sent to monitoring ({monitoring_uuid}).", 'success')
         if collection:
@@ -716,7 +716,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_monitoring=lookyloo.monitoring_enabled,
-                               monitoring_settings=lookyloo.monitoring_settings if lookyloo.monitoring_enabled else {},
+                               monitoring_settings=lookyloo.monitoring_settings if lookyloo.monitoring_enabled else None,
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,
