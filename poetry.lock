@@ -2169,14 +2169,14 @@ docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.17.2"
+version = "1.18.0"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylookyloo-1.17.2-py3-none-any.whl", hash = "sha256:c5b53c5b93c35a84151613f830223050493f3da8b0065c026ea07a0109bccab9"},
-    {file = "pylookyloo-1.17.2.tar.gz", hash = "sha256:22bfb4788700e7936677269e3917d6d6f20fc4feef7960f7cebfca4f3f0ad268"},
+    {file = "pylookyloo-1.18.0-py3-none-any.whl", hash = "sha256:e9482ed532c1b1ddeddf08d756d02d67f1a6a372c591f2641e445265e90c72f5"},
+    {file = "pylookyloo-1.18.0.tar.gz", hash = "sha256:e3093ec1484d6cddcaf1ecacac5f2a01ba16197ab938bcf9a2f18e67fd6898be"},
 ]
 
 [package.dependencies]
@@ -2187,14 +2187,14 @@ docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
 name = "pylookyloomonitoring"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python API to connect to lookyloo monitoring"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylookyloomonitoring-0.1.0-py3-none-any.whl", hash = "sha256:2050f16d0ae169f6cf1ab035ccb3f5429e2ed66a9ec18aa89fb4f7b66fc6abce"},
-    {file = "pylookyloomonitoring-0.1.0.tar.gz", hash = "sha256:24de1a57427374f16df43c9799eec66927ab07247444df7dd3412ec3e7e2f5bd"},
+    {file = "pylookyloomonitoring-0.2.0-py3-none-any.whl", hash = "sha256:c698398a4a175a9c2708606114da823a643d0cec92141c6e307e4b465c6cadca"},
+    {file = "pylookyloomonitoring-0.2.0.tar.gz", hash = "sha256:1823c08422dc3fc26a10cc23b3e7caef84e4b82674c0b23f733bd53c68e08502"},
 ]
 
 [package.dependencies]
@@ -3188,4 +3188,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "dfaa00c814e1f5349de919d5eebcb9e1d0a823f56f9017f5b9a5f844ac9e7e15"
+content-hash = "ff5a45dc97fe202ce089e4c10e60fd61368453e0e856aa58c0fcf449756ea922"
