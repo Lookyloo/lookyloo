@@ -72,7 +72,7 @@ publicsuffixlist = "^0.9.3"
 pyfaup = "^1.2"
 chardet = "^5.1.0"
 pysecuritytxt = "^1.0.1"
-pylookyloomonitoring = {git = "https://github.com/Lookyloo/PyLookylooMonitoring.git"}
+pylookyloomonitoring = "^0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.0.1"
