@@ -709,6 +709,13 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
         if cache.error:
             flash(cache.error, 'warning')
 
+        if lookyloo.monitoring_enabled:
+            try:
+                monitoring_collections = lookyloo.monitoring.collections()
+            except Exception as e:
+                monitoring_collections = []
+                flash(f'Unable to get existing connections from the monitoring : {e}', 'warning')
+
         return render_template('tree.html', tree_json=ct.to_json(),
                                info=cache,
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
@@ -717,6 +724,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_monitoring=lookyloo.monitoring_enabled,
                                monitoring_settings=lookyloo.monitoring_settings if lookyloo.monitoring_enabled else None,
+                               monitoring_collections=monitoring_collections if lookyloo.monitoring_enabled else [],
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,

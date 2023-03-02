@@ -740,8 +740,18 @@
               {% endif %}
             </div>
             <div class="mb-3">
-              <label for="collection" class="form-label">Collection</label>
+              {% if monitoring_collections %}
+              <label for="collection" class="form-label">Pick a collection.</label>
+              <input type="text" class="form-control" list="collections" id="collection" name="collection" placeholder="Type a collection name, or select an existing one (arrow down to see them)">
+              <datalist id="collections">
+                {% for name in monitoring_collections %}
+                <option value="{{name}}">{{name}}</option>
+                {% endfor %}
+              </datalist>
+              {%else%}
+              <label for=collection" class="form-label">Add to a collection.</label>
               <input type="text" class="form-control" name="collection" id="collection" placeholder="Name of the collection">
+              {% endif %}
             </div>
             <div class="mb-3 form-check">
                 <input class="form-check-input" type="checkbox" name="confirm" onchange="document.getElementById('btn-notification').disabled = !this.checked;"></input>
