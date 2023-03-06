@@ -2169,14 +2169,14 @@ docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.18.0"
+version = "1.18.1"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylookyloo-1.18.0-py3-none-any.whl", hash = "sha256:e9482ed532c1b1ddeddf08d756d02d67f1a6a372c591f2641e445265e90c72f5"},
-    {file = "pylookyloo-1.18.0.tar.gz", hash = "sha256:e3093ec1484d6cddcaf1ecacac5f2a01ba16197ab938bcf9a2f18e67fd6898be"},
+    {file = "pylookyloo-1.18.1-py3-none-any.whl", hash = "sha256:6d32c96536e84ddf034bfb30e849e88f43b76440e67269121fce868e80433aad"},
+    {file = "pylookyloo-1.18.1.tar.gz", hash = "sha256:fc75f3f8859a0eaec0607644e82f6da7436396d2695d5d01cdd27da4c08c8f00"},
 ]
 
 [package.dependencies]
@@ -3188,4 +3188,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "ff5a45dc97fe202ce089e4c10e60fd61368453e0e856aa58c0fcf449756ea922"
+content-hash = "de88f3073ce429dd89fcdd8c4ea41de81fba04e8a098433c0f3db19077dbc4c9"

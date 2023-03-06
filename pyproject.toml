@@ -47,7 +47,7 @@ defang = "^0.5.3"
 vt-py = "^0.17.5"
 pyeupi = "^1.1"
 pysanejs = "^2.0.1"
-pylookyloo = "^1.18.0"
+pylookyloo = "^1.18.1"
 dnspython = "^2.3.0"
 pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.4.168.1", extras = ["url", "fileobjects"]}
