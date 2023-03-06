@@ -32,6 +32,7 @@ services:
         - ./discarded:/lookyloo/discarded_captures
         - ./user_agents:/lookyloo/user_agents
         - ./config:/lookyloo/config
+        - ./logs:/lookyloo/logs
     ports:
         - "5100:5100"
     links:
