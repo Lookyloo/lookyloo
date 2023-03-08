@@ -272,7 +272,7 @@ class CapturesIndex(Mapping):
                 default_recursion_limit = sys.getrecursionlimit()
                 sys.setrecursionlimit(int(default_recursion_limit * 1.1))
                 try:
-                    pickle.dump(tree, _p)
+                    pickle.dump(tree, _p, protocol=5)
                 except RecursionError as e:
                     raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
                 sys.setrecursionlimit(default_recursion_limit)
