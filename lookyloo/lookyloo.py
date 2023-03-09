@@ -652,6 +652,15 @@ class Lookyloo():
         to_return['all_emails'] = list(to_return['all_emails'])
         return to_return
 
+    def contacts(self, capture_uuid: str, /) -> List[Dict[str, Any]]:
+        capture = self.get_crawled_tree(capture_uuid)
+        rendered_hostnode = self.get_hostnode_from_tree(capture_uuid, capture.root_hartree.rendered_node.hostnode_uuid)
+        result = []
+        for node in reversed(rendered_hostnode.get_ancestors()):
+            result.append(self.takedown_details(node))
+        result.append(self.takedown_details(rendered_hostnode))
+        return result
+
     def send_mail(self, capture_uuid: str, /, email: str='', comment: str='') -> None:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
@@ -692,6 +701,11 @@ class Lookyloo():
             sender=msg['From'].addresses[0].display_name,
         )
         msg.set_content(body)
+        try:
+            contact_for_takedown = self.contacts(capture_uuid)
+            msg.add_attachment(json.dumps(contact_for_takedown, indent=2), maintype='application', subtype='json', filename='contacts.json')
+        except Exception as e:
+            self.logger.warning(f'Unable to get the contacts: {e}')
         try:
             s = smtplib.SMTP(email_config['smtp_host'], email_config['smtp_port'])
             s.send_message(msg)

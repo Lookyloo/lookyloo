@@ -486,17 +486,8 @@ class Takedown(Resource):
         parameters: Dict = request.get_json(force=True)
         capture_uuid = parameters.get('capture_uuid')
         if not capture_uuid:
-            return {'error': f'Invalid UUID: {capture_uuid}'}
-
-        capture = lookyloo.get_crawled_tree(capture_uuid)
-        if not capture:
-            return {'error': f'Unknown capture {capture_uuid}'}
-        rendered_hostnode = lookyloo.get_hostnode_from_tree(capture_uuid, capture.root_hartree.rendered_node.hostnode_uuid)
-        result = []
-        for node in reversed(rendered_hostnode.get_ancestors()):
-            result.append(lookyloo.takedown_details(node))
-        result.append(lookyloo.takedown_details(rendered_hostnode))
-        return result
+            return {'error': f'Invalid request: {parameters}'}
+        return lookyloo.contacts(capture_uuid)
 
 
 # Admin stuff
