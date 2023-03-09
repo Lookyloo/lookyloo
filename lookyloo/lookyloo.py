@@ -703,7 +703,7 @@ class Lookyloo():
         msg.set_content(body)
         try:
             contact_for_takedown = self.contacts(capture_uuid)
-            msg.add_attachment(json.dumps(contact_for_takedown, indent=2), maintype='application', subtype='json', filename='contacts.json')
+            msg.add_attachment(json.dumps(contact_for_takedown, indent=2), filename='contacts.json')
         except Exception as e:
             self.logger.warning(f'Unable to get the contacts: {e}')
         try:
