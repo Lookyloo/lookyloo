@@ -22,6 +22,7 @@ from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
 from .default import get_homedir, safe_create_dir, get_config
+from .exceptions import LookylooException
 
 logger = logging.getLogger('Lookyloo - Helpers')
 
@@ -41,7 +42,7 @@ def get_resources_hashes(har2tree_container: Union[CrawledTree, HostNode, URLNod
     elif isinstance(har2tree_container, URLNode):
         urlnodes = [har2tree_container]
     else:
-        raise Exception(f'har2tree_container cannot be {type(har2tree_container)}')
+        raise LookylooException(f'har2tree_container cannot be {type(har2tree_container)}')
     all_ressources_hashes: Set[str] = set()
     for urlnode in urlnodes:
         if hasattr(urlnode, 'resources_hashes'):
@@ -136,7 +137,7 @@ class UserAgents:
         if parsed_ua.version:
             browser_key = f'{browser_key} {parsed_ua.version}'
         if not platform_key or not browser_key:
-            raise Exception(f'Unable to get valid default user agent from playwright: {parsed_ua}')
+            raise LookylooException(f'Unable to get valid default user agent from playwright: {parsed_ua}')
         return {'os': platform_key,
                 'browser': browser_key,
                 'useragent': parsed_ua.string}
