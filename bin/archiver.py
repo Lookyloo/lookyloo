@@ -101,7 +101,10 @@ class Archiver(AbstractManager):
         # { 2020: { 12: [(directory, uuid)] } }
         to_archive: Dict[int, Dict[int, List[Path]]] = defaultdict(lambda: defaultdict(list))
         for capture_uuid in get_captures_dir().rglob('uuid'):
-            timestamp = datetime.strptime(capture_uuid.parent.name, '%Y-%m-%dT%H:%M:%S.%f')
+            try:
+                timestamp = datetime.strptime(capture_uuid.parent.name, '%Y-%m-%dT%H:%M:%S.%f')
+            except ValueError:
+                timestamp = datetime.strptime(capture_uuid.parent.name, '%Y-%m-%dT%H:%M:%S')
             if timestamp.date() >= cut_time:
                 continue
             to_archive[timestamp.year][timestamp.month].append(capture_uuid.parent)
