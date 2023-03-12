@@ -625,7 +625,7 @@ class Lookyloo():
                 else:
                     to_return['all_emails'] |= {contact.lstrip('mailto:') for contact in parsed['contact'] if contact.startswith('mailto:')}
         except SecurityTXTNotAvailable as e:
-            self.logger.info(e)
+            self.logger.debug(f'Unable to get a security.txt file: {e}')
 
         for emails in to_return['ips'].values():
             to_return['all_emails'] |= set(emails)
