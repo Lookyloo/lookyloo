@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import contextlib
+import gzip
 import json
 import logging
 import os
 import pickle
+import pickletools
 import signal
 import sys
 import time
@@ -87,21 +89,33 @@ def remove_pickle_tree(capture_dir: Path) -> None:
 @lru_cache(maxsize=256)
 def load_pickle_tree(capture_dir: Path, last_mod_time: int) -> CrawledTree:
     pickle_file = capture_dir / 'tree.pickle'
-    if pickle_file.exists():
-        with pickle_file.open('rb') as _p:
-            try:
+    pickle_file_gz = capture_dir / 'tree.pickle.gz'
+    tree = None
+    try:
+        if pickle_file.exists():
+            with pickle_file.open('rb') as _p:
                 tree = pickle.load(_p)
-                if tree.root_hartree.har.path.exists():
-                    return tree
-                else:
-                    # The capture was moved.
-                    remove_pickle_tree(capture_dir)
-            except pickle.UnpicklingError:
+        elif pickle_file_gz.exists():
+            with gzip.open(pickle_file_gz, 'rb') as _pg:
+                tree = pickle.load(_pg)
+    except pickle.UnpicklingError as e:
+        print(e)
+        remove_pickle_tree(capture_dir)
+
+    if tree:
+        try:
+            if tree.root_hartree.har.path.exists():
+                return tree
+            else:
+                # The capture was moved.
                 remove_pickle_tree(capture_dir)
-            except EOFError:
-                remove_pickle_tree(capture_dir)
-            except Exception:
-                remove_pickle_tree(capture_dir)
+        except EOFError as e:
+            print(e)
+            remove_pickle_tree(capture_dir)
+        except Exception as e:
+            print(e)
+            remove_pickle_tree(capture_dir)
+
     if list(capture_dir.rglob('*.har')) or list(capture_dir.rglob('*.har.gz')):
         raise TreeNeedsRebuild('We have HAR files and need to rebuild the tree.')
     # The tree doesn't need to be rebuilt if there are no HAR files.
@@ -265,14 +279,15 @@ class CapturesIndex(Mapping):
         except RecursionError as e:
             raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
         else:
-            with (capture_dir / 'tree.pickle').open('wb') as _p:
+            with gzip.open(capture_dir / 'tree.pickle.gz', 'wb') as _p:
                 # Some pickles require a pretty high recursion limit, this kindof fixes it.
                 # If the capture is really broken (generally a refresh to self), the capture
                 # is discarded in the RecursionError above.
                 default_recursion_limit = sys.getrecursionlimit()
                 sys.setrecursionlimit(int(default_recursion_limit * 1.1))
                 try:
-                    pickle.dump(tree, _p, protocol=5)
+                    _p.write(pickletools.optimize(pickle.dumps(tree, protocol=5)))
+                    # pickle.dump(tree, _p, protocol=5)
                 except RecursionError as e:
                     raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
                 sys.setrecursionlimit(default_recursion_limit)
