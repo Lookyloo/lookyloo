@@ -2192,14 +2192,14 @@ docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.168.1"
+version = "2.4.169.1"
 description = "Python API for MISP."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pymisp-2.4.168.1-py3-none-any.whl", hash = "sha256:ba69aa40fd49b9a2674c75b5db03e46dca88268d8e2efa1b88f6b71ff8223d57"},
-    {file = "pymisp-2.4.168.1.tar.gz", hash = "sha256:70b77dddd55212eb40afff6f1890f20c746ca3ec45d955dc7a832ea7ceff3a2f"},
+    {file = "pymisp-2.4.169.1-py3-none-any.whl", hash = "sha256:7801addea702eed9e2b632f6e5f656f796f27488120535143879a7fa0fc0f0cc"},
+    {file = "pymisp-2.4.169.1.tar.gz", hash = "sha256:381678496454136be3753a3cffb5e232bcd4e6cbc9e29f131c18ff5761e9bedd"},
 ]
 
 [package.dependencies]
@@ -3175,4 +3175,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "4dbde052bdba5e3dd2c8069b462e96757f37481e8872a7920af744c3fe2978ae"
+content-hash = "37e3da30989103254088c0bd845526ba1795f56e16a425b534da330ac3b6db99"
