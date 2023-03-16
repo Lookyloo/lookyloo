@@ -561,8 +561,12 @@ def export(tree_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/urls_rendered_page', methods=['GET'])
 def urls_rendered_page(tree_uuid: str):
-    urls = lookyloo.get_urls_rendered_page(tree_uuid)
-    return render_template('urls_rendered.html', base_tree_uuid=tree_uuid, urls=urls)
+    try:
+        urls = lookyloo.get_urls_rendered_page(tree_uuid)
+        return render_template('urls_rendered.html', base_tree_uuid=tree_uuid, urls=urls)
+    except Exception:
+        flash('Unable to find the rendered node in this capture, cannot get the URLs.', 'error')
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
 @app.route('/tree/<string:tree_uuid>/hashlookup', methods=['GET'])
