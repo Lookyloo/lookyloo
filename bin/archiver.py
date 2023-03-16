@@ -25,7 +25,7 @@ class Archiver(AbstractManager):
     def __init__(self, loglevel: int=logging.INFO):
         super().__init__(loglevel)
         self.script_name = 'archiver'
-        self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
+        self.redis = Redis(unix_socket_path=get_socket_path('cache'))
 
         # make sure archived captures dir exists
         self.archived_captures_dir = get_homedir() / 'archived_captures'

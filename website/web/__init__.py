@@ -225,9 +225,13 @@ def after_request(response):
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>/hashes', methods=['GET'])
 def hashes_hostnode(tree_uuid: str, node_uuid: str):
-    hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
-    return send_file(BytesIO('\n'.join(hashes).encode()),
-                     mimetype='test/plain', as_attachment=True, download_name=f'hashes.{node_uuid}.txt')
+    try:
+        hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
+        return send_file(BytesIO('\n'.join(hashes).encode()),
+                         mimetype='test/plain', as_attachment=True, download_name=f'hashes.{node_uuid}.txt')
+    except NoValidHarFile:
+        return send_file(BytesIO(b'The capture is broken and does not contain any HAR files.'),
+                         mimetype='test/plain', as_attachment=True, download_name=f'hashes.{node_uuid}.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>/text', methods=['GET'])
