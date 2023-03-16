@@ -461,7 +461,7 @@ class CapturesIndex(Mapping):
 
         _all_ips = set()
         for node in ct.root_hartree.hostname_tree.traverse():
-            if hasattr(node, 'hostname_is_ip'):
+            if hasattr(node, 'hostname_is_ip') and node.hostname_is_ip:
                 continue
             if node.name not in host_cnames or node.name not in host_ips:
                 host_cnames[node.name] = ''

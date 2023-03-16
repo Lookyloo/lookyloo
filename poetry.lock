@@ -945,14 +945,14 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.18.0"
+version = "1.18.1"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "har2tree-1.18.0-py3-none-any.whl", hash = "sha256:36beb72ce84181dd00fd17c1b6eaeeada0c46367f7e0e2210943b57b8066fa65"},
-    {file = "har2tree-1.18.0.tar.gz", hash = "sha256:7c429a340f911a0a3addb3e7cd024fcca34e19661f31fb74e63a39582100a7a4"},
+    {file = "har2tree-1.18.1-py3-none-any.whl", hash = "sha256:dfddbd75d0a54f8f86c34d92f55b0b901f44ef8e58755c1eca18977006fc519f"},
+    {file = "har2tree-1.18.1.tar.gz", hash = "sha256:893054df9ec9a4bd3d7ccd9061d16aeb9b2600701f10ec04293280fdeb4b3432"},
 ]
 
 [package.dependencies]
@@ -3178,4 +3178,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "37e3da30989103254088c0bd845526ba1795f56e16a425b534da330ac3b6db99"
+content-hash = "69db81e04098a18ad0cd22444e7751558dd2cc65cc531a9105af6868cdd5b3a4"
