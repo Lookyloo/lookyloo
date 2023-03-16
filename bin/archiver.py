@@ -122,6 +122,7 @@ class Archiver(AbstractManager):
                 for capture_path in captures:
                     p.delete(str(capture_path))
                     (capture_path / 'tree.pickle').unlink(missing_ok=True)
+                    (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
                     capture_path.rename(dest_dir / capture_path.name)
         p.execute()
 

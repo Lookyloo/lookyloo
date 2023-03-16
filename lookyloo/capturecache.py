@@ -99,7 +99,6 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int) -> CrawledTree:
             with gzip.open(pickle_file_gz, 'rb') as _pg:
                 tree = pickle.load(_pg)
     except pickle.UnpicklingError as e:
-        print(e)
         remove_pickle_tree(capture_dir)
 
     if tree:
@@ -110,10 +109,8 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int) -> CrawledTree:
                 # The capture was moved.
                 remove_pickle_tree(capture_dir)
         except EOFError as e:
-            print(e)
             remove_pickle_tree(capture_dir)
         except Exception as e:
-            print(e)
             remove_pickle_tree(capture_dir)
 
     if list(capture_dir.rglob('*.har')) or list(capture_dir.rglob('*.har.gz')):
