@@ -14,9 +14,9 @@ import time
 from collections.abc import Mapping
 from datetime import datetime
 from functools import lru_cache
-from logging import Logger
+from logging import Logger, LoggerAdapter
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, Set
+from typing import Any, Dict, List, Optional, Tuple, Union, Set, MutableMapping
 
 import dns.rdatatype
 import dns.resolver
@@ -32,19 +32,31 @@ from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, Tr
 from .modules import Cloudflare
 
 
+class LookylooCacheLogAdapter(LoggerAdapter):
+    """
+    Prepend log entry with the UUID of the capture
+    """
+    def process(self, msg: str, kwargs: MutableMapping[str, Any]) -> Tuple[str, MutableMapping[str, Any]]:
+        if self.extra:
+            return '[{}] {}'.format(self.extra['uuid'], msg), kwargs
+        return msg, kwargs
+
+
 class CaptureCache():
     __slots__ = ('uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir',
                  'error', 'incomplete_redirects', 'no_index', 'categories', 'parent',
                  'user_agent', 'referer', 'logger')
 
     def __init__(self, cache_entry: Dict[str, Any]):
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
+        logger = logging.getLogger(f'{self.__class__.__name__}')
+        logger.setLevel(get_config('generic', 'loglevel'))
         __default_cache_keys: Tuple[str, str, str, str, str, str] = ('uuid', 'title', 'timestamp',
                                                                      'url', 'redirects', 'capture_dir')
         if 'uuid' not in cache_entry or 'capture_dir' not in cache_entry:
             raise LookylooException(f'The capture is deeply broken: {cache_entry}')
         self.uuid: str = cache_entry['uuid']
+        self.logger = LookylooCacheLogAdapter(logger, {'uuid': self.uuid})
+
         self.capture_dir: Path = Path(cache_entry['capture_dir'])
 
         if all(key in cache_entry.keys() for key in __default_cache_keys):
@@ -58,7 +70,7 @@ class CaptureCache():
             if cache_entry.get('redirects'):
                 self.redirects: List[str] = json.loads(cache_entry['redirects'])
             else:
-                self.logger.info(f'No redirects in cache for {self.uuid}')
+                self.logger.debug('No redirects in cache')
                 self.redirects = []
             if not self.capture_dir.exists():
                 raise MissingCaptureDirectory(f'The capture {self.uuid} does not exists in {self.capture_dir}.')
@@ -104,7 +116,7 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> C
     except EOFError:
         remove_pickle_tree(capture_dir)
     except Exception:
-        logger.exception('Unexpected exception when unpickling')
+        logger.exception('Unexpected exception when unpickling.')
         remove_pickle_tree(capture_dir)
 
     if tree:
@@ -241,7 +253,7 @@ class CapturesIndex(Mapping):
             raise MissingCaptureDirectory(f'UUID ({uuid}) linked to a missing directory ({capture_dir}).')
         raise MissingUUID(f'Unable to find UUID {uuid}.')
 
-    def _create_pickle(self, capture_dir: Path) -> CrawledTree:
+    def _create_pickle(self, capture_dir: Path, logger: LookylooCacheLogAdapter) -> CrawledTree:
         with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
@@ -254,14 +266,14 @@ class CapturesIndex(Mapping):
             # The pickle is being created somewhere else, wait until it's done.
             while is_locked(capture_dir):
                 time.sleep(5)
-            return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, self.logger)
+            return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, logger)
 
         if not (har_files := sorted(capture_dir.glob('*.har'))):
             har_files = sorted(capture_dir.glob('*.har.gz'))
         try:
             with self._timeout_context():
                 tree = CrawledTree(har_files, uuid)
-            self.__resolve_dns(tree)
+            self.__resolve_dns(tree, logger)
             if self.contextualizer:
                 self.contextualizer.contextualize_tree(tree)
         except Har2TreeError as e:
@@ -270,7 +282,7 @@ class CapturesIndex(Mapping):
                 har_file.rename(har_file.with_suffix('.broken'))
             raise NoValidHarFile(f'We got har files, but they are broken: {e}')
         except TimeoutError:
-            self.logger.warning(f'Unable to rebuild the tree for {capture_dir}, the tree took too long.')
+            logger.warning(f'Unable to rebuild the tree for {capture_dir}, the tree took too long.')
             for har_file in har_files:
                 har_file.rename(har_file.with_suffix('.broken'))
             raise NoValidHarFile(f'We got har files, but creating a tree took more than {self.timeout}s.')
@@ -319,16 +331,17 @@ class CapturesIndex(Mapping):
         with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
         try:
-            tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, self.logger)
+            tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, logger)
         except NoValidHarFile:
-            self.logger.debug('Unable to rebuild the tree, the HAR files are broken.')
+            logger.debug('Unable to rebuild the tree, the HAR files are broken.')
         except TreeNeedsRebuild:
             try:
-                tree = self._create_pickle(capture_dir)
+                tree = self._create_pickle(capture_dir, logger)
                 self.indexing.new_internal_uuids(tree)
             except NoValidHarFile:
-                self.logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are broken.')
+                logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are broken.')
                 tree = None
 
         cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': capture_dir_str}
@@ -368,7 +381,7 @@ class CapturesIndex(Mapping):
                 and isinstance(cache['error'], str)
                 and 'HTTP Error' not in cache['error']
                 and "No har files in" not in cache['error']):
-            self.logger.info(cache['error'])
+            logger.info(cache['error'])
 
         if (capture_dir / 'categories').exists():
             with (capture_dir / 'categories').open() as _categories:
@@ -395,7 +408,7 @@ class CapturesIndex(Mapping):
         p.execute()
         return CaptureCache(cache)
 
-    def __resolve_dns(self, ct: CrawledTree):
+    def __resolve_dns(self, ct: CrawledTree, logger: LookylooCacheLogAdapter):
         '''Resolves all domains of the tree, keeps A (IPv4), AAAA (IPv6), and CNAME entries
         and store them in ips.json and cnames.json, in the capture directory.
         Updates the nodes of the tree accordingly so the information is available.
@@ -458,7 +471,7 @@ class CapturesIndex(Mapping):
                     try:
                         response = dns.resolver.resolve(node.name, query_type, search=True, raise_on_no_answer=False)
                     except Exception as e:
-                        self.logger.warning(f'Unable to resolve DNS: {e}')
+                        logger.warning(f'Unable to resolve DNS: {e}')
                         continue
                     for answer in response.response.answer:
                         name_to_cache = str(answer.name).rstrip('.')
@@ -507,7 +520,7 @@ class CapturesIndex(Mapping):
                 try:
                     self.ipasnhistory.mass_cache(ips)
                 except Exception as e:
-                    self.logger.warning(f'Unable to submit IPs to IPASNHistory: {e}')
+                    logger.warning(f'Unable to submit IPs to IPASNHistory: {e}')
                 else:
                     time.sleep(2)
                     ipasn_responses = self.ipasnhistory.mass_query(ips)

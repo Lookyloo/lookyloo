@@ -323,24 +323,28 @@ class Lookyloo():
         if not cache:
             self.logger.warning(f'Unable to get the modules responses unless the capture {capture_uuid} is cached')
             return None
+        if not hasattr(cache, 'url'):
+            self.logger.warning(f'The capture {capture_uuid} does not have a URL in the cache, it is broken.')
+            return None
+
         to_return: Dict[str, Any] = {}
         if self.vt.available:
             to_return['vt'] = {}
-            if cache.redirects:
+            if hasattr(cache, 'redirects') and cache.redirects:
                 for redirect in cache.redirects:
                     to_return['vt'][redirect] = self.vt.get_url_lookup(redirect)
             else:
                 to_return['vt'][cache.url] = self.vt.get_url_lookup(cache.url)
         if self.pi.available:
             to_return['pi'] = {}
-            if cache.redirects:
+            if hasattr(cache, 'redirects') and cache.redirects:
                 for redirect in cache.redirects:
                     to_return['pi'][redirect] = self.pi.get_url_lookup(redirect)
             else:
                 to_return['pi'][cache.url] = self.pi.get_url_lookup(cache.url)
         if self.phishtank.available:
             to_return['phishtank'] = {'urls': {}, 'ips_hits': {}}
-            if cache.redirects:
+            if hasattr(cache, 'redirects') and cache.redirects:
                 for redirect in cache.redirects:
                     to_return['phishtank']['urls'][redirect] = self.phishtank.get_url_lookup(redirect)
             else:
@@ -350,7 +354,7 @@ class Lookyloo():
                 to_return['phishtank']['ips_hits'] = ips_hits
         if self.urlhaus.available:
             to_return['urlhaus'] = {'urls': {}}
-            if cache.redirects:
+            if hasattr(cache, 'redirects') and cache.redirects:
                 for redirect in cache.redirects:
                     to_return['urlhaus']['urls'][redirect] = self.urlhaus.get_url_lookup(redirect)
             else:
@@ -379,7 +383,7 @@ class Lookyloo():
         if self.riskiq.available:
             try:
                 self.riskiq.capture_default_trigger(cache)
-                if cache.redirects:
+                if hasattr(cache, 'redirects') and cache.redirects:
                     hostname = urlparse(cache.redirects[-1]).hostname
                 else:
                     hostname = urlparse(cache.url).hostname
@@ -675,7 +679,7 @@ class Lookyloo():
                 initial_url = defang(cache.url, colon=True, all_dots=True)
             else:
                 initial_url = cache.url
-            if cache.redirects:
+            if hasattr(cache, 'redirects') and cache.redirects:
                 redirects = "Redirects:\n"
                 if email_config['defang_urls']:
                     redirects += defang('\n'.join(cache.redirects), colon=True, all_dots=True)
@@ -1270,7 +1274,7 @@ class Lookyloo():
                 stats[date_submission.year][date_submission.month]['uniq_urls'] = set()
             stats[date_submission.year][date_submission.month]['submissions'] += 1
             stats[date_submission.year][date_submission.month]['uniq_urls'].add(cache.url)
-            if len(cache.redirects) > 0:
+            if hasattr(cache, 'redirects') and len(cache.redirects) > 0:
                 stats[date_submission.year][date_submission.month]['submissions_with_redirects'] += 1
                 stats[date_submission.year][date_submission.month]['redirects'] += len(cache.redirects)
                 stats[date_submission.year][date_submission.month]['uniq_urls'].update(cache.redirects)
@@ -1282,7 +1286,7 @@ class Lookyloo():
                     weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'] = set()
                 weeks_stats[date_submission.isocalendar()[1]]['submissions'] += 1
                 weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'].add(cache.url)
-                if len(cache.redirects) > 0:
+                if hasattr(cache, 'redirects') and len(cache.redirects) > 0:
                     weeks_stats[date_submission.isocalendar()[1]]['submissions_with_redirects'] += 1
                     weeks_stats[date_submission.isocalendar()[1]]['redirects'] += len(cache.redirects)
                     weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'].update(cache.redirects)
