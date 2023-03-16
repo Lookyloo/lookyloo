@@ -14,6 +14,7 @@ import time
 from collections.abc import Mapping
 from datetime import datetime
 from functools import lru_cache
+from logging import Logger
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union, Set
 
@@ -77,7 +78,7 @@ class CaptureCache():
 
     @property
     def tree(self) -> CrawledTree:
-        return load_pickle_tree(self.capture_dir, self.capture_dir.stat().st_mtime)
+        return load_pickle_tree(self.capture_dir, self.capture_dir.stat().st_mtime, self.logger)
 
 
 def remove_pickle_tree(capture_dir: Path) -> None:
@@ -87,7 +88,7 @@ def remove_pickle_tree(capture_dir: Path) -> None:
 
 
 @lru_cache(maxsize=256)
-def load_pickle_tree(capture_dir: Path, last_mod_time: int) -> CrawledTree:
+def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> CrawledTree:
     pickle_file = capture_dir / 'tree.pickle'
     pickle_file_gz = capture_dir / 'tree.pickle.gz'
     tree = None
@@ -98,19 +99,19 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int) -> CrawledTree:
         elif pickle_file_gz.exists():
             with gzip.open(pickle_file_gz, 'rb') as _pg:
                 tree = pickle.load(_pg)
-    except pickle.UnpicklingError as e:
+    except pickle.UnpicklingError:
+        remove_pickle_tree(capture_dir)
+    except EOFError:
+        remove_pickle_tree(capture_dir)
+    except Exception:
+        logger.exception('Unexpected exception when unpickling')
         remove_pickle_tree(capture_dir)
 
     if tree:
-        try:
-            if tree.root_hartree.har.path.exists():
-                return tree
-            else:
-                # The capture was moved.
-                remove_pickle_tree(capture_dir)
-        except EOFError as e:
-            remove_pickle_tree(capture_dir)
-        except Exception as e:
+        if tree.root_hartree.har.path.exists():
+            return tree
+        else:
+            # The capture was moved.
             remove_pickle_tree(capture_dir)
 
     if list(capture_dir.rglob('*.har')) or list(capture_dir.rglob('*.har.gz')):
@@ -253,7 +254,7 @@ class CapturesIndex(Mapping):
             # The pickle is being created somewhere else, wait until it's done.
             while is_locked(capture_dir):
                 time.sleep(5)
-            return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
+            return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, self.logger)
 
         if not (har_files := sorted(capture_dir.glob('*.har'))):
             har_files = sorted(capture_dir.glob('*.har.gz'))
@@ -319,7 +320,7 @@ class CapturesIndex(Mapping):
             uuid = f.read().strip()
 
         try:
-            tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime)
+            tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, self.logger)
         except NoValidHarFile:
             self.logger.debug('Unable to rebuild the tree, the HAR files are broken.')
         except TreeNeedsRebuild:
@@ -447,6 +448,8 @@ class CapturesIndex(Mapping):
 
         _all_ips = set()
         for node in ct.root_hartree.hostname_tree.traverse():
+            if hasattr(node, 'hostname_is_ip'):
+                continue
             if node.name not in host_cnames or node.name not in host_ips:
                 host_cnames[node.name] = ''
                 host_ips[node.name] = {'v4': set(), 'v6': set()}
