@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import calendar
+import functools
 import http
 import json
 import logging
@@ -221,20 +222,33 @@ def after_request(response):
     return response
 
 
+def file_response(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except NoValidHarFile:
+            return send_file(BytesIO(b'The capture is broken and does not contain any HAR files.'),
+                             mimetype='test/plain', as_attachment=True, download_name='error.txt')
+        except MissingUUID as e:
+            return send_file(BytesIO(str(e).encode()),
+                             mimetype='test/plain', as_attachment=True, download_name='error.txt')
+
+    return wrapper
+
+
 # ##### Hostnode level methods #####
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>/hashes', methods=['GET'])
+@file_response
 def hashes_hostnode(tree_uuid: str, node_uuid: str):
-    try:
-        hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
-        return send_file(BytesIO('\n'.join(hashes).encode()),
-                         mimetype='test/plain', as_attachment=True, download_name=f'hashes.{node_uuid}.txt')
-    except NoValidHarFile:
-        return send_file(BytesIO(b'The capture is broken and does not contain any HAR files.'),
-                         mimetype='test/plain', as_attachment=True, download_name=f'hashes.{node_uuid}.txt')
+    hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
+    return send_file(BytesIO('\n'.join(hashes).encode()),
+                     mimetype='test/plain', as_attachment=True, download_name=f'hashes.{node_uuid}.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>/text', methods=['GET'])
+@file_response
 def urls_hostnode(tree_uuid: str, node_uuid: str):
     hostnode = lookyloo.get_hostnode_from_tree(tree_uuid, node_uuid)
     return send_file(BytesIO('\n'.join(url.name for url in hostnode.urls).encode()),
@@ -484,6 +498,7 @@ def modules(tree_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/redirects', methods=['GET'])
+@file_response
 def redirects(tree_uuid: str):
     cache = lookyloo.capture_cache(tree_uuid)
     if not cache or not hasattr(cache, 'redirects'):
@@ -499,6 +514,7 @@ def redirects(tree_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
+@file_response
 def image(tree_uuid: str):
     max_width = request.args.get('width')
     if max_width:
@@ -510,6 +526,7 @@ def image(tree_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/data', methods=['GET'])
+@file_response
 def data(tree_uuid: str):
     filename, data = lookyloo.get_data(tree_uuid)
     if len(filename) == 0:
@@ -526,12 +543,14 @@ def data(tree_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/thumbnail/', defaults={'width': 64}, methods=['GET'])
 @app.route('/tree/<string:tree_uuid>/thumbnail/<int:width>', methods=['GET'])
+@file_response
 def thumbnail(tree_uuid: str, width: int):
     to_return = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=False, width=width)
     return send_file(to_return, mimetype='image/png')
 
 
 @app.route('/tree/<string:tree_uuid>/html', methods=['GET'])
+@file_response
 def html(tree_uuid: str):
     to_return = lookyloo.get_html(tree_uuid)
     return send_file(to_return, mimetype='text/html',
@@ -539,6 +558,7 @@ def html(tree_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/cookies', methods=['GET'])
+@file_response
 def cookies(tree_uuid: str):
     to_return = lookyloo.get_cookies(tree_uuid)
     return send_file(to_return, mimetype='application/json',
@@ -546,6 +566,7 @@ def cookies(tree_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/hashes', methods=['GET'])
+@file_response
 def hashes_tree(tree_uuid: str):
     hashes = lookyloo.get_hashes(tree_uuid)
     return send_file(BytesIO('\n'.join(hashes).encode()),
@@ -553,6 +574,7 @@ def hashes_tree(tree_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/export', methods=['GET'])
+@file_response
 def export(tree_uuid: str):
     to_return = lookyloo.get_capture(tree_uuid)
     return send_file(to_return, mimetype='application/zip',
@@ -1108,6 +1130,7 @@ def statsfull():
 
 @app.route('/whois/<string:query>', methods=['GET'])
 @app.route('/whois/<string:query>/<int:email_only>', methods=['GET'])
+@file_response
 def whois(query: str, email_only: int=0):
     to_return = lookyloo.uwhois.whois(query, bool(email_only))
     if isinstance(to_return, str):
@@ -1119,6 +1142,7 @@ def whois(query: str, email_only: int=0):
 # ##### Methods related to a specific URLNode #####
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/request_cookies', methods=['GET'])
+@file_response
 def urlnode_request_cookies(tree_uuid: str, node_uuid: str):
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.request_cookie:
@@ -1129,6 +1153,7 @@ def urlnode_request_cookies(tree_uuid: str, node_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/response_cookies', methods=['GET'])
+@file_response
 def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.response_cookie:
@@ -1139,6 +1164,7 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/urls_in_rendered_content', methods=['GET'])
+@file_response
 def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str):
     # Note: we could simplify it with lookyloo.get_urls_rendered_page, but if at somepoint,
     # we have multiple page rendered on one tree, it will be a problem.
@@ -1156,6 +1182,7 @@ def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/rendered_content', methods=['GET'])
+@file_response
 def urlnode_rendered_content(tree_uuid: str, node_uuid: str):
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.rendered_html:
@@ -1165,6 +1192,7 @@ def urlnode_rendered_content(tree_uuid: str, node_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/posted_data', methods=['GET'])
+@file_response
 def urlnode_post_request(tree_uuid: str, node_uuid: str):
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.posted_data:
@@ -1193,6 +1221,7 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str):
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource', methods=['POST', 'GET'])
+@file_response
 def get_ressource(tree_uuid: str, node_uuid: str):
     if request.method == 'POST':
         h_request = request.form.get('ressource_hash')
@@ -1213,6 +1242,7 @@ def get_ressource(tree_uuid: str, node_uuid: str):
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource_preview', methods=['GET'])
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource_preview/<string:h_ressource>', methods=['GET'])
+@file_response
 def get_ressource_preview(tree_uuid: str, node_uuid: str, h_ressource: Optional[str]=None):
     ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_ressource)
     if not ressource:
@@ -1225,6 +1255,7 @@ def get_ressource_preview(tree_uuid: str, node_uuid: str, h_ressource: Optional[
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/hashes', methods=['GET'])
+@file_response
 def hashes_urlnode(tree_uuid: str, node_uuid: str):
     hashes = lookyloo.get_hashes(tree_uuid, urlnode_uuid=node_uuid)
     return send_file(BytesIO('\n'.join(hashes).encode()),
