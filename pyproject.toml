@@ -71,7 +71,7 @@ pyipasnhistory = "^2.1.2"
 publicsuffixlist = "^0.9.3"
 pyfaup = "^1.2"
 chardet = "^5.1.0"
-pysecuritytxt = "^1.0.1"
+pysecuritytxt = "^1.1.0"
 pylookyloomonitoring = "^0.2.0"
 
 [tool.poetry.group.dev.dependencies]
