@@ -243,14 +243,14 @@ tzdata = ["tzdata"]
 
 [[package]]
 name = "beautifulsoup4"
-version = "4.11.2"
+version = "4.12.0"
 description = "Screen-scraping library"
 category = "main"
 optional = false
 python-versions = ">=3.6.0"
 files = [
-    {file = "beautifulsoup4-4.11.2-py3-none-any.whl", hash = "sha256:0e79446b10b3ecb499c1556f7e228a53e64a2bfcebd455f370d8927cb5b59e39"},
-    {file = "beautifulsoup4-4.11.2.tar.gz", hash = "sha256:bc4bdda6717de5a2987436fb8d72f45dc90dd856bdfd512a1314ce90349a0106"},
+    {file = "beautifulsoup4-4.12.0-py3-none-any.whl", hash = "sha256:2130a5ad7f513200fae61a17abb5e338ca980fa28c439c0571014bc0217e9591"},
+    {file = "beautifulsoup4-4.12.0.tar.gz", hash = "sha256:c5fceeaec29d09c84970e47c65f2f0efe57872f7cff494c9691a26ec0ff13234"},
 ]
 
 [package.dependencies]
@@ -1085,14 +1085,14 @@ files = [
 
 [[package]]
 name = "importlib-metadata"
-version = "6.0.0"
+version = "6.1.0"
 description = "Read metadata from Python packages"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "importlib_metadata-6.0.0-py3-none-any.whl", hash = "sha256:7efb448ec9a5e313a57655d35aa54cd3e01b7e1fbcf72dce1bf06119420f5bad"},
-    {file = "importlib_metadata-6.0.0.tar.gz", hash = "sha256:e354bedeb60efa6affdcc8ae121b73544a7aa74156d047311948f6d711cd378d"},
+    {file = "importlib_metadata-6.1.0-py3-none-any.whl", hash = "sha256:ff80f3b5394912eb1b108fcfd444dc78b7f1f3e16b16188054bd01cb9cb86f09"},
+    {file = "importlib_metadata-6.1.0.tar.gz", hash = "sha256:43ce9281e097583d758c2c708c4376371261a02c34682491a8e98352365aad20"},
 ]
 
 [package.dependencies]
@@ -2192,14 +2192,14 @@ docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.169.1"
+version = "2.4.169.2"
 description = "Python API for MISP."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pymisp-2.4.169.1-py3-none-any.whl", hash = "sha256:7801addea702eed9e2b632f6e5f656f796f27488120535143879a7fa0fc0f0cc"},
-    {file = "pymisp-2.4.169.1.tar.gz", hash = "sha256:381678496454136be3753a3cffb5e232bcd4e6cbc9e29f131c18ff5761e9bedd"},
+    {file = "pymisp-2.4.169.2-py3-none-any.whl", hash = "sha256:6bb4ff09c1930a9b68c898264ed0e3ddc2c0c5dbf1ad2fbed58e597198e477cd"},
+    {file = "pymisp-2.4.169.2.tar.gz", hash = "sha256:9e3b51170efbe869d0d4c480e1df41ccba82feccc9e6f25e75dffaea7bd957d8"},
 ]
 
 [package.dependencies]
@@ -2214,7 +2214,7 @@ python-magic = {version = ">=0.4.27,<0.5.0", optional = true, markers = "extra =
 requests = ">=2.28.2,<3.0.0"
 
 [package.extras]
-brotli = ["urllib3[brotli] (>=1.26.14,<2.0.0)"]
+brotli = ["urllib3[brotli] (>=1.26.15,<2.0.0)"]
 docs = ["recommonmark (>=0.7.1,<0.8.0)", "sphinx-autodoc-typehints (>=1.22,<2.0)"]
 email = ["RTFDE (>=0.0.2,<0.0.3)", "extract_msg (>=0.39.2,<0.40.0)", "oletools (>=0.60.1,<0.61.0)"]
 fileobjects = ["lief (>=0.12.3,<0.13.0)", "pydeep2 (>=0.5.1,<0.6.0)", "python-magic (>=0.4.27,<0.5.0)"]
@@ -2313,14 +2313,14 @@ requests = ">=2.28.1,<3.0.0"
 
 [[package]]
 name = "pysecuritytxt"
-version = "1.0.1"
+version = "1.1.0"
 description = "Python CLI and module for querying security.txt files on domains."
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pysecuritytxt-1.0.1-py3-none-any.whl", hash = "sha256:989748caaf5e49bf1de3e452e7f3b11e33ddf192c2f4c7a11a0e6a5560f5fe89"},
-    {file = "pysecuritytxt-1.0.1.tar.gz", hash = "sha256:a01d9c1562697c63f62318d7f8fac01c2439002fd2f4e24b754ebf45cb856cf5"},
+    {file = "pysecuritytxt-1.1.0-py3-none-any.whl", hash = "sha256:f3c3f76ef25bb3d98f6890cd059c6582673522065de5fcc4942fa7212ba5c14b"},
+    {file = "pysecuritytxt-1.1.0.tar.gz", hash = "sha256:761a497001d9127bed104b2580d7b91f1b01e9848c85a8fb8a954811c03a4808"},
 ]
 
 [package.dependencies]
@@ -2402,18 +2402,18 @@ tzdata = {version = "*", markers = "python_version >= \"3.6\""}
 
 [[package]]
 name = "redis"
-version = "4.5.1"
+version = "4.5.2"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "redis-4.5.1-py3-none-any.whl", hash = "sha256:5deb072d26e67d2be1712603bfb7947ec3431fb0eec9c578994052e33035af6d"},
-    {file = "redis-4.5.1.tar.gz", hash = "sha256:1eec3741cda408d3a5f84b78d089c8b8d895f21b3b050988351e925faf202864"},
+    {file = "redis-4.5.2-py3-none-any.whl", hash = "sha256:4b12b3a1e9bfb43dc533330ec6d142329d0c27ea6bb6716a9d0389e8f2038a4e"},
+    {file = "redis-4.5.2.tar.gz", hash = "sha256:d8ae1a4f725eea6e3958411870fdf944c587b00ea12be28d3bd5575d8f26430c"},
 ]
 
 [package.dependencies]
-async-timeout = ">=4.0.2"
+async-timeout = {version = ">=4.0.2", markers = "python_version < \"3.11\""}
 hiredis = {version = ">=1.0.0", optional = true, markers = "extra == \"hiredis\""}
 
 [package.extras]
@@ -2703,14 +2703,14 @@ test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.11.6.7"
+version = "4.12.0.0"
 description = "Typing stubs for beautifulsoup4"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-beautifulsoup4-4.11.6.7.tar.gz", hash = "sha256:ecca610052c5418a9a2ade28a0c1995ca0b90c8450a70de8dc26a118de2aca56"},
-    {file = "types_beautifulsoup4-4.11.6.7-py3-none-any.whl", hash = "sha256:49ada75863d0d89fc4ad29f064d75c022cb2ad389e17271f0517f8fb34080715"},
+    {file = "types-beautifulsoup4-4.12.0.0.tar.gz", hash = "sha256:3859e70d3118d65d12ebfca109304de4bf52383e6f99f941c114fd1153bb6cc1"},
+    {file = "types_beautifulsoup4-4.12.0.0-py3-none-any.whl", hash = "sha256:43c23852a6ef0053632b9a308fc3488831c0f3e02c0f4b4478a28703217cf683"},
 ]
 
 [package.dependencies]
@@ -2860,14 +2860,14 @@ files = [
 
 [[package]]
 name = "tzlocal"
-version = "4.2"
+version = "4.3"
 description = "tzinfo object for the local timezone"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "tzlocal-4.2-py3-none-any.whl", hash = "sha256:89885494684c929d9191c57aa27502afc87a579be5cdd3225c77c463ea043745"},
-    {file = "tzlocal-4.2.tar.gz", hash = "sha256:ee5842fa3a795f023514ac2d801c4a81d1743bbe642e3940143326b3a00addd7"},
+    {file = "tzlocal-4.3-py3-none-any.whl", hash = "sha256:b44c4388f3d34f25862cfbb387578a4d70fec417649da694a132f628a23367e2"},
+    {file = "tzlocal-4.3.tar.gz", hash = "sha256:3f21d09e1b2aa9f2dacca12da240ca37de3ba5237a93addfd6d593afe9073355"},
 ]
 
 [package.dependencies]
@@ -2876,8 +2876,7 @@ pytz-deprecation-shim = "*"
 tzdata = {version = "*", markers = "platform_system == \"Windows\""}
 
 [package.extras]
-devenv = ["black", "pyroma", "pytest-cov", "zest.releaser"]
-test = ["pytest (>=4.3)", "pytest-mock (>=3.3)"]
+devenv = ["black", "check-manifest", "flake8", "pyroma", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)", "zest.releaser"]
 
 [[package]]
 name = "ua-parser"

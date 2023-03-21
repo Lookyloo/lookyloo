@@ -63,7 +63,7 @@ class Lookyloo():
         self.is_public_instance = get_config('generic', 'public_instance')
         self.public_domain = get_config('generic', 'public_domain')
 
-        self.securitytxt = PySecurityTXT()
+        self.securitytxt = PySecurityTXT(useragent=get_useragent_for_requests())
 
         self.taxonomies = get_taxonomies()
 
