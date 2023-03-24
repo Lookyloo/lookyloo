@@ -444,9 +444,15 @@ class CaptureExport(Resource):
 
 # Compare captures (WiP)
 
+compare_settings_mapping = api.model('CompareSettings', {
+    'ressources_ignore_domains': fields.List(fields.String(description="A domain to ignore")),
+    'ressources_ignore_regexes': fields.List(fields.String(description="A regex to match anything in a URL"))
+})
+
 compare_captures_fields = api.model('CompareCapturesFields', {
     'capture_left': fields.String(description="Left capture to compare.", required=True),
     'capture_right': fields.String(description="Right capture to compare.", required=True),
+    'compare_settings': fields.Nested(compare_settings_mapping, description="The settings to compare captures.")
 })
 
 
@@ -458,8 +464,10 @@ class CompareCaptures(Resource):
         parameters: Dict = request.get_json(force=True)
         left_uuid = parameters.get('capture_left')
         right_uuid = parameters.get('capture_right')
+        if not left_uuid or not right_uuid:
+            return {'error': 'UUIDs of captures to compare missing', 'details': f'Left: {left_uuid} / Right: {right_uuid}'}
         try:
-            result = comparator.compare_captures(left_uuid, right_uuid)
+            result = comparator.compare_captures(left_uuid, right_uuid, settings=parameters.get('compare_settings'))
         except MissingUUID as e:
             # UUID non-existent, or capture still ongoing.
             if left_uuid and right_uuid:

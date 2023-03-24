@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+import fnmatch
 import logging
 
-from typing import Dict, Any, Union, List
+from typing import Dict, Any, Union, List, Optional, TypedDict, Set
 
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
@@ -11,6 +12,13 @@ from .context import Context
 from .capturecache import CapturesIndex
 from .default import get_config, get_socket_path
 from .exceptions import MissingUUID
+
+
+class CompareSettings(TypedDict):
+    '''The settings that can be passed to the compare method to filter out some differences'''
+
+    ressources_ignore_domains: Set[str]
+    ressources_ignore_regexes: Set[str]
 
 
 class Comparator():
@@ -29,7 +37,7 @@ class Comparator():
     def redis(self):
         return Redis(connection_pool=self.redis_pool)
 
-    def compare_nodes(self, left, right, /) -> Dict[str, Any]:
+    def _compare_nodes(self, left, right, /) -> Dict[str, Any]:
         to_return = {}
         # URL
         if left.name != right.name:
@@ -57,7 +65,7 @@ class Comparator():
         # IPs in hostnode + ASNs
         return to_return
 
-    def compare_captures(self, capture_left, capture_right, /) -> Dict[str, Any]:
+    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: Optional[CompareSettings]=None) -> Dict[str, Any]:
         if capture_left not in self._captures_index:
             raise MissingUUID(f'{capture_left} does not exists.')
         if capture_right not in self._captures_index:
@@ -112,12 +120,30 @@ class Comparator():
         redirect_nodes_right = [a for a in reversed(right.tree.root_hartree.rendered_node.get_ancestors())] + [right.tree.root_hartree.rendered_node]
         for redirect_left, redirect_right in zip(redirect_nodes_left, redirect_nodes_right):
             if isinstance(to_return['redirects']['nodes'], list):
-                to_return['redirects']['nodes'].append(self.compare_nodes(redirect_left, redirect_right))
+                to_return['redirects']['nodes'].append(self._compare_nodes(redirect_left, redirect_right))
 
         # Compare all ressources URLs
+
         to_return['ressources'] = {}
-        ressources_left = {a.name for a in left.tree.root_hartree.rendered_node.traverse()}
-        ressources_right = {a.name for a in right.tree.root_hartree.rendered_node.traverse()}
+        _settings: Optional[CompareSettings]
+        if settings:
+            # cleanup the settings
+            _ignore_domains = set(settings['ressources_ignore_domains'] if settings.get('ressources_ignore_domains') else [])
+            _ignore_regexes = set(settings['ressources_ignore_regexes'] if settings.get('ressources_ignore_regexes') else [])
+            _settings = {
+                'ressources_ignore_domains': _ignore_domains,
+                'ressources_ignore_regexes': _ignore_regexes
+            }
+        else:
+            _settings = None
+        ressources_left = {a.name for a in left.tree.root_hartree.rendered_node.traverse()
+                           if not _settings
+                           or not a.hostname.endswith(_settings['ressources_ignore_domains'])
+                           or not any(fnmatch.fnmatch(a.name, regex) for regex in _settings['ressources_ignore_regexes'])}
+        ressources_right = {a.name for a in right.tree.root_hartree.rendered_node.traverse() if not settings
+                            if not _settings
+                            or not a.hostname.endswith(_settings['ressources_ignore_domains'])
+                            or not any(fnmatch.fnmatch(a.name, regex) for regex in _settings['ressources_ignore_regexes'])}
         if present_in_both := ressources_left & ressources_right:
             to_return['ressources']['both'] = sorted(present_in_both)
         if present_left := ressources_left - ressources_right:
