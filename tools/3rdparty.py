@@ -4,9 +4,9 @@ import requests
 
 from lookyloo.default import get_homedir
 
-d3js_version = '7.8.2'
+d3js_version = '7.8.3'
 jquery_version = "3.6.4"
-datatables_version = "1.13.3"
+datatables_version = "1.13.4"
 
 if __name__ == '__main__':
     dest_dir = get_homedir() / 'website' / 'web' / 'static'
