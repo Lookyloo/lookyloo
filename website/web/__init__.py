@@ -632,6 +632,7 @@ def bulk_captures(base_tree_uuid: str):
 @flask_login.login_required
 def hide_capture(tree_uuid: str):
     lookyloo.hide_capture(tree_uuid)
+    flash('Successfully hidden.', 'success')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
@@ -640,6 +641,7 @@ def hide_capture(tree_uuid: str):
 def rebuild_tree(tree_uuid: str):
     try:
         lookyloo.remove_pickle(tree_uuid)
+        flash('Successfully rebuilt.', 'success')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     except Exception:
         return redirect(url_for('index'))

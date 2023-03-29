@@ -264,8 +264,8 @@
               <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button">Re-Capture</a>
             </li>
             <li class="list-group-item">
-              <a href="#downloadModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#downloadModal" role="button">Download elements</a>
+              <a href="#downloadModal" data-bs-toggle="modal"
+                 data-bs-target="#downloadModal" role="button">Download elements</a>
             </li>
             <li class="list-group-item">
               <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
@@ -277,6 +277,10 @@
         <div class="vr"></div>
         <div class="col-md">
           <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <a href="#adminModal" data-bs-toggle="modal"
+                 data-bs-target="#adminModal" role="button">Admin tasks</a>
+            </li>
             <li class="list-group-item">
               <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
                  data-bs-toggle="modal" data-bs-target="#historyModal" role="button">Historical lookups</a>
@@ -650,6 +654,36 @@
   </div>
 </div>
 
+<div class="modal fade" id="adminModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="adminModalLabel">
+                  RUn admin only tasks on the capture
+              </h4>
+              </br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          </br>
+          <div class="modal-body">
+          <ul>
+            <li>
+              <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
+            </li>
+            <li>
+              <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
+            </li>
+            <li>
+              <a href="{{ url_for('logout') }}" role="button">Logout</a>
+            </li>
+          </ul>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
 <div class="modal fade" id="hashlookupModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
