@@ -941,18 +941,18 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.18.1"
+version = "1.19.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "har2tree-1.18.1-py3-none-any.whl", hash = "sha256:dfddbd75d0a54f8f86c34d92f55b0b901f44ef8e58755c1eca18977006fc519f"},
-    {file = "har2tree-1.18.1.tar.gz", hash = "sha256:893054df9ec9a4bd3d7ccd9061d16aeb9b2600701f10ec04293280fdeb4b3432"},
+    {file = "har2tree-1.19.0-py3-none-any.whl", hash = "sha256:4b55b0b416a66aa9893170713607e73f594b2b00032a23e3baba6f58737abe51"},
+    {file = "har2tree-1.19.0.tar.gz", hash = "sha256:33a3f87ce7ffbe4cfe19ad7674fc3b5f73d22d828511fbf3788840b6b4941187"},
 ]
 
 [package.dependencies]
-beautifulsoup4 = ">=4.11.2,<5.0.0"
+beautifulsoup4 = ">=4.12.0,<5.0.0"
 charset-normalizer = ">=2,<4"
 ete3 = ">=3.1.2,<4.0.0"
 filetype = ">=1.2.0,<2.0.0"
@@ -1231,20 +1231,20 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.3.1"
+version = "1.3.2"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.3.1-py3-none-any.whl", hash = "sha256:c6aa52c333f7e637e116a9fbcd434c22daede7aeeedcbb3aca67c9b4a671a1a4"},
-    {file = "lacuscore-1.3.1.tar.gz", hash = "sha256:93818a792951869afcd50e35ef803b7c7d7ff1b89d3ad8b86e40d3199d26b975"},
+    {file = "lacuscore-1.3.2-py3-none-any.whl", hash = "sha256:1d01a200273a0e553ecac86d641e3bb86503a63a98fc7cadec2e362d74fa8d06"},
+    {file = "lacuscore-1.3.2.tar.gz", hash = "sha256:2f422e17f2e4223d1d98c9e49d52212719aa2100208520afbd6403c302d5879b"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.19.0,<2.0.0", extras = ["recaptcha"]}
-redis = {version = ">=4.5.1,<4.5.2 || >4.5.2,<4.5.3 || >4.5.3,<5.0.0", extras = ["hiredis"]}
+playwrightcapture = {version = ">=1.19.1,<2.0.0", extras = ["recaptcha"]}
+redis = {version = ">=4.5.4,<5.0.0", extras = ["hiredis"]}
 requests = ">=2.28.2,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
 
@@ -1888,19 +1888,19 @@ files = [
 
 [[package]]
 name = "playwright"
-version = "1.32.0"
+version = "1.32.1"
 description = "A high-level API to automate web browsers"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "playwright-1.32.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:1cccf2185452cdd7eb4c130fad15ed403fb246d3f6560c6c0ff65953e6b204e7"},
-    {file = "playwright-1.32.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:b94b014442989dd707b7c4f4c8cc92462d087282a48b121055343a3229f1333f"},
-    {file = "playwright-1.32.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:0d92de3ee2652de48ba05737493687dc07bd721415afb528b5fa909950291e67"},
-    {file = "playwright-1.32.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:0c824f29d7406860c6c6773c512018c9ec2114d0baef20968e994e9cb3498dfa"},
-    {file = "playwright-1.32.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ef7dcf45b7011105e33055e8cb3aa9bbaa50a861e8cc2d997f132379b721fe29"},
-    {file = "playwright-1.32.0-py3-none-win32.whl", hash = "sha256:ad58e165b6cb0125f9176637176a1b46db7c8360a6058ae44ca1c5ff24740c26"},
-    {file = "playwright-1.32.0-py3-none-win_amd64.whl", hash = "sha256:138f1671e0033218e2d83bcd1a89000ee913fb84adff4f3606cfeb86529db0c8"},
+    {file = "playwright-1.32.1-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:e2f919e8611f598d6e81bd12ab24c5987955b05fc663c98b862034a955387300"},
+    {file = "playwright-1.32.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:5dbf28b8256c2f570a66d6a7c04cd0bfb5225e696e01f85cf5aa49e29ea95b42"},
+    {file = "playwright-1.32.1-py3-none-macosx_11_0_universal2.whl", hash = "sha256:42473495f8af0279d868cc541d0c6d3733a8adb117253499dae85203104b0824"},
+    {file = "playwright-1.32.1-py3-none-manylinux1_x86_64.whl", hash = "sha256:83123330e2913a28d11bb8846f7c81a4736553c80f3e9748d213bcaa24fafe91"},
+    {file = "playwright-1.32.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d56a743f7d88a313b25a88422779c64e5d5a95baa805b9dfd1c5785aa01d217d"},
+    {file = "playwright-1.32.1-py3-none-win32.whl", hash = "sha256:274bfdd413a979346ce66e99c993c105a123e48da591a65638e5cdf518c90172"},
+    {file = "playwright-1.32.1-py3-none-win_amd64.whl", hash = "sha256:32bb5645904b5ba3096a4696c70ce3213eb2310c77273140dc5de14498a84134"},
 ]
 
 [package.dependencies]
@@ -1910,21 +1910,21 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.19.0"
+version = "1.19.1"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.19.0-py3-none-any.whl", hash = "sha256:d767f10339527cad0f46b6c1ff1f687bb4b1ec8f9153252a9d24c79ffe339079"},
-    {file = "playwrightcapture-1.19.0.tar.gz", hash = "sha256:5642c658c4f02d4b9a84adf19a681c8c4d0a2e0f80ece39f6c7d9b3c5da34e22"},
+    {file = "playwrightcapture-1.19.1-py3-none-any.whl", hash = "sha256:95f669d30fedbfb73411edeef1860ca304fb7658ca534aad0e18ecd41f429118"},
+    {file = "playwrightcapture-1.19.1.tar.gz", hash = "sha256:cc8de71b5528b07cd7f68c864c5ca3a337449b2b304f7244a6932a5bfbce3ed5"},
 ]
 
 [package.dependencies]
 beautifulsoup4 = ">=4.12.0,<5.0.0"
 dateparser = ">=1.1.8,<2.0.0"
 lxml = ">=4.9.2,<5.0.0"
-playwright = ">=1.32.0,<2.0.0"
+playwright = ">=1.32.1,<2.0.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
 requests = {version = ">=2.28.2,<3.0.0", optional = true, markers = "extra == \"recaptcha\""}
 SpeechRecognition = {version = ">=3.10.0,<4.0.0", optional = true, markers = "extra == \"recaptcha\""}
@@ -2134,14 +2134,14 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.3.0"
+version = "1.3.1"
 description = "Python CLI and module for lacus"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylacus-1.3.0-py3-none-any.whl", hash = "sha256:8e66eae59c176a5ae352e541f23305e4f3daed11830ebd6d0899bfef60d0178b"},
-    {file = "pylacus-1.3.0.tar.gz", hash = "sha256:083bdfc63a5945f1ab0826db00911c1886f5b6a0c609a332bed48d14c329eaac"},
+    {file = "pylacus-1.3.1-py3-none-any.whl", hash = "sha256:0c42e135c8443293d690dd9d9a09861759b058da5f6c903a0de57e5a722ee51b"},
+    {file = "pylacus-1.3.1.tar.gz", hash = "sha256:d205d7be51434f14da91dfce06f1edadf41c1e3af6fd311029676620450d6824"},
 ]
 
 [package.dependencies]
@@ -2152,14 +2152,14 @@ docs = ["Sphinx (>=6.1.3,<7.0.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.18.1"
+version = "1.19.0"
 description = "Python CLI and module for Lookyloo"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylookyloo-1.18.1-py3-none-any.whl", hash = "sha256:6d32c96536e84ddf034bfb30e849e88f43b76440e67269121fce868e80433aad"},
-    {file = "pylookyloo-1.18.1.tar.gz", hash = "sha256:fc75f3f8859a0eaec0607644e82f6da7436396d2695d5d01cdd27da4c08c8f00"},
+    {file = "pylookyloo-1.19.0-py3-none-any.whl", hash = "sha256:10be0d517556bcc938a17ad252c95deb8b7ea107a977a91aa7184a4302dbe178"},
+    {file = "pylookyloo-1.19.0.tar.gz", hash = "sha256:37f7160e67e58cbf503b1002fc14fd72eb22219bf14596008b256a0e5ebf2c4e"},
 ]
 
 [package.dependencies]
@@ -2398,18 +2398,18 @@ tzdata = {version = "*", markers = "python_version >= \"3.6\""}
 
 [[package]]
 name = "redis"
-version = "4.5.1"
+version = "4.5.4"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "redis-4.5.1-py3-none-any.whl", hash = "sha256:5deb072d26e67d2be1712603bfb7947ec3431fb0eec9c578994052e33035af6d"},
-    {file = "redis-4.5.1.tar.gz", hash = "sha256:1eec3741cda408d3a5f84b78d089c8b8d895f21b3b050988351e925faf202864"},
+    {file = "redis-4.5.4-py3-none-any.whl", hash = "sha256:2c19e6767c474f2e85167909061d525ed65bea9301c0770bb151e041b7ac89a2"},
+    {file = "redis-4.5.4.tar.gz", hash = "sha256:73ec35da4da267d6847e47f68730fdd5f62e2ca69e3ef5885c6a78a9374c3893"},
 ]
 
 [package.dependencies]
-async-timeout = ">=4.0.2"
+async-timeout = {version = ">=4.0.2", markers = "python_version <= \"3.11.2\""}
 hiredis = {version = ">=1.0.0", optional = true, markers = "extra == \"hiredis\""}
 
 [package.extras]
@@ -2761,14 +2761,14 @@ files = [
 
 [[package]]
 name = "types-redis"
-version = "4.5.1.5"
+version = "4.5.4.1"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.5.1.5.tar.gz", hash = "sha256:f516254bd593023110a38b77e80d5a76a7f033f1d94c53bee09a7d5d0433f34d"},
-    {file = "types_redis-4.5.1.5-py3-none-any.whl", hash = "sha256:43d92b4d6315a45bb0e9a790683ba4448ada88cd1233f3f9886fa6f783f53956"},
+    {file = "types-redis-4.5.4.1.tar.gz", hash = "sha256:bf04192f415b2b42ecefd70bb4b91eb0352e48f2716a213e038e35c096a639c2"},
+    {file = "types_redis-4.5.4.1-py3-none-any.whl", hash = "sha256:2db530f54facec3149147bfe61d5ac24f5fe4e871823d95a601cd2c1d775d8a0"},
 ]
 
 [package.dependencies]
@@ -3145,4 +3145,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "90c87185cbe7b1ac8cc1b958a832284124e1373d51186bb464f310ae90539272"
+content-hash = "811852388034f1883383c8be93c750399ea1d4bde5648b4d623e516090e9080b"
