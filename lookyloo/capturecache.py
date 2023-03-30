@@ -274,6 +274,7 @@ class CapturesIndex(Mapping):
         if not (har_files := sorted(capture_dir.glob('*.har'))):
             har_files = sorted(capture_dir.glob('*.har.gz'))
         try:
+            default_recursion_limit = sys.getrecursionlimit()
             with self._timeout_context():
                 tree = CrawledTree(har_files, uuid)
             self.__resolve_dns(tree, logger)
@@ -292,19 +293,25 @@ class CapturesIndex(Mapping):
         except RecursionError as e:
             raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
         else:
-            with gzip.open(capture_dir / 'tree.pickle.gz', 'wb') as _p:
-                # Some pickles require a pretty high recursion limit, this kindof fixes it.
-                # If the capture is really broken (generally a refresh to self), the capture
-                # is discarded in the RecursionError above.
-                default_recursion_limit = sys.getrecursionlimit()
-                sys.setrecursionlimit(int(default_recursion_limit * 1.1))
-                try:
+            # Some pickles require a pretty high recursion limit, this kindof fixes it.
+            # If the capture is really broken (generally a refresh to self), the capture
+            # is discarded in the RecursionError above.
+            sys.setrecursionlimit(int(default_recursion_limit * 1.1))
+            try:
+                with gzip.open(capture_dir / 'tree.pickle.gz', 'wb') as _p:
                     _p.write(pickletools.optimize(pickle.dumps(tree, protocol=5)))
-                    # pickle.dump(tree, _p, protocol=5)
-                except RecursionError as e:
-                    raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
-                sys.setrecursionlimit(default_recursion_limit)
+            except RecursionError as e:
+                logger.exception('Unable to store pickle.')
+                # unable to use the HAR files, get them out of the way
+                for har_file in har_files:
+                    har_file.rename(har_file.with_suffix('.broken'))
+                (capture_dir / 'tree.pickle.gz').unlink(missing_ok=True)
+                raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
+            except Exception:
+                (capture_dir / 'tree.pickle.gz').unlink(missing_ok=True)
+                logger.exception('Unable to store pickle.')
         finally:
+            sys.setrecursionlimit(default_recursion_limit)
             lock_file.unlink(missing_ok=True)
         return tree
 
