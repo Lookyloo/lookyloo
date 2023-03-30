@@ -72,7 +72,7 @@ publicsuffixlist = "^0.9.3"
 pyfaup = "^1.2"
 chardet = "^5.1.0"
 pysecuritytxt = "^1.1.0"
-pylookyloomonitoring = "^0.2.0"
+pylookyloomonitoring = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.1.1"
