@@ -95,8 +95,11 @@ class CaptureCache():
 
 def remove_pickle_tree(capture_dir: Path) -> None:
     pickle_file = capture_dir / 'tree.pickle'
+    pickle_file_gz = capture_dir / 'tree.pickle.gz'
     if pickle_file.exists():
         pickle_file.unlink()
+    if pickle_file_gz.exists():
+        pickle_file_gz.unlink()
 
 
 @lru_cache(maxsize=256)
