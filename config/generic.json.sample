@@ -28,7 +28,7 @@
   },
   "monitoring": {
     "enable": false,
-    "url": "https://127.0.0.1:5200"
+    "url": "http://127.0.0.1:5200"
   },
   "tor_proxy": {
     "server": "socks5://127.0.0.1:9050"
