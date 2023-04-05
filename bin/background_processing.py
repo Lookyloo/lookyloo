@@ -5,7 +5,7 @@ import logging
 import logging.config
 from collections import Counter
 from datetime import date, timedelta
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from lookyloo.lookyloo import Lookyloo
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
@@ -16,7 +16,7 @@ logging.config.dictConfig(get_config('logging'))
 
 class Processing(AbstractManager):
 
-    def __init__(self, loglevel: int=logging.INFO):
+    def __init__(self, loglevel: Optional[int]=None):
         super().__init__(loglevel)
         self.script_name = 'processing'
         self.lookyloo = Lookyloo()

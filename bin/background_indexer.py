@@ -5,6 +5,8 @@ import logging.config
 import os
 import shutil
 
+from typing import Optional
+
 from lookyloo.default import AbstractManager, get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.lookyloo import Lookyloo
@@ -16,7 +18,7 @@ logging.config.dictConfig(get_config('logging'))
 
 class BackgroundIndexer(AbstractManager):
 
-    def __init__(self, loglevel: int=logging.INFO):
+    def __init__(self, loglevel: Optional[int]=None):
         super().__init__(loglevel)
         self.lookyloo = Lookyloo()
         self.script_name = 'background_indexer'

@@ -13,17 +13,17 @@ from typing import List, Optional, Tuple
 from redis import Redis
 from redis.exceptions import ConnectionError as RedisConnectionError
 
-from .helpers import get_socket_path
+from .helpers import get_socket_path, get_config
 
 
 class AbstractManager(ABC):
 
     script_name: str
 
-    def __init__(self, loglevel: int=logging.DEBUG):
-        self.loglevel = loglevel
+    def __init__(self, loglevel: Optional[int]=None):
+        self.loglevel: int = loglevel if loglevel is not None else get_config('generic', 'loglevel') or logging.INFO
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(loglevel)
+        self.logger.setLevel(self.loglevel)
         self.logger.info(f'Initializing {self.__class__.__name__}')
         self.process: Optional[Popen] = None
         self.__redis = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)

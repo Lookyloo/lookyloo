@@ -10,7 +10,7 @@ from collections import defaultdict
 from collections.abc import Mapping
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from redis import Redis
 
@@ -22,7 +22,7 @@ logging.config.dictConfig(get_config('logging'))
 
 class Archiver(AbstractManager):
 
-    def __init__(self, loglevel: int=logging.INFO):
+    def __init__(self, loglevel: Optional[int]=None):
         super().__init__(loglevel)
         self.script_name = 'archiver'
         self.redis = Redis(unix_socket_path=get_socket_path('cache'))
