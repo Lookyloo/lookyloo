@@ -158,8 +158,8 @@ class Lookyloo():
         if not has_remote_lacus:
             # We need a redis connector that doesn't decode.
             redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))
-            self._lacus = LacusCore(redis, get_config('generic', 'tor_proxy'),
-                                    get_config('generic', 'only_global_lookups'),
+            self._lacus = LacusCore(redis, tor_proxy=get_config('generic', 'tor_proxy'),
+                                    only_global_lookups=get_config('generic', 'only_global_lookups'),
                                     loglevel=get_config('generic', 'loglevel'))
         return self._lacus
 
