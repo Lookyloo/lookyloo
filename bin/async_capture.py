@@ -111,14 +111,21 @@ class AsyncCapture(AbstractManager):
 
         if isinstance(self.lookyloo.lacus, LacusCore):
             await self._trigger_captures()
+            # NOTE: +1 because running this method also counts for one and will
+            #       be decremented when it finishes
+            self.set_running(len(self.captures) + 1)
 
         self.process_capture_queue()
 
-    async def _wait_to_finish(self):
+    async def _wait_to_finish_async(self):
         if isinstance(self.lookyloo.lacus, LacusCore):
             while self.captures:
                 self.logger.info(f'Waiting for {len(self.captures)} capture(s) to finish...')
                 await asyncio.sleep(5)
+                # NOTE: +1 so we don't quit before the final process capture queue
+                self.set_running(len(self.captures) + 1)
+            self.process_capture_queue()
+            self.unset_running()
         self.logger.info('No more captures')
 
 
