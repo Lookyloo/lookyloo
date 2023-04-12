@@ -556,7 +556,7 @@ class CapturesIndex(Mapping):
                 for ip in _all_ips:
                     if ip in ipasn:
                         ipasn_entries[ip] = ipasn[ip]
-                    if ip in cflare_hits:
+                    if ip in cflare_hits and cflare_hits[ip] is True:
                         cflare_entries[ip] = True
 
                 if ipasn_entries:
