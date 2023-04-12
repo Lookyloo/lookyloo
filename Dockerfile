@@ -6,9 +6,9 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get -y install wget python3-dev git python3-venv python3-pip python-is-python3
-RUN apt-get -y install libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libxkbcommon0 libxdamage1 libgbm1 libpango-1.0-0 libcairo2 libatspi2.0-0
-RUN apt-get -y install libxcomposite1 libxfixes3 libxrandr2 libasound2
+RUN apt-get -y install wget=1.21.* python3-dev=3.10.* git=1:2.34.* python3-venv=3.10.* python3-pip=22.0.* python-is-python3=3.9.* 
+RUN apt-get -y install libnss3=2:3.68.* libnspr4=2:4.32-* libatk1.0-0=2.36.* libatk-bridge2.0-0=2.38.* libcups2=2.4.* libxkbcommon0=1.4.* libxdamage1=1:1.1.* libgbm1=22.2.* libpango-1.0-0=1.50.* libcairo2=1.16.* libatspi2.0-0=2.44.* 
+RUN apt-get -y install libxcomposite1=1:0.4.* libxfixes3=1:6.0.* libxrandr2=2:1.5.* libasound2=1.2.* 
 RUN pip3 install poetry
 
 WORKDIR lookyloo
