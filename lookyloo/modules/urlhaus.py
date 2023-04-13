@@ -79,7 +79,7 @@ class URLhaus():
         url_information = self.__url_result(url)
         if (not url_information
             or ('query_status' in url_information
-                and url_information['query_status'] == 'no_results')):
+                and url_information['query_status'] in ['no_results', 'invalid_url'])):
             try:
                 url_storage_dir.rmdir()
             except OSError:
