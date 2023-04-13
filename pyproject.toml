@@ -50,10 +50,10 @@ pysanejs = "^2.0.1"
 pylookyloo = "^1.19.0"
 dnspython = "^2.3.0"
 pytaxonomies = "^1.5.0"
-pymisp = {version = "^2.4.169.3", extras = ["url", "fileobjects"]}
+pymisp = {version = "^2.4.170", extras = ["url", "fileobjects"]}
 Pillow = "^9.5.0"
 flask-restx = "^1.1.0"
-rich = "^13.3.3"
+rich = "^13.3.4"
 pyphishtanklookup = "^1.2"
 Flask-Cors = "^3.0.10"
 pyhashlookup = "^1.2.1"
