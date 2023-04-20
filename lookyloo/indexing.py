@@ -106,7 +106,7 @@ class Indexing():
         pipeline = self.redis.pipeline()
         for cn, cn_freq in self.cookies_names:
             for domain, d_freq in self.get_cookie_domains(cn):
-                tld = psl.get_tld(domain)
+                tld = psl.publicsuffix(domain)
                 main_domain_part = re.sub(f'.{tld}$', '', domain).split('.')[-1]
                 pipeline.zincrby('aggregate_domains_cn', cn_freq, f'{main_domain_part}|{cn}')
                 pipeline.zincrby('aggregate_cn_domains', d_freq, f'{cn}|{main_domain_part}')

@@ -132,7 +132,7 @@ class MISP():
 
     def lookup(self, node: URLNode, hostnode: HostNode) -> Union[Dict[str, Set[str]], Dict[str, Any]]:
         if self.available and self.enable_lookup:
-            tld = self.psl.get_tld(hostnode.name)
+            tld = self.psl.publicsuffix(hostnode.name)
             domain = re.sub(f'.{tld}$', '', hostnode.name).split('.')[-1]
             to_lookup = [node.name, hostnode.name, f'{domain}.{tld}'] + hostnode.resolved_ips
             if hasattr(hostnode, 'cnames'):
