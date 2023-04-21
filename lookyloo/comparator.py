@@ -5,6 +5,8 @@ import logging
 
 from typing import Dict, Any, Union, List, Optional, TypedDict, Set
 
+from har2tree import URLNode
+
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
@@ -34,35 +36,55 @@ class Comparator():
         self._captures_index = CapturesIndex(self.redis, self.context)
 
     @property
-    def redis(self):
+    def redis(self) -> Redis:
         return Redis(connection_pool=self.redis_pool)
 
-    def _compare_nodes(self, left, right, /) -> Dict[str, Any]:
+    def get_comparables_node(self, node: URLNode) -> Dict[str, str]:
+        to_return = {'url': node.name, 'hostname': node.hostname}
+        if hasattr(node, 'ip_address'):
+            to_return['ip_address'] = str(node.ip_address)
+        return to_return
+
+    def _compare_nodes(self, left: Dict[str, str], right: Dict[str, str], /) -> Dict[str, Any]:
         to_return = {}
         # URL
-        if left.name != right.name:
+        if left['url'] != right['url']:
             to_return['url'] = {'message': 'The nodes have different URLs.',
-                                'details': [left.name, right.name]}
+                                'details': [left['url'], right['url']]}
             # Hostname
-            if left.hostname != right.hostname:
+            if left['hostname'] != right['hostname']:
                 to_return['hostname'] = {'message': 'The nodes have different hostnames.',
-                                         'details': [left.hostname, right.hostname]}
+                                         'details': [left['hostname'], right['hostname']]}
             else:
                 to_return['hostname'] = {'message': 'The nodes have the same hostname.',
-                                         'details': left.hostname}
+                                         'details': left['hostname']}
         else:
             to_return['url'] = {'message': 'The nodes have the same URL.',
-                                'details': left.name}
+                                'details': left['url']}
         # IP in HAR
-        if hasattr(left, 'ip_address') and hasattr(right, 'ip_address'):
-            if left.ip_address != right.ip_address:
+        if left.get('ip_address') and right.get('ip_address'):
+            if left['ip_address'] != right['ip_address']:
                 to_return['ip'] = {'message': 'The nodes load content from different IPs.',
-                                   'details': [str(left.ip_address), str(right.ip_address)]}
+                                   'details': [left['ip_address'], right['ip_address']]}
             else:
                 to_return['ip'] = {'message': 'The nodes load content from the same IP.',
-                                   'details': str(left.ip_address)}
+                                   'details': left['ip_address']}
 
         # IPs in hostnode + ASNs
+        return to_return
+
+    def get_comparables_capture(self, capture_uuid: str) -> Dict[str, Any]:
+        if capture_uuid not in self._captures_index:
+            raise MissingUUID(f'{capture_uuid} does not exists.')
+
+        capture = self._captures_index[capture_uuid]
+        to_return = {'root_url': capture.tree.root_url,
+                     'final_url': capture.tree.root_hartree.har.final_redirect,
+                     'final_hostname': capture.tree.root_hartree.rendered_node.hostname,
+                     'final_status_code': capture.tree.root_hartree.rendered_node.response['status'],
+                     'redirects': {'length': len(capture.tree.redirects)}}
+
+        to_return['redirects']['nodes'] = [self.get_comparables_node(a) for a in list(reversed(capture.tree.root_hartree.rendered_node.get_ancestors())) + [capture.tree.root_hartree.rendered_node]]
         return to_return
 
     def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: Optional[CompareSettings]=None) -> Dict[str, Any]:
@@ -75,54 +97,54 @@ class Comparator():
                                              List[Union[str, Dict[str, Any]]],
                                              Dict[str, Union[int, str,
                                                              List[Union[int, str, Dict[str, Any]]]]]]]] = {}
-        left = self._captures_index[capture_left]
-        right = self._captures_index[capture_right]
+        left = self.get_comparables_capture(capture_left)
+        right = self.get_comparables_capture(capture_right)
         # Compare initial URL (first entry in HAR)
-        if left.tree.root_url != right.tree.root_url:
+        if left['root_url'] != right['root_url']:
             to_return['root_url'] = {'message': 'The captures are for different URLs.',
-                                     'details': [left.tree.root_url, right.tree.root_url]}
+                                     'details': [left['root_url'], right['root_url']]}
         else:
             to_return['root_url'] = {'message': 'The captures are the same URL.',
-                                     'details': left.tree.root_url}
+                                     'details': left['root_url']}
 
         # Compare landing page (URL in browser)
-        if left.tree.root_hartree.har.final_redirect != right.tree.root_hartree.har.final_redirect:
+        if left['final_url'] != right['final_url']:
             to_return['final_url'] = {'message': 'The landing page is different.',
-                                      'details': [left.tree.root_hartree.har.final_redirect, right.tree.root_hartree.har.final_redirect]}
+                                      'details': [left['final_url'], right['final_url']]}
             #   => if different, check if the hostname is the same
-            if left.tree.root_hartree.rendered_node.hostname != right.tree.root_hartree.rendered_node.hostname:
+            if left['final_hostname'] != right['final_hostname']:
                 to_return['final_hostname'] = {'message': 'The hostname of the rendered page is different.',
-                                               'details': [left.tree.root_hartree.rendered_node.hostname, right.tree.root_hartree.rendered_node.hostname]}
+                                               'details': [left['final_hostname'], right['final_hostname']]}
             else:
                 to_return['final_hostname'] = {'message': 'The hostname of the rendered page is the same.',
-                                               'details': left.tree.root_hartree.rendered_node.hostname}
+                                               'details': left['final_hostname']}
         else:
             to_return['final_url'] = {'message': 'The landing page is the same.',
-                                      'details': left.tree.root_hartree.har.final_redirect}
+                                      'details': left['final_url']}
 
-        if left.tree.root_hartree.rendered_node.response['status'] != right.tree.root_hartree.rendered_node.response['status']:
+        if left['final_status_code'] != right['final_status_code']:
             to_return['final_status_code'] = {'message': 'The status code of the rendered page is different.',
-                                              'details': [left.tree.root_hartree.rendered_node.response['status'], right.tree.root_hartree.rendered_node.response['status']]}
+                                              'details': [left['final_status_code'], right['final_status_code']]}
         else:
             to_return['final_status_code'] = {'message': 'The status code of the rendered page is the same.',
-                                              'details': left.tree.root_hartree.rendered_node.response['status']}
+                                              'details': left['final_status_code']}
 
         to_return['redirects'] = {'length': {}, 'nodes': []}
-        if len(left.tree.redirects) != len(right.tree.redirects):
+        if left['redirects']['length'] != right['redirects']['length']:
             to_return['redirects']['length'] = {'message': 'The captures have a different amount of redirects',
-                                                'details': [len(left.tree.redirects), len(right.tree.redirects)]}
+                                                'details': [left['redirects']['length'], right['redirects']['length']]}
         else:
             to_return['redirects']['length'] = {'message': 'The captures have the same number of redirects',
-                                                'details': len(left.tree.redirects)}
+                                                'details': left['redirects']['length']}
 
         # Compare chain of redirects
-        redirect_nodes_left = [a for a in reversed(left.tree.root_hartree.rendered_node.get_ancestors())] + [left.tree.root_hartree.rendered_node]
-        redirect_nodes_right = [a for a in reversed(right.tree.root_hartree.rendered_node.get_ancestors())] + [right.tree.root_hartree.rendered_node]
-        for redirect_left, redirect_right in zip(redirect_nodes_left, redirect_nodes_right):
+        for redirect_left, redirect_right in zip(right['redirects']['nodes'], left['redirects']['nodes']):
             if isinstance(to_return['redirects']['nodes'], list):
                 to_return['redirects']['nodes'].append(self._compare_nodes(redirect_left, redirect_right))
 
         # Compare all ressources URLs
+        left_capture = self._captures_index[capture_left]
+        right_capture = self._captures_index[capture_right]
 
         to_return['ressources'] = {}
         _settings: Optional[CompareSettings]
@@ -136,11 +158,11 @@ class Comparator():
             }
         else:
             _settings = None
-        ressources_left = {a.name for a in left.tree.root_hartree.rendered_node.traverse()
+        ressources_left = {a.name for a in left_capture.tree.root_hartree.rendered_node.traverse()
                            if not _settings
                            or not a.hostname.endswith(_settings['ressources_ignore_domains'])
                            or not any(fnmatch.fnmatch(a.name, regex) for regex in _settings['ressources_ignore_regexes'])}
-        ressources_right = {a.name for a in right.tree.root_hartree.rendered_node.traverse() if not settings
+        ressources_right = {a.name for a in right_capture.tree.root_hartree.rendered_node.traverse() if not settings
                             if not _settings
                             or not a.hostname.endswith(_settings['ressources_ignore_domains'])
                             or not any(fnmatch.fnmatch(a.name, regex) for regex in _settings['ressources_ignore_regexes'])}
