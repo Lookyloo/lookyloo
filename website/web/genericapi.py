@@ -12,9 +12,9 @@ from werkzeug.security import check_password_hash
 
 from lacuscore import CaptureStatus as CaptureStatusCore
 from pylacus import CaptureStatus as CaptureStatusPy
-from lookyloo.lookyloo import Lookyloo
 from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID
+from lookyloo.lookyloo import Lookyloo
 
 from .helpers import build_users_table, load_user_from_request, src_request_ip
 
@@ -477,6 +477,37 @@ class CompareCaptures(Resource):
             else:
                 return {'error': str(e), 'details': 'Invalid request (left/right UUIDs missing.)'}
         return result
+
+
+comparables_nodes_model = api.model('ComparablesNodeModel', {
+    'url': fields.String,
+    'hostname': fields.String,
+    'ip_address': fields.String,
+})
+
+redirects_model = api.model('RedirectsModel', {
+    'length': fields.Integer,
+    'nodes': fields.List(fields.Nested(comparables_nodes_model)),
+})
+
+
+comparables_model = api.model('ComparablesModel', {
+    'root_url': fields.String,
+    'final_url': fields.String,
+    'final_hostname': fields.String,
+    'final_status_code': fields.Integer,
+    'redirects': fields.Nested(redirects_model),
+    'ressources': fields.List(fields.List(fields.String)),
+})
+
+
+@api.route('/json/comparables/<string:capture_uuid>')
+@api.doc(description='Get the data we can compare across captures')
+class Comparables(Resource):
+
+    @api.marshal_with(comparables_model)
+    def get(self, capture_uuid: str):
+        return comparator.get_comparables_capture(capture_uuid)
 
 
 # Get information for takedown

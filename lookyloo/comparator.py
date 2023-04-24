@@ -85,6 +85,7 @@ class Comparator():
                      'redirects': {'length': len(capture.tree.redirects)}}
 
         to_return['redirects']['nodes'] = [self.get_comparables_node(a) for a in list(reversed(capture.tree.root_hartree.rendered_node.get_ancestors())) + [capture.tree.root_hartree.rendered_node]]
+        to_return['ressources'] = {(a.name, a.hostname) for a in capture.tree.root_hartree.rendered_node.traverse()}
         return to_return
 
     def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: Optional[CompareSettings]=None) -> Dict[str, Any]:
@@ -143,9 +144,6 @@ class Comparator():
                 to_return['redirects']['nodes'].append(self._compare_nodes(redirect_left, redirect_right))
 
         # Compare all ressources URLs
-        left_capture = self._captures_index[capture_left]
-        right_capture = self._captures_index[capture_right]
-
         to_return['ressources'] = {}
         _settings: Optional[CompareSettings]
         if settings:
@@ -158,14 +156,14 @@ class Comparator():
             }
         else:
             _settings = None
-        ressources_left = {a.name for a in left_capture.tree.root_hartree.rendered_node.traverse()
+        ressources_left = {url for url, hostname in left['ressources']
                            if not _settings
-                           or not a.hostname.endswith(_settings['ressources_ignore_domains'])
-                           or not any(fnmatch.fnmatch(a.name, regex) for regex in _settings['ressources_ignore_regexes'])}
-        ressources_right = {a.name for a in right_capture.tree.root_hartree.rendered_node.traverse() if not settings
+                           or not hostname.endswith(_settings['ressources_ignore_domains'])
+                           or not any(fnmatch.fnmatch(url, regex) for regex in _settings['ressources_ignore_regexes'])}
+        ressources_right = {url for url, hostname in right['ressources']
                             if not _settings
-                            or not a.hostname.endswith(_settings['ressources_ignore_domains'])
-                            or not any(fnmatch.fnmatch(a.name, regex) for regex in _settings['ressources_ignore_regexes'])}
+                            or not hostname.endswith(_settings['ressources_ignore_domains'])
+                            or not any(fnmatch.fnmatch(url, regex) for regex in _settings['ressources_ignore_regexes'])}
         if present_in_both := ressources_left & ressources_right:
             to_return['ressources']['both'] = sorted(present_in_both)
         if present_left := ressources_left - ressources_right:
