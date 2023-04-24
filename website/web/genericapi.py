@@ -501,7 +501,7 @@ comparables_model = api.model('ComparablesModel', {
 })
 
 
-@api.route('/json/comparables/<string:capture_uuid>')
+@api.route('/json/<string:capture_uuid>/comparables')
 @api.doc(description='Get the data we can compare across captures')
 class Comparables(Resource):
 
