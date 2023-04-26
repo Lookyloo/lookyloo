@@ -9,6 +9,7 @@
 {% from "macros.html" import other_captures_table %}
 {% from "macros.html" import get_ressource_button %}
 {% from "macros.html" import context_form %}
+{% from "macros.html" import pandora_submit %}
 
 {% block title %}Details for {{ hostnode.name }} {% endblock %}
 
@@ -63,9 +64,17 @@
   });
   </script>
   <script>
-  function submit_pandora(){
+  function submit_pandora(node_uuid, ressource_hash){
+    let data = {};
+    if (node_uuid) {
+        data.node_uuid = node_uuid;
+    };
+    if (ressource_hash) {
+        data.ressource_hash = ressource_hash;
+    };
     fetch("{{ url_for('pandora_submit', tree_uuid=tree_uuid)}}", {
-         method: "GET",
+        method: "POST",
+        body: JSON.stringify(data),
       })
       .then(response => response.json())
       .then(data => {
@@ -232,8 +241,7 @@
           {% if url['url_object'].downloaded_filename %}
             {% if has_pandora %}
             <div> Downloaded file: <b>{{url['url_object'].downloaded_filename}}</b> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})</div>
-            <button id="pandora_submit_button" type="button" class="btn btn-primary" onclick="submit_pandora()">Submit to Pandora</button>
-            <div>After clicking on the button above, a link to the report on Pandora will be copied in your clipboard.</div>
+            {{ pandora_submit() }}
             {% else %}
             <a href="{{ url_for('data', tree_uuid=tree_uuid)}}">
               Download {{url['url_object'].downloaded_filename}}
@@ -255,6 +263,9 @@
             Empty body.
             {% else %}
             {{ ressource_legitimacy_details(url['legitimacy'], url['url_object'].body.getbuffer().nbytes) }}
+            {% if has_pandora %}
+            {{ pandora_submit(url['url_object'].uuid) }}
+            {% endif %}
             {% endif %}
             </div>
           {%endif%}
@@ -305,6 +316,9 @@
               {% endif %}
               {{ ressource_legitimacy_details(details['legitimacy'], details['body_size']) }}
               </div>
+              {% if has_pandora %}
+              {{ pandora_submit(url['url_object'].uuid, hash) }}
+              {% endif %}
               <div>
                 This file {% if details['type'] %}(<b>{{ details['type'] }}</b>){% endif %} can be found <b>{{ details['hash_freq'] }}</b> times
                 across all the captures on this lookyloo instance, in <b>{{ details['hash_domains_freq'] }}</b> unique domains.

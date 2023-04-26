@@ -271,6 +271,22 @@
 </div>
 {% endmacro %}
 
+
+{% macro pandora_submit(node_uuid, ressource_hash) %}
+<div class="col-sm-8">
+  <button id="pandora_submit_button" type="button" class="btn btn-primary btn-sm" title="open a new tab with the pandora report"
+  {% if node_uuid and ressource_hash %}
+    onclick="submit_pandora('{{node_uuid}}', '{{ressource_hash}}')"
+  {% elif node_uuid %}
+    onclick="submit_pandora('{{node_uuid}}')"
+  {% else %}
+    onclick="submit_pandora()"
+  {% endif %}
+  >Submit to Pandora</button>
+</div>
+{% endmacro %}
+
+
 {% macro popup_icons_response(urlnode, tree_uuid) %}
 <div>
   {% if urlnode.response_cookie %}

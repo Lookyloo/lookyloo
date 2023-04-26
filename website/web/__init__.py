@@ -792,9 +792,24 @@ def tree_body_hashes(tree_uuid: str):
     return render_template('tree_body_hashes.html', tree_uuid=tree_uuid, body_hashes=body_hashes)
 
 
-@app.route('/tree/<string:tree_uuid>/pandora', methods=['GET'])
+@app.route('/tree/<string:tree_uuid>/pandora', methods=['GET', 'POST'])
 def pandora_submit(tree_uuid: str):
-    filename, content = lookyloo.get_data(tree_uuid)
+    node_uuid = None
+    if request.method == 'POST':
+        input_json = request.get_json(force=True)
+        node_uuid = input_json.get('node_uuid')
+        h_request = input_json.get('ressource_hash')
+    if node_uuid:
+        ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_request)
+        if ressource:
+            filename, content, mimetype = ressource
+        elif h_request:
+            return {'error': 'Unable to find resource {h_request} in node {node_uuid} of tree {tree_uuid}'}
+        else:
+            return {'error': 'Unable to find resource in node {node_uuid} of tree {tree_uuid}'}
+    else:
+        filename, content = lookyloo.get_data(tree_uuid)
+
     response = lookyloo.pandora.submit_file(content, filename)
     return jsonify(response)
 
