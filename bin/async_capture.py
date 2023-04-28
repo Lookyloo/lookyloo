@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import asyncio
+import json
 import logging
 import logging.config
 import signal
@@ -92,6 +93,12 @@ class AsyncCapture(AbstractManager):
                 last_redirected_url=entries.get('last_redirected_url'),
                 cookies=entries.get('cookies')  # type: ignore
             )
+
+            if ('auto_report' in to_capture):
+                settings = json.loads(to_capture['auto_report'])
+                if settings.get('email'):
+                    self.lookyloo.send_mail(uuid, email=settings['email'],
+                                            comment=settings.get('comment'))
 
             lazy_cleanup = self.lookyloo.redis.pipeline()
             if queue and self.lookyloo.redis.zscore('queues', queue):

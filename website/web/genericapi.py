@@ -355,6 +355,11 @@ class CaptureCookies(Resource):
 
 # Just text
 
+auto_report_model = api.model('AutoReportModel', {
+    'email': fields.String(description="Email of the reporter, used by the analyst to get in touch."),
+    'comment': fields.String(description="Description of the URL, will be given to the analyst.")
+})
+
 submit_fields_post = api.model('SubmitFieldsPost', {
     'url': fields.Url(description="The URL to capture"),
     'document': fields.String(description="A base64 encoded document, it can be anything a browser can display."),
@@ -366,7 +371,8 @@ submit_fields_post = api.model('SubmitFieldsPost', {
     'referer': fields.String(description="Referer to pass to the capture", example=''),
     'headers': fields.String(description="Headers to pass to the capture", example='Accept-Language: en-US;q=0.5, fr-FR;q=0.4'),
     'proxy': fields.Url(description="Proxy to use for the capture. Format: [scheme]://[username]:[password]@[hostname]:[port]", example=''),
-    'cookies': fields.String(description="JSON export of a list of cookies as exported from an other capture", example='')
+    'cookies': fields.String(description="JSON export of a list of cookies as exported from an other capture", example=''),
+    'auto_report': fields.Nested(auto_report_model, description="The settings for the automatic reporting.")
 })
 
 

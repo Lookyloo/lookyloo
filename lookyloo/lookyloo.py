@@ -666,7 +666,7 @@ class Lookyloo():
         result.append(self.takedown_details(rendered_hostnode))
         return result
 
-    def send_mail(self, capture_uuid: str, /, email: str='', comment: str='') -> None:
+    def send_mail(self, capture_uuid: str, /, email: str='', comment: Optional[str]=None) -> None:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
             return
@@ -702,7 +702,7 @@ class Lookyloo():
             uuid=capture_uuid,
             initial_url=initial_url,
             redirects=redirects,
-            comment=comment,
+            comment=comment if comment else '',
             sender=msg['From'].addresses[0].display_name,
         )
         msg.set_content(body)
