@@ -954,18 +954,18 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.19.0"
+version = "1.19.2"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "har2tree-1.19.0-py3-none-any.whl", hash = "sha256:4b55b0b416a66aa9893170713607e73f594b2b00032a23e3baba6f58737abe51"},
-    {file = "har2tree-1.19.0.tar.gz", hash = "sha256:33a3f87ce7ffbe4cfe19ad7674fc3b5f73d22d828511fbf3788840b6b4941187"},
+    {file = "har2tree-1.19.2-py3-none-any.whl", hash = "sha256:8cc5a674313e704e0333439d6e59c112acea3536b432167c4a0319638c69d4e2"},
+    {file = "har2tree-1.19.2.tar.gz", hash = "sha256:0dd2f9473be24c21e88f7ccfaf94eb6f7c908d1618ef7de37d222ab701a59fb5"},
 ]
 
 [package.dependencies]
-beautifulsoup4 = ">=4.12.0,<5.0.0"
+beautifulsoup4 = ">=4.12.2,<5.0.0"
 charset-normalizer = ">=2,<4"
 ete3 = ">=3.1.2,<4.0.0"
 filetype = ">=1.2.0,<2.0.0"
@@ -974,12 +974,12 @@ numpy = [
     {version = "1.23.3", markers = "python_version < \"3.10\""},
     {version = ">=1.23.4,<2.0.0", markers = "python_version >= \"3.10\""},
 ]
-publicsuffixlist = ">=0.9.3,<0.10.0"
+publicsuffixlist = ">=0.9.4,<0.10.0"
 six = ">=1.16.0,<2.0.0"
 w3lib = ">=2.1.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=6.1.3,<7.0.0)"]
+docs = ["Sphinx (>=6.2.1,<7.0.0)"]
 
 [[package]]
 name = "hiredis"
@@ -1133,14 +1133,14 @@ testing = ["flake8 (<5)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-chec
 
 [[package]]
 name = "ipython"
-version = "8.12.0"
+version = "8.13.0"
 description = "IPython: Productive Interactive Computing"
 category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ipython-8.12.0-py3-none-any.whl", hash = "sha256:1c183bf61b148b00bcebfa5d9b39312733ae97f6dad90d7e9b4d86c8647f498c"},
-    {file = "ipython-8.12.0.tar.gz", hash = "sha256:a950236df04ad75b5bc7f816f9af3d74dc118fd42f2ff7e80e8e60ca1f182e2d"},
+    {file = "ipython-8.13.0-py3-none-any.whl", hash = "sha256:a0a8a30376cee8019c6e22bc0ab4320762f5f5e4d7abed0ea3ee4b95e3982ad5"},
+    {file = "ipython-8.13.0.tar.gz", hash = "sha256:8d56026b882958db8eab089654f0c045d1237622313a1506da136fb0cce4270f"},
 ]
 
 [package.dependencies]
@@ -1245,25 +1245,25 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.4.9"
+version = "1.4.10"
 description = "Core of Lacus, usable as a module"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.4.9-py3-none-any.whl", hash = "sha256:7a6cb9935253c38eb81b61cd72e489af78887914b06675e48e39947a061b26d2"},
-    {file = "lacuscore-1.4.9.tar.gz", hash = "sha256:57113906a31b815bbaa6b15472e134a6900ec66a39899feb787bd58cb22d50e8"},
+    {file = "lacuscore-1.4.10-py3-none-any.whl", hash = "sha256:fe7c1ef7a227ee0b2b03873962f030b79a0bc1fb49e855c82ac7537f153812ba"},
+    {file = "lacuscore-1.4.10.tar.gz", hash = "sha256:4c7e4119b7466470dcc189b56151c2d0d85ec9ee947753153a1b27d00ed898e3"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.19.9,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.19.10,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=4.5.4,<5.0.0", extras = ["hiredis"]}
-requests = ">=2.28.2,<3.0.0"
+requests = ">=2.29.0,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
 
 [package.extras]
-docs = ["Sphinx (>=6.1.3,<7.0.0)"]
+docs = ["Sphinx (>=6.2.1,<7.0.0)"]
 
 [[package]]
 name = "lief"
@@ -1902,14 +1902,14 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.19.9"
+version = "1.19.10"
 description = "A simple library to capture websites using playwright"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.19.9-py3-none-any.whl", hash = "sha256:621ffaefd9a2e80f9036cd64291d66196f16397dc8f987f0c938309b5a76086b"},
-    {file = "playwrightcapture-1.19.9.tar.gz", hash = "sha256:4047ab6a0392cd1004279d09e4df509bcced304189a680400f6332039fbeabeb"},
+    {file = "playwrightcapture-1.19.10-py3-none-any.whl", hash = "sha256:eece312f1b3fcdc378302f670ce7d1cdd60316e568dd461c746dbe12a6c68a77"},
+    {file = "playwrightcapture-1.19.10.tar.gz", hash = "sha256:89a254f95682a86be9e8ed945f7e7b1c4834b84808b038ea1dc027fe5443b51f"},
 ]
 
 [package.dependencies]
@@ -1918,12 +1918,12 @@ dateparser = ">=1.1.8,<2.0.0"
 lxml = ">=4.9.2,<5.0.0"
 playwright = ">=1.32.1,<2.0.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
-requests = {version = ">=2.28.2,<3.0.0", optional = true, markers = "extra == \"recaptcha\""}
+requests = {version = ">=2.29.0,<3.0.0", optional = true, markers = "extra == \"recaptcha\""}
 SpeechRecognition = {version = ">=3.10.0,<4.0.0", optional = true, markers = "extra == \"recaptcha\""}
 w3lib = ">=2.1.1,<3.0.0"
 
 [package.extras]
-recaptcha = ["SpeechRecognition (>=3.10.0,<4.0.0)", "pydub (>=0.25.1,<0.26.0)", "requests (>=2.28.2,<3.0.0)"]
+recaptcha = ["SpeechRecognition (>=3.10.0,<4.0.0)", "pydub (>=0.25.1,<0.26.0)", "requests (>=2.29.0,<3.0.0)"]
 
 [[package]]
 name = "prompt-toolkit"
@@ -2126,21 +2126,21 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.4.0"
+version = "1.4.1"
 description = "Python CLI and module for lacus"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylacus-1.4.0-py3-none-any.whl", hash = "sha256:1a3dfb9d0c5891c54f6fd0287225194e190ab41e75617a74e9dd7b3c83daf9fe"},
-    {file = "pylacus-1.4.0.tar.gz", hash = "sha256:a0521cf8ab781fe75c73a6942645dcf8b7c940f6d8db596da8e575a4451797a9"},
+    {file = "pylacus-1.4.1-py3-none-any.whl", hash = "sha256:2a139f0f022022aa514750fb3befda6fbd8d1c9d555c95f9910139245c17262a"},
+    {file = "pylacus-1.4.1.tar.gz", hash = "sha256:a8c8f82e533e1938cbde02b0a8a8dc104ad2c784e26958e1b3c3093b8995b710"},
 ]
 
 [package.dependencies]
-requests = ">=2.28.2,<3.0.0"
+requests = ">=2.29.0,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=6.1.3,<7.0.0)"]
+docs = ["Sphinx (>=6.2.1,<7.0.0)"]
 
 [[package]]
 name = "pylookyloo"
@@ -2480,14 +2480,14 @@ files = [
 
 [[package]]
 name = "requests"
-version = "2.28.2"
+version = "2.29.0"
 description = "Python HTTP for Humans."
 category = "main"
 optional = false
-python-versions = ">=3.7, <4"
+python-versions = ">=3.7"
 files = [
-    {file = "requests-2.28.2-py3-none-any.whl", hash = "sha256:64299f4909223da747622c030b781c0d7811e359c37124b4bd368fb8c6518baa"},
-    {file = "requests-2.28.2.tar.gz", hash = "sha256:98b1b2782e3c6c4904938b84c0eb932721069dfdb9134313beff7c83c2df24bf"},
+    {file = "requests-2.29.0-py3-none-any.whl", hash = "sha256:e8f3c9be120d3333921d213eef078af392fba3933ab7ed2d1cba3b56f2568c3b"},
+    {file = "requests-2.29.0.tar.gz", hash = "sha256:f2e34a75f4749019bb0e3effb66683630e4ffeaf75819fb51bebef1bf5aef059"},
 ]
 
 [package.dependencies]
@@ -2518,14 +2518,14 @@ six = "*"
 
 [[package]]
 name = "rich"
-version = "13.3.4"
+version = "13.3.5"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "rich-13.3.4-py3-none-any.whl", hash = "sha256:22b74cae0278fd5086ff44144d3813be1cedc9115bdfabbfefd86400cb88b20a"},
-    {file = "rich-13.3.4.tar.gz", hash = "sha256:b5d573e13605423ec80bdd0cd5f8541f7844a0e71a13f74cf454ccb2f490708b"},
+    {file = "rich-13.3.5-py3-none-any.whl", hash = "sha256:69cdf53799e63f38b95b9bf9c875f8c90e78dd62b2f00c13a911c7a3b9fa4704"},
+    {file = "rich-13.3.5.tar.gz", hash = "sha256:2d11b9b8dd03868f09b4fffadc84a6a8cda574e40dc90821bd845720ebb8e89c"},
 ]
 
 [package.dependencies]
@@ -2617,14 +2617,14 @@ tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
 name = "tldextract"
-version = "3.4.0"
+version = "3.4.1"
 description = "Accurately separates a URL's subdomain, domain, and public suffix, using the Public Suffix List (PSL). By default, this includes the public ICANN TLDs and their exceptions. You can optionally support the Public Suffix List's private domains as well."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "tldextract-3.4.0-py3-none-any.whl", hash = "sha256:47aa4d8f1a4da79a44529c9a2ddc518663b25d371b805194ec5ce2a5f615ccd2"},
-    {file = "tldextract-3.4.0.tar.gz", hash = "sha256:78aef13ac1459d519b457a03f1f74c1bf1c2808122a6bcc0e6840f81ba55ad73"},
+    {file = "tldextract-3.4.1-py3-none-any.whl", hash = "sha256:26f646987b01ae2946e7491cce4aaf54129f3489a196a274e6c843ec72968313"},
+    {file = "tldextract-3.4.1.tar.gz", hash = "sha256:fa9e50c4a03bede2a1d95dca620d661678484626858ccf388cf9671a0dd497a4"},
 ]
 
 [package.dependencies]
@@ -2702,14 +2702,14 @@ files = [
 
 [[package]]
 name = "types-pillow"
-version = "9.5.0.1"
+version = "9.5.0.2"
 description = "Typing stubs for Pillow"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-Pillow-9.5.0.1.tar.gz", hash = "sha256:c23992c26ce52a7020444d1e7fbdc99e9fab50592806123039864fd4608b6793"},
-    {file = "types_Pillow-9.5.0.1-py3-none-any.whl", hash = "sha256:205b074a344fa8e26555c4f988adc66dceab3ba789ed3af7ca1dd4318a707ec0"},
+    {file = "types-Pillow-9.5.0.2.tar.gz", hash = "sha256:b3f9f621f259566c19c1deca21901017c8b1e3e200ed2e49e0a2d83c0a5175db"},
+    {file = "types_Pillow-9.5.0.2-py3-none-any.whl", hash = "sha256:58fdebd0ffa2353ecccdd622adde23bce89da5c0c8b96c34f2d1eca7b7e42d0e"},
 ]
 
 [[package]]
@@ -2784,14 +2784,14 @@ types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-urllib3"
-version = "1.26.25.10"
+version = "1.26.25.11"
 description = "Typing stubs for urllib3"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-urllib3-1.26.25.10.tar.gz", hash = "sha256:c44881cde9fc8256d05ad6b21f50c4681eb20092552351570ab0a8a0653286d6"},
-    {file = "types_urllib3-1.26.25.10-py3-none-any.whl", hash = "sha256:12c744609d588340a07e45d333bf870069fc8793bcf96bae7a96d4712a42591d"},
+    {file = "types-urllib3-1.26.25.11.tar.gz", hash = "sha256:697102ddf4f781eed6f692353f40cee1098643526f5a8b99f49d2ede90fd3754"},
+    {file = "types_urllib3-1.26.25.11-py3-none-any.whl", hash = "sha256:04235e792139cf3624b25d38faab593456738fbdb7439634046172e3b1339400"},
 ]
 
 [[package]]
@@ -2911,14 +2911,14 @@ files = [
 
 [[package]]
 name = "werkzeug"
-version = "2.3.0"
+version = "2.3.1"
 description = "The comprehensive WSGI web application library."
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Werkzeug-2.3.0-py3-none-any.whl", hash = "sha256:340335057f72974d9281dbaf52c8090a9f9a59ba304ae814bf0656e6559c0020"},
-    {file = "Werkzeug-2.3.0.tar.gz", hash = "sha256:3b6b46926d052b8ebca97c4dc73c12e47bdd07d57ab0600c039c3155450227bc"},
+    {file = "Werkzeug-2.3.1-py3-none-any.whl", hash = "sha256:69a4b8fcbb30a4c3fa81a5cebd961541273e4d222a4c08593b0b18312e14f64a"},
+    {file = "Werkzeug-2.3.1.tar.gz", hash = "sha256:2d35a28a75ae03727eae14ea7d13627c0f77aed6b9998441e6dae0b387f697fc"},
 ]
 
 [package.dependencies]
