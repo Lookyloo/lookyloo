@@ -50,7 +50,7 @@ pysanejs = "^2.0.1"
 pylookyloo = "^1.19.0"
 dnspython = "^2.3.0"
 pytaxonomies = "^1.5.0"
-pymisp = {version = "^2.4.170.1", extras = ["url", "fileobjects"]}
+pymisp = {version = "^2.4.170.2", extras = ["url", "fileobjects"]}
 Pillow = "^9.5.0"
 flask-restx = "^1.1.0"
 rich = "^13.3.5"
@@ -60,15 +60,15 @@ pyhashlookup = "^1.2.1"
 lief = "^0.13.0"
 ua-parser = "^0.16.1"
 Flask-Login = "^0.6.2"
-har2tree = "^1.19.2"
+har2tree = "^1.19.3"
 passivetotal = "^2.5.9"
 werkzeug = "^2.3.3"
 filetype = "^1.2.0"
 pypandora = "^1.4.0"
-lacuscore = "^1.4.10"
+lacuscore = "^1.4.11"
 pylacus = "^1.4.1"
 pyipasnhistory = "^2.1.2"
-publicsuffixlist = "^0.9.4"
+publicsuffixlist = "^0.10.0.20230429"
 pyfaup = "^1.2"
 chardet = "^5.1.0"
 pysecuritytxt = "^1.1.0"
@@ -76,7 +76,10 @@ pylookyloomonitoring = "^1.0.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.2.0"
-ipython = "<8.13.0"
+ipython = [
+    {version = "<8.13.0", python = "<3.9"},
+    {version = "^8.13.0", python = ">=3.9"}
+]
 types-redis = {version = "^4.5.4.1"}
 types-requests = "^2.29.0.0"
 types-pkg-resources = "^0.1.3"
