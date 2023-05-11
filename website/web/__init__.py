@@ -663,17 +663,19 @@ def monitor(tree_uuid: str):
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
 
     collection: str = request.form['collection'] if request.form.get('collection') else ''
+    notification_email: str = request.form['notification'] if request.form.get('notification') else ''
     frequency: str = request.form['frequency'] if request.form.get('frequency') else 'daily'
     expire_at: Optional[float] = datetime.fromisoformat(request.form['expire_at']).timestamp() if request.form.get('expire_at') else None
     cache = lookyloo.capture_cache(tree_uuid)
     if cache:
         monitoring_uuid = lookyloo.monitoring.monitor({'url': cache.url, 'user_agent': cache.user_agent, 'listing': False},
-                                                      frequency=frequency, collection=collection, expire_at=expire_at)
+                                                      frequency=frequency, collection=collection, expire_at=expire_at,
+                                                      notification={'email': notification_email})
         flash(f"Sent to monitoring ({monitoring_uuid}).", 'success')
         if collection:
             flash(f"See monitored captures in the same collection here: {lookyloo.monitoring.root_url}/monitored/{collection}.", 'success')
         else:
-            flash(f"Comparison available as soon as we have more than one capture: {lookyloo.monitoring.root_url}/changes_tracking/{collection}.", 'success')
+            flash(f"Comparison available as soon as we have more than one capture: {lookyloo.monitoring.root_url}/changes_tracking/{monitoring_uuid}.", 'success')
     else:
         flash(f"Unable to send to monitoring, uuid {tree_uuid} not found in cache.", 'error')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
