@@ -473,7 +473,7 @@ class CompareCaptures(Resource):
         if not left_uuid or not right_uuid:
             return {'error': 'UUIDs of captures to compare missing', 'details': f'Left: {left_uuid} / Right: {right_uuid}'}
         try:
-            result = comparator.compare_captures(left_uuid, right_uuid, settings=parameters.get('compare_settings'))
+            different, result = comparator.compare_captures(left_uuid, right_uuid, settings=parameters.get('compare_settings'))
         except MissingUUID as e:
             # UUID non-existent, or capture still ongoing.
             if left_uuid and right_uuid:
@@ -482,6 +482,7 @@ class CompareCaptures(Resource):
                 return {'error': str(e), 'details': {left_uuid: status_left, right_uuid: status_right}}
             else:
                 return {'error': str(e), 'details': 'Invalid request (left/right UUIDs missing.)'}
+        result['different'] = different
         return result
 
 

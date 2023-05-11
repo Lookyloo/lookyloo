@@ -3,7 +3,7 @@
 import fnmatch
 import logging
 
-from typing import Dict, Any, Union, List, Optional, TypedDict, Set
+from typing import Dict, Any, Union, List, Optional, TypedDict, Set, Tuple
 
 from har2tree import URLNode
 
@@ -45,10 +45,11 @@ class Comparator():
             to_return['ip_address'] = str(node.ip_address)
         return to_return
 
-    def _compare_nodes(self, left: Dict[str, str], right: Dict[str, str], /) -> Dict[str, Any]:
+    def _compare_nodes(self, left: Dict[str, str], right: Dict[str, str], /, different: bool) -> Tuple[bool, Dict[str, Any]]:
         to_return = {}
         # URL
         if left['url'] != right['url']:
+            different = True
             to_return['url'] = {'message': 'The nodes have different URLs.',
                                 'details': [left['url'], right['url']]}
             # Hostname
@@ -64,6 +65,7 @@ class Comparator():
         # IP in HAR
         if left.get('ip_address') and right.get('ip_address'):
             if left['ip_address'] != right['ip_address']:
+                different = True
                 to_return['ip'] = {'message': 'The nodes load content from different IPs.',
                                    'details': [left['ip_address'], right['ip_address']]}
             else:
@@ -71,7 +73,7 @@ class Comparator():
                                    'details': left['ip_address']}
 
         # IPs in hostnode + ASNs
-        return to_return
+        return different, to_return
 
     def get_comparables_capture(self, capture_uuid: str) -> Dict[str, Any]:
         if capture_uuid not in self._captures_index:
@@ -88,12 +90,13 @@ class Comparator():
         to_return['ressources'] = {(a.name, a.hostname) for a in capture.tree.root_hartree.rendered_node.traverse()}
         return to_return
 
-    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: Optional[CompareSettings]=None) -> Dict[str, Any]:
+    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: Optional[CompareSettings]=None) -> Tuple[bool, Dict[str, Any]]:
         if capture_left not in self._captures_index:
             raise MissingUUID(f'{capture_left} does not exists.')
         if capture_right not in self._captures_index:
             raise MissingUUID(f'{capture_right} does not exists.')
 
+        different: bool = False
         to_return: Dict[str, Dict[str, Union[str,
                                              List[Union[str, Dict[str, Any]]],
                                              Dict[str, Union[int, str,
@@ -102,6 +105,7 @@ class Comparator():
         right = self.get_comparables_capture(capture_right)
         # Compare initial URL (first entry in HAR)
         if left['root_url'] != right['root_url']:
+            different = True
             to_return['root_url'] = {'message': 'The captures are for different URLs.',
                                      'details': [left['root_url'], right['root_url']]}
         else:
@@ -110,6 +114,7 @@ class Comparator():
 
         # Compare landing page (URL in browser)
         if left['final_url'] != right['final_url']:
+            different = True
             to_return['final_url'] = {'message': 'The landing page is different.',
                                       'details': [left['final_url'], right['final_url']]}
             #   => if different, check if the hostname is the same
@@ -124,6 +129,7 @@ class Comparator():
                                       'details': left['final_url']}
 
         if left['final_status_code'] != right['final_status_code']:
+            different = True
             to_return['final_status_code'] = {'message': 'The status code of the rendered page is different.',
                                               'details': [left['final_status_code'], right['final_status_code']]}
         else:
@@ -132,6 +138,7 @@ class Comparator():
 
         to_return['redirects'] = {'length': {}, 'nodes': []}
         if left['redirects']['length'] != right['redirects']['length']:
+            different = True
             to_return['redirects']['length'] = {'message': 'The captures have a different amount of redirects',
                                                 'details': [left['redirects']['length'], right['redirects']['length']]}
         else:
@@ -141,7 +148,8 @@ class Comparator():
         # Compare chain of redirects
         for redirect_left, redirect_right in zip(right['redirects']['nodes'], left['redirects']['nodes']):
             if isinstance(to_return['redirects']['nodes'], list):
-                to_return['redirects']['nodes'].append(self._compare_nodes(redirect_left, redirect_right))
+                different, node_compare = self._compare_nodes(redirect_left, redirect_right, different)
+                to_return['redirects']['nodes'].append(node_compare)
 
         # Compare all ressources URLs
         to_return['ressources'] = {}
@@ -167,12 +175,14 @@ class Comparator():
         if present_in_both := ressources_left & ressources_right:
             to_return['ressources']['both'] = sorted(present_in_both)
         if present_left := ressources_left - ressources_right:
+            different = True
             to_return['ressources']['left'] = sorted(present_left)
         if present_right := ressources_right - ressources_left:
+            different = True
             to_return['ressources']['right'] = sorted(present_right)
 
         # IP/ASN checks - Note: there is the IP in the HAR, and the ones resolved manually - if the IP is different, but part of the list, it's cool
         # For each node up to the landing page
         #   Compare IPs
         #   Compare ASNs
-        return to_return
+        return different, to_return
