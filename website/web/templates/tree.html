@@ -455,9 +455,14 @@
         <dd class="col-sm-10">{{ info.referer }}</dd>
         {%endif%}
 
-
         {% if meta %}
           {% for k, v in meta.items() if k not in ['user_agent'] %}
+            <dt class="col-sm-2">{{k.title()}}</dt>
+            <dd class="col-sm-10">{{ v }}</dd>
+          {% endfor %}
+        {%endif%}
+        {% if capture_settings %}
+          {% for k, v in capture_settings.items() if v and k in ['proxy']%}
             <dt class="col-sm-2">{{k.title()}}</dt>
             <dd class="col-sm-10">{{ v }}</dd>
           {% endfor %}

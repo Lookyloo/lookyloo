@@ -727,6 +727,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
         b64_thumbnail = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=True)
         screenshot_size = lookyloo.get_screenshot(tree_uuid).getbuffer().nbytes
         meta = lookyloo.get_meta(tree_uuid)
+        capture_settings = lookyloo.get_capture_settings(tree_uuid)
         hostnode_to_highlight = None
         if node_uuid:
             try:
@@ -770,7 +771,8 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                auto_trigger_modules=auto_trigger_modules,
                                confirm_message=confirm_message if confirm_message else 'Tick to confirm.',
                                parent_uuid=cache.parent,
-                               has_redirects=True if cache.redirects else False)
+                               has_redirects=True if cache.redirects else False,
+                               capture_settings=capture_settings)
 
     except NoValidHarFile:
         flash(f'Unable to build a tree for {tree_uuid}: {cache.error}.', 'warning')

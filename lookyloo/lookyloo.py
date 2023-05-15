@@ -263,6 +263,16 @@ class Lookyloo():
             json.dump(meta, f)
         return meta
 
+    def get_capture_settings(self, capture_uuid: str, /) -> CaptureSettings:
+        cache = self.capture_cache(capture_uuid)
+        if not cache:
+            return {}
+        cs_file = cache.capture_dir / 'capture_settings.json'
+        if cs_file.exists():
+            with cs_file.open('r') as f:
+                return json.load(f)
+        return {}
+
     def categories_capture(self, capture_uuid: str, /) -> Dict[str, Any]:
         '''Get all the categories related to a capture, in MISP Taxonomies format'''
         categ_file = self._captures_index[capture_uuid].capture_dir / 'categories'
