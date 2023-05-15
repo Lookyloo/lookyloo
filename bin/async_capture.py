@@ -7,12 +7,12 @@ import logging.config
 import signal
 
 from pathlib import Path
-from typing import Dict, Optional, Set, Union
+from typing import Optional, Set, Union
 
 from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
 from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 
-from lookyloo.lookyloo import Lookyloo
+from lookyloo.lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import AbstractManager, get_config
 from lookyloo.helpers import get_captures_dir
 
@@ -73,14 +73,14 @@ class AsyncCapture(AbstractManager):
             self.lookyloo.redis.sadd('ongoing', uuid)
             queue: Optional[str] = self.lookyloo.redis.getdel(f'{uuid}_mgmt')
 
-            to_capture: Dict[str, str] = self.lookyloo.redis.hgetall(uuid)
+            to_capture: CaptureSettings = self.lookyloo.redis.hgetall(uuid)
 
             if get_config('generic', 'default_public'):
                 # By default, the captures are on the index, unless the user mark them as un-listed
-                listing = False if ('listing' in to_capture and to_capture['listing'].lower() in ['false', '0', '']) else True
+                listing = False if ('listing' in to_capture and to_capture['listing'].lower() in ['false', '0', '']) else True  # type: ignore
             else:
                 # By default, the captures are not on the index, unless the user mark them as listed
-                listing = True if ('listing' in to_capture and to_capture['listing'].lower() in ['true', '1']) else False
+                listing = True if ('listing' in to_capture and to_capture['listing'].lower() in ['true', '1']) else False  # type: ignore
 
             self.lookyloo.store_capture(
                 uuid, listing,
@@ -91,11 +91,15 @@ class AsyncCapture(AbstractManager):
                 error=entries.get('error'), har=entries.get('har'),
                 png=entries.get('png'), html=entries.get('html'),
                 last_redirected_url=entries.get('last_redirected_url'),
-                cookies=entries.get('cookies')  # type: ignore
+                cookies=entries.get('cookies'),
+                capture_settings=to_capture
             )
 
-            if ('auto_report' in to_capture):
-                settings = json.loads(to_capture['auto_report'])
+            if 'auto_report' in to_capture:
+                if isinstance(to_capture['auto_report'], str):
+                    settings = json.loads(to_capture['auto_report'])
+                else:
+                    settings = to_capture['auto_report']
                 if settings.get('email'):
                     self.lookyloo.send_mail(uuid, email=settings['email'],
                                             comment=settings.get('comment'))

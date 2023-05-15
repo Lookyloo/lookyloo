@@ -14,7 +14,7 @@ from lacuscore import CaptureStatus as CaptureStatusCore
 from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID
-from lookyloo.lookyloo import Lookyloo
+from lookyloo.lookyloo import Lookyloo, CaptureSettings
 
 from .helpers import build_users_table, load_user_from_request, src_request_ip
 
@@ -396,8 +396,9 @@ class SubmitCapture(Resource):
         if 'url' not in request.args or not request.args.get('url'):
             return 'No "url" in the URL params, nothting to capture.', 400
 
-        to_query = {'url': request.args['url'],
-                    'listing': False if 'listing' in request.args and request.args['listing'] in [0, '0'] else True}
+        to_query: CaptureSettings = {
+            'url': request.args['url'],
+            'listing': False if 'listing' in request.args and request.args['listing'] in [0, '0'] else True}
         if request.args.get('user_agent'):
             to_query['user_agent'] = request.args['user_agent']
         if request.args.get('browser_name'):
@@ -421,7 +422,7 @@ class SubmitCapture(Resource):
             user = flask_login.current_user.get_id()
         else:
             user = src_request_ip(request)
-        to_query: Dict = request.get_json(force=True)
+        to_query: CaptureSettings = request.get_json(force=True)
         perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
         return perma_uuid
 

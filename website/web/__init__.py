@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import base64
 import calendar
 import functools
 import http
@@ -32,7 +33,7 @@ from werkzeug.security import check_password_hash
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
-from lookyloo.lookyloo import Indexing, Lookyloo
+from lookyloo.lookyloo import Indexing, Lookyloo, CaptureSettings
 
 from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
@@ -615,13 +616,14 @@ def bulk_captures(base_tree_uuid: str):
     cookies = load_cookies(lookyloo.get_cookies(base_tree_uuid))
     bulk_captures = []
     for url in [urls[int(selected_id) - 1] for selected_id in selected_urls]:
-        capture = {'url': url,
-                   'cookies': cookies,
-                   'referer': cache.redirects[-1] if cache.redirects else cache.url,
-                   'user_agent': cache.user_agent,
-                   'parent': base_tree_uuid,
-                   'listing': False if cache and cache.no_index else True
-                   }
+        capture: CaptureSettings = {
+            'url': url,
+            'cookies': cookies,
+            'referer': cache.redirects[-1] if cache.redirects else cache.url,
+            'user_agent': cache.user_agent,
+            'parent': base_tree_uuid,
+            'listing': False if cache and cache.no_index else True
+        }
         new_capture_uuid = lookyloo.enqueue_capture(capture, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         bulk_captures.append((new_capture_uuid, url))
 
@@ -1036,10 +1038,10 @@ def capture_web():
             flash('Invalid submission: please submit at least a URL or a document.', 'error')
             return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
-        capture_query: Dict[str, Union[str, bytes, int, bool]] = {}
+        capture_query: CaptureSettings = {}
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
-            capture_query['cookies'] = request.files['cookies'].stream.read()
+            capture_query['cookies'] = load_cookies(request.files['cookies'].stream.read())
 
         if request.form.get('device_name'):
             capture_query['device_name'] = request.form['device_name']
@@ -1095,7 +1097,7 @@ def capture_web():
             return render_template('bulk_captures.html', bulk_captures=bulk_captures)
         elif 'document' in request.files:
             # File upload
-            capture_query['document'] = request.files['document'].stream.read()
+            capture_query['document'] = base64.b64encode(request.files['document'].stream.read()).decode()
             if request.files['document'].filename:
                 capture_query['document_name'] = request.files['document'].filename
             else:

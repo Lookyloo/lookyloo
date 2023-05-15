@@ -12,8 +12,7 @@ from email.message import EmailMessage
 from functools import cached_property
 from io import BytesIO
 from pathlib import Path
-from typing import (Any, Dict, Iterable, List, MutableMapping, Optional, Set,
-                    Tuple, Union)
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING
 from urllib.parse import urlparse
 from uuid import uuid4
 from zipfile import ZipFile
@@ -21,17 +20,18 @@ from zipfile import ZipFile
 from defang import defang  # type: ignore
 from har2tree import CrawledTree, HostNode, URLNode
 from lacuscore import (LacusCore,
-                       CaptureStatus as CaptureStatusCore)
-#                       CaptureResponse as CaptureResponseCore,
-#                       CaptureResponseJson as CaptureResponseJsonCore,
-#                       CaptureSettings as CaptureSettingsCore)
+                       CaptureStatus as CaptureStatusCore,
+                       # CaptureResponse as CaptureResponseCore)
+                       # CaptureResponseJson as CaptureResponseJsonCore,
+                       CaptureSettings as CaptureSettingsCore)
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
 from pylacus import (PyLacus,
-                     CaptureStatus as CaptureStatusPy)
-#                     CaptureResponse as CaptureResponsePy,
-#                     CaptureResponseJson as CaptureResponseJsonPy,
-#                     CaptureSettings as CaptureSettingsPy)
+                     CaptureStatus as CaptureStatusPy
+                     # CaptureResponse as CaptureResponsePy,
+                     # CaptureResponseJson as CaptureResponseJsonPy,
+                     # CaptureSettings as CaptureSettingsPy
+                     )
 from pymisp import MISPAttribute, MISPEvent, MISPObject
 from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable
 from pylookyloomonitoring import PyLookylooMonitoring
@@ -51,6 +51,20 @@ from .indexing import Indexing
 from .modules import (MISP, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
                       RiskIQ, RiskIQError, Pandora, URLhaus)
+
+if TYPE_CHECKING:
+    from playwright.async_api import Cookie
+
+
+class CaptureSettings(CaptureSettingsCore, total=False):
+    '''The capture settings that can be passed to Lookyloo'''
+    listing: Optional[int]
+    not_queued: Optional[int]
+    auto_report: Optional[Union[str, Dict[str, str]]]
+    dnt: Optional[str]
+    browser_name: Optional[str]
+    os: Optional[str]
+    parent: Optional[str]
 
 
 class Lookyloo():
@@ -499,13 +513,20 @@ class Lookyloo():
             self._captures_index.reload_cache(capture_uuid)
             return self._captures_index[capture_uuid].tree
 
-    def _prepare_lacus_query(self, query: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        query = {k: v for k, v in query.items() if v is not None}  # Remove the none, it makes redis unhappy
+    def _prepare_lacus_query(self, query: CaptureSettings) -> CaptureSettings:
+        # Remove the none, it makes redis unhappy
+        query = {k: v for k, v in query.items() if v is not None}  # type: ignore
         # NOTE: Lookyloo' capture can pass a do not track header independently from the default headers, merging it here
-        headers = query.pop('headers', '')
+        headers = query.pop('headers', {})
         if 'dnt' in query:
-            headers += f'\nDNT: {query.pop("dnt")}'
-            headers = headers.strip()
+            if isinstance(headers, str):
+                headers += f'\nDNT: {query.pop("dnt")}'
+                headers = headers.strip()
+            elif isinstance(headers, dict):
+                dnt_entry = query.pop("dnt")
+                if dnt_entry:
+                    headers['DNT'] = dnt_entry.strip()
+
         if headers:
             query['headers'] = headers
 
@@ -521,7 +542,7 @@ class Lookyloo():
             query['user_agent'] = user_agent if user_agent else self.user_agents.default['useragent']
 
         # NOTE: the document must be base64 encoded
-        document = query.pop('document', None)
+        document: Optional[Union[str, bytes]] = query.pop('document', None)
         if document:
             if isinstance(document, bytes):
                 query['document'] = base64.b64encode(document).decode()
@@ -529,7 +550,7 @@ class Lookyloo():
                 query['document'] = document
         return query
 
-    def enqueue_capture(self, query: MutableMapping[str, Any], source: str, user: str, authenticated: bool) -> str:
+    def enqueue_capture(self, query: CaptureSettings, source: str, user: str, authenticated: bool) -> str:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
 
         def get_priority(source: str, user: str, authenticated: bool) -> int:
@@ -547,14 +568,15 @@ class Lookyloo():
 
         for key, value in query.items():
             if isinstance(value, bool):
-                query[key] = 1 if value else 0
+                query[key] = 1 if value else 0  # type: ignore
             elif isinstance(value, (list, dict)):
-                query[key] = json.dumps(value) if value else None
+                query[key] = json.dumps(value) if value else None  # type: ignore
 
         query = self._prepare_lacus_query(query)
 
-        query['priority'] = get_priority(source, user, authenticated)
-        if query['priority'] < -10:
+        priority = get_priority(source, user, authenticated)
+        query['priority'] = priority
+        if priority < -10:
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query['listing'] = 0
         try:
@@ -595,7 +617,7 @@ class Lookyloo():
                         if value:
                             mapping_capture[key] = json.dumps(value)
                     elif value is not None:
-                        mapping_capture[key] = value
+                        mapping_capture[key] = value  # type: ignore
 
                 p = self.redis.pipeline()
                 p.zadd('to_capture', {perma_uuid: query['priority']})
@@ -1323,7 +1345,8 @@ class Lookyloo():
                       error: Optional[str]=None, har: Optional[Dict[str, Any]]=None,
                       png: Optional[bytes]=None, html: Optional[str]=None,
                       last_redirected_url: Optional[str]=None,
-                      cookies: Optional[List[Dict[str, str]]]=None
+                      cookies: Optional[Union[List['Cookie'], List[Dict[str, str]]]]=None,
+                      capture_settings: Optional[CaptureSettings]=None
                       ) -> None:
 
         now = datetime.now()
@@ -1383,4 +1406,9 @@ class Lookyloo():
         if cookies:
             with (dirpath / '0.cookies.json').open('w') as _cookies:
                 json.dump(cookies, _cookies)
+
+        if capture_settings:
+            with (dirpath / 'capture_settings.json').open('w') as _cs:
+                json.dump(capture_settings, _cs)
+
         self.redis.hset('lookup_dirs', uuid, str(dirpath))
