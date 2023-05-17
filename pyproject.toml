@@ -50,7 +50,7 @@ pysanejs = "^2.0.1"
 pylookyloo = "^1.19.0"
 dnspython = "^2.3.0"
 pytaxonomies = "^1.5.0"
-pymisp = {version = "^2.4.170.2", extras = ["url", "fileobjects"]}
+pymisp = {version = "^2.4.171", extras = ["url", "fileobjects"]}
 Pillow = "^9.5.0"
 flask-restx = "^1.1.0"
 rich = "^13.3.5"
