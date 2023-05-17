@@ -3,7 +3,7 @@
 import fnmatch
 import logging
 
-from typing import Dict, Any, Union, List, Optional, TypedDict, Set, Tuple
+from typing import Dict, Any, Union, List, Optional, TypedDict, Tuple
 
 from har2tree import URLNode
 
@@ -166,12 +166,12 @@ class Comparator():
             _settings = None
         ressources_left = {url for url, hostname in left['ressources']
                            if not _settings
-                           or not hostname.endswith(_settings['ressources_ignore_domains'])
-                           or not any(fnmatch.fnmatch(url, regex) for regex in _settings['ressources_ignore_regexes'])}
+                           or (not hostname.endswith(_settings['ressources_ignore_domains'])
+                               and not any(fnmatch.fnmatch(url, regex) for regex in _settings['ressources_ignore_regexes']))}
         ressources_right = {url for url, hostname in right['ressources']
                             if not _settings
-                            or not hostname.endswith(_settings['ressources_ignore_domains'])
-                            or not any(fnmatch.fnmatch(url, regex) for regex in _settings['ressources_ignore_regexes'])}
+                            or (not hostname.endswith(_settings['ressources_ignore_domains'])
+                                and not any(fnmatch.fnmatch(url, regex) for regex in _settings['ressources_ignore_regexes']))}
         if present_in_both := ressources_left & ressources_right:
             to_return['ressources']['both'] = sorted(present_in_both)
         if present_left := ressources_left - ressources_right:
