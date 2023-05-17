@@ -34,6 +34,7 @@ class Comparator():
 
         self.context = Context()
         self._captures_index = CapturesIndex(self.redis, self.context)
+        self.public_domain = get_config('generic', 'public_domain')
 
     @property
     def redis(self) -> Redis:
@@ -101,6 +102,8 @@ class Comparator():
                                              List[Union[str, Dict[str, Any]]],
                                              Dict[str, Union[int, str,
                                                              List[Union[int, str, Dict[str, Any]]]]]]]] = {}
+        to_return['lookyloo_urls'] = {'left': f'https://{self.public_domain}/tree/{capture_left}',
+                                      'right': f'https://{self.public_domain}/tree/{capture_right}'}
         left = self.get_comparables_capture(capture_left)
         right = self.get_comparables_capture(capture_right)
         # Compare initial URL (first entry in HAR)
