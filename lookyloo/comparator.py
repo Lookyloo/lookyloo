@@ -19,8 +19,8 @@ from .exceptions import MissingUUID
 class CompareSettings(TypedDict):
     '''The settings that can be passed to the compare method to filter out some differences'''
 
-    ressources_ignore_domains: Set[str]
-    ressources_ignore_regexes: Set[str]
+    ressources_ignore_domains: Tuple[str, ...]
+    ressources_ignore_regexes: Tuple[str, ...]
 
 
 class Comparator():
@@ -159,8 +159,8 @@ class Comparator():
             _ignore_domains = set(settings['ressources_ignore_domains'] if settings.get('ressources_ignore_domains') else [])
             _ignore_regexes = set(settings['ressources_ignore_regexes'] if settings.get('ressources_ignore_regexes') else [])
             _settings = {
-                'ressources_ignore_domains': _ignore_domains,
-                'ressources_ignore_regexes': _ignore_regexes
+                'ressources_ignore_domains': tuple(_ignore_domains),
+                'ressources_ignore_regexes': tuple(_ignore_regexes)
             }
         else:
             _settings = None
