@@ -53,7 +53,7 @@ pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.4.171", extras = ["url", "fileobjects"]}
 Pillow = "^9.5.0"
 flask-restx = "^1.1.0"
-rich = "^13.3.5"
+rich = "^13.4.1"
 pyphishtanklookup = "^1.2"
 Flask-Cors = "^3.0.10"
 pyhashlookup = "^1.2.1"
