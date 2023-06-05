@@ -341,6 +341,14 @@ class CapturesIndex(Mapping):
         with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
+        # Get capture settings as they were submitted
+        capture_settings_file = capture_dir / 'capture_settings.json'
+        if capture_settings_file.exists():
+            with capture_settings_file.open() as f:
+                capture_settings = json.load(f)
+        else:
+            capture_settings = {}
+
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
         try:
             tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, logger)
@@ -375,7 +383,7 @@ class CapturesIndex(Mapping):
                 har = HarFile(har_files[0], uuid)
                 cache['title'] = har.initial_title
                 cache['timestamp'] = har.initial_start_time
-                cache['url'] = har.root_url
+                cache['url'] = capture_settings['url'] if capture_settings.get('url') else har.root_url
                 cache['redirects'] = json.dumps(tree.redirects) if tree else ''
                 cache['incomplete_redirects'] = 0
                 cache['user_agent'] = har.root_user_agent if har.root_user_agent else 'No User Agent.'
