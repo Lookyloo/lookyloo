@@ -8,6 +8,7 @@ import json
 import logging
 import logging.config
 import os
+import sys
 import time
 
 import filetype  # type: ignore
@@ -15,7 +16,7 @@ import filetype  # type: ignore
 from datetime import date, datetime, timedelta, timezone
 from importlib.metadata import version
 from io import BytesIO, StringIO
-from typing import Any, Dict, List, Optional, Union, TypedDict
+from typing import Any, Dict, List, Optional, Union, TypedDict, Set, Tuple
 from urllib.parse import quote_plus, unquote_plus, urlparse
 from uuid import uuid4
 from zipfile import ZipFile
@@ -34,6 +35,12 @@ from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
 from lookyloo.lookyloo import Indexing, Lookyloo, CaptureSettings
+
+if sys.version_info < (3, 9):
+    from pytz import all_timezones_set
+else:
+    from zoneinfo import available_timezones
+    all_timezones_set = available_timezones()
 
 from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
@@ -198,6 +205,16 @@ def get_icon(icon_id: str) -> Optional[Icon]:
 
 
 app.jinja_env.globals.update(get_icon=get_icon)
+
+
+def get_tz_info() -> Tuple[Optional[str], str, Set[str]]:
+    now = datetime.now().astimezone()
+    local_TZ = now.tzname()
+    local_UTC_offset = f'UTC{now.strftime("%z")}'
+    return local_TZ, local_UTC_offset, all_timezones_set
+
+
+app.jinja_env.globals.update(tz_info=get_tz_info)
 
 
 # ##### Generic/configuration methods #####
@@ -1066,6 +1083,23 @@ def capture_web():
 
         if request.form.get('headers'):
             capture_query['headers'] = request.form['headers']
+
+        if request.form.get('timezone_id'):
+            capture_query['timezone_id'] = request.form['timezone_id']
+
+        if request.form.get('locale'):
+            capture_query['locale'] = request.form['locale']
+
+        if request.form.get('geo_longitude') and request.form.get('geo_latitude'):
+            capture_query['geolocation'] = {'longitude': float(request.form['geo_longitude']),
+                                            'latitude': float(request.form['geo_latitude'])}
+
+        if request.form.get('http_auth_username') and request.form.get('http_auth_password'):
+            capture_query['http_credentials'] = {'username': request.form['http_auth_username'],
+                                                 'password': request.form['http_auth_password']}
+
+        if request.form.get('color_scheme'):
+            capture_query['color_scheme'] = request.form['color_scheme']
 
         if request.form.get('proxy'):
             parsed_proxy = urlparse(request.form['proxy'])

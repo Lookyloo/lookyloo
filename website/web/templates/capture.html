@@ -252,9 +252,76 @@
         </div>
 
         <div class="row mb-3">
+          {% set local_TZ, local_UTC_offset, all_timezones = tz_info() %}
+          <label for="timezone_id" class="col-sm-2 col-form-label">Timezone (defaults to {{local_TZ}} - {{local_UTC_offset}}):</label>
+          <div class="col-sm-10">
+            <input class="form-control" list="tzOptions" name="timezone_id" id="timezone_id" aria-label="Pick the timezone for the capture">
+            <datalist id="tzOptions">
+              {% for tz in all_timezones %}
+              <option value="{{tz}}">{{tz}}</option>
+              {%endfor%}
+            </datalist>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label for="locale" class="col-sm-2 col-form-label">Locale:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" name="locale" id="locale" placeholder="Pass a language locale to the capture">
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label for="color_scheme" class="col-sm-2 col-form-label">Color scheme:</label>
+          <div class="col-sm-10">
+            <select class="form-select" id="color_scheme" name="color_scheme" aria-label="Select a prefered color scheme">
+              <option selected>Select a color scheme</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="no-preference">No preference</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label for="geoloc" class="col-sm-2 col-form-label">Geolocation:</label>
+          <div class="col-sm-10" id="geoloc">
+            <div class="row g-3">
+              <div class="col">
+                <input type="number" step="any" class="form-control" name="geo_longitude" id="geo_longitude" placeholder="Longitude">
+              </div>
+              <div class="col">
+                <input type="number" step="any" class="form-control" name="geo_latitude" id="geo_latitude" placeholder="Latitude">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
           <label for="proxy" class="col-sm-2 col-form-label">Proxy:</label>
           <div class="col-sm-10">
             <input type="text" class="form-control" name="proxy" id="proxy" placeholder="Expected format: [scheme]://[username]:[password]@[hostname]:[port]">
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label for="httpauth" class="col-sm-2 col-form-label">HTTP Authentication</label>
+          <div class="col-sm-10" id="httpauth">
+            <div class="row g-3">
+              <div class="col">
+                <input type="text" class="form-control" name="http_auth_username" id="http_auth_username" placeholder="Username">
+              </div>
+              <div class="col">
+                  <input type="text" class="form-control" name="http_auth_password" id="http_auth_password" placeholder="Password">
+              </div>
+            </div>
+            <div class="alert alert-danger" role="alert">
+              The authentication credentials will be stored on the lookyloo instance and potentially
+              accessed by third parties (either because the Lookyloo instance is public,
+              or people other than you have access to the instance).
+              If that's the case, please make sure none of them can be used to login as yourself
+              on websites.
+            </div>
           </div>
         </div>
 
