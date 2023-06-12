@@ -777,7 +777,7 @@ class Lookyloo():
         all_paths.append(capture_dir / 'uuid')
         with ZipFile(to_return, 'w') as myzip:
             for path in all_paths:
-                if path.name.endswith('pickle'):
+                if path.suffix in ['.pickle', '.gz']:
                     continue
                 myzip.write(path, arcname=f'{capture_dir.name}/{path.name}')
         to_return.seek(0)
