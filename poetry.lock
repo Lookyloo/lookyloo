@@ -630,18 +630,18 @@ tests = ["asttokens", "littleutils", "pytest", "rich"]
 
 [[package]]
 name = "filelock"
-version = "3.12.0"
+version = "3.12.1"
 description = "A platform independent file lock."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "filelock-3.12.0-py3-none-any.whl", hash = "sha256:ad98852315c2ab702aeb628412cbf7e95b7ce8c3bf9565670b4eaecf1db370a9"},
-    {file = "filelock-3.12.0.tar.gz", hash = "sha256:fc03ae43288c013d2ea83c8597001b1129db351aad9c57fe2409327916b8e718"},
+    {file = "filelock-3.12.1-py3-none-any.whl", hash = "sha256:42f1e4ff2b497311213d61ad7aac5fed9050608e5309573f101eefa94143134a"},
+    {file = "filelock-3.12.1.tar.gz", hash = "sha256:82b1f7da46f0ae42abf1bc78e548667f484ac59d2bcec38c713cee7e2eb51e83"},
 ]
 
 [package.extras]
-docs = ["furo (>=2023.3.27)", "sphinx (>=6.1.3)", "sphinx-autodoc-typehints (>=1.23,!=1.23.4)"]
-testing = ["covdefaults (>=2.3)", "coverage (>=7.2.3)", "diff-cover (>=7.5)", "pytest (>=7.3.1)", "pytest-cov (>=4)", "pytest-mock (>=3.10)", "pytest-timeout (>=2.1)"]
+docs = ["furo (>=2023.5.20)", "sphinx (>=7.0.1)", "sphinx-autodoc-typehints (>=1.23,!=1.23.4)"]
+testing = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "diff-cover (>=7.5)", "pytest (>=7.3.1)", "pytest-cov (>=4.1)", "pytest-mock (>=3.10)", "pytest-timeout (>=2.1)"]
 
 [[package]]
 name = "filetype"
@@ -1238,18 +1238,18 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.5.4"
+version = "1.5.6"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.5.4-py3-none-any.whl", hash = "sha256:bb118ee6e7603ecb18191e5eb60a74d2a9c700076d1c80ec581acefceb66def7"},
-    {file = "lacuscore-1.5.4.tar.gz", hash = "sha256:6de799e9735a32950445225db9018e1f52d593c29e1f536059b541ac7d6fb47d"},
+    {file = "lacuscore-1.5.6-py3-none-any.whl", hash = "sha256:dfccc4a0230472734e0b1ba6cdcc9fe4a981b47e0cc4d7abb81ff8a7a65ecb06"},
+    {file = "lacuscore-1.5.6.tar.gz", hash = "sha256:199a4392073afeeb6ead3e82dc73e88812adc1c6c3fca0c70bb4c7bb527200f9"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.20.3,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.20.4,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=4.5.5,<5.0.0", extras = ["hiredis"]}
 requests = ">=2.31.0,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
@@ -1927,13 +1927,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.0.20230506"
+version = "0.10.0.20230611"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.0.20230506-py2.py3-none-any.whl", hash = "sha256:bd05a501cf28f1782a5bf48cae49c7681339809c69c74ff6fa77c73a94683df9"},
-    {file = "publicsuffixlist-0.10.0.20230506.tar.gz", hash = "sha256:c1e437d574dbbfc54d368c8248ba421280b1001d75417051baf47e9a6b46cd64"},
+    {file = "publicsuffixlist-0.10.0.20230611-py2.py3-none-any.whl", hash = "sha256:1a79c2efcb40a4ebf2a5f74ddb36a5b85c9344824cdba64002513db433fdf09e"},
+    {file = "publicsuffixlist-0.10.0.20230611.tar.gz", hash = "sha256:cf99a1ffcb05ba5932f4b5f42cfc01b9859e6e3b2a59cd04b0f8c364cb93097f"},
 ]
 
 [package.extras]
@@ -2139,33 +2139,33 @@ docs = ["Sphinx (>=7.0.1,<8.0.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.171"
+version = "2.4.172"
 description = "Python API for MISP."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pymisp-2.4.171-py3-none-any.whl", hash = "sha256:9410f44cd811f91d523593b5353e0fd37057ba1b1cf856a4050454cbb8a5b788"},
-    {file = "pymisp-2.4.171.tar.gz", hash = "sha256:6dca1dd7be6e63c423eb48e84e587cb776db545de3385dc4875ecc55192a7863"},
+    {file = "pymisp-2.4.172-py3-none-any.whl", hash = "sha256:b2c128277400a9070bba4891eb3f05e8962a17ad2ca25e8541c99c0adb77b4a3"},
+    {file = "pymisp-2.4.172.tar.gz", hash = "sha256:d81d4a0f3b94c020320e61e43c4eab6eedf292df79b81ed39c50c9170782123c"},
 ]
 
 [package.dependencies]
-deprecated = ">=1.2.13,<2.0.0"
+deprecated = ">=1.2.14,<2.0.0"
 jsonschema = ">=4.17.3,<5.0.0"
-lief = {version = ">=0.13.0,<0.14.0", optional = true, markers = "extra == \"fileobjects\""}
-publicsuffixlist = ">=0.10.0.20230506,<0.11.0.0"
+lief = {version = ">=0.13.1,<0.14.0", optional = true, markers = "extra == \"fileobjects\""}
+publicsuffixlist = ">=0.10.0.20230608,<0.11.0.0"
 pydeep2 = {version = ">=0.5.1,<0.6.0", optional = true, markers = "extra == \"fileobjects\""}
 pyfaup = {version = ">=1.2,<2.0", optional = true, markers = "extra == \"url\""}
 python-dateutil = ">=2.8.2,<3.0.0"
 python-magic = {version = ">=0.4.27,<0.5.0", optional = true, markers = "extra == \"fileobjects\""}
-requests = ">=2.30.0,<3.0.0"
+requests = ">=2.31.0,<3.0.0"
 
 [package.extras]
 brotli = ["urllib3[brotli]"]
 docs = ["recommonmark (>=0.7.1,<0.8.0)", "sphinx-autodoc-typehints (>=1.23.0,<2.0.0)"]
-email = ["RTFDE (>=0.0.2,<0.0.3)", "extract_msg (>=0.41.1,<0.42.0)", "oletools (>=0.60.1,<0.61.0)"]
-fileobjects = ["lief (>=0.13.0,<0.14.0)", "pydeep2 (>=0.5.1,<0.6.0)", "python-magic (>=0.4.27,<0.5.0)"]
+email = ["RTFDE (>=0.0.2,<0.0.3)", "extract_msg (>=0.41.2,<0.42.0)", "oletools (>=0.60.1,<0.61.0)"]
+fileobjects = ["lief (>=0.13.1,<0.14.0)", "pydeep2 (>=0.5.1,<0.6.0)", "python-magic (>=0.4.27,<0.5.0)"]
 openioc = ["beautifulsoup4 (>=4.12.2,<5.0.0)"]
-pdfexport = ["reportlab (>=4.0.0,<5.0.0)"]
+pdfexport = ["reportlab (>=4.0.4,<5.0.0)"]
 url = ["pyfaup (>=1.2,<2.0)"]
 virustotal = ["validators (>=0.20.0,<0.21.0)"]
 
@@ -2852,13 +2852,13 @@ files = [
 
 [[package]]
 name = "werkzeug"
-version = "2.3.4"
+version = "2.3.6"
 description = "The comprehensive WSGI web application library."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Werkzeug-2.3.4-py3-none-any.whl", hash = "sha256:48e5e61472fee0ddee27ebad085614ebedb7af41e88f687aaf881afb723a162f"},
-    {file = "Werkzeug-2.3.4.tar.gz", hash = "sha256:1d5a58e0377d1fe39d061a5de4469e414e78ccb1e1e59c0f5ad6fa1c36c52b76"},
+    {file = "Werkzeug-2.3.6-py3-none-any.whl", hash = "sha256:935539fa1413afbb9195b24880778422ed620c0fc09670945185cce4d91a8890"},
+    {file = "Werkzeug-2.3.6.tar.gz", hash = "sha256:98c774df2f91b05550078891dee5f0eb0cb797a522c757a2452b9cee5b202330"},
 ]
 
 [package.dependencies]
@@ -3073,4 +3073,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "7042d65a2d0849ded20d663781db236b254b64b7ae13a7a323c0e358b7d57009"
+content-hash = "8bc1abb775af65cfa9fd958dca6b7b4849c98ae482d522acad8018527738f7cd"
