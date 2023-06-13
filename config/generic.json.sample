@@ -33,6 +33,12 @@
   "tor_proxy": {
     "server": "socks5://127.0.0.1:9050"
   },
+  "global_proxy": {
+    "enable": false,
+    "server": "",
+    "username": "",
+    "password": ""
+  },
   "email": {
     "from": "Lookyloo <lookyloo@myorg.local>",
     "to": "Investigation Team <investigation_unit@myorg.local>",
@@ -79,7 +85,8 @@
     "enable_mail_notification": "Allow users to notify a pre-configured email address about a specific capture",
     "remote_lacus": "By default, lookyloo will do the capture locally. Enabling this feature means you have a dedicated Lacus instance somewhere",
     "monitoring": "Enable connection to a remote monitoring instance",
-    "tor_proxy": "URL to connect to a SOCKS 5 proxy for tor",
+    "tor_proxy": "URL to connect to a SOCKS 5 proxy for tor - If you capture via a lacus instance, this value is ignored",
+    "global_proxy": "Proxy configuration to use for *all* the requests (except .onions) - If you capture via a lacus instance, this value is ignored",
     "email": "Configuration for sending email notifications.",
     "priority": "Define the priority of a new capture. A capture from the web interface has priority over a capture from the API, same for authenticated user vs. anonymous.",
     "hide_captures_with_error": "Capturing an URL may result in an error (domain non-existent, HTTP error, ...). They may be useful to see, but if you have a public instance, they will clutter the index.",

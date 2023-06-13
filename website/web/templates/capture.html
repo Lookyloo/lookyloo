@@ -297,12 +297,14 @@
           </div>
         </div>
 
+        {% if not has_global_proxy %}
         <div class="row mb-3">
           <label for="proxy" class="col-sm-2 col-form-label">Proxy:</label>
           <div class="col-sm-10">
             <input type="text" class="form-control" name="proxy" id="proxy" placeholder="Expected format: [scheme]://[username]:[password]@[hostname]:[port]">
           </div>
         </div>
+        {%endif%}
 
         <div class="row mb-3">
           <label for="httpauth" class="col-sm-2 col-form-label">HTTP Authentication</label>

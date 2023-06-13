@@ -967,7 +967,8 @@ def _prepare_capture_template(user_ua: Optional[str], predefined_url: Optional[s
                            personal_ua=user_ua,
                            default_public=get_config('generic', 'default_public'),
                            devices=lookyloo.get_playwright_devices(),
-                           predefined_url_to_capture=predefined_url if predefined_url else '')
+                           predefined_url_to_capture=predefined_url if predefined_url else '',
+                           has_global_proxy=True if lookyloo.global_proxy else False)
 
 
 @app.route('/recapture/<string:tree_uuid>', methods=['GET'])

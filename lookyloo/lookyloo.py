@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import base64
+import copy
 import json
 import logging
 import operator
@@ -76,6 +77,12 @@ class Lookyloo():
         self.user_agents = UserAgents()
         self.is_public_instance = get_config('generic', 'public_instance')
         self.public_domain = get_config('generic', 'public_domain')
+
+        self.global_proxy = {}
+        if global_proxy := get_config('generic', 'global_proxy'):
+            if global_proxy.get('enable'):
+                self.global_proxy = copy.copy(global_proxy)
+                self.global_proxy.pop('enable')
 
         self.securitytxt = PySecurityTXT(useragent=get_useragent_for_requests())
 
@@ -598,7 +605,7 @@ class Lookyloo():
                 browser=query.get('browser', None),
                 device_name=query.get('device_name', None),
                 user_agent=query.get('user_agent', None),
-                proxy=query.get('proxy', None),
+                proxy=self.global_proxy if self.global_proxy else query.get('proxy', None),
                 general_timeout_in_sec=query.get('general_timeout_in_sec', None),
                 cookies=query.get('cookies', None),
                 headers=query.get('headers', None),
