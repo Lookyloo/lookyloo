@@ -48,6 +48,13 @@
     "confirm_message": "Message the users need to confirm before they submit a notification.",
     "defang_urls": true
   },
+  "email_smtp_auth": {
+      "auth": false,
+      "smtp_user":"johndoe@myorg.local",
+      "smtp_pass":"password",
+      "smtp_use_starttls": true,
+      "verify_certificate": true
+  },
   "priority": {
     "sources": {
       "web": 10,

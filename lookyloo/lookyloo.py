@@ -6,6 +6,7 @@ import json
 import logging
 import operator
 import smtplib
+import ssl
 
 from collections import defaultdict
 from datetime import date, datetime, timezone
@@ -715,6 +716,7 @@ class Lookyloo():
             return
 
         email_config = get_config('generic', 'email')
+        smtp_auth = get_config('generic', 'email_smtp_auth')
         redirects = ''
         initial_url = ''
         cache = self.capture_cache(capture_uuid)
@@ -755,9 +757,18 @@ class Lookyloo():
         except Exception as e:
             self.logger.warning(f'Unable to get the contacts: {e}')
         try:
-            s = smtplib.SMTP(email_config['smtp_host'], email_config['smtp_port'])
-            s.send_message(msg)
-            s.quit()
+            with smtplib.SMTP(email_config['smtp_host'], email_config['smtp_port']) as s:
+                if smtp_auth['auth']:
+                    if smtp_auth['smtp_use_starttls']:
+                        if smtp_auth['verify_certificate'] is False:
+                            ssl_context = ssl.create_default_context()
+                            ssl_context.check_hostname = False
+                            ssl_context.verify_mode = ssl.CERT_NONE
+                            s.starttls(context=ssl_context)
+                        else:
+                            s.starttls()
+                    s.login(smtp_auth['smtp_user'], smtp_auth['smtp_pass'])
+                s.send_message(msg)
         except Exception as e:
             self.logger.exception(e)
             self.logger.warning(msg.as_string())
