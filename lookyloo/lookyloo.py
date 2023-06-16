@@ -7,6 +7,7 @@ import logging
 import operator
 import smtplib
 import ssl
+import time
 
 from collections import defaultdict
 from datetime import date, datetime, timezone
@@ -168,13 +169,18 @@ class Lookyloo():
             remote_lacus_config = get_config('generic', 'remote_lacus')
             if remote_lacus_config.get('enable'):
                 self.logger.info("Remote lacus enabled, trying to set it up...")
-                remote_lacus_url = remote_lacus_config.get('url')
-                self._lacus = PyLacus(remote_lacus_url)
-                if self._lacus.is_up:
-                    has_remote_lacus = True
-                    self.logger.info(f"Remote lacus enabled to {remote_lacus_url}.")
+                lacus_retries = 10
+                while lacus_retries > 0:
+                    remote_lacus_url = remote_lacus_config.get('url')
+                    self._lacus = PyLacus(remote_lacus_url)
+                    if self._lacus.is_up:
+                        has_remote_lacus = True
+                        self.logger.info(f"Remote lacus enabled to {remote_lacus_url}.")
+                        break
+                    lacus_retries -= 1
+                    self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}, trying again {lacus_retries} more time(s).")
+                    time.sleep(10)
                 else:
-                    self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}.")
                     raise LookylooException('Remote lacus is enabled but unreachable.')
 
         if not has_remote_lacus:
