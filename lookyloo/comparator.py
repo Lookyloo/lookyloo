@@ -12,7 +12,7 @@ from redis.connection import UnixDomainSocketConnection
 
 from .context import Context
 from .capturecache import CapturesIndex
-from .default import get_config, get_socket_path
+from .default import get_config, get_socket_path, LookylooException
 from .exceptions import MissingUUID
 
 
@@ -81,14 +81,26 @@ class Comparator():
             raise MissingUUID(f'{capture_uuid} does not exists.')
 
         capture = self._captures_index[capture_uuid]
-        to_return = {'root_url': capture.tree.root_url,
-                     'final_url': capture.tree.root_hartree.har.final_redirect,
-                     'final_hostname': capture.tree.root_hartree.rendered_node.hostname,
-                     'final_status_code': capture.tree.root_hartree.rendered_node.response['status'],
-                     'redirects': {'length': len(capture.tree.redirects)}}
+        to_return: Dict[str, Any]
+        try:
+            if capture.error:
+                # The error on lookyloo is too verbose and contains the UUID of the capture, skip that.
+                if "has an error: " in capture.error:
+                    _, message = capture.error.split('has an error: ', 1)
+                else:
+                    message = capture.error
+                to_return = {'error': message}
+            else:
+                to_return = {'root_url': capture.tree.root_url,
+                             'final_url': capture.tree.root_hartree.har.final_redirect,
+                             'final_hostname': capture.tree.root_hartree.rendered_node.hostname,
+                             'final_status_code': capture.tree.root_hartree.rendered_node.response['status'],
+                             'redirects': {'length': len(capture.tree.redirects)}}
 
-        to_return['redirects']['nodes'] = [self.get_comparables_node(a) for a in list(reversed(capture.tree.root_hartree.rendered_node.get_ancestors())) + [capture.tree.root_hartree.rendered_node]]
-        to_return['ressources'] = {(a.name, a.hostname) for a in capture.tree.root_hartree.rendered_node.traverse()}
+                to_return['redirects']['nodes'] = [self.get_comparables_node(a) for a in list(reversed(capture.tree.root_hartree.rendered_node.get_ancestors())) + [capture.tree.root_hartree.rendered_node]]
+                to_return['ressources'] = {(a.name, a.hostname) for a in capture.tree.root_hartree.rendered_node.traverse()}
+        except LookylooException as e:
+            to_return = {'error': str(e)}
         return to_return
 
     def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: Optional[CompareSettings]=None) -> Tuple[bool, Dict[str, Any]]:
@@ -106,6 +118,32 @@ class Comparator():
                                       'right': f'https://{self.public_domain}/tree/{capture_right}'}
         left = self.get_comparables_capture(capture_left)
         right = self.get_comparables_capture(capture_right)
+        if 'error' in left and 'error' in right:
+            # both captures failed
+            if left['error'] == right['error']:
+                to_return['error'] = {'message': 'Both captures failed with the same error message.',
+                                      'details': right['error']}
+            else:
+                different = True
+                to_return['error'] = {'message': 'Both captures failed with different error messages',
+                                      'details': [left['error'], right['error']]}
+
+        elif 'error' in right:
+            different = True
+            to_return['error'] = {'message': 'Error in the most recent capture.',
+                                  'details': ['The precedent capture worked fine', right['error']]}
+
+        elif 'error' in left:
+            different = True
+            to_return['error'] = {'message': 'Error in the precedent capture.',
+                                  'details': [left['error'], 'The most recent capture worked fine']}
+
+        # Just to avoid to put everything below in a else
+        if 'error' in to_return:
+            return different, to_return
+
+        # ------------------------- Compare working captures
+
         # Compare initial URL (first entry in HAR)
         if left['root_url'] != right['root_url']:
             different = True
