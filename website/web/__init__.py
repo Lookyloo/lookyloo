@@ -535,7 +535,7 @@ def redirects(tree_uuid: str):
 @file_response
 def image(tree_uuid: str):
     max_width = request.args.get('width')
-    if max_width:
+    if max_width and max_width.isdigit():
         to_return = lookyloo.get_screenshot_thumbnail(tree_uuid, width=int(max_width))
     else:
         to_return = lookyloo.get_screenshot(tree_uuid)
