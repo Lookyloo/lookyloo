@@ -7,7 +7,7 @@ from collections import Counter
 from datetime import date, timedelta
 from typing import Any, Dict, Optional
 
-from lookyloo.lookyloo import Lookyloo
+from lookyloo.lookyloo import Lookyloo, CaptureStatusCore, CaptureStatusPy
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 
@@ -73,7 +73,8 @@ class Processing(AbstractManager):
     def _retry_failed_enqueue(self):
         '''If enqueuing failed, the settings are added, with a UUID in the 'to_capture key', and they have a UUID'''
         for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf'):
-            if self.lookyloo.redis.hexists(uuid, 'not_queued'):
+            if (self.lookyloo.redis.hexists(uuid, 'not_queued')
+                    or self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]):
                 self.logger.info(f'Found a non-queued capture ({uuid}), retrying now.')
                 # This capture couldn't be queued and we created the uuid locally
                 query = self.lookyloo.redis.hgetall(uuid)
