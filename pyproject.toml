@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lookyloo"
-version = "1.20.0"
+version = "1.21.0"
 description = "Web interface to track the trackers."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
@@ -54,7 +54,7 @@ pymisp = {version = "^2.4.172", extras = ["url", "fileobjects"]}
 Pillow = "^9.5.0"
 flask-restx = "^1.1.0"
 rich = "^13.4.2"
-pyphishtanklookup = "^1.2"
+pyphishtanklookup = "^1.3.0"
 Flask-Cors = "^4.0.0"
 pyhashlookup = "^1.2.1"
 lief = "^0.13.2"
@@ -64,15 +64,15 @@ har2tree = "^1.20.0"
 passivetotal = "^2.5.9"
 werkzeug = "^2.3.6"
 filetype = "^1.2.0"
-pypandora = "^1.4.0"
-lacuscore = "^1.5.13"
-pylacus = "^1.5.1"
+pypandora = "^1.5.0"
+lacuscore = "^1.6.0"
+pylacus = "^1.6.0"
 pyipasnhistory = "^2.1.2"
 publicsuffixlist = "^0.10.0.20230617"
 pyfaup = "^1.2"
 chardet = "^5.1.0"
 pysecuritytxt = "^1.1.1"
-pylookyloomonitoring = "^1.0.5"
+pylookyloomonitoring = "^1.1.0"
 pytz = {"version" = "^2023.3", python = "<3.9"}
 
 [tool.poetry.group.dev.dependencies]
@@ -81,13 +81,13 @@ ipython = [
     {version = "<8.13.0", python = "<3.9"},
     {version = "^8.13.0", python = ">=3.9"}
 ]
-types-redis = {version = "^4.5.5.2"}
+types-redis = {version = "^4.6.0.0"}
 types-requests = "^2.31.0.1"
 types-pkg-resources = "^0.1.3"
 types-Deprecated = "^1.2.9.2"
 types-python-dateutil = "^2.8.19.13"
 types-beautifulsoup4 = "^4.12.0.5"
-types-Pillow = "^9.5.0.4"
+types-Pillow = "^9.5.0.5"
 types-pytz = "^2023.3.0.0"
 
 [build-system]

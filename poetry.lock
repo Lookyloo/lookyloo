@@ -1237,18 +1237,18 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "lacuscore"
-version = "1.5.13"
+version = "1.6.0"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.5.13-py3-none-any.whl", hash = "sha256:a9e6801ec2986211fa13fa3e666f0de1a59e9eba48638c75be12315105c21031"},
-    {file = "lacuscore-1.5.13.tar.gz", hash = "sha256:af113d3f9812cd23f8159127ab73e48b146a3697164fe3b8b1a950658c332ccf"},
+    {file = "lacuscore-1.6.0-py3-none-any.whl", hash = "sha256:44908a19a4936f85b82a0b46f8b81641f61cb2e69dea9aee67fa8a944cf541cb"},
+    {file = "lacuscore-1.6.0.tar.gz", hash = "sha256:8001f5db7f3595c6b808b3b810d3c795d29f9cad408053387a2d4bc24b0b4c28"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.20.9,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.21.0,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=4.6.0,<5.0.0", extras = ["hiredis"]}
 requests = ">=2.31.0,<3.0.0"
 ua-parser = ">=0.16.1,<0.17.0"
@@ -1872,13 +1872,13 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.20.9"
+version = "1.21.0"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.20.9-py3-none-any.whl", hash = "sha256:0a4fb48716515aff5ca22370116539c5a7ede398e0e89848c549c6f1b25efef7"},
-    {file = "playwrightcapture-1.20.9.tar.gz", hash = "sha256:6594e49856e3ca9b186459a339363e2d4937fce27873e5e0f19750f21fdbbac5"},
+    {file = "playwrightcapture-1.21.0-py3-none-any.whl", hash = "sha256:291a7a20b2d02c7b93b79a2e734a7f52ea794a233af9794a65608359ec69dbfd"},
+    {file = "playwrightcapture-1.21.0.tar.gz", hash = "sha256:00a1e093814a6dfc87e0bccfd229ee1706e6ced0c478df41a4b68433d9526a3f"},
 ]
 
 [package.dependencies]
@@ -2084,13 +2084,13 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.5.1"
+version = "1.6.0"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylacus-1.5.1-py3-none-any.whl", hash = "sha256:abcbb2ea1d26f5807bfcb4d6cb3d973aba6a65b2024b2b30b83f5925a87c4196"},
-    {file = "pylacus-1.5.1.tar.gz", hash = "sha256:4ab886e5acea4d50aa0a75db230797c5e0e91a937a598bbbe36a61db5bfd7f87"},
+    {file = "pylacus-1.6.0-py3-none-any.whl", hash = "sha256:29ba2cf0e54d3aa1df468c89659fbb19854fc39eeacdb4e48b5669e43b64e1e0"},
+    {file = "pylacus-1.6.0.tar.gz", hash = "sha256:c978bcb296fe90ed8a567ff588d93ffa682b69021c2ac54df1b804ebc7c8c6f7"},
 ]
 
 [package.dependencies]
@@ -2118,13 +2118,13 @@ docs = ["Sphinx (>=7.0.1,<8.0.0)"]
 
 [[package]]
 name = "pylookyloomonitoring"
-version = "1.0.5"
+version = "1.1.0"
 description = "Python API to connect to lookyloo monitoring"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylookyloomonitoring-1.0.5-py3-none-any.whl", hash = "sha256:c3ccaf70e024238d792ec35b9c7cd8650b37b5c7e07a9aa3943531cfcdbe0dc3"},
-    {file = "pylookyloomonitoring-1.0.5.tar.gz", hash = "sha256:7cc32e13922607f1f03470bb4461e9a69bdf26820dfcc6fd232e6a8868f91ba5"},
+    {file = "pylookyloomonitoring-1.1.0-py3-none-any.whl", hash = "sha256:0e9e5db2e002628c352c9d38472aacf64ecfb06dcf207e13adb9dc995c987ded"},
+    {file = "pylookyloomonitoring-1.1.0.tar.gz", hash = "sha256:0fd76bdf00a0b01f6d0abb08fc20f1a0d9d9d059c4235c602d66c93430e806ae"},
 ]
 
 [package.dependencies]
@@ -2167,37 +2167,37 @@ virustotal = ["validators (>=0.20.0,<0.21.0)"]
 
 [[package]]
 name = "pypandora"
-version = "1.4.0"
+version = "1.5.0"
 description = "Python CLI and module for pandora"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pypandora-1.4.0-py3-none-any.whl", hash = "sha256:4d3f8313957c4423ab3c80af6eff2e7b2f27fcee68cbd18dfe8ac81f49440bd2"},
-    {file = "pypandora-1.4.0.tar.gz", hash = "sha256:4945b690afd87ffe55a3782a9a4dbc107d30368a765ec467111ae0015a059bad"},
+    {file = "pypandora-1.5.0-py3-none-any.whl", hash = "sha256:dd5de14d0c2cc53586e1ccf26b4da38dc23ea856e102f98a246c65d6dcfae341"},
+    {file = "pypandora-1.5.0.tar.gz", hash = "sha256:1a7d5a830f0146eaf36fd20e320f016f9e984d7ec700bf00b3849cc8c5018e9a"},
 ]
 
 [package.dependencies]
-requests = ">=2.28.2,<3.0.0"
+requests = ">=2.31.0,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=6.1.3,<7.0.0)"]
+docs = ["Sphinx (>=7.0.1,<8.0.0)"]
 
 [[package]]
 name = "pyphishtanklookup"
-version = "1.2"
+version = "1.3.0"
 description = "Python CLI and module for PhishtankLookup"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pyphishtanklookup-1.2-py3-none-any.whl", hash = "sha256:11135b357f5cb18e1e97f7f7f5f5c6b82e605d270787447932e7579ffc4485de"},
-    {file = "pyphishtanklookup-1.2.tar.gz", hash = "sha256:b460bab68a5edef390815865752676b209ff075e157c50d3bfcbcf06b571e72d"},
+    {file = "pyphishtanklookup-1.3.0-py3-none-any.whl", hash = "sha256:be685f378d1ea658ee1e02b66169ff75333fa1a0c065947cdfd1595e426660d6"},
+    {file = "pyphishtanklookup-1.3.0.tar.gz", hash = "sha256:a539efb92f0337d8e955e1ba296a9976f6c8cc10ba3ba81dd1a5a044d5d1c035"},
 ]
 
 [package.dependencies]
-requests = ">=2.28.1,<3.0.0"
+requests = ">=2.31.0,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=6.0.0,<7.0.0)"]
+docs = ["Sphinx (>=6.2.1,<7.0.0)"]
 
 [[package]]
 name = "pyrsistent"
@@ -2643,13 +2643,13 @@ files = [
 
 [[package]]
 name = "types-pillow"
-version = "9.5.0.4"
+version = "9.5.0.5"
 description = "Typing stubs for Pillow"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-Pillow-9.5.0.4.tar.gz", hash = "sha256:f1b6af47abd151847ee25911ffeba784899bc7dc7f9eba8ca6a5aac522b012ef"},
-    {file = "types_Pillow-9.5.0.4-py3-none-any.whl", hash = "sha256:69427d9fa4320ff6e30f00fb9c0dd71185dc0a16de4757774220104759483466"},
+    {file = "types-Pillow-9.5.0.5.tar.gz", hash = "sha256:de9877aa1e6226b6479459ca84df02fd7e999b970c79cfee3b8298840336e77c"},
+    {file = "types_Pillow-9.5.0.5-py3-none-any.whl", hash = "sha256:2b17f95c5c16e4962e4032bdb95494766a85569fa278ee21e5fcbbd318e9ccd2"},
 ]
 
 [[package]]
@@ -2701,13 +2701,13 @@ files = [
 
 [[package]]
 name = "types-redis"
-version = "4.5.5.2"
+version = "4.6.0.0"
 description = "Typing stubs for redis"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.5.5.2.tar.gz", hash = "sha256:2fe82f374d9dddf007deaf23d81fddcfd9523d9522bf11523c5c43bc5b27099e"},
-    {file = "types_redis-4.5.5.2-py3-none-any.whl", hash = "sha256:bf8692252038dbe03b007ca4fde87d3ae8e10610854a6858e3bf5d01721a7c4b"},
+    {file = "types-redis-4.6.0.0.tar.gz", hash = "sha256:4ad588026d89ba72eae29b6276448ea117d77e5e4df258c0429d274da652ef9c"},
+    {file = "types_redis-4.6.0.0-py3-none-any.whl", hash = "sha256:528038f32a0a2642e00d9c80dd95879a348ced6071bb747c746c0cb1ad06426c"},
 ]
 
 [package.dependencies]
@@ -2741,13 +2741,13 @@ files = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.6.3"
+version = "4.7.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "typing_extensions-4.6.3-py3-none-any.whl", hash = "sha256:88a4153d8505aabbb4e13aacb7c486c2b4a33ca3b3f807914a9b4c844c471c26"},
-    {file = "typing_extensions-4.6.3.tar.gz", hash = "sha256:d91d5919357fe7f681a9f2b5b4cb2a5f1ef0a1e9f59c4d8ff0d3491e05c0ffd5"},
+    {file = "typing_extensions-4.7.0-py3-none-any.whl", hash = "sha256:5d8c9dac95c27d20df12fb1d97b9793ab8b2af8a3a525e68c80e21060c161771"},
+    {file = "typing_extensions-4.7.0.tar.gz", hash = "sha256:935ccf31549830cda708b42289d44b6f74084d616a00be651601a4f968e77c82"},
 ]
 
 [[package]]
@@ -3069,4 +3069,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "dae7aad536a14c6fb9d15610b6f23082a6e69973030291ffaa06b55d74dbbf63"
+content-hash = "449164b860b99b51564406c1c0d6f37db1e64a29669346b46ff235966b6fb5ad"
