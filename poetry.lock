@@ -917,13 +917,13 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.20.0"
+version = "1.21.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "har2tree-1.20.0-py3-none-any.whl", hash = "sha256:d1d953ac62f13af21878d4db55bf26543fb2bd4671d22ca40ec44b1f9e71a981"},
-    {file = "har2tree-1.20.0.tar.gz", hash = "sha256:161c5df9f14c4a73e5376e08ae6048fe3c7389c6e19ff39bedf107e7017b19a1"},
+    {file = "har2tree-1.21.0-py3-none-any.whl", hash = "sha256:a1ab64d1e965650efac2904e54e93f30741a23fe32e51f05551cb4560f980009"},
+    {file = "har2tree-1.21.0.tar.gz", hash = "sha256:daf1a448189c4eed023e9e02126dcfcba8029101e71ea6a2b014f1d5b7352cdf"},
 ]
 
 [package.dependencies]
@@ -936,7 +936,7 @@ numpy = [
     {version = "1.23.3", markers = "python_version < \"3.10\""},
     {version = ">=1.23.4,<2.0.0", markers = "python_version >= \"3.10\""},
 ]
-publicsuffixlist = ">=0.10.0.20230506,<0.11.0.0"
+publicsuffixlist = ">=0.10.0.20230617,<0.11.0.0"
 six = ">=1.16.0,<2.0.0"
 w3lib = ">=2.1.1,<3.0.0"
 
@@ -3069,4 +3069,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "449164b860b99b51564406c1c0d6f37db1e64a29669346b46ff235966b6fb5ad"
+content-hash = "fe12698ab1cc61ca2205def8974826f787bdf91bd56ca73643eb83024b9cd167"
