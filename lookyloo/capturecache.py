@@ -185,7 +185,8 @@ class CapturesIndex(Mapping):
             cc = CaptureCache(cached)
             # NOTE: checking for pickle to exist may be a bad idea here.
             if (cc.capture_dir.exists()
-                    and (cc.capture_dir / 'tree.pickle').exists()
+                    and ((cc.capture_dir / 'tree.pickle.gz').exists()
+                         or (cc.capture_dir / 'tree.pickle').exists())
                     and not cc.incomplete_redirects):
                 self.__cache[uuid] = cc
                 return self.__cache[uuid]
