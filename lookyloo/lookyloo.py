@@ -458,7 +458,11 @@ class Lookyloo():
                     if datetime.fromisoformat(date_str).replace(tzinfo=timezone.utc) < index_cut_time:
                         continue
                     capture_uuids.append(uuid)
-            cached_captures_only = False
+            # NOTE: we absolutely have to respect the cached_captures_only setting and
+            #       never overwrite it. This method is called to display the index
+            #       and if we try to display everything, including the non-cached entries,
+            #       the index can get stuck building a lot of captures
+            # cached_captures_only = False
 
         if not capture_uuids:
             # No captures at all on the instance
