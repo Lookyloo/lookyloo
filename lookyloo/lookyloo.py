@@ -729,12 +729,17 @@ class Lookyloo():
         smtp_auth = get_config('generic', 'email_smtp_auth')
         redirects = ''
         initial_url = ''
-        cache = self.capture_cache(capture_uuid)
-        if cache and hasattr(cache, 'url'):
-            if email_config['defang_urls']:
-                initial_url = defang(cache.url, colon=True, all_dots=True)
+        if cache := self.capture_cache(capture_uuid):
+            if hasattr(cache, 'url'):
+                if email_config['defang_urls']:
+                    initial_url = defang(cache.url, colon=True, all_dots=True)
+                else:
+                    initial_url = cache.url
             else:
-                initial_url = cache.url
+                initial_url = 'Unable to get URL from cache, this is probably a bug.'
+                if hasattr(cache, 'error') and cache.error:
+                    initial_url += f' - {cache.error}'
+
             if hasattr(cache, 'redirects') and cache.redirects:
                 redirects = "Redirects:\n"
                 if email_config['defang_urls']:
@@ -743,10 +748,6 @@ class Lookyloo():
                     redirects += '\n'.join(cache.redirects)
             else:
                 redirects = "No redirects."
-        else:
-            initial_url = 'Unable to get URL from cache, this is probably a bug.'
-            if hasattr(cache, 'error'):
-                initial_url += f' - {cache.error}'
 
         msg = EmailMessage()
         msg['From'] = email_config['from']
