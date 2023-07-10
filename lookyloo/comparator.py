@@ -13,7 +13,7 @@ from redis.connection import UnixDomainSocketConnection
 from .context import Context
 from .capturecache import CapturesIndex
 from .default import get_config, get_socket_path, LookylooException
-from .exceptions import MissingUUID
+from .exceptions import MissingUUID, TreeNeedsRebuild
 
 
 class CompareSettings(TypedDict):
@@ -99,6 +99,9 @@ class Comparator():
 
                 to_return['redirects']['nodes'] = [self.get_comparables_node(a) for a in list(reversed(capture.tree.root_hartree.rendered_node.get_ancestors())) + [capture.tree.root_hartree.rendered_node]]
                 to_return['ressources'] = {(a.name, a.hostname) for a in capture.tree.root_hartree.rendered_node.traverse()}
+        except TreeNeedsRebuild as e:
+            self.logger.warning(f"The tree for {capture_uuid} couldn't be built.")
+            to_return = {'error': str(e)}
         except LookylooException as e:
             to_return = {'error': str(e)}
         return to_return
