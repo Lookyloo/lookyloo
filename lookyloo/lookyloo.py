@@ -1443,8 +1443,14 @@ class Lookyloo():
                 _img.write(png)
 
         if html:
-            with (dirpath / '0.html').open('w') as _html:
-                _html.write(html)
+            try:
+                with (dirpath / '0.html').open('w') as _html:
+                    _html.write(html)
+            except UnicodeEncodeError:
+                # NOTE: Unable to store as string, try to store as bytes instead
+                #        Yes, it is dirty.
+                with (dirpath / '0.html').open('wb') as _html:
+                    _html.write(html.encode('utf-16', 'surrogatepass'))
 
         if last_redirected_url:
             with (dirpath / '0.last_redirect.txt').open('w') as _redir:
