@@ -161,8 +161,7 @@
   var parent_uuid = {{ parent_uuid|tojson }};
   var capture_starttime = new Date(Date.parse("{{ info.timestamp.isoformat() }}"));
   window.addEventListener('DOMContentLoaded', (event) => {
-      document.getElementById("start_time").innerHTML =
-          `${capture_starttime.getFullYear()}-${("0" + (capture_starttime.getMonth() + 1)).slice(-2)}-${("0" + capture_starttime.getDate()).slice(-2)} ${capture_starttime.toLocaleTimeString()}`;
+      document.getElementById("start_time").innerHTML = capture_starttime.toString();
   });
 </script>
 
