@@ -175,7 +175,7 @@ class MISPExport(Resource):
 
         to_return = []
         for e in event:
-            to_return.append(e.to_json(indent=2))
+            to_return.append(json.loads(e.to_json()))
         return to_return
 
 

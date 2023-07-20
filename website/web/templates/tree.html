@@ -644,6 +644,12 @@
             <li>
               <a href="{{ url_for('export', tree_uuid=tree_uuid) }}" role="button">Download full capture</a>
             </li>
+            <li>
+              <a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid) }}" role="button">Download as MISP Event</a>
+              {% if parent_uuid %}
+              (<a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, with_parents=True) }}" role="button">with parents</a>)
+              {% endif %}
+            </li>
             {% if has_redirects %}
             <li>
               <a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">Download redirects</a>
