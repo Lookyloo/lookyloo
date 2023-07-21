@@ -72,6 +72,7 @@ class BackgroundIndexer(AbstractManager):
             p.sismember('indexed_urls', cache.uuid)
             p.sismember('indexed_body_hashes', cache.uuid)
             p.sismember('indexed_cookies', cache.uuid)
+            p.sismember('indexed_hhhashes', cache.uuid)
             indexed = p.execute()
             if all(indexed):
                 continue
@@ -91,6 +92,9 @@ class BackgroundIndexer(AbstractManager):
             if not indexed[2]:
                 self.logger.info(f'Indexing cookies for {cache.uuid}')
                 self.lookyloo.indexing.index_cookies_capture(ct)
+            if not indexed[3]:
+                self.logger.info(f'Indexing HH Hashes for {cache.uuid}')
+                self.lookyloo.indexing.index_http_headers_hashes_capture(ct)
             # NOTE: categories aren't taken in account here, should be fixed(?)
             # see indexing.index_categories_capture(capture_uuid, categories)
 

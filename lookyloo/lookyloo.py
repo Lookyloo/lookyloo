@@ -974,6 +974,15 @@ class Lookyloo():
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
+    def get_hhh_investigator(self, hhh: str, /) -> List[Tuple[str, str, str]]:
+        '''Returns all the captures related to a cookie name entry, used in the web interface.'''
+        all_captures = dict(self.indexing.get_http_headers_hashes_captures(hhh))
+        cached_captures = self.sorted_capture_cache([entry for entry in all_captures])
+        captures = [(cache.uuid,
+                     self.get_urlnode_from_tree(cache.uuid, all_captures[cache.uuid]).hostnode_uuid,
+                     cache.title) for cache in cached_captures]
+        return captures
+
     def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> Tuple[int, Dict[str, List[Tuple[str, str, str, str, str]]]]:
         '''Search all the captures a specific hash was seen.
         If a URL is given, it splits the results if the hash is seen on the same URL or an other one.

@@ -119,6 +119,7 @@ def logout():
 # Config
 
 lookyloo: Lookyloo = Lookyloo()
+indexing: Indexing = Indexing()
 
 time_delta_on_index = get_config('generic', 'time_delta_on_index')
 blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')
@@ -903,19 +904,25 @@ def index_hidden():
 
 @app.route('/cookies', methods=['GET'])
 def cookies_lookup():
-    i = Indexing()
-    cookies_names = [(name, freq, i.cookies_names_number_domains(name)) for name, freq in i.cookies_names]
+    cookies_names = [(name, freq, indexing.cookies_names_number_domains(name))
+                     for name, freq in indexing.cookies_names]
     return render_template('cookies.html', cookies_names=cookies_names)
+
+
+@app.route('/hhhashes', methods=['GET'])
+def hhhashes_lookup():
+    hhhashes = [(hhh, freq, indexing.http_headers_hashes_number_captures(hhh))
+                for hhh, freq in indexing.http_headers_hashes]
+    return render_template('hhhashes.html', hhhashes=hhhashes)
 
 
 @app.route('/ressources', methods=['GET'])
 def ressources():
-    i = Indexing()
     ressources = []
-    for h, freq in i.ressources:
-        domain_freq = i.ressources_number_domains(h)
+    for h, freq in indexing.ressources:
+        domain_freq = indexing.ressources_number_domains(h)
         context = lookyloo.context.find_known_content(h)
-        capture_uuid, url_uuid, hostnode_uuid = i.get_hash_uuids(h)
+        capture_uuid, url_uuid, hostnode_uuid = indexing.get_hash_uuids(h)
         try:
             ressource = lookyloo.get_ressource(capture_uuid, url_uuid, h)
         except MissingUUID:
@@ -929,8 +936,7 @@ def ressources():
 
 @app.route('/categories', methods=['GET'])
 def categories():
-    i = Indexing()
-    return render_template('categories.html', categories=i.categories)
+    return render_template('categories.html', categories=indexing.categories)
 
 
 @app.route('/rebuild_all')
@@ -1158,6 +1164,12 @@ def capture_web():
 def cookies_name_detail(cookie_name: str):
     captures, domains = lookyloo.get_cookie_name_investigator(cookie_name.strip())
     return render_template('cookie_name.html', cookie_name=cookie_name, domains=domains, captures=captures)
+
+
+@app.route('/hhhdetails/<string:hhh>', methods=['GET'])
+def hhh_detail(hhh: str):
+    captures = lookyloo.get_hhh_investigator(hhh.strip())
+    return render_template('hhh_details.html', hhh=hhh, captures=captures)
 
 
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])

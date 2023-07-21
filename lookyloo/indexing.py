@@ -2,7 +2,7 @@
 
 import hashlib
 import logging
-import re
+# import re
 from collections import defaultdict
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 from urllib.parse import urlsplit
@@ -12,7 +12,7 @@ from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
 from .default import get_socket_path, get_config
-from .helpers import get_public_suffix_list
+# from .helpers import get_public_suffix_list
 
 
 class Indexing():
@@ -38,6 +38,9 @@ class Indexing():
         if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
             self.logger.debug(f'Body hashes index: update internal UUIDs for {crawled_tree.uuid}')
             self._reindex_body_hashes_capture(crawled_tree)
+        if self.redis.sismember('indexed_hhhashes', crawled_tree.uuid):
+            self.logger.debug(f'HTTP Headers hashes index: update internal UUIDs for {crawled_tree.uuid}')
+            self._reindex_http_headers_hashes_capture(crawled_tree)
 
     # ###### Cookies ######
 
@@ -60,20 +63,24 @@ class Indexing():
     def _reindex_cookies_capture(self, crawled_tree: CrawledTree) -> None:
         pipeline = self.redis.pipeline()
         already_loaded: Set[Tuple[str, str]] = set()
-        already_cleaned_up = []
+        already_cleaned_up: Set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if hasattr(urlnode, 'cookies_received'):
-                for domain, cookie, _ in urlnode.cookies_received:
-                    name, value = cookie.split('=', 1)
-                    if (name, domain) in already_loaded:
-                        # Only add cookie name once / capture
-                        continue
-                    already_loaded.add((name, domain))
-                    if name not in already_cleaned_up:
-                        for key in self.redis.sscan_iter(f'cn|{name}|captures', f'{crawled_tree.uuid}|*'):
-                            pipeline.srem(f'cn|{name}|captures', key)
-                    already_cleaned_up.append(name)
-                    pipeline.sadd(f'cn|{name}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
+            if not hasattr(urlnode, 'cookies_received'):
+                continue
+            for domain, cookie, _ in urlnode.cookies_received:
+                name, value = cookie.split('=', 1)
+                if (name, domain) in already_loaded:
+                    # Only add cookie name once / capture
+                    continue
+                already_loaded.add((name, domain))
+                if name not in already_cleaned_up:
+                    # We only run this srem once per name for a capture,
+                    # before adding it for the first time
+                    pipeline.srem(f'cn|{name}|captures',
+                                  *[key for key in self.redis.sscan_iter(f'cn|{name}|captures',
+                                                                         f'{crawled_tree.uuid}|*')])
+                    already_cleaned_up.add(name)
+                pipeline.sadd(f'cn|{name}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
         pipeline.execute()
 
     def index_cookies_capture(self, crawled_tree: CrawledTree) -> None:
@@ -85,22 +92,25 @@ class Indexing():
         pipeline = self.redis.pipeline()
         already_loaded: Set[Tuple[str, str]] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if hasattr(urlnode, 'cookies_received'):
-                for domain, cookie, _ in urlnode.cookies_received:
-                    name, value = cookie.split('=', 1)
-                    if (name, domain) in already_loaded:
-                        # Only add cookie name once / capture
-                        continue
-                    already_loaded.add((name, domain))
-                    pipeline.zincrby('cookies_names', 1, name)
-                    pipeline.zincrby(f'cn|{name}', 1, domain)
-                    pipeline.sadd(f'cn|{name}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
-                    pipeline.zincrby(f'cn|{name}|{domain}', 1, value)
+            if not hasattr(urlnode, 'cookies_received'):
+                continue
+            for domain, cookie, _ in urlnode.cookies_received:
+                name, value = cookie.split('=', 1)
+                if (name, domain) in already_loaded:
+                    # Only add cookie name once / capture
+                    continue
+                already_loaded.add((name, domain))
+                pipeline.zincrby('cookies_names', 1, name)
+                pipeline.zincrby(f'cn|{name}', 1, domain)
+                pipeline.sadd(f'cn|{name}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
+                pipeline.zincrby(f'cn|{name}|{domain}', 1, value)
 
-                    pipeline.sadd('lookyloo_domains', domain)
-                    pipeline.sadd(domain, name)
+                pipeline.sadd('lookyloo_domains', domain)
+                pipeline.sadd(domain, name)
         pipeline.execute()
 
+    """
+    # Not used anywhere?
     def aggregate_domain_cookies(self):
         psl = get_public_suffix_list()
         pipeline = self.redis.pipeline()
@@ -116,6 +126,7 @@ class Indexing():
         self.redis.delete('aggregate_domains_cn')
         self.redis.delete('aggregate_cn_domains')
         return {'domains': aggregate_domains_cn, 'cookies': aggregate_cn_domains}
+    """
 
     # ###### Body hashes ######
 
@@ -140,13 +151,14 @@ class Indexing():
 
     def _reindex_body_hashes_capture(self, crawled_tree: CrawledTree) -> None:
         # if the capture is regenerated, the hostnodes/urlnodes UUIDs are changed
-        cleaned_up_hashes = []
+        cleaned_up_hashes: Set[str] = set()
         pipeline = self.redis.pipeline()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             for h in urlnode.resources_hashes:
                 if h not in cleaned_up_hashes:
-                    self.redis.delete(f'bh|{h}|captures|{crawled_tree.uuid}')
-                cleaned_up_hashes.append(h)
+                    # Delete the hash for that capture the first time we see it.
+                    pipeline.delete(f'bh|{h}|captures|{crawled_tree.uuid}')
+                    cleaned_up_hashes.add(h)
                 pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1,
                                  f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
         pipeline.execute()
@@ -170,6 +182,7 @@ class Indexing():
         pipeline.execute()
 
     def get_hash_uuids(self, body_hash: str) -> Tuple[str, str, str]:
+        """Use that to get a reference allowing to fetch a resource from one of the capture."""
         capture_uuid: str = self.redis.srandmember(f'bh|{body_hash}|captures')
         entry = self.redis.zrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, 1)[0]
         urlnode_uuid, hostnode_uuid, url = entry.split('|', 2)
@@ -216,6 +229,58 @@ class Indexing():
                 urls[url].append({'capture': capture_uuid, 'hostnode': hostnode_uuid, 'urlnode': url_uuid})
         return urls
 
+    # ###### HTTP Headers Hashes ######
+
+    @property
+    def http_headers_hashes(self) -> List[Tuple[str, float]]:
+        return self.redis.zrevrange('hhhashes', 0, -1, withscores=True)
+
+    def http_headers_hashes_number_captures(self, hhh: str) -> int:
+        return self.redis.scard(f'hhhashes|{hhh}|captures')
+
+    def get_http_headers_hashes_captures(self, hhh: str) -> List[Tuple[str, str]]:
+        return [uuids.split('|') for uuids in self.redis.smembers(f'hhhashes|{hhh}|captures')]
+
+    def _reindex_http_headers_hashes_capture(self, crawled_tree: CrawledTree) -> None:
+        pipeline = self.redis.pipeline()
+        already_loaded: Set[str] = set()
+        already_cleaned_up: Set[str] = set()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            if not hasattr(urlnode, 'hhhash'):
+                continue
+            if urlnode.hhhash in already_loaded:
+                # Only add cookie name once / capture
+                continue
+            already_loaded.add(urlnode.hhhash)
+            if urlnode.hhhash not in already_cleaned_up:
+                # We only run this srem once per name for a capture,
+                # before adding it for the first time
+                pipeline.srem(f'hhhashes|{urlnode.hhhash}|captures',
+                              *[key for key in self.redis.sscan_iter(f'hhhashes|{urlnode.hhhash}|captures',
+                                                                     f'{crawled_tree.uuid}|*')])
+                already_cleaned_up.add(urlnode.hhhash)
+            pipeline.sadd(f'hhhashes|{urlnode.hhhash}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
+        pipeline.execute()
+
+    def index_http_headers_hashes_capture(self, crawled_tree: CrawledTree) -> None:
+        if self.redis.sismember('indexed_hhhashes', crawled_tree.uuid):
+            # Do not reindex
+            return
+        self.redis.sadd('indexed_hhhashes', crawled_tree.uuid)
+
+        pipeline = self.redis.pipeline()
+        already_loaded: Set[str] = set()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            if not hasattr(urlnode, 'hhhash'):
+                continue
+            if urlnode.hhhash in already_loaded:
+                # Only add cookie name once / capture
+                continue
+            already_loaded.add(urlnode.hhhash)
+            pipeline.zincrby('hhhashes', 1, urlnode.hhhash)
+            pipeline.sadd(f'hhhashes|{urlnode.hhhash}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
+        pipeline.execute()
+
     # ###### URLs and Domains ######
 
     @property
@@ -240,15 +305,13 @@ class Indexing():
             pipeline.zincrby('urls', 1, urlnode.name)
             # set of all captures with this URL
             # We need to make sure the keys in redis aren't too long.
-            m = hashlib.md5()
-            m.update(urlnode.name.encode())
-            pipeline.sadd(f'urls|{m.hexdigest()}|captures', crawled_tree.uuid)
+            md5 = hashlib.md5(urlnode.name.encode()).hexdigest()
+            pipeline.sadd(f'urls|{md5}|captures', crawled_tree.uuid)
         pipeline.execute()
 
     def get_captures_url(self, url: str) -> Set[str]:
-        m = hashlib.md5()
-        m.update(url.encode())
-        return self.redis.smembers(f'urls|{m.hexdigest()}|captures')
+        md5 = hashlib.md5(url.encode()).hexdigest()
+        return self.redis.smembers(f'urls|{md5}|captures')
 
     def get_captures_hostname(self, hostname: str) -> Set[str]:
         return self.redis.smembers(f'hostnames|{hostname}|captures')

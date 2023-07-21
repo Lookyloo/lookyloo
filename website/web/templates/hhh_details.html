@@ -1,0 +1,17 @@
+{% extends "main.html" %}
+
+{% from 'bootstrap5/utils.html' import render_messages %}
+
+{% block title %}{{ hhh }}{% endblock %}
+
+{% block content %}
+  <center>
+      <h2>{{ hhh }}</h2>
+  </center>
+  <p>The same HTTP Headers Hash was seen in these captures:</p>
+  <ul>
+  {% for capture_uuid, hostnode_uuid, title in captures %}
+    <li><a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid) }}">{{ title }}</a></li>
+  {% endfor %}
+  </ul>
+{% endblock %}
