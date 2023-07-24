@@ -42,7 +42,7 @@ gunicorn = "^21.2.0"
 charset-normalizer = "^3.2.0"
 redis = {version = "^4.6.0", extras = ["hiredis"]}
 beautifulsoup4 = "^4.12.2"
-bootstrap-flask = "^2.2.0"
+bootstrap-flask = "^2.3.0"
 defang = "^0.5.3"
 vt-py = "^0.17.5"
 pyeupi = "^1.1"

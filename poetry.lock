@@ -285,13 +285,13 @@ files = [
 
 [[package]]
 name = "bootstrap-flask"
-version = "2.2.0"
+version = "2.3.0"
 description = "Bootstrap 4 & 5 helper for your Flask projects."
 optional = false
 python-versions = "*"
 files = [
-    {file = "Bootstrap-Flask-2.2.0.tar.gz", hash = "sha256:40f3bf7d5802e429b2fca286a548bdde816c1185c28aa8df3051cff35cd05cac"},
-    {file = "Bootstrap_Flask-2.2.0-py2.py3-none-any.whl", hash = "sha256:b1fd9be1d22f4f1714a8a596ea2a4a5db9c957ba6db4aea4cb38ae90555233f3"},
+    {file = "Bootstrap-Flask-2.3.0.tar.gz", hash = "sha256:c8b7307cc775950c7f3fa4846ba1d5e23c00dfcd2c1b436a7265b367ded3d50c"},
+    {file = "Bootstrap_Flask-2.3.0-py2.py3-none-any.whl", hash = "sha256:a5a2376d64bfd835bd17322912d2c2045ecb48728b9d3aca0271900a0b027759"},
 ]
 
 [package.dependencies]
@@ -3228,4 +3228,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "804d861074b064bc7ba2f1ed62543f3f375d3c2c6fe87308d708f9cd4a313536"
+content-hash = "ae4dc019039dec6284d3ab0e3a1683afbaa07e1bc9fae43e0be3c94d4cfc3ff2"
