@@ -300,13 +300,13 @@ WTForms = "*"
 
 [[package]]
 name = "certifi"
-version = "2023.5.7"
+version = "2023.7.22"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2023.5.7-py3-none-any.whl", hash = "sha256:c6c2e98f5c7869efca1f8916fed228dd91539f9f1b444c314c06eef02980c716"},
-    {file = "certifi-2023.5.7.tar.gz", hash = "sha256:0f0d56dc5a6ad56fd4ba36484d6cc34451e1c6548c61daad8c320169f91eddc7"},
+    {file = "certifi-2023.7.22-py3-none-any.whl", hash = "sha256:92d6037539857d8206b8f6ae472e8b77db8058fec5937a1ef3f54304089edbb9"},
+    {file = "certifi-2023.7.22.tar.gz", hash = "sha256:539cc1d13202e33ca466e88b2807e29f4c13049d6d87031a3c110744495cb082"},
 ]
 
 [[package]]
@@ -1314,13 +1314,13 @@ referencing = ">=0.28.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.6.2"
+version = "1.6.3"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.6.2-py3-none-any.whl", hash = "sha256:3ec1fc75f51d7bfa53c5ce3a7d9072af34f0bb5b2fd5e1d7d50aa6db8c048f08"},
-    {file = "lacuscore-1.6.2.tar.gz", hash = "sha256:c83c985ba601cb72448f2c183cb6ad31be9c9da4380c360eb2919b3e95888092"},
+    {file = "lacuscore-1.6.3-py3-none-any.whl", hash = "sha256:f68ed0b9442461273b4b102e1e3cde3acb4195ae58e0e94394470b09ceb6e157"},
+    {file = "lacuscore-1.6.3.tar.gz", hash = "sha256:beea7f8f7a8b52ba09df8410354aea1b1cd7d480898cdc18b65e8c63ca50caaf"},
 ]
 
 [package.dependencies]
@@ -3228,4 +3228,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "bea06994ce4e44f8fc02865b6d5dc1c35ae0ac21d7cbaa54c70f31f49e49a56a"
+content-hash = "804d861074b064bc7ba2f1ed62543f3f375d3c2c6fe87308d708f9cd4a313536"
