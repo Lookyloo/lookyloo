@@ -364,6 +364,9 @@ class CapturesIndex(Mapping):
                 tree = None
 
         cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': capture_dir_str}
+        if capture_settings.get('url'):
+            cache['url'] = capture_settings['url']
+
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
             with (capture_dir / 'error.txt').open() as _error:
@@ -375,7 +378,7 @@ class CapturesIndex(Mapping):
                 except json.decoder.JSONDecodeError:
                     # old format
                     error_to_cache = content
-                cache['error'] = f'The capture {capture_dir.name} has an error: {error_to_cache}'
+                cache['error'] = f'The capture {uuid} ({capture_dir.name}) has an error: {error_to_cache}'
 
         if not (har_files := sorted(capture_dir.rglob('*.har'))):
             har_files = sorted(capture_dir.rglob('*.har.gz'))
@@ -384,10 +387,12 @@ class CapturesIndex(Mapping):
                 har = HarFile(har_files[0], uuid)
                 cache['title'] = har.initial_title
                 cache['timestamp'] = har.initial_start_time
-                cache['url'] = capture_settings['url'] if capture_settings.get('url') else har.root_url
                 cache['redirects'] = json.dumps(tree.redirects) if tree else ''
                 cache['incomplete_redirects'] = 0
                 cache['user_agent'] = har.root_user_agent if har.root_user_agent else 'No User Agent.'
+                if 'url' not in cache:
+                    # if all went well, we already filled that one above.
+                    cache['url'] = har.root_url
                 if har.root_referrer:
                     cache['referer'] = har.root_referrer
             except Har2TreeError as e:
