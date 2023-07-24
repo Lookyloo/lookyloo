@@ -247,13 +247,13 @@ class Lookyloo():
 
         to_return = {'uuid': cache.uuid,
                      'url': cache.url if hasattr(cache, 'url') else 'Unable to get URL for the capture'}
-        if hasattr(cache, 'error'):
+        if hasattr(cache, 'error') and cache.error:
             to_return['error'] = cache.error
         if hasattr(cache, 'title'):
             to_return['title'] = cache.title
         if hasattr(cache, 'timestamp'):
             to_return['capture_time'] = cache.timestamp.isoformat()
-        if hasattr(cache, 'user_agent'):
+        if hasattr(cache, 'user_agent') and cache.user_agent:
             to_return['user_agent'] = cache.user_agent
         if hasattr(cache, 'referer'):
             to_return['referer'] = cache.referer if cache.referer else ''

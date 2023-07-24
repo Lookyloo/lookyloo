@@ -58,6 +58,12 @@ class CaptureCache():
         self.logger = LookylooCacheLogAdapter(logger, {'uuid': self.uuid})
 
         self.capture_dir: Path = Path(cache_entry['capture_dir'])
+        if not self.capture_dir.exists():
+            raise MissingCaptureDirectory(f'The capture {self.uuid} does not exists in {self.capture_dir}.')
+
+        if url := cache_entry.get('url'):
+            # This entry *should* be present even if there is an error.
+            self.url: str = url
 
         if all(key in cache_entry.keys() for key in __default_cache_keys):
             self.title: str = cache_entry['title']
@@ -66,14 +72,11 @@ class CaptureCache():
             except ValueError:
                 # If the microsecond is missing (0), it fails
                 self.timestamp = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
-            self.url: str = cache_entry['url']
             if cache_entry.get('redirects'):
                 self.redirects: List[str] = json.loads(cache_entry['redirects'])
             else:
                 self.logger.debug('No redirects in cache')
                 self.redirects = []
-            if not self.capture_dir.exists():
-                raise MissingCaptureDirectory(f'The capture {self.uuid} does not exists in {self.capture_dir}.')
         elif not cache_entry.get('error'):
             missing = set(__default_cache_keys) - set(cache_entry.keys())
             raise LookylooException(f'Missing keys ({missing}), no error message. It should not happen.')
