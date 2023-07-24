@@ -986,14 +986,18 @@ class Lookyloo():
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
-    def get_hhh_investigator(self, hhh: str, /) -> List[Tuple[str, str, str]]:
+    def get_hhh_investigator(self, hhh: str, /) -> Tuple[List[Tuple[str, str, str, str]], List[Tuple[str, str]]]:
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''
         all_captures = dict(self.indexing.get_http_headers_hashes_captures(hhh))
         cached_captures = self.sorted_capture_cache([entry for entry in all_captures])
         captures = [(cache.uuid,
                      self.get_urlnode_from_tree(cache.uuid, all_captures[cache.uuid]).hostnode_uuid,
+                     self.get_urlnode_from_tree(cache.uuid, all_captures[cache.uuid]).name,
                      cache.title) for cache in cached_captures]
-        return captures
+        # get the headers and format them as they were in the response
+        urlnode = self.get_urlnode_from_tree(cached_captures[0].uuid, all_captures[cached_captures[0].uuid])
+        headers = [(header["name"], header["value"]) for header in urlnode.response['headers']]
+        return captures, headers
 
     def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> Tuple[int, Dict[str, List[Tuple[str, str, str, str, str]]]]:
         '''Search all the captures a specific hash was seen.

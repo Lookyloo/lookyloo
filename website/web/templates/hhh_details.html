@@ -8,10 +8,47 @@
   <center>
       <h2>{{ hhh }}</h2>
   </center>
+  <div class="table-responsive">
+      <table id="table" class="table">
+          <thead>
+              <tr>
+                  <th>Name</th>
+                  <th>Value</th>
+              </tr>
+          </thead>
+          <tbody>
+              {%for name, value in headers%}
+              <tr>
+                  <td>{{name}}</td>
+                  <td>{{value}}</td>
+              </tr>
+              {%endfor%}
+          </tbody>
+      </table>
+  </div>
   <p>The same HTTP Headers Hash was seen in these captures:</p>
   <ul>
-  {% for capture_uuid, hostnode_uuid, title in captures %}
-    <li><a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid) }}">{{ title }}</a></li>
-  {% endfor %}
+  <div class="table-responsive">
+      <table id="table" class="table">
+          <thead>
+              <tr>
+                  <th>Capture Title</th>
+                  <th>URL matching the HHH</th>
+              </tr>
+          </thead>
+          <tbody>
+            {% for capture_uuid, hostnode_uuid, url, title in captures %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid) }}">
+                        {{ title }}
+                    </a>
+                </td>
+                <td>{{url}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+      </table>
+  </div>
   </ul>
 {% endblock %}

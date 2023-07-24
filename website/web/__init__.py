@@ -1168,8 +1168,8 @@ def cookies_name_detail(cookie_name: str):
 
 @app.route('/hhhdetails/<string:hhh>', methods=['GET'])
 def hhh_detail(hhh: str):
-    captures = lookyloo.get_hhh_investigator(hhh.strip())
-    return render_template('hhh_details.html', hhh=hhh, captures=captures)
+    captures, headers = lookyloo.get_hhh_investigator(hhh.strip())
+    return render_template('hhh_details.html', hhh=hhh, captures=captures, headers=headers)
 
 
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])
