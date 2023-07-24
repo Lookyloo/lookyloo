@@ -293,6 +293,10 @@
               </a>
             </p>
           </div>
+          {% if url['url_object'].hhhash %}
+            <button type="button" class="btn btn-sm btn-link" onclick="openURLInNewTab('{{ url_for('hhh_detail', hhh=url['url_object'].hhhash) }}')">See other captures with the same HTTP Headers Hash</button>
+          {% endif %}
+
           {% endif %}
           {% if enable_context_by_users %}
             </br>

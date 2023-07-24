@@ -12,14 +12,14 @@
       <table id="table" class="table">
           <thead>
               <tr>
-                  <th>Name</th>
-                  <th>Value</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Value sample</th>
               </tr>
           </thead>
           <tbody>
               {%for name, value in headers%}
               <tr>
-                  <td>{{name}}</td>
+                  <th scope="row">{{name}}</th>
                   <td>{{value}}</td>
               </tr>
               {%endfor%}
