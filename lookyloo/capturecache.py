@@ -273,7 +273,11 @@ class CapturesIndex(Mapping):
             # The pickle is being created somewhere else, wait until it's done.
             while is_locked(capture_dir):
                 time.sleep(5)
-            return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, logger)
+            try:
+                return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, logger)
+            except TreeNeedsRebuild:
+                # If this exception is raised, the building failed somewhere else, let's give it another shot.
+                pass
 
         if not (har_files := sorted(capture_dir.glob('*.har'))):
             har_files = sorted(capture_dir.glob('*.har.gz'))

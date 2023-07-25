@@ -38,10 +38,6 @@ class BackgroundIndexer(AbstractManager):
                 # We already have a pickle file
                 self.logger.debug(f'{uuid_path.parent} has a pickle.')
                 continue
-            elif not list(uuid_path.parent.rglob('*.har.gz')) and not list(uuid_path.parent.rglob('*.har')):
-                # No HAR file
-                self.logger.info(f'{uuid_path.parent} has no HAR file.')
-                continue
 
             if is_locked(uuid_path.parent):
                 # it is really locked
@@ -50,6 +46,14 @@ class BackgroundIndexer(AbstractManager):
 
             with uuid_path.open() as f:
                 uuid = f.read()
+
+            if not list(uuid_path.parent.rglob('*.har.gz')) and not list(uuid_path.parent.rglob('*.har')):
+                # No HAR file
+                self.logger.warning(f'{uuid_path.parent} has no HAR file.')
+                self.lookyloo.redis.hdel('lookup_dirs', uuid)
+                shutil.move(str(uuid_path.parent), str(self.discarded_captures_dir / uuid_path.parent.name))
+                continue
+
             if not self.lookyloo.redis.hexists('lookup_dirs', uuid):
                 # The capture with this UUID exists, but it is for some reason missing in lookup_dirs
                 self.lookyloo.redis.hset('lookup_dirs', uuid, str(uuid_path.parent))

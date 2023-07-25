@@ -226,7 +226,6 @@ def get_cache_directory(root: Path, identifier: str, namespace: Optional[Union[s
 def is_locked(locked_dir_path: Path, /) -> bool:
     """Check if a capture directory is locked, if the lock is recent enough,
     and if the locking process is still running.
-    Note: if the lock has been set by the same process, we ignore it.
 
     :param locked_dir_path: Path of the directory.
     """
@@ -237,13 +236,19 @@ def is_locked(locked_dir_path: Path, /) -> bool:
 
     try:
         content = ''
-        while not content:
+        max_wait_content = 5
+        while max_wait_content > 0:
             with lock_file.open('r') as f:
                 if content := f.read():
                     break
-                # The file is empty, we're between the creation and setting the content
-                logger.info(f'Lock file empty ({lock_file}), waiting...')
-                time.sleep(1)
+            # The file is empty, we're between the creation and setting the content
+            logger.info(f'Lock file empty ({lock_file}), waiting...')
+            max_wait_content -= 1
+            time.sleep(1)
+        else:
+            logger.warning('Lock file empty for too long, removing it.')
+            lock_file.unlink(missing_ok=True)
+            return False
 
         ts, pid = content.split(';')
         try:
