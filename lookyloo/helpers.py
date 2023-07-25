@@ -3,6 +3,7 @@ import hashlib
 import json
 import logging
 import os
+import time
 
 from datetime import datetime, timedelta
 from functools import lru_cache
@@ -225,6 +226,7 @@ def get_cache_directory(root: Path, identifier: str, namespace: Optional[Union[s
 def is_locked(locked_dir_path: Path, /) -> bool:
     """Check if a capture directory is locked, if the lock is recent enough,
     and if the locking process is still running.
+    Note: if the lock has been set by the same process, we ignore it.
 
     :param locked_dir_path: Path of the directory.
     """
@@ -234,19 +236,25 @@ def is_locked(locked_dir_path: Path, /) -> bool:
         return False
 
     try:
-        with lock_file.open('r') as f:
-            content = f.read()
-            if ';' in content:
-                ts, pid = content.split(';')
-                try:
-                    os.kill(int(pid), 0)
-                except OSError:
-                    logger.info(f'Lock by dead script {lock_file}, removing it.')
-                    lock_file.unlink(missing_ok=True)
-                    return False
-            else:
-                # Old format
-                ts = content
+        content = ''
+        while not content:
+            with lock_file.open('r') as f:
+                if content := f.read():
+                    break
+                # The file is empty, we're between the creation and setting the content
+                logger.info(f'Lock file empty ({lock_file}), waiting...')
+                time.sleep(1)
+
+        ts, pid = content.split(';')
+        if pid == str(os.getpid()):
+            # Locked by the same PID, was locked by the indexer.
+            return False
+        try:
+            os.kill(int(pid), 0)
+        except OSError:
+            logger.info(f'Lock by dead script {lock_file}, removing it.')
+            lock_file.unlink(missing_ok=True)
+            return False
 
         lock_ts = datetime.fromisoformat(ts)
         if lock_ts < datetime.now() - timedelta(minutes=30):
@@ -255,7 +263,7 @@ def is_locked(locked_dir_path: Path, /) -> bool:
             lock_file.unlink(missing_ok=True)
             return False
     except Exception as e:
-        logger.critical(f'Lock found, but uanble to open it: {e}.')
+        logger.critical(f'Lock found, but unable process it: {e}.')
         return False
 
     # The lockfile is here for a good reason.

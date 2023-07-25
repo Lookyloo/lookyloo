@@ -5,12 +5,13 @@ import logging.config
 import os
 import shutil
 
+from datetime import datetime
 from typing import Optional
 
 from lookyloo.default import AbstractManager, get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.lookyloo import Lookyloo
-from lookyloo.helpers import is_locked
+from lookyloo.helpers import is_locked, try_make_file
 
 
 logging.config.dictConfig(get_config('logging'))
@@ -38,7 +39,13 @@ class BackgroundIndexer(AbstractManager):
                     or not list(uuid_path.parent.rglob('*.har.gz'))):
                 continue
 
-            if is_locked(uuid_path.parent):
+            lock_file = uuid_path.parent / 'lock'
+            if try_make_file(lock_file):
+                # Lock created, we can process
+                with lock_file.open('w') as f:
+                    f.write(f"{datetime.now().isoformat()};{os.getpid()}")
+            elif is_locked(uuid_path.parent):
+                # it is really locked
                 continue
 
             with uuid_path.open() as f:
