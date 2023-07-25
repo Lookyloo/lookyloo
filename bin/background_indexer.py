@@ -8,10 +8,10 @@ import shutil
 from datetime import datetime
 from typing import Optional
 
-from lookyloo.default import AbstractManager, get_config
+from lookyloo.default import AbstractManager, get_config, try_make_file
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.lookyloo import Lookyloo
-from lookyloo.helpers import is_locked, try_make_file
+from lookyloo.helpers import is_locked
 
 
 logging.config.dictConfig(get_config('logging'))
