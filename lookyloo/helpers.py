@@ -246,9 +246,6 @@ def is_locked(locked_dir_path: Path, /) -> bool:
                 time.sleep(1)
 
         ts, pid = content.split(';')
-        if pid == str(os.getpid()):
-            # Locked by the same PID, was locked by the indexer.
-            return False
         try:
             os.kill(int(pid), 0)
         except OSError:
@@ -267,6 +264,7 @@ def is_locked(locked_dir_path: Path, /) -> bool:
         return False
 
     # The lockfile is here for a good reason.
+    logger.info(f'Directory locked by {pid}.')
     return True
 
 
