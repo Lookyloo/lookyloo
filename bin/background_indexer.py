@@ -5,6 +5,7 @@ import logging.config
 import os
 import shutil
 
+from pathlib import Path
 from typing import Optional
 
 from lookyloo.default import AbstractManager, get_config
@@ -59,6 +60,18 @@ class BackgroundIndexer(AbstractManager):
             if not self.lookyloo.redis.hexists('lookup_dirs', uuid):
                 # The capture with this UUID exists, but it is for some reason missing in lookup_dirs
                 self.lookyloo.redis.hset('lookup_dirs', uuid, str(uuid_path.parent))
+            else:
+                cached_path = Path(self.lookyloo.redis.hget('lookup_dirs', uuid))
+                if cached_path != uuid_path.parent:
+                    # we have a duplicate UUID, it is proably related to some bad copy/paste
+                    if cached_path.exists():
+                        # Both paths exist, move the one that isn't in lookup_dirs
+                        self.logger.critical(f'Duplicate UUID for {uuid} in {cached_path} and {uuid_path.parent}, discarding the latest')
+                        shutil.move(str(uuid_path.parent), str(self.discarded_captures_dir / uuid_path.parent.name))
+                        continue
+                    else:
+                        # The path in lookup_dirs for that UUID doesn't exists, just update it.
+                        self.lookyloo.redis.hset('lookup_dirs', uuid, str(uuid_path.parent))
 
             try:
                 self.logger.info(f'Build pickle for {uuid}: {uuid_path.parent.name}')

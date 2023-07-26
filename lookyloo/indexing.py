@@ -76,9 +76,9 @@ class Indexing():
                 if name not in already_cleaned_up:
                     # We only run this srem once per name for a capture,
                     # before adding it for the first time
-                    pipeline.srem(f'cn|{name}|captures',
-                                  *[key for key in self.redis.sscan_iter(f'cn|{name}|captures',
-                                                                         f'{crawled_tree.uuid}|*')])
+                    to_remove = [key for key in self.redis.sscan_iter(f'cn|{name}|captures', f'{crawled_tree.uuid}|*')]
+                    if to_remove:
+                        pipeline.srem(f'cn|{name}|captures', *to_remove)
                     already_cleaned_up.add(name)
                 pipeline.sadd(f'cn|{name}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
         pipeline.execute()
@@ -255,9 +255,9 @@ class Indexing():
             if urlnode.hhhash not in already_cleaned_up:
                 # We only run this srem once per name for a capture,
                 # before adding it for the first time
-                pipeline.srem(f'hhhashes|{urlnode.hhhash}|captures',
-                              *[key for key in self.redis.sscan_iter(f'hhhashes|{urlnode.hhhash}|captures',
-                                                                     f'{crawled_tree.uuid}|*')])
+                to_remove = [key for key in self.redis.sscan_iter(f'hhhashes|{urlnode.hhhash}|captures', f'{crawled_tree.uuid}|*')]
+                if to_remove:
+                    pipeline.srem(f'hhhashes|{urlnode.hhhash}|captures', * to_remove)
                 already_cleaned_up.add(urlnode.hhhash)
             pipeline.sadd(f'hhhashes|{urlnode.hhhash}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
         pipeline.execute()
