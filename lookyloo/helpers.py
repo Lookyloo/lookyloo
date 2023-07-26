@@ -269,7 +269,7 @@ def is_locked(locked_dir_path: Path, /) -> bool:
         return False
 
     # The lockfile is here for a good reason.
-    logger.info(f'Directory locked by {pid}.')
+    logger.debug(f'Directory locked by {pid}.')
     return True
 
 
