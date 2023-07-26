@@ -27,13 +27,18 @@ class BackgroundIndexer(AbstractManager):
         self.discarded_captures_dir.mkdir(parents=True, exist_ok=True)
 
     def _to_run_forever(self):
-        self._build_missing_pickles()
-        self._check_indexes()
+        all_done = self._build_missing_pickles()
+        if all_done:
+            self._check_indexes()
         self.lookyloo.update_tree_cache_info(os.getpid(), self.script_name)
 
-    def _build_missing_pickles(self):
+    def _build_missing_pickles(self) -> bool:
         self.logger.info('Build missing pickles...')
+        # Sometimes, we have a huge backlog and the process might get stuck on old captures for a very long time
+        # This value makes sure we break out of the loop and build pickles of the most recent captures
+        max_captures = 50
         for uuid_path in sorted(self.lookyloo.capture_dir.glob('**/uuid'), reverse=True):
+            max_captures -= 1
             if ((uuid_path.parent / 'tree.pickle.gz').exists() or (uuid_path.parent / 'tree.pickle').exists()):
                 # We already have a pickle file
                 self.logger.debug(f'{uuid_path.parent} has a pickle.')
@@ -69,7 +74,13 @@ class BackgroundIndexer(AbstractManager):
                 # The capture is not working, moving it away.
                 self.lookyloo.redis.hdel('lookup_dirs', uuid)
                 shutil.move(str(uuid_path.parent), str(self.discarded_captures_dir / uuid_path.parent.name))
-        self.logger.info('... done.')
+            if max_captures <= 0:
+                break
+        else:
+            self.logger.info('... done.')
+            return True
+        self.logger.info('... too many captures in the backlog, start from the beginning.')
+        return False
 
     def _check_indexes(self):
         self.logger.info('Check indexes...')
