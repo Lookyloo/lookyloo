@@ -158,15 +158,15 @@ def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str, bytes, L
         if isinstance(cookie_pseudofile, (str, bytes)):
             try:
                 cookies = json.loads(cookie_pseudofile)
-            except json.decoder.JSONDecodeError:
-                logger.warning(f'Unable to load json content: {cookie_pseudofile!r}')
+            except json.decoder.JSONDecodeError as e:
+                logger.warning(f'Unable to load json content ({e}): {cookie_pseudofile!r}')
                 return []
         elif isinstance(cookie_pseudofile, BufferedIOBase):
             # Note: we might have an empty BytesIO, which is not False.
             try:
                 cookies = json.load(cookie_pseudofile)
-            except json.decoder.JSONDecodeError:
-                logger.warning(f'Unable to load json content: {cookie_pseudofile}')
+            except json.decoder.JSONDecodeError as e:
+                logger.warning(f'Unable to load json content ({e}): {cookie_pseudofile.read()!r}')
                 return []
         else:
             # Already a dict
