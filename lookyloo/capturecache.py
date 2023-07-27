@@ -74,20 +74,13 @@ class CaptureCache():
 
         if cache_entry.get('title') is not None:
             self.title: str = cache_entry['title']
-        else:
-            # This shouldn't happen, but if it does, we need the key to exist.
-            self.logger.warning(f'Title missing in cache for {self.uuid}.')
-            self.title = ''
+
         if cache_entry.get('timestamp'):
             try:
                 self.timestamp: datetime = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')
             except ValueError:
                 # If the microsecond is missing (0), it fails
                 self.timestamp = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
-        else:
-            # This shouldn't happen, but if it does, we need the key to exist.
-            self.logger.warning(f'Timestamp missing in cache for {self.uuid}.')
-            self.timestamp = datetime.fromtimestamp(0)
 
         self.redirects: List[str] = json.loads(cache_entry['redirects']) if cache_entry.get('redirects') else []
 

@@ -774,7 +774,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
         return render_template('tree.html', tree_json=ct.to_json(),
                                info=cache,
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
-                               screenshot_thumbnail=b64_thumbnail, page_title=cache.title,
+                               screenshot_thumbnail=b64_thumbnail, page_title=cache.title if hasattr(cache, 'title') else '',
                                screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_monitoring=lookyloo.monitoring_enabled,
