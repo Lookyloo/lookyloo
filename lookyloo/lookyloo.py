@@ -522,6 +522,10 @@ class Lookyloo():
                 if not cache.user_agent and not cache.error:
                     # 2022-12-07: New cache format, store the user agent and referers.
                     needs_update = True
+                if not hasattr(cache, 'title') or not cache.title:
+                    # 2023-17-27: The title should *always* be there,
+                    # unless the HAR file is missing or broken
+                    needs_update = True
                 if needs_update:
                     self._captures_index.reload_cache(capture_uuid)
                     cache = self._captures_index[capture_uuid]

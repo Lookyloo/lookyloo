@@ -65,24 +65,34 @@ class CaptureCache():
             # This entry *should* be present even if there is an error.
             self.url: str = url
 
-        if all(key in cache_entry.keys() for key in __default_cache_keys):
+        # if the cache doesn't have the keys in __default_cache_keys, it must have an error.
+        # if it has neither all the expected entries, nor error, we must raise an exception
+        if (not all(key in cache_entry.keys() for key in __default_cache_keys)
+                and not cache_entry.get('error')):
+            missing = set(__default_cache_keys) - set(cache_entry.keys())
+            raise LookylooException(f'Missing keys ({missing}), no error message. It should not happen.')
+
+        if cache_entry.get('title') is not None:
             self.title: str = cache_entry['title']
+        else:
+            # This shouldn't happen, but if it does, we need the key to exist.
+            self.logger.warning(f'Title missing in cache for {self.uuid}.')
+            self.title = ''
+        if cache_entry.get('timestamp'):
             try:
                 self.timestamp: datetime = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')
             except ValueError:
                 # If the microsecond is missing (0), it fails
                 self.timestamp = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
-            if cache_entry.get('redirects'):
-                self.redirects: List[str] = json.loads(cache_entry['redirects'])
-            else:
-                self.logger.debug('No redirects in cache')
-                self.redirects = []
-        elif not cache_entry.get('error'):
-            missing = set(__default_cache_keys) - set(cache_entry.keys())
-            raise LookylooException(f'Missing keys ({missing}), no error message. It should not happen.')
+        else:
+            # This shouldn't happen, but if it does, we need the key to exist.
+            self.logger.warning(f'Timestamp missing in cache for {self.uuid}.')
+            self.timestamp = datetime.fromtimestamp(0)
+
+        self.redirects: List[str] = json.loads(cache_entry['redirects']) if cache_entry.get('redirects') else []
 
         # Error without all the keys in __default_cache_keys was fatal.
-        # if the keys in __default_cache_keys are present, it was an HTTP error
+        # if the keys in __default_cache_keys are present, it was an HTTP error and we still need to pass the error along
         self.error: Optional[str] = cache_entry.get('error')
         self.incomplete_redirects: bool = True if cache_entry.get('incomplete_redirects') in [1, '1'] else False
         self.no_index: bool = True if cache_entry.get('no_index') in [1, '1'] else False
