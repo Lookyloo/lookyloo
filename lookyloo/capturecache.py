@@ -176,6 +176,7 @@ class CapturesIndex(Mapping):
 
     @property
     def cached_captures(self) -> Set[str]:
+        self._quick_init()
         return set(self.__cache.keys())
 
     def __getitem__(self, uuid: str) -> CaptureCache:
@@ -225,8 +226,14 @@ class CapturesIndex(Mapping):
         '''Initialize the cache with a list of UUIDs, with less back and forth with redis.
         Only get recent captures.'''
         p = self.redis.pipeline()
-        for directory in self.redis.hvals('lookup_dirs'):
+        has_new_cached_captures = False
+        for uuid, directory in self.redis.hscan_iter('lookup_dirs'):
+            if uuid in self.__cache:
+                continue
+            has_new_cached_captures = True
             p.hgetall(directory)
+        if not has_new_cached_captures:
+            return
         for cache in p.execute():
             if not cache:
                 continue
