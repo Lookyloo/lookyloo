@@ -44,7 +44,7 @@ class LookylooCacheLogAdapter(LoggerAdapter):
 
 class CaptureCache():
     __slots__ = ('uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir',
-                 'error', 'incomplete_redirects', 'no_index', 'categories', 'parent',
+                 'error', 'no_index', 'categories', 'parent',
                  'user_agent', 'referer', 'logger')
 
     def __init__(self, cache_entry: Dict[str, Any]):
@@ -87,7 +87,6 @@ class CaptureCache():
         # Error without all the keys in __default_cache_keys was fatal.
         # if the keys in __default_cache_keys are present, it was an HTTP error and we still need to pass the error along
         self.error: Optional[str] = cache_entry.get('error')
-        self.incomplete_redirects: bool = True if cache_entry.get('incomplete_redirects') in [1, '1'] else False
         self.no_index: bool = True if cache_entry.get('no_index') in [1, '1'] else False
         self.categories: List[str] = json.loads(cache_entry['categories']) if cache_entry.get('categories') else []
         self.parent: Optional[str] = cache_entry.get('parent')
@@ -181,8 +180,7 @@ class CapturesIndex(Mapping):
 
     def __getitem__(self, uuid: str) -> CaptureCache:
         if uuid in self.__cache:
-            if (self.__cache[uuid].capture_dir.exists()
-                    and not self.__cache[uuid].incomplete_redirects):
+            if self.__cache[uuid].capture_dir.exists():
                 return self.__cache[uuid]
             del self.__cache[uuid]
         capture_dir = self._get_capture_dir(uuid)
@@ -192,11 +190,9 @@ class CapturesIndex(Mapping):
             # NOTE: checking for pickle to exist may be a bad idea here.
             if (cc.capture_dir.exists()
                     and ((cc.capture_dir / 'tree.pickle.gz').exists()
-                         or (cc.capture_dir / 'tree.pickle').exists())
-                    and not cc.incomplete_redirects):
+                         or (cc.capture_dir / 'tree.pickle').exists())):
                 self.__cache[uuid] = cc
                 return self.__cache[uuid]
-
         self.__cache[uuid] = self._set_capture_cache(capture_dir)
         return self.__cache[uuid]
 
@@ -398,7 +394,6 @@ class CapturesIndex(Mapping):
                 cache['title'] = har.initial_title
                 cache['timestamp'] = har.initial_start_time
                 cache['redirects'] = json.dumps(tree.redirects) if tree else ''
-                cache['incomplete_redirects'] = 0
                 cache['user_agent'] = har.root_user_agent if har.root_user_agent else 'No User Agent.'
                 if 'url' not in cache:
                     # if all went well, we already filled that one above.

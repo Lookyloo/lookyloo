@@ -866,7 +866,7 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: Opti
             continue
 
         titles.append((cached.uuid, cached.title, cached.timestamp.isoformat(), cached.url,
-                       cached.redirects, cached.incomplete_redirects))
+                       cached.redirects))
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
     return render_template('index.html', titles=titles, public_domain=lookyloo.public_domain,
                            show_project_page=get_config('generic', 'show_project_page'),

@@ -484,7 +484,9 @@ class Lookyloo():
             # Do not try to build pickles
             capture_uuids = set(capture_uuids) & self._captures_index.cached_captures
 
-        all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids if self.capture_cache(uuid) and hasattr(self._captures_index[uuid], 'timestamp')]
+        all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids
+                                         if self.capture_cache(uuid)
+                                         and hasattr(self._captures_index[uuid], 'timestamp')]
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 
@@ -1010,7 +1012,8 @@ class Lookyloo():
         If a URL is given, it splits the results if the hash is seen on the same URL or an other one.
         Capture UUID avoids duplicates on the same capture'''
         captures_list: Dict[str, List[Tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
-        total_captures, details = self.indexing.get_body_hash_captures(blob_hash, url, filter_capture_uuid=capture_uuid, limit=-1, prefered_uuids=self._captures_index.cached_captures)
+        total_captures, details = self.indexing.get_body_hash_captures(blob_hash, url, filter_capture_uuid=capture_uuid, limit=-1,
+                                                                       prefered_uuids=self._captures_index.cached_captures)
         for h_capture_uuid, url_uuid, url_hostname, same_url in details:
             cache = self.capture_cache(h_capture_uuid)
             if cache and hasattr(cache, 'title'):

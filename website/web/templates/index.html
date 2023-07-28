@@ -97,7 +97,7 @@ $(document).ready(function () {
      </tr>
     </thead>
     <tbody>
-      {% for uuid, page_title, datetime, url, redirects, incomplete_redirects in titles %}
+      {% for uuid, page_title, datetime, url, redirects in titles %}
       <tr>
         <td data-search="{{ page_title }} {{ url }}">
           <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
@@ -115,11 +115,7 @@ $(document).ready(function () {
             {%endif%}
             </p>
             {% endfor %}
-            {% if incomplete_redirects %}
-                <a style="float: right;" href="{{ url_for('cache_tree', tree_uuid=uuid) }}">Unable to find the redirects, click here to build the tree</a>
-            {%else%}
-              <a style="float: right;" href="{{ url_for('redirects', tree_uuid=uuid) }}">Download redirects</a>
-            {%endif%}
+            <a style="float: right;" href="{{ url_for('redirects', tree_uuid=uuid) }}">Download redirects</a>
           {% else%}
             No redirect
           {%endif%}
