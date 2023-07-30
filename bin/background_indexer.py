@@ -39,7 +39,7 @@ class BackgroundIndexer(AbstractManager):
         # This value makes sure we break out of the loop and build pickles of the most recent captures
         max_captures = 50
         got_new_captures = False
-        for uuid_path in sorted(self.lookyloo.capture_dir.glob('**/uuid'), reverse=True):
+        for uuid_path in sorted(self.lookyloo.capture_dir.rglob('uuid'), reverse=True):
             if ((uuid_path.parent / 'tree.pickle.gz').exists() or (uuid_path.parent / 'tree.pickle').exists()):
                 # We already have a pickle file
                 self.logger.debug(f'{uuid_path.parent} has a pickle.')

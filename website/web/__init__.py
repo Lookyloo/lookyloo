@@ -841,6 +841,11 @@ def pandora_submit(tree_uuid: str):
 # ##### helpers #####
 
 def index_generic(show_hidden: bool=False, show_error: bool=True, category: Optional[str]=None):
+    """This method is used to generate the index page. It is possible that some of the captures
+    do not have their pickle yet.
+
+    We must assume that calling cached.tree will fail, and handle it gracefully.
+    """
     titles = []
     cut_time: Optional[datetime] = None
     if time_delta_on_index:
