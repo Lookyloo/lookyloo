@@ -908,13 +908,13 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.21.4"
+version = "1.21.5"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "har2tree-1.21.4-py3-none-any.whl", hash = "sha256:3f26b06b8e52f811cef35bac02a3266c8ce1354e4674353f884ecb2c01ec56a9"},
-    {file = "har2tree-1.21.4.tar.gz", hash = "sha256:c2941315f24a7c207bf79acd1c2da52b57dce31c4685d34cb63b5ce2fbabdcda"},
+    {file = "har2tree-1.21.5-py3-none-any.whl", hash = "sha256:21681f2bd04a3c7169b5a571dd2ce21c63c80dee4a085bd62043be0d837fa376"},
+    {file = "har2tree-1.21.5.tar.gz", hash = "sha256:62fe710cc0a560ac508c2c598246896a19dfea6eeac41c849dae9eeca7dae757"},
 ]
 
 [package.dependencies]
@@ -926,11 +926,11 @@ numpy = [
     {version = "1.23.3", markers = "python_version < \"3.10\""},
     {version = ">=1.23.4,<2.0.0", markers = "python_version >= \"3.10\""},
 ]
-publicsuffixlist = ">=0.10.0.20230719,<0.11.0.0"
+publicsuffixlist = ">=0.10.0.20230730,<0.11.0.0"
 w3lib = ">=2.1.1,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=7.1.0,<8.0.0)"]
+docs = ["Sphinx (>=7.1.1,<8.0.0)"]
 
 [[package]]
 name = "hiredis"
@@ -1169,21 +1169,21 @@ files = [
 
 [[package]]
 name = "jedi"
-version = "0.18.2"
+version = "0.19.0"
 description = "An autocompletion tool for Python that can be used for text editors."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "jedi-0.18.2-py2.py3-none-any.whl", hash = "sha256:203c1fd9d969ab8f2119ec0a3342e0b49910045abe6af0a3ae83a5764d54639e"},
-    {file = "jedi-0.18.2.tar.gz", hash = "sha256:bae794c30d07f6d910d32a7048af09b5a39ed740918da923c6b780790ebac612"},
+    {file = "jedi-0.19.0-py2.py3-none-any.whl", hash = "sha256:cb8ce23fbccff0025e9386b5cf85e892f94c9b822378f8da49970471335ac64e"},
+    {file = "jedi-0.19.0.tar.gz", hash = "sha256:bcf9894f1753969cbac8022a8c2eaee06bfa3724e4192470aaffe7eb6272b0c4"},
 ]
 
 [package.dependencies]
-parso = ">=0.8.0,<0.9.0"
+parso = ">=0.8.3,<0.9.0"
 
 [package.extras]
 docs = ["Jinja2 (==2.11.3)", "MarkupSafe (==1.1.1)", "Pygments (==2.8.1)", "alabaster (==0.7.12)", "babel (==2.9.1)", "chardet (==4.0.0)", "commonmark (==0.8.1)", "docutils (==0.17.1)", "future (==0.18.2)", "idna (==2.10)", "imagesize (==1.2.0)", "mock (==1.0.1)", "packaging (==20.9)", "pyparsing (==2.4.7)", "pytz (==2021.1)", "readthedocs-sphinx-ext (==2.1.4)", "recommonmark (==0.5.0)", "requests (==2.25.1)", "six (==1.15.0)", "snowballstemmer (==2.1.0)", "sphinx (==1.8.5)", "sphinx-rtd-theme (==0.4.3)", "sphinxcontrib-serializinghtml (==1.1.4)", "sphinxcontrib-websupport (==1.2.4)", "urllib3 (==1.26.4)"]
-qa = ["flake8 (==3.8.3)", "mypy (==0.782)"]
+qa = ["flake8 (==5.0.4)", "mypy (==0.971)", "types-setuptools (==67.2.0.1)"]
 testing = ["Django (<3.1)", "attrs", "colorama", "docopt", "pytest (<7.0.0)"]
 
 [[package]]
@@ -1931,13 +1931,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.0.20230719"
+version = "0.10.0.20230730"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.0.20230719-py2.py3-none-any.whl", hash = "sha256:62a8d1523726b6a89b1d971b1a687c9b3f1b1daec0ab5ba3bca1ee66bc748254"},
-    {file = "publicsuffixlist-0.10.0.20230719.tar.gz", hash = "sha256:9b53fdfe06e07e6da5e6575dabe10698ceb82105057dbcdd98865ee1e5fe0a6d"},
+    {file = "publicsuffixlist-0.10.0.20230730-py2.py3-none-any.whl", hash = "sha256:3a23efc4416474a7ad1db7e85d04f7af24db76a34cec6d82e6e3392b3dd6d8f1"},
+    {file = "publicsuffixlist-0.10.0.20230730.tar.gz", hash = "sha256:1cd3847ec1ebc02069715630958ad67bdfeb7e7f9f35f699d30fc41298ceedac"},
 ]
 
 [package.extras]
@@ -2458,13 +2458,13 @@ six = "*"
 
 [[package]]
 name = "rich"
-version = "13.4.2"
+version = "13.5.0"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "rich-13.4.2-py3-none-any.whl", hash = "sha256:8f87bc7ee54675732fa66a05ebfe489e27264caeeff3728c945d25971b6485ec"},
-    {file = "rich-13.4.2.tar.gz", hash = "sha256:d653d6bccede5844304c605d5aac802c7cf9621efd700b46c7ec2b51ea914898"},
+    {file = "rich-13.5.0-py3-none-any.whl", hash = "sha256:996670a7618ccce27c55ba6fc0142e6e343773e11d34c96566a17b71b0e6f179"},
+    {file = "rich-13.5.0.tar.gz", hash = "sha256:62c81e88dc078d2372858660e3d5566746870133e51321f852ccc20af5c7e7b2"},
 ]
 
 [package.dependencies]
@@ -3146,4 +3146,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "005fd2ad7533d8f017f529ffd2b8844a7c41b40d7f63e8ce599a42595c59375f"
+content-hash = "525ee1c64910329ddcf9bb9d13eaac3d2241f02355b131b9e2ee599aed770a3a"

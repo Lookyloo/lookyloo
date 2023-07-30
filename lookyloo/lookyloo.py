@@ -1083,7 +1083,13 @@ class Lookyloo():
         if not cache:
             return {'error': 'UUID missing in cache, try again later.'}
 
-        event = self.misp.export(cache, self.is_public_instance)
+        # if the file submitted on lookyloo cannot be displayed (PDF), it willbe downloaded.
+        # In the case, we want to have it as a FileObject in the export
+        filename, pseudofile = self.get_data(capture_uuid)
+        if filename:
+            event = self.misp.export(cache, self.is_public_instance, filename, pseudofile)
+        else:
+            event = self.misp.export(cache, self.is_public_instance)
         screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png',
                                                         data=self.get_screenshot(cache.uuid),
                                                         disable_correlation=True)  # type: ignore

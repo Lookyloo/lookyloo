@@ -2,6 +2,8 @@
 
 import logging
 import re
+
+from io import BytesIO
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Union, TYPE_CHECKING
 
@@ -165,7 +167,9 @@ class MISP():
             if hostnodes and hasattr(hostnodes[0], 'resolved_ips'):
                 obj.add_attributes('ip', *hostnodes[0].resolved_ips)
 
-    def export(self, cache: 'CaptureCache', is_public_instance: bool=False) -> MISPEvent:
+    def export(self, cache: 'CaptureCache', is_public_instance: bool=False,
+               submitted_filename: Optional[str]=None,
+               submitted_file: Optional[BytesIO]=None) -> MISPEvent:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''
         public_domain = get_config('generic', 'public_domain')
@@ -173,15 +177,32 @@ class MISP():
         if cache.url.startswith('file'):
             filename = cache.url.rsplit('/', 1)[-1]
             event.info = f'Lookyloo Capture ({filename})'
+            # Create file object as initial
+            if hasattr(cache.tree.root_hartree.url_tree, 'body'):
+                # The file could be viewed in the browser
+                filename = cache.tree.root_hartree.url_tree.name
+                pseudofile = cache.tree.root_hartree.url_tree.body
+            elif submitted_filename:
+                # Impossible to get the file from the HAR.
+                filename = submitted_filename
+                pseudofile = submitted_file
+            else:
+                raise Exception('We must have a file here.')
+
+            initial_file = FileObject(pseudofile=pseudofile, filename=filename)
+            initial_file.comment = 'This is a capture of a file, rendered in the browser'
+            initial_obj = event.add_object(initial_file)
         else:
             event.info = f'Lookyloo Capture ({cache.url})'
             initial_url = URLObject(cache.url)
             initial_url.comment = 'Submitted URL'
             self.__misp_add_ips_to_URLObject(initial_url, cache.tree.root_hartree.hostname_tree)
+            initial_obj = event.add_object(initial_url)
 
         lookyloo_link: MISPAttribute = event.add_attribute('link', f'https://{public_domain}/tree/{cache.uuid}')  # type: ignore
         if not is_public_instance:
             lookyloo_link.distribution = 0
+        initial_obj.add_reference(lookyloo_link, 'captured-by', 'Capture on lookyloo')
 
         redirects: List[URLObject] = []
         for nb, url in enumerate(cache.redirects):
@@ -200,9 +221,6 @@ class MISP():
             for u_object in redirects:
                 prec_object.add_reference(u_object, 'redirects-to')
                 prec_object = u_object
-
-        initial_obj = event.add_object(initial_url)
-        initial_obj.add_reference(lookyloo_link, 'captured-by', 'Capture on lookyloo')
 
         for u_object in redirects:
             event.add_object(u_object)
