@@ -29,12 +29,12 @@
 </script>
 {% endif %}
 
-<div class="table-responsive">
-<table id="bodyHashesTable" class="table">
+<table id="bodyHashesTable" class="table w-auto">
 <thead>
  <tr>
    <th>File type</th>
    <th>Captures total</th>
+   <th>Ressource</th>
    <th>Hash (sha512)</th>
  </tr>
 </thead>
@@ -57,11 +57,13 @@
         </a>
     </td>
     <td>{{ info['total_captures'] }}</td>
+    <td><p class="text-break">{{ info['node'].name }}</p></td>
     <td>
+      <span class="d-inline-block text-truncate" style="max-width: 200px;">
         <a href="{{ url_for('body_hash_details', body_hash=body_hash) }}">{{body_hash}}</a>
+      </span>
     </td>
   </tr>
   {% endfor %}
 </tbody>
 </table>
-</div>
