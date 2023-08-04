@@ -78,7 +78,7 @@ class Archiver(AbstractManager):
         '''Run that after the captures are in the proper directories'''
         # Recent captures
         self.logger.info('Update recent indexes')
-        directories_to_index = {capture_dir.parent.parent for capture_dir in get_captures_dir().rglob('uuid')}
+        directories_to_index = {capture_dir.parent.parent for capture_dir in get_captures_dir().glob('*/*/*/uuid')}
         for directory_to_index in directories_to_index:
             self.logger.debug(f'Updating index for {directory_to_index}')
             self._update_index(directory_to_index)
@@ -86,7 +86,7 @@ class Archiver(AbstractManager):
 
         # Archived captures
         self.logger.info('Update archives indexes')
-        directories_to_index = {capture_dir.parent.parent for capture_dir in self.archived_captures_dir.rglob('uuid')}
+        directories_to_index = {capture_dir.parent.parent for capture_dir in self.archived_captures_dir.glob('*/*/*/uuid')}
         for directory_to_index in directories_to_index:
             self.logger.debug(f'Updating index for {directory_to_index}')
             self._update_index(directory_to_index)
@@ -100,7 +100,7 @@ class Archiver(AbstractManager):
         # Format:
         # { 2020: { 12: [(directory, uuid)] } }
         to_archive: Dict[int, Dict[int, List[Path]]] = defaultdict(lambda: defaultdict(list))
-        for capture_uuid in get_captures_dir().rglob('uuid'):
+        for capture_uuid in get_captures_dir().glob('*/*/*/uuid'):
             try:
                 timestamp = datetime.strptime(capture_uuid.parent.name, '%Y-%m-%dT%H:%M:%S.%f')
             except ValueError:
@@ -130,7 +130,7 @@ class Archiver(AbstractManager):
 
     def _compress_hars(self):
         self.logger.info('Compressing archived captures')
-        for index in self.archived_captures_dir.rglob('index'):
+        for index in self.archived_captures_dir.glob('*/*/index'):
             with index.open('r') as _f:
                 for uuid, dirname in csv.reader(_f):
                     for har in (index.parent / dirname).rglob('*.har'):
@@ -144,7 +144,7 @@ class Archiver(AbstractManager):
 
     def _load_indexes(self):
         # Initialize archives
-        for index in get_captures_dir().rglob('index'):
+        for index in get_captures_dir().glob('*/*/index'):
             with index.open('r') as _f:
                 recent_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
             if recent_uuids:
@@ -154,7 +154,7 @@ class Archiver(AbstractManager):
         self.logger.info('Recent indexes loaded')
 
         # Initialize archives
-        for index in self.archived_captures_dir.rglob('index'):
+        for index in self.archived_captures_dir.glob('*/*/index'):
             with index.open('r') as _f:
                 archived_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
             if archived_uuids:
