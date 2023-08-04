@@ -997,10 +997,15 @@ class Lookyloo():
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''
         all_captures = dict(self.indexing.get_http_headers_hashes_captures(hhh))
         if cached_captures := self.sorted_capture_cache([entry for entry in all_captures]):
-            captures = [(cache.uuid,
-                         self.get_urlnode_from_tree(cache.uuid, all_captures[cache.uuid]).hostnode_uuid,
-                         self.get_urlnode_from_tree(cache.uuid, all_captures[cache.uuid]).name,
-                         cache.title) for cache in cached_captures]
+            captures = []
+            for cache in cached_captures:
+                try:
+                    urlnode = self.get_urlnode_from_tree(cache.uuid, all_captures[cache.uuid])
+                except Exception as e:
+                    self.logger.warning(f'Cache for {cache.uuid} needs a rebuild: {e}.')
+                    self._captures_index.remove_pickle(cache.uuid)
+                    continue
+                captures.append((cache.uuid, urlnode.hostnode_uuid, urlnode.name, cache.title))
             # get the headers and format them as they were in the response
             urlnode = self.get_urlnode_from_tree(cached_captures[0].uuid, all_captures[cached_captures[0].uuid])
             headers = [(header["name"], header["value"]) for header in urlnode.response['headers']]
