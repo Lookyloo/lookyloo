@@ -8,7 +8,7 @@ import shutil
 
 from collections import defaultdict
 from collections.abc import Mapping
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -88,6 +88,9 @@ class Archiver(AbstractManager):
         self.logger.info('Update archives indexes')
         directories_to_index = {capture_dir.parent.parent for capture_dir in self.archived_captures_dir.glob('*/*/*/uuid')}
         for directory_to_index in directories_to_index:
+            if self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
             self.logger.debug(f'Updating index for {directory_to_index}')
             self._update_index(directory_to_index)
         self.logger.info('Archived indexes updated')
@@ -100,15 +103,26 @@ class Archiver(AbstractManager):
         # Format:
         # { 2020: { 12: [(directory, uuid)] } }
         to_archive: Dict[int, Dict[int, List[Path]]] = defaultdict(lambda: defaultdict(list))
-        for capture_uuid in get_captures_dir().glob('*/*/*/uuid'):
-            try:
-                timestamp = datetime.strptime(capture_uuid.parent.name, '%Y-%m-%dT%H:%M:%S.%f')
-            except ValueError:
-                timestamp = datetime.strptime(capture_uuid.parent.name, '%Y-%m-%dT%H:%M:%S')
-            if timestamp.date() >= cut_time:
+        # In order to avoid scanning the complete directory on each run, we check if year and month are
+        # older than the cut time.
+        for index in get_captures_dir().glob('*/*/index'):
+            if self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
+            month = int(index.parent.name)
+            year = int(index.parent.parent.name)
+            if date(year, month, 1) >= cut_time:
                 continue
-            to_archive[timestamp.year][timestamp.month].append(capture_uuid.parent)
-            self.logger.info(f'Archiving {capture_uuid.parent}.')
+
+            for capture_uuid in index.parent.glob('*/uuid'):
+                try:
+                    timestamp = datetime.strptime(capture_uuid.parent.name, '%Y-%m-%dT%H:%M:%S.%f')
+                except ValueError:
+                    timestamp = datetime.strptime(capture_uuid.parent.name, '%Y-%m-%dT%H:%M:%S')
+                if timestamp.date() >= cut_time:
+                    continue
+                to_archive[timestamp.year][timestamp.month].append(capture_uuid.parent)
+                self.logger.info(f'Archiving {capture_uuid.parent}.')
 
         if not to_archive:
             self.logger.info('Nothing to archive.')
@@ -131,6 +145,9 @@ class Archiver(AbstractManager):
     def _compress_hars(self):
         self.logger.info('Compressing archived captures')
         for index in self.archived_captures_dir.glob('*/*/index'):
+            if self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
             with index.open('r') as _f:
                 for uuid, dirname in csv.reader(_f):
                     for har in (index.parent / dirname).rglob('*.har'):
@@ -145,6 +162,10 @@ class Archiver(AbstractManager):
     def _load_indexes(self):
         # Initialize archives
         for index in get_captures_dir().glob('*/*/index'):
+            if self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
+
             with index.open('r') as _f:
                 recent_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
             if recent_uuids:
@@ -155,6 +176,9 @@ class Archiver(AbstractManager):
 
         # Initialize archives
         for index in self.archived_captures_dir.glob('*/*/index'):
+            if self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
             with index.open('r') as _f:
                 archived_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
             if archived_uuids:

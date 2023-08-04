@@ -84,6 +84,8 @@ class BackgroundIndexer(AbstractManager):
                 self.logger.warning(f'Unable to find {uuid}. That should not happen.')
             except NoValidHarFile as e:
                 self.logger.critical(f'There are no HAR files in the capture {uuid}: {uuid_path.parent.name} - {e}')
+            except FileNotFoundError:
+                self.logger.warning(f'Capture {uuid} disappeared during processing, probably archived.')
             except Exception:
                 self.logger.exception(f'Unable to build pickle for {uuid}: {uuid_path.parent.name}')
                 # The capture is not working, moving it away.
