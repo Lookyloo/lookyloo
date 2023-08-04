@@ -180,9 +180,13 @@ class Archiver(AbstractManager):
                 self.logger.warning('Shutdown requested, breaking.')
                 break
             with index.open('r') as _f:
-                archived_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
+                archived_uuids: Mapping = {uuid: index.parent / dirname for uuid, dirname in csv.reader(_f)}
             if archived_uuids:
-                self.redis.hset('lookup_dirs_archived', mapping=archived_uuids)
+                new_uuids = set(archived_uuids.keys()) - set(self.redis.hkeys('lookup_dirs_archived'))
+                # NOTE: Only check if the directory exists if the UUID isn't in the cache.
+                self.redis.hset('lookup_dirs_archived', mapping={uuid: str(dirname)
+                                                                 for uuid, dirname in archived_uuids.items()
+                                                                 if uuid in new_uuids and dirname.exists()})
                 self.redis.hdel('lookup_dirs', *archived_uuids.keys())
             else:
                 index.unlink()
