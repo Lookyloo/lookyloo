@@ -48,7 +48,8 @@ class Archiver(AbstractManager):
             existing_captures = index_file.parent.iterdir()
             try:
                 with index_file.open('r') as _f:
-                    current_index = {uuid: dirname for uuid, dirname in csv.reader(_f) if (index_file.parent / dirname) in existing_captures}
+                    current_index = {uuid: dirname for uuid, dirname in csv.reader(_f)
+                                     if (index_file.parent / dirname) in existing_captures}
             except Exception as e:
                 # the index file is broken, it will be recreated.
                 self.logger.warning(f'Index for {root_dir} broken, recreating it: {e}')
@@ -66,7 +67,7 @@ class Archiver(AbstractManager):
         if not current_index:
             # The directory has been archived. It is probably safe to unlink, but
             # if it's not, we will lose a whole buch of captures. Moving instead for safety.
-            root_dir.rename(get_homedir() / 'discarded_captures' / root_dir.name)
+            shutil.move(str(root_dir), str(get_homedir() / 'discarded_captures' / root_dir.name))
             return
 
         with index_file.open('w') as _f:
@@ -74,20 +75,38 @@ class Archiver(AbstractManager):
             for uuid, dirname in current_index.items():
                 index_writer.writerow([uuid, dirname])
 
+    def _make_dirs_list(self, root_dir: Path) -> List[Path]:
+        directories = []
+        year_now = date.today().year
+        while True:
+            year_dir = root_dir / str(year_now)
+            if not year_dir.exists():
+                # if we do not have a directory with this year, quit the loop
+                break
+            for month in range(12, 0, -1):
+                month_dir = year_dir / f'{month:02}'
+                if month_dir.exists():
+                    directories.append(month_dir)
+            year_now -= 1
+        return directories
+
     def _update_all_capture_indexes(self):
         '''Run that after the captures are in the proper directories'''
         # Recent captures
         self.logger.info('Update recent indexes')
-        directories_to_index = {capture_dir.parent.parent for capture_dir in get_captures_dir().glob('*/*/*/uuid')}
-        for directory_to_index in directories_to_index:
+        # NOTE: the call below will check the existence of every path ending with `uuid`,
+        #       it is extremely inneficient as we have many hundred of thusands of them
+        #       and we only care about the rood directory (ex: 2023/06)
+        # directories_to_index = {capture_dir.parent.parent
+        #                        for capture_dir in get_captures_dir().glob('*/*/*/uuid')}
+        for directory_to_index in self._make_dirs_list(get_captures_dir()):
             self.logger.debug(f'Updating index for {directory_to_index}')
             self._update_index(directory_to_index)
         self.logger.info('Recent indexes updated')
 
         # Archived captures
         self.logger.info('Update archives indexes')
-        directories_to_index = {capture_dir.parent.parent for capture_dir in self.archived_captures_dir.glob('*/*/*/uuid')}
-        for directory_to_index in directories_to_index:
+        for directory_to_index in self._make_dirs_list(self.archived_captures_dir):
             if self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 break
@@ -168,7 +187,9 @@ class Archiver(AbstractManager):
 
             self.logger.info(f'Loading {index}')
             with index.open('r') as _f:
-                recent_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
+                recent_uuids: Mapping = {uuid: str(index.parent / dirname)
+                                         for uuid, dirname in csv.reader(_f)
+                                         if (index.parent / dirname).exists()}
             if recent_uuids:
                 self.logger.info(f'{len(recent_uuids)} captures in directory.')
                 self.redis.hset('lookup_dirs', mapping=recent_uuids)
@@ -185,7 +206,8 @@ class Archiver(AbstractManager):
                 break
             self.logger.debug(f'Loading {index}')
             with index.open('r') as _f:
-                archived_uuids: Mapping = {uuid: index.parent / dirname for uuid, dirname in csv.reader(_f)}
+                archived_uuids: Mapping = {uuid: index.parent / dirname
+                                           for uuid, dirname in csv.reader(_f)}
             if archived_uuids:
                 self.logger.debug(f'{len(archived_uuids)} captures in directory.')
                 new_uuids = set(archived_uuids.keys()) - already_archived_uuids
@@ -195,9 +217,10 @@ class Archiver(AbstractManager):
 
                 self.logger.info(f'Loading {index}, {len(archived_uuids)} captures in directory, {len(new_uuids)} archived UUID to check.')
                 # NOTE: Only check if the directory exists if the UUID isn't in the cache.
-                self.redis.hset('lookup_dirs_archived', mapping={uuid: str(dirname)
-                                                                 for uuid, dirname in archived_uuids.items()
-                                                                 if uuid in new_uuids and dirname.exists()})
+                self.redis.hset('lookup_dirs_archived',
+                                mapping={uuid: str(dirname)
+                                         for uuid, dirname in archived_uuids.items()
+                                         if uuid in new_uuids and dirname.exists()})
                 self.redis.hdel('lookup_dirs', *archived_uuids.keys())
             else:
                 index.unlink()
