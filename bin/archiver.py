@@ -137,7 +137,7 @@ class Archiver(AbstractManager):
                     p.delete(str(capture_path))
                     (capture_path / 'tree.pickle').unlink(missing_ok=True)
                     (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
-                    capture_path.rename(dest_dir / capture_path.name)
+                    shutil.move(str(capture_path), str(dest_dir / capture_path.name))
         p.execute()
 
         self.logger.info('Archiving done.')
@@ -166,23 +166,34 @@ class Archiver(AbstractManager):
                 self.logger.warning('Shutdown requested, breaking.')
                 break
 
+            self.logger.info(f'Loading {index}')
             with index.open('r') as _f:
                 recent_uuids: Mapping = {uuid: str(index.parent / dirname) for uuid, dirname in csv.reader(_f) if (index.parent / dirname).exists()}
             if recent_uuids:
+                self.logger.info(f'{len(recent_uuids)} captures in directory.')
                 self.redis.hset('lookup_dirs', mapping=recent_uuids)
             else:
                 index.unlink()
         self.logger.info('Recent indexes loaded')
 
+        already_archived_uuids = {k.decode() for k in self.redis.hkeys('lookup_dirs_archived')}
+        self.logger.info(f'Already have {len(already_archived_uuids)} UUIDs archived')
         # Initialize archives
-        for index in self.archived_captures_dir.glob('*/*/index'):
+        for index in sorted(self.archived_captures_dir.glob('*/*/index'), reverse=True):
             if self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 break
+            self.logger.debug(f'Loading {index}')
             with index.open('r') as _f:
                 archived_uuids: Mapping = {uuid: index.parent / dirname for uuid, dirname in csv.reader(_f)}
             if archived_uuids:
-                new_uuids = set(archived_uuids.keys()) - set(self.redis.hkeys('lookup_dirs_archived'))
+                self.logger.debug(f'{len(archived_uuids)} captures in directory.')
+                new_uuids = set(archived_uuids.keys()) - already_archived_uuids
+                if not new_uuids:
+                    self.logger.debug('No new archived UUID to check.')
+                    continue
+
+                self.logger.info(f'Loading {index}, {len(archived_uuids)} captures in directory, {len(new_uuids)} archived UUID to check.')
                 # NOTE: Only check if the directory exists if the UUID isn't in the cache.
                 self.redis.hset('lookup_dirs_archived', mapping={uuid: str(dirname)
                                                                  for uuid, dirname in archived_uuids.items()
