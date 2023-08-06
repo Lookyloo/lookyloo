@@ -4,6 +4,7 @@ import csv
 import gzip
 import logging
 import logging.config
+import os
 import shutil
 
 from collections import defaultdict
@@ -41,11 +42,15 @@ class Archiver(AbstractManager):
 
     def _update_index(self, root_dir: Path) -> None:
         current_index: Dict[str, str] = {}
+        if not os.listdir(root_dir):
+            # the directory is empty, we can safely remove it
+            root_dir.rmdir()
+            return
 
         index_file = root_dir / 'index'
+        existing_captures = index_file.parent.iterdir()
         if index_file.exists():
             # Skip index if the directory has been archived.
-            existing_captures = index_file.parent.iterdir()
             try:
                 with index_file.open('r') as _f:
                     current_index = {uuid: dirname for uuid, dirname in csv.reader(_f)
@@ -56,10 +61,15 @@ class Archiver(AbstractManager):
                 pass
             if not current_index:
                 index_file.unlink()
-
-        for uuid_file in root_dir.glob('*/uuid'):
-            if uuid_file.parent.name in current_index.values():
+        for capture_dir in existing_captures:
+            if not capture_dir.is_dir():
+                continue
+            if capture_dir.name in current_index.values():
                 # The path is already in the index file, no need to read the uuid file
+                continue
+            uuid_file = capture_dir / 'uuid'
+            if not uuid_file.exists():
+                self.logger.warning(f'No UUID file in {capture_dir}.')
                 continue
             with uuid_file.open() as _f:
                 current_index[_f.read().strip()] = uuid_file.parent.name
@@ -67,7 +77,7 @@ class Archiver(AbstractManager):
         if not current_index:
             # The directory has been archived. It is probably safe to unlink, but
             # if it's not, we will lose a whole buch of captures. Moving instead for safety.
-            shutil.move(str(root_dir), str(get_homedir() / 'discarded_captures' / root_dir.name))
+            shutil.move(str(root_dir), str(get_homedir() / 'discarded_captures' / root_dir.parent / root_dir.name))
             return
 
         with index_file.open('w') as _f:
