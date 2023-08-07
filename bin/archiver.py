@@ -47,32 +47,54 @@ class Archiver(AbstractManager):
             root_dir.rmdir()
             return
 
+        self.logger.debug(f'Updating index for {root_dir}')
         index_file = root_dir / 'index'
-        existing_captures = index_file.parent.iterdir()
+        existing_captures_names = {existing_capture.name for existing_capture in index_file.parent.iterdir()
+                                   if existing_capture.name != 'index'}
         if index_file.exists():
             # Skip index if the directory has been archived.
             try:
                 with index_file.open('r') as _f:
                     current_index = {uuid: dirname for uuid, dirname in csv.reader(_f)
-                                     if (index_file.parent / dirname) in existing_captures}
+                                     if uuid
+                                     and dirname
+                                     and dirname in existing_captures_names}
             except Exception as e:
                 # the index file is broken, it will be recreated.
                 self.logger.warning(f'Index for {root_dir} broken, recreating it: {e}')
                 pass
             if not current_index:
                 index_file.unlink()
-        for capture_dir in existing_captures:
+
+        if set(current_index.values()) == existing_captures_names:
+            # No new captures, quitting
+            self.logger.debug(f'No new captures in {root_dir}.')
+            return
+
+        new_captures = sorted(existing_captures_names - set(current_index.values()), reverse=True)
+        self.logger.info(f'{len(new_captures)} new captures in {root_dir}.')
+
+        for capture_dir_name in new_captures:
+            capture_dir = root_dir / capture_dir_name
             if not capture_dir.is_dir():
-                continue
-            if capture_dir.name in current_index.values():
-                # The path is already in the index file, no need to read the uuid file
+                self.logger.warning(f'{capture_dir} is not a directory')
                 continue
             uuid_file = capture_dir / 'uuid'
             if not uuid_file.exists():
                 self.logger.warning(f'No UUID file in {capture_dir}.')
+                shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures' / capture_dir.name))
                 continue
             with uuid_file.open() as _f:
-                current_index[_f.read().strip()] = uuid_file.parent.name
+                uuid = _f.read().strip()
+                if not uuid:
+                    self.logger.warning(f'{uuid_file} is empty')
+                    shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures' / capture_dir.name))
+                    continue
+                if uuid in current_index:
+                    self.logger.warning(f'Duplicate UUID ({uuid}) in {current_index[uuid]} and {uuid_file.parent.name}')
+                    shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures' / capture_dir.name))
+                    continue
+                current_index[uuid] = uuid_file.parent.name
 
         if not current_index:
             # The directory has been archived. It is probably safe to unlink, but
@@ -110,17 +132,17 @@ class Archiver(AbstractManager):
         # directories_to_index = {capture_dir.parent.parent
         #                        for capture_dir in get_captures_dir().glob('*/*/*/uuid')}
         for directory_to_index in self._make_dirs_list(get_captures_dir()):
-            self.logger.debug(f'Updating index for {directory_to_index}')
+            if self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
             self._update_index(directory_to_index)
         self.logger.info('Recent indexes updated')
-
         # Archived captures
         self.logger.info('Update archives indexes')
         for directory_to_index in self._make_dirs_list(self.archived_captures_dir):
             if self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 break
-            self.logger.debug(f'Updating index for {directory_to_index}')
             self._update_index(directory_to_index)
         self.logger.info('Archived indexes updated')
 
