@@ -82,17 +82,17 @@ class Archiver(AbstractManager):
             uuid_file = capture_dir / 'uuid'
             if not uuid_file.exists():
                 self.logger.warning(f'No UUID file in {capture_dir}.')
-                shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures' / capture_dir.name))
+                shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures'))
                 continue
             with uuid_file.open() as _f:
                 uuid = _f.read().strip()
                 if not uuid:
                     self.logger.warning(f'{uuid_file} is empty')
-                    shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures' / capture_dir.name))
+                    shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures'))
                     continue
                 if uuid in current_index:
                     self.logger.warning(f'Duplicate UUID ({uuid}) in {current_index[uuid]} and {uuid_file.parent.name}')
-                    shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures' / capture_dir.name))
+                    shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures'))
                     continue
                 current_index[uuid] = uuid_file.parent.name
 
@@ -188,7 +188,7 @@ class Archiver(AbstractManager):
                     p.delete(str(capture_path))
                     (capture_path / 'tree.pickle').unlink(missing_ok=True)
                     (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
-                    shutil.move(str(capture_path), str(dest_dir / capture_path.name))
+                    shutil.move(str(capture_path), str(dest_dir))
         p.execute()
 
         self.logger.info('Archiving done.')

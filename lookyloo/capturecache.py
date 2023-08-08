@@ -58,8 +58,6 @@ class CaptureCache():
         self.logger = LookylooCacheLogAdapter(logger, {'uuid': self.uuid})
 
         self.capture_dir: Path = Path(cache_entry['capture_dir'])
-        if not self.capture_dir.exists():
-            raise MissingCaptureDirectory(f'The capture {self.uuid} does not exists in {self.capture_dir}.')
 
         if url := cache_entry.get('url'):
             # This entry *should* be present even if there is an error.
@@ -95,6 +93,8 @@ class CaptureCache():
 
     @property
     def tree(self) -> CrawledTree:
+        if not self.capture_dir.exists():
+            raise MissingCaptureDirectory(f'The capture {self.uuid} does not exists in {self.capture_dir}.')
         return load_pickle_tree(self.capture_dir, self.capture_dir.stat().st_mtime, self.logger)
 
 
