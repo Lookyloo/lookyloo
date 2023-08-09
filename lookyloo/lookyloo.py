@@ -15,7 +15,7 @@ from email.message import EmailMessage
 from functools import cached_property
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING, overload, Literal
 from urllib.parse import urlparse
 from uuid import uuid4
 from zipfile import ZipFile
@@ -646,6 +646,7 @@ class Lookyloo():
                 geolocation=query.get('geolocation', None),
                 color_scheme=query.get('color_scheme', None),
                 rendered_hostname_only=query.get('rendered_hostname_only', True),
+                with_favicon=query.get('with_favicon', True),
                 # force=query.get('force', False),
                 # recapture_interval=query.get('recapture_interval', 300),
                 priority=query.get('priority', 0)
@@ -825,6 +826,8 @@ class Lookyloo():
                 return BytesIO(f.read())
         to_return = BytesIO()
         # Add uuid file to the export, allows to keep the same UUID across platforms.
+        # NOTE: the UUID file will always be added, as long as all_files is True,
+        #       even if we pass an extension
         all_paths.append(capture_dir / 'uuid')
         with ZipFile(to_return, 'w') as myzip:
             for path in all_paths:
@@ -834,6 +837,21 @@ class Lookyloo():
                 myzip.write(path, arcname=f'{capture_dir.name}/{path.name}')
         to_return.seek(0)
         return to_return
+
+    @overload
+    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[False], for_datauri: Literal[True]) -> str:
+        ...
+
+    @overload
+    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[True], for_datauri: Literal[False]) -> BytesIO:
+        ...
+
+    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: bool=False, for_datauri: bool=False) -> Union[BytesIO, str]:
+        '''Get rendered HTML'''
+        fav = self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
+        if not all_favicons and for_datauri:
+            return base64.b64encode(fav.getvalue()).decode()
+        return fav
 
     def get_html(self, capture_uuid: str, /, all_html: bool=False) -> BytesIO:
         '''Get rendered HTML'''
@@ -1438,7 +1456,8 @@ class Lookyloo():
                       png: Optional[bytes]=None, html: Optional[str]=None,
                       last_redirected_url: Optional[str]=None,
                       cookies: Optional[Union[List['Cookie'], List[Dict[str, str]]]]=None,
-                      capture_settings: Optional[CaptureSettings]=None
+                      capture_settings: Optional[CaptureSettings]=None,
+                      potential_favicons: Optional[Set[bytes]]=None
                       ) -> None:
 
         now = datetime.now()
@@ -1508,5 +1527,10 @@ class Lookyloo():
         if capture_settings:
             with (dirpath / 'capture_settings.json').open('w') as _cs:
                 json.dump(capture_settings, _cs)
+
+        if potential_favicons:
+            for f_id, favicon in enumerate(potential_favicons):
+                with (dirpath / f'{f_id}.potential_favicons.ico').open('wb') as _fw:
+                    _fw.write(favicon)
 
         self.redis.hset('lookup_dirs', uuid, str(dirpath))

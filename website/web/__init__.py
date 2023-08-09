@@ -746,6 +746,8 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
         screenshot_size = lookyloo.get_screenshot(tree_uuid).getbuffer().nbytes
         meta = lookyloo.get_meta(tree_uuid)
         capture_settings = lookyloo.get_capture_settings(tree_uuid)
+        # Get a potential favicon, if it exists
+        b64_potential_favicon = lookyloo.get_potential_favicons(tree_uuid, all_favicons=False, for_datauri=True)
         hostnode_to_highlight = None
         if node_uuid:
             try:
@@ -775,6 +777,7 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                info=cache,
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
                                screenshot_thumbnail=b64_thumbnail, page_title=cache.title if hasattr(cache, 'title') else '',
+                               favicon=b64_potential_favicon,
                                screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_monitoring=lookyloo.monitoring_enabled,
@@ -1020,6 +1023,7 @@ def submit_capture():
             cookies: Optional[List[Dict[str, str]]] = None
             has_error = False
             with ZipFile(BytesIO(request.files['full_capture'].stream.read()), 'r') as lookyloo_capture:
+                potential_favicons = set()
                 for filename in lookyloo_capture.namelist():
                     if filename.endswith('0.har'):
                         har = json.loads(lookyloo_capture.read(filename))
@@ -1032,6 +1036,9 @@ def submit_capture():
                     elif filename.endswith('0.cookies.json'):
                         # Not required
                         cookies = json.loads(lookyloo_capture.read(filename))
+                    elif filename.endswith('potential_favicons.ico'):
+                        # We may have more than one favicon
+                        potential_favicons.add(lookyloo_capture.read(filename))
                 if not har or not html or not last_redirected_url or not screenshot:
                     has_error = True
                     if not har:
@@ -1045,7 +1052,8 @@ def submit_capture():
             if not has_error:
                 lookyloo.store_capture(uuid, is_public=listing, har=har,
                                        last_redirected_url=last_redirected_url,
-                                       png=screenshot, html=html, cookies=cookies)
+                                       png=screenshot, html=html, cookies=cookies,
+                                       potential_favicons=potential_favicons)
                 return redirect(url_for('tree', tree_uuid=uuid))
         else:
             flash('Invalid submission: please submit at least an HAR file.', 'error')

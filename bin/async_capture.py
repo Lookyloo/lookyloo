@@ -92,7 +92,8 @@ class AsyncCapture(AbstractManager):
                 png=entries.get('png'), html=entries.get('html'),
                 last_redirected_url=entries.get('last_redirected_url'),
                 cookies=entries.get('cookies'),
-                capture_settings=to_capture
+                capture_settings=to_capture,
+                potential_favicons=entries.get('potential_favicons')
             )
 
             if 'auto_report' in to_capture:

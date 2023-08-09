@@ -609,8 +609,24 @@ function update(root, computed_node_width=0) {
                             d3.select('#tooltip').style('opacity', 0)
                         });
                   } else {
-                    d3.select(this).append("svg").append('rect')
-                        .attr('x', selected_node_bbox.width/3)
+                    d3.select(this).append('image')
+                        .attr('x', selected_node_bbox.width/6)
+                        .attr('y', node_height - 1)
+                        .attr('id', 'favicon')
+                        .attr("width", 32)
+                        .attr("height", 32)
+                        .attr("xlink:href", `data:image/png;base64,${favicon}`)
+                        .attr('cursor', 'pointer')
+                        .on('mouseover', (event, d) => {
+                            d3.select('#tooltip')
+                              .style('opacity', 1)
+                              .style('left', `${event.pageX + 10}px`)
+                              .style('top', `${event.pageY + 10}px`)
+                              .text('Potential favicon.');
+                        });
+
+                      d3.select(this).append("svg").append('rect')
+                        .attr('x', selected_node_bbox.width/2)
                         .attr('y', node_height - 3)
                         .attr('width', thumbnail_size)
                         .attr('height', thumbnail_size)
@@ -618,7 +634,7 @@ function update(root, computed_node_width=0) {
                         .attr('stroke', 'black');
 
                     d3.select(this).append('image')
-                        .attr('x', selected_node_bbox.width/3)
+                        .attr('x', selected_node_bbox.width/2)
                         .attr('y', node_height - 3)
                         .attr('id', 'screenshot_thumbnail')
                         .attr("width", thumbnail_size)
