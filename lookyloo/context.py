@@ -208,7 +208,7 @@ class Context():
             elif all(urlnode.empty_response for urlnode in hostnode.urls):
                 hostnode.add_feature('all_empty', True)
             else:
-                legit = [True for urlnode in hostnode.urls if hasattr(urlnode, 'legitimate')]
+                legit = [True for urlnode in hostnode.urls if 'legitimate' in urlnode.features]
                 if len(legit) == len(hostnode.urls):
                     hostnode.add_feature('legitimate', True)
         return tree

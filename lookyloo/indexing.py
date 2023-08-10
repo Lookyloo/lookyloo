@@ -65,7 +65,7 @@ class Indexing():
         already_loaded: Set[Tuple[str, str]] = set()
         already_cleaned_up: Set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if not hasattr(urlnode, 'cookies_received'):
+            if 'cookies_received' not in urlnode.features:
                 continue
             for domain, cookie, _ in urlnode.cookies_received:
                 name, value = cookie.split('=', 1)
@@ -92,7 +92,7 @@ class Indexing():
         pipeline = self.redis.pipeline()
         already_loaded: Set[Tuple[str, str]] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if not hasattr(urlnode, 'cookies_received'):
+            if 'cookies_received' not in urlnode.features:
                 continue
             for domain, cookie, _ in urlnode.cookies_received:
                 name, value = cookie.split('=', 1)
@@ -246,7 +246,7 @@ class Indexing():
         already_loaded: Set[str] = set()
         already_cleaned_up: Set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if not hasattr(urlnode, 'hhhash'):
+            if 'hhhash' not in urlnode.features:
                 continue
             if urlnode.hhhash in already_loaded:
                 # Only add cookie name once / capture
@@ -271,7 +271,7 @@ class Indexing():
         pipeline = self.redis.pipeline()
         already_loaded: Set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if not hasattr(urlnode, 'hhhash'):
+            if 'hhhash' not in urlnode.features:
                 continue
             if urlnode.hhhash in already_loaded:
                 # Only add cookie name once / capture
