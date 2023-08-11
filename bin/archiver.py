@@ -38,7 +38,9 @@ class Archiver(AbstractManager):
         self._archive()
         self._update_all_capture_indexes()
         self._load_indexes()
-        self._compress_hars()
+        # The HARs are supposedly all compressed so this call shouldn't be required
+        # unless you're processing old captures for the first time.
+        # self._compress_hars()
 
     def _update_index(self, root_dir: Path) -> None:
         current_index: Dict[str, str] = {}
@@ -188,12 +190,23 @@ class Archiver(AbstractManager):
                     p.delete(str(capture_path))
                     (capture_path / 'tree.pickle').unlink(missing_ok=True)
                     (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
+                    # If the HAR isn't archived yet, archive it before copy
+                    for har in capture_path.glob('*.har'):
+                        with har.open('rb') as f_in:
+                            with gzip.open(f'{har}.gz', 'wb') as f_out:
+                                shutil.copyfileobj(f_in, f_out)
+                        har.unlink()
                     shutil.move(str(capture_path), str(dest_dir))
         p.execute()
 
         self.logger.info('Archiving done.')
 
     def _compress_hars(self):
+        """This method is very slow (it checks every single capture for non-compressed HARs)
+        The new approach is to compress the har of every capture by default so this shouldn't be
+        needed anymore. Keeping it here just for reference, or to process old archives that contain
+        non-gziped HARs.
+        """
         self.logger.info('Compressing archived captures')
         for index in self.archived_captures_dir.glob('*/*/index'):
             if self.shutdown_requested():
@@ -201,9 +214,7 @@ class Archiver(AbstractManager):
                 break
             with index.open('r') as _f:
                 for uuid, dirname in csv.reader(_f):
-                    for har in (index.parent / dirname).rglob('*.har'):
-                        if not har.exists():
-                            continue
+                    for har in (index.parent / dirname).glob('*.har'):
                         with har.open('rb') as f_in:
                             with gzip.open(f'{har}.gz', 'wb') as f_out:
                                 shutil.copyfileobj(f_in, f_out)

@@ -166,13 +166,13 @@ test = ["astroid", "pytest"]
 
 [[package]]
 name = "async-timeout"
-version = "4.0.2"
+version = "4.0.3"
 description = "Timeout context manager for asyncio programs"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},
-    {file = "async_timeout-4.0.2-py3-none-any.whl", hash = "sha256:8ca1e4fcf50d07413d66d1a5e416e42cfdf5851c981d679a09851a6853383b3c"},
+    {file = "async-timeout-4.0.3.tar.gz", hash = "sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f"},
+    {file = "async_timeout-4.0.3-py3-none-any.whl", hash = "sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028"},
 ]
 
 [[package]]
@@ -908,13 +908,13 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.21.6"
+version = "1.21.7"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "har2tree-1.21.6-py3-none-any.whl", hash = "sha256:22e152634d1307a3a096a46581f218b71ca8d7f0aee558eff0aa5303c2130cf2"},
-    {file = "har2tree-1.21.6.tar.gz", hash = "sha256:09e73fbbee97bab0da4e209332d1a017ae844a88d4d77896927a575f83a62926"},
+    {file = "har2tree-1.21.7-py3-none-any.whl", hash = "sha256:ffe14f2d21c53bd95839e67682aff4ecf4bb624bfda0aa23857df6dfe5aa70fa"},
+    {file = "har2tree-1.21.7.tar.gz", hash = "sha256:b03cd8c2ee7e954060c1109c08844c376db9d7fd0e2e2499bbdc5d9fe6879b7f"},
 ]
 
 [package.dependencies]
@@ -926,7 +926,7 @@ numpy = [
     {version = "1.23.3", markers = "python_version < \"3.10\""},
     {version = ">=1.23.4,<2.0.0", markers = "python_version >= \"3.10\""},
 ]
-publicsuffixlist = ">=0.10.0.20230804,<0.11.0.0"
+publicsuffixlist = ">=0.10.0.20230811,<0.11.0.0"
 w3lib = ">=2.1.2,<3.0.0"
 
 [package.extras]
@@ -1243,13 +1243,13 @@ referencing = ">=0.28.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.6.5"
+version = "1.6.6"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.6.5-py3-none-any.whl", hash = "sha256:373cde9898938521514d08e3a53e6b8d5c71dac59eaad1a067c33086fddbfd4f"},
-    {file = "lacuscore-1.6.5.tar.gz", hash = "sha256:bc6da53bf58819e995db8f2ed33be032bcc9bac04e06c2f2d752cb30c6965e3a"},
+    {file = "lacuscore-1.6.6-py3-none-any.whl", hash = "sha256:456914de415fba8bbaeef32446ff74703015f55ad3d79691d97515e8eb14dc66"},
+    {file = "lacuscore-1.6.6.tar.gz", hash = "sha256:279087601cca7730c061e4188c27cc7f72246157bde8ecf5dc345aea69e1009e"},
 ]
 
 [package.dependencies]
@@ -1926,13 +1926,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.0.20230806"
+version = "0.10.0.20230811"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.0.20230806-py2.py3-none-any.whl", hash = "sha256:c05dbd256d049d3fb94405e7e4a5215cffb39e7329471137e04b320d22cbf141"},
-    {file = "publicsuffixlist-0.10.0.20230806.tar.gz", hash = "sha256:8c30ea7a0019386d144ca3db8751f757ee46acc194ea6d9619eb175041491c96"},
+    {file = "publicsuffixlist-0.10.0.20230811-py2.py3-none-any.whl", hash = "sha256:cd84fcabb7d5bbca45ac3a1ea876cd8fac4d093705a827b20afbe34f5b2e70e6"},
+    {file = "publicsuffixlist-0.10.0.20230811.tar.gz", hash = "sha256:0ba20a5fa7b9fe5c6dc787d978c6be212e53c962a1a417a2a5948c9d28a4c549"},
 ]
 
 [package.extras]
@@ -3154,4 +3154,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "056a4bf984207efa7930a8af07e93d4fd1ce7751288b0047d64df1918ad92cb1"
+content-hash = "3d380da51d6c302c872b3bec918b8c3581946d43e91ba047f0984e9325293cdb"

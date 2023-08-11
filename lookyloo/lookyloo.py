@@ -2,6 +2,7 @@
 
 import base64
 import copy
+import gzip
 import json
 import logging
 import operator
@@ -1499,8 +1500,8 @@ class Lookyloo():
                 json.dump(error, _error)
 
         if har:
-            with (dirpath / '0.har').open('w') as _har:
-                json.dump(har, _har)
+            with gzip.open(dirpath / '0.har.gz', 'wt') as f_out:
+                f_out.write(json.dumps(har))
 
         if png:
             with (dirpath / '0.png').open('wb') as _img:
