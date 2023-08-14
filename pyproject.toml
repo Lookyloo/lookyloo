@@ -88,7 +88,7 @@ types-Deprecated = "^1.2.9.3"
 types-python-dateutil = "^2.8.19.14"
 types-beautifulsoup4 = "^4.12.0.5"
 types-Pillow = "^10.0.0.2"
-types-pytz = "^2023.3.0.0"
+types-pytz = "^2023.3.0.1"
 
 [build-system]
 requires = ["poetry_core"]
