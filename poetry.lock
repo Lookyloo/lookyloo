@@ -1243,18 +1243,18 @@ referencing = ">=0.28.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.6.6"
+version = "1.6.7"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.6.6-py3-none-any.whl", hash = "sha256:456914de415fba8bbaeef32446ff74703015f55ad3d79691d97515e8eb14dc66"},
-    {file = "lacuscore-1.6.6.tar.gz", hash = "sha256:279087601cca7730c061e4188c27cc7f72246157bde8ecf5dc345aea69e1009e"},
+    {file = "lacuscore-1.6.7-py3-none-any.whl", hash = "sha256:1024dc67b7cb1835946fc199f14b25d704f8b43e36947fa7cb9bd4519df1ad04"},
+    {file = "lacuscore-1.6.7.tar.gz", hash = "sha256:050f07be3d9a304c68033daaf2bb975304381b2f055846d84e1f0016789c309a"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.21.4,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.21.6,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=4.6.0,<5.0.0", extras = ["hiredis"]}
 requests = ">=2.31.0,<3.0.0"
 ua-parser = ">=0.18.0,<0.19.0"
@@ -1855,18 +1855,18 @@ files = [
 
 [[package]]
 name = "playwright"
-version = "1.36.0"
+version = "1.37.0"
 description = "A high-level API to automate web browsers"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "playwright-1.36.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:b7c6ddfca2b141b0385387cc56c125b14ea867902c39e3fc650ddd6c429b17da"},
-    {file = "playwright-1.36.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:428a719a6c7e40781c19860ed813840ac2d63678f7587abe12e800ea030d4b7e"},
-    {file = "playwright-1.36.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:4e396853034742b76654cdab27422155d238f46e4dc6369ea75854fafb935586"},
-    {file = "playwright-1.36.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:72e80076e595f5fcd8ebd89bf6635ad78e4bafa633119faed8b2568d17dbd398"},
-    {file = "playwright-1.36.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ffbb927679b62fad5071439d5fe0840af46ad1844bc44bf80e1a0ad706140c98"},
-    {file = "playwright-1.36.0-py3-none-win32.whl", hash = "sha256:84213339f179fd2a70f77ea7faea0616d74871349d556c53a1ecb7dd5097973c"},
-    {file = "playwright-1.36.0-py3-none-win_amd64.whl", hash = "sha256:89ca2261bb00b67d3dff97691cf18f4347ee0529a11e431e47df67b703d4d8fa"},
+    {file = "playwright-1.37.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:b476f63251876f1625f490af8d58ec0db90b555c623b7f54105f91d33878c06d"},
+    {file = "playwright-1.37.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:68d56efe5ce916bab349177e90726837a6f0cae77ebd6a5200f5333b787b25fb"},
+    {file = "playwright-1.37.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:428fdf9bfff586b73f96df53692d50d422afb93ca4650624f61e8181f548fed2"},
+    {file = "playwright-1.37.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:41f0280472af94c426e941f6a969ff6a7ea156dc15fd01d09ac4b8f092e2346e"},
+    {file = "playwright-1.37.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b574889ef97b7f44a633aa10d72b8966a850a4354d915fd0bc7e8658e825dd63"},
+    {file = "playwright-1.37.0-py3-none-win32.whl", hash = "sha256:8b5d96aae54289129ab19d3d0e2e431171ae3e5d88d49a10900dcbe569a27d43"},
+    {file = "playwright-1.37.0-py3-none-win_amd64.whl", hash = "sha256:678b9926be2df06321d11a525d4bf08d9f4a5b151354a3b82fe2ac14476322d5"},
 ]
 
 [package.dependencies]
@@ -1876,19 +1876,19 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.21.4"
+version = "1.21.6"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.21.4-py3-none-any.whl", hash = "sha256:2d83818f109d440755da463d8941cd5a55e1f3790ebf0538a5be947a6d8f18dc"},
-    {file = "playwrightcapture-1.21.4.tar.gz", hash = "sha256:db34d15134c23357b919028aca6ad734348755c598e5252038ef0c07feeec7ef"},
+    {file = "playwrightcapture-1.21.6-py3-none-any.whl", hash = "sha256:bbf70d31dccc2e950da37b19c385ad4a1db785dcb5004f4a1033ebd314c418ff"},
+    {file = "playwrightcapture-1.21.6.tar.gz", hash = "sha256:4df09f0731e55dcb85c7dd7fc26489da9d243227412ed3f24c2379e9bbef8ee0"},
 ]
 
 [package.dependencies]
 beautifulsoup4 = {version = ">=4.12.2,<5.0.0", extras = ["lxml"]}
 dateparser = ">=1.1.8,<2.0.0"
-playwright = ">=1.36.0,<2.0.0"
+playwright = ">=1.37.0,<2.0.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
 pytz = {version = ">=2023.3,<2024.0", markers = "python_version < \"3.9\""}
 requests = {version = ">=2.31.0,<3.0.0", extras = ["socks"], optional = true, markers = "extra == \"recaptcha\""}
@@ -1926,13 +1926,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.0.20230811"
+version = "0.10.0.20230814"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.0.20230811-py2.py3-none-any.whl", hash = "sha256:cd84fcabb7d5bbca45ac3a1ea876cd8fac4d093705a827b20afbe34f5b2e70e6"},
-    {file = "publicsuffixlist-0.10.0.20230811.tar.gz", hash = "sha256:0ba20a5fa7b9fe5c6dc787d978c6be212e53c962a1a417a2a5948c9d28a4c549"},
+    {file = "publicsuffixlist-0.10.0.20230814-py2.py3-none-any.whl", hash = "sha256:0f582a24087bda335903d49c8e07f2aa5e917680bceab4ad21a376fdbaae0d33"},
+    {file = "publicsuffixlist-0.10.0.20230814.tar.gz", hash = "sha256:186ea295451ab954f6bbf06e4b86a0cc9550772744b86c29c495739d60dbe3a4"},
 ]
 
 [package.extras]
@@ -2692,13 +2692,13 @@ test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.12.0.5"
+version = "4.12.0.6"
 description = "Typing stubs for beautifulsoup4"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-beautifulsoup4-4.12.0.5.tar.gz", hash = "sha256:d9be456416a62a5b9740559592e1063a69d4b0a1b83911d878558c8ae8e07074"},
-    {file = "types_beautifulsoup4-4.12.0.5-py3-none-any.whl", hash = "sha256:718364c8e6787884501c700b1d22b6c0a8711bf9d6c9bf96e1fba81495bc46a8"},
+    {file = "types-beautifulsoup4-4.12.0.6.tar.gz", hash = "sha256:045ab285d3e540186e16133612f43f67e31f910e6d7578906b43a0ad8f811347"},
+    {file = "types_beautifulsoup4-4.12.0.6-py3-none-any.whl", hash = "sha256:3da00d754e73afae0ec2793253af0cb9aa1ff2c730e34b31c60313da781b4f6f"},
 ]
 
 [package.dependencies]
@@ -2775,13 +2775,13 @@ files = [
 
 [[package]]
 name = "types-pytz"
-version = "2023.3.0.0"
+version = "2023.3.0.1"
 description = "Typing stubs for pytz"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-pytz-2023.3.0.0.tar.gz", hash = "sha256:ecdc70d543aaf3616a7e48631543a884f74205f284cefd6649ddf44c6a820aac"},
-    {file = "types_pytz-2023.3.0.0-py3-none-any.whl", hash = "sha256:4fc2a7fbbc315f0b6630e0b899fd6c743705abe1094d007b0e612d10da15e0f3"},
+    {file = "types-pytz-2023.3.0.1.tar.gz", hash = "sha256:1a7b8d4aac70981cfa24478a41eadfcd96a087c986d6f150d77e3ceb3c2bdfab"},
+    {file = "types_pytz-2023.3.0.1-py3-none-any.whl", hash = "sha256:65152e872137926bb67a8fe6cc9cfd794365df86650c5d5fdc7b167b0f38892e"},
 ]
 
 [[package]]
@@ -2933,13 +2933,13 @@ files = [
 
 [[package]]
 name = "werkzeug"
-version = "2.3.6"
+version = "2.3.7"
 description = "The comprehensive WSGI web application library."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Werkzeug-2.3.6-py3-none-any.whl", hash = "sha256:935539fa1413afbb9195b24880778422ed620c0fc09670945185cce4d91a8890"},
-    {file = "Werkzeug-2.3.6.tar.gz", hash = "sha256:98c774df2f91b05550078891dee5f0eb0cb797a522c757a2452b9cee5b202330"},
+    {file = "werkzeug-2.3.7-py3-none-any.whl", hash = "sha256:effc12dba7f3bd72e605ce49807bbe692bd729c3bb122a3b91747a6ae77df528"},
+    {file = "werkzeug-2.3.7.tar.gz", hash = "sha256:2b8c0e447b4b9dbcc85dd97b6eeb4dcbaf6c8b6c3be0bd654e25553e0a2157d8"},
 ]
 
 [package.dependencies]
@@ -3154,4 +3154,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "3d380da51d6c302c872b3bec918b8c3581946d43e91ba047f0984e9325293cdb"
+content-hash = "71c0285acfb1dfd2bbef0d71aa49b144671ad1a5421e57bedf679a6f24599109"
