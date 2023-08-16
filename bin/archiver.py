@@ -81,6 +81,10 @@ class Archiver(AbstractManager):
             if not capture_dir.is_dir():
                 self.logger.warning(f'{capture_dir} is not a directory')
                 continue
+            if not next(capture_dir.iterdir(), None):
+                self.logger.warning(f'{capture_dir} is empty, removing.')
+                capture_dir.rmdir()
+                continue
             uuid_file = capture_dir / 'uuid'
             if not uuid_file.exists():
                 self.logger.warning(f'No UUID file in {capture_dir}.')
