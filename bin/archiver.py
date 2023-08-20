@@ -190,16 +190,27 @@ class Archiver(AbstractManager):
             for month, captures in month_captures.items():
                 dest_dir = self.archived_captures_dir / str(year) / f'{month:02}'
                 dest_dir.mkdir(parents=True, exist_ok=True)
+                capture_breakpoint = 1000
                 for capture_path in captures:
+                    capture_breakpoint -= 1
+                    if capture_breakpoint <= 0:
+                        # Break and restart later
+                        self.logger.info('Archived many captures in {year}-{month}, will keep going later.')
+                        break
+                    elif capture_breakpoint % 100:
+                        # Just check if we requested a shutdown.
+                        if self.shutdown_requested():
+                            self.logger.warning('Shutdown requested, breaking.')
+                            break
                     p.delete(str(capture_path))
-                    (capture_path / 'tree.pickle').unlink(missing_ok=True)
-                    (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
                     # If the HAR isn't archived yet, archive it before copy
                     for har in capture_path.glob('*.har'):
                         with har.open('rb') as f_in:
                             with gzip.open(f'{har}.gz', 'wb') as f_out:
                                 shutil.copyfileobj(f_in, f_out)
                         har.unlink()
+                    (capture_path / 'tree.pickle').unlink(missing_ok=True)
+                    (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
                     shutil.move(str(capture_path), str(dest_dir))
         p.execute()
 
