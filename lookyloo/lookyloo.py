@@ -623,7 +623,7 @@ class Lookyloo():
 
         priority = get_priority(source, user, authenticated)
         query['priority'] = priority
-        if priority < -10:
+        if priority < -100:
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query['listing'] = 0
         try:
@@ -1106,6 +1106,11 @@ class Lookyloo():
         cache = self.capture_cache(capture_uuid)
         if not cache:
             return {'error': 'UUID missing in cache, try again later.'}
+
+        # The tree is needed to generate the export. The call below makes sure it is cached
+        # as it may not be if the uses calls the json export without viewing the tree first,
+        # and it has been archived.
+        self.get_crawled_tree(capture_uuid)
 
         # if the file submitted on lookyloo cannot be displayed (PDF), it willbe downloaded.
         # In the case, we want to have it as a FileObject in the export
