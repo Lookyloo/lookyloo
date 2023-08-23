@@ -202,10 +202,12 @@
           {{ popup_icons_request(url['url_object'], tree_uuid) }}
 
           {% if url['url_object'].posted_data %}
-          <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-              Download posted data
-          </a></br>
-          Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
+              <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
+                  Download posted data
+              </a></br>
+              {% if url['url_object'].posted_data is string %}
+              Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
+              {% endif %}
           {% endif %}
 
           {% if url['cookies_sent'] %}
