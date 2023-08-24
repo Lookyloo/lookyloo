@@ -919,6 +919,11 @@ class Lookyloo():
         '''Returns a lot of information about the hash (sha512) and the hits in the instance.
         Also contains the data (base64 encoded)'''
         details = self.indexing.get_body_hash_urls(body_hash)
+
+        # Break immediately if we have the hash of the empty file
+        if body_hash == 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e':
+            return details, BytesIO()
+
         # get the body from the first entry in the details list
         for _, entries in details.items():
             if not entries:
@@ -941,6 +946,8 @@ class Lookyloo():
                     for h, b in blobs:
                         if h == body_hash:
                             return details, b
+
+        # TODO: Couldn't find the file anywhere. Maybe return a warning in the file?
         return details, BytesIO()
 
     def get_all_body_hashes(self, capture_uuid: str, /) -> Dict[str, Dict[str, Union[URLNode, int]]]:
