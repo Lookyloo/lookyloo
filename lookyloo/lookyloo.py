@@ -919,23 +919,29 @@ class Lookyloo():
         '''Returns a lot of information about the hash (sha512) and the hits in the instance.
         Also contains the data (base64 encoded)'''
         details = self.indexing.get_body_hash_urls(body_hash)
-        body_content = BytesIO()
         # get the body from the first entry in the details list
         for _, entries in details.items():
+            if not entries:
+                continue
             ct = self.get_crawled_tree(entries[0]['capture'])
-            urlnode = ct.root_hartree.get_url_node_by_uuid(entries[0]['urlnode'])
+            try:
+                urlnode = ct.root_hartree.get_url_node_by_uuid(entries[0]['urlnode'])
+            except Exception:
+                # Unable to find URLnode in the tree, it probably has been rebuild.
+                self.logger.warning(f'Unable to find {entries[0]["urlnode"]} in entries[0]["capture"]')
+                continue
+
+            # From that point, we just try to get the content. Break as soon as we found one.
             if urlnode.body_hash == body_hash:
                 # the hash we're looking for is the whole file
-                body_content = urlnode.body
+                return details, urlnode.body
             else:
                 # The hash is an embedded resource
                 for _, blobs in urlnode.embedded_ressources.items():
                     for h, b in blobs:
                         if h == body_hash:
-                            body_content = b
-                            break
-            break
-        return details, body_content
+                            return details, b
+        return details, BytesIO()
 
     def get_all_body_hashes(self, capture_uuid: str, /) -> Dict[str, Dict[str, Union[URLNode, int]]]:
         ct = self.get_crawled_tree(capture_uuid)
