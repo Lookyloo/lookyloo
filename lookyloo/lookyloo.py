@@ -929,7 +929,7 @@ class Lookyloo():
                 body_content = urlnode.body
             else:
                 # The hash is an embedded resource
-                for _, blobs in urlnode.body_hash.embedded_ressources.items():
+                for _, blobs in urlnode.embedded_ressources.items():
                     for h, b in blobs:
                         if h == body_hash:
                             body_content = b
