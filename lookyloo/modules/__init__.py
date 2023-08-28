@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from .fox import FOX  # noqa
-from .misp import MISP  # noqa
+from .misp import MISPs, MISP  # noqa
 from .pi import PhishingInitiative  # noqa
 from .sanejs import SaneJavaScript  # noqa
 from .urlscan import UrlScan  # noqa

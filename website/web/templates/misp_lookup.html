@@ -1,11 +1,24 @@
-{% from "macros.html" import shorten_string %}
+<center>
+  <h1 class="display-4">MISP hits</h1>
+  <h6>Searching on URL, domain, IPs, and CNAMEs for all the nodes up to the rendered page.</h6>
+  <h6>Skips the entries in warnings lists enabled on your MISP instance.</h6>
+{% if misps_occurrences|length > 1 %}
+</br>
+<hr/>
+<label for="mispSelector">Select the MISP instance to search in</label>
+</br>
+<div class="btn-group" role="group" aria-label="MISP Selector" id="mispSelector">
+  {%for name in misps_occurrences %}
+  <button type="button" value="{{name}}" class="btn btn-outline-primary {%if name == current_misp%}active{%endif%}" href="#">{{name}}</a></li>
+  {%endfor%}
+</div>
+{%endif%}
+</center>
 
-<div>
-  <center>
-    <h1 class="display-4">MISP hits</h1>
-    <h6>Searching on URL, domain, IPs, and CNAMEs for all the nodes up to the rendered page.</h6>
-    <h6>Skips the entries in warnings lists enabled on your MISP instance.</h6>
-  </center>
+<div id="allInstances">
+{% for name, occurrences in misps_occurrences.items() %}
+<div id="{{name}}" {%if name != current_misp%}style="display:none"{%endif%}>
+{% set hits, root_url = occurrences %}
 {% if hits %}
   <ul>
   {% for event_id, values in hits.items() %}
@@ -21,3 +34,6 @@
 {% else %}
   No hits
 {% endif %}
+</div>
+{% endfor %}
+</div>

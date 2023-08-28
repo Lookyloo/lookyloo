@@ -23,16 +23,23 @@
     "enabled": true,
     "allow_auto_trigger": true
   },
-  "MISP": {
-    "apikey": null,
-    "url": "https://misp.url",
-    "verify_tls_cert": true,
-    "timeout": 10,
-    "enable_lookup": false,
-    "enable_push": false,
-    "default_tags": [],
-    "auto_publish": false,
-    "allow_auto_trigger": false
+  "MultipleMISPs": {
+    "default": "MISP",
+    "instances": {
+      "MISP": {
+        "apikey": null,
+        "url": "https://misp.url",
+        "verify_tls_cert": true,
+        "timeout": 10,
+        "enable_lookup": false,
+        "enable_push": false,
+        "default_tags": [
+          "source:lookyloo"
+        ],
+        "auto_publish": false,
+        "allow_auto_trigger": false
+      }
+    }
   },
   "UniversalWhois": {
     "enabled": false,

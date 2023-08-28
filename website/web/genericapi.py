@@ -180,6 +180,7 @@ misp_push_fields = api.model('MISPPushFields', {
 
 
 @api.route('/json/<string:capture_uuid>/misp_push')
+@api.route('/json/<string:capture_uuid>/misp_push/<string:instance_name>')
 @api.doc(description='Push an event to a pre-configured MISP instance',
          params={'capture_uuid': 'The UUID of the capture'},
          security='apikey')
@@ -188,20 +189,21 @@ class MISPPush(Resource):
 
     @api.param('with_parents', 'Also push the parents of the capture (if any)')
     @api.param('allow_duplicates', 'Push the event even if it is already present on the MISP instance')
-    def get(self, capture_uuid: str):
+    def get(self, capture_uuid: str, instance_name: Optional[str]=None):
         with_parents = True if request.args.get('with_parents') else False
         allow_duplicates = True if request.args.get('allow_duplicates') else False
         to_return: Dict = {}
-        if not lookyloo.misp.available:
+        misp = self.get_misp_instance(instance_name)
+        if not misp.available:
             to_return['error'] = 'MISP module not available.'
-        elif not lookyloo.misp.enable_push:
+        elif not misp.enable_push:
             to_return['error'] = 'Push not enabled in MISP module.'
         else:
             event = lookyloo.misp_export(capture_uuid, with_parents)
             if isinstance(event, dict):
                 to_return['error'] = event
             else:
-                new_events = lookyloo.misp.push(event, allow_duplicates)
+                new_events = misp.push(event, allow_duplicates)
                 if isinstance(new_events, dict):
                     to_return['error'] = new_events
                 else:
@@ -213,22 +215,23 @@ class MISPPush(Resource):
         return to_return
 
     @api.doc(body=misp_push_fields)
-    def post(self, capture_uuid: str):
+    def post(self, capture_uuid: str, instance_name: Optional[str]=None):
         parameters: Dict = request.get_json(force=True)
         with_parents = True if parameters.get('with_parents') else False
         allow_duplicates = True if parameters.get('allow_duplicates') else False
 
         to_return: Dict = {}
-        if not lookyloo.misp.available:
+        misp = self.get_misp_instance(instance_name)
+        if not misp.available:
             to_return['error'] = 'MISP module not available.'
-        elif not lookyloo.misp.enable_push:
+        elif not misp.enable_push:
             to_return['error'] = 'Push not enabled in MISP module.'
         else:
             event = lookyloo.misp_export(capture_uuid, with_parents)
             if isinstance(event, dict):
                 to_return['error'] = event
             else:
-                new_events = lookyloo.misp.push(event, allow_duplicates)
+                new_events = misp.push(event, allow_duplicates)
                 if isinstance(new_events, dict):
                     to_return['error'] = new_events
                 else:

@@ -1,6 +1,24 @@
-<div>
-  <p>Default tags: {{', '.join(default_tags)}}</p>
-  <form role="form" action="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}" method=post enctype=multipart/form-data>
+{% if misp_instances_settings|length > 1 %}
+<center>
+<label for="mispSelector">Select the MISP instance to push to</label>
+</br>
+<div class="btn-group" role="group" aria-label="MISP Selector" id="mispSelector">
+  {%for name in misp_instances_settings %}
+  <button type="button" value="{{name}}" class="btn btn-outline-primary {%if name == current_misp%}active{%endif%}" href="#">{{name}}</a></li>
+  {%endfor%}
+</div>
+</center>
+{%endif%}
+
+<div id="allInstances">
+{%for name, misp_settings in misp_instances_settings.items() %}
+<div id="{{name}}" {%if name != current_misp%}style="display:none"{%endif%}>
+  <form role="form" action="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
+        method=post enctype=multipart/form-data>
+    <label for="misp_instance_name" class="col-sm-2 col-form-label">Submit event to:</label>
+    <input type="text" class="form-control" name="misp_instance_name" value="{{name}}" readonly>
+    <label for="defaultTags" class="col-sm-6 col-form-label">Tags attached to the event by default</label>
+    <input type="text" class="form-control" name="defaultTags" value="{{', '.join(misp_settings['default_tags'])}}" disabled readonly>
     <div class="row mb-3">
       <div class="col-sm-10">
         <label for="url" class="col-sm-2 col-form-label">Event info:</label>
@@ -12,20 +30,21 @@
       <div class="col-sm-10">
         <label for="tags" class="col-sm-2 col-form-label">Available tags:</label>
         <select class="form-control" name="tags" id="tags" multiple>
-          {% for tag in fav_tags %}
-          <option value="{{ tag.name }}">{{ tag.name }}</option>
+          {% for tag_name in misp_settings['fav_tags'] %}
+          <option value="{{ tag_name }}">{{ tag_name }}</option>
           {% endfor %}
         </select>
       </div>
     </div>
     <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="auto_publish" {%if auto_publish %} checked {% endif %}></input>
+      <input class="form-check-input" type="checkbox" name="auto_publish"
+             {%if misp_settings.auto_publish %} checked {% endif %}></input>
       <label for="auto_publish" class="form-check-label">Publish the event automatically</label>
     </div>
-    {% if existing_event %}
-    <p>There is already an <a href="{{existing_event}}">event on your MISP instance</a> with this lookyloo capture.</p>
+    {% if misp_settings.existing_event %}
+    <p>There is already an <a href="{{misp_settings.existing_event}}">event on your MISP instance</a> with this lookyloo capture.</p>
     <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="force_push" onchange="document.getElementById('btn-misp-push').disabled = !this.checked;"></input>
+      <input class="form-check-input" type="checkbox" name="force_push" onchange="document.getElementById('btn-misp-push-{{name}}').disabled = !this.checked;"></input>
       <label for="force_push" class="form-check-label">Tick this box if you want to push anyway</label>
     </div>
     {% endif %}
@@ -35,6 +54,9 @@
       <label for="with_parents" class="form-check-label">Also push the parents</label>
     </div>
     {% endif %}
-    <button type="submit" class="btn btn-primary" id="btn-misp-push" {% if existing_event %}disabled=true{% endif %}>Push to MISP</button>
+    <button type="submit" class="btn btn-primary" id="btn-misp-push-{{name}}"
+            {% if misp_settings.existing_event %}disabled=true{% endif %}>Push to {{name}}</button>
   </form>
+</div>
+{%endfor%}
 </div>

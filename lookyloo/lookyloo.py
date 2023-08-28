@@ -52,7 +52,7 @@ from .helpers import (get_captures_dir, get_email_template,
                       uniq_domains, ParsedUserAgent, load_cookies, UserAgents,
                       get_useragent_for_requests)
 from .indexing import Indexing
-from .modules import (MISP, PhishingInitiative, UniversalWhois,
+from .modules import (MISPs, MISP, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
                       RiskIQ, RiskIQError, Pandora, URLhaus)
 
@@ -106,9 +106,33 @@ class Lookyloo():
         if not self.vt.available:
             self.logger.warning('Unable to setup the VirusTotal module')
 
-        self.misp = MISP(get_config('modules', 'MISP'))
-        if not self.misp.available:
-            self.logger.warning('Unable to setup the MISP module')
+        # ## Initialize MISP(s)
+        try_old_config = False
+        if misps_config := get_config('modules', 'MultipleMISPs'):
+            # New config
+            self.misps = MISPs(misps_config)
+            if not self.misps.available:
+                self.logger.warning('Unable to setup the MISP module')
+                try_old_config = True
+
+        if try_old_config:
+            # Legacy MISP config, now use MultipleMISPs key to support more than one MISP instance
+            try:
+                if misp_config := get_config('modules', 'MISP'):
+                    misps_config = {'default': 'MISP', 'instances': {'MISP': misp_config}}
+                    self.misps = MISPs(misps_config)
+                    if self.misps.available:
+                        self.logger.warning('Please migrate the MISP config to the "MultipleMISPs" key in the config, and remove the "MISP" key')
+                    else:
+                        self.logger.warning('Unable to setup the MISP module')
+            except Exception:
+                # The key was removed from the config, and the sample config
+                pass
+
+        if not self.misps.available:
+            self.logger.info('The MISP module is not configured')
+
+        # ## Done with MISP(s)
 
         self.uwhois = UniversalWhois(get_config('modules', 'UniversalWhois'))
         if not self.uwhois.available:
@@ -1129,9 +1153,9 @@ class Lookyloo():
         # In the case, we want to have it as a FileObject in the export
         filename, pseudofile = self.get_data(capture_uuid)
         if filename:
-            event = self.misp.export(cache, self.is_public_instance, filename, pseudofile)
+            event = self.misps.export(cache, self.is_public_instance, filename, pseudofile)
         else:
-            event = self.misp.export(cache, self.is_public_instance)
+            event = self.misps.export(cache, self.is_public_instance)
         screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png',
                                                         data=self.get_screenshot(cache.uuid),
                                                         disable_correlation=True)  # type: ignore
@@ -1179,8 +1203,18 @@ class Lookyloo():
 
         return [event]
 
-    def get_misp_occurrences(self, capture_uuid: str, /) -> Optional[Dict[str, Set[str]]]:
-        if not self.misp.available:
+    def get_misp_instance(self, instance_name: Optional[str]=None) -> MISP:
+        if instance_name:
+            if misp := self.misps.get(instance_name):
+                return misp
+            self.logger.warning(f'Unable to connect to MISP Instance {instance_name}, falling back to default.')
+
+        return self.misps.default_misp
+
+    def get_misp_occurrences(self, capture_uuid: str, /, *, instance_name: Optional[str]=None) -> Optional[Tuple[Dict[str, Set[str]], str]]:
+        misp = self.get_misp_instance(instance_name)
+
+        if not misp.available:
             return None
         try:
             ct = self.get_crawled_tree(capture_uuid)
@@ -1190,12 +1224,12 @@ class Lookyloo():
         nodes_to_lookup = ct.root_hartree.rendered_node.get_ancestors() + [ct.root_hartree.rendered_node]
         to_return: Dict[str, Set[str]] = defaultdict(set)
         for node in nodes_to_lookup:
-            hits = self.misp.lookup(node, ct.root_hartree.get_host_node_by_uuid(node.hostnode_uuid))
+            hits = misp.lookup(node, ct.root_hartree.get_host_node_by_uuid(node.hostnode_uuid))
             for event_id, values in hits.items():
                 if not isinstance(values, set):
                     continue
                 to_return[event_id].update(values)
-        return to_return
+        return to_return, misp.client.root_url
 
     def get_hashes_with_context(self, tree_uuid: str, /, algorithm: str, *, urls_only: bool=False) -> Union[Dict[str, Set[str]], Dict[str, List[URLNode]]]:
         """Build (on demand) hashes for all the ressources of the tree, using the alorighm provided by the user.

@@ -354,32 +354,61 @@ def stats(tree_uuid: str):
 @app.route('/tree/<string:tree_uuid>/misp_lookup', methods=['GET'])
 @flask_login.login_required
 def web_misp_lookup_view(tree_uuid: str):
-    hits = lookyloo.get_misp_occurrences(tree_uuid)
-    if hits:
-        misp_root_url = lookyloo.misp.client.root_url
-    else:
-        misp_root_url = ''
-    return render_template('misp_lookup.html', uuid=tree_uuid, hits=hits, misp_root_url=misp_root_url)
+    if not lookyloo.misps.available:
+        flash('There are no MISP instances available.', 'error')
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
+    misps_occurrences = {}
+    for instance_name in lookyloo.misps:
+        if occurrences := lookyloo.get_misp_occurrences(tree_uuid, instance_name=instance_name):
+            misps_occurrences[instance_name] = occurrences
+    return render_template('misp_lookup.html', uuid=tree_uuid,
+                           current_misp=lookyloo.misps.default_instance,
+                           misps_occurrences=misps_occurrences)
 
 
 @app.route('/tree/<string:tree_uuid>/misp_push', methods=['GET', 'POST'])
 @flask_login.login_required
 def web_misp_push_view(tree_uuid: str):
-    error = False
-    if not lookyloo.misp.available:
-        flash('MISP module not available.', 'error')
+    if not lookyloo.misps.available:
+        flash('There are no MISP instances available.', 'error')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    elif not lookyloo.misp.enable_push:
-        flash('Push not enabled in MISP module.', 'error')
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
-    else:
-        event = lookyloo.misp_export(tree_uuid)
-        if isinstance(event, dict):
-            flash(f'Unable to generate the MISP export: {event}', 'error')
-            return redirect(url_for('tree', tree_uuid=tree_uuid))
 
-    if request.method == 'POST':
+    event = lookyloo.misp_export(tree_uuid)
+    if isinstance(event, dict):
+        flash(f'Unable to generate the MISP export: {event}', 'error')
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+    if request.method == 'GET':
+        # Initialize settings that will be displayed on the template
+        misp_instances_settings = {}
+        for name, instance in lookyloo.misps.items():
+            # the 1st attribute in the event is the link to lookyloo
+            misp_instances_settings[name] = {
+                'default_tags': instance.default_tags,
+                'fav_tags': [tag.name for tag in instance.get_fav_tags()],
+                'auto_publish': instance.auto_publish
+            }
+            if existing_misp_url := instance.get_existing_event_url(event[-1].attributes[0].value):
+                misp_instances_settings[name]['existing_event'] = existing_misp_url
+
+        cache = lookyloo.capture_cache(tree_uuid)
+        return render_template('misp_push_view.html',
+                               current_misp=lookyloo.misps.default_instance,
+                               tree_uuid=tree_uuid,
+                               event=event[0],
+                               misp_instances_settings=misp_instances_settings,
+                               has_parent=True if cache and cache.parent else False)
+
+    elif request.method == 'POST':
         # event is a MISPEvent at this point
+        misp_instance_name = request.form.get('misp_instance_name')
+        if not misp_instance_name or misp_instance_name not in lookyloo.misps:
+            flash(f'MISP instance {misp_instance_name} is unknown.', 'error')
+            return redirect(url_for('tree', tree_uuid=tree_uuid))
+        misp = lookyloo.misps[misp_instance_name]
+        if not misp.enable_push:
+            flash('Push not enabled in MISP module.', 'error')
+            return redirect(url_for('tree', tree_uuid=tree_uuid))
         # Submit the event
         tags = request.form.getlist('tags')
         error = False
@@ -406,30 +435,17 @@ def web_misp_push_view(tree_uuid: str):
         events[-1].info = request.form.get('event_info')
 
         try:
-            new_events = lookyloo.misp.push(events, True if request.form.get('force_push') else False,
-                                            True if request.form.get('auto_publish') else False)
+            new_events = misp.push(events, True if request.form.get('force_push') else False,
+                                   True if request.form.get('auto_publish') else False)
         except MISPServerError:
-            flash(f'MISP returned an error, the event(s) might still have been created on {lookyloo.misp.client.root_url}', 'error')
+            flash(f'MISP returned an error, the event(s) might still have been created on {misp.client.root_url}', 'error')
         else:
             if isinstance(new_events, dict):
                 flash(f'Unable to create event(s): {new_events}', 'error')
             else:
                 for e in new_events:
-                    flash(f'MISP event {e.id} created on {lookyloo.misp.client.root_url}', 'success')
+                    flash(f'MISP event {e.id} created on {misp.client.root_url}', 'success')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    else:
-        # the 1st attribute in the event is the link to lookyloo
-        existing_misp_url = lookyloo.misp.get_existing_event_url(event[-1].attributes[0].value)
-
-    fav_tags = lookyloo.misp.get_fav_tags()
-    cache = lookyloo.capture_cache(tree_uuid)
-
-    return render_template('misp_push_view.html', tree_uuid=tree_uuid,
-                           event=event[0], fav_tags=fav_tags,
-                           existing_event=existing_misp_url,
-                           auto_publish=lookyloo.misp.auto_publish,
-                           has_parent=True if cache and cache.parent else False,
-                           default_tags=lookyloo.misp.default_tags)
 
 
 @app.route('/tree/<string:tree_uuid>/modules', methods=['GET'])
@@ -786,8 +802,8 @@ def tree(tree_uuid: str, node_uuid: Optional[str]=None):
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,
-                               misp_push=lookyloo.misp.available and lookyloo.misp.enable_push,
-                               misp_lookup=lookyloo.misp.available and lookyloo.misp.enable_lookup,
+                               misp_push=lookyloo.misps.available and lookyloo.misps.default_misp.enable_push,
+                               misp_lookup=lookyloo.misps.available and lookyloo.misps.default_misp.enable_lookup,
                                blur_screenshot=blur_screenshot, urlnode_uuid=hostnode_to_highlight,
                                auto_trigger_modules=auto_trigger_modules,
                                confirm_message=confirm_message if confirm_message else 'Tick to confirm.',
