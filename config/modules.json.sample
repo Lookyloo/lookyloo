@@ -81,7 +81,7 @@
     "VirusTotal": "Module to query Virustotal: https://www.virustotal.com/",
     "PhishingInitiative": "Module to query phishing initiative: https://phishing-initiative.fr/contrib/",
     "SaneJS": "Module to query SaneJS: https://github.com/Lookyloo/sanejs",
-    "MISP": "Module to query MISP: https://www.misp-project.org/",
+    "MultipleMISPs": "Module to query one or more MISP(s): https://www.misp-project.org/",
     "UniversalWhois": "Module to query a local instance of uWhoisd: https://github.com/Lookyloo/uwhoisd",
     "UrlScan": "Module to query urlscan.io",
     "Phishtank": "Module to query Phishtank Lookup (https://github.com/Lookyloo/phishtank-lookup). URL set to none means querying the public instance.",
