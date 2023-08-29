@@ -52,7 +52,7 @@ from .helpers import (get_captures_dir, get_email_template,
                       uniq_domains, ParsedUserAgent, load_cookies, UserAgents,
                       get_useragent_for_requests)
 from .indexing import Indexing
-from .modules import (MISPs, MISP, PhishingInitiative, UniversalWhois,
+from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
                       RiskIQ, RiskIQError, Pandora, URLhaus)
 
@@ -1203,16 +1203,14 @@ class Lookyloo():
 
         return [event]
 
-    def get_misp_instance(self, instance_name: Optional[str]=None) -> MISP:
-        if instance_name:
-            if misp := self.misps.get(instance_name):
-                return misp
-            self.logger.warning(f'Unable to connect to MISP Instance {instance_name}, falling back to default.')
-
-        return self.misps.default_misp
-
     def get_misp_occurrences(self, capture_uuid: str, /, *, instance_name: Optional[str]=None) -> Optional[Tuple[Dict[str, Set[str]], str]]:
-        misp = self.get_misp_instance(instance_name)
+        if instance_name is None:
+            misp = self.misps.default_misp
+        elif self.misps.get(instance_name) is not None:
+            misp = self.misps[instance_name]
+        else:
+            self.logger.warning(f'MISP instance "{instance_name}" does not exists.')
+            return None
 
         if not misp.available:
             return None

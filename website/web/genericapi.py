@@ -192,8 +192,15 @@ class MISPPush(Resource):
     def get(self, capture_uuid: str, instance_name: Optional[str]=None):
         with_parents = True if request.args.get('with_parents') else False
         allow_duplicates = True if request.args.get('allow_duplicates') else False
+
+        if instance_name is None:
+            misp = lookyloo.misps.default_misp
+        elif lookyloo.misps.get(instance_name) is not None:
+            misp = lookyloo.misps[instance_name]
+        else:
+            return {'error': f'MISP instance "{instance_name}" does not exists.'}
+
         to_return: Dict = {}
-        misp = self.get_misp_instance(instance_name)
         if not misp.available:
             to_return['error'] = 'MISP module not available.'
         elif not misp.enable_push:
@@ -209,7 +216,7 @@ class MISPPush(Resource):
                 else:
                     events_to_return = []
                     for e in new_events:
-                        events_to_return.append(e.to_json(indent=2))
+                        events_to_return.append(json.loads(e.to_json()))
                     return events_to_return
 
         return to_return
@@ -219,9 +226,14 @@ class MISPPush(Resource):
         parameters: Dict = request.get_json(force=True)
         with_parents = True if parameters.get('with_parents') else False
         allow_duplicates = True if parameters.get('allow_duplicates') else False
+        if instance_name is None:
+            misp = lookyloo.misps.default_misp
+        elif lookyloo.misps.get(instance_name) is not None:
+            misp = lookyloo.misps[instance_name]
+        else:
+            return {'error': f'MISP instance "{instance_name}" does not exists.'}
 
         to_return: Dict = {}
-        misp = self.get_misp_instance(instance_name)
         if not misp.available:
             to_return['error'] = 'MISP module not available.'
         elif not misp.enable_push:
@@ -237,7 +249,7 @@ class MISPPush(Resource):
                 else:
                     events_to_return = []
                     for e in new_events:
-                        events_to_return.append(e.to_json(indent=2))
+                        events_to_return.append(json.loads(e.to_json()))
                     return events_to_return
 
         return to_return
