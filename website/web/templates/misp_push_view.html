@@ -4,7 +4,7 @@
 </br>
 <div class="btn-group" role="group" aria-label="MISP Selector" id="mispSelector">
   {%for name in misp_instances_settings %}
-  <button type="button" value="{{name.replace(' ', '_')}}"
+  <button type="button" value="push_{{name.replace(' ', '_')}}"
           class="btn btn-outline-primary {%if name == current_misp%}active{%endif%}" href="#">{{name}}</a></li>
   {%endfor%}
 </div>
@@ -13,7 +13,7 @@
 
 <div id="allInstances">
 {%for name, misp_settings in misp_instances_settings.items() %}
-<div id="{{name.replace(' ', '_')}}" {%if name != current_misp%}style="display:none"{%endif%}>
+<div id="push_{{name.replace(' ', '_')}}" {%if name != current_misp%}style="display:none"{%endif%}>
   <form role="form" action="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
         method=post enctype=multipart/form-data>
     <label for="misp_instance_name" class="col-sm-2 col-form-label">Submit event to:</label>

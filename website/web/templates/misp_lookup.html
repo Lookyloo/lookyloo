@@ -9,7 +9,7 @@
 </br>
 <div class="btn-group" role="group" aria-label="MISP Selector" id="mispSelector">
   {%for name in misps_occurrences %}
-  <button type="button" value="{{name.replace(' ', '_')}}" class="btn btn-outline-primary {%if name == current_misp%}active{%endif%}" href="#">{{name}}</a></li>
+  <button type="button" value="lookup_{{name.replace(' ', '_')}}" class="btn btn-outline-primary {%if name == current_misp%}active{%endif%}" href="#">{{name}}</a></li>
   {%endfor%}
 </div>
 {%endif%}
@@ -17,7 +17,7 @@
 
 <div id="allInstances">
 {% for name, occurrences in misps_occurrences.items() %}
-<div id="{{name.replace(' ', '_')}}" {%if name != current_misp%}style="display:none"{%endif%}>
+<div id="lookup_{{name.replace(' ', '_')}}" {%if name != current_misp%}style="display:none"{%endif%}>
 {% set hits, root_url = occurrences %}
 {% if hits %}
   <ul>
