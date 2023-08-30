@@ -13,7 +13,7 @@ from werkzeug.security import check_password_hash
 from lacuscore import CaptureStatus as CaptureStatusCore
 from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo.comparator import Comparator
-from lookyloo.exceptions import MissingUUID
+from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.lookyloo import Lookyloo, CaptureSettings
 
 from .helpers import build_users_table, load_user_from_request, src_request_ip
@@ -35,6 +35,12 @@ token_request_fields = api.model('AuthTokenFields', {
     'username': fields.String(description="Your username", required=True),
     'password': fields.String(description="Your password", required=True),
 })
+
+
+@api.errorhandler(NoValidHarFile)
+def handle_no_HAR_file_exception(error):
+    '''The capture has no HAR file, it failed for some reason.'''
+    return {'message': str(error)}, 400
 
 
 @api.route('/json/get_token')
