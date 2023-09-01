@@ -619,6 +619,20 @@ files = [
 ]
 
 [[package]]
+name = "exceptiongroup"
+version = "1.1.3"
+description = "Backport of PEP 654 (exception groups)"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "exceptiongroup-1.1.3-py3-none-any.whl", hash = "sha256:343280667a4585d195ca1cf9cef84a4e178c4b6cf2274caef9859782b567d5e3"},
+    {file = "exceptiongroup-1.1.3.tar.gz", hash = "sha256:097acd85d473d75af5bb98e41b61ff7fe35efe6675e4f9370ec6ec5126d160e9"},
+]
+
+[package.extras]
+test = ["pytest (>=6)"]
+
+[[package]]
 name = "executing"
 version = "1.2.0"
 description = "Get the currently executing AST node of a frame, and other information"
@@ -1122,13 +1136,13 @@ test-extra = ["curio", "matplotlib (!=3.2.0)", "nbformat", "numpy (>=1.21)", "pa
 
 [[package]]
 name = "ipython"
-version = "8.14.0"
+version = "8.15.0"
 description = "IPython: Productive Interactive Computing"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "ipython-8.14.0-py3-none-any.whl", hash = "sha256:248aca623f5c99a6635bc3857677b7320b9b8039f99f070ee0d20a5ca5a8e6bf"},
-    {file = "ipython-8.14.0.tar.gz", hash = "sha256:1d197b907b6ba441b692c48cf2a3a2de280dc0ac91a3405b39349a50272ca0a1"},
+    {file = "ipython-8.15.0-py3-none-any.whl", hash = "sha256:45a2c3a529296870a97b7de34eda4a31bee16bc7bf954e07d39abe49caf8f887"},
+    {file = "ipython-8.15.0.tar.gz", hash = "sha256:2baeb5be6949eeebf532150f81746f8333e2ccce02de1c7eedde3f23ed5e9f1e"},
 ]
 
 [package.dependencies]
@@ -1136,6 +1150,7 @@ appnope = {version = "*", markers = "sys_platform == \"darwin\""}
 backcall = "*"
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
 decorator = "*"
+exceptiongroup = {version = "*", markers = "python_version < \"3.11\""}
 jedi = ">=0.16"
 matplotlib-inline = "*"
 pexpect = {version = ">4.3", markers = "sys_platform != \"win32\""}
@@ -1147,9 +1162,9 @@ traitlets = ">=5"
 typing-extensions = {version = "*", markers = "python_version < \"3.10\""}
 
 [package.extras]
-all = ["black", "curio", "docrepr", "ipykernel", "ipyparallel", "ipywidgets", "matplotlib", "matplotlib (!=3.2.0)", "nbconvert", "nbformat", "notebook", "numpy (>=1.21)", "pandas", "pytest (<7)", "pytest (<7.1)", "pytest-asyncio", "qtconsole", "setuptools (>=18.5)", "sphinx (>=1.3)", "sphinx-rtd-theme", "stack-data", "testpath", "trio", "typing-extensions"]
+all = ["black", "curio", "docrepr", "exceptiongroup", "ipykernel", "ipyparallel", "ipywidgets", "matplotlib", "matplotlib (!=3.2.0)", "nbconvert", "nbformat", "notebook", "numpy (>=1.21)", "pandas", "pytest (<7)", "pytest (<7.1)", "pytest-asyncio", "qtconsole", "setuptools (>=18.5)", "sphinx (>=1.3)", "sphinx-rtd-theme", "stack-data", "testpath", "trio", "typing-extensions"]
 black = ["black"]
-doc = ["docrepr", "ipykernel", "matplotlib", "pytest (<7)", "pytest (<7.1)", "pytest-asyncio", "setuptools (>=18.5)", "sphinx (>=1.3)", "sphinx-rtd-theme", "stack-data", "testpath", "typing-extensions"]
+doc = ["docrepr", "exceptiongroup", "ipykernel", "matplotlib", "pytest (<7)", "pytest (<7.1)", "pytest-asyncio", "setuptools (>=18.5)", "sphinx (>=1.3)", "sphinx-rtd-theme", "stack-data", "testpath", "typing-extensions"]
 kernel = ["ipykernel"]
 nbconvert = ["nbconvert"]
 nbformat = ["nbformat"]
@@ -1246,24 +1261,24 @@ referencing = ">=0.28.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.6.8"
+version = "1.6.10"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.6.8-py3-none-any.whl", hash = "sha256:424aef2c7f57ef45c845719c5c0c4b715106aadbf93b14fd7c8c72208c055ebe"},
-    {file = "lacuscore-1.6.8.tar.gz", hash = "sha256:c3b7cefbaa576fdce67b41de6d005ad0196b58bec551ebe3899f23bf6ff378e1"},
+    {file = "lacuscore-1.6.10-py3-none-any.whl", hash = "sha256:d4b8410718f41da31e8fe0f9ff20271c9e3109e055f83bd4491a5f20104390b2"},
+    {file = "lacuscore-1.6.10.tar.gz", hash = "sha256:0f6f6aa42af73e1bbbcbfc66437078a2f62cbaf461b0782a96d9f9cab201824d"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.21.6,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.21.8,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=4.6.0,<5.0.0", extras = ["hiredis"]}
 requests = ">=2.31.0,<3.0.0"
 ua-parser = ">=0.18.0,<0.19.0"
 
 [package.extras]
-docs = ["Sphinx (>=7.1.2,<8.0.0)"]
+docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
 
 [[package]]
 name = "lief"
@@ -1884,13 +1899,13 @@ typing-extensions = {version = "*", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "playwrightcapture"
-version = "1.21.6"
+version = "1.21.8"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.21.6-py3-none-any.whl", hash = "sha256:bbf70d31dccc2e950da37b19c385ad4a1db785dcb5004f4a1033ebd314c418ff"},
-    {file = "playwrightcapture-1.21.6.tar.gz", hash = "sha256:4df09f0731e55dcb85c7dd7fc26489da9d243227412ed3f24c2379e9bbef8ee0"},
+    {file = "playwrightcapture-1.21.8-py3-none-any.whl", hash = "sha256:197ab42b9452df15ca506bc3292dbaf87910a7a772a0117584b6acd727b84966"},
+    {file = "playwrightcapture-1.21.8.tar.gz", hash = "sha256:592914c75bbbd5897fc675870f289c6a4a8f18ada918a5dfd5923780fa51128e"},
 ]
 
 [package.dependencies]
@@ -3165,4 +3180,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "96abeb4dd1b7f6963d1a77adf41b1bea6a38667561d75663ab7643a502c37e14"
+content-hash = "029556a0fbccb3d82ed8576435269ae19a9620fc7f027acd6ca70a05668a0fdf"
