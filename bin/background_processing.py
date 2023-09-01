@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import time
 import logging
 import logging.config
 from collections import Counter
@@ -73,39 +74,59 @@ class Processing(AbstractManager):
     def _retry_failed_enqueue(self):
         '''If enqueuing failed, the settings are added, with a UUID in the 'to_capture key', and they have a UUID'''
         for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf'):
-            if (self.lookyloo.redis.hexists(uuid, 'not_queued')
-                    or self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]):
-                self.logger.info(f'Found a non-queued capture ({uuid}), retrying now.')
-                # This capture couldn't be queued and we created the uuid locally
-                query = self.lookyloo.redis.hgetall(uuid)
-                try:
-                    self.lookyloo.lacus.enqueue(
-                        url=query.get('url', None),
-                        document_name=query.get('document_name', None),
-                        document=query.get('document', None),
-                        # depth=query.get('depth', 0),
-                        browser=query.get('browser', None),
-                        device_name=query.get('device_name', None),
-                        user_agent=query.get('user_agent', None),
-                        proxy=query.get('proxy', None),
-                        general_timeout_in_sec=query.get('general_timeout_in_sec', None),
-                        cookies=query.get('cookies', None),
-                        headers=query.get('headers', None),
-                        http_credentials=query.get('http_credentials', None),
-                        viewport=query.get('viewport', None),
-                        referer=query.get('referer', None),
-                        rendered_hostname_only=query.get('rendered_hostname_only', True),
-                        # force=query.get('force', False),
-                        # recapture_interval=query.get('recapture_interval', 300),
-                        priority=query.get('priority', None),
-                        uuid=uuid
-                    )
-                except Exception as e:
-                    self.logger.warning(f'Still unable to enqueue capture: {e}')
-                    break
+            try_reenqueue = False
+            if self.lookyloo.redis.hexists(uuid, 'not_queued'):
+                # The capture is marked as not queued
+                try_reenqueue = True
+            elif self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                # The capture is unknown on lacus side. It might be a race condition.
+                # Let's retry a few times.
+                retry = 3
+                while retry > 0:
+                    if self.lookyloo.lacus.get_capture_status(uuid) not in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                        # Was a race condition, the UUID is being processed by Lacus
+                        break
+                    retry -= 1
+                    time.sleep(3)
                 else:
-                    self.lookyloo.redis.hdel(uuid, 'not_queued')
-                    self.logger.info(f'{uuid} enqueued.')
+                    # UUID is still unknown
+                    try_reenqueue = True
+            if not try_reenqueue:
+                continue
+            self.logger.info(f'Found a non-queued capture ({uuid}), retrying now.')
+            # This capture couldn't be queued and we created the uuid locally
+            query = self.lookyloo.redis.hgetall(uuid)
+            try:
+                new_uuid = self.lookyloo.lacus.enqueue(
+                    url=query.get('url', None),
+                    document_name=query.get('document_name', None),
+                    document=query.get('document', None),
+                    # depth=query.get('depth', 0),
+                    browser=query.get('browser', None),
+                    device_name=query.get('device_name', None),
+                    user_agent=query.get('user_agent', None),
+                    proxy=query.get('proxy', None),
+                    general_timeout_in_sec=query.get('general_timeout_in_sec', None),
+                    cookies=query.get('cookies', None),
+                    headers=query.get('headers', None),
+                    http_credentials=query.get('http_credentials', None),
+                    viewport=query.get('viewport', None),
+                    referer=query.get('referer', None),
+                    rendered_hostname_only=query.get('rendered_hostname_only', True),
+                    # force=query.get('force', False),
+                    # recapture_interval=query.get('recapture_interval', 300),
+                    priority=query.get('priority', None),
+                    uuid=uuid
+                )
+                if new_uuid != uuid:
+                    # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
+                    self.logger.warning(f'Had to change the capture UUID (duplicate). Old: {uuid} / New: {new_uuid}')
+            except Exception as e:
+                self.logger.warning(f'Still unable to enqueue capture: {e}')
+                break
+            else:
+                self.lookyloo.redis.hdel(uuid, 'not_queued')
+                self.logger.info(f'{uuid} enqueued.')
 
 
 def main():
