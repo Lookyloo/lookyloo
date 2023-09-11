@@ -587,6 +587,11 @@ class Lookyloo():
     def _prepare_lacus_query(self, query: CaptureSettings) -> CaptureSettings:
         # Remove the none, it makes redis unhappy
         query = {k: v for k, v in query.items() if v is not None}  # type: ignore
+
+        if 'url' in query and query['url'] is not None:
+            # Make sure the URL does not have any space or newline
+            query['url'] = query['url'].strip()
+
         # NOTE: Lookyloo' capture can pass a do not track header independently from the default headers, merging it here
         headers = query.pop('headers', {})
         if 'dnt' in query:
