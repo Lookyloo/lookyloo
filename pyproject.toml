@@ -73,7 +73,7 @@ pyfaup = "^1.2"
 chardet = "^5.2.0"
 pysecuritytxt = "^1.1.2"
 pylookyloomonitoring = "^1.1.1"
-pytz = {"version" = "^2023.3", python = "<3.9"}
+pytz = {"version" = "^2023.3.post1", python = "<3.9"}
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.5.1"
@@ -87,7 +87,7 @@ types-pkg-resources = "^0.1.3"
 types-Deprecated = "^1.2.9.3"
 types-python-dateutil = "^2.8.19.14"
 types-beautifulsoup4 = "^4.12.0.6"
-types-Pillow = "^10.0.0.2"
+types-Pillow = "^10.0.0.3"
 types-pytz = "^2023.3.0.1"
 
 [build-system]
