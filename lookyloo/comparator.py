@@ -22,6 +22,8 @@ class CompareSettings(TypedDict):
     ressources_ignore_domains: Tuple[str, ...]
     ressources_ignore_regexes: Tuple[str, ...]
 
+    ignore_ips: bool
+
 
 class Comparator():
 
@@ -46,7 +48,7 @@ class Comparator():
             to_return['ip_address'] = str(node.ip_address)
         return to_return
 
-    def _compare_nodes(self, left: Dict[str, str], right: Dict[str, str], /, different: bool) -> Tuple[bool, Dict[str, Any]]:
+    def _compare_nodes(self, left: Dict[str, str], right: Dict[str, str], /, different: bool, ignore_ips: bool) -> Tuple[bool, Dict[str, Any]]:
         to_return = {}
         # URL
         if left['url'] != right['url']:
@@ -64,7 +66,7 @@ class Comparator():
             to_return['url'] = {'message': 'The nodes have the same URL.',
                                 'details': left['url']}
         # IP in HAR
-        if left.get('ip_address') and right.get('ip_address'):
+        if not ignore_ips and left.get('ip_address') and right.get('ip_address'):
             if left['ip_address'] != right['ip_address']:
                 different = True
                 to_return['ip'] = {'message': 'The nodes load content from different IPs.',
@@ -189,14 +191,7 @@ class Comparator():
             to_return['redirects']['length'] = {'message': 'The captures have the same number of redirects',
                                                 'details': left['redirects']['length']}
 
-        # Compare chain of redirects
-        for redirect_left, redirect_right in zip(right['redirects']['nodes'], left['redirects']['nodes']):
-            if isinstance(to_return['redirects']['nodes'], list):
-                different, node_compare = self._compare_nodes(redirect_left, redirect_right, different)
-                to_return['redirects']['nodes'].append(node_compare)
-
-        # Compare all ressources URLs
-        to_return['ressources'] = {}
+        # Prepare settings
         _settings: Optional[CompareSettings]
         if settings:
             # cleanup the settings
@@ -204,10 +199,19 @@ class Comparator():
             _ignore_regexes = set(settings['ressources_ignore_regexes'] if settings.get('ressources_ignore_regexes') else [])
             _settings = {
                 'ressources_ignore_domains': tuple(_ignore_domains),
-                'ressources_ignore_regexes': tuple(_ignore_regexes)
+                'ressources_ignore_regexes': tuple(_ignore_regexes),
+                'ignore_ips': bool(settings.get('ignore_ips'))
             }
         else:
             _settings = None
+
+        # Compare chain of redirects
+        for redirect_left, redirect_right in zip(right['redirects']['nodes'], left['redirects']['nodes']):
+            if isinstance(to_return['redirects']['nodes'], list):  # NOTE always true, but makes mypy happy.
+                different, node_compare = self._compare_nodes(redirect_left, redirect_right, different, _settings['ignore_ips'] if _settings is not None else False)
+                to_return['redirects']['nodes'].append(node_compare)
+
+        # Compare all ressources URLs
         ressources_left = {url for url, hostname in left['ressources']
                            if not _settings
                            or (not hostname.endswith(_settings['ressources_ignore_domains'])
@@ -216,6 +220,8 @@ class Comparator():
                             if not _settings
                             or (not hostname.endswith(_settings['ressources_ignore_domains'])
                                 and not any(fnmatch.fnmatch(url, regex) for regex in _settings['ressources_ignore_regexes']))}
+
+        to_return['ressources'] = {}
         if present_in_both := ressources_left & ressources_right:
             to_return['ressources']['both'] = sorted(present_in_both)
         if present_left := ressources_left - ressources_right:
