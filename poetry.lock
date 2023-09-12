@@ -2147,13 +2147,13 @@ docs = ["Sphinx (>=7.0.1,<8.0.0)"]
 
 [[package]]
 name = "pylookyloomonitoring"
-version = "1.1.1"
+version = "1.1.2"
 description = "Python API to connect to lookyloo monitoring"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylookyloomonitoring-1.1.1-py3-none-any.whl", hash = "sha256:6496f78d7bb9221bfcd260b3fdb71671f64c5bfe2b372aeebc9572be0646bdcd"},
-    {file = "pylookyloomonitoring-1.1.1.tar.gz", hash = "sha256:56a65209f86721ff0410c8aa267ae7235a594b4189cd02985f6cbef5031c3643"},
+    {file = "pylookyloomonitoring-1.1.2-py3-none-any.whl", hash = "sha256:66adda13c4fcd340a3be96f9bb832a2f4d1fd19a1b7cb815c6e7cbbeacf673e0"},
+    {file = "pylookyloomonitoring-1.1.2.tar.gz", hash = "sha256:aaf02701ab8f2fd7b863600dcf20b18f50a966f9c847c4f791c322804a4c9777"},
 ]
 
 [package.dependencies]
@@ -3180,4 +3180,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "3bfb0c7e6b093a7abf0c9358e79b6223a50d4f3241313967ea0bfe157ee9fc9d"
+content-hash = "41184ccb4810f47a9ab9516cce9f02c71b12a2a944d648a8e11f9d711ca75ef5"
