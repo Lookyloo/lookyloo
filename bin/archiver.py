@@ -226,9 +226,8 @@ class Archiver(AbstractManager):
                     (capture_path / 'tree.pickle').unlink(missing_ok=True)
                     (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
                     shutil.move(str(capture_path), str(dest_dir))
-                if captures:
-                    # we archived some captures, update relevant index
-                    self._update_index(captures[0].parent)
+                # we archived some captures, update relevant index
+                self._update_index(dest_dir)
                 if not archiving_done:
                     break
             else:
