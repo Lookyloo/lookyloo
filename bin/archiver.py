@@ -44,11 +44,13 @@ class Archiver(AbstractManager):
                 self.logger.warning('Shutdown requested, breaking.')
                 break
             archiving_done = self._archive()
-            self._update_all_capture_indexes()
             self._load_indexes()
             # The HARs are supposedly all compressed so this call shouldn't be required
             # unless you're processing old captures for the first time.
             # self._compress_hars()
+        if not self.shutdown_requested():
+            # This call takes a very long time on MinIO
+            self._update_all_capture_indexes()
 
     def _update_index(self, root_dir: Path) -> None:
         current_index: Dict[str, str] = {}
@@ -224,6 +226,13 @@ class Archiver(AbstractManager):
                     (capture_path / 'tree.pickle').unlink(missing_ok=True)
                     (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
                     shutil.move(str(capture_path), str(dest_dir))
+                if captures:
+                    # we archived some captures, update relevant index
+                    self._update_index(captures[0].parent)
+                if not archiving_done:
+                    break
+            else:
+                break
         p.execute()
         if archiving_done:
             self.logger.info('Archiving done.')
