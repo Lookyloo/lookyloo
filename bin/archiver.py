@@ -35,12 +35,20 @@ class Archiver(AbstractManager):
         self._load_indexes()
 
     def _to_run_forever(self):
-        self._archive()
-        self._update_all_capture_indexes()
-        self._load_indexes()
-        # The HARs are supposedly all compressed so this call shouldn't be required
-        # unless you're processing old captures for the first time.
-        # self._compress_hars()
+        archiving_done = False
+        # NOTE: When we archive a big directory, moving *a lot* of files, expecially to MinIO
+        # can take a very long time. In order to avoid being stuck on the archiving, we break that in chunks
+        # but we also want to keep archiving without waiting 1h between each run.
+        while not archiving_done:
+            if self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
+            archiving_done = self._archive()
+            self._update_all_capture_indexes()
+            self._load_indexes()
+            # The HARs are supposedly all compressed so this call shouldn't be required
+            # unless you're processing old captures for the first time.
+            # self._compress_hars()
 
     def _update_index(self, root_dir: Path) -> None:
         current_index: Dict[str, str] = {}
@@ -156,6 +164,8 @@ class Archiver(AbstractManager):
         archive_interval = timedelta(days=get_config('generic', 'archive'))
         cut_time = (datetime.now() - archive_interval).date()
         cut_time = cut_time.replace(day=1)
+        self.logger.info('Archiving all captures older than {cut_time.isoformat()}.')
+        archiving_done = True
 
         # Format:
         # { 2020: { 12: [(directory, uuid)] } }
@@ -179,7 +189,7 @@ class Archiver(AbstractManager):
                 if timestamp.date() >= cut_time:
                     continue
                 to_archive[timestamp.year][timestamp.month].append(capture_uuid.parent)
-                self.logger.info(f'Archiving {capture_uuid.parent}.')
+                self.logger.debug(f'Archiving {capture_uuid.parent}.')
 
         if not to_archive:
             self.logger.info('Nothing to archive.')
@@ -190,14 +200,16 @@ class Archiver(AbstractManager):
             for month, captures in month_captures.items():
                 dest_dir = self.archived_captures_dir / str(year) / f'{month:02}'
                 dest_dir.mkdir(parents=True, exist_ok=True)
-                capture_breakpoint = 1000
+                capture_breakpoint = 100
+                self.logger.info(f'{len(captures)} captures to archive in {year}-{month}.')
                 for capture_path in captures:
                     capture_breakpoint -= 1
                     if capture_breakpoint <= 0:
                         # Break and restart later
                         self.logger.info('Archived many captures in {year}-{month}, will keep going later.')
+                        archiving_done = False
                         break
-                    elif capture_breakpoint % 100:
+                    elif capture_breakpoint % 10:
                         # Just check if we requested a shutdown.
                         if self.shutdown_requested():
                             self.logger.warning('Shutdown requested, breaking.')
@@ -213,8 +225,9 @@ class Archiver(AbstractManager):
                     (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
                     shutil.move(str(capture_path), str(dest_dir))
         p.execute()
-
-        self.logger.info('Archiving done.')
+        if archiving_done:
+            self.logger.info('Archiving done.')
+        return archiving_done
 
     def _compress_hars(self):
         """This method is very slow (it checks every single capture for non-compressed HARs)
