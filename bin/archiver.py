@@ -164,7 +164,7 @@ class Archiver(AbstractManager):
         archive_interval = timedelta(days=get_config('generic', 'archive'))
         cut_time = (datetime.now() - archive_interval).date()
         cut_time = cut_time.replace(day=1)
-        self.logger.info('Archiving all captures older than {cut_time.isoformat()}.')
+        self.logger.info(f'Archiving all captures older than {cut_time.isoformat()}.')
         archiving_done = True
 
         # Format:
@@ -206,7 +206,7 @@ class Archiver(AbstractManager):
                     capture_breakpoint -= 1
                     if capture_breakpoint <= 0:
                         # Break and restart later
-                        self.logger.info('Archived many captures in {year}-{month}, will keep going later.')
+                        self.logger.info(f'Archived many captures in {year}-{month}, will keep going later.')
                         archiving_done = False
                         break
                     elif capture_breakpoint % 10:
