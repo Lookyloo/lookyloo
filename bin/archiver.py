@@ -15,8 +15,8 @@ from typing import Dict, List, Optional
 
 from redis import Redis
 
-from lookyloo.default import AbstractManager, get_config, get_homedir, get_socket_path
-from lookyloo.helpers import get_captures_dir
+from lookyloo.default import AbstractManager, get_config, get_homedir, get_socket_path, try_make_file
+from lookyloo.helpers import get_captures_dir, is_locked
 
 logging.config.dictConfig(get_config('logging'))
 
@@ -205,6 +205,16 @@ class Archiver(AbstractManager):
                 capture_breakpoint = 100
                 self.logger.info(f'{len(captures)} captures to archive in {year}-{month}.')
                 for capture_path in captures:
+                    lock_file = capture_path / 'lock'
+                    if try_make_file(lock_file):
+                        # Lock created, we can process
+                        with lock_file.open('w') as f:
+                            f.write(f"{datetime.now().isoformat()};{os.getpid()}")
+                    else:
+                        # The directory is locked because a pickle is being created, try again later
+                        if is_locked(capture_path):
+                            # call this method to remove dead locks
+                            continue
                     capture_breakpoint -= 1
                     if capture_breakpoint <= 0:
                         # Break and restart later
@@ -216,16 +226,21 @@ class Archiver(AbstractManager):
                         if self.shutdown_requested():
                             self.logger.warning('Shutdown requested, breaking.')
                             break
-                    p.delete(str(capture_path))
                     # If the HAR isn't archived yet, archive it before copy
                     for har in capture_path.glob('*.har'):
                         with har.open('rb') as f_in:
                             with gzip.open(f'{har}.gz', 'wb') as f_out:
                                 shutil.copyfileobj(f_in, f_out)
                         har.unlink()
-                    (capture_path / 'tree.pickle').unlink(missing_ok=True)
-                    (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
-                    shutil.move(str(capture_path), str(dest_dir))
+                    try:
+                        (capture_path / 'tree.pickle').unlink(missing_ok=True)
+                        (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
+                        shutil.move(str(capture_path), str(dest_dir))
+                        p.delete(str(capture_path))
+                    except OSError as e:
+                        self.logger.warning(f'Unable to archive capture: {e}')
+                    finally:
+                        lock_file.unlink(missing_ok=True)
                 # we archived some captures, update relevant index
                 self._update_index(dest_dir)
                 if not archiving_done:
