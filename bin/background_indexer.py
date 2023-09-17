@@ -67,7 +67,10 @@ class BackgroundIndexer(AbstractManager):
                     if cached_path.exists():
                         # Both paths exist, move the one that isn't in lookup_dirs
                         self.logger.critical(f'Duplicate UUID for {uuid} in {cached_path} and {uuid_path.parent}, discarding the latest')
-                        shutil.move(str(uuid_path.parent), str(self.discarded_captures_dir / uuid_path.parent.name))
+                        try:
+                            shutil.move(str(uuid_path.parent), str(self.discarded_captures_dir / uuid_path.parent.name))
+                        except FileNotFoundError as e:
+                            self.logger.warning(f'Unable to move capture: {e}')
                         continue
                     else:
                         # The path in lookup_dirs for that UUID doesn't exists, just update it.
@@ -89,8 +92,12 @@ class BackgroundIndexer(AbstractManager):
             except Exception:
                 self.logger.exception(f'Unable to build pickle for {uuid}: {uuid_path.parent.name}')
                 # The capture is not working, moving it away.
-                self.lookyloo.redis.hdel('lookup_dirs', uuid)
-                shutil.move(str(uuid_path.parent), str(self.discarded_captures_dir / uuid_path.parent.name))
+                try:
+                    shutil.move(str(uuid_path.parent), str(self.discarded_captures_dir / uuid_path.parent.name))
+                    self.lookyloo.redis.hdel('lookup_dirs', uuid)
+                except FileNotFoundError as e:
+                    self.logger.warning(f'Unable to move capture: {e}')
+                    continue
             if max_captures <= 0:
                 self.logger.info('Too many captures in the backlog, start from the beginning.')
                 return False
