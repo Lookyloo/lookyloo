@@ -102,14 +102,19 @@ class Archiver(AbstractManager):
                 continue
             with uuid_file.open() as _f:
                 uuid = _f.read().strip()
-                if not uuid:
-                    self.logger.warning(f'{uuid_file} is empty')
-                    shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures'))
+                try:
+                    if not uuid:
+                        self.logger.warning(f'{uuid_file} is empty')
+                        shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures'))
+                        continue
+                    if uuid in current_index:
+                        self.logger.warning(f'Duplicate UUID ({uuid}) in {current_index[uuid]} and {uuid_file.parent.name}')
+                        shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures'))
+                        continue
+                except OSError as e:
+                    self.logger.warning(f'Error when discarding capture {capture_dir}: {e}')
                     continue
-                if uuid in current_index:
-                    self.logger.warning(f'Duplicate UUID ({uuid}) in {current_index[uuid]} and {uuid_file.parent.name}')
-                    shutil.move(str(capture_dir), str(get_homedir() / 'discarded_captures'))
-                    continue
+
                 current_index[uuid] = uuid_file.parent.name
 
         if not current_index:
