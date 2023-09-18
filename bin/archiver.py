@@ -204,6 +204,7 @@ class Archiver(AbstractManager):
                 dest_dir.mkdir(parents=True, exist_ok=True)
                 capture_breakpoint = 100
                 self.logger.info(f'{len(captures)} captures to archive in {year}-{month}.')
+                locks_to_clear: List[Path] = []
                 for capture_path in captures:
                     lock_file = capture_path / 'lock'
                     if try_make_file(lock_file):
@@ -240,9 +241,11 @@ class Archiver(AbstractManager):
                     except OSError as e:
                         self.logger.warning(f'Unable to archive capture: {e}')
                     finally:
-                        lock_file.unlink(missing_ok=True)
+                        locks_to_clear.append(dest_dir / capture_path.name / 'lock')
                 # we archived some captures, update relevant index
                 self._update_index(dest_dir)
+                for lock in locks_to_clear:
+                    lock.unlink(missing_ok=True)
                 if not archiving_done:
                     break
             else:
