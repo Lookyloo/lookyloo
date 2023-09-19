@@ -61,7 +61,7 @@ class Archiver(AbstractManager):
 
         self.logger.debug(f'Updating index for {root_dir}')
         index_file = root_dir / 'index'
-        existing_captures_names = {existing_capture.name for existing_capture in index_file.parent.iterdir()
+        existing_captures_names = {existing_capture.name for existing_capture in root_dir.iterdir()
                                    if existing_capture.name != 'index'}
         if index_file.exists():
             # Skip index if the directory has been archived.
