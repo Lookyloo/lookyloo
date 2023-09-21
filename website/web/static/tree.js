@@ -609,7 +609,8 @@ function update(root, computed_node_width=0) {
                             d3.select('#tooltip').style('opacity', 0)
                         });
                   } else {
-                    d3.select(this).append('image')
+                    if (favicon) {
+                      d3.select(this).append('image')
                         .attr('x', selected_node_bbox.width/6)
                         .attr('y', node_height - 1)
                         .attr('id', 'favicon')
@@ -624,7 +625,8 @@ function update(root, computed_node_width=0) {
                               .style('top', `${event.pageY + 10}px`)
                               .text('Potential favicon.');
                         });
-
+                    }
+                    if (screenshot_thumbnail) {
                       d3.select(this).append("svg").append('rect')
                         .attr('x', selected_node_bbox.width/2)
                         .attr('y', node_height - 3)
@@ -654,6 +656,7 @@ function update(root, computed_node_width=0) {
                         .on('mouseout', (event, d) => {
                             d3.select('#tooltip').style('opacity', 0)
                         });
+                    }
                   }
                 };
 
