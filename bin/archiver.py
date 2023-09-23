@@ -200,7 +200,7 @@ class Archiver(AbstractManager):
 
         if not to_archive:
             self.logger.info('Nothing to archive.')
-            return
+            return archiving_done
 
         for year, month_captures in to_archive.items():
             for month, captures in month_captures.items():
