@@ -55,9 +55,14 @@ jobs:
           poetry run tools/3rdparty.py
           poetry run start
 
+      - name: Clone PyLookyloo
+        uses: actions/checkout@v4
+        with:
+          repository: Lookyloo/PyLookyloo
+          path: PyLookyloo
+
       - name: Install pylookyloo and run test
         run: |
-          git clone https://github.com/Lookyloo/PyLookyloo.git
           pushd PyLookyloo
           poetry install
           poetry run python -m pytest tests/testing_github.py
