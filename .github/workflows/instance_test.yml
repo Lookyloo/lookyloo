@@ -60,7 +60,7 @@ jobs:
           git clone https://github.com/Lookyloo/PyLookyloo.git
           pushd PyLookyloo
           poetry install
-          poetry run python tests/testing_github.py
+          poetry run python -m pytest tests/testing_github.py
           popd
 
       - name: Stop instance

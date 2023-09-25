@@ -1077,21 +1077,21 @@ testing = ["flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs
 
 [[package]]
 name = "importlib-resources"
-version = "6.0.1"
+version = "6.1.0"
 description = "Read resources from Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "importlib_resources-6.0.1-py3-none-any.whl", hash = "sha256:134832a506243891221b88b4ae1213327eea96ceb4e407a00d790bb0626f45cf"},
-    {file = "importlib_resources-6.0.1.tar.gz", hash = "sha256:4359457e42708462b9626a04657c6208ad799ceb41e5c58c57ffa0e6a098a5d4"},
+    {file = "importlib_resources-6.1.0-py3-none-any.whl", hash = "sha256:aa50258bbfa56d4e33fbd8aa3ef48ded10d1735f11532b8df95388cc6bdb7e83"},
+    {file = "importlib_resources-6.1.0.tar.gz", hash = "sha256:9d48dcccc213325e810fd723e7fbb45ccb39f6cf5c31f00cf2b965f5f10f3cb9"},
 ]
 
 [package.dependencies]
 zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
+testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff", "zipp (>=3.17)"]
 
 [[package]]
 name = "ipython"
@@ -1221,13 +1221,13 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "jsonschema"
-version = "4.19.0"
+version = "4.19.1"
 description = "An implementation of JSON Schema validation for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jsonschema-4.19.0-py3-none-any.whl", hash = "sha256:043dc26a3845ff09d20e4420d6012a9c91c9aa8999fa184e7efcfeccb41e32cb"},
-    {file = "jsonschema-4.19.0.tar.gz", hash = "sha256:6e1e7569ac13be8139b2dd2c21a55d350066ee3f80df06c608b398cdc6f30e8f"},
+    {file = "jsonschema-4.19.1-py3-none-any.whl", hash = "sha256:cd5f1f9ed9444e554b38ba003af06c0a8c2868131e56bfbef0550fb450c0330e"},
+    {file = "jsonschema-4.19.1.tar.gz", hash = "sha256:ec84cc37cfa703ef7cd4928db24f9cb31428a5d0fa77747b8b51a847458e0bbf"},
 ]
 
 [package.dependencies]
@@ -1954,13 +1954,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.0.20230919"
+version = "0.10.0.20230920"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.0.20230919-py2.py3-none-any.whl", hash = "sha256:31bfc7035dddae547eba69c7976337517bb46e70e12f5b3e650b2493f59f60cc"},
-    {file = "publicsuffixlist-0.10.0.20230919.tar.gz", hash = "sha256:c89486256a43c00c42dd92ac19cb5921255d5d0f37e5bdc4bc95a4e126c17649"},
+    {file = "publicsuffixlist-0.10.0.20230920-py2.py3-none-any.whl", hash = "sha256:3ef6fabdbde3bbdb2d0a340496552ddb78343b49e1504bd405f19409d21e2639"},
+    {file = "publicsuffixlist-0.10.0.20230920.tar.gz", hash = "sha256:e12a7cbb224027e4a0d30bfa4e336430e08a94bfdcff64e858fd5bc86d8166d1"},
 ]
 
 [package.extras]
@@ -2135,20 +2135,19 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.21.0"
+version = "1.21.1"
 description = "Python CLI and module for Lookyloo"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylookyloo-1.21.0-py3-none-any.whl", hash = "sha256:846c5544aa4842813a78d0385d0f05da269f6760268a58cdd5c91bd9d4ab5f4d"},
-    {file = "pylookyloo-1.21.0.tar.gz", hash = "sha256:799456641ea6dc875b347a8906a17328a2e5bc09365f3f5de2b384e4bd38b754"},
+    {file = "pylookyloo-1.21.1-py3-none-any.whl", hash = "sha256:2cd443b27e708c592634e844c1dce3917593ae6a54f2f4b0e8990fdc278cd2f0"},
 ]
 
 [package.dependencies]
 requests = ">=2.31.0,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=7.0.1,<8.0.0)"]
+docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
 
 [[package]]
 name = "pylookyloomonitoring"
@@ -2680,13 +2679,13 @@ tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
 name = "tldextract"
-version = "3.5.0"
+version = "3.6.0"
 description = "Accurately separates a URL's subdomain, domain, and public suffix, using the Public Suffix List (PSL). By default, this includes the public ICANN TLDs and their exceptions. You can optionally support the Public Suffix List's private domains as well."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "tldextract-3.5.0-py3-none-any.whl", hash = "sha256:2cb271ca8d06ea1630a1361b58edad14e0cf81f34ce3c90b052854528fe2a281"},
-    {file = "tldextract-3.5.0.tar.gz", hash = "sha256:4df1c65b95be61d59428e8611e955e54e6f1d4483d3e8d5733d3a9062155e910"},
+    {file = "tldextract-3.6.0-py3-none-any.whl", hash = "sha256:30a492de80f4de215aa998588ba5c2e625ee74ace3a2705cfb52b0021053bcbe"},
+    {file = "tldextract-3.6.0.tar.gz", hash = "sha256:a5d8b6583791daca268a7592ebcf764152fa49617983c49916ee9de99b366222"},
 ]
 
 [package.dependencies]
@@ -2806,24 +2805,24 @@ files = [
 
 [[package]]
 name = "types-pytz"
-version = "2023.3.1.0"
+version = "2023.3.1.1"
 description = "Typing stubs for pytz"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-pytz-2023.3.1.0.tar.gz", hash = "sha256:8e7d2198cba44a72df7628887c90f68a568e1445f14db64631af50c3cab8c090"},
-    {file = "types_pytz-2023.3.1.0-py3-none-any.whl", hash = "sha256:a660a38ed86d45970603e4f3b4877c7ba947668386a896fb5d9589c17e7b8407"},
+    {file = "types-pytz-2023.3.1.1.tar.gz", hash = "sha256:cc23d0192cd49c8f6bba44ee0c81e4586a8f30204970fc0894d209a6b08dab9a"},
+    {file = "types_pytz-2023.3.1.1-py3-none-any.whl", hash = "sha256:1999a123a3dc0e39a2ef6d19f3f8584211de9e6a77fe7a0259f04a524e90a5cf"},
 ]
 
 [[package]]
 name = "types-redis"
-version = "4.6.0.6"
+version = "4.6.0.7"
 description = "Typing stubs for redis"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.6.0.6.tar.gz", hash = "sha256:7865a843802937ab2ddca33579c4e255bfe73f87af85824ead7a6729ba92fc52"},
-    {file = "types_redis-4.6.0.6-py3-none-any.whl", hash = "sha256:e0e9dcc530623db3a41ec058ccefdcd5c7582557f02ab5f7aa9a27fe10a78d7e"},
+    {file = "types-redis-4.6.0.7.tar.gz", hash = "sha256:28c4153ddb5c9d4f10def44a2454673c361d2d5fc3cd867cf3bb1520f3f59a38"},
+    {file = "types_redis-4.6.0.7-py3-none-any.whl", hash = "sha256:05b1bf92879b25df20433fa1af07784a0d7928c616dc2ebf9087618db77ccbd0"},
 ]
 
 [package.dependencies]
@@ -2832,13 +2831,13 @@ types-pyOpenSSL = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.31.0.2"
+version = "2.31.0.4"
 description = "Typing stubs for requests"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-requests-2.31.0.2.tar.gz", hash = "sha256:6aa3f7faf0ea52d728bb18c0a0d1522d9bfd8c72d26ff6f61bfc3d06a411cf40"},
-    {file = "types_requests-2.31.0.2-py3-none-any.whl", hash = "sha256:56d181c85b5925cbc59f4489a57e72a8b2166f18273fd8ba7b6fe0c0b986f12a"},
+    {file = "types-requests-2.31.0.4.tar.gz", hash = "sha256:a111041148d7e04bf100c476bc4db3ee6b0a1cd0b4018777f6a660b1c4f1318d"},
+    {file = "types_requests-2.31.0.4-py3-none-any.whl", hash = "sha256:c7a9d6b62776f21b169a94a0e9d2dfcae62fa9149f53594ff791c3ae67325490"},
 ]
 
 [package.dependencies]
@@ -2908,13 +2907,13 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "2.0.4"
+version = "2.0.5"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "urllib3-2.0.4-py3-none-any.whl", hash = "sha256:de7df1803967d2c2a98e4b11bb7d6bd9210474c46e8a0401514e3a42a75ebde4"},
-    {file = "urllib3-2.0.4.tar.gz", hash = "sha256:8d22f86aae8ef5e410d4f539fde9ce6b2113a001bb4d189e0aed70642d602b11"},
+    {file = "urllib3-2.0.5-py3-none-any.whl", hash = "sha256:ef16afa8ba34a1f989db38e1dbbe0c302e4289a47856990d0682e374563ce35e"},
+    {file = "urllib3-2.0.5.tar.gz", hash = "sha256:13abf37382ea2ce6fb744d4dad67838eec857c9f4f57009891805e0b5e123594"},
 ]
 
 [package.extras]
@@ -3185,4 +3184,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "7d09609a286ae35d447bccbe13317860d10874a80815b27591935d4ddb244fd2"
+content-hash = "604a267042e330b1e56285e379e46b2aa816a0fe5dc9a40deeb3faa54f8a82dc"
