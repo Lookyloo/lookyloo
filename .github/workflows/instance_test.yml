@@ -31,11 +31,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: redis/redis
-          path: ../redis
+          path: redis-tmp
           ref: 7.2
 
       - name: Install and setup redis
         run: |
+          mv redis-tmp ../redis
           pushd ..
           pushd redis
           make
