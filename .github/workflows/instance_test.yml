@@ -27,12 +27,17 @@ jobs:
           python-version: ${{matrix.python-version}}
           cache: 'poetry'
 
+      - name: Clone Redis
+        uses: actions/checkout@v4
+        with:
+          repository: redis/redis
+          path: ../redis
+          ref: 7.2
+
       - name: Install and setup redis
         run: |
           pushd ..
-          git clone https://github.com/antirez/redis.git
           pushd redis
-          git checkout 7.0
           make
           popd
           popd
