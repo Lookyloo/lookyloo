@@ -71,3 +71,9 @@ jobs:
       - name: Stop instance
         run: |
           poetry run stop
+
+      - name: Logs
+        if: ${{ always() }}
+        run: |
+          cat logs/*.log
+          cat website/logs/*.log
