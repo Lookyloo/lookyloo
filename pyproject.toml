@@ -40,7 +40,7 @@ requests = "^2.31.0"
 flask = "^2.3.3"
 gunicorn = "^21.2.0"
 charset-normalizer = "^3.2.0"
-redis = {version = "^5.0.0", extras = ["hiredis"]}
+redis = {version = "^5.0.1", extras = ["hiredis"]}
 beautifulsoup4 = "^4.12.2"
 bootstrap-flask = "^2.3.0"
 defang = "^0.5.3"
