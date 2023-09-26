@@ -241,17 +241,20 @@
           {{ popup_icons_response(url['url_object'], tree_uuid) }}
 
           {% if url['url_object'].downloaded_filename %}
+          <div>
             {% if has_pandora %}
-            <div> Downloaded file: <b>{{url['url_object'].downloaded_filename}}</b> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})</div>
-            {{ pandora_submit() }}
+              <div> Downloaded file: <b>{{url['url_object'].downloaded_filename}}</b> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})</div>
+              {{ pandora_submit() }}
             {% else %}
-            <a href="{{ url_for('data', tree_uuid=tree_uuid)}}">
-              Download {{url['url_object'].downloaded_filename}}
-            </a> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})
+              <a href="{{ url_for('data', tree_uuid=tree_uuid)}}">
+                Download {{url['url_object'].downloaded_filename}}
+              </a> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})
             {% endif%}
+          </div>
+          {% endif%}
 
-          {% else %}
-            {% if url['url_object'].rendered_html %}
+          {% if url['url_object'].rendered_html %}
+          <div>
             <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
                 Download rendered HTML page
             </a>({{ sizeof_fmt(url['url_object'].rendered_html.getbuffer().nbytes)}})
@@ -259,18 +262,19 @@
             <a href="{{ url_for('urlnode_urls_in_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
                 Download URLs in rendered HTML page
             </a>
-            {% endif %}
-            <div>
+          </div>
+          {% endif %}
+
+          <div>
             {% if url['url_object'].empty_response %}
-            Empty body.
+            Empty HTML body.
             {% else %}
-            {{ ressource_legitimacy_details(url['legitimacy'], url['url_object'].body.getbuffer().nbytes) }}
-            {% if has_pandora %}
-            {{ pandora_submit(url['url_object'].uuid) }}
+              {{ ressource_legitimacy_details(url['legitimacy'], url['url_object'].body.getbuffer().nbytes) }}
+              {% if has_pandora %}
+                {{ pandora_submit(url['url_object'].uuid) }}
+              {% endif %}
             {% endif %}
-            {% endif %}
-            </div>
-          {%endif%}
+          </div>
 
 
           {% if url['known_content'] %}
