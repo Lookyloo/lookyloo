@@ -3,7 +3,10 @@
 import base64
 import hashlib
 import json
+
+from io import BytesIO
 from typing import Any, Dict, Optional
+from zipfile import ZipFile
 
 import flask_login  # type: ignore
 from flask import request, send_file
@@ -460,6 +463,21 @@ class CaptureExport(Resource):
     @api.produces(['application/zip'])
     def get(self, capture_uuid: str):
         return send_file(lookyloo.get_capture(capture_uuid), mimetype='application/zip')
+
+
+@api.route('/bin/<string:capture_uuid>/data')
+@api.doc(description='Get the file downloaded by the capture.',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureData(Resource):
+
+    @api.produces(['application/zip'])
+    def get(self, capture_uuid: str):
+        filename, data = lookyloo.get_data(capture_uuid)
+        to_return = BytesIO()
+        with ZipFile(to_return, 'w') as z:
+            z.writestr(filename, data.getvalue())
+        to_return.seek(0)
+        return send_file(to_return, mimetype='application/zip')
 
 
 # Compare captures (WiP)
