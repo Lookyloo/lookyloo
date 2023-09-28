@@ -323,7 +323,8 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
         ['request_cookie', {path: "/static/cookie_read.png", tooltip: "cookie(s) sent to the server in the request"}],
         ['response_cookie', {path: "/static/cookie_received.png", tooltip: "cookie(s) received in the response"}],
         ['redirect', {path: "/static/redirect.png", tooltip: "redirect(s)"}],
-        ['redirect_to_nothing', {path: "/static/cookie_in_url.png", tooltip: "redirect(s) to URL(s) missing in the capture"}]
+        ['redirect_to_nothing', {path: "/static/cookie_in_url.png", tooltip: "redirect(s) to URL(s) missing in the capture"}],
+        ['downloaded_filename', {path: "/static/download.png", tooltip: "contains a downloaded file."}]
     ]);
 
     // Put all the icone in one sub svg document
@@ -337,6 +338,8 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
         let counter = 0;
         if (typeof d.data[key] === 'boolean') {
           has_icon = d.data[key];
+        } else if (typeof d.data[key] === 'string') {
+            has_icon = d.data[key];
         } else if (typeof d.data[key] === 'number') {
           has_icon = d.data[key] > 0;
           counter = d.data[key];
@@ -359,7 +362,7 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
                       .style('opacity', 1)
                       .style('left', `${event.pageX + 10}px`)
                       .style('top', `${event.pageY + 10}px`)
-                      .text(`${counter} ${icon_details.tooltip}`);
+                      .text(counter? `${counter} ${icon_details.tooltip}`:icon_details.tooltip);
               })
               .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0));
           if (counter > 0) {
