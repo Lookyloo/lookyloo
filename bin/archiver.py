@@ -61,16 +61,12 @@ class Archiver(AbstractManager):
 
         self.logger.debug(f'Updating index for {root_dir}')
         index_file = root_dir / 'index'
-        existing_captures_names = {existing_capture.name for existing_capture in root_dir.iterdir()
-                                   if existing_capture.is_dir()}
         if index_file.exists():
             # Skip index if the directory has been archived.
             try:
                 with index_file.open('r') as _f:
                     current_index = {uuid: dirname for uuid, dirname in csv.reader(_f)
-                                     if uuid
-                                     and dirname
-                                     and dirname in existing_captures_names}
+                                     if uuid and dirname}
             except Exception as e:
                 # the index file is broken, it will be recreated.
                 self.logger.warning(f'Index for {root_dir} broken, recreating it: {e}')
@@ -78,7 +74,11 @@ class Archiver(AbstractManager):
             if not current_index:
                 index_file.unlink()
 
-        if set(current_index.values()) == existing_captures_names:
+        curent_index_dirs = set(current_index.values())
+
+        existing_captures_names = {existing_capture.name for existing_capture in root_dir.iterdir()
+                                   if (existing_capture.name in curent_index_dirs) or existing_capture.is_dir()}
+        if curent_index_dirs == existing_captures_names:
             # No new captures, quitting
             self.logger.debug(f'No new captures in {root_dir}.')
             return

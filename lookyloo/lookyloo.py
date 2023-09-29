@@ -916,8 +916,12 @@ class Lookyloo():
             # We might have a direct download link, and no screenshot. Assign the thumbnail accordingly.
             try:
                 filename, data = self.get_data(capture_uuid)
-                self.logger.info(f'{capture_uuid} is is a download link, set thumbnail.')
-                error_img = get_homedir() / 'website' / 'web' / 'static' / 'download.png'
+                if filename:
+                    self.logger.info(f'{capture_uuid} is is a download link, set thumbnail.')
+                    error_img = get_homedir() / 'website' / 'web' / 'static' / 'download.png'
+                else:
+                    # No screenshot and no data, it is probably because the capture failed.
+                    error_img = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
             except Exception:
                 # The capture probably doesn't have a screenshot at all, no need to log that as a warning.
                 self.logger.debug(f'Unable to generate the screenshot thumbnail of {capture_uuid}: {e}.')
