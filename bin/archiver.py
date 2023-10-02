@@ -76,14 +76,15 @@ class Archiver(AbstractManager):
 
         curent_index_dirs = set(current_index.values())
 
-        existing_captures_names = {existing_capture.name for existing_capture in root_dir.iterdir()
-                                   if (existing_capture.name in curent_index_dirs) or existing_capture.is_dir()}
-        if curent_index_dirs == existing_captures_names:
+        with os.scandir(root_dir) as it:
+            new_captures = {existing_capture.name for existing_capture in it
+                            if (existing_capture.name not in curent_index_dirs) and existing_capture.is_dir()}
+
+        if not new_captures:
             # No new captures, quitting
             self.logger.debug(f'No new captures in {root_dir}.')
             return
 
-        new_captures = sorted(existing_captures_names - set(current_index.values()), reverse=True)
         self.logger.info(f'{len(new_captures)} new captures in {root_dir}.')
 
         for capture_dir_name in new_captures:
@@ -329,7 +330,7 @@ class Archiver(AbstractManager):
 
 def main():
     a = Archiver()
-    a.run(sleep_in_sec=3600)
+    a.run(sleep_in_sec=36000)
 
 
 if __name__ == '__main__':
