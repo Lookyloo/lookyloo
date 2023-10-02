@@ -54,7 +54,7 @@ class Archiver(AbstractManager):
 
     def _update_index(self, root_dir: Path) -> None:
         current_index: Dict[str, str] = {}
-        if not os.listdir(root_dir):
+        if not any(os.scandir(root_dir)):
             # the directory is empty, we can safely remove it
             root_dir.rmdir()
             return
