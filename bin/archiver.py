@@ -34,6 +34,19 @@ class Archiver(AbstractManager):
 
         self._load_indexes()
 
+        # NOTE 2023-10-03: if we store the archived captures in s3fs (as it is the case in the CIRCL demo instance),
+        # listing the directories directly with s3fs-fuse causes I/O errors and is making the interface unusable.
+        # It is only a problem on directory listing and not when accessing a capture, so we only need to change the way
+        # we generate the index files.
+        # Other issue: the python module s3fs requires urllib < 2.0 (https://github.com/boto/botocore/issues/2926) so
+        # we cannot run the script creating the indexes in the same virtual environment as the rest of the project.
+        # The variable below will only be used to make sure we don't try to trigger a directory listing on a s3fs-fuse mount
+        # and we're going to create the index files from another script, in tools/create_archive_indexes.
+        self.archive_on_s3fs = False
+        s3fs_config = get_config('generic', 's3fs')
+        if s3fs_config.get('archive_on_s3fs'):
+            self.archive_on_s3fs = True
+
     def _to_run_forever(self):
         archiving_done = False
         # NOTE: When we archive a big directory, moving *a lot* of files, expecially to MinIO
@@ -159,6 +172,9 @@ class Archiver(AbstractManager):
                 break
             self._update_index(directory_to_index)
         self.logger.info('Recent indexes updated')
+        if self.archive_on_s3fs:
+            self.logger.info('Not updating indexes as they are on a s3fs-fuse mount.')
+            return
         # Archived captures
         self.logger.info('Update archives indexes')
         for directory_to_index in self._make_dirs_list(self.archived_captures_dir):
@@ -330,7 +346,7 @@ class Archiver(AbstractManager):
 
 def main():
     a = Archiver()
-    a.run(sleep_in_sec=36000)
+    a.run(sleep_in_sec=3600)
 
 
 if __name__ == '__main__':

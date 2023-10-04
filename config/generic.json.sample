@@ -70,6 +70,15 @@
   "archive": 180,
   "max_capture_time": 3600,
   "max_tree_create_time": 120,
+  "s3fs": {
+    "archive_on_s3fs": false,
+    "config": {
+      "key": "",
+      "secret": "",
+      "endpoint_url": "",
+      "bucket_name": ""
+    }
+  },
   "_notes": {
     "loglevel": "(lookyloo) Can be one of the value listed here: https://docs.python.org/3/library/logging.html#levels",
     "only_global_lookups": "Set it to True if your instance is publicly available so users aren't able to scan your internal network",
@@ -100,6 +109,7 @@
     "hide_captures_with_error": "Capturing an URL may result in an error (domain non-existent, HTTP error, ...). They may be useful to see, but if you have a public instance, they will clutter the index.",
     "archive": "The captures older than this value (in days) will be archived. They're not cached by default in the Lookyloo class.",
     "max_capture_time": "The very maximal time we allow a capture to keep going. Should only be triggered by captures that cause playwright to never quit.",
-    "max_tree_create_time": "The max time the generation of a tree is allowed to take"
+    "max_tree_create_time": "The max time the generation of a tree is allowed to take",
+    "s3fs": "The config to access a S3FS instance with the s3fs python module - it is not integrated properly for now as it requires urllib < 2.0 which is a non-started at this stage."
   }
 }
