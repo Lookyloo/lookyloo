@@ -9,7 +9,7 @@ from datetime import date
 from pathlib import Path
 from typing import List, Dict
 
-import s3fs
+import s3fs  # type: ignore
 
 # manual get config file
 
