@@ -1164,7 +1164,7 @@ class Lookyloo():
         # and it has been archived.
         self.get_crawled_tree(capture_uuid)
 
-        # if the file submitted on lookyloo cannot be displayed (PDF), it willbe downloaded.
+        # if the file submitted on lookyloo cannot be displayed (PDF), it will be downloaded.
         # In the case, we want to have it as a FileObject in the export
         filename, pseudofile = self.get_data(capture_uuid)
         if filename:
