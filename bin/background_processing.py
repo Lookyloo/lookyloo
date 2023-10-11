@@ -85,11 +85,13 @@ class Processing(AbstractManager):
                 while retry > 0:
                     if self.lookyloo.lacus.get_capture_status(uuid) not in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
                         # Was a race condition, the UUID is being processed by Lacus
+                        self.logger.info(f'UUID {uuid} was only temporary unknown')
                         break
                     retry -= 1
                     time.sleep(3)
                 else:
                     # UUID is still unknown
+                    self.logger.info(f'UUID {uuid} is still unknown')
                     try_reenqueue = True
             if not try_reenqueue:
                 continue

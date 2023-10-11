@@ -107,7 +107,7 @@ def remove_pickle_tree(capture_dir: Path) -> None:
         pickle_file_gz.unlink()
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=64)
 def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> CrawledTree:
     pickle_file = capture_dir / 'tree.pickle'
     pickle_file_gz = capture_dir / 'tree.pickle.gz'
