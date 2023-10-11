@@ -1,39 +1,33 @@
 #!/usr/bin/env python3
 
-import logging
 import re
 import socket
 
-from typing import Any, Dict, overload, Literal, List, Union
+from typing import overload, Literal, List, Union
 
 from har2tree import CrawledTree, Har2TreeError, HostNode
 
-from ..default import get_config
+from .abstractmodule import AbstractModule
 
 
-class UniversalWhois():
+class UniversalWhois(AbstractModule):
 
-    def __init__(self, config: Dict[str, Any]):
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
-        if not config.get('enabled'):
-            self.available = False
-            self.logger.info('Module not enabled.')
-            return
-        self.server = config.get('ipaddress')
-        self.port = config.get('port')
-        self.allow_auto_trigger = False
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
+    def module_init(self) -> bool:
+        if not self.config.get('enabled'):
+            self.logger.info('Not enabled.')
+            return False
+
+        self.server = self.config.get('ipaddress')
+        self.port = self.config.get('port')
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
 
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.connect((self.server, self.port))
         except Exception as e:
-            self.available = False
             self.logger.warning(f'Unable to connect to uwhois ({self.server}:{self.port}): {e}')
-            return
-        self.available = True
+            return False
+        return True
 
     def query_whois_hostnode(self, hostnode: HostNode) -> None:
         if hasattr(hostnode, 'resolved_ips'):

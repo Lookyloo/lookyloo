@@ -88,7 +88,6 @@ class Lookyloo():
                 self.global_proxy.pop('enable')
 
         self.securitytxt = PySecurityTXT(useragent=get_useragent_for_requests())
-
         self.taxonomies = get_taxonomies()
 
         self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
@@ -98,29 +97,20 @@ class Lookyloo():
         self._priority = get_config('generic', 'priority')
 
         # Initialize 3rd party components
-        self.pi = PhishingInitiative(get_config('modules', 'PhishingInitiative'))
-        if not self.pi.available:
-            self.logger.warning('Unable to setup the PhishingInitiative module')
-
-        self.vt = VirusTotal(get_config('modules', 'VirusTotal'))
-        if not self.vt.available:
-            self.logger.warning('Unable to setup the VirusTotal module')
-
         # ## Initialize MISP(s)
         try_old_config = False
-        if misps_config := get_config('modules', 'MultipleMISPs'):
-            # New config
-            self.misps = MISPs(misps_config)
-            if not self.misps.available:
-                self.logger.warning('Unable to setup the MISP module')
-                try_old_config = True
+        # New config
+        self.misps = MISPs(config_name='MultipleMISPs')
+        if not self.misps.available:
+            self.logger.warning('Unable to setup the MISPs module')
+            try_old_config = True
 
         if try_old_config:
             # Legacy MISP config, now use MultipleMISPs key to support more than one MISP instance
             try:
                 if misp_config := get_config('modules', 'MISP'):
                     misps_config = {'default': 'MISP', 'instances': {'MISP': misp_config}}
-                    self.misps = MISPs(misps_config)
+                    self.misps = MISPs(config=misps_config)
                     if self.misps.available:
                         self.logger.warning('Please migrate the MISP config to the "MultipleMISPs" key in the config, and remove the "MISP" key')
                     else:
@@ -129,38 +119,16 @@ class Lookyloo():
                 # The key was removed from the config, and the sample config
                 pass
 
-        if not self.misps.available:
-            self.logger.info('The MISP module is not configured')
-
         # ## Done with MISP(s)
-
-        self.uwhois = UniversalWhois(get_config('modules', 'UniversalWhois'))
-        if not self.uwhois.available:
-            self.logger.warning('Unable to setup the UniversalWhois module')
-
-        self.urlscan = UrlScan(get_config('modules', 'UrlScan'))
-        if not self.urlscan.available:
-            self.logger.warning('Unable to setup the UrlScan module')
-
-        self.phishtank = Phishtank(get_config('modules', 'Phishtank'))
-        if not self.phishtank.available:
-            self.logger.warning('Unable to setup the Phishtank module')
-
-        self.hashlookup = Hashlookup(get_config('modules', 'Hashlookup'))
-        if not self.hashlookup.available:
-            self.logger.warning('Unable to setup the Hashlookup module')
-
-        self.riskiq = RiskIQ(get_config('modules', 'RiskIQ'))
-        if not self.riskiq.available:
-            self.logger.warning('Unable to setup the RiskIQ module')
-
-        self.pandora = Pandora(get_config('modules', 'Pandora'))
-        if not self.pandora.available:
-            self.logger.warning('Unable to setup the Pandora module')
-
-        self.urlhaus = URLhaus(get_config('modules', 'URLhaus'))
-        if not self.urlhaus.available:
-            self.logger.warning('Unable to setup the URLhaus module')
+        self.pi = PhishingInitiative(config_name='PhishingInitiative')
+        self.vt = VirusTotal(config_name='VirusTotal')
+        self.uwhois = UniversalWhois(config_name='UniversalWhois')
+        self.urlscan = UrlScan(config_name='UrlScan')
+        self.phishtank = Phishtank(config_name='Phishtank')
+        self.hashlookup = Hashlookup(config_name='Hashlookup')
+        self.riskiq = RiskIQ(config_name='RiskIQ')
+        self.pandora = Pandora(config_name='Pandora')
+        self.urlhaus = URLhaus(config_name='URLhaus')
 
         self.monitoring_enabled = False
         if monitoring_config := get_config('generic', 'monitoring'):

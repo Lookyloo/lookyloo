@@ -1,35 +1,31 @@
 #!/usr/bin/env python3
 
-import logging
 from io import BytesIO
-from typing import Any, Dict
+from typing import Dict
 
 from pypandora import PyPandora
 
-from ..default import ConfigError, get_config
+from ..default import ConfigError
 from ..helpers import get_useragent_for_requests
 
+from .abstractmodule import AbstractModule
 
-class Pandora():
 
-    def __init__(self, config: Dict[str, Any]):
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
-        if not config.get('url'):
-            self.available = False
-            return
+class Pandora(AbstractModule):
 
-        self.client = PyPandora(root_url=config['url'], useragent=get_useragent_for_requests())
+    def module_init(self) -> bool:
+        if not self.config.get('url'):
+            self.logger.info('No URL in config.')
+            return False
 
+        self.client = PyPandora(root_url=self.config['url'], useragent=get_useragent_for_requests())
         if not self.client.is_up:
-            self.available = False
-            return
+            self.logger.warning('Not up.')
+            return False
 
-        self.available = True
-        self.allow_auto_trigger = False
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
 
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
+        return True
 
     def capture_default_trigger(self, file_in_memory: BytesIO, filename: str, /, auto_trigger: bool=False) -> Dict:
         '''Automatically submit the file if the landing URL is a file instead of a webpage'''

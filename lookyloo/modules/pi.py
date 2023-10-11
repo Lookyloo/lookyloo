@@ -14,27 +14,25 @@ from ..helpers import get_cache_directory
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 
+from .abstractmodule import AbstractModule
 
-class PhishingInitiative():
 
-    def __init__(self, config: Dict[str, Any]):
-        if not config.get('apikey'):
-            self.available = False
-            return
+class PhishingInitiative(AbstractModule):
 
-        self.available = True
-        self.autosubmit = False
+    def module_init(self) -> bool:
+        if not self.config.get('apikey'):
+            self.logger.info('No API key')
+            return False
+
         self.allow_auto_trigger = False
-        self.client = PyEUPI(config['apikey'])
+        self.client = PyEUPI(self.config['apikey'])
 
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
-
-        if config.get('autosubmit'):
-            self.autosubmit = True
+        self.autosubmit = self.config.get('autosubmit', False)
+        self.allow_auto_trigger = self.config.get('allow_auto_trigger', False)
 
         self.storage_dir_eupi = get_homedir() / 'eupi'
         self.storage_dir_eupi.mkdir(parents=True, exist_ok=True)
+        return True
 
     def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
         url_storage_dir = get_cache_directory(self.storage_dir_eupi, url)

@@ -12,22 +12,22 @@ from ..helpers import get_cache_directory
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 
+from .abstractmodule import AbstractModule
 
-class URLhaus():
 
-    def __init__(self, config: Dict[str, Any]):
-        if not config.get('enabled'):
-            self.available = False
-            return
+class URLhaus(AbstractModule):
 
-        self.available = True
-        self.allow_auto_trigger = False
-        self.url = config.get('url')
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
+    def module_init(self) -> bool:
+        if not self.config.get('enabled'):
+            self.logger.info('Not enabled')
+            return False
+
+        self.url = self.config.get('url')
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
 
         self.storage_dir_uh = get_homedir() / 'urlhaus'
         self.storage_dir_uh.mkdir(parents=True, exist_ok=True)
+        return True
 
     def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
         url_storage_dir = get_cache_directory(self.storage_dir_uh, url, 'url')

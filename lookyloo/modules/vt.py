@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import json
-import logging
 import time
 from datetime import date
 from typing import Any, Dict, Optional, TYPE_CHECKING
@@ -9,35 +8,30 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 import vt  # type: ignore
 from vt.error import APIError  # type: ignore
 
-from ..default import ConfigError, get_homedir, get_config
+from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 
+from .abstractmodule import AbstractModule
 
-class VirusTotal():
 
-    def __init__(self, config: Dict[str, Any]):
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
-        if not config.get('apikey'):
-            self.available = False
-            return
+class VirusTotal(AbstractModule):
 
-        self.available = True
-        self.autosubmit = False
-        self.allow_auto_trigger = False
-        self.client = vt.Client(config['apikey'])
+    def module_init(self) -> bool:
+        if not self.config.get('apikey'):
+            self.logger.info('Not enabled')
+            return False
 
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
+        self.client = vt.Client(self.config['apikey'])
 
-        if config.get('autosubmit'):
-            self.autosubmit = True
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
+        self.autosubmit = bool(self.config.get('autosubmit', False))
 
         self.storage_dir_vt = get_homedir() / 'vt_url'
         self.storage_dir_vt.mkdir(parents=True, exist_ok=True)
+        return True
 
     def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
         url_storage_dir = get_cache_directory(self.storage_dir_vt, vt.url_id(url))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import json
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from har2tree import CrawledTree
 from pyhashlookup import Hashlookup
@@ -9,25 +9,27 @@ from pyhashlookup import Hashlookup
 from ..default import ConfigError
 from ..helpers import get_useragent_for_requests
 
+from .abstractmodule import AbstractModule
 
-class HashlookupModule():
+
+class HashlookupModule(AbstractModule):
     '''This module is a bit different as it will trigger a lookup of all the hashes
     and store the response in the capture directory'''
 
-    def __init__(self, config: Dict[str, Any]):
-        if not config.get('enabled'):
-            self.available = False
-            return
+    def module_init(self) -> bool:
+        if not self.config.get('enabled'):
+            self.logger.info('Not enabled.')
+            return False
 
-        self.available = True
-        self.allow_auto_trigger = False
-        if config.get('url'):
-            self.client = Hashlookup(config['url'], useragent=get_useragent_for_requests())
+        if self.config.get('url'):
+            self.client = Hashlookup(self.config['url'], useragent=get_useragent_for_requests())
         else:
             self.client = Hashlookup(useragent=get_useragent_for_requests())
+        # Makes sure the webservice is reachable, raises an exception otherwise.
+        self.client.info()
 
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
+        return True
 
     def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, auto_trigger: bool=False) -> Dict:
         '''Run the module on all the nodes up to the final redirect'''

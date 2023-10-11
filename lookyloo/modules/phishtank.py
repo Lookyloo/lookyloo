@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, Optional, List, TYPE_CHECKING
 
@@ -12,26 +13,30 @@ from ..helpers import get_cache_directory
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 
+from .abstractmodule import AbstractModule
 
-class Phishtank():
 
-    def __init__(self, config: Dict[str, Any]):
-        if not config.get('enabled'):
-            self.available = False
-            return
+class Phishtank(AbstractModule):
 
-        self.available = True
-        self.allow_auto_trigger = False
-        if config.get('url'):
-            self.client = PhishtankLookup(config['url'])
+    def module_init(self) -> bool:
+        if not self.config.get('enabled'):
+            self.logger.info('Not enabled.')
+            return False
+
+        if self.config.get('url'):
+            self.client = PhishtankLookup(self.config['url'])
         else:
             self.client = PhishtankLookup()
 
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
+        if not self.client.is_up:
+            self.logger.warning('Not up.')
+            return False
+
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
 
         self.storage_dir_pt = get_homedir() / 'phishtank'
         self.storage_dir_pt.mkdir(parents=True, exist_ok=True)
+        return True
 
     def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
         url_storage_dir = get_cache_directory(self.storage_dir_pt, url, 'url')

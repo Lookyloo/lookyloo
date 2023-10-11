@@ -33,7 +33,7 @@ class AsyncCapture(AbstractManager):
         if isinstance(self.lookyloo.lacus, LacusCore):
             self.captures: Set[asyncio.Task] = set()
 
-        self.fox = FOX(get_config('modules', 'FOX'))
+        self.fox = FOX(config_name='FOX')
         if not self.fox.available:
             self.logger.warning('Unable to setup the FOX module')
 

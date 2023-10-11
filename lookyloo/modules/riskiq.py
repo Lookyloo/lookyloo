@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import json
-import logging
 
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, Optional, Union, TYPE_CHECKING
@@ -10,12 +9,14 @@ from urllib.parse import urlparse
 from passivetotal import AccountClient, DnsRequest, WhoisRequest  # type: ignore
 from requests import Response
 
-from ..default import ConfigError, get_homedir, get_config
+from ..default import ConfigError, get_homedir
 from ..exceptions import ModuleError
 from ..helpers import get_cache_directory
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
+
+from .abstractmodule import AbstractModule
 
 
 class RiskIQError(ModuleError):
@@ -24,46 +25,36 @@ class RiskIQError(ModuleError):
         self.response = response
 
 
-class RiskIQ():
+class RiskIQ(AbstractModule):
 
-    def __init__(self, config: Dict[str, Any]):
-        if not (config.get('user') and config.get('apikey')):
-            self.available = False
-            return
-
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
-
-        self.available = True
-        self.allow_auto_trigger = False
+    def module_init(self) -> bool:
+        if not (self.config.get('user') and self.config.get('apikey')):
+            self.logger.info('Missing credentials.')
+            return False
 
         try:
             # Check if account is working
-            test_client = AccountClient(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
+            test_client = AccountClient(username=self.config.get('user'),
+                                        api_key=self.config.get('apikey'), exception_class=RiskIQError)
             details = test_client.get_account_details()
+            self.client_dns = DnsRequest(username=self.config.get('user'),
+                                         api_key=self.config.get('apikey'), exception_class=RiskIQError)
+            self.client_whois = WhoisRequest(username=self.config.get('user'),
+                                             api_key=self.config.get('apikey'), exception_class=RiskIQError)
         except RiskIQError as e:
-            self.available = False
-            if hasattr(e, 'response'):
-                details = e.response.json()
-                if 'message' in details:
-                    self.logger.warning(f'RiskIQ not available, {details["message"]}')
-            self.logger.warning(f'RiskIQ not available: {e}')
-            return
-        except Exception as e:
-            self.available = False
-            self.logger.warning(f'RiskIQ not available: {e}')
-            return
+            details = e.response.json()
+            if 'message' in details:
+                self.logger.warning(f'RiskIQ not available: {details["message"]}')
+            else:
+                self.logger.warning(f'RiskIQ not available: {details}')
+            return False
 
-        self.client_dns = DnsRequest(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
-        self.client_whois = WhoisRequest(username=config.get('user'), api_key=config.get('apikey'), exception_class=RiskIQError)
-
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
-
-        self.default_first_seen = config.get('default_first_seen_in_days', 5)
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
+        self.default_first_seen = self.config.get('default_first_seen_in_days', 5)
 
         self.storage_dir_riskiq = get_homedir() / 'riskiq'
         self.storage_dir_riskiq.mkdir(parents=True, exist_ok=True)
+        return True
 
     def get_passivedns(self, query: str) -> Optional[Dict[str, Any]]:
         # The query can be IP or Hostname. For now, we only do it on domains.

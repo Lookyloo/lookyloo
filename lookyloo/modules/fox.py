@@ -1,36 +1,33 @@
 #!/usr/bin/env python3
 
-import logging
-from typing import Any, Dict
+from typing import Dict
 
 import requests
 
-from ..default import ConfigError, get_config
+from ..default import ConfigError
 from ..helpers import get_useragent_for_requests
 
+from .abstractmodule import AbstractModule
 
-class FOX():
 
-    def __init__(self, config: Dict[str, Any]):
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
-        if not config.get('apikey'):
-            self.available = False
-            return
+class FOX(AbstractModule):
 
-        self.available = True
+    def module_init(self) -> bool:
+        if not self.config.get('apikey'):
+            self.logger.info('No API key.')
+            return False
+
         self.autosubmit = False
         self.allow_auto_trigger = False
         self.client = requests.session()
         self.client.headers['User-Agent'] = get_useragent_for_requests()
-        self.client.headers['X-API-KEY'] = config['apikey']
+        self.client.headers['X-API-KEY'] = self.config['apikey']
         self.client.headers['Content-Type'] = 'application/json'
 
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
+        self.autosubmit = bool(self.config.get('autosubmit', False))
 
-        if config.get('autosubmit'):
-            self.autosubmit = True
+        return True
 
     def capture_default_trigger(self, url: str, /, auto_trigger: bool=False) -> Dict:
         '''Run the module on the initial URL'''

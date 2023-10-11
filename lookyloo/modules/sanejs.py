@@ -1,34 +1,33 @@
 #!/usr/bin/env python3
 
 import json
-import logging
 from datetime import date
-from typing import Any, Dict, Iterable, List, Union
+from typing import Dict, Iterable, List, Union
 
 from pysanejs import SaneJS
 
-from ..default import get_config, get_homedir
+from ..default import get_homedir
+
+from .abstractmodule import AbstractModule
 
 
-class SaneJavaScript():
+class SaneJavaScript(AbstractModule):
 
-    def __init__(self, config: Dict[str, Any]):
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
-        if not config.get('enabled'):
-            self.available = False
-            self.logger.info('Module not enabled.')
-            return
+    def module_init(self) -> bool:
+        if not self.config.get('enabled'):
+            self.logger.info('Not enabled.')
+            return False
+
         self.client = SaneJS()
+
         if not self.client.is_up:
-            self.available = False
-            return
-        self.available = True
-        self.allow_auto_trigger = False
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
+            self.logger.warning('Not up.')
+            return False
+
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
         self.storage_dir = get_homedir() / 'sanejs'
         self.storage_dir.mkdir(parents=True, exist_ok=True)
+        return True
 
     def hashes_lookup(self, sha512: Union[Iterable[str], str], force: bool=False) -> Dict[str, List[str]]:
         if isinstance(sha512, str):

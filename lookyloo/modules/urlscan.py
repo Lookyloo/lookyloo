@@ -1,48 +1,41 @@
 #!/usr/bin/env python3
 
 import json
-import logging
 from datetime import date
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
 import requests
 
-from ..default import ConfigError, get_config, get_homedir
+from ..default import ConfigError, get_homedir
 from ..helpers import get_useragent_for_requests, get_cache_directory
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 
+from .abstractmodule import AbstractModule
 
-class UrlScan():
 
-    def __init__(self, config: Dict[str, Any]):
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
-        if not config.get('apikey'):
-            self.available = False
-            return
+class UrlScan(AbstractModule):
 
-        self.available = True
-        self.autosubmit = False
-        self.allow_auto_trigger = False
+    def module_init(self) -> bool:
+        if not self.config.get('apikey'):
+            self.logger.info('No API key.')
+            return False
+
         self.client = requests.session()
         self.client.headers['User-Agent'] = get_useragent_for_requests()
-        self.client.headers['API-Key'] = config['apikey']
+        self.client.headers['API-Key'] = self.config['apikey']
         self.client.headers['Content-Type'] = 'application/json'
 
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
+        self.autosubmit = bool(self.config.get('autosubmit', False))
 
-        if config.get('autosubmit'):
-            self.autosubmit = True
-
-        if config.get('force_visibility'):
+        if self.config.get('force_visibility'):
             # Cases:
             # 1. False: unlisted for hidden captures / public for others
             # 2. "key": default visibility defined on urlscan.io
             # 3. "public", "unlisted", "private": is set for all submissions
-            self.force_visibility = config['force_visibility']
+            self.force_visibility = self.config['force_visibility']
         else:
             self.force_visibility = False
 
@@ -52,6 +45,7 @@ class UrlScan():
 
         self.storage_dir_urlscan = get_homedir() / 'urlscan'
         self.storage_dir_urlscan.mkdir(parents=True, exist_ok=True)
+        return True
 
     def get_url_submission(self, capture_info: 'CaptureCache') -> Dict[str, Any]:
         url_storage_dir = get_cache_directory(

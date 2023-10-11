@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import logging
 import re
 
 from io import BytesIO
@@ -16,35 +15,31 @@ from pymisp.tools import FileObject, URLObject
 from ..default import get_config, get_homedir
 from ..helpers import get_public_suffix_list
 
+from .abstractmodule import AbstractModule
+
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 
 
-class MISPs(Mapping):
+class MISPs(Mapping, AbstractModule):
 
-    def __init__(self, config: Dict[str, Any]):
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
-
-        if not config.get('default'):
-            self.available = False
+    def module_init(self) -> bool:
+        if not self.config.get('default'):
             self.logger.info('No default instance configured, disabling MISP.')
-            return
-        if not config.get('instances'):
-            self.available = False
+            return False
+        if not self.config.get('instances'):
             self.logger.warning('No MISP instances configured, disabling MISP.')
-            return
+            return False
 
-        self.default_instance = config['default']
+        self.default_instance = self.config['default']
 
-        if self.default_instance not in config['instances']:
-            self.available = False
-            self.logger.warning(f"The default MISP instance ({self.default_instance}) is missing in the instances ({', '.join(config['instances'].keys())}), disabling MISP.")
-            return
+        if self.default_instance not in self.config['instances']:
+            self.logger.warning(f"The default MISP instance ({self.default_instance}) is missing in the instances ({', '.join(self.config['instances'].keys())}), disabling MISP.")
+            return False
 
         self.__misps: Dict[str, 'MISP'] = {}
-        for instance_name, instance_config in config['instances'].items():
-            if misp_connector := MISP(instance_config):
+        for instance_name, instance_config in self.config['instances'].items():
+            if misp_connector := MISP(config=instance_config):
                 if misp_connector.available:
                     self.__misps[instance_name] = misp_connector
                 else:
@@ -53,11 +48,10 @@ class MISPs(Mapping):
                 self.logger.warning(f"Unable to initialize the connector to '{instance_name}'. It won't be available.")
 
         if not self.__misps.get(self.default_instance) or not self.__misps[self.default_instance].available:
-            self.available = False
             self.logger.warning("Unable to initialize the connector to the default MISP instance, disabling MISP.")
-            return
+            return False
 
-        self.available = True
+        return True
 
     def __getitem__(self, name: str) -> 'MISP':
         return self.__misps[name]
@@ -151,39 +145,30 @@ class MISPs(Mapping):
                 obj.add_attributes('ip', *hostnodes[0].resolved_ips)
 
 
-class MISP():
+class MISP(AbstractModule):
 
-    def __init__(self, config: Dict[str, Any]):
-        self.logger = logging.getLogger(f'{self.__class__.__name__}')
-        self.logger.setLevel(get_config('generic', 'loglevel'))
-        if not config.get('apikey'):
-            self.available = False
-            self.logger.info('Module not enabled.')
-            return
+    def module_init(self) -> bool:
+        if not self.config.get('apikey'):
+            self.logger.info('No API key: {self.config}.')
+            return False
 
-        self.available = True
-        self.enable_lookup = False
-        self.enable_push = False
-        self.allow_auto_trigger = False
         try:
-            self.client = PyMISP(url=config['url'], key=config['apikey'],
-                                 ssl=config['verify_tls_cert'], timeout=config['timeout'])
+            self.client = PyMISP(url=self.config['url'], key=self.config['apikey'],
+                                 ssl=self.config['verify_tls_cert'], timeout=self.config['timeout'])
         except Exception as e:
-            self.available = False
             self.logger.warning(f'Unable to connect to MISP: {e}')
-            return
+            return False
 
-        if config.get('enable_lookup'):
-            self.enable_lookup = True
-        if config.get('enable_push'):
-            self.enable_push = True
-        if config.get('allow_auto_trigger'):
-            self.allow_auto_trigger = True
-        self.default_tags: List[str] = config.get('default_tags')  # type: ignore
-        self.auto_publish = config.get('auto_publish')
+        self.enable_lookup = bool(self.config.get('enable_lookup', False))
+        self.enable_push = bool(self.config.get('enable_push', False))
+        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
+
+        self.default_tags: List[str] = self.config.get('default_tags')  # type: ignore
+        self.auto_publish = bool(self.config.get('auto_publish', False))
         self.storage_dir_misp = get_homedir() / 'misp'
         self.storage_dir_misp.mkdir(parents=True, exist_ok=True)
         self.psl = get_public_suffix_list()
+        return True
 
     def get_fav_tags(self):
         return self.client.tags(pythonify=True, favouritesOnly=1)
