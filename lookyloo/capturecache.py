@@ -95,6 +95,8 @@ class CaptureCache():
     def tree(self) -> CrawledTree:
         if not self.capture_dir.exists():
             raise MissingCaptureDirectory(f'The capture {self.uuid} does not exists in {self.capture_dir}.')
+        while is_locked(self.capture_dir):
+            time.sleep(5)
         return load_pickle_tree(self.capture_dir, self.capture_dir.stat().st_mtime, self.logger)
 
 
