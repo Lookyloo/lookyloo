@@ -1959,13 +1959,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.0.20231002"
+version = "0.10.0.20231020"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.0.20231002-py2.py3-none-any.whl", hash = "sha256:81990427ec5dbdc8f2620c1775d5bc47ba54fe44b4e64797d06040d708d67171"},
-    {file = "publicsuffixlist-0.10.0.20231002.tar.gz", hash = "sha256:a8ef3f5745196fd956bcf6f425b5000450896c616ee6e95130e147e2fae10ccc"},
+    {file = "publicsuffixlist-0.10.0.20231020-py2.py3-none-any.whl", hash = "sha256:bf1477ee8e8412781d6e8a9cc6077413b6ab34b69d38604d4ed246c44c2cd010"},
+    {file = "publicsuffixlist-0.10.0.20231020.tar.gz", hash = "sha256:e56a21e7158856f56f826a78c6da54e75ad74826431f49633e92e992f1663bef"},
 ]
 
 [package.extras]
@@ -2126,13 +2126,13 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.6.2"
+version = "1.7.0"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylacus-1.6.2-py3-none-any.whl", hash = "sha256:3c52e49f06e2facfc5ae36af4166b6bac61b8d715b324fcb696b11cc5a779a94"},
-    {file = "pylacus-1.6.2.tar.gz", hash = "sha256:dfb8e7db551fe7b1f58292ff89988b18251f51446aa43e087b8600d310786049"},
+    {file = "pylacus-1.7.0-py3-none-any.whl", hash = "sha256:4d33a66f57631489d0e38cb8520dbe9b120435c7aadc2ecce0337a70d46b381a"},
+    {file = "pylacus-1.7.0.tar.gz", hash = "sha256:a7e34919b4ff3130ab576a854e97a0243eab20301754a9e232f301d939421ccb"},
 ]
 
 [package.dependencies]
@@ -2257,13 +2257,13 @@ requests = ">=2.31.0,<3.0.0"
 
 [[package]]
 name = "pysecuritytxt"
-version = "1.1.2"
+version = "1.2.0"
 description = "Python CLI and module for querying security.txt files on domains."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pysecuritytxt-1.1.2-py3-none-any.whl", hash = "sha256:f4f6c7cc58e208885454b97f318bfc9df7591c045d215eb48b76a5dd5c7037c4"},
-    {file = "pysecuritytxt-1.1.2.tar.gz", hash = "sha256:8ca67a2ad8d794fd1f5a5f9430a65b36c6cec69a2e648d0ecc760d997d2d63c3"},
+    {file = "pysecuritytxt-1.2.0-py3-none-any.whl", hash = "sha256:720ef8038df6eb39b40d63fa530d7f20091e470111703596cc654dcecf6f3a80"},
+    {file = "pysecuritytxt-1.2.0.tar.gz", hash = "sha256:dec98e2c708e0c70122e6c2d062d812a835d90c39102ed382fc7fe4d200f7b97"},
 ]
 
 [package.dependencies]
@@ -3184,4 +3184,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "270e34156026b5b8e1172996a139a00317c9021e0259fd1ccdd1099fe8d9f498"
+content-hash = "9400db3325e19346e80949f35913552685dd24288dc88d23a249d1b24c1dab75"

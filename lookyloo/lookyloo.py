@@ -64,7 +64,7 @@ class CaptureSettings(CaptureSettingsCore, total=False):
     '''The capture settings that can be passed to Lookyloo'''
     listing: Optional[int]
     not_queued: Optional[int]
-    auto_report: Optional[Union[str, Dict[str, str]]]
+    auto_report: Optional[Union[bool, str, Dict[str, str]]]
     dnt: Optional[str]
     browser_name: Optional[str]
     os: Optional[str]
