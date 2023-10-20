@@ -98,12 +98,13 @@ class AsyncCapture(AbstractManager):
 
             if 'auto_report' in to_capture:
                 settings = {}
-                if isinstance(to_capture['auto_report'], int):
-                    # auto_report was a bool in the submission, it can be 1 or 0. 0 means no.
-                    if not to_capture['auto_report']:
-                        continue
-                elif isinstance(to_capture['auto_report'], str):
-                    settings = json.loads(to_capture['auto_report'])
+                if isinstance(to_capture['auto_report'], str):
+                    if to_capture['auto_report'].isdigit():
+                        # auto_report was a bool in the submission, it can be 1 or 0. 0 means no.
+                        if to_capture['auto_report'] == '0':
+                            continue
+                    else:
+                        settings = json.loads(to_capture['auto_report'])
                 elif isinstance(to_capture['auto_report'], dict):
                     settings = to_capture['auto_report']
 
