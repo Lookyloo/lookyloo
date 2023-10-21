@@ -1098,6 +1098,8 @@ class Lookyloo():
 
     def __misp_add_vt_to_URLObject(self, obj: MISPObject) -> Optional[MISPObject]:
         urls = obj.get_attributes_by_relation('url')
+        if not urls:
+            return None
         url = urls[0]
         self.vt.url_lookup(url.value)
         report = self.vt.get_url_lookup(url.value)
