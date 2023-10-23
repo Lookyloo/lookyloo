@@ -39,7 +39,7 @@ python = ">=3.8,<3.12"
 requests = "^2.31.0"
 flask = "^2.3.3"
 gunicorn = "^21.2.0"
-charset-normalizer = "^3.3.0"
+charset-normalizer = "^3.3.1"
 redis = {version = "^5.0.1", extras = ["hiredis"]}
 beautifulsoup4 = "^4.12.2"
 bootstrap-flask = "^2.3.2"
