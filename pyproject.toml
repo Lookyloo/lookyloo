@@ -35,7 +35,7 @@ start_website = "bin.start_website:main"
 
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.13"
+python = ">=3.8,<3.12"
 requests = "^2.31.0"
 flask = "^2.3.3"
 gunicorn = "^21.2.0"
