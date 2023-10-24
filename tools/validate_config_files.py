@@ -22,7 +22,7 @@ def validate_generic_config_file():
     if not user_config.exists():
         # The config file was never created, copy the sample.
         with user_config.open('w') as _fw:
-            json.dump(generic_config_sample, _fw)
+            json.dump(generic_config_sample, _fw, indent=2, sort_keys=True)
 
     with user_config.open() as f:
         generic_config = json.load(f)
