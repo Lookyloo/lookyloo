@@ -400,7 +400,11 @@ class CapturesIndex(Mapping):
         if har_files:
             try:
                 har = HarFile(har_files[0], uuid)
-                cache['title'] = har.initial_title
+                try:
+                    # If encoding fails, the cache cannot be stored in redis and it barfs.
+                    cache['title'] = har.initial_title.encode().decode()
+                except UnicodeEncodeError:
+                    cache['title'] = har.initial_title.encode('utf-8', 'backslashreplace').decode()
                 cache['timestamp'] = har.initial_start_time
                 cache['redirects'] = json.dumps(tree.redirects) if tree else ''
                 cache['user_agent'] = har.root_user_agent if har.root_user_agent else 'No User Agent.'
