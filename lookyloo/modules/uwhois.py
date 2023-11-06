@@ -32,7 +32,12 @@ class UniversalWhois(AbstractModule):
     def query_whois_hostnode(self, hostnode: HostNode) -> None:
         if hasattr(hostnode, 'resolved_ips'):
             ip: str
-            for ip in hostnode.resolved_ips:
+            if 'v4' in hostnode.resolved_ips and 'v6' in hostnode.resolved_ips:
+                _all_ips = set(hostnode.resolved_ips['v4']) | set(hostnode.resolved_ips['v6'])
+            else:
+                # old format
+                _all_ips = hostnode.resolved_ips
+            for ip in _all_ips:
                 self.whois(ip)
         if hasattr(hostnode, 'cnames'):
             cname: str
