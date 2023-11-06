@@ -196,11 +196,14 @@ class Indexing():
 
         :param filter_url: URL of the hash we're searching for
         :param filter_capture_uuid: UUID of the capture the hash was found in
-        :param limit: Max matching captures to return
+        :param limit: Max matching captures to return, -1 means unlimited.
         :param prefered_uuids: UUID cached right now, so we don't rebuild trees.
         '''
         to_return: List[Tuple[str, str, str, bool]] = []
         len_captures = self.redis.scard(f'bh|{body_hash}|captures')
+        unlimited = False
+        if limit == -1:
+            unlimited = True
         for capture_uuid in self.redis.sscan_iter(f'bh|{body_hash}|captures'):
             if capture_uuid == filter_capture_uuid:
                 # Used to skip hits in current capture
@@ -208,7 +211,8 @@ class Indexing():
                 continue
             if prefered_uuids and capture_uuid not in prefered_uuids:
                 continue
-            limit -= 1
+            if not unlimited:
+                limit -= 1
             for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
                 url_uuid, hostnode_uuid, url = entry.split('|', 2)
                 hostname: str = urlsplit(url).hostname
@@ -216,7 +220,7 @@ class Indexing():
                     to_return.append((capture_uuid, hostnode_uuid, hostname, url == filter_url))
                 else:
                     to_return.append((capture_uuid, hostnode_uuid, hostname, False))
-            if limit <= 0:
+            if not unlimited and limit <= 0:
                 break
         return len_captures, to_return
 
