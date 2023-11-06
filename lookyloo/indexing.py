@@ -193,21 +193,22 @@ class Indexing():
                                limit: int=20,
                                prefered_uuids: Set[str]=set()) -> Tuple[int, List[Tuple[str, str, str, bool]]]:
         '''Get the captures matching the hash.
+
         :param filter_url: URL of the hash we're searching for
         :param filter_capture_uuid: UUID of the capture the hash was found in
         :param limit: Max matching captures to return
         :param prefered_uuids: UUID cached right now, so we don't rebuild trees.
         '''
         to_return: List[Tuple[str, str, str, bool]] = []
-        all_captures: Set[str] = self.redis.smembers(f'bh|{body_hash}|captures')
-        len_captures = len(all_captures)
-        for capture_uuid in list(all_captures)[:limit]:
+        len_captures = self.redis.scard(f'bh|{body_hash}|captures')
+        for capture_uuid in self.redis.sscan_iter(f'bh|{body_hash}|captures'):
             if capture_uuid == filter_capture_uuid:
                 # Used to skip hits in current capture
                 len_captures -= 1
                 continue
             if prefered_uuids and capture_uuid not in prefered_uuids:
                 continue
+            limit -= 1
             for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
                 url_uuid, hostnode_uuid, url = entry.split('|', 2)
                 hostname: str = urlsplit(url).hostname
@@ -215,6 +216,8 @@ class Indexing():
                     to_return.append((capture_uuid, hostnode_uuid, hostname, url == filter_url))
                 else:
                     to_return.append((capture_uuid, hostnode_uuid, hostname, False))
+            if limit <= 0:
+                break
         return len_captures, to_return
 
     def get_body_hash_domains(self, body_hash: str) -> List[Tuple[str, float]]:
