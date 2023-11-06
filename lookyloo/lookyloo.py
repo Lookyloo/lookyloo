@@ -1057,7 +1057,7 @@ class Lookyloo():
         Capture UUID avoids duplicates on the same capture'''
         captures_list: Dict[str, List[Tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
         total_captures, details = self.indexing.get_body_hash_captures(blob_hash, url, filter_capture_uuid=capture_uuid, limit=-1,
-                                                                       prefered_uuids=self._captures_index.cached_captures)
+                                                                       prefered_uuids=set(self._captures_index.keys()))
         for h_capture_uuid, url_uuid, url_hostname, same_url in details:
             cache = self.capture_cache(h_capture_uuid)
             if cache and hasattr(cache, 'title'):
