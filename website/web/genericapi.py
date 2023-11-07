@@ -2,6 +2,7 @@
 
 import base64
 import hashlib
+import importlib
 import json
 
 from io import BytesIO
@@ -17,14 +18,13 @@ from lacuscore import CaptureStatus as CaptureStatusCore
 from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
-from lookyloo.lookyloo import Lookyloo, CaptureSettings
+from lookyloo.lookyloo import CaptureSettings
 
 from .helpers import build_users_table, load_user_from_request, src_request_ip
 
 api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
-
-lookyloo: Lookyloo = Lookyloo()
+lookyloo = importlib.import_module('lookyloo', '.')
 comparator: Comparator = Comparator()
 
 

@@ -34,7 +34,7 @@ from werkzeug.security import check_password_hash
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
-from lookyloo.lookyloo import Indexing, Lookyloo, CaptureSettings
+from lookyloo.lookyloo import Lookyloo, CaptureSettings
 
 if sys.version_info < (3, 9):
     from pytz import all_timezones_set
@@ -119,7 +119,6 @@ def logout():
 # Config
 
 lookyloo: Lookyloo = Lookyloo()
-indexing: Indexing = Indexing()
 
 time_delta_on_index = get_config('generic', 'time_delta_on_index')
 blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')
@@ -928,25 +927,25 @@ def index_hidden():
 
 @app.route('/cookies', methods=['GET'])
 def cookies_lookup():
-    cookies_names = [(name, freq, indexing.cookies_names_number_domains(name))
-                     for name, freq in indexing.cookies_names]
+    cookies_names = [(name, freq, lookyloo.indexing.cookies_names_number_domains(name))
+                     for name, freq in lookyloo.indexing.cookies_names]
     return render_template('cookies.html', cookies_names=cookies_names)
 
 
 @app.route('/hhhashes', methods=['GET'])
 def hhhashes_lookup():
-    hhhashes = [(hhh, freq, indexing.http_headers_hashes_number_captures(hhh))
-                for hhh, freq in indexing.http_headers_hashes]
+    hhhashes = [(hhh, freq, lookyloo.indexing.http_headers_hashes_number_captures(hhh))
+                for hhh, freq in lookyloo.indexing.http_headers_hashes]
     return render_template('hhhashes.html', hhhashes=hhhashes)
 
 
 @app.route('/ressources', methods=['GET'])
 def ressources():
     ressources = []
-    for h, freq in indexing.ressources:
-        domain_freq = indexing.ressources_number_domains(h)
+    for h, freq in lookyloo.indexing.ressources:
+        domain_freq = lookyloo.indexing.ressources_number_domains(h)
         context = lookyloo.context.find_known_content(h)
-        capture_uuid, url_uuid, hostnode_uuid = indexing.get_hash_uuids(h)
+        capture_uuid, url_uuid, hostnode_uuid = lookyloo.indexing.get_hash_uuids(h)
         try:
             ressource = lookyloo.get_ressource(capture_uuid, url_uuid, h)
         except MissingUUID:
@@ -960,7 +959,7 @@ def ressources():
 
 @app.route('/categories', methods=['GET'])
 def categories():
-    return render_template('categories.html', categories=indexing.categories)
+    return render_template('categories.html', categories=lookyloo.indexing.categories)
 
 
 @app.route('/rebuild_all')
