@@ -18,13 +18,13 @@ from lacuscore import CaptureStatus as CaptureStatusCore
 from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
-from lookyloo.lookyloo import CaptureSettings
+from lookyloo.lookyloo import CaptureSettings, Lookyloo
 
 from .helpers import build_users_table, load_user_from_request, src_request_ip
 
 api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
-lookyloo = importlib.import_module('lookyloo', '.')
+lookyloo = Lookyloo()
 comparator: Comparator = Comparator()
 
 
