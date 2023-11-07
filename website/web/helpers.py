@@ -11,6 +11,16 @@ import flask_login  # type: ignore
 from werkzeug.security import generate_password_hash
 
 from lookyloo.default import get_config, get_homedir
+from lookyloo.lookyloo import Lookyloo
+
+__global_lookyloo_instance = None
+
+
+def get_lookyloo_instance() -> Lookyloo:
+    global __global_lookyloo_instance
+    if __global_lookyloo_instance is None:
+        __global_lookyloo_instance = Lookyloo()
+    return __global_lookyloo_instance
 
 
 def src_request_ip(request) -> str:

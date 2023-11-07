@@ -44,7 +44,8 @@ else:
 
 from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
-                      load_user_from_request, src_request_ip, sri_load)
+                      load_user_from_request, src_request_ip, sri_load,
+                      get_lookyloo_instance)
 from .proxied import ReverseProxied
 
 logging.config.dictConfig(get_config('logging'))
@@ -118,7 +119,7 @@ def logout():
 
 # Config
 
-lookyloo: Lookyloo = Lookyloo()
+lookyloo: Lookyloo = get_lookyloo_instance()
 
 time_delta_on_index = get_config('generic', 'time_delta_on_index')
 blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')

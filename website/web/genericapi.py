@@ -2,7 +2,6 @@
 
 import base64
 import hashlib
-import importlib
 import json
 
 from io import BytesIO
@@ -20,11 +19,11 @@ from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.lookyloo import CaptureSettings, Lookyloo
 
-from .helpers import build_users_table, load_user_from_request, src_request_ip
+from .helpers import build_users_table, load_user_from_request, src_request_ip, get_lookyloo_instance
 
 api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
-lookyloo = Lookyloo()
+lookyloo: Lookyloo = get_lookyloo_instance()
 comparator: Comparator = Comparator()
 
 
