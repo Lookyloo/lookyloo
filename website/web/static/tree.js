@@ -405,7 +405,10 @@ function text_entry(relative_x_pos, relative_y_pos, d) {
           .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0))
           .text(d => {
             let to_print;
-            if (d.data.name.length > 50) {
+            if (d.data.idna) {
+                to_print = d.data.idna;
+            }
+            else if (d.data.name.length > 50) {
                 to_print = `[...] ${d.data.name.substring(d.data.name.length - 50, d.data.name.length)}`;
             } else {
                 to_print = d.data.name

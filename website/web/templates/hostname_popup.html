@@ -101,8 +101,13 @@
 {% block content %}
   {# Headers #}
   <center>
-    <h3>{{ hostnode.name }}</h3>
-    {% if hostnode.idna %}<h4>({{hostnode.idna}})</h4>{% endif %}
+    {% if hostnode.idna %}
+      <h3>{{hostnode.idna}}
+          </br><small class="text-body-secondary">{{hostnode.name}}</small>
+      </h3>
+    {% else %}
+      <h3>{{hostnode.name}}</h3>
+    {% endif %}
     </br>
     <button type="button" class="btn btn-primary" onclick="whereAmI('{{ hostnode_uuid }}')">Locate in tree</button>
     {% if uwhois_available %}
