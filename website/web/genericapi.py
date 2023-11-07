@@ -472,6 +472,10 @@ class CaptureData(Resource):
     @api.produces(['application/zip'])
     def get(self, capture_uuid: str):
         filename, data = lookyloo.get_data(capture_uuid)
+        if not filename:
+            # This capture didn't trigger a download.
+            filename = 'no_download'
+            data = BytesIO(b"This capture didn't trigger a download")
         to_return = BytesIO()
         with ZipFile(to_return, 'w') as z:
             z.writestr(filename, data.getvalue())
