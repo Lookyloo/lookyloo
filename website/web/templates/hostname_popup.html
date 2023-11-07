@@ -101,7 +101,9 @@
 {% block content %}
   {# Headers #}
   <center>
-      <h3>{{ hostnode.name }}</h3>
+    <h3>{{ hostnode.name }}</h3>
+    {% if hostnode.idna %}<h4>({{hostnode.idna}})</h4>{% endif %}
+    </br>
     <button type="button" class="btn btn-primary" onclick="whereAmI('{{ hostnode_uuid }}')">Locate in tree</button>
     {% if uwhois_available %}
     <a href="{{ url_for('whois', query=hostnode.name) }}" class="btn btn-primary" role="button">
