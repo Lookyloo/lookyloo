@@ -371,14 +371,14 @@ class CaptureCookies(Resource):
 # Just text
 
 auto_report_model = api.model('AutoReportModel', {
-    'email': fields.String(description="Email of the reporter, used by the analyst to get in touch."),
-    'comment': fields.String(description="Description of the URL, will be given to the analyst.")
+    'email': fields.String(description="Email of the reporter, used by the analyst to get in touch.", example=''),
+    'comment': fields.String(description="Description of the URL, will be given to the analyst.", example='')
 })
 
 submit_fields_post = api.model('SubmitFieldsPost', {
-    'url': fields.Url(description="The URL to capture"),
-    'document': fields.String(description="A base64 encoded document, it can be anything a browser can display."),
-    'document_name': fields.String(description="The name of the document."),
+    'url': fields.Url(description="The URL to capture", example=''),
+    'document': fields.String(description="A base64 encoded document, it can be anything a browser can display.", example=''),
+    'document_name': fields.String(description="The name of the document.", example=''),
     'listing': fields.Integer(description="Display the capture on the index", min=0, max=1, example=1),
     'user_agent': fields.String(description="User agent to use for the capture", example=''),
     'browser_name': fields.String(description="Use this browser. Must be chromium, firefox or webkit.", example=''),
