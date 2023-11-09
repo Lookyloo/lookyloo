@@ -569,9 +569,9 @@ class CapturesIndex(Mapping):
                     if 'responses' in ipasn_responses:
                         for response in ipasn_responses['responses']:
                             ip = response['meta']['ip']
-                            r = list(response['response'].values())[0]
-                            if ip not in ipasn and r:
-                                ipasn[ip] = r
+                            if responses := list(response['response'].values()):
+                                if ip not in ipasn and responses[0]:
+                                    ipasn[ip] = responses[0]
 
         if ipasn or cflare_hits:
             # retraverse tree to populate it with the features
