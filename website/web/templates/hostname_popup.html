@@ -11,7 +11,7 @@
 {% from "macros.html" import context_form %}
 {% from "macros.html" import pandora_submit %}
 
-{% block title %}Details for {{ hostnode.name }} {% endblock %}
+{% block title %}Details for {% if hostnode.idna %}{{hostnode.idna}} {%else%} {{ hostnode.name }} {%endif%}{% endblock %}
 
 {% block scripts %}
   {{ super() }}

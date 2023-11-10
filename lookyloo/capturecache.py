@@ -562,7 +562,8 @@ class CapturesIndex(Mapping):
                 try:
                     self.ipasnhistory.mass_cache(ips)
                 except Exception as e:
-                    logger.warning(f'Unable to submit IPs to IPASNHistory: {e}')
+                    logger.warning(f'Unable to submit IPs to IPASNHistory, disabling: {e}')
+                    self.ipasnhistory = None
                 else:
                     time.sleep(2)
                     ipasn_responses = self.ipasnhistory.mass_query(ips)
