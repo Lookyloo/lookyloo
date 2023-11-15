@@ -1497,7 +1497,7 @@ class Lookyloo():
                       ) -> None:
 
         now = datetime.now()
-        dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / now.isoformat()
+        dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / f'{now.day:02}' / now.isoformat()
         safe_create_dir(dirpath)
 
         if os or browser:

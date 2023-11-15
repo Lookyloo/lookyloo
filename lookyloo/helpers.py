@@ -5,12 +5,12 @@ import logging
 import os
 import time
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from functools import lru_cache
 from importlib.metadata import version
 from io import BufferedIOBase
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union, Tuple
 from urllib.parse import urlparse
 
 
@@ -74,6 +74,44 @@ def get_captures_dir() -> Path:
 def get_email_template() -> str:
     with (get_homedir() / 'config' / 'email.tmpl').open() as f:
         return f.read()
+
+
+@lru_cache
+def make_ts_from_dirname(dirname: str) -> datetime:
+    try:
+        return datetime.strptime(dirname, '%Y-%m-%dT%H:%M:%S.%f')
+    except ValueError:
+        return datetime.strptime(dirname, '%Y-%m-%dT%H:%M:%S')
+
+
+def get_sorted_captures_from_disk(captures_dir: Path, /, *,
+                                  cut_time: Optional[Union[datetime, date]]=None,
+                                  keep_more_recent: bool=True) -> List[Tuple[datetime, Path]]:
+    '''Recursively gets all the captures present in a specific directory, doesn't use the indexes.
+
+    NOTE: this method should never be used on archived captures as it's going to take forever on S3
+    '''
+
+    all_paths: List[Tuple[datetime, Path]] = []
+    for entry in captures_dir.iterdir():
+        if not entry.is_dir():
+            # index file
+            continue
+        if entry.name.isdigit():
+            # sub directory
+            all_paths += get_sorted_captures_from_disk(entry, cut_time=cut_time, keep_more_recent=keep_more_recent)
+        else:
+            # capture directory
+            capture_time = make_ts_from_dirname(entry.name)
+            if cut_time:
+                if keep_more_recent and capture_time >= cut_time:
+                    all_paths.append((capture_time, entry))
+                elif capture_time < cut_time:
+                    # keep only older
+                    all_paths.append((capture_time, entry))
+            else:
+                all_paths.append((capture_time, entry))
+    return sorted(all_paths)
 
 
 class UserAgents:
