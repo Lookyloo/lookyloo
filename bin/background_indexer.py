@@ -45,7 +45,7 @@ class BackgroundIndexer(AbstractManager):
         archive_interval = timedelta(days=get_config('generic', 'archive'))
         cut_time = (datetime.now() - archive_interval)
         for month_dir in make_dirs_list(self.lookyloo.capture_dir):
-            for capture_time, path in get_sorted_captures_from_disk(month_dir, cut_time=cut_time, keep_more_recent=True):
+            for capture_time, path in sorted(get_sorted_captures_from_disk(month_dir, cut_time=cut_time, keep_more_recent=True), reverse=True):
                 if ((path / 'tree.pickle.gz').exists() or (path / 'tree.pickle').exists()):
                     # We already have a pickle file
                     self.logger.debug(f'{path} has a pickle.')
