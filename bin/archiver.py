@@ -286,6 +286,7 @@ class Archiver(AbstractManager):
             # archive the capture.
             capture_path = Path(path)
             if not capture_path.exists():
+                self.redis.hdel('lookup_dirs', uuid)
                 if not self.redis.hexists('lookup_dirs_archived', uuid):
                     self.logger.warning(f'Missing capture directory for {uuid}, unable to archive {capture_path}')
                 continue
