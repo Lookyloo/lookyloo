@@ -99,6 +99,9 @@ class Archiver(AbstractManager):
             # * <datetime>
             # * <day> (which contains a <datetime> directory)
             for entry in self.s3fs_client.ls(s3fs_dir, detail=False, refresh=False):
+                if entry.endswith('/'):
+                    # root directory
+                    continue
                 if not self.s3fs_client.isdir(entry):
                     # index
                     continue
@@ -336,7 +339,7 @@ class Archiver(AbstractManager):
                 self.logger.warning('Shutdown requested, breaking.')
                 break
 
-            self.logger.info(f'Loading {index}')
+            self.logger.debug(f'Loading {index}')
             if recent_uuids := self.__load_index(index):
                 self.logger.debug(f'{len(recent_uuids)} captures in directory {index.parent}.')
                 self.redis.hset('lookup_dirs', mapping=recent_uuids)  # type: ignore
