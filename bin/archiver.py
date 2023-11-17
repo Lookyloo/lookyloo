@@ -65,6 +65,8 @@ class Archiver(AbstractManager):
                 break
             archiving_done = self._archive()
             self._load_indexes()
+            if not archiving_done:
+                self._update_all_capture_indexes(recent_only=True)
         if not self.shutdown_requested():
             # This call takes a very long time on MinIO
             self._update_all_capture_indexes()
@@ -193,7 +195,7 @@ class Archiver(AbstractManager):
 
         return index_file
 
-    def _update_all_capture_indexes(self):
+    def _update_all_capture_indexes(self, *, recent_only: bool=False):
         '''Run that after the captures are in the proper directories'''
         # Recent captures
         self.logger.info('Update recent indexes')
@@ -208,6 +210,10 @@ class Archiver(AbstractManager):
                 break
             self._update_index(directory_to_index)
         self.logger.info('Recent indexes updated')
+        if recent_only:
+            self.logger.info('Only updating recent indexes.')
+            return
+
         # Archived captures
         self.logger.info('Update archives indexes')
         for directory_to_index in make_dirs_list(self.archived_captures_dir):
