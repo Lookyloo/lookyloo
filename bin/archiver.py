@@ -120,6 +120,7 @@ class Archiver(AbstractManager):
                     if str(dir_on_disk) not in current_index_dirs:
                         new_captures.add(dir_on_disk)
                     else:
+                        current_dirs.add(str(dir_on_disk))
                         current_dirs.add(dir_on_disk.name)
 
         else:
@@ -139,6 +140,7 @@ class Archiver(AbstractManager):
                         if str(dir_on_disk) not in current_index_dirs:
                             new_captures.add(dir_on_disk)
                         else:
+                            current_dirs.add(str(dir_on_disk))
                             current_dirs.add(dir_on_disk.name)
 
         # Check if all the directories in current_dirs (that we got by listing the directory)
