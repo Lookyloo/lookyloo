@@ -144,11 +144,10 @@ class Archiver(AbstractManager):
                             current_dirs.add(dir_on_disk.name)
 
         # Check if all the directories in current_dirs (that we got by listing the directory)
-        # are the same as the one in the index. If they're not, we pop the UUID before sriting the index
-        if current_dirs != current_index_dirs:
-            non_existing_dirs = current_index_dirs - current_dirs
-            self.logger.info(f'Got {len(non_existing_dirs)} in {root_dir}, removing them from the index.')
-            current_index = {uuid: path for uuid, path in current_index.items() if path not in non_existing_dirs}
+        # are the same as the one in the index. If they're not, we pop the UUID before writing the index
+        if non_existing_dirs := current_index_dirs - current_dirs:
+            self.logger.info(f'Got {len(non_existing_dirs)} non existing dirs in {root_dir}, removing them from the index.')
+            current_index = {uuid: Path(path).name for uuid, path in current_index.items() if path not in non_existing_dirs}
 
         if not current_index and not new_captures and not sub_indexes:
             # No captures at all in the directory and subdirectories, quitting
