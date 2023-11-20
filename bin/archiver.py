@@ -155,6 +155,7 @@ class Archiver(AbstractManager):
             if s3fs_parent_dir:
                 logmsg = f'{logmsg} (s3fs directory)'
             self.logger.info(logmsg)
+            index_file.unlink(missing_ok=True)
             return None
 
         if new_captures:
