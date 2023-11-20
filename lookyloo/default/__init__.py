@@ -7,8 +7,12 @@ from .exceptions import LookylooException  # noqa
 # and allow to update them easily.
 # You should not have to change anything in this file below this line.
 
+import os  # noqa
+
 from .abstractmanager import AbstractManager  # noqa
 
 from .exceptions import MissingEnv, CreateDirectoryException, ConfigError  # noqa
 
 from .helpers import get_homedir, load_configs, get_config, safe_create_dir, get_socket_path, try_make_file  # noqa
+
+os.chdir(get_homedir())
