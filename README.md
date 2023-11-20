@@ -99,20 +99,20 @@ The command below will suspend versioning:
 mc version suspend <alias_in_config>/<bucket>
 ```
 
-And if you're already stuck with an index that was updated 10.000 times and you cannot do anything about it:
+### I'm stuck, my file is raising I/O errors 
 
-```bash
-mc rm --non-current --versions --recursive --force <alias_in_config>/<bucket>/path/to/index
-```
+It will happen when your index was updated 10.000 times and versioning was enabled.
 
-Error message from bash (unhelpful):
+This is how to check you're in this situation: 
+
+* Error message from bash (unhelpful):
 
 ```bash
 $ (git::main) rm /path/to/lookyloo/archived_captures/Year/Month/Day/index
 rm: cannot remove '/path/to/lookyloo/archived_captures/Year/Month/Day/index': Input/output error
 ```
 
-Python code:
+* Check with python
 
 ```python
 from lookyloo.default import get_config
@@ -127,11 +127,17 @@ s3fs_bucket = s3fs_config['config']['bucket_name']
 s3fs_client.rm_file(s3fs_bucket + '/Year/Month/Day/index')
 ```
 
-Error from python (somewhat more helpful):
+* Error from python (somewhat more helpful):
+
 ```
 OSError: [Errno 5] An error occurred (MaxVersionsExceeded) when calling the DeleteObject operation: You've exceeded the limit on the number of versions you can create on this object
 ```
 
+* **Solution**: run this command to remove all older versions of the file 
+
+```bash
+mc rm --non-current --versions --recursive --force <alias_in_config>/<bucket>/Year/Month/Day/index
+```
 
 # Contributing to Lookyloo
 To learn more about contributing to Lookyloo, see our [contributor guide](https://www.lookyloo.eu/docs/main/contributing.html).
