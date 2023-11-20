@@ -79,6 +79,8 @@ filesystem using python methods (`iterdir`, `scandir`...))
 A workaround is to use the python s3fs module as it will not access the filesystem for listing directories.
 You can configure the s3fs credentials in `config/generic.json` key `s3fs`.
 
+**Warning**: this will not save you if you run `ls` on a directoy that contains *a lot* of captures.
+
 ## Versioning
 
 By default, a MinIO bucket (backend for s3fs) will have versioning enabled, wich means it
