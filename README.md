@@ -65,6 +65,74 @@ pip install pylookyloo
 
 For more details on `pylookyloo`, read the overview [docs](https://www.lookyloo.eu/docs/main/pylookyloo-overview.html), the [documentation](https://pylookyloo.readthedocs.io/en/latest/) of the module itself, or the code in this [GitHub repository](https://github.com/Lookyloo/PyLookyloo).
 
+# Notes regarding using S3FS for storage
+
+## Directory listing
+
+TL;DR: it is slow.
+
+If you have namy captures (say more than 1000/day), and store captures in a s3fs bucket mounted with s3fs-fuse,
+doing a directory listing in bash (`ls`) will most probably lock the I/O for every process
+trying to access any file in the whole bucket. The same will be true if you access the
+filesystem using python methods (`iterdir`, `scandir`...))
+
+A workaround is to use the python s3fs module as it will not access the filesystem for listing directories.
+You can configure the s3fs credentials in `config/generic.json` key `s3fs`.
+
+## Versioning
+
+By default, a MinIO bucket (backend for s3fs) will have versioning enabled, wich means it
+keeps a copy of every version of every file you're storing. It becomes a problem if you have a lot of captures
+as the index files are updated on every change, and the max amount of versions is 10.000.
+So by the time you have > 10.000 captures in a directory, you'll get I/O errors when you try
+to update the index file. And you absolutely do not care about that versioning in lookyloo.
+
+To check if versioning is enabled (can be either enabled or suspended):
+
+```
+mc version info <alias_in_config>/<bucket>
+```
+
+The command below will suspend versioning:
+
+```bash
+mc version suspend <alias_in_config>/<bucket>
+```
+
+And if you're already stuck with an index that was updated 10.000 times and you cannot do anything about it:
+
+```bash
+mc rm --non-current --versions --recursive --force <alias_in_config>/<bucket>/path/to/index
+```
+
+Error message from bash (unhelpful):
+
+```bash
+$ (git::main) rm /path/to/lookyloo/archived_captures/Year/Month/Day/index
+rm: cannot remove '/path/to/lookyloo/archived_captures/Year/Month/Day/index': Input/output error
+```
+
+Python code:
+
+```python
+from lookyloo.default import get_config
+import s3fs
+
+s3fs_config = get_config('generic', 's3fs')
+s3fs_client = s3fs.S3FileSystem(key=s3fs_config['config']['key'],
+                                secret=s3fs_config['config']['secret'],
+                                endpoint_url=s3fs_config['config']['endpoint_url'])
+
+s3fs_bucket = s3fs_config['config']['bucket_name']
+s3fs_client.rm_file(s3fs_bucket + '/Year/Month/Day/index')
+```
+
+Error from python (somewhat more helpful):
+```
+OSError: [Errno 5] An error occurred (MaxVersionsExceeded) when calling the DeleteObject operation: You've exceeded the limit on the number of versions you can create on this object
+```
+
+
 # Contributing to Lookyloo
 To learn more about contributing to Lookyloo, see our [contributor guide](https://www.lookyloo.eu/docs/main/contributing.html).
 
