@@ -82,5 +82,5 @@ jobs:
       - name: Logs
         if: ${{ always() }}
         run: |
-          cat logs/*.log
-          cat website/logs/*.log
+          find -wholename ./logs/*.log -exec cat {} \;
+          find -wholename ./website/logs/*.log -exec cat {} \;
