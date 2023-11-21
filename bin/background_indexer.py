@@ -91,7 +91,7 @@ class BackgroundIndexer(AbstractManager):
                     self.logger.info(f'Build pickle for {uuid}: {path.name}')
                     self.lookyloo.get_crawled_tree(uuid)
                     self.lookyloo.trigger_modules(uuid, auto_trigger=True)
-                    self.logger.info(f'Pickle for {uuid} build.')
+                    self.logger.info(f'Pickle for {uuid} built.')
                     got_new_captures = True
                     max_captures -= 1
                 except MissingUUID:
@@ -120,7 +120,7 @@ class BackgroundIndexer(AbstractManager):
 
     def _check_indexes(self):
         index_redis = self.lookyloo.indexing.redis
-        can_index = index_redis.set('ongoing_indexing', 1, ex=300, nx=True)
+        can_index = index_redis.set('ongoing_indexing', 1, ex=3600, nx=True)
         if not can_index:
             # There is no reason to run this method in multiple scripts.
             self.logger.info('Indexing already ongoing in another process.')
