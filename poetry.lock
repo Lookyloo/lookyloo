@@ -669,13 +669,13 @@ files = [
 
 [[package]]
 name = "exceptiongroup"
-version = "1.1.3"
+version = "1.2.0"
 description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "exceptiongroup-1.1.3-py3-none-any.whl", hash = "sha256:343280667a4585d195ca1cf9cef84a4e178c4b6cf2274caef9859782b567d5e3"},
-    {file = "exceptiongroup-1.1.3.tar.gz", hash = "sha256:097acd85d473d75af5bb98e41b61ff7fe35efe6675e4f9370ec6ec5126d160e9"},
+    {file = "exceptiongroup-1.2.0-py3-none-any.whl", hash = "sha256:4bfd3996ac73b41e9b9628b04e079f193850720ea5945fc96a08633c66912f14"},
+    {file = "exceptiongroup-1.2.0.tar.gz", hash = "sha256:91f5c769735f051a4290d52edd0858999b57e5876e9f85937691bd4c9fa3ed68"},
 ]
 
 [package.extras]
@@ -2057,13 +2057,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.0.20231120"
+version = "0.10.0.20231121"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.0.20231120-py2.py3-none-any.whl", hash = "sha256:a8d2bef224e328c38e709105312be59268c7fae76b38d629f7c74b7cefb977e6"},
-    {file = "publicsuffixlist-0.10.0.20231120.tar.gz", hash = "sha256:1d416e7d0e1c11e928d5b69b1baa080736a04c1d5a931cc28c0d666ba69a71ed"},
+    {file = "publicsuffixlist-0.10.0.20231121-py2.py3-none-any.whl", hash = "sha256:f2b8c30c25e9dddd6ef56c270783df597f64c54e6d24e37882608e7683211b9a"},
+    {file = "publicsuffixlist-0.10.0.20231121.tar.gz", hash = "sha256:e89735db141c8728d77c8d24bef0820463cda62beccf9d62ce04bfe3526b5674"},
 ]
 
 [package.extras]
@@ -2225,13 +2225,13 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.7.0"
+version = "1.7.1"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylacus-1.7.0-py3-none-any.whl", hash = "sha256:4d33a66f57631489d0e38cb8520dbe9b120435c7aadc2ecce0337a70d46b381a"},
-    {file = "pylacus-1.7.0.tar.gz", hash = "sha256:a7e34919b4ff3130ab576a854e97a0243eab20301754a9e232f301d939421ccb"},
+    {file = "pylacus-1.7.1-py3-none-any.whl", hash = "sha256:fba39616b51de89d09e8f09c2d417de308c1801b1df4e60d810dca16180938d8"},
+    {file = "pylacus-1.7.1.tar.gz", hash = "sha256:c761111ed6d0702f8e8f275e0d6753d164dd84cf1f50344150267ea3cd19ed27"},
 ]
 
 [package.dependencies]
@@ -2242,13 +2242,13 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.22.1"
+version = "1.22.2"
 description = "Python CLI and module for Lookyloo"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylookyloo-1.22.1-py3-none-any.whl", hash = "sha256:abbe50476391873fc70c1c7621118a3d47379617dd7a9f5aecdd599f5b220806"},
-    {file = "pylookyloo-1.22.1.tar.gz", hash = "sha256:e4159bd0d08ca4a6e97f03d9c0836c4cadd6ef40cfc9d8566821dc69eff959df"},
+    {file = "pylookyloo-1.22.2-py3-none-any.whl", hash = "sha256:4508e8cffb381d7627e36f6d27c5ac7f30716eb9ead0d8e177b09bb4b5f4ba29"},
+    {file = "pylookyloo-1.22.2.tar.gz", hash = "sha256:2c01950bca21b193b45fc05067d8bb01250f99aea732c7f9b01e399f56355b37"},
 ]
 
 [package.dependencies]
@@ -2308,13 +2308,13 @@ virustotal = ["validators (>=0.22.0,<0.23.0)"]
 
 [[package]]
 name = "pypandora"
-version = "1.6.0"
+version = "1.6.1"
 description = "Python CLI and module for pandora"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pypandora-1.6.0-py3-none-any.whl", hash = "sha256:e60f8ddd0814cec17e02d9c4423792ad49d647df075bd83f6e8b5f1efab7c5af"},
-    {file = "pypandora-1.6.0.tar.gz", hash = "sha256:c9eecb1a37b779625ddb1a75607142644b2644debd50dd7ee2ef59f4ff7c54c4"},
+    {file = "pypandora-1.6.1-py3-none-any.whl", hash = "sha256:e90800be9be17be5ee2cd376d8e4ea045152a0d91e52d1ae4f26d208f1cc52cc"},
+    {file = "pypandora-1.6.1.tar.gz", hash = "sha256:6c80bb28fcb88bd979ba536e483fa6cdea2b552a65f5de8160a173b54cd097da"},
 ]
 
 [package.dependencies]
@@ -3049,13 +3049,13 @@ files = [
 
 [[package]]
 name = "wcwidth"
-version = "0.2.10"
+version = "0.2.11"
 description = "Measures the displayed width of unicode strings in a terminal"
 optional = false
 python-versions = "*"
 files = [
-    {file = "wcwidth-0.2.10-py2.py3-none-any.whl", hash = "sha256:aec5179002dd0f0d40c456026e74a729661c9d468e1ed64405e3a6c2176ca36f"},
-    {file = "wcwidth-0.2.10.tar.gz", hash = "sha256:390c7454101092a6a5e43baad8f83de615463af459201709556b6e4b1c861f97"},
+    {file = "wcwidth-0.2.11-py2.py3-none-any.whl", hash = "sha256:c4b153acf29f1f0d7fb1b00d097cce82b73de7a2016321c8d7ca71bd76dd848b"},
+    {file = "wcwidth-0.2.11.tar.gz", hash = "sha256:25eb3ecbec328cdb945f56f2a7cfe784bdf7a73a8197398c7a7c65e7fe93e9ae"},
 ]
 
 [[package]]
@@ -3292,4 +3292,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.12"
-content-hash = "91e6065fc706d8381083c5f6c9515d4e3e04849ce87efd4c2d3561f10c30965e"
+content-hash = "bb2d0df9ee8e17358f775726f3b934f0f48e557cc879418471cfd36341db153d"
