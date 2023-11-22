@@ -869,10 +869,11 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: Opti
     cut_time: Optional[datetime] = None
     if time_delta_on_index:
         # We want to filter the captures on the index
-        cut_time = (datetime.now() - timedelta(**time_delta_on_index)).replace(tzinfo=timezone.utc)
+        cut_time = (datetime.now() - timedelta(**time_delta_on_index))
+        cut_time_with_tz = cut_time.replace(tzinfo=timezone.utc)
 
     for cached in lookyloo.sorted_capture_cache(index_cut_time=cut_time):
-        if cut_time and cached.timestamp < cut_time:
+        if cut_time and cached.timestamp < cut_time_with_tz:
             continue
 
         if category:
