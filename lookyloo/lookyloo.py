@@ -11,7 +11,7 @@ import ssl
 import time
 
 from collections import defaultdict
-from datetime import date, datetime, timezone, timedelta
+from datetime import date, datetime, timedelta
 from email.message import EmailMessage
 from functools import cached_property
 from io import BytesIO
@@ -50,7 +50,7 @@ from .exceptions import (MissingCaptureDirectory,
 from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, load_cookies, UserAgents,
-                      get_useragent_for_requests)
+                      get_useragent_for_requests, make_ts_from_dirname)
 from .indexing import Indexing
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -453,8 +453,7 @@ class Lookyloo():
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''
         # Make sure we do not try to load archived captures that would still be in 'lookup_dirs'
-        archive_interval = timedelta(days=get_config('generic', 'archive') + 1)
-        cut_time = (datetime.now() - archive_interval)
+        cut_time = (datetime.now() - timedelta(days=get_config('generic', 'archive') - 1))
         if index_cut_time:
             if index_cut_time < cut_time:
                 index_cut_time = cut_time
@@ -464,7 +463,7 @@ class Lookyloo():
             capture_uuids = []
             for uuid, directory in sorted(self.redis.hgetall('lookup_dirs').items(), key=lambda item: item[1], reverse=True):
                 date_str = directory.rsplit('/', 1)[1]
-                if datetime.fromisoformat(date_str).replace(tzinfo=timezone.utc) < index_cut_time:
+                if make_ts_from_dirname(date_str) < index_cut_time:
                     continue
                 capture_uuids.append(uuid)
             # NOTE: we absolutely have to respect the cached_captures_only setting and
