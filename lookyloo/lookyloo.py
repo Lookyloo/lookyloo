@@ -11,7 +11,7 @@ import ssl
 import time
 
 from collections import defaultdict
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 from email.message import EmailMessage
 from functools import cached_property
 from io import BytesIO
@@ -452,17 +452,21 @@ class Lookyloo():
     def sorted_capture_cache(self, capture_uuids: Optional[Iterable[str]]=None, cached_captures_only: bool=True, index_cut_time: Optional[datetime]=None) -> List[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''
+        # Make sure we do not try to load archived captures that would still be in 'lookup_dirs'
+        archive_interval = timedelta(days=get_config('generic', 'archive') + 1)
+        cut_time = (datetime.now() - archive_interval)
+        if index_cut_time:
+            if index_cut_time < cut_time:
+                index_cut_time = cut_time
+        else:
+            index_cut_time = cut_time
         if capture_uuids is None:
-            all_captures = {k: v for k, v in sorted(self.redis.hgetall('lookup_dirs').items(), key=lambda item: item[1], reverse=True)}
-            if index_cut_time is None:
-                capture_uuids = list(all_captures.keys())
-            else:
-                capture_uuids = []
-                for uuid, directory in self.redis.hgetall('lookup_dirs').items():
-                    date_str = directory.rsplit('/', 1)[1]
-                    if datetime.fromisoformat(date_str).replace(tzinfo=timezone.utc) < index_cut_time:
-                        continue
-                    capture_uuids.append(uuid)
+            capture_uuids = []
+            for uuid, directory in sorted(self.redis.hgetall('lookup_dirs').items(), key=lambda item: item[1], reverse=True):
+                date_str = directory.rsplit('/', 1)[1]
+                if datetime.fromisoformat(date_str).replace(tzinfo=timezone.utc) < index_cut_time:
+                    continue
+                capture_uuids.append(uuid)
             # NOTE: we absolutely have to respect the cached_captures_only setting and
             #       never overwrite it. This method is called to display the index
             #       and if we try to display everything, including the non-cached entries,
