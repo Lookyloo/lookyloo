@@ -459,13 +459,10 @@ class Lookyloo():
                 index_cut_time = cut_time
         else:
             index_cut_time = cut_time
+
         if capture_uuids is None:
-            capture_uuids = []
-            for uuid, directory in sorted(self.redis.hgetall('lookup_dirs').items(), key=lambda item: item[1], reverse=True):
-                date_str = directory.rsplit('/', 1)[1]
-                if make_ts_from_dirname(date_str) < index_cut_time:
-                    continue
-                capture_uuids.append(uuid)
+            capture_uuids = {uuid for uuid, directory in self.redis.hscan_iter('lookup_dirs')
+                             if make_ts_from_dirname(directory.rsplit('/', 1)[-1]) > index_cut_time}
             # NOTE: we absolutely have to respect the cached_captures_only setting and
             #       never overwrite it. This method is called to display the index
             #       and if we try to display everything, including the non-cached entries,
