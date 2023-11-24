@@ -4,7 +4,7 @@ import argparse
 import json
 import logging
 
-import s3fs
+import s3fs  # type: ignore
 
 from lookyloo.default import get_config
 
