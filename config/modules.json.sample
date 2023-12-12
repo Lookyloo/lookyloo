@@ -74,6 +74,11 @@
     "allow_auto_trigger": false,
     "default_first_seen_in_days": 5
   },
+  "CIRCLPDNS": {
+    "user": null,
+    "password": null,
+    "allow_auto_trigger": false
+  },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
     "autosubmit": "Automatically submits the URL to the 3rd party service.",

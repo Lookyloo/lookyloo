@@ -13,3 +13,4 @@ from .hashlookup import HashlookupModule as Hashlookup  # noqa
 from .riskiq import RiskIQ, RiskIQError  # noqa
 from .urlhaus import URLhaus  # noqa
 from .cloudflare import Cloudflare  # noqa
+from .circlpdns import CIRCLPDNS  # noqa

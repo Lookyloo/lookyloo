@@ -54,7 +54,7 @@ from .helpers import (get_captures_dir, get_email_template,
 from .indexing import Indexing
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
-                      RiskIQ, RiskIQError, Pandora, URLhaus)
+                      RiskIQ, RiskIQError, Pandora, URLhaus, CIRCLPDNS)
 
 if TYPE_CHECKING:
     from playwright.async_api import Cookie
@@ -120,6 +120,7 @@ class Lookyloo():
                 pass
 
         # ## Done with MISP(s)
+
         self.pi = PhishingInitiative(config_name='PhishingInitiative')
         self.vt = VirusTotal(config_name='VirusTotal')
         self.uwhois = UniversalWhois(config_name='UniversalWhois')
@@ -129,6 +130,7 @@ class Lookyloo():
         self.riskiq = RiskIQ(config_name='RiskIQ')
         self.pandora = Pandora(config_name='Pandora')
         self.urlhaus = URLhaus(config_name='URLhaus')
+        self.circl_pdns = CIRCLPDNS(config_name='CIRCLPDNS')
 
         self.monitoring_enabled = False
         if monitoring_config := get_config('generic', 'monitoring'):
@@ -423,7 +425,7 @@ class Lookyloo():
         if not cache:
             self.logger.warning(f'Unable to get the modules responses unless the capture {capture_uuid} is cached')
             return {}
-        to_return: Dict[str, Any] = {}
+        to_return: Dict[str, Any] = defaultdict(dict)
         if self.riskiq.available:
             try:
                 self.riskiq.capture_default_trigger(cache)
@@ -435,6 +437,15 @@ class Lookyloo():
                     to_return['riskiq'] = self.riskiq.get_passivedns(hostname)
             except RiskIQError as e:
                 self.logger.warning(e.response.content)
+        if self.circl_pdns.available:
+            self.circl_pdns.capture_default_trigger(cache)
+            if hasattr(cache, 'redirects') and cache.redirects:
+                hostname = urlparse(cache.redirects[-1]).hostname
+            else:
+                hostname = urlparse(cache.url).hostname
+            if hostname:
+                to_return['circl_pdns'][hostname] = self.circl_pdns.get_passivedns(hostname)
+
         return to_return
 
     def hide_capture(self, capture_uuid: str, /) -> None:
