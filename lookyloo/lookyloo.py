@@ -434,8 +434,8 @@ class Lookyloo():
                 else:
                     hostname = urlparse(cache.url).hostname
                 if hostname:
-                    if entries := self.riskiq.get_passivedns(hostname):
-                        to_return['riskiq'] = entries
+                    if _riskiq_entries := self.riskiq.get_passivedns(hostname):
+                        to_return['riskiq'] = _riskiq_entries
             except RiskIQError as e:
                 self.logger.warning(e.response.content)
         if self.circl_pdns.available:
@@ -445,8 +445,8 @@ class Lookyloo():
             else:
                 hostname = urlparse(cache.url).hostname
             if hostname:
-                if entries := self.circl_pdns.get_passivedns(hostname):
-                    to_return['circl_pdns'][hostname] = entries
+                if _circl_entries := self.circl_pdns.get_passivedns(hostname):
+                    to_return['circl_pdns'][hostname] = _circl_entries
         return to_return
 
     def hide_capture(self, capture_uuid: str, /) -> None:
