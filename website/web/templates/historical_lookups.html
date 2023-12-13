@@ -1,7 +1,43 @@
 {% from "macros.html" import shorten_string %}
 
 <div>
-{% if riskiq %}
+{% if circl_pdns %}
+  <center>
+    <h1 class="display-4">CIRCL Passive DNS
+     <div class="help-tip" title="Click for more details"
+          onclick="location.href='https://www.circl.lu/services/passive-dns/';"
+          style="cursor: pointer;">
+     </div>
+    </h1>
+  {% for query, responses in circl_pdns.items() %}
+  <div>
+    <h3>{{query}}</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="col-sm-2" scope="col">First seen</th>
+          <th class="col-sm-2" scope="col">Last seen</th>
+          <th class="col-sm-1" scope="col">RR Type</th>
+          <th class="col-sm-2" scope="col">R Data</th>
+          <th scope="col">RR Name</th>
+      </thead>
+      <tbody>
+        {%for response in responses %}
+        <tr>
+          <td>{{response.time_first_datetime}}</td>
+          <td>{{response.time_last_datetime}}</td>
+          <td>{{response.rrtype}}</td>
+          <td>{{response.rdata}}</td>
+          <td>{{response.rrname}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+  </div>
+  {%endfor%}
+  </center>
+
+{% endif%}
+{% if riskiq and current_user.is_authenticated %}
   <hr>
   <center>
     <h1 class="display-4">RiskIQ</h1>
@@ -13,52 +49,20 @@
       <tr>
         <th class="col-sm-2" scope="col">First seen</th>
         <th class="col-sm-2" scope="col">Last seen</th>
-        <th scope="col">Resolve</th>
         <th class="col-sm-1" scope="col">Type</th>
+        <th scope="col">Resolve</th>
     </thead>
     <tbody>
       {% for entry in riskiq['results'] %}
       <tr>
         <td>{{entry['firstSeen']}}</td>
         <td>{{entry['lastSeen']}}</td>
-        <td>{{entry['resolve']}}</td>
         <td>{{entry['recordType']}}</td>
+        <td>{{entry['resolve']}}</td>
       </tr>
       {% endfor %}
   </table>
   </div>
   </center>
-{% endif%}
-{% if circl_pdns %}
-  <hr>
-  <center>
-    <h1 class="display-4">CIRCL Passve DNS</h1>
-  {% for query, responses in circl_pdns.items() %}
-  <div>
-    <h3>{{query}}</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th class="col-sm-2" scope="col">First seen</th>
-          <th class="col-sm-2" scope="col">Last seen</th>
-          <th scope="col">R Data</th>
-          <th scope="col">RR Name</th>
-          <th class="col-sm-1" scope="col">RR Type</th>
-      </thead>
-      <tbody>
-        {%for response in responses %}
-        <tr>
-          <td>{{response.time_first_datetime}}</td>
-          <td>{{response.time_last_datetime}}</td>
-          <td>{{response.rdata}}</td>
-          <td>{{response.rrname}}</td>
-          <td>{{response.rrtype}}</td>
-        </tr>
-        {% endfor %}
-    </table>
-  </div>
-  {%endfor%}
-  </center>
-
 {% endif%}
 </div>

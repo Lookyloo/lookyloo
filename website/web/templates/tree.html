@@ -208,6 +208,10 @@
           <a href="#detailsModal" data-bs-toggle="modal" data-bs-target="#detailsModal" role="button">Capture Details</a>
         </li>
         <li class="list-group-item">
+          <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
+             data-bs-toggle="modal" data-bs-target="#statsModal" role="button">Statistics</a>
+        </li>
+        <li class="list-group-item">
           <a href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button">Lookyloo Manual</a>
         </li>
         <li class="list-group-item">
@@ -252,12 +256,12 @@
                    data-bs-target="#screenshotModal" role="button">Page Screenshot</a>
               </li>
               <li class="list-group-item">
-                <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
-                   data-bs-toggle="modal" data-bs-target="#statsModal" role="button">Statistics</a>
-              </li>
-              <li class="list-group-item">
                 <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
                    data-bs-toggle="modal" data-bs-target="#modulesModal" role="button">Third Party Reports</a>
+              </li>
+              <li class="list-group-item">
+                <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
+                   data-bs-toggle="modal" data-bs-target="#historyModal" role="button">Historical lookups</a>
               </li>
               <li class="list-group-item">
                 <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
@@ -292,10 +296,6 @@
             <li class="list-group-item">
               <a href="#adminModal" data-bs-toggle="modal"
                  data-bs-target="#adminModal" role="button">Admin tasks</a>
-            </li>
-            <li class="list-group-item">
-              <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
-                 data-bs-toggle="modal" data-bs-target="#historyModal" role="button">Historical lookups</a>
             </li>
             {% if misp_push%}
             <li class="list-group-item">
