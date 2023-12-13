@@ -108,7 +108,7 @@ class RiskIQ(AbstractModule):
             return
 
         pdns_info = self.client_dns.get_passive_dns(query=hostname, start=first_seen.isoformat())
-        if not pdns_info:
+        if not pdns_info or not pdns_info.get('results'):
             try:
                 url_storage_dir.rmdir()
             except OSError:

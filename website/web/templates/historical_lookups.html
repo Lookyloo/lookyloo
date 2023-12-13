@@ -1,6 +1,9 @@
 {% from "macros.html" import shorten_string %}
 
 <div>
+{% if not circl_pdns and not riskiq %}
+  No historical data available
+{%else%}
 {% if circl_pdns %}
   <center>
     <h1 class="display-4">CIRCL Passive DNS
@@ -9,7 +12,7 @@
           style="cursor: pointer;">
      </div>
     </h1>
-  {% for query, responses in circl_pdns.items() %}
+  {% for query, responses in circl_pdns.items() if responses %}
   <div>
     <h3>{{query}}</h3>
     <table class="table">
@@ -35,9 +38,8 @@
   </div>
   {%endfor%}
   </center>
-
 {% endif%}
-{% if riskiq and current_user.is_authenticated %}
+{% if riskiq %}
   <hr>
   <center>
     <h1 class="display-4">RiskIQ</h1>
@@ -64,5 +66,6 @@
   </table>
   </div>
   </center>
+{% endif%}
 {% endif%}
 </div>
