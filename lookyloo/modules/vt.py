@@ -47,8 +47,12 @@ class VirusTotal(AbstractModule):
         if not cached_entries:
             return None
 
-        with cached_entries[0].open() as f:
-            return json.load(f)
+        try:
+            with cached_entries[0].open() as f:
+                return json.load(f)
+        except json.decoder.JSONDecodeError:
+            cached_entries[0].unlink(missing_ok=True)
+            return None
 
     def capture_default_trigger(self, cache: 'CaptureCache', /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
         '''Run the module on all the nodes up to the final redirect'''
