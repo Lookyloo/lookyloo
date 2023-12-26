@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 
 import vt  # type: ignore
 from vt.error import APIError  # type: ignore
+from vt.object import WhistleBlowerDict  # type: ignore
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory
@@ -15,6 +16,11 @@ if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 
 from .abstractmodule import AbstractModule
+
+
+def jsonify_vt(obj: WhistleBlowerDict):
+    if isinstance(obj, WhistleBlowerDict):
+        return {k: v for k, v in obj.items()}
 
 
 class VirusTotal(AbstractModule):
@@ -92,7 +98,7 @@ class VirusTotal(AbstractModule):
             try:
                 url_information = self.client.get_object(f"/urls/{url_id}")
                 with vt_file.open('w') as _f:
-                    json.dump(url_information.to_dict(), _f)
+                    json.dump(url_information.to_dict(), _f, default=jsonify_vt)
                 break
             except APIError as e:
                 if not self.autosubmit:
