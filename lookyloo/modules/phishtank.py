@@ -144,7 +144,11 @@ class Phishtank(AbstractModule):
 
         url_information = self.client.get_url_entry(url)
         if not url_information:
-            url_storage_dir.rmdir()
+            try:
+                url_storage_dir.rmdir()
+            except OSError:
+                # no need to print an exception.
+                pass
             return
 
         with pt_file.open('w') as _f:
