@@ -114,8 +114,6 @@ class Archiver(AbstractManager):
                     if sub_index := self._update_index(dir_on_disk, s3fs_parent_dir=s3fs_dir):
                         # got a day directory that contains captures
                         sub_indexes.append(sub_index)
-                    else:
-                        continue
                 else:
                     # got a capture
                     if str(dir_on_disk) not in current_index_dirs:
@@ -134,8 +132,6 @@ class Archiver(AbstractManager):
                         if sub_index := self._update_index(dir_on_disk):
                             # got a day directory that contains captures
                             sub_indexes.append(sub_index)
-                        else:
-                            continue
                     else:
                         # isoformat
                         if str(dir_on_disk) not in current_index_dirs:
