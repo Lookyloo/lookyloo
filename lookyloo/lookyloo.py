@@ -699,7 +699,7 @@ class Lookyloo():
                      'asns': {},  # ASN: [list of contacts from whois]
                      'all_emails': set()
                      }
-        to_return['ips'] = {ip: self.uwhois.whois(ip, contact_email_only=True) for ip in hostnode.resolved_ips['v4'] | hostnode.resolved_ips['v6']}
+        to_return['ips'] = {ip: self.uwhois.whois(ip, contact_email_only=True) for ip in set(hostnode.resolved_ips['v4']) | set(hostnode.resolved_ips['v6'])}
         to_return['asns'] = {asn['asn']: self.uwhois.whois(f'AS{asn["asn"]}', contact_email_only=True) for asn in hostnode.ipasn.values()}
 
         # try to get contact from security.txt file
