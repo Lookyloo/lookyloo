@@ -1477,7 +1477,7 @@ class Lookyloo():
             statistics['weeks'].append(week_stat)
 
         for year in sorted(stats.keys()):
-            year_stats: Dict[str, Union[int, List]] = {'year': year, 'months': [], 'yearly_submissions': 0, 'yearly_redirects': 0}
+            year_stats: Dict[str, Union[int, List]] = {'year': year, 'months': [], 'yearly_submissions': 0}
             for month in sorted(stats[year].keys()):
                 month_stats = stats[year][month]
                 if len(month_stats) == 1:
@@ -1491,8 +1491,6 @@ class Lookyloo():
 
                 year_stats['months'].append(month_stats)  # type: ignore
                 year_stats['yearly_submissions'] += month_stats['submissions']
-                if 'redirects' in month_stats:
-                    year_stats['yearly_redirects'] += month_stats['redirects']
             statistics['years'].append(year_stats)
 
         return statistics
