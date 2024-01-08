@@ -163,9 +163,13 @@ class Archiver(AbstractManager):
             # capture_dir_name is *only* the isoformat of the capture.
             # This directory will either be directly in the month directory (old format)
             # or in the day directory (new format)
-            if not next(capture_dir.iterdir(), None):
-                self.logger.warning(f'{capture_dir} is empty, removing.')
-                capture_dir.rmdir()
+            try:
+                if not next(capture_dir.iterdir(), None):
+                    self.logger.warning(f'{capture_dir} is empty, removing.')
+                    capture_dir.rmdir()
+                    continue
+            except FileNotFoundError:
+                self.logger.warning(f'{capture_dir} does not exists.')
                 continue
 
             try:
