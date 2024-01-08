@@ -1426,10 +1426,11 @@ class Lookyloo():
         today = date.today()
         calendar_week = today.isocalendar()[1]
 
-        stats_dict = {'submissions': 0, 'submissions_with_redirects': 0, 'redirects': 0}
+        stats_dict = {'submissions': 0, 'redirects': 0}
         stats: Dict[int, Dict[int, Dict[str, Any]]] = {}
         weeks_stats: Dict[int, Dict] = {}
 
+        # Only recent captures that are not archived
         for cache in self.sorted_capture_cache():
             if not hasattr(cache, 'timestamp'):
                 continue
@@ -1443,7 +1444,6 @@ class Lookyloo():
             stats[date_submission.year][date_submission.month]['submissions'] += 1
             stats[date_submission.year][date_submission.month]['uniq_urls'].add(cache.url)
             if hasattr(cache, 'redirects') and len(cache.redirects) > 0:
-                stats[date_submission.year][date_submission.month]['submissions_with_redirects'] += 1
                 stats[date_submission.year][date_submission.month]['redirects'] += len(cache.redirects)
                 stats[date_submission.year][date_submission.month]['uniq_urls'].update(cache.redirects)
 
@@ -1455,9 +1455,18 @@ class Lookyloo():
                 weeks_stats[date_submission.isocalendar()[1]]['submissions'] += 1
                 weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'].add(cache.url)
                 if hasattr(cache, 'redirects') and len(cache.redirects) > 0:
-                    weeks_stats[date_submission.isocalendar()[1]]['submissions_with_redirects'] += 1
                     weeks_stats[date_submission.isocalendar()[1]]['redirects'] += len(cache.redirects)
                     weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'].update(cache.redirects)
+
+        # Build limited stats based on archved captures and the indexes
+        archives_stats: Dict[int, Dict[int, int]] = defaultdict(lambda: defaultdict(int))
+        for _, capture_path in self.redis.hscan_iter('lookup_dirs_archived'):
+            capture_ts = datetime.fromisoformat(capture_path.rsplit('/', 1)[-1])
+            if capture_ts.year not in stats:
+                stats[capture_ts.year] = {}
+            if capture_ts.month not in stats[capture_ts.year]:
+                stats[capture_ts.year][capture_ts.month] = {'submissions': 0}
+            archives_stats[capture_ts.year][capture_ts.month] += 1
 
         statistics: Dict[str, List] = {'weeks': [], 'years': []}
         for week_number in sorted(weeks_stats.keys()):
@@ -1472,15 +1481,21 @@ class Lookyloo():
             year_stats: Dict[str, Union[int, List]] = {'year': year, 'months': [], 'yearly_submissions': 0, 'yearly_redirects': 0}
             for month in sorted(stats[year].keys()):
                 month_stats = stats[year][month]
-                urls = month_stats.pop('uniq_urls')
-                month_stats['month_number'] = month
-                month_stats['uniq_urls'] = len(urls)
-                month_stats['uniq_domains'] = len(uniq_domains(urls))
-                year_stats['months'].append(month_stats)  # type: ignore
+                if len(month_stats) == 1:
+                    # archived captures, missing many values
+                    month_stats['month_number'] = month
+                else:
+                    urls = month_stats.pop('uniq_urls')
+                    month_stats['month_number'] = month
+                    month_stats['uniq_urls'] = len(urls)
+                    month_stats['uniq_domains'] = len(uniq_domains(urls))
 
+                year_stats['months'].append(month_stats)  # type: ignore
                 year_stats['yearly_submissions'] += month_stats['submissions']
-                year_stats['yearly_redirects'] += month_stats['redirects']
+                if 'redirects' in month_stats:
+                    year_stats['yearly_redirects'] += month_stats['redirects']
             statistics['years'].append(year_stats)
+
         return statistics
 
     def store_capture(self, uuid: str, is_public: bool,

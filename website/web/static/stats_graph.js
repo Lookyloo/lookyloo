@@ -14,7 +14,9 @@ d3.json('/json/stats').then(json => {
             unique_urls_year.x.push(month.month_number)
 
             submissions_year.y.push(month.submissions)
-            unique_urls_year.y.push(month.uniq_urls)
+            if (month.uniq_urls != null) {
+                unique_urls_year.y.push(month.uniq_urls)
+            }
         });
         datasets.push(submissions_year)
         datasets.push(unique_urls_year)
@@ -71,7 +73,10 @@ d3.json('/json/stats').then(json => {
     data_lines.append("text")
                .datum((d, i) => { return {name: datasets[i].label, final: d[d.length-1]}; })
                .attr("transform", d => {
-                   return ( `translate(${x_scale(d.final[0])}, ${y_scale(d.final[1])})` ) ; })
+                   if (d.final != null) {
+                       return ( `translate(${x_scale(d.final[0])}, ${y_scale(d.final[1])})` ) ;
+                   }
+               })
                .attr("x", 3)
                .attr("dy", ".35em")
                .attr("fill", (_, i) =>{ return d3.schemeCategory10[i]; })

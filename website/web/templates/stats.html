@@ -11,7 +11,6 @@
     <thead>
     <tr>
       <th>Submissions</th>
-      <th>Submissions with redirects</th>
       <th>Redirects</th>
       <th>Unique urls (including redirects)</th>
       <th>Unique domains (including redirects)</th>
@@ -20,7 +19,6 @@
     <tbody>
     <tr>
       <td> {{ week['submissions'] }} </td>
-      <td> {{ week['submissions_with_redirects'] }} </td>
       <td> {{ week['redirects'] }} </td>
       <td> {{ week['uniq_urls'] }} </td>
       <td> {{ week['uniq_domains'] }} </td>
@@ -45,7 +43,6 @@
       <tr>
         <th>Month</th>
         <th>Submissions</th>
-        <th>Submissions with redirects</th>
         <th>Redirects</th>
         <th>Unique urls (including redirects)</th>
         <th>Unique domains (including redirects)</th>
@@ -56,7 +53,6 @@
         <tr>
           <td> {{ month_name(month['month_number']) }} </td>
           <td> {{ month['submissions'] }} </td>
-          <td> {{ month['submissions_with_redirects'] }} </td>
           <td> {{ month['redirects'] }} </td>
           <td> {{ month['uniq_urls'] }} </td>
           <td> {{ month['uniq_domains'] }} </td>
