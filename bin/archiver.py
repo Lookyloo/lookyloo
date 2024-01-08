@@ -119,6 +119,7 @@ class Archiver(AbstractManager):
                     if str(dir_on_disk) not in current_index_dirs:
                         new_captures.add(dir_on_disk)
                 current_dirs.add(dir_on_disk.name)
+                current_dirs.add(str(dir_on_disk))
 
         else:
             with os.scandir(root_dir) as it:
@@ -137,6 +138,7 @@ class Archiver(AbstractManager):
                         if str(dir_on_disk) not in current_index_dirs:
                             new_captures.add(dir_on_disk)
                     current_dirs.add(dir_on_disk.name)
+                    current_dirs.add(str(dir_on_disk))
 
         # Check if all the directories in current_dirs (that we got by listing the directory)
         # are the same as the one in the index. If they're not, we pop the UUID before writing the index
