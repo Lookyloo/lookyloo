@@ -71,15 +71,23 @@ d3.json('/json/stats').then(json => {
             .attr("r", 3);
 
     data_lines.append("text")
-               .datum((d, i) => { return {name: datasets[i].label, final: d[d.length-1]}; })
+               .datum((d, i) => {
+                   if (d[d.length-1] != null) {
+                       return {name: datasets[i].label, final: d[d.length-1]};
+                   }
+               })
                .attr("transform", d => {
-                   if (d.final != null) {
+                   if (d != null) {
                        return ( `translate(${x_scale(d.final[0])}, ${y_scale(d.final[1])})` ) ;
                    }
                })
                .attr("x", 3)
                .attr("dy", ".35em")
                .attr("fill", (_, i) =>{ return d3.schemeCategory10[i]; })
-               .text(d => { return d.name; }) ;
+               .text(d => {
+                   if (d != null) {
+                       return d.name;
+                   }
+               }) ;
 
 });
