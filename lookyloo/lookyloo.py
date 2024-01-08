@@ -1459,14 +1459,13 @@ class Lookyloo():
                     weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'].update(cache.redirects)
 
         # Build limited stats based on archved captures and the indexes
-        archives_stats: Dict[int, Dict[int, int]] = defaultdict(lambda: defaultdict(int))
         for _, capture_path in self.redis.hscan_iter('lookup_dirs_archived'):
             capture_ts = datetime.fromisoformat(capture_path.rsplit('/', 1)[-1])
             if capture_ts.year not in stats:
                 stats[capture_ts.year] = {}
             if capture_ts.month not in stats[capture_ts.year]:
                 stats[capture_ts.year][capture_ts.month] = {'submissions': 0}
-            archives_stats[capture_ts.year][capture_ts.month] += 1
+            stats[capture_ts.year][capture_ts.month]['submissions'] += 1
 
         statistics: Dict[str, List] = {'weeks': [], 'years': []}
         for week_number in sorted(weeks_stats.keys()):
