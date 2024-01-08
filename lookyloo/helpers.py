@@ -79,11 +79,12 @@ def get_email_template() -> str:
 def make_dirs_list(root_dir: Path) -> List[Path]:
     directories = []
     year_now = date.today().year
-    while True:
+    while year_now >= year_now - 10:
         year_dir = root_dir / str(year_now)
         if not year_dir.exists():
-            # if we do not have a directory with this year, quit the loop
-            break
+            # if we do not have a directory with this year, continue.
+            # If we quit, it breaks on the new year.
+            continue
         for month in range(12, 0, -1):
             month_dir = year_dir / f'{month:02}'
             if month_dir.exists():
