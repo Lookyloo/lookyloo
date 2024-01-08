@@ -111,17 +111,16 @@ class Archiver(AbstractManager):
                     continue
                 dir_on_disk = root_dir / entry.rsplit('/', 1)[-1]
                 if dir_on_disk.name.isdigit():
-                    # got a day directory that contains captures
-                    sub_index = self._update_index(dir_on_disk, s3fs_parent_dir=s3fs_dir)
-                    if sub_index:
+                    if sub_index := self._update_index(dir_on_disk, s3fs_parent_dir=s3fs_dir):
+                        # got a day directory that contains captures
                         sub_indexes.append(sub_index)
+                    else:
+                        continue
                 else:
                     # got a capture
                     if str(dir_on_disk) not in current_index_dirs:
                         new_captures.add(dir_on_disk)
-                    else:
-                        current_dirs.add(str(dir_on_disk))
-                        current_dirs.add(dir_on_disk.name)
+                current_dirs.add(dir_on_disk.name)
 
         else:
             with os.scandir(root_dir) as it:
@@ -132,16 +131,16 @@ class Archiver(AbstractManager):
                         continue
                     dir_on_disk = Path(entry)
                     if dir_on_disk.name.isdigit():
-                        sub_index = self._update_index(dir_on_disk)
-                        if sub_index:
+                        if sub_index := self._update_index(dir_on_disk):
+                            # got a day directory that contains captures
                             sub_indexes.append(sub_index)
+                        else:
+                            continue
                     else:
                         # isoformat
                         if str(dir_on_disk) not in current_index_dirs:
                             new_captures.add(dir_on_disk)
-                        else:
-                            current_dirs.add(str(dir_on_disk))
-                            current_dirs.add(dir_on_disk.name)
+                    current_dirs.add(dir_on_disk.name)
 
         # Check if all the directories in current_dirs (that we got by listing the directory)
         # are the same as the one in the index. If they're not, we pop the UUID before writing the index
