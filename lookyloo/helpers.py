@@ -79,7 +79,8 @@ def get_email_template() -> str:
 def make_dirs_list(root_dir: Path) -> List[Path]:
     directories = []
     year_now = date.today().year
-    while year_now >= year_now - 10:
+    oldest_year = year_now - 10
+    while year_now >= oldest_year:
         year_dir = root_dir / str(year_now)
         if not year_dir.exists():
             # if we do not have a directory with this year, continue.
