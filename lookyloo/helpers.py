@@ -82,14 +82,11 @@ def make_dirs_list(root_dir: Path) -> List[Path]:
     oldest_year = year_now - 10
     while year_now >= oldest_year:
         year_dir = root_dir / str(year_now)
-        if not year_dir.exists():
-            # if we do not have a directory with this year, continue.
-            # If we quit, it breaks on the new year.
-            continue
-        for month in range(12, 0, -1):
-            month_dir = year_dir / f'{month:02}'
-            if month_dir.exists():
-                directories.append(month_dir)
+        if year_dir.exists():
+            for month in range(12, 0, -1):
+                month_dir = year_dir / f'{month:02}'
+                if month_dir.exists():
+                    directories.append(month_dir)
         year_now -= 1
     return directories
 
