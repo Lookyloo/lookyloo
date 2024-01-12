@@ -1447,18 +1447,18 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.7.8"
+version = "1.7.9"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.7.8-py3-none-any.whl", hash = "sha256:b877567a7efb35802c5fb6a01a8b88602978c16b49ee0ceead937337c6710081"},
-    {file = "lacuscore-1.7.8.tar.gz", hash = "sha256:e0aa938a6555c8fe8485777e04c2ca549cd3b1fd7a75e7839d49a3fef1499252"},
+    {file = "lacuscore-1.7.9-py3-none-any.whl", hash = "sha256:74309aa4216fabffadd4ab724f8f2273d12e59dedd8e826e2710847d92497f8c"},
+    {file = "lacuscore-1.7.9.tar.gz", hash = "sha256:cb0df82d88ffe805fc78c60e535ee54d82842b763a84ad97cfc2a5a99d4c3ed7"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.22.5,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.22.6,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=5.0.1,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.31.0,<3.0.0"
 ua-parser = ">=0.18.0,<0.19.0"
@@ -2154,13 +2154,13 @@ test = ["pytest"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.22.5"
+version = "1.22.6"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.22.5-py3-none-any.whl", hash = "sha256:023d394efe2c6173178ac7a9143a9b77400704b965280c494e9bb418eaa2ea86"},
-    {file = "playwrightcapture-1.22.5.tar.gz", hash = "sha256:8fac3bf723536ebc6ff0e1908aa838029a8b6e8ed1998fd162d5557d1d3fb2ec"},
+    {file = "playwrightcapture-1.22.6-py3-none-any.whl", hash = "sha256:910ad4dabbc51864f1c8fed6e62c2869a519211bcf7ae6e9c5aac3ea29268e33"},
+    {file = "playwrightcapture-1.22.6.tar.gz", hash = "sha256:b5c377585aba9ff71f055127b6be86458503ff3308e8fc8225dd4c05ab9597ae"},
 ]
 
 [package.dependencies]
@@ -2173,7 +2173,7 @@ pytz = {version = ">=2023.3.post1,<2024.0", markers = "python_version < \"3.9\""
 requests = {version = ">=2.31.0,<3.0.0", extras = ["socks"], optional = true, markers = "extra == \"recaptcha\""}
 setuptools = ">=69.0.3,<70.0.0"
 SpeechRecognition = {version = ">=3.10.1,<4.0.0", optional = true, markers = "extra == \"recaptcha\""}
-tzdata = ">=2023.3,<2024.0"
+tzdata = ">=2023.4,<2024.0"
 w3lib = ">=2.1.2,<3.0.0"
 
 [package.extras]
@@ -3592,4 +3592,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.12"
-content-hash = "9e6afc44fccf8789e1968b698fc9a6632bfb7fb5d053a404356000386d1fd3ad"
+content-hash = "95ea92c4f809ea280840866efc4385f75bbb4c7ace7cb9ac4979c17df722fd02"
