@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-from typing import Dict
+from __future__ import annotations
+
+from typing import Dict, Any
 
 import requests
 
@@ -29,7 +31,7 @@ class FOX(AbstractModule):
 
         return True
 
-    def capture_default_trigger(self, url: str, /, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, url: str, /, auto_trigger: bool=False) -> dict[str, str]:
         '''Run the module on the initial URL'''
         if not self.available:
             return {'error': 'Module not available'}
@@ -52,7 +54,7 @@ class FOX(AbstractModule):
         response.raise_for_status()
         return True
 
-    def url_submit(self, url: str) -> Dict:
+    def url_submit(self, url: str) -> dict[str, Any]:
         '''Submit a URL to FOX
         '''
         if not self.available:

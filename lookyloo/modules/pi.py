@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 import time
 
 from datetime import date
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
-from pyeupi import PyEUPI
+from pyeupi import PyEUPI  # type: ignore[attr-defined]
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory
@@ -34,7 +36,7 @@ class PhishingInitiative(AbstractModule):
         self.storage_dir_eupi.mkdir(parents=True, exist_ok=True)
         return True
 
-    def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
+    def get_url_lookup(self, url: str) -> dict[str, Any] | None:
         url_storage_dir = get_cache_directory(self.storage_dir_eupi, url)
         if not url_storage_dir.exists():
             return None
@@ -45,7 +47,7 @@ class PhishingInitiative(AbstractModule):
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, cache: 'CaptureCache', /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False, auto_trigger: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}

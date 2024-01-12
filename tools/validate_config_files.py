@@ -7,7 +7,7 @@ import argparse
 from lookyloo.default import get_homedir
 
 
-def validate_generic_config_file():
+def validate_generic_config_file() -> bool:
     sample_config = get_homedir() / 'config' / 'generic.json.sample'
     with sample_config.open() as f:
         generic_config_sample = json.load(f)
@@ -53,7 +53,7 @@ def validate_generic_config_file():
     return True
 
 
-def validate_modules_config_file():
+def validate_modules_config_file() -> bool:
     with (get_homedir() / 'config' / 'modules.json').open() as f:
         modules_config = json.load(f)
     with (get_homedir() / 'config' / 'modules.json.sample').open() as f:
@@ -69,7 +69,7 @@ def validate_modules_config_file():
     return True
 
 
-def update_user_configs():
+def update_user_configs() -> bool:
     for file_name in ['generic', 'modules']:
         with (get_homedir() / 'config' / f'{file_name}.json').open() as f:
             try:

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -9,7 +12,7 @@ from typing import Any, Dict, Optional, Union
 from . import env_global_name
 from .exceptions import ConfigError, CreateDirectoryException, MissingEnv
 
-configs: Dict[str, Dict[str, Any]] = {}
+configs: dict[str, dict[str, Any]] = {}
 logger = logging.getLogger('Helpers')
 
 
@@ -34,7 +37,7 @@ Run the following command (assuming you run the code from the clonned repository
 
 
 @lru_cache(64)
-def load_configs(path_to_config_files: Optional[Union[str, Path]]=None):
+def load_configs(path_to_config_files: str | Path | None=None) -> None:
     global configs
     if configs:
         return
@@ -57,7 +60,7 @@ def load_configs(path_to_config_files: Optional[Union[str, Path]]=None):
 
 
 @lru_cache(64)
-def get_config(config_type: str, entry: Optional[str]=None, quiet: bool=False) -> Any:
+def get_config(config_type: str, entry: str | None=None, quiet: bool=False) -> Any:
     """Get an entry from the given config_type file. Automatic fallback to the sample file"""
     global configs
     if not configs:
@@ -97,7 +100,7 @@ def get_socket_path(name: str) -> str:
     return str(get_homedir() / mapping[name])
 
 
-def try_make_file(filename: Path):
+def try_make_file(filename: Path) -> bool:
     try:
         filename.touch(exist_ok=False)
         return True

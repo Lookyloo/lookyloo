@@ -73,7 +73,7 @@ def ua_parser(html_content: str) -> Dict[str, Any]:
     return to_store
 
 
-def main():
+def main() -> None:
     to_parse = Path('Most Common User Agents - Tech Blog (wh).html')
 
     today = datetime.now()

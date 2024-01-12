@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 from datetime import date
 from typing import Dict, Iterable, List, Union
 
-from pysanejs import SaneJS
+from pysanejs import SaneJS  # type: ignore[attr-defined]
 
 from ..default import get_homedir
 
@@ -29,7 +31,7 @@ class SaneJavaScript(AbstractModule):
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         return True
 
-    def hashes_lookup(self, sha512: Union[Iterable[str], str], force: bool=False) -> Dict[str, List[str]]:
+    def hashes_lookup(self, sha512: Iterable[str] | str, force: bool=False) -> dict[str, list[str]]:
         if isinstance(sha512, str):
             hashes: Iterable[str] = [sha512]
         else:
@@ -43,7 +45,7 @@ class SaneJavaScript(AbstractModule):
             with sanejs_unknowns.open() as f:
                 unknown_hashes = {line.strip() for line in f.readlines()}
 
-        to_return: Dict[str, List[str]] = {}
+        to_return: dict[str, list[str]] = {}
 
         if force:
             to_lookup = hashes

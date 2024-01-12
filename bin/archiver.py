@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import csv
 import gzip
 import logging
@@ -23,7 +25,7 @@ logging.config.dictConfig(get_config('logging'))
 
 class Archiver(AbstractManager):
 
-    def __init__(self, loglevel: Optional[int]=None):
+    def __init__(self, loglevel: int | None=None) -> None:
         super().__init__(loglevel)
         self.script_name = 'archiver'
         self.redis = Redis(unix_socket_path=get_socket_path('cache'))
@@ -54,7 +56,7 @@ class Archiver(AbstractManager):
             self.s3fs_bucket = s3fs_config['config']['bucket_name']
             self.s3fs_client.clear_multipart_uploads(self.s3fs_bucket)
 
-    def _to_run_forever(self):
+    def _to_run_forever(self) -> None:
         archiving_done = False
         # NOTE: When we archive a big directory, moving *a lot* of files, expecially to MinIO
         # can take a very long time. In order to avoid being stuck on the archiving, we break that in chunks
@@ -71,14 +73,14 @@ class Archiver(AbstractManager):
             # This call takes a very long time on MinIO
             self._update_all_capture_indexes()
 
-    def _update_index(self, root_dir: Path, *, s3fs_parent_dir: Optional[str]=None) -> Optional[Path]:
+    def _update_index(self, root_dir: Path, *, s3fs_parent_dir: str | None=None) -> Path | None:
         # returns a path to the index for the given directory
         logmsg = f'Updating index for {root_dir}'
         if s3fs_parent_dir:
             logmsg = f'{logmsg} (s3fs)'
         self.logger.info(logmsg)
 
-        current_index: Dict[str, str] = {}
+        current_index: dict[str, str] = {}
         index_file = root_dir / 'index'
         if index_file.exists():
             try:
@@ -91,11 +93,11 @@ class Archiver(AbstractManager):
                 # NOTE: should we remove if it has subs?
                 index_file.unlink()
 
-        sub_indexes: List[Path] = []
-        current_index_dirs: Set[str] = set(current_index.values())
-        new_captures: Set[Path] = set()
+        sub_indexes: list[Path] = []
+        current_index_dirs: set[str] = set(current_index.values())
+        new_captures: set[Path] = set()
         # Directories that are actually in the listing.
-        current_dirs: Set[str] = set()
+        current_dirs: set[str] = set()
 
         if s3fs_parent_dir:
             s3fs_dir = '/'.join([s3fs_parent_dir, root_dir.name])
@@ -212,7 +214,7 @@ class Archiver(AbstractManager):
 
         return index_file
 
-    def _update_all_capture_indexes(self, *, recent_only: bool=False):
+    def _update_all_capture_indexes(self, *, recent_only: bool=False) -> None:
         '''Run that after the captures are in the proper directories'''
         # Recent captures
         self.logger.info('Update recent indexes')
@@ -278,7 +280,7 @@ class Archiver(AbstractManager):
 
         return dest_dir / capture_path.name
 
-    def _archive(self):
+    def _archive(self) -> bool:
         archive_interval = timedelta(days=get_config('generic', 'archive'))
         cut_time = (datetime.now() - archive_interval)
         self.logger.info(f'Archiving all captures older than {cut_time.isoformat()}.')
@@ -340,7 +342,7 @@ class Archiver(AbstractManager):
             self.logger.info('Archiving done.')
         return archiving_done
 
-    def __load_index(self, index_path: Path, ignore_sub: bool=False) -> Dict[str, str]:
+    def __load_index(self, index_path: Path, ignore_sub: bool=False) -> dict[str, str]:
         '''Loads the given index file and all the subsequent ones if they exist'''
         # NOTE: this method is used on recent and archived captures, it must never trigger a dir listing
         indexed_captures = {}
@@ -359,7 +361,7 @@ class Archiver(AbstractManager):
                     indexed_captures[key] = str(index_path.parent / path_name)
         return indexed_captures
 
-    def _load_indexes(self):
+    def _load_indexes(self) -> None:
         # capture_dir / Year / Month / index <- should always exists. If not, created by _update_index
         # Initialize recent index
         for index in sorted(get_captures_dir().glob('*/*/index'), reverse=True):
@@ -391,7 +393,7 @@ class Archiver(AbstractManager):
         self.logger.info(f'Archived indexes loaded: {total_archived_captures} entries.')
 
 
-def main():
+def main() -> None:
     a = Archiver()
     a.run(sleep_in_sec=3600)
 

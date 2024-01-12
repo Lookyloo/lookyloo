@@ -14,23 +14,22 @@ from typing import Any, Dict, List, Optional, Set, Union, Tuple
 from urllib.parse import urlparse
 
 
-from har2tree import CrawledTree, HostNode, URLNode
+from har2tree import CrawledTree, HostNode, URLNode  # type: ignore[attr-defined]
 from playwrightcapture import get_devices
 from publicsuffixlist import PublicSuffixList  # type: ignore
-from pytaxonomies import Taxonomies
+from pytaxonomies import Taxonomies  # type: ignore[attr-defined]
 from ua_parser import user_agent_parser  # type: ignore
 from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
-from .default import get_homedir, safe_create_dir, get_config
-from .exceptions import LookylooException
+from .default import get_homedir, safe_create_dir, get_config, LookylooException
 
 logger = logging.getLogger('Lookyloo - Helpers')
 
 
 # This method is used in json.dump or json.dumps calls as the default parameter:
 # json.dumps(..., default=dump_to_json)
-def serialize_to_json(obj: Union[Set]) -> Union[List]:
+def serialize_to_json(obj: Union[Set[Any]]) -> Union[List[Any]]:
     if isinstance(obj, set):
         return sorted(obj)
 
@@ -52,12 +51,12 @@ def get_resources_hashes(har2tree_container: Union[CrawledTree, HostNode, URLNod
 
 
 @lru_cache(64)
-def get_taxonomies():
+def get_taxonomies() -> Taxonomies:
     return Taxonomies()
 
 
 @lru_cache(64)
-def get_public_suffix_list():
+def get_public_suffix_list() -> PublicSuffixList:
     """Initialize Public Suffix List"""
     # TODO (?): fetch the list
     return PublicSuffixList()
@@ -131,7 +130,7 @@ def get_sorted_captures_from_disk(captures_dir: Path, /, *,
 
 class UserAgents:
 
-    def __init__(self):
+    def __init__(self) -> None:
         if get_config('generic', 'use_user_agents_users'):
             self.path = get_homedir() / 'own_user_agents'
         else:
@@ -145,14 +144,14 @@ class UserAgents:
         self.playwright_devices = get_devices()
         self._load_newest_ua_file(ua_files_path[0])
 
-    def _load_newest_ua_file(self, path: Path):
+    def _load_newest_ua_file(self, path: Path) -> None:
         self.most_recent_ua_path = path
         with self.most_recent_ua_path.open() as f:
             self.most_recent_uas = json.load(f)
             self.by_freq = self.most_recent_uas.pop('by_frequency')
         self._load_playwright_devices()
 
-    def _load_playwright_devices(self):
+    def _load_playwright_devices(self) -> None:
         # Only get default and desktop for now.
         for device_name, details in self.playwright_devices['desktop']['default'].items():
             parsed_ua = ParsedUserAgent(details['user_agent'])
@@ -254,16 +253,17 @@ def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str, bytes, L
     return to_return
 
 
-def uniq_domains(uniq_urls):
+def uniq_domains(uniq_urls: List[str]) -> Set[str]:
     domains = set()
     for url in uniq_urls:
         splitted = urlparse(url)
-        domains.add(splitted.hostname)
+        if splitted.hostname:
+            domains.add(splitted.hostname)
     return domains
 
 
 @lru_cache(64)
-def get_useragent_for_requests():
+def get_useragent_for_requests() -> str:
     return f'Lookyloo / {version("lookyloo")}'
 
 
@@ -331,11 +331,11 @@ class ParsedUserAgent(UserAgent):
     # from https://python.tutorialink.com/how-do-i-get-the-user-agent-with-flask/
 
     @cached_property
-    def _details(self):
+    def _details(self) -> Dict[str, Any]:
         return user_agent_parser.Parse(self.string)
 
     @property
-    def platform(self):
+    def platform(self) -> Optional[str]:  # type: ignore[override]
         return self._details['os'].get('family')
 
     @property
@@ -343,11 +343,11 @@ class ParsedUserAgent(UserAgent):
         return self._aggregate_version(self._details['os'])
 
     @property
-    def browser(self):
+    def browser(self) -> Optional[str]:  # type: ignore[override]
         return self._details['user_agent'].get('family')
 
     @property
-    def version(self):
+    def version(self) -> Optional[str]:  # type: ignore[override]
         return self._aggregate_version(self._details['user_agent'])
 
     def _aggregate_version(self, details: Dict[str, str]) -> Optional[str]:
@@ -357,5 +357,5 @@ class ParsedUserAgent(UserAgent):
             if (part := details.get(key)) is not None
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'OS: {self.platform} - Browser: {self.browser} {self.version} - UA: {self.string}'

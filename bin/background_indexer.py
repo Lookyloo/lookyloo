@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import logging
 import logging.config
 import os
@@ -20,7 +22,7 @@ logging.config.dictConfig(get_config('logging'))
 
 class BackgroundIndexer(AbstractManager):
 
-    def __init__(self, loglevel: Optional[int]=None):
+    def __init__(self, loglevel: int | None=None):
         super().__init__(loglevel)
         self.lookyloo = Lookyloo()
         self.script_name = 'background_indexer'
@@ -28,7 +30,7 @@ class BackgroundIndexer(AbstractManager):
         self.discarded_captures_dir = self.lookyloo.capture_dir.parent / 'discarded_captures'
         self.discarded_captures_dir.mkdir(parents=True, exist_ok=True)
 
-    def _to_run_forever(self):
+    def _to_run_forever(self) -> None:
         all_done = self._build_missing_pickles()
         if all_done:
             self._check_indexes()
@@ -72,7 +74,7 @@ class BackgroundIndexer(AbstractManager):
                     # The capture with this UUID exists, but it is for some reason missing in lookup_dirs
                     self.lookyloo.redis.hset('lookup_dirs', uuid, str(path))
                 else:
-                    cached_path = Path(self.lookyloo.redis.hget('lookup_dirs', uuid))
+                    cached_path = Path(self.lookyloo.redis.hget('lookup_dirs', uuid))  # type: ignore[arg-type]
                     if cached_path != path:
                         # we have a duplicate UUID, it is proably related to some bad copy/paste
                         if cached_path.exists():
@@ -118,13 +120,13 @@ class BackgroundIndexer(AbstractManager):
             return True
         return False
 
-    def _check_indexes(self):
+    def _check_indexes(self) -> None:
         index_redis = self.lookyloo.indexing.redis
         can_index = index_redis.set('ongoing_indexing', 1, ex=3600, nx=True)
         if not can_index:
             # There is no reason to run this method in multiple scripts.
             self.logger.info('Indexing already ongoing in another process.')
-            return
+            return None
         self.logger.info('Check indexes...')
         for cache in self.lookyloo.sorted_capture_cache(cached_captures_only=False):
             if self.lookyloo.is_public_instance and cache.no_index:
@@ -163,7 +165,7 @@ class BackgroundIndexer(AbstractManager):
         self.logger.info('... done.')
 
 
-def main():
+def main() -> None:
     i = BackgroundIndexer()
     i.run(sleep_in_sec=60)
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 import time
 import logging
@@ -8,7 +10,7 @@ from collections import Counter
 from datetime import date, timedelta
 from typing import Any, Dict, Optional
 
-from lookyloo.lookyloo import Lookyloo, CaptureStatusCore, CaptureStatusPy
+from lookyloo.lookyloo import Lookyloo, CaptureStatusCore, CaptureStatusPy  # type: ignore[attr-defined]
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 
@@ -17,19 +19,19 @@ logging.config.dictConfig(get_config('logging'))
 
 class Processing(AbstractManager):
 
-    def __init__(self, loglevel: Optional[int]=None):
+    def __init__(self, loglevel: int | None=None):
         super().__init__(loglevel)
         self.script_name = 'processing'
         self.lookyloo = Lookyloo()
 
         self.use_own_ua = get_config('generic', 'use_user_agents_users')
 
-    def _to_run_forever(self):
+    def _to_run_forever(self) -> None:
         if self.use_own_ua:
             self._build_ua_file()
         self._retry_failed_enqueue()
 
-    def _build_ua_file(self):
+    def _build_ua_file(self) -> None:
         '''Build a file in a format compatible with the capture page'''
         yesterday = (date.today() - timedelta(days=1))
         self_generated_ua_file_path = get_homedir() / 'own_user_agents' / str(yesterday.year) / f'{yesterday.month:02}'
@@ -44,7 +46,7 @@ class Processing(AbstractManager):
             self.logger.info(f'No User-agent file for {yesterday} to generate.')
             return
 
-        to_store: Dict[str, Any] = {'by_frequency': []}
+        to_store: dict[str, Any] = {'by_frequency': []}
         uas = Counter([entry.split('|', 1)[1] for entry in entries])
         for ua, _ in uas.most_common():
             parsed_ua = ParsedUserAgent(ua)
@@ -71,7 +73,7 @@ class Processing(AbstractManager):
         self.lookyloo.redis.delete(f'user_agents|{yesterday.isoformat()}')
         self.logger.info(f'User-agent file for {yesterday} generated.')
 
-    def _retry_failed_enqueue(self):
+    def _retry_failed_enqueue(self) -> None:
         '''If enqueuing failed, the settings are added, with a UUID in the 'to_capture key', and they have a UUID'''
         for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf'):
             try_reenqueue = False
@@ -131,7 +133,7 @@ class Processing(AbstractManager):
                 self.logger.info(f'{uuid} enqueued.')
 
 
-def main():
+def main() -> None:
     p = Processing()
     p.run(sleep_in_sec=30)
 

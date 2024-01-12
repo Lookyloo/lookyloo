@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import re
 import socket
 
 from typing import overload, Literal, List, Union
 
-from har2tree import CrawledTree, Har2TreeError, HostNode
+from har2tree import CrawledTree, Har2TreeError, HostNode  # type: ignore[attr-defined]
 
 from .abstractmodule import AbstractModule
 
@@ -62,7 +64,7 @@ class UniversalWhois(AbstractModule):
                 self.query_whois_hostnode(n)
 
     @overload
-    def whois(self, query: str, contact_email_only: Literal[True]) -> List[str]:
+    def whois(self, query: str, contact_email_only: Literal[True]) -> list[str]:
         ...
 
     @overload
@@ -70,10 +72,10 @@ class UniversalWhois(AbstractModule):
         ...
 
     @overload
-    def whois(self, query: str, contact_email_only: bool=False) -> Union[str, List[str]]:
+    def whois(self, query: str, contact_email_only: bool=False) -> str | list[str]:
         ...
 
-    def whois(self, query: str, contact_email_only: bool=False) -> Union[str, List[str]]:
+    def whois(self, query: str, contact_email_only: bool=False) -> str | list[str]:
         if not self.available:
             return ''
         bytes_whois = b''

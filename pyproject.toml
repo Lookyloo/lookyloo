@@ -65,7 +65,7 @@ passivetotal = "^2.5.9"
 werkzeug = "^3.0.1"
 filetype = "^1.2.0"
 pypandora = "^1.6.1"
-lacuscore = "^1.7.8"
+lacuscore = "^1.7.9"
 pylacus = "^1.7.1"
 pyipasnhistory = "^2.1.2"
 publicsuffixlist = "^0.10.0.20231214"
@@ -103,17 +103,3 @@ types-pytz = "^2023.3.1.1"
 [build-system]
 requires = ["poetry_core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.mypy]
-check_untyped_defs = true
-ignore_errors = false
-ignore_missing_imports = false
-strict_optional = true
-no_implicit_optional = true
-warn_unused_ignores = true
-warn_redundant_casts = true
-warn_unused_configs = true
-warn_unreachable = true
-
-show_error_context = true
-pretty = true

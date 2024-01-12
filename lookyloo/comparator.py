@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import fnmatch
 import logging
 
 from typing import Dict, Any, Union, List, Optional, TypedDict, Tuple
 
-from har2tree import URLNode
+from har2tree import URLNode  # type: ignore[attr-defined]
 
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
@@ -19,8 +21,8 @@ from .exceptions import MissingUUID, TreeNeedsRebuild
 class CompareSettings(TypedDict):
     '''The settings that can be passed to the compare method to filter out some differences'''
 
-    ressources_ignore_domains: Tuple[str, ...]
-    ressources_ignore_regexes: Tuple[str, ...]
+    ressources_ignore_domains: tuple[str, ...]
+    ressources_ignore_regexes: tuple[str, ...]
 
     ignore_ips: bool
 
@@ -39,16 +41,16 @@ class Comparator():
         self.public_domain = get_config('generic', 'public_domain')
 
     @property
-    def redis(self) -> Redis:
+    def redis(self) -> Redis:  # type: ignore[type-arg]
         return Redis(connection_pool=self.redis_pool)
 
-    def get_comparables_node(self, node: URLNode) -> Dict[str, str]:
+    def get_comparables_node(self, node: URLNode) -> dict[str, str]:
         to_return = {'url': node.name, 'hostname': node.hostname}
         if hasattr(node, 'ip_address'):
             to_return['ip_address'] = str(node.ip_address)
         return to_return
 
-    def _compare_nodes(self, left: Dict[str, str], right: Dict[str, str], /, different: bool, ignore_ips: bool) -> Tuple[bool, Dict[str, Any]]:
+    def _compare_nodes(self, left: dict[str, str], right: dict[str, str], /, different: bool, ignore_ips: bool) -> tuple[bool, dict[str, Any]]:
         to_return = {}
         # URL
         if left['url'] != right['url']:
@@ -78,12 +80,12 @@ class Comparator():
         # IPs in hostnode + ASNs
         return different, to_return
 
-    def get_comparables_capture(self, capture_uuid: str) -> Dict[str, Any]:
+    def get_comparables_capture(self, capture_uuid: str) -> dict[str, Any]:
         if capture_uuid not in self._captures_index:
             raise MissingUUID(f'{capture_uuid} does not exists.')
 
         capture = self._captures_index[capture_uuid]
-        to_return: Dict[str, Any]
+        to_return: dict[str, Any]
         try:
             if capture.error:
                 # The error on lookyloo is too verbose and contains the UUID of the capture, skip that.
@@ -108,17 +110,17 @@ class Comparator():
             to_return = {'error': str(e)}
         return to_return
 
-    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: Optional[CompareSettings]=None) -> Tuple[bool, Dict[str, Any]]:
+    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: CompareSettings | None=None) -> tuple[bool, dict[str, Any]]:
         if capture_left not in self._captures_index:
             raise MissingUUID(f'{capture_left} does not exists.')
         if capture_right not in self._captures_index:
             raise MissingUUID(f'{capture_right} does not exists.')
 
         different: bool = False
-        to_return: Dict[str, Dict[str, Union[str,
-                                             List[Union[str, Dict[str, Any]]],
-                                             Dict[str, Union[int, str,
-                                                             List[Union[int, str, Dict[str, Any]]]]]]]] = {}
+        to_return: dict[str, dict[str, (str |
+                                             list[str | dict[str, Any]] |
+                                             dict[str, (int | str |
+                                                             list[int | str | dict[str, Any]])])]] = {}
         to_return['lookyloo_urls'] = {'left': f'https://{self.public_domain}/tree/{capture_left}',
                                       'right': f'https://{self.public_domain}/tree/{capture_right}'}
         left = self.get_comparables_capture(capture_left)
@@ -192,7 +194,7 @@ class Comparator():
                                                 'details': left['redirects']['length']}
 
         # Prepare settings
-        _settings: Optional[CompareSettings]
+        _settings: CompareSettings | None
         if settings:
             # cleanup the settings
             _ignore_domains = set(settings['ressources_ignore_domains'] if settings.get('ressources_ignore_domains') else [])

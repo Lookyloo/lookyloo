@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import asyncio
 import logging
+import logging.config
 import os
 import signal
 import time
 from abc import ABC
 from datetime import datetime, timedelta
 from subprocess import Popen
-from typing import List, Optional, Tuple
 
 from redis import Redis
 from redis.exceptions import ConnectionError as RedisConnectionError
@@ -20,18 +22,18 @@ class AbstractManager(ABC):
 
     script_name: str
 
-    def __init__(self, loglevel: Optional[int]=None):
+    def __init__(self, loglevel: int | None=None):
         self.loglevel: int = loglevel if loglevel is not None else get_config('generic', 'loglevel') or logging.INFO
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(self.loglevel)
         self.logger.info(f'Initializing {self.__class__.__name__}')
-        self.process: Optional[Popen] = None
+        self.process: Popen | None = None  # type: ignore[type-arg]
         self.__redis = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
 
         self.force_stop = False
 
     @staticmethod
-    def is_running() -> List[Tuple[str, float]]:
+    def is_running() -> list[tuple[str, float]]:
         try:
             r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
             for script_name, score in r.zrangebyscore('running', '-inf', '+inf', withscores=True):
@@ -52,7 +54,7 @@ class AbstractManager(ABC):
             return []
 
     @staticmethod
-    def clear_running():
+    def clear_running() -> None:
         try:
             r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
             r.delete('running')
@@ -60,14 +62,14 @@ class AbstractManager(ABC):
             print('Unable to connect to redis, the system is down.')
 
     @staticmethod
-    def force_shutdown():
+    def force_shutdown() -> None:
         try:
             r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
             r.set('shutdown', 1)
         except RedisConnectionError:
             print('Unable to connect to redis, the system is down.')
 
-    def set_running(self, number: Optional[int]=None) -> None:
+    def set_running(self, number: int | None=None) -> None:
         if number == 0:
             self.__redis.zrem('running', self.script_name)
         else:
@@ -111,7 +113,7 @@ class AbstractManager(ABC):
     def _to_run_forever(self) -> None:
         raise NotImplementedError('This method must be implemented by the child')
 
-    def _kill_process(self):
+    def _kill_process(self) -> None:
         if self.process is None:
             return
         kill_order = [signal.SIGWINCH, signal.SIGTERM, signal.SIGINT, signal.SIGKILL]
@@ -167,7 +169,7 @@ class AbstractManager(ABC):
     def _wait_to_finish(self) -> None:
         self.logger.info('Not implemented, nothing to wait for.')
 
-    async def stop(self):
+    async def stop(self) -> None:
         self.force_stop = True
 
     async def _to_run_forever_async(self) -> None:
@@ -176,7 +178,7 @@ class AbstractManager(ABC):
     async def _wait_to_finish_async(self) -> None:
         self.logger.info('Not implemented, nothing to wait for.')
 
-    async def stop_async(self):
+    async def stop_async(self) -> None:
         """Method to pass the signal handler:
             loop.add_signal_handler(signal.SIGTERM, lambda: loop.create_task(p.stop()))
         """

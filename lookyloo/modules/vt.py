@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 import time
 from datetime import date
@@ -18,9 +20,10 @@ if TYPE_CHECKING:
 from .abstractmodule import AbstractModule
 
 
-def jsonify_vt(obj: WhistleBlowerDict):
+def jsonify_vt(obj: WhistleBlowerDict) -> dict[str, Any]:
     if isinstance(obj, WhistleBlowerDict):
         return {k: v for k, v in obj.items()}
+    return obj
 
 
 class VirusTotal(AbstractModule):
@@ -39,7 +42,7 @@ class VirusTotal(AbstractModule):
         self.storage_dir_vt.mkdir(parents=True, exist_ok=True)
         return True
 
-    def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
+    def get_url_lookup(self, url: str) -> dict[str, Any] | None:
         url_storage_dir = get_cache_directory(self.storage_dir_vt, vt.url_id(url))
         if not url_storage_dir.exists():
             return None
@@ -54,7 +57,7 @@ class VirusTotal(AbstractModule):
             cached_entries[0].unlink(missing_ok=True)
             return None
 
-    def capture_default_trigger(self, cache: 'CaptureCache', /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False, auto_trigger: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}

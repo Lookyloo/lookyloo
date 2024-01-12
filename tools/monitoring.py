@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import os
 import sys
 
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 from redis import Redis
 from redis.exceptions import ConnectionError
@@ -21,11 +23,11 @@ console = Console(color_system="256")
 class Monitoring():
 
     def __init__(self) -> None:
-        self.redis_cache: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
-        self.redis_indexing: Redis = Redis(unix_socket_path=get_socket_path('indexing'), decode_responses=True)
+        self.redis_cache: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)  # type: ignore[type-arg]
+        self.redis_indexing: Redis = Redis(unix_socket_path=get_socket_path('indexing'), decode_responses=True)  # type: ignore[type-arg]
 
     @property
-    def backend_status(self):
+    def backend_status(self) -> bool:
         socket_path_cache = get_socket_path('cache')
         socket_path_index = get_socket_path('indexing')
         backend_up = True
@@ -56,12 +58,12 @@ class Monitoring():
         return backend_up
 
     @property
-    def queues(self):
+    def queues(self) -> list[tuple[str, float]]:
         return self.redis_cache.zrevrangebyscore('queues', 'Inf', '-Inf', withscores=True)
 
     @property
-    def ongoing_captures(self):
-        captures_uuid: List[Tuple[str, float]] = self.redis_cache.zrevrangebyscore('to_capture', 'Inf', '-Inf', withscores=True)
+    def ongoing_captures(self) -> list[tuple[str, float, dict[str, Any]]]:
+        captures_uuid: list[tuple[str, float]] = self.redis_cache.zrevrangebyscore('to_capture', 'Inf', '-Inf', withscores=True)
         if not captures_uuid:
             return []
         to_return = []
@@ -75,7 +77,7 @@ class Monitoring():
         return to_return
 
     @property
-    def tree_cache(self):
+    def tree_cache(self) -> dict[str, str]:
         to_return = {}
         for pid_name, value in self.redis_cache.hgetall('tree_cache').items():
             pid, name = pid_name.split('|', 1)

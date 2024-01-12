@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 from urllib.parse import urlsplit
 
-from har2tree import CrawledTree, HostNode, URLNode
+from har2tree import CrawledTree, HostNode, URLNode  # type: ignore[attr-defined]
 from redis import Redis
 
 from .default import get_config, get_homedir, get_socket_path
@@ -16,14 +18,14 @@ from .modules import SaneJavaScript
 
 class Context():
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
-        self.redis: Redis = Redis(unix_socket_path=get_socket_path('indexing'), db=1, decode_responses=True)
+        self.redis: Redis = Redis(unix_socket_path=get_socket_path('indexing'), db=1, decode_responses=True)  # type: ignore[type-arg]
         self._cache_known_content()
         self.sanejs = SaneJavaScript(config_name='SaneJS')
 
-    def clear_context(self):
+    def clear_context(self) -> None:
         self.redis.flushdb()
 
     def _cache_known_content(self) -> None:
@@ -55,13 +57,13 @@ class Context():
                         p.sadd(f'bh|{h}|legitimate', *details['hostnames'])
                 p.execute()
 
-    def find_known_content(self, har2tree_container: Union[CrawledTree, HostNode, URLNode, str]) -> Dict[str, Any]:
+    def find_known_content(self, har2tree_container: CrawledTree | HostNode | URLNode | str) -> dict[str, Any]:
         """Return a dictionary of content resources found in the local known_content database, or in SaneJS (if enabled)"""
         if isinstance(har2tree_container, str):
-            to_lookup: Set[str] = {har2tree_container, }
+            to_lookup: set[str] = {har2tree_container, }
         else:
             to_lookup = get_resources_hashes(har2tree_container)
-        known_content_table: Dict[str, Any] = {}
+        known_content_table: dict[str, Any] = {}
         if not to_lookup:
             return known_content_table
         # get generic known content
@@ -113,7 +115,7 @@ class Context():
 
         return known_content_table
 
-    def store_known_legitimate_tree(self, tree: CrawledTree):
+    def store_known_legitimate_tree(self, tree: CrawledTree) -> None:
         known_content = self.find_known_content(tree)
         capture_file: Path = get_homedir() / 'known_content_user' / f'{urlsplit(tree.root_url).hostname}.json'
         if capture_file.exists():
@@ -156,7 +158,7 @@ class Context():
         with open(capture_file, 'w') as f:
             json.dump(to_store, f, indent=2, default=serialize_to_json)
 
-    def mark_as_legitimate(self, tree: CrawledTree, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> None:
+    def mark_as_legitimate(self, tree: CrawledTree, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> None:
         if hostnode_uuid:
             urlnodes = tree.root_hartree.get_host_node_by_uuid(hostnode_uuid).urls
         elif urlnode_uuid:
@@ -214,7 +216,7 @@ class Context():
     def legitimate_body(self, body_hash: str, legitimate_hostname: str) -> None:
         self.redis.sadd(f'bh|{body_hash}|legitimate', legitimate_hostname)
 
-    def store_known_malicious_ressource(self, ressource_hash: str, details: Dict[str, str]):
+    def store_known_malicious_ressource(self, ressource_hash: str, details: dict[str, str]) -> None:
         known_malicious_ressource_file = get_homedir() / 'known_content_user' / 'malicious.json'
         if known_malicious_ressource_file.exists():
             with open(known_malicious_ressource_file) as f:
@@ -236,7 +238,7 @@ class Context():
         with open(known_malicious_ressource_file, 'w') as f:
             json.dump(to_store, f, indent=2, default=serialize_to_json)
 
-    def add_malicious(self, ressource_hash: str, details: Dict[str, str]):
+    def add_malicious(self, ressource_hash: str, details: dict[str, str]) -> None:
         self.store_known_malicious_ressource(ressource_hash, details)
         p = self.redis.pipeline()
         p.sadd('bh|malicious', ressource_hash)
@@ -246,7 +248,7 @@ class Context():
             p.sadd(f'{ressource_hash}|tag', details['type'])
         p.execute()
 
-    def store_known_legitimate_ressource(self, ressource_hash: str, details: Dict[str, str]):
+    def store_known_legitimate_ressource(self, ressource_hash: str, details: dict[str, str]) -> None:
         known_legitimate_ressource_file = get_homedir() / 'known_content_user' / 'legitimate.json'
         if known_legitimate_ressource_file.exists():
             with open(known_legitimate_ressource_file) as f:
@@ -267,7 +269,7 @@ class Context():
         with open(known_legitimate_ressource_file, 'w') as f:
             json.dump(to_store, f, indent=2, default=serialize_to_json)
 
-    def add_legitimate(self, ressource_hash: str, details: Dict[str, str]):
+    def add_legitimate(self, ressource_hash: str, details: dict[str, str]) -> None:
         self.store_known_legitimate_ressource(ressource_hash, details)
         if 'domain' in details:
             self.redis.sadd(f'bh|{ressource_hash}|legitimate', details['domain'])
@@ -277,7 +279,7 @@ class Context():
 
     # Query DB
 
-    def is_legitimate(self, urlnode: URLNode, known_hashes: Dict[str, Any]) -> Optional[bool]:
+    def is_legitimate(self, urlnode: URLNode, known_hashes: dict[str, Any]) -> bool | None:
         """
         If legitimate if generic, marked as legitimate or known on sanejs, loaded from the right domain
         3 cases:
@@ -285,7 +287,7 @@ class Context():
             * False if *any* content is malicious
             * None in all other cases
         """
-        status: List[Optional[bool]] = []
+        status: list[bool | None] = []
         for h in urlnode.resources_hashes:
             # Note: we can have multiple hashes on the same urlnode (see embedded resources).
             if h not in known_hashes:
@@ -305,7 +307,7 @@ class Context():
             return True  # All the contents are known legitimate
         return None
 
-    def is_malicious(self, urlnode: URLNode, known_hashes: Dict[str, Any]) -> Optional[bool]:
+    def is_malicious(self, urlnode: URLNode, known_hashes: dict[str, Any]) -> bool | None:
         """3 cases:
             * True if *any* content is malicious
             * False if *all* the contents are known legitimate

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 from typing import Dict, List
 
-from har2tree import CrawledTree
-from pyhashlookup import Hashlookup
+from har2tree import CrawledTree  # type: ignore[attr-defined]
+from pyhashlookup import Hashlookup  # type: ignore[attr-defined]
 
 from ..default import ConfigError
 from ..helpers import get_useragent_for_requests
@@ -31,7 +33,7 @@ class HashlookupModule(AbstractModule):
         self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
         return True
 
-    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, auto_trigger: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}
@@ -52,14 +54,14 @@ class HashlookupModule(AbstractModule):
 
         return {'success': 'Module triggered'}
 
-    def hashes_lookup(self, hashes: List[str]) -> Dict[str, Dict[str, str]]:
+    def hashes_lookup(self, hashes: list[str]) -> dict[str, dict[str, str]]:
         '''Lookup a list of hashes against Hashlookup
         Note: It will trigger a request to hashlookup every time *until* there is a hit, then once a day.
         '''
         if not self.available:
             raise ConfigError('Hashlookup not available, probably not enabled.')
 
-        to_return: Dict[str, Dict[str, str]] = {}
+        to_return: dict[str, dict[str, str]] = {}
         for entry in self.client.sha1_bulk_lookup(hashes):
             if 'SHA-1' in entry:
                 to_return[entry['SHA-1'].lower()] = entry

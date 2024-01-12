@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, Optional, List, TYPE_CHECKING
 
-from pyphishtanklookup import PhishtankLookup
+from pyphishtanklookup import PhishtankLookup  # type: ignore[attr-defined]
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory
@@ -38,7 +40,7 @@ class Phishtank(AbstractModule):
         self.storage_dir_pt.mkdir(parents=True, exist_ok=True)
         return True
 
-    def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
+    def get_url_lookup(self, url: str) -> dict[str, Any] | None:
         url_storage_dir = get_cache_directory(self.storage_dir_pt, url, 'url')
         if not url_storage_dir.exists():
             return None
@@ -49,10 +51,10 @@ class Phishtank(AbstractModule):
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def lookup_ips_capture(self, cache: 'CaptureCache') -> Dict[str, List[Dict[str, Any]]]:
+    def lookup_ips_capture(self, cache: CaptureCache) -> dict[str, list[dict[str, Any]]]:
         with (cache.capture_dir / 'ips.json').open() as f:
             ips_dump = json.load(f)
-        to_return: Dict[str, List[Dict[str, Any]]] = {}
+        to_return: dict[str, list[dict[str, Any]]] = {}
         for ip in {ip for ips_list in ips_dump.values() for ip in ips_list}:
             entry = self.get_ip_lookup(ip)
             if not entry:
@@ -64,7 +66,7 @@ class Phishtank(AbstractModule):
                     to_return[ip].append(entry)
         return to_return
 
-    def get_ip_lookup(self, ip: str) -> Optional[Dict[str, Any]]:
+    def get_ip_lookup(self, ip: str) -> dict[str, Any] | None:
         ip_storage_dir = get_cache_directory(self.storage_dir_pt, ip, 'ip')
         if not ip_storage_dir.exists():
             return None
@@ -75,7 +77,7 @@ class Phishtank(AbstractModule):
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, cache: 'CaptureCache', /, *, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, auto_trigger: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}

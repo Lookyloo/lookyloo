@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 
 from datetime import date
 from typing import Dict, List, Optional, TYPE_CHECKING
 from urllib.parse import urlparse
 
-from pypdns import PyPDNS, PDNSRecord
+from pypdns import PyPDNS, PDNSRecord  # type: ignore[attr-defined]
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory
@@ -32,7 +34,7 @@ class CIRCLPDNS(AbstractModule):
         self.storage_dir_pypdns.mkdir(parents=True, exist_ok=True)
         return True
 
-    def get_passivedns(self, query: str) -> Optional[List[PDNSRecord]]:
+    def get_passivedns(self, query: str) -> list[PDNSRecord] | None:
         # The query can be IP or Hostname. For now, we only do it on domains.
         url_storage_dir = get_cache_directory(self.storage_dir_pypdns, query, 'pdns')
         if not url_storage_dir.exists():
@@ -44,7 +46,7 @@ class CIRCLPDNS(AbstractModule):
         with cached_entries[0].open() as f:
             return [PDNSRecord(record) for record in json.load(f)]
 
-    def capture_default_trigger(self, cache: 'CaptureCache', /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False, auto_trigger: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}

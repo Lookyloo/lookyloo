@@ -8,7 +8,7 @@ from redis.exceptions import ConnectionError
 from lookyloo.default import get_homedir, get_socket_path
 
 
-def main():
+def main() -> None:
     get_homedir()
     p = Popen(['shutdown'])
     p.wait()

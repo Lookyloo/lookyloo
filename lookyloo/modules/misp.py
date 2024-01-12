@@ -5,12 +5,12 @@ import re
 from io import BytesIO
 from collections import defaultdict
 from collections.abc import Mapping
-from typing import Any, Dict, List, Optional, Set, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Set, Union, TYPE_CHECKING, Iterator
 
 import requests
-from har2tree import HostNode, URLNode, Har2TreeError
-from pymisp import MISPAttribute, MISPEvent, PyMISP
-from pymisp.tools import FileObject, URLObject
+from har2tree import HostNode, URLNode, Har2TreeError  # type: ignore[attr-defined]
+from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag  # type: ignore[attr-defined]
+from pymisp.tools import FileObject, URLObject  # type: ignore[attr-defined]
 
 from ..default import get_config, get_homedir
 from ..helpers import get_public_suffix_list
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 
 
-class MISPs(Mapping, AbstractModule):
+class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
 
     def module_init(self) -> bool:
         if not self.config.get('default'):
@@ -37,7 +37,7 @@ class MISPs(Mapping, AbstractModule):
             self.logger.warning(f"The default MISP instance ({self.default_instance}) is missing in the instances ({', '.join(self.config['instances'].keys())}), disabling MISP.")
             return False
 
-        self.__misps: Dict[str, 'MISP'] = {}
+        self.__misps = {}
         for instance_name, instance_config in self.config['instances'].items():
             if misp_connector := MISP(config=instance_config):
                 if misp_connector.available:
@@ -56,10 +56,10 @@ class MISPs(Mapping, AbstractModule):
     def __getitem__(self, name: str) -> 'MISP':
         return self.__misps[name]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[dict[str, 'MISP']]:
         return iter(self.__misps)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.__misps)
 
     @property
@@ -170,10 +170,10 @@ class MISP(AbstractModule):
         self.psl = get_public_suffix_list()
         return True
 
-    def get_fav_tags(self):
+    def get_fav_tags(self) -> dict[Any, Any] | list[MISPTag]:
         return self.client.tags(pythonify=True, favouritesOnly=1)
 
-    def _prepare_push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False, auto_publish: Optional[bool]=False) -> Union[List[MISPEvent], Dict]:
+    def _prepare_push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False, auto_publish: Optional[bool]=False) -> Union[List[MISPEvent], Dict[str, str]]:
         '''Adds the pre-configured information as required by the instance.
         If duplicates aren't allowed, they will be automatically skiped and the
         extends_uuid key in the next element in the list updated'''
@@ -196,11 +196,11 @@ class MISP(AbstractModule):
             for tag in self.default_tags:
                 event.add_tag(tag)
             if auto_publish:
-                event.publish()
+                event.publish()  # type: ignore[no-untyped-call]
             events_to_push.append(event)
         return events_to_push
 
-    def push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False, auto_publish: Optional[bool]=None) -> Union[List[MISPEvent], Dict]:
+    def push(self, to_push: Union[List[MISPEvent], MISPEvent], allow_duplicates: bool=False, auto_publish: Optional[bool]=None) -> Union[List[MISPEvent], Dict[Any, Any]]:
         if auto_publish is None:
             auto_publish = self.auto_publish
         if self.available and self.enable_push:

@@ -4,14 +4,14 @@ import base64
 import hashlib
 import json
 
-from typing import Dict
+from typing import Dict, Any
 
 from lookyloo.default import get_homedir
 
 if __name__ == '__main__':
     dest_dir = get_homedir() / 'website' / 'web'
 
-    to_save: Dict = {'static': {}}
+    to_save: Dict[str, Any] = {'static': {}}
 
     for resource in (dest_dir / 'static').glob('*'):
         if resource.name[0] == '.':

@@ -13,13 +13,13 @@ logging.config.dictConfig(get_config('logging'))
 
 class Website(AbstractManager):
 
-    def __init__(self, loglevel: Optional[int]=None):
+    def __init__(self, loglevel: Optional[int]=None) -> None:
         super().__init__(loglevel)
         self.script_name = 'website'
-        self.process = self._launch_website()
+        self.process: Popen = self._launch_website()  # type: ignore[type-arg]
         self.set_running()
 
-    def _launch_website(self):
+    def _launch_website(self) -> Popen:  # type: ignore[type-arg]
         website_dir = get_homedir() / 'website'
         ip = get_config('generic', 'website_listen_ip')
         port = get_config('generic', 'website_listen_port')
@@ -32,7 +32,7 @@ class Website(AbstractManager):
                      cwd=website_dir)
 
 
-def main():
+def main() -> None:
     w = Website()
     w.run(sleep_in_sec=10)
 

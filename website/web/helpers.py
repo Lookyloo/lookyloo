@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, List, Union
 
 import flask_login  # type: ignore
+from flask import Request
 from werkzeug.security import generate_password_hash
 
 from lookyloo.default import get_config, get_homedir
@@ -23,7 +24,7 @@ def get_lookyloo_instance() -> Lookyloo:
     return __global_lookyloo_instance
 
 
-def src_request_ip(request) -> str:
+def src_request_ip(request: Request) -> str | None:
     # NOTE: X-Real-IP is the IP passed by the reverse proxy in the headers.
     real_ip = request.headers.get('X-Real-IP')
     if not real_ip:
@@ -31,11 +32,11 @@ def src_request_ip(request) -> str:
     return real_ip
 
 
-class User(flask_login.UserMixin):
+class User(flask_login.UserMixin):  # type: ignore[misc]
     pass
 
 
-def load_user_from_request(request):
+def load_user_from_request(request: Request) -> User | None:
     api_key = request.headers.get('Authorization')
     if not api_key:
         return None

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import contextlib
 import gzip
 import json
@@ -13,15 +15,15 @@ import time
 
 from collections.abc import Mapping
 from datetime import datetime
-from functools import lru_cache
+from functools import lru_cache, _CacheInfo as CacheInfo
 from logging import Logger, LoggerAdapter
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, Set, MutableMapping
+from typing import Any, Dict, List, Optional, Tuple, Union, Set, MutableMapping, Iterator
 
 import dns.rdatatype
 import dns.resolver
-from har2tree import CrawledTree, Har2TreeError, HarFile
-from pyipasnhistory import IPASNHistory
+from har2tree import CrawledTree, Har2TreeError, HarFile  # type: ignore[attr-defined]
+from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
 from .context import Context
@@ -32,11 +34,11 @@ from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, Tr
 from .modules import Cloudflare
 
 
-class LookylooCacheLogAdapter(LoggerAdapter):
+class LookylooCacheLogAdapter(LoggerAdapter):  # type: ignore[type-arg]
     """
     Prepend log entry with the UUID of the capture
     """
-    def process(self, msg: str, kwargs: MutableMapping[str, Any]) -> Tuple[str, MutableMapping[str, Any]]:
+    def process(self, msg: str, kwargs: MutableMapping[str, Any]) -> tuple[str, MutableMapping[str, Any]]:
         if self.extra:
             return '[{}] {}'.format(self.extra['uuid'], msg), kwargs
         return msg, kwargs
@@ -47,10 +49,10 @@ class CaptureCache():
                  'error', 'no_index', 'categories', 'parent',
                  'user_agent', 'referer', 'logger')
 
-    def __init__(self, cache_entry: Dict[str, Any]):
+    def __init__(self, cache_entry: dict[str, Any]):
         logger = logging.getLogger(f'{self.__class__.__name__}')
         logger.setLevel(get_config('generic', 'loglevel'))
-        __default_cache_keys: Tuple[str, str, str, str, str, str] = ('uuid', 'title', 'timestamp',
+        __default_cache_keys: tuple[str, str, str, str, str, str] = ('uuid', 'title', 'timestamp',
                                                                      'url', 'redirects', 'capture_dir')
         if 'uuid' not in cache_entry or 'capture_dir' not in cache_entry:
             raise LookylooException(f'The capture is deeply broken: {cache_entry}')
@@ -80,16 +82,16 @@ class CaptureCache():
                 # If the microsecond is missing (0), it fails
                 self.timestamp = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
 
-        self.redirects: List[str] = json.loads(cache_entry['redirects']) if cache_entry.get('redirects') else []
+        self.redirects: list[str] = json.loads(cache_entry['redirects']) if cache_entry.get('redirects') else []
 
         # Error without all the keys in __default_cache_keys was fatal.
         # if the keys in __default_cache_keys are present, it was an HTTP error and we still need to pass the error along
-        self.error: Optional[str] = cache_entry.get('error')
+        self.error: str | None = cache_entry.get('error')
         self.no_index: bool = True if cache_entry.get('no_index') in [1, '1'] else False
-        self.categories: List[str] = json.loads(cache_entry['categories']) if cache_entry.get('categories') else []
-        self.parent: Optional[str] = cache_entry.get('parent')
-        self.user_agent: Optional[str] = cache_entry.get('user_agent')
-        self.referer: Optional[str] = cache_entry.get('referer')
+        self.categories: list[str] = json.loads(cache_entry['categories']) if cache_entry.get('categories') else []
+        self.parent: str | None = cache_entry.get('parent')
+        self.user_agent: str | None = cache_entry.get('user_agent')
+        self.referer: str | None = cache_entry.get('referer')
 
     @property
     def tree(self) -> CrawledTree:
@@ -142,26 +144,26 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> C
     raise NoValidHarFile("Couldn't find HAR files")
 
 
-def serialize_sets(obj):
+def serialize_sets(obj: Any) -> Any:
     if isinstance(obj, set):
         return list(obj)
 
     return obj
 
 
-class CapturesIndex(Mapping):
+class CapturesIndex(Mapping):  # type: ignore[type-arg]
 
-    def __init__(self, redis: Redis, contextualizer: Optional[Context]=None):
+    def __init__(self, redis: Redis, contextualizer: Context | None=None) -> None:  # type: ignore[type-arg]
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.redis = redis
         self.indexing = Indexing()
         self.contextualizer = contextualizer
-        self.__cache: Dict[str, CaptureCache] = {}
+        self.__cache: dict[str, CaptureCache] = {}
         self._quick_init()
         self.timeout = get_config('generic', 'max_tree_create_time')
         try:
-            self.ipasnhistory: Optional[IPASNHistory] = IPASNHistory()
+            self.ipasnhistory: IPASNHistory | None = IPASNHistory()
             if not self.ipasnhistory.is_up:
                 self.ipasnhistory = None
         except Exception as e:
@@ -169,7 +171,7 @@ class CapturesIndex(Mapping):
             self.logger.warning(f'Unable to setup IPASN History: {e}')
             self.ipasnhistory = None
         try:
-            self.cloudflare: Optional[Cloudflare] = Cloudflare()
+            self.cloudflare: Cloudflare | None = Cloudflare()
             if not self.cloudflare.available:
                 self.cloudflare = None
         except Exception as e:
@@ -177,7 +179,7 @@ class CapturesIndex(Mapping):
             self.cloudflare = None
 
     @property
-    def cached_captures(self) -> Set[str]:
+    def cached_captures(self) -> set[str]:
         self._quick_init()
         return set(self.__cache.keys())
 
@@ -199,10 +201,10 @@ class CapturesIndex(Mapping):
         self.__cache[uuid] = self._set_capture_cache(capture_dir)
         return self.__cache[uuid]
 
-    def __iter__(self):
-        return iter(self.__cache)
+    def __iter__(self) -> Iterator[dict[str, CaptureCache]]:
+        return iter(self.__cache)  # type: ignore[arg-type]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.__cache)
 
     def reload_cache(self, uuid: str) -> None:
@@ -221,7 +223,7 @@ class CapturesIndex(Mapping):
         self.redis.flushdb()
         self.__cache = {}
 
-    def lru_cache_status(self):
+    def lru_cache_status(self) -> CacheInfo:
         return load_pickle_tree.cache_info()
 
     def _quick_init(self) -> None:
@@ -332,11 +334,11 @@ class CapturesIndex(Mapping):
         return tree
 
     @staticmethod
-    def _raise_timeout(_, __):
+    def _raise_timeout(_, __) -> None:  # type: ignore[no-untyped-def]
         raise TimeoutError
 
     @contextlib.contextmanager
-    def _timeout_context(self):
+    def _timeout_context(self) -> Iterator[None]:
         if self.timeout != 0:
             # Register a function to raise a TimeoutError on the signal.
             signal.signal(signal.SIGALRM, self._raise_timeout)
@@ -378,7 +380,7 @@ class CapturesIndex(Mapping):
                 logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are broken.')
                 tree = None
 
-        cache: Dict[str, Union[str, int]] = {'uuid': uuid, 'capture_dir': capture_dir_str}
+        cache: dict[str, str | int] = {'uuid': uuid, 'capture_dir': capture_dir_str}
         if capture_settings.get('url'):
             cache['url'] = capture_settings['url']
 
@@ -450,18 +452,18 @@ class CapturesIndex(Mapping):
         p.execute()
         return CaptureCache(cache)
 
-    def __resolve_dns(self, ct: CrawledTree, logger: LookylooCacheLogAdapter):
+    def __resolve_dns(self, ct: CrawledTree, logger: LookylooCacheLogAdapter) -> CrawledTree:
         '''Resolves all domains of the tree, keeps A (IPv4), AAAA (IPv6), and CNAME entries
         and store them in ips.json and cnames.json, in the capture directory.
         Updates the nodes of the tree accordingly so the information is available.
         '''
 
-        def _build_cname_chain(known_cnames: Dict[str, str], hostname) -> List[str]:
+        def _build_cname_chain(known_cnames: dict[str, str], hostname: str) -> list[str]:
             '''Returns a list of CNAMEs starting from one hostname.
             The CNAMEs resolutions are made in `_resolve_dns`. A hostname can have a CNAME entry
             and the CNAME entry can have an other CNAME entry, and so on multiple times.
             This method loops over the hostnames until there are no CNAMES.'''
-            cnames: List[str] = []
+            cnames: list[str] = []
             to_search = hostname
             while True:
                 if not known_cnames.get(to_search):
@@ -474,7 +476,7 @@ class CapturesIndex(Mapping):
         ips_path = ct.root_hartree.har.path.parent / 'ips.json'
         ipasn_path = ct.root_hartree.har.path.parent / 'ipasn.json'
 
-        host_cnames: Dict[str, str] = {}
+        host_cnames: dict[str, str] = {}
         if cnames_path.exists():
             try:
                 with cnames_path.open() as f:
@@ -483,7 +485,7 @@ class CapturesIndex(Mapping):
                 # The json is broken, delete and re-trigger the requests
                 host_cnames = {}
 
-        host_ips: Dict[str, Dict[str, Set[str]]] = {}
+        host_ips: dict[str, dict[str, set[str]]] = {}
         if ips_path.exists():
             try:
                 with ips_path.open() as f:
@@ -492,7 +494,7 @@ class CapturesIndex(Mapping):
                 # The json is broken, delete and re-trigger the requests
                 host_ips = {}
 
-        ipasn: Dict[str, Dict[str, str]] = {}
+        ipasn: dict[str, dict[str, str]] = {}
         if ipasn_path.exists():
             try:
                 with ipasn_path.open() as f:

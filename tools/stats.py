@@ -1,8 +1,8 @@
-from lookyloo.lookyloo import Lookyloo
+from lookyloo import Lookyloo
 import calendar
 import datetime
 from urllib.parse import urlparse
-from typing import Dict, Any, Union, Set
+from typing import Dict, Any, Union, Set, List
 
 lookyloo = Lookyloo()
 
@@ -15,11 +15,12 @@ weeks_stats: Dict[int, Dict[str, Union[int, Set[str]]]] = \
      calendar_week: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()}}
 
 
-def uniq_domains(uniq_urls):
+def uniq_domains(uniq_urls: List[str]) -> Set[str]:
     domains = set()
     for url in uniq_urls:
         splitted = urlparse(url)
-        domains.add(splitted.hostname)
+        if splitted.hostname:
+            domains.add(splitted.hostname)
     return domains
 
 
@@ -50,8 +51,8 @@ for week_number, week_stat in weeks_stats.items():
     print('    Number of analysis with redirects:', week_stat['analysis_with_redirects'])
     print('    Number of redirects:', week_stat['redirects'])
     print('    Number of unique URLs:', len(week_stat['uniq_urls']))  # type: ignore
-    domains = uniq_domains(week_stat['uniq_urls'])
-    print('    Number of unique domains:', len(domains))
+    d = uniq_domains(week_stat['uniq_urls'])  # type: ignore[arg-type]
+    print('    Number of unique domains:', len(d))
 
 
 for year, data in stats.items():

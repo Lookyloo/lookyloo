@@ -16,3 +16,17 @@ from .exceptions import MissingEnv, CreateDirectoryException, ConfigError  # noq
 from .helpers import get_homedir, load_configs, get_config, safe_create_dir, get_socket_path, try_make_file  # noqa
 
 os.chdir(get_homedir())
+
+__all__ = [
+    'LookylooException',
+    'AbstractManager',
+    'MissingEnv',
+    'CreateDirectoryException',
+    'ConfigError',
+    'get_homedir',
+    'load_configs',
+    'get_config',
+    'safe_create_dir',
+    'get_socket_path',
+    'try_make_file',
+]

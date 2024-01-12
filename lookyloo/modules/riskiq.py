@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 
 from datetime import date, datetime, timedelta
@@ -56,7 +58,7 @@ class RiskIQ(AbstractModule):
         self.storage_dir_riskiq.mkdir(parents=True, exist_ok=True)
         return True
 
-    def get_passivedns(self, query: str) -> Optional[Dict[str, Any]]:
+    def get_passivedns(self, query: str) -> dict[str, Any] | None:
         # The query can be IP or Hostname. For now, we only do it on domains.
         url_storage_dir = get_cache_directory(self.storage_dir_riskiq, query, 'pdns')
         if not url_storage_dir.exists():
@@ -68,7 +70,7 @@ class RiskIQ(AbstractModule):
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, cache: 'CaptureCache', /, *, force: bool=False, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False, auto_trigger: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}
@@ -88,7 +90,7 @@ class RiskIQ(AbstractModule):
         self.pdns_lookup(hostname, force)
         return {'success': 'Module triggered'}
 
-    def pdns_lookup(self, hostname: str, force: bool=False, first_seen: Optional[Union[date, datetime]]=None) -> None:
+    def pdns_lookup(self, hostname: str, force: bool=False, first_seen: date | datetime | None=None) -> None:
         '''Lookup an hostname on RiskIQ Passive DNS
         Note: force means re-fetch the entry RiskIQ even if we already did it today
         '''

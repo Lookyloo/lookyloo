@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import base64
 import copy
 import gzip
@@ -22,7 +24,7 @@ from uuid import uuid4
 from zipfile import ZipFile
 
 from defang import defang  # type: ignore
-from har2tree import CrawledTree, HostNode, URLNode
+from har2tree import CrawledTree, HostNode, URLNode  # type: ignore[attr-defined]
 from lacuscore import (LacusCore,
                        CaptureStatus as CaptureStatusCore,
                        # CaptureResponse as CaptureResponseCore)
@@ -30,15 +32,15 @@ from lacuscore import (LacusCore,
                        CaptureSettings as CaptureSettingsCore)
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
-from pylacus import (PyLacus,
+from pylacus import (PyLacus,  # type: ignore[attr-defined]
                      CaptureStatus as CaptureStatusPy
                      # CaptureResponse as CaptureResponsePy,
                      # CaptureResponseJson as CaptureResponseJsonPy,
                      # CaptureSettings as CaptureSettingsPy
                      )
-from pymisp import MISPAttribute, MISPEvent, MISPObject
-from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable
-from pylookyloomonitoring import PyLookylooMonitoring
+from pymisp import MISPAttribute, MISPEvent, MISPObject  # type: ignore[attr-defined]
+from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable  # type: ignore[attr-defined]
+from pylookyloomonitoring import PyLookylooMonitoring  # type: ignore[attr-defined]
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
@@ -62,13 +64,13 @@ if TYPE_CHECKING:
 
 class CaptureSettings(CaptureSettingsCore, total=False):
     '''The capture settings that can be passed to Lookyloo'''
-    listing: Optional[int]
-    not_queued: Optional[int]
-    auto_report: Optional[Union[bool, str, Dict[str, str]]]
-    dnt: Optional[str]
-    browser_name: Optional[str]
-    os: Optional[str]
-    parent: Optional[str]
+    listing: int | None
+    not_queued: int | None
+    auto_report: bool | str | dict[str, str] | None
+    dnt: str | None
+    browser_name: str | None
+    os: str | None
+    parent: str | None
 
 
 class Lookyloo():
@@ -153,13 +155,13 @@ class Lookyloo():
         self.lacus
 
     @property
-    def redis(self):
+    def redis(self) -> Redis:  # type: ignore[type-arg]
         return Redis(connection_pool=self.redis_pool)
 
     @cached_property
-    def lacus(self):
+    def lacus(self) -> PyLacus | LacusCore:
         has_remote_lacus = False
-        self._lacus: Union[PyLacus, LacusCore]
+        self._lacus: PyLacus | LacusCore
         if get_config('generic', 'remote_lacus'):
             remote_lacus_config = get_config('generic', 'remote_lacus')
             if remote_lacus_config.get('enable'):
@@ -180,7 +182,7 @@ class Lookyloo():
 
         if not has_remote_lacus:
             # We need a redis connector that doesn't decode.
-            redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))
+            redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))  # type: ignore[type-arg]
             self._lacus = LacusCore(redis, tor_proxy=get_config('generic', 'tor_proxy'),
                                     max_capture_time=get_config('generic', 'max_capture_time'),
                                     only_global_lookups=get_config('generic', 'only_global_lookups'),
@@ -188,14 +190,14 @@ class Lookyloo():
         return self._lacus
 
     def add_context(self, capture_uuid: str, /, urlnode_uuid: str, *, ressource_hash: str,
-                    legitimate: bool, malicious: bool, details: Dict[str, Dict[str, str]]):
+                    legitimate: bool, malicious: bool, details: dict[str, dict[str, str]]) -> None:
         '''Adds context information to a capture or a URL node'''
         if malicious:
             self.context.add_malicious(ressource_hash, details['malicious'])
         if legitimate:
             self.context.add_legitimate(ressource_hash, details['legitimate'])
 
-    def add_to_legitimate(self, capture_uuid: str, /, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None):
+    def add_to_legitimate(self, capture_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> None:
         '''Mark a full capture as legitimate.
         Iterates over all the nodes and mark them all as legitimate too.'''
         ct = self.get_crawled_tree(capture_uuid)
@@ -225,12 +227,12 @@ class Lookyloo():
         ct = self.get_crawled_tree(capture_uuid)
         return ct.root_hartree.get_host_node_by_uuid(node_uuid)
 
-    def get_statistics(self, capture_uuid: str, /) -> Dict[str, Any]:
+    def get_statistics(self, capture_uuid: str, /) -> dict[str, Any]:
         '''Get the statistics of a capture.'''
         ct = self.get_crawled_tree(capture_uuid)
         return ct.root_hartree.stats
 
-    def get_info(self, capture_uuid: str, /) -> Dict[str, Any]:
+    def get_info(self, capture_uuid: str, /) -> dict[str, Any]:
         '''Get basic information about the capture.'''
         cache = self.capture_cache(capture_uuid)
         if not cache:
@@ -254,7 +256,7 @@ class Lookyloo():
             to_return['referer'] = cache.referer if cache.referer else ''
         return to_return
 
-    def get_meta(self, capture_uuid: str, /) -> Dict[str, str]:
+    def get_meta(self, capture_uuid: str, /) -> dict[str, str]:
         '''Get the meta informations from a capture (mostly, details about the User Agent used.)'''
         cache = self.capture_cache(capture_uuid)
         if not cache:
@@ -294,7 +296,7 @@ class Lookyloo():
                 return json.load(f)
         return {}
 
-    def categories_capture(self, capture_uuid: str, /) -> Dict[str, Any]:
+    def categories_capture(self, capture_uuid: str, /) -> dict[str, Any]:
         '''Get all the categories related to a capture, in MISP Taxonomies format'''
         categ_file = self._captures_index[capture_uuid].capture_dir / 'categories'
         # get existing categories if possible
@@ -337,7 +339,7 @@ class Lookyloo():
         with categ_file.open('w') as f:
             f.writelines(f'{t}\n' for t in current_categories)
 
-    def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False) -> Dict:
+    def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False) -> dict[str, Any]:
         '''Launch the 3rd party modules on a capture.
         It uses the cached result *if* the module was triggered the same day.
         The `force` flag re-triggers the module regardless of the cache.'''
@@ -350,8 +352,8 @@ class Lookyloo():
         self.uwhois.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
         self.hashlookup.capture_default_trigger(ct, auto_trigger=auto_trigger)
 
-        to_return: Dict[str, Dict] = {'PhishingInitiative': {}, 'VirusTotal': {}, 'UrlScan': {},
-                                      'URLhaus': {}}
+        to_return: dict[str, dict[str, Any]] = {'PhishingInitiative': {}, 'VirusTotal': {}, 'UrlScan': {},
+                                                'URLhaus': {}}
         if cache := self.capture_cache(capture_uuid):
             to_return['PhishingInitiative'] = self.pi.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
             to_return['VirusTotal'] = self.vt.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
@@ -363,7 +365,7 @@ class Lookyloo():
             to_return['URLhaus'] = self.urlhaus.capture_default_trigger(cache, auto_trigger=auto_trigger)
         return to_return
 
-    def get_modules_responses(self, capture_uuid: str, /) -> Optional[Dict[str, Any]]:
+    def get_modules_responses(self, capture_uuid: str, /) -> dict[str, Any] | None:
         '''Get the responses of the modules from the cached responses on the disk'''
         cache = self.capture_cache(capture_uuid)
         if not cache:
@@ -373,7 +375,7 @@ class Lookyloo():
             self.logger.warning(f'The capture {capture_uuid} does not have a URL in the cache, it is broken.')
             return None
 
-        to_return: Dict[str, Any] = {}
+        to_return: dict[str, Any] = {}
         if self.vt.available:
             to_return['vt'] = {}
             if hasattr(cache, 'redirects') and cache.redirects:
@@ -416,7 +418,7 @@ class Lookyloo():
                     to_return['urlscan']['result'] = result
         return to_return
 
-    def get_historical_lookups(self, capture_uuid: str, /, force: bool=False) -> Dict:
+    def get_historical_lookups(self, capture_uuid: str, /, force: bool=False) -> dict[str, Any]:
         # this method is only trigered when the user wants to get more details about the capture
         # by looking at Passive DNS systems, check if there are hits in the current capture
         # in another one and things like that. The trigger_modules method is for getting
@@ -425,7 +427,7 @@ class Lookyloo():
         if not cache:
             self.logger.warning(f'Unable to get the modules responses unless the capture {capture_uuid} is cached')
             return {}
-        to_return: Dict[str, Any] = defaultdict(dict)
+        to_return: dict[str, Any] = defaultdict(dict)
         if self.riskiq.available:
             try:
                 self.riskiq.capture_default_trigger(cache)
@@ -461,7 +463,7 @@ class Lookyloo():
     def update_tree_cache_info(self, process_id: int, classname: str) -> None:
         self.redis.hset('tree_cache', f'{process_id}|{classname}', str(self._captures_index.lru_cache_status()))
 
-    def sorted_capture_cache(self, capture_uuids: Optional[Iterable[str]]=None, cached_captures_only: bool=True, index_cut_time: Optional[datetime]=None) -> List[CaptureCache]:
+    def sorted_capture_cache(self, capture_uuids: Iterable[str] | None=None, cached_captures_only: bool=True, index_cut_time: datetime | None=None) -> list[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''
         # Make sure we do not try to load archived captures that would still be in 'lookup_dirs'
@@ -489,13 +491,13 @@ class Lookyloo():
             # Do not try to build pickles
             capture_uuids = set(capture_uuids) & self._captures_index.cached_captures
 
-        all_cache: List[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids
+        all_cache: list[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids
                                          if self.capture_cache(uuid)
                                          and hasattr(self._captures_index[uuid], 'timestamp')]
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 
-    def get_capture_status(self, capture_uuid: str, /) -> Union[CaptureStatusCore, CaptureStatusPy]:
+    def get_capture_status(self, capture_uuid: str, /) -> CaptureStatusCore | CaptureStatusPy:
         '''Returns the status (queued, ongoing, done, or UUID unknown)'''
         if self.redis.hexists('lookup_dirs', capture_uuid):
             return CaptureStatusCore.DONE
@@ -520,7 +522,7 @@ class Lookyloo():
             return CaptureStatusCore.ONGOING
         return lacus_status
 
-    def capture_cache(self, capture_uuid: str, /, *, force_update: bool = False) -> Optional[CaptureCache]:
+    def capture_cache(self, capture_uuid: str, /, *, force_update: bool = False) -> CaptureCache | None:
         """Get the cache from redis, rebuild the tree if the internal UUID changed => slow"""
         try:
             cache = self._captures_index[capture_uuid]
@@ -598,7 +600,7 @@ class Lookyloo():
             query['user_agent'] = user_agent if user_agent else self.user_agents.default['useragent']
 
         # NOTE: the document must be base64 encoded
-        document: Optional[Union[str, bytes]] = query.pop('document', None)
+        document: str | bytes | None = query.pop('document', None)
         if document:
             if isinstance(document, bytes):
                 query['document'] = base64.b64encode(document).decode()
@@ -631,17 +633,16 @@ class Lookyloo():
         query = self._prepare_lacus_query(query)
 
         priority = get_priority(source, user, authenticated)
-        query['priority'] = priority
         if priority < -100:
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query['listing'] = 0
         try:
-            perma_uuid = self.lacus.enqueue(
+            perma_uuid = self.lacus.enqueue(  # type: ignore[misc]
                 url=query.get('url', None),
                 document_name=query.get('document_name', None),
                 document=query.get('document', None),
                 # depth=query.get('depth', 0),
-                browser=query.get('browser', None),
+                browser=query.get('browser', None),  # type: ignore[arg-type]
                 device_name=query.get('device_name', None),
                 user_agent=query.get('user_agent', None),
                 proxy=self.global_proxy if self.global_proxy else query.get('proxy', None),
@@ -659,7 +660,7 @@ class Lookyloo():
                 with_favicon=query.get('with_favicon', True),
                 # force=query.get('force', False),
                 # recapture_interval=query.get('recapture_interval', 300),
-                priority=query.get('priority', 0)
+                priority=priority
             )
         except Exception as e:
             self.logger.critical(f'Unable to enqueue capture: {e}')
@@ -670,7 +671,7 @@ class Lookyloo():
                     and self.redis.zscore('to_capture', perma_uuid) is None):  # capture ongoing
 
                 # Make the settings redis compatible
-                mapping_capture: Dict[str, Union[bytes, float, int, str]] = {}
+                mapping_capture: dict[str, bytes | float | int | str] = {}
                 for key, value in query.items():
                     if isinstance(value, bool):
                         mapping_capture[key] = 1 if value else 0
@@ -681,15 +682,15 @@ class Lookyloo():
                         mapping_capture[key] = value  # type: ignore
 
                 p = self.redis.pipeline()
-                p.zadd('to_capture', {perma_uuid: query['priority']})
-                p.hset(perma_uuid, mapping=mapping_capture)
+                p.zadd('to_capture', {perma_uuid: priority})
+                p.hset(perma_uuid, mapping=mapping_capture)  # type: ignore[arg-type]
                 p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
                 p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
                 p.execute()
 
         return perma_uuid
 
-    def takedown_details(self, hostnode: HostNode) -> Dict[str, Any]:
+    def takedown_details(self, hostnode: HostNode) -> dict[str, Any]:
         if not self.uwhois.available:
             self.logger.warning('UWhois module not enabled, unable to use this method')
             raise LookylooException('UWhois module not enabled, unable to use this method')
@@ -740,7 +741,7 @@ class Lookyloo():
         to_return['all_emails'] = list(to_return['all_emails'])
         return to_return
 
-    def contacts(self, capture_uuid: str, /) -> List[Dict[str, Any]]:
+    def contacts(self, capture_uuid: str, /) -> list[dict[str, Any]]:
         capture = self.get_crawled_tree(capture_uuid)
         rendered_hostnode = self.get_hostnode_from_tree(capture_uuid, capture.root_hartree.rendered_node.hostnode_uuid)
         result = []
@@ -749,7 +750,7 @@ class Lookyloo():
         result.append(self.takedown_details(rendered_hostnode))
         return result
 
-    def send_mail(self, capture_uuid: str, /, email: str='', comment: Optional[str]=None) -> None:
+    def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None) -> None:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
             return
@@ -856,7 +857,7 @@ class Lookyloo():
     def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[True], for_datauri: Literal[False]) -> BytesIO:
         ...
 
-    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: bool=False, for_datauri: bool=False) -> Union[BytesIO, str]:
+    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: bool=False, for_datauri: bool=False) -> BytesIO | str:
         '''Get rendered HTML'''
         fav = self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
         if not all_favicons and for_datauri:
@@ -867,7 +868,7 @@ class Lookyloo():
         '''Get rendered HTML'''
         return self._get_raw(capture_uuid, 'html', all_html)
 
-    def get_data(self, capture_uuid: str, /) -> Tuple[str, BytesIO]:
+    def get_data(self, capture_uuid: str, /) -> tuple[str, BytesIO]:
         '''Get the data'''
         return self._get_raw(capture_uuid, 'data.filename', False).getvalue().decode(), self._get_raw(capture_uuid, 'data', False)
 
@@ -879,7 +880,7 @@ class Lookyloo():
         '''Get the screenshot(s) of the rendered page'''
         return self._get_raw(capture_uuid, 'png', all_files=False)
 
-    def get_screenshot_thumbnail(self, capture_uuid: str, /, for_datauri: bool=False, width: int=64) -> Union[str, BytesIO]:
+    def get_screenshot_thumbnail(self, capture_uuid: str, /, for_datauri: bool=False, width: int=64) -> str | BytesIO:
         '''Get the thumbnail of the rendered page. Always crop to a square.'''
         to_return = BytesIO()
         size = width, width
@@ -921,12 +922,12 @@ class Lookyloo():
         '''Get all the files related to this capture.'''
         return self._get_raw(capture_uuid)
 
-    def get_urls_rendered_page(self, capture_uuid: str, /) -> List[str]:
+    def get_urls_rendered_page(self, capture_uuid: str, /) -> list[str]:
         ct = self.get_crawled_tree(capture_uuid)
         return sorted(set(ct.root_hartree.rendered_node.urls_in_rendered_page)
                       - set(ct.root_hartree.all_url_requests.keys()))
 
-    def get_body_hash_investigator(self, body_hash: str, /) -> Tuple[List[Tuple[str, str]], List[Tuple[str, float]]]:
+    def get_body_hash_investigator(self, body_hash: str, /) -> tuple[list[tuple[str, str]], list[tuple[str, float]]]:
         '''Returns all the captures related to a hash (sha512), used in the web interface.'''
         total_captures, details = self.indexing.get_body_hash_captures(body_hash, limit=-1)
         cached_captures = self.sorted_capture_cache([d[0] for d in details])
@@ -934,7 +935,7 @@ class Lookyloo():
         domains = self.indexing.get_body_hash_domains(body_hash)
         return captures, domains
 
-    def get_body_hash_full(self, body_hash: str, /) -> Tuple[Dict[str, List[Dict[str, str]]], BytesIO]:
+    def get_body_hash_full(self, body_hash: str, /) -> tuple[dict[str, list[dict[str, str]]], BytesIO]:
         '''Returns a lot of information about the hash (sha512) and the hits in the instance.
         Also contains the data (base64 encoded)'''
         details = self.indexing.get_body_hash_urls(body_hash)
@@ -969,9 +970,9 @@ class Lookyloo():
         # TODO: Couldn't find the file anywhere. Maybe return a warning in the file?
         return details, BytesIO()
 
-    def get_all_body_hashes(self, capture_uuid: str, /) -> Dict[str, Dict[str, Union[URLNode, int]]]:
+    def get_all_body_hashes(self, capture_uuid: str, /) -> dict[str, dict[str, URLNode | int]]:
         ct = self.get_crawled_tree(capture_uuid)
-        to_return: Dict[str, Dict[str, Union[URLNode, int]]] = defaultdict()
+        to_return: dict[str, dict[str, URLNode | int]] = defaultdict()
         for node in ct.root_hartree.url_tree.traverse():
             if node.empty_response or node.body_hash in to_return:
                 # If we have the same hash more than once, skip
@@ -981,24 +982,24 @@ class Lookyloo():
             to_return[node.body_hash] = {'node': node, 'total_captures': total_captures}
         return to_return
 
-    def get_latest_url_capture(self, url: str, /) -> Optional[CaptureCache]:
+    def get_latest_url_capture(self, url: str, /) -> CaptureCache | None:
         '''Get the most recent capture with this URL'''
         captures = self.sorted_capture_cache(self.indexing.get_captures_url(url))
         if captures:
             return captures[0]
         return None
 
-    def get_url_occurrences(self, url: str, /, limit: int=20, cached_captures_only: bool=True) -> List[Dict]:
+    def get_url_occurrences(self, url: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
         '''Get the most recent captures and URL nodes where the URL has been seen.'''
         captures = self.sorted_capture_cache(self.indexing.get_captures_url(url), cached_captures_only=cached_captures_only)
 
-        to_return: List[Dict] = []
+        to_return: list[dict[str, Any]] = []
         for capture in captures[:limit]:
             ct = self.get_crawled_tree(capture.uuid)
-            to_append: Dict[str, Union[str, Dict]] = {'capture_uuid': capture.uuid,
-                                                      'start_timestamp': capture.timestamp.isoformat(),
-                                                      'title': capture.title}
-            urlnodes: Dict[str, Dict[str, str]] = {}
+            to_append: dict[str, str | dict[str, Any]] = {'capture_uuid': capture.uuid,
+                                                                'start_timestamp': capture.timestamp.isoformat(),
+                                                                'title': capture.title}
+            urlnodes: dict[str, dict[str, str]] = {}
             for urlnode in ct.root_hartree.url_tree.search_nodes(name=url):
                 urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
                                           'hostnode_uuid': urlnode.hostnode_uuid}
@@ -1008,19 +1009,20 @@ class Lookyloo():
             to_return.append(to_append)
         return to_return
 
-    def get_hostname_occurrences(self, hostname: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> List[Dict]:
+    def get_hostname_occurrences(self, hostname: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
         '''Get the most recent captures and URL nodes where the hostname has been seen.'''
         captures = self.sorted_capture_cache(self.indexing.get_captures_hostname(hostname), cached_captures_only=cached_captures_only)
 
-        to_return: List[Dict] = []
+        to_return: list[dict[str, Any]] = []
         for capture in captures[:limit]:
             ct = self.get_crawled_tree(capture.uuid)
-            to_append: Dict[str, Union[str, List, Dict]] = {'capture_uuid': capture.uuid,
-                                                            'start_timestamp': capture.timestamp.isoformat(),
-                                                            'title': capture.title}
-            hostnodes: List[str] = []
+            to_append: dict[str, str | list[Any] | dict[str, Any]] = {
+                'capture_uuid': capture.uuid,
+                'start_timestamp': capture.timestamp.isoformat(),
+                'title': capture.title}
+            hostnodes: list[str] = []
             if with_urls_occurrences:
-                urlnodes: Dict[str, Dict[str, str]] = {}
+                urlnodes: dict[str, dict[str, str]] = {}
             for hostnode in ct.root_hartree.hostname_tree.search_nodes(name=hostname):
                 hostnodes.append(hostnode.uuid)
                 if with_urls_occurrences:
@@ -1036,7 +1038,7 @@ class Lookyloo():
                 to_return.append(to_append)
         return to_return
 
-    def get_cookie_name_investigator(self, cookie_name: str, /) -> Tuple[List[Tuple[str, str]], List[Tuple[str, float, List[Tuple[str, float]]]]]:
+    def get_cookie_name_investigator(self, cookie_name: str, /) -> tuple[list[tuple[str, str]], list[tuple[str, float, list[tuple[str, float]]]]]:
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''
         cached_captures = self.sorted_capture_cache([entry[0] for entry in self.indexing.get_cookies_names_captures(cookie_name)])
         captures = [(cache.uuid, cache.title) for cache in cached_captures]
@@ -1044,7 +1046,7 @@ class Lookyloo():
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
-    def get_hhh_investigator(self, hhh: str, /) -> Tuple[List[Tuple[str, str, str, str]], List[Tuple[str, str]]]:
+    def get_hhh_investigator(self, hhh: str, /) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str]]]:
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''
         all_captures = dict(self.indexing.get_http_headers_hashes_captures(hhh))
         if cached_captures := self.sorted_capture_cache([entry for entry in all_captures]):
@@ -1063,11 +1065,11 @@ class Lookyloo():
             return captures, headers
         return [], []
 
-    def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> Tuple[int, Dict[str, List[Tuple[str, str, str, str, str]]]]:
+    def hash_lookup(self, blob_hash: str, url: str, capture_uuid: str) -> tuple[int, dict[str, list[tuple[str, str, str, str, str]]]]:
         '''Search all the captures a specific hash was seen.
         If a URL is given, it splits the results if the hash is seen on the same URL or an other one.
         Capture UUID avoids duplicates on the same capture'''
-        captures_list: Dict[str, List[Tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
+        captures_list: dict[str, list[tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
         total_captures, details = self.indexing.get_body_hash_captures(blob_hash, url, filter_capture_uuid=capture_uuid, limit=-1,
                                                                        prefered_uuids=set(self._captures_index.keys()))
         for h_capture_uuid, url_uuid, url_hostname, same_url in details:
@@ -1082,7 +1084,7 @@ class Lookyloo():
         captures_list['different_url'].sort(key=lambda y: y[3])
         return total_captures, captures_list
 
-    def get_ressource(self, tree_uuid: str, /, urlnode_uuid: str, h: Optional[str]) -> Optional[Tuple[str, BytesIO, str]]:
+    def get_ressource(self, tree_uuid: str, /, urlnode_uuid: str, h: str | None) -> tuple[str, BytesIO, str] | None:
         '''Get a specific resource from a URL node. If a hash s also given, we want an embeded resource'''
         try:
             url = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
@@ -1108,7 +1110,7 @@ class Lookyloo():
                     return 'embedded_ressource.bin', BytesIO(blob.getvalue()), mimetype
         return None
 
-    def __misp_add_vt_to_URLObject(self, obj: MISPObject) -> Optional[MISPObject]:
+    def __misp_add_vt_to_URLObject(self, obj: MISPObject) -> MISPObject | None:
         urls = obj.get_attributes_by_relation('url')
         if not urls:
             return None
@@ -1124,7 +1126,7 @@ class Lookyloo():
         obj.add_reference(vt_obj, 'analysed-with')
         return vt_obj
 
-    def __misp_add_urlscan_to_event(self, capture_uuid: str, visibility: str) -> Optional[MISPAttribute]:
+    def __misp_add_urlscan_to_event(self, capture_uuid: str, visibility: str) -> MISPAttribute | None:
         if cache := self.capture_cache(capture_uuid):
             response = self.urlscan.url_submit(cache, visibility)
             if 'result' in response:
@@ -1134,7 +1136,7 @@ class Lookyloo():
                 return attribute
         return None
 
-    def misp_export(self, capture_uuid: str, /, with_parent: bool=False) -> Union[List[MISPEvent], Dict[str, str]]:
+    def misp_export(self, capture_uuid: str, /, with_parent: bool=False) -> list[MISPEvent] | dict[str, str]:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''
         cache = self.capture_cache(capture_uuid)
@@ -1200,7 +1202,7 @@ class Lookyloo():
 
         return [event]
 
-    def get_misp_occurrences(self, capture_uuid: str, /, *, instance_name: Optional[str]=None) -> Optional[Tuple[Dict[str, Set[str]], str]]:
+    def get_misp_occurrences(self, capture_uuid: str, /, *, instance_name: str | None=None) -> tuple[dict[str, set[str]], str] | None:
         if instance_name is None:
             misp = self.misps.default_misp
         elif self.misps.get(instance_name) is not None:
@@ -1217,7 +1219,7 @@ class Lookyloo():
             self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_uuid}) is cached.')
             return None
         nodes_to_lookup = ct.root_hartree.rendered_node.get_ancestors() + [ct.root_hartree.rendered_node]
-        to_return: Dict[str, Set[str]] = defaultdict(set)
+        to_return: dict[str, set[str]] = defaultdict(set)
         for node in nodes_to_lookup:
             hits = misp.lookup(node, ct.root_hartree.get_host_node_by_uuid(node.hostnode_uuid))
             for event_id, values in hits.items():
@@ -1226,7 +1228,7 @@ class Lookyloo():
                 to_return[event_id].update(values)
         return to_return, misp.client.root_url
 
-    def get_hashes_with_context(self, tree_uuid: str, /, algorithm: str, *, urls_only: bool=False) -> Union[Dict[str, Set[str]], Dict[str, List[URLNode]]]:
+    def get_hashes_with_context(self, tree_uuid: str, /, algorithm: str, *, urls_only: bool=False) -> dict[str, set[str]] | dict[str, list[URLNode]]:
         """Build (on demand) hashes for all the ressources of the tree, using the alorighm provided by the user.
         If you just want the hashes in SHA512, use the get_hashes method, it gives you a list of hashes an they're build
         with the tree. This method is computing the hashes when you query it, so it is slower."""
@@ -1236,7 +1238,7 @@ class Lookyloo():
             return {h: {node.name for node in nodes} for h, nodes in hashes.items()}
         return hashes
 
-    def merge_hashlookup_tree(self, tree_uuid: str, /) -> Tuple[Dict[str, Dict[str, Any]], int]:
+    def merge_hashlookup_tree(self, tree_uuid: str, /) -> tuple[dict[str, dict[str, Any]], int]:
         if not self.hashlookup.available:
             raise LookylooException('Hashlookup module not enabled.')
         hashes_tree = self.get_hashes_with_context(tree_uuid, algorithm='sha1')
@@ -1253,20 +1255,20 @@ class Lookyloo():
         with hashlookup_file.open() as f:
             hashlookup_entries = json.load(f)
 
-        to_return: Dict[str, Dict[str, Any]] = defaultdict(dict)
+        to_return: dict[str, dict[str, Any]] = defaultdict(dict)
 
         for sha1 in hashlookup_entries.keys():
             to_return[sha1]['nodes'] = hashes_tree[sha1]
             to_return[sha1]['hashlookup'] = hashlookup_entries[sha1]
         return to_return, len(hashes_tree)
 
-    def get_hashes(self, tree_uuid: str, /, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
+    def get_hashes(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
         """Return hashes (sha512) of resources.
         Only tree_uuid: All the hashes
         tree_uuid and hostnode_uuid: hashes of all the resources in that hostnode (including embedded ressources)
         tree_uuid, hostnode_uuid, and urlnode_uuid: hash of the URL node body, and embedded resources
         """
-        container: Union[CrawledTree, HostNode, URLNode]
+        container: CrawledTree | HostNode | URLNode
         if urlnode_uuid:
             container = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
         elif hostnode_uuid:
@@ -1275,7 +1277,7 @@ class Lookyloo():
             container = self.get_crawled_tree(tree_uuid)
         return get_resources_hashes(container)
 
-    def get_hostnames(self, tree_uuid: str, /, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
+    def get_hostnames(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
         """Return all the unique hostnames:
             * of a complete tree if no hostnode_uuid and urlnode_uuid are given
             * of a HostNode if hostnode_uuid is given
@@ -1291,7 +1293,7 @@ class Lookyloo():
             ct = self.get_crawled_tree(tree_uuid)
             return {node.name for node in ct.root_hartree.hostname_tree.traverse()}
 
-    def get_urls(self, tree_uuid: str, /, hostnode_uuid: Optional[str]=None, urlnode_uuid: Optional[str]=None) -> Set[str]:
+    def get_urls(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
         """Return all the unique URLs:
             * of a complete tree if no hostnode_uuid and urlnode_uuid are given
             * of a HostNode if hostnode_uuid is given
@@ -1307,18 +1309,18 @@ class Lookyloo():
             ct = self.get_crawled_tree(tree_uuid)
             return {node.name for node in ct.root_hartree.url_tree.traverse()}
 
-    def get_playwright_devices(self) -> Dict:
+    def get_playwright_devices(self) -> dict[str, Any]:
         """Get the preconfigured devices from Playwright"""
         return get_devices()
 
-    def get_hostnode_investigator(self, capture_uuid: str, /, node_uuid: str) -> Tuple[HostNode, List[Dict[str, Any]]]:
+    def get_hostnode_investigator(self, capture_uuid: str, /, node_uuid: str) -> tuple[HostNode, list[dict[str, Any]]]:
         '''Gather all the informations needed to display the Hostnode investigator popup.'''
 
-        def normalize_known_content(h: str, /, known_content: Dict[str, Any], url: URLNode) -> Tuple[Optional[Union[str, List[Any]]], Optional[Tuple[bool, Any]]]:
+        def normalize_known_content(h: str, /, known_content: dict[str, Any], url: URLNode) -> tuple[str | list[Any] | None, tuple[bool, Any] | None]:
             ''' There are a few different sources to figure out known vs. legitimate content,
             this method normalize it for the web interface.'''
-            known: Optional[Union[str, List[Any]]] = None
-            legitimate: Optional[Tuple[bool, Any]] = None
+            known: str | list[Any] | None = None
+            legitimate: tuple[bool, Any] | None = None
             if h not in known_content:
                 return known, legitimate
 
@@ -1340,13 +1342,13 @@ class Lookyloo():
         known_content = self.context.find_known_content(hostnode)
         self.uwhois.query_whois_hostnode(hostnode)
 
-        urls: List[Dict[str, Any]] = []
+        urls: list[dict[str, Any]] = []
         for url in hostnode.urls:
             # For the popup, we need:
             # * https vs http
             # * everything after the domain
             # * the full URL
-            to_append: Dict[str, Any] = {
+            to_append: dict[str, Any] = {
                 'encrypted': url.name.startswith('https'),
                 'url_path': url.name.split('/', 3)[-1],
                 'url_object': url,
@@ -1389,7 +1391,7 @@ class Lookyloo():
 
             # Optional: Cookies sent to server in request -> map to nodes who set the cookie in response
             if hasattr(url, 'cookies_sent'):
-                to_display_sent: Dict[str, Set[Iterable[Optional[str]]]] = defaultdict(set)
+                to_display_sent: dict[str, set[Iterable[str | None]]] = defaultdict(set)
                 for cookie, contexts in url.cookies_sent.items():
                     if not contexts:
                         # Locally created?
@@ -1401,7 +1403,7 @@ class Lookyloo():
 
             # Optional: Cookies received from server in response -> map to nodes who send the cookie in request
             if hasattr(url, 'cookies_received'):
-                to_display_received: Dict[str, Dict[str, Set[Iterable[Optional[str]]]]] = {'3rd_party': defaultdict(set), 'sent': defaultdict(set), 'not_sent': defaultdict(set)}
+                to_display_received: dict[str, dict[str, set[Iterable[str | None]]]] = {'3rd_party': defaultdict(set), 'sent': defaultdict(set), 'not_sent': defaultdict(set)}
                 for domain, c_received, is_3rd_party in url.cookies_received:
                     if c_received not in ct.root_hartree.cookies_sent:
                         # This cookie is never sent.
@@ -1421,14 +1423,14 @@ class Lookyloo():
             urls.append(to_append)
         return hostnode, urls
 
-    def get_stats(self) -> Dict[str, List]:
+    def get_stats(self) -> dict[str, list[Any]]:
         '''Gather statistics about the lookyloo instance'''
         today = date.today()
         calendar_week = today.isocalendar()[1]
 
         stats_dict = {'submissions': 0, 'redirects': 0}
-        stats: Dict[int, Dict[int, Dict[str, Any]]] = {}
-        weeks_stats: Dict[int, Dict] = {}
+        stats: dict[int, dict[int, dict[str, Any]]] = {}
+        weeks_stats: dict[int, dict[str, Any]] = {}
 
         # Only recent captures that are not archived
         for cache in self.sorted_capture_cache():
@@ -1467,7 +1469,7 @@ class Lookyloo():
                 stats[capture_ts.year][capture_ts.month] = {'submissions': 0}
             stats[capture_ts.year][capture_ts.month]['submissions'] += 1
 
-        statistics: Dict[str, List] = {'weeks': [], 'years': []}
+        statistics: dict[str, list[Any]] = {'weeks': [], 'years': []}
         for week_number in sorted(weeks_stats.keys()):
             week_stat = weeks_stats[week_number]
             urls = week_stat.pop('uniq_urls')
@@ -1477,7 +1479,7 @@ class Lookyloo():
             statistics['weeks'].append(week_stat)
 
         for year in sorted(stats.keys()):
-            year_stats: Dict[str, Union[int, List]] = {'year': year, 'months': [], 'yearly_submissions': 0}
+            year_stats: dict[str, int | list[Any]] = {'year': year, 'months': [], 'yearly_submissions': 0}
             for month in sorted(stats[year].keys()):
                 month_stats = stats[year][month]
                 if len(month_stats) == 1:
@@ -1496,15 +1498,15 @@ class Lookyloo():
         return statistics
 
     def store_capture(self, uuid: str, is_public: bool,
-                      os: Optional[str]=None, browser: Optional[str]=None,
-                      parent: Optional[str]=None,
-                      downloaded_filename: Optional[str]=None, downloaded_file: Optional[bytes]=None,
-                      error: Optional[str]=None, har: Optional[Dict[str, Any]]=None,
-                      png: Optional[bytes]=None, html: Optional[str]=None,
-                      last_redirected_url: Optional[str]=None,
-                      cookies: Optional[Union[List['Cookie'], List[Dict[str, str]]]]=None,
-                      capture_settings: Optional[CaptureSettings]=None,
-                      potential_favicons: Optional[Set[bytes]]=None
+                      os: str | None=None, browser: str | None=None,
+                      parent: str | None=None,
+                      downloaded_filename: str | None=None, downloaded_file: bytes | None=None,
+                      error: str | None=None, har: dict[str, Any] | None=None,
+                      png: bytes | None=None, html: str | None=None,
+                      last_redirected_url: str | None=None,
+                      cookies: list[Cookie] | list[dict[str, str]] | None=None,
+                      capture_settings: CaptureSettings | None=None,
+                      potential_favicons: set[bytes] | None=None
                       ) -> None:
 
         now = datetime.now()
@@ -1512,7 +1514,7 @@ class Lookyloo():
         safe_create_dir(dirpath)
 
         if os or browser:
-            meta: Dict[str, str] = {}
+            meta: dict[str, str] = {}
             if os:
                 meta['os'] = os
             if browser:

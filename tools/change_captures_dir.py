@@ -9,7 +9,7 @@ from lookyloo.default import safe_create_dir, get_socket_path
 from lookyloo.helpers import get_captures_dir
 
 
-def rename_captures():
+def rename_captures() -> None:
     r = Redis(unix_socket_path=get_socket_path('cache'))
     capture_dir: Path = get_captures_dir()
     for uuid_path in capture_dir.glob('*/uuid'):

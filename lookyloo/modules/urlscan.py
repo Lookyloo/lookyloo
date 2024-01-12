@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 from datetime import date
 from typing import Any, Dict, Optional, TYPE_CHECKING
@@ -47,7 +49,7 @@ class UrlScan(AbstractModule):
         self.storage_dir_urlscan.mkdir(parents=True, exist_ok=True)
         return True
 
-    def get_url_submission(self, capture_info: 'CaptureCache') -> Dict[str, Any]:
+    def get_url_submission(self, capture_info: CaptureCache) -> dict[str, Any]:
         url_storage_dir = get_cache_directory(
             self.storage_dir_urlscan,
             f'{capture_info.url}{capture_info.user_agent}{capture_info.referer}',
@@ -61,7 +63,7 @@ class UrlScan(AbstractModule):
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, capture_info: 'CaptureCache', /, visibility: str, *, force: bool=False, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, capture_info: CaptureCache, /, visibility: str, *, force: bool=False, auto_trigger: bool=False) -> dict[str, str]:
         '''Run the module on the initial URL'''
         if not self.available:
             return {'error': 'Module not available'}
@@ -75,7 +77,7 @@ class UrlScan(AbstractModule):
         self.url_submit(capture_info, visibility, force)
         return {'success': 'Module triggered'}
 
-    def __submit_url(self, url: str, useragent: Optional[str], referer: Optional[str], visibility: str) -> Dict:
+    def __submit_url(self, url: str, useragent: str | None, referer: str | None, visibility: str) -> dict[str, Any]:
         data = {'customagent': useragent if useragent else '', 'referer': referer if referer else ''}
 
         if not url.startswith('http'):
@@ -96,12 +98,12 @@ class UrlScan(AbstractModule):
         response.raise_for_status()
         return response.json()
 
-    def __url_result(self, uuid: str) -> Dict:
+    def __url_result(self, uuid: str) -> dict[str, Any]:
         response = self.client.get(f'https://urlscan.io/api/v1/result/{uuid}')
         response.raise_for_status()
         return response.json()
 
-    def url_submit(self, capture_info: 'CaptureCache', visibility: str, force: bool=False) -> Dict:
+    def url_submit(self, capture_info: CaptureCache, visibility: str, force: bool=False) -> dict[str, Any]:
         '''Lookup an URL on urlscan.io
         Note: force means 2 things:
             * (re)scan of the URL
@@ -142,7 +144,7 @@ class UrlScan(AbstractModule):
             return response
         return {'error': 'Submitting is not allowed by the configuration'}
 
-    def url_result(self, capture_info: 'CaptureCache'):
+    def url_result(self, capture_info: CaptureCache) -> dict[str, Any]:
         '''Get the result from a submission.'''
         submission = self.get_url_submission(capture_info)
         if submission and 'uuid' in submission:

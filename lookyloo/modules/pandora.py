@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
-from io import BytesIO
-from typing import Dict
+from __future__ import annotations
 
-from pypandora import PyPandora
+from io import BytesIO
+from typing import Dict, Any
+
+from pypandora import PyPandora  # type: ignore[attr-defined]
 
 from ..default import ConfigError
 from ..helpers import get_useragent_for_requests
@@ -27,7 +29,7 @@ class Pandora(AbstractModule):
 
         return True
 
-    def capture_default_trigger(self, file_in_memory: BytesIO, filename: str, /, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, file_in_memory: BytesIO, filename: str, /, auto_trigger: bool=False) -> dict[str, str]:
         '''Automatically submit the file if the landing URL is a file instead of a webpage'''
         if not self.available:
             return {'error': 'Module not available'}
@@ -39,7 +41,7 @@ class Pandora(AbstractModule):
         self.submit_file(file_in_memory, filename)
         return {'success': 'Module triggered'}
 
-    def submit_file(self, file_in_memory: BytesIO, filename: str) -> Dict:
+    def submit_file(self, file_in_memory: BytesIO, filename: str) -> dict[str, Any]:
         '''Submit a file to Pandora'''
         if not self.available:
             raise ConfigError('Pandora not available, probably not able to reach the server.')

@@ -5,7 +5,7 @@ from subprocess import Popen, run
 from lookyloo.default import get_homedir
 
 
-def main():
+def main() -> None:
     # Just fail if the env isn't set.
     get_homedir()
     print('Start backend (redis)...')

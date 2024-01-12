@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import json
 from datetime import date
 from typing import Any, Dict, Optional, TYPE_CHECKING
@@ -29,7 +31,7 @@ class URLhaus(AbstractModule):
         self.storage_dir_uh.mkdir(parents=True, exist_ok=True)
         return True
 
-    def get_url_lookup(self, url: str) -> Optional[Dict[str, Any]]:
+    def get_url_lookup(self, url: str) -> dict[str, Any] | None:
         url_storage_dir = get_cache_directory(self.storage_dir_uh, url, 'url')
         if not url_storage_dir.exists():
             return None
@@ -40,13 +42,13 @@ class URLhaus(AbstractModule):
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def __url_result(self, url: str) -> Dict:
+    def __url_result(self, url: str) -> dict[str, Any]:
         data = {'url': url}
         response = requests.post(f'{self.url}/url/', data)
         response.raise_for_status()
         return response.json()
 
-    def capture_default_trigger(self, cache: 'CaptureCache', /, *, auto_trigger: bool=False) -> Dict:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, auto_trigger: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
         if not self.available:
             return {'error': 'Module not available'}
