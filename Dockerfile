@@ -17,6 +17,7 @@ COPY lookyloo lookyloo/
 COPY tools tools/
 COPY bin bin/
 COPY website website/
+COPY config config/
 COPY pyproject.toml .
 COPY poetry.lock .
 COPY README.md .
