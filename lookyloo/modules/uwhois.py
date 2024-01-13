@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import socket
 
-from typing import overload, Literal, List, Union
+from typing import overload, Literal
 
 from har2tree import CrawledTree, Har2TreeError, HostNode  # type: ignore[attr-defined]
 

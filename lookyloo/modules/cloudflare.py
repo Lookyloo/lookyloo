@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import ipaddress
-from typing import Dict, Set
 
 import requests
 
@@ -35,12 +36,12 @@ class Cloudflare(AbstractModule):
         self.v6_list = [ipaddress.ip_network(net) for net in ipv6_list.split('\n')]
         return True
 
-    def ips_lookup(self, ips: Set[str]) -> Dict[str, bool]:
+    def ips_lookup(self, ips: set[str]) -> dict[str, bool]:
         '''Lookup a list of IPs. True means it is a known Cloudflare IP'''
         if not self.available:
             raise ConfigError('Hashlookup not available, probably not enabled.')
 
-        to_return: Dict[str, bool] = {}
+        to_return: dict[str, bool] = {}
         for ip_s, ip_p in [(ip, ipaddress.ip_address(ip)) for ip in ips]:
             if ip_p.version == 4:
                 to_return[ip_s] = any(ip_p in net for net in self.v4_list)

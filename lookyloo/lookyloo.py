@@ -18,12 +18,12 @@ from email.message import EmailMessage
 from functools import cached_property
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING, overload, Literal
+from typing import Any, Iterable, TYPE_CHECKING, overload, Literal
 from urllib.parse import urlparse
 from uuid import uuid4
 from zipfile import ZipFile
 
-from defang import defang  # type: ignore
+from defang import defang  # type: ignore[import-untyped]
 from har2tree import CrawledTree, HostNode, URLNode  # type: ignore[attr-defined]
 from lacuscore import (LacusCore,
                        CaptureStatus as CaptureStatusCore,
@@ -997,8 +997,8 @@ class Lookyloo():
         for capture in captures[:limit]:
             ct = self.get_crawled_tree(capture.uuid)
             to_append: dict[str, str | dict[str, Any]] = {'capture_uuid': capture.uuid,
-                                                                'start_timestamp': capture.timestamp.isoformat(),
-                                                                'title': capture.title}
+                                                          'start_timestamp': capture.timestamp.isoformat(),
+                                                          'title': capture.title}
             urlnodes: dict[str, dict[str, str]] = {}
             for urlnode in ct.root_hartree.url_tree.search_nodes(name=url):
                 urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),

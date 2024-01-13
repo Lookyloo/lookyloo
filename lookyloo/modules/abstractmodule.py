@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import logging
 
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, Any
+from typing import Any
 
 from ..default import get_config
 
@@ -13,11 +15,11 @@ logging.config.dictConfig(get_config('logging'))
 class AbstractModule(ABC):
     '''Just a simple abstract for the modules to catch issues with initialization'''
 
-    def __init__(self, /, *, config_name: Optional[str]=None,
-                 config: Optional[Dict[str, Any]]=None):
+    def __init__(self, /, *, config_name: str | None=None,
+                 config: dict[str, Any] | None=None):
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
-        self.config: Dict[str, Any] = {}
+        self.config: dict[str, Any] = {}
         self._available = False
         if config_name:
             try:

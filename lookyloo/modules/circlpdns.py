@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 from datetime import date
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 from pypdns import PyPDNS, PDNSRecord  # type: ignore[attr-defined]

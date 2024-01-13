@@ -9,12 +9,11 @@ import logging.config
 import signal
 
 from pathlib import Path
-from typing import Optional, Set, Union
 
 from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
 from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy  # type: ignore[attr-defined]
 
-from lookyloo.lookyloo import Lookyloo, CaptureSettings
+from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import AbstractManager, get_config
 from lookyloo.helpers import get_captures_dir
 

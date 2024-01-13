@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import logging
 import logging.config
 
 from subprocess import Popen
-from typing import Optional
 
 from lookyloo.default import get_config, get_homedir, AbstractManager
 
@@ -13,7 +14,7 @@ logging.config.dictConfig(get_config('logging'))
 
 class Website(AbstractManager):
 
-    def __init__(self, loglevel: Optional[int]=None) -> None:
+    def __init__(self, loglevel: int | None=None) -> None:
         super().__init__(loglevel)
         self.script_name = 'website'
         self.process: Popen = self._launch_website()  # type: ignore[type-arg]

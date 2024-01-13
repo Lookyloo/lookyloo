@@ -18,7 +18,7 @@ from datetime import datetime
 from functools import lru_cache, _CacheInfo as CacheInfo
 from logging import Logger, LoggerAdapter
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, Set, MutableMapping, Iterator
+from typing import Any, MutableMapping, Iterator
 
 import dns.rdatatype
 import dns.resolver

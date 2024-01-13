@@ -7,7 +7,7 @@ import hashlib
 import json
 
 from io import BytesIO
-from typing import Any, Dict, Optional, Tuple, List
+from typing import Any
 from zipfile import ZipFile
 
 import flask_login  # type: ignore
@@ -17,9 +17,9 @@ from werkzeug.security import check_password_hash
 
 from lacuscore import CaptureStatus as CaptureStatusCore
 from pylacus import CaptureStatus as CaptureStatusPy  # type: ignore[attr-defined]
+from lookyloo import CaptureSettings, Lookyloo
 from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
-from lookyloo.lookyloo import CaptureSettings, Lookyloo
 
 from .helpers import build_users_table, load_user_from_request, src_request_ip, get_lookyloo_instance
 

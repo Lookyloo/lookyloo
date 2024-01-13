@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any
 from urllib.parse import urlsplit
 
 from har2tree import CrawledTree, HostNode, URLNode  # type: ignore[attr-defined]

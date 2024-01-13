@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import hashlib
 import json
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Union
 
 import flask_login  # type: ignore
 from flask import Request
 from werkzeug.security import generate_password_hash
 
+from lookyloo import Lookyloo
 from lookyloo.default import get_config, get_homedir
-from lookyloo.lookyloo import Lookyloo
 
 __global_lookyloo_instance = None
 
@@ -50,7 +51,7 @@ def load_user_from_request(request: Request) -> User | None:
 
 
 @lru_cache(64)
-def build_keys_table() -> Dict[str, str]:
+def build_keys_table() -> dict[str, str]:
     keys_table = {}
     for username, authstuff in build_users_table().items():
         if 'authkey' in authstuff:
@@ -59,7 +60,7 @@ def build_keys_table() -> Dict[str, str]:
 
 
 @lru_cache(64)
-def get_users() -> Dict[str, Union[str, List[str]]]:
+def get_users() -> dict[str, str | list[str]]:
     try:
         # Use legacy user mgmt, no need to print a warning, and it will fail on new install.
         return get_config('generic', 'cache_clean_user', quiet=True)
@@ -68,8 +69,8 @@ def get_users() -> Dict[str, Union[str, List[str]]]:
 
 
 @lru_cache(64)
-def build_users_table() -> Dict[str, Dict[str, str]]:
-    users_table: Dict[str, Dict[str, str]] = {}
+def build_users_table() -> dict[str, dict[str, str]]:
+    users_table: dict[str, dict[str, str]] = {}
     for username, authstuff in get_users().items():
         if isinstance(authstuff, str):
             # just a password, make a key
@@ -101,6 +102,6 @@ def get_secret_key() -> bytes:
 
 
 @lru_cache(64)
-def sri_load() -> Dict[str, Dict[str, str]]:
+def sri_load() -> dict[str, dict[str, str]]:
     with (get_homedir() / 'website' / 'web' / 'sri.txt').open() as f:
         return json.load(f)

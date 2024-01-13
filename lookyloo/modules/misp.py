@@ -7,7 +7,7 @@ import re
 from io import BytesIO
 from collections import defaultdict
 from collections.abc import Mapping
-from typing import Any, Dict, List, Optional, Set, Union, TYPE_CHECKING, Iterator
+from typing import Any, TYPE_CHECKING, Iterator
 
 import requests
 from har2tree import HostNode, URLNode, Har2TreeError  # type: ignore[attr-defined]
@@ -209,7 +209,7 @@ class MISP(AbstractModule):
             events = self._prepare_push(to_push, allow_duplicates, auto_publish)
             if not events:
                 return {'error': 'All the events are already on the MISP instance.'}
-            if isinstance(events, Dict):
+            if isinstance(events, dict):
                 return {'error': events}
             to_return = []
             for event in events:

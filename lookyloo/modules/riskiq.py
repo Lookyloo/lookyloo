@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 from datetime import date, datetime, timedelta
-from typing import Any, Dict, Optional, Union, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 from urllib.parse import urlparse
 
 from passivetotal import AccountClient, DnsRequest, WhoisRequest  # type: ignore

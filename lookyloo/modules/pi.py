@@ -6,7 +6,7 @@ import json
 import time
 
 from datetime import date
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from pyeupi import PyEUPI  # type: ignore[attr-defined]
 

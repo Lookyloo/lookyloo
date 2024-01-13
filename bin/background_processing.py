@@ -8,11 +8,13 @@ import logging
 import logging.config
 from collections import Counter
 from datetime import date, timedelta
-from typing import Any, Dict, Optional
+from typing import Any
 
-from lookyloo.lookyloo import Lookyloo, CaptureStatusCore, CaptureStatusPy  # type: ignore[attr-defined]
+from lacuscore import CaptureStatus as CaptureStatusCore
+from lookyloo import Lookyloo
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
+from pylacus import CaptureStatus as CaptureStatusPy  # type: ignore[attr-defined]
 
 logging.config.dictConfig(get_config('logging'))
 

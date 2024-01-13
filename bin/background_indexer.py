@@ -9,11 +9,10 @@ import shutil
 
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
+from lookyloo import Lookyloo
 from lookyloo.default import AbstractManager, get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
-from lookyloo.lookyloo import Lookyloo
 from lookyloo.helpers import is_locked, get_sorted_captures_from_disk, make_dirs_list
 
 

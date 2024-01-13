@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import Dict, Any
+from typing import Any
 
 from pypandora import PyPandora  # type: ignore[attr-defined]
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from typing import Dict, Iterable, List, Union
+from typing import Iterable
 
 from pysanejs import SaneJS  # type: ignore[attr-defined]
 

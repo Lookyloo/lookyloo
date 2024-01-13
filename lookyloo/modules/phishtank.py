@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Dict, Optional, List, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from pyphishtanklookup import PhishtankLookup  # type: ignore[attr-defined]
 

@@ -7,7 +7,7 @@ import logging
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from . import env_global_name
 from .exceptions import ConfigError, CreateDirectoryException, MissingEnv

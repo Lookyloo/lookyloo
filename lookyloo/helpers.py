@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+from __future__ import annotations
+
 import hashlib
 import json
 import logging
@@ -10,7 +13,7 @@ from functools import lru_cache
 from importlib.metadata import version
 from io import BufferedIOBase
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union, Tuple
+from typing import Any
 from urllib.parse import urlparse
 
 
@@ -29,12 +32,12 @@ logger = logging.getLogger('Lookyloo - Helpers')
 
 # This method is used in json.dump or json.dumps calls as the default parameter:
 # json.dumps(..., default=dump_to_json)
-def serialize_to_json(obj: Union[Set[Any]]) -> Union[List[Any]]:
+def serialize_to_json(obj: set[Any]) -> list[Any]:
     if isinstance(obj, set):
         return sorted(obj)
 
 
-def get_resources_hashes(har2tree_container: Union[CrawledTree, HostNode, URLNode]) -> Set[str]:
+def get_resources_hashes(har2tree_container: CrawledTree | HostNode | URLNode) -> set[str]:
     if isinstance(har2tree_container, CrawledTree):
         urlnodes = har2tree_container.root_hartree.url_tree.traverse()
     elif isinstance(har2tree_container, HostNode):
@@ -43,7 +46,7 @@ def get_resources_hashes(har2tree_container: Union[CrawledTree, HostNode, URLNod
         urlnodes = [har2tree_container]
     else:
         raise LookylooException(f'har2tree_container cannot be {type(har2tree_container)}')
-    all_ressources_hashes: Set[str] = set()
+    all_ressources_hashes: set[str] = set()
     for urlnode in urlnodes:
         if hasattr(urlnode, 'resources_hashes'):
             all_ressources_hashes.update(urlnode.resources_hashes)
@@ -75,7 +78,7 @@ def get_email_template() -> str:
         return f.read()
 
 
-def make_dirs_list(root_dir: Path) -> List[Path]:
+def make_dirs_list(root_dir: Path) -> list[Path]:
     directories = []
     year_now = date.today().year
     oldest_year = year_now - 10
@@ -99,14 +102,14 @@ def make_ts_from_dirname(dirname: str) -> datetime:
 
 
 def get_sorted_captures_from_disk(captures_dir: Path, /, *,
-                                  cut_time: Optional[Union[datetime, date]]=None,
-                                  keep_more_recent: bool=True) -> List[Tuple[datetime, Path]]:
+                                  cut_time: datetime | date | None=None,
+                                  keep_more_recent: bool=True) -> list[tuple[datetime, Path]]:
     '''Recursively gets all the captures present in a specific directory, doesn't use the indexes.
 
     NOTE: this method should never be used on archived captures as it's going to take forever on S3
     '''
 
-    all_paths: List[Tuple[datetime, Path]] = []
+    all_paths: list[tuple[datetime, Path]] = []
     for entry in captures_dir.iterdir():
         if not entry.is_dir():
             # index file
@@ -173,14 +176,14 @@ class UserAgents:
             self.most_recent_uas[platform_key][browser_key].insert(0, parsed_ua.string)
 
     @property
-    def user_agents(self) -> Dict[str, Dict[str, List[str]]]:
+    def user_agents(self) -> dict[str, dict[str, list[str]]]:
         ua_files_path = sorted(self.path.glob('**/*.json'), reverse=True)
         if ua_files_path[0] != self.most_recent_ua_path:
             self._load_newest_ua_file(ua_files_path[0])
         return self.most_recent_uas
 
     @property
-    def default(self) -> Dict[str, str]:
+    def default(self) -> dict[str, str]:
         '''The default useragent for desktop chrome from playwright'''
         parsed_ua = ParsedUserAgent(self.playwright_devices['desktop']['default']['Desktop Chrome']['user_agent'])
         platform_key = parsed_ua.platform
@@ -196,16 +199,16 @@ class UserAgents:
                 'useragent': parsed_ua.string}
 
 
-def load_known_content(directory: str='known_content') -> Dict[str, Dict[str, Any]]:
-    to_return: Dict[str, Dict[str, Any]] = {}
+def load_known_content(directory: str='known_content') -> dict[str, dict[str, Any]]:
+    to_return: dict[str, dict[str, Any]] = {}
     for known_content_file in (get_homedir() / directory).glob('*.json'):
         with known_content_file.open() as f:
             to_return[known_content_file.stem] = json.load(f)
     return to_return
 
 
-def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str, bytes, List[Dict[str, Union[str, bool]]]]]=None) -> List[Dict[str, Union[str, bool]]]:
-    cookies: List[Dict[str, Union[str, bool]]]
+def load_cookies(cookie_pseudofile: BufferedIOBase | str | bytes | list[dict[str, str | bool]] | None=None) -> list[dict[str, str | bool]]:
+    cookies: list[dict[str, str | bool]]
     if cookie_pseudofile:
         if isinstance(cookie_pseudofile, (str, bytes)):
             try:
@@ -229,10 +232,10 @@ def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str, bytes, L
 
         with (get_homedir() / 'cookies.json').open() as f:
             cookies = json.load(f)
-    to_return: List[Dict[str, Union[str, bool]]] = []
+    to_return: list[dict[str, str | bool]] = []
     try:
         for cookie in cookies:
-            to_add: Dict[str, Union[str, bool]]
+            to_add: dict[str, str | bool]
             if 'Host raw' in cookie and isinstance(cookie['Host raw'], str):
                 # Cookie export format for Cookie Quick Manager
                 u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]
@@ -253,7 +256,7 @@ def load_cookies(cookie_pseudofile: Optional[Union[BufferedIOBase, str, bytes, L
     return to_return
 
 
-def uniq_domains(uniq_urls: List[str]) -> Set[str]:
+def uniq_domains(uniq_urls: list[str]) -> set[str]:
     domains = set()
     for url in uniq_urls:
         splitted = urlparse(url)
@@ -267,7 +270,7 @@ def get_useragent_for_requests() -> str:
     return f'Lookyloo / {version("lookyloo")}'
 
 
-def get_cache_directory(root: Path, identifier: str, namespace: Optional[Union[str, Path]] = None) -> Path:
+def get_cache_directory(root: Path, identifier: str, namespace: str | Path | None = None) -> Path:
     m = hashlib.md5()
     m.update(identifier.encode())
     digest = m.hexdigest()
@@ -331,26 +334,26 @@ class ParsedUserAgent(UserAgent):
     # from https://python.tutorialink.com/how-do-i-get-the-user-agent-with-flask/
 
     @cached_property
-    def _details(self) -> Dict[str, Any]:
+    def _details(self) -> dict[str, Any]:
         return user_agent_parser.Parse(self.string)
 
     @property
-    def platform(self) -> Optional[str]:  # type: ignore[override]
+    def platform(self) -> str | None:  # type: ignore[override]
         return self._details['os'].get('family')
 
     @property
-    def platform_version(self) -> Optional[str]:
+    def platform_version(self) -> str | None:
         return self._aggregate_version(self._details['os'])
 
     @property
-    def browser(self) -> Optional[str]:  # type: ignore[override]
+    def browser(self) -> str | None:  # type: ignore[override]
         return self._details['user_agent'].get('family')
 
     @property
-    def version(self) -> Optional[str]:  # type: ignore[override]
+    def version(self) -> str | None:  # type: ignore[override]
         return self._aggregate_version(self._details['user_agent'])
 
-    def _aggregate_version(self, details: Dict[str, str]) -> Optional[str]:
+    def _aggregate_version(self, details: dict[str, str]) -> str | None:
         return '.'.join(
             part
             for key in ('major', 'minor', 'patch', 'patch_minor')

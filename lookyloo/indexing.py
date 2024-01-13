@@ -6,7 +6,7 @@ import hashlib
 import logging
 # import re
 from collections import defaultdict
-from typing import Dict, Iterable, List, Optional, Set, Tuple
+from typing import Iterable
 from urllib.parse import urlsplit
 
 from har2tree import CrawledTree  # type: ignore[attr-defined]

@@ -7,7 +7,6 @@ import os
 import time
 from pathlib import Path
 from subprocess import Popen
-from typing import Optional, Dict
 
 from redis import Redis
 from redis.exceptions import ConnectionError

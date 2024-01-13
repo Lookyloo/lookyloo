@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import time
 from datetime import date
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 import vt  # type: ignore
 from vt.error import APIError  # type: ignore

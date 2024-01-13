@@ -18,7 +18,7 @@ import filetype  # type: ignore
 from datetime import date, datetime, timedelta, timezone
 from importlib.metadata import version
 from io import BytesIO, StringIO
-from typing import Any, Dict, List, Optional, Union, TypedDict, Set, Tuple
+from typing import Any, TypedDict
 from urllib.parse import quote_plus, unquote_plus, urlparse
 from uuid import uuid4
 from zipfile import ZipFile
@@ -34,10 +34,10 @@ from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
+from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
-from lookyloo.lookyloo import Lookyloo, CaptureSettings
 
 if sys.version_info < (3, 9):
     from pytz import all_timezones_set

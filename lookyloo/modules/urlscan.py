@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 import requests
 

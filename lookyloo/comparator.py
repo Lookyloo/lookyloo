@@ -5,7 +5,7 @@ from __future__ import annotations
 import fnmatch
 import logging
 
-from typing import Dict, Any, Union, List, Optional, TypedDict, Tuple
+from typing import Any, TypedDict
 
 from har2tree import URLNode  # type: ignore[attr-defined]
 
@@ -117,10 +117,9 @@ class Comparator():
             raise MissingUUID(f'{capture_right} does not exists.')
 
         different: bool = False
-        to_return: dict[str, dict[str, (str |
-                                             list[str | dict[str, Any]] |
-                                             dict[str, (int | str |
-                                                             list[int | str | dict[str, Any]])])]] = {}
+        to_return: dict[str, dict[str,
+                                  (str | list[str | dict[str, Any]]
+                                   | dict[str, (int | str | list[int | str | dict[str, Any]])])]] = {}
         to_return['lookyloo_urls'] = {'left': f'https://{self.public_domain}/tree/{capture_left}',
                                       'right': f'https://{self.public_domain}/tree/{capture_right}'}
         left = self.get_comparables_capture(capture_left)

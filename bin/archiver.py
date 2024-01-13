@@ -12,7 +12,6 @@ import shutil
 
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
 from redis import Redis
 import s3fs  # type: ignore

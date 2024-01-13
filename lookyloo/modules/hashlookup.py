@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from typing import Dict, List
 
 from har2tree import CrawledTree  # type: ignore[attr-defined]
 from pyhashlookup import Hashlookup  # type: ignore[attr-defined]
