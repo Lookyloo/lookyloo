@@ -23,7 +23,7 @@ COPY poetry.lock .
 COPY README.md .
 COPY LICENSE .
 
-RUN mkdir cache user_agents scraped
+RUN mkdir cache user_agents scraped logs
 
 RUN echo LOOKYLOO_HOME="'`pwd`'" > .env
 RUN cat .env
