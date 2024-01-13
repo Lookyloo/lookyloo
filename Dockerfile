@@ -25,6 +25,7 @@ COPY LICENSE .
 RUN mkdir cache user_agents scraped
 
 RUN echo LOOKYLOO_HOME="'`pwd`'" > .env
+RUN cat .env
 RUN poetry install
 RUN poetry run playwright install
 RUN poetry run tools/3rdparty.py
