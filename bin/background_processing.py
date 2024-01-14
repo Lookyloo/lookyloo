@@ -121,7 +121,7 @@ class Processing(AbstractManager):
                     rendered_hostname_only=query.get('rendered_hostname_only', True),
                     # force=query.get('force', False),
                     # recapture_interval=query.get('recapture_interval', 300),
-                    priority=query.get('priority', None),
+                    priority=query.get('priority', 0),
                     uuid=uuid
                 )
                 if new_uuid != uuid:
