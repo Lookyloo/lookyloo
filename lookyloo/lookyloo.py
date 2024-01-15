@@ -39,7 +39,7 @@ from pylacus import (PyLacus,  # type: ignore[attr-defined]
                      # CaptureSettings as CaptureSettingsPy
                      )
 from pymisp import MISPAttribute, MISPEvent, MISPObject  # type: ignore[attr-defined]
-from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable  # type: ignore[attr-defined]
+from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable
 from pylookyloomonitoring import PyLookylooMonitoring  # type: ignore[attr-defined]
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
