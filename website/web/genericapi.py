@@ -16,7 +16,7 @@ from flask_restx import Namespace, Resource, abort, fields  # type: ignore
 from werkzeug.security import check_password_hash
 
 from lacuscore import CaptureStatus as CaptureStatusCore
-from pylacus import CaptureStatus as CaptureStatusPy  # type: ignore[attr-defined]
+from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo import CaptureSettings, Lookyloo
 from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID, NoValidHarFile

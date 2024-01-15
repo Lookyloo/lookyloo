@@ -11,7 +11,7 @@ import signal
 from pathlib import Path
 
 from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
-from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy  # type: ignore[attr-defined]
+from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 
 from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import AbstractManager, get_config

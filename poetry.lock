@@ -2376,13 +2376,13 @@ docs = ["Sphinx (>=5.3.0,<6.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.7.1"
+version = "1.7.2"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylacus-1.7.1-py3-none-any.whl", hash = "sha256:fba39616b51de89d09e8f09c2d417de308c1801b1df4e60d810dca16180938d8"},
-    {file = "pylacus-1.7.1.tar.gz", hash = "sha256:c761111ed6d0702f8e8f275e0d6753d164dd84cf1f50344150267ea3cd19ed27"},
+    {file = "pylacus-1.7.2-py3-none-any.whl", hash = "sha256:ead8f0b361867c0fe0be2d05ddf74d4a46228c3aa4e3bec995ad208ab3b1c6b9"},
+    {file = "pylacus-1.7.2.tar.gz", hash = "sha256:aa845b422153e59b55c72fe79c1275ce503e4c9c96716ce5619e62e8f514485a"},
 ]
 
 [package.dependencies]
@@ -3592,4 +3592,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.12"
-content-hash = "9e13230b9ed88e71cee243144b62fb4d9fb445213b7735ed1d170bdb7c51d958"
+content-hash = "ba9fcec99e23d48213f76c0a2b8f0fdb1c85a0b729abfbe29a2825cf3d54f06c"

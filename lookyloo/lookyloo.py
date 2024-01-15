@@ -32,7 +32,7 @@ from lacuscore import (LacusCore,
                        CaptureSettings as CaptureSettingsCore)
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
-from pylacus import (PyLacus,  # type: ignore[attr-defined]
+from pylacus import (PyLacus,
                      CaptureStatus as CaptureStatusPy
                      # CaptureResponse as CaptureResponsePy,
                      # CaptureResponseJson as CaptureResponseJsonPy,

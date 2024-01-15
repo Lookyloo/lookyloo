@@ -14,7 +14,7 @@ from lacuscore import CaptureStatus as CaptureStatusCore
 from lookyloo import Lookyloo
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
-from pylacus import CaptureStatus as CaptureStatusPy  # type: ignore[attr-defined]
+from pylacus import CaptureStatus as CaptureStatusPy
 
 logging.config.dictConfig(get_config('logging'))
 
