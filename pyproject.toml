@@ -41,7 +41,7 @@ flask = "^3.0.0"
 gunicorn = "^21.2.0"
 charset-normalizer = "^3.3.2"
 redis = {version = "^5.0.1", extras = ["hiredis"]}
-beautifulsoup4 = "^4.12.2"
+beautifulsoup4 = "^4.12.3"
 bootstrap-flask = "^2.3.3"
 defang = "^0.5.3"
 vt-py = "^0.18"
