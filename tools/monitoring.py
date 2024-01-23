@@ -133,12 +133,12 @@ if __name__ == '__main__':
         console.print(s)
 
     if m.lacus is not None:
-        status = m.lacus_status()
+        lacus_status = m.lacus_status()
         console.print('Lacus status:')
-        if status['is_busy']:
+        if lacus_status['is_busy']:
             console.print(Padding('[red]WARNING[/red]: Lacus is busy.', (0, 2)))
-        console.print(Padding(f'Ongoing captures: {status["ongoing_captures"]}', (0, 2)))
-        console.print(Padding(f'Enqueued captures: {status["enqueued_captures"]}', (0, 2)))
+        console.print(Padding(f'Ongoing captures: {lacus_status["ongoing_captures"]}', (0, 2)))
+        console.print(Padding(f'Enqueued captures: {lacus_status["enqueued_captures"]}', (0, 2)))
 
     console.print('Current queues:')
     for q, priority in m.queues:
