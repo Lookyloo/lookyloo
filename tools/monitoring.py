@@ -5,14 +5,16 @@ from __future__ import annotations
 import os
 import sys
 
-from typing import List, Tuple, Any
+from typing import Any
 
 from redis import Redis
 from redis.exceptions import ConnectionError
 from rich.console import Console
 from rich.padding import Padding
 
-from lookyloo.default import get_socket_path, AbstractManager
+from pylacus import PyLacus
+
+from lookyloo.default import get_socket_path, AbstractManager, get_config
 
 # NOTE: run with watch:
 #   watch --color tools/monitoring.py
@@ -22,9 +24,19 @@ console = Console(color_system="256")
 
 class Monitoring():
 
+    lacus: PyLacus | None = None
+
     def __init__(self) -> None:
         self.redis_cache: Redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)  # type: ignore[type-arg]
         self.redis_indexing: Redis = Redis(unix_socket_path=get_socket_path('indexing'), decode_responses=True)  # type: ignore[type-arg]
+        # try to connect to a remote lacus if lookyloo is configured this way
+        if remote_lacus_config := get_config('generic', 'remote_lacus'):
+            if remote_lacus_config.get('enable'):
+                remote_lacus_url = remote_lacus_config.get('url')
+                self.lacus = PyLacus(remote_lacus_url)
+                if not self.lacus.is_up:
+                    self.lacus = None
+                    console.print(f'[red]WARNING[/red]: Remote lacus is configured but not reachable: {remote_lacus_url}.')
 
     @property
     def backend_status(self) -> bool:
@@ -89,6 +101,17 @@ class Monitoring():
             to_return[pid_name] = value
         return to_return
 
+    def lacus_status(self) -> dict[str, Any]:
+        if not self.lacus:
+            return {}
+        to_return = {}
+        to_return['is_busy'] = self.lacus.is_busy()
+        status = self.lacus.status()
+        to_return['max_concurrent_captures'] = status['max_concurrent_captures']
+        to_return['ongoing_captures'] = status['ongoing_captures']
+        to_return['enqueued_captures'] = status['enqueued_captures']
+        return to_return
+
 
 if __name__ == '__main__':
 
@@ -108,6 +131,14 @@ if __name__ == '__main__':
     for name, status in m.tree_cache.items():
         s = Padding(f'{name}: {status}', (0, 2))
         console.print(s)
+
+    if m.lacus is not None:
+        status = m.lacus_status()
+        console.print('Lacus status:')
+        if status['is_busy']:
+            console.print(Padding('[red]WARNING[/red]: Lacus is busy.', (0, 2)))
+        console.print(Padding(f'Ongoing captures: {status["ongoing_captures"]}', (0, 2)))
+        console.print(Padding(f'Enqueued captures: {status["enqueued_captures"]}', (0, 2)))
 
     console.print('Current queues:')
     for q, priority in m.queues:
