@@ -77,27 +77,30 @@ class Processing(AbstractManager):
 
     def _retry_failed_enqueue(self) -> None:
         '''If enqueuing failed, the settings are added, with a UUID in the 'to_capture key', and they have a UUID'''
-        for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf'):
-            try_reenqueue = False
+        to_requeue: list[str] = []
+        for uuid, _ in self.lookyloo.redis.zscan_iter('to_capture'):
             if self.lookyloo.redis.hexists(uuid, 'not_queued'):
                 # The capture is marked as not queued
-                try_reenqueue = True
+                to_requeue.append(uuid)
             elif self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
                 # The capture is unknown on lacus side. It might be a race condition.
                 # Let's retry a few times.
                 retry = 3
                 while retry > 0:
+                    time.sleep(1)
                     if self.lookyloo.lacus.get_capture_status(uuid) not in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
-                        # Was a race condition, the UUID is being processed by Lacus
+                        # Was a race condition, the UUID has been or is being processed by Lacus
                         self.logger.info(f'UUID {uuid} was only temporary unknown')
                         break
                     retry -= 1
-                    time.sleep(3)
                 else:
                     # UUID is still unknown
                     self.logger.info(f'UUID {uuid} is still unknown')
-                    try_reenqueue = True
-            if not try_reenqueue:
+                    to_requeue.append(uuid)
+
+        for uuid in to_requeue:
+            if not self.lookyloo.redis.zscore('to_capture', uuid):
+                # The capture has been captured in the meantime.
                 continue
             self.logger.info(f'Found a non-queued capture ({uuid}), retrying now.')
             # This capture couldn't be queued and we created the uuid locally
