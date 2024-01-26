@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from redis import Redis
-import s3fs  # type: ignore
+import s3fs  # type: ignore[import-untyped]
 
 from lookyloo.default import AbstractManager, get_config, get_homedir, get_socket_path, try_make_file
 from lookyloo.helpers import get_captures_dir, is_locked, make_ts_from_dirname, make_dirs_list
@@ -371,7 +371,7 @@ class Archiver(AbstractManager):
             self.logger.debug(f'Loading {index}')
             if recent_uuids := self.__load_index(index):
                 self.logger.debug(f'{len(recent_uuids)} captures in directory {index.parent}.')
-                self.redis.hset('lookup_dirs', mapping=recent_uuids)  # type: ignore
+                self.redis.hset('lookup_dirs', mapping=recent_uuids)  # type: ignore[arg-type]
             else:
                 index.unlink()
         total_recent_captures = self.redis.hlen('lookup_dirs')
@@ -385,7 +385,7 @@ class Archiver(AbstractManager):
             self.logger.debug(f'Loading {index}')
             if archived_uuids := self.__load_index(index):
                 self.logger.debug(f'{len(archived_uuids)} captures in directory {index.parent}.')
-                self.redis.hset('lookup_dirs_archived', mapping=archived_uuids)  # type: ignore
+                self.redis.hset('lookup_dirs_archived', mapping=archived_uuids)  # type: ignore[arg-type]
             else:
                 index.unlink()
         total_archived_captures = self.redis.hlen('lookup_dirs_archived')

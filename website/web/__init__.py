@@ -13,7 +13,7 @@ import os
 import sys
 import time
 
-import filetype  # type: ignore
+import filetype  # type: ignore[import-untyped]
 
 from datetime import date, datetime, timedelta, timezone
 from importlib.metadata import version
@@ -23,12 +23,12 @@ from urllib.parse import quote_plus, unquote_plus, urlparse
 from uuid import uuid4
 from zipfile import ZipFile
 
-import flask_login  # type: ignore
+import flask_login  # type: ignore[import-untyped]
 from flask import (Flask, Response, Request, flash, jsonify, redirect, render_template,
                    request, send_file, url_for)
-from flask_bootstrap import Bootstrap5  # type: ignore
-from flask_cors import CORS  # type: ignore
-from flask_restx import Api  # type: ignore
+from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
+from flask_cors import CORS  # type: ignore[import-untyped]
+from flask_restx import Api  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus
 from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
 from werkzeug.security import check_password_hash
@@ -54,7 +54,7 @@ from .proxied import ReverseProxied
 logging.config.dictConfig(get_config('logging'))
 
 app: Flask = Flask(__name__)
-app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore
+app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore[method-assign]
 
 app.config['SECRET_KEY'] = get_secret_key()
 

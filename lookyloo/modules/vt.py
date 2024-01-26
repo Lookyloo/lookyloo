@@ -7,9 +7,9 @@ import time
 from datetime import date
 from typing import Any, TYPE_CHECKING
 
-import vt  # type: ignore
-from vt.error import APIError  # type: ignore
-from vt.object import WhistleBlowerDict  # type: ignore
+import vt  # type: ignore[import-untyped]
+from vt.error import APIError  # type: ignore[import-untyped]
+from vt.object import WhistleBlowerDict  # type: ignore[import-untyped]
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory

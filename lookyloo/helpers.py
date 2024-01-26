@@ -19,9 +19,9 @@ from urllib.parse import urlparse
 
 from har2tree import CrawledTree, HostNode, URLNode  # type: ignore[attr-defined]
 from playwrightcapture import get_devices
-from publicsuffixlist import PublicSuffixList  # type: ignore
+from publicsuffixlist import PublicSuffixList  # type: ignore[import-untyped]
 from pytaxonomies import Taxonomies  # type: ignore[attr-defined]
-from ua_parser import user_agent_parser  # type: ignore
+from ua_parser import user_agent_parser  # type: ignore[import-untyped]
 from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 

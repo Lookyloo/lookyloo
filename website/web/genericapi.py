@@ -10,9 +10,9 @@ from io import BytesIO
 from typing import Any
 from zipfile import ZipFile
 
-import flask_login  # type: ignore
+import flask_login  # type: ignore[import-untyped]
 from flask import request, send_file, Response
-from flask_restx import Namespace, Resource, abort, fields  # type: ignore
+from flask_restx import Namespace, Resource, abort, fields  # type: ignore[import-untyped]
 from werkzeug.security import check_password_hash
 
 from lacuscore import CaptureStatus as CaptureStatusCore
@@ -29,7 +29,7 @@ lookyloo: Lookyloo = get_lookyloo_instance()
 comparator: Comparator = Comparator()
 
 
-def api_auth_check(method):  # type: ignore
+def api_auth_check(method):  # type: ignore[no-untyped-def]
     if flask_login.current_user.is_authenticated or load_user_from_request(request):
         return method
     abort(403, 'Authentication required.')

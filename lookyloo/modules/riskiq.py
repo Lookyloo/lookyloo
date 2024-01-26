@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 from typing import Any, TYPE_CHECKING
 from urllib.parse import urlparse
 
-from passivetotal import AccountClient, DnsRequest, WhoisRequest  # type: ignore
+from passivetotal import AccountClient, DnsRequest, WhoisRequest  # type: ignore[import-untyped]
 from requests import Response
 
 from ..default import ConfigError, get_homedir

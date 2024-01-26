@@ -568,7 +568,7 @@ class Lookyloo():
 
     def _prepare_lacus_query(self, query: CaptureSettings) -> CaptureSettings:
         # Remove the none, it makes redis unhappy
-        query = {k: v for k, v in query.items() if v is not None}  # type: ignore
+        query = {k: v for k, v in query.items() if v is not None}  # type: ignore[assignment]
 
         if 'url' in query and query['url'] is not None:
             # Make sure the URL does not have any space or newline
@@ -626,9 +626,9 @@ class Lookyloo():
 
         for key, value in query.items():
             if isinstance(value, bool):
-                query[key] = 1 if value else 0  # type: ignore
+                query[key] = 1 if value else 0  # type: ignore[literal-required]
             elif isinstance(value, (list, dict)):
-                query[key] = json.dumps(value) if value else None  # type: ignore
+                query[key] = json.dumps(value) if value else None  # type: ignore[literal-required]
 
         query = self._prepare_lacus_query(query)
 
@@ -679,7 +679,7 @@ class Lookyloo():
                         if value:
                             mapping_capture[key] = json.dumps(value)
                     elif value is not None:
-                        mapping_capture[key] = value  # type: ignore
+                        mapping_capture[key] = value  # type: ignore[assignment]
 
                 p = self.redis.pipeline()
                 p.zadd('to_capture', {perma_uuid: priority})
@@ -1157,7 +1157,7 @@ class Lookyloo():
             event = self.misps.export(cache, self.is_public_instance)
         screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png',
                                                         data=self.get_screenshot(cache.uuid),
-                                                        disable_correlation=True)  # type: ignore
+                                                        disable_correlation=True)  # type: ignore[assignment]
         # If the last object attached to tht event is a file, it is the rendered page
         if event.objects and event.objects[-1].name == 'file':
             event.objects[-1].add_reference(screenshot, 'rendered-as', 'Screenshot of the page')
@@ -1180,7 +1180,7 @@ class Lookyloo():
                 pt_entry = self.phishtank.get_url_lookup(urls[0].value)
                 if not pt_entry or not pt_entry.get('phish_detail_url'):
                     continue
-                pt_attribute: MISPAttribute = event.add_attribute('link', value=pt_entry['phish_detail_url'], comment='Phishtank permalink')  # type: ignore
+                pt_attribute: MISPAttribute = event.add_attribute('link', value=pt_entry['phish_detail_url'], comment='Phishtank permalink')  # type: ignore[assignment]
                 e_obj.add_reference(pt_attribute, 'known-as', 'Permalink on Phishtank')
 
         if self.urlscan.available:
@@ -1491,7 +1491,7 @@ class Lookyloo():
                     month_stats['uniq_urls'] = len(urls)
                     month_stats['uniq_domains'] = len(uniq_domains(urls))
 
-                year_stats['months'].append(month_stats)  # type: ignore
+                year_stats['months'].append(month_stats)  # type: ignore[union-attr]
                 year_stats['yearly_submissions'] += month_stats['submissions']
             statistics['years'].append(year_stats)
 

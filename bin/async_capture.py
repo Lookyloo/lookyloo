@@ -79,10 +79,10 @@ class AsyncCapture(AbstractManager):
 
             if get_config('generic', 'default_public'):
                 # By default, the captures are on the index, unless the user mark them as un-listed
-                listing = False if ('listing' in to_capture and to_capture['listing'].lower() in ['false', '0', '']) else True  # type: ignore
+                listing = False if ('listing' in to_capture and isinstance(to_capture['listing'], str) and to_capture['listing'].lower() in ['false', '0', '']) else True
             else:
                 # By default, the captures are not on the index, unless the user mark them as listed
-                listing = True if ('listing' in to_capture and to_capture['listing'].lower() in ['true', '1']) else False  # type: ignore
+                listing = True if ('listing' in to_capture and isinstance(to_capture['listing'], str) and to_capture['listing'].lower() in ['true', '1']) else False
 
             self.lookyloo.store_capture(
                 uuid, listing,

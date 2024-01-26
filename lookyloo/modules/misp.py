@@ -100,7 +100,7 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
             self.__misp_add_ips_to_URLObject(initial_url, cache.tree.root_hartree.hostname_tree)
             initial_obj = event.add_object(initial_url)
 
-        lookyloo_link: MISPAttribute = event.add_attribute('link', f'https://{public_domain}/tree/{cache.uuid}')  # type: ignore
+        lookyloo_link: MISPAttribute = event.add_attribute('link', f'https://{public_domain}/tree/{cache.uuid}')  # type: ignore[assignment]
         if not is_public_instance:
             lookyloo_link.distribution = 0
         initial_obj.add_reference(lookyloo_link, 'captured-by', 'Capture on lookyloo')
@@ -165,7 +165,7 @@ class MISP(AbstractModule):
         self.enable_push = bool(self.config.get('enable_push', False))
         self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
 
-        self.default_tags: list[str] = self.config.get('default_tags')  # type: ignore
+        self.default_tags: list[str] = self.config.get('default_tags')  # type: ignore[assignment]
         self.auto_publish = bool(self.config.get('auto_publish', False))
         self.storage_dir_misp = get_homedir() / 'misp'
         self.storage_dir_misp.mkdir(parents=True, exist_ok=True)
@@ -270,11 +270,11 @@ class MISP(AbstractModule):
                     to_return: dict[str, set[str]] = defaultdict(set)
                     # NOTE: We have MISPAttribute in that list
                     for a in attributes:
-                        to_return[a.event_id].add(a.value)  # type: ignore
+                        to_return[a.event_id].add(a.value)  # type: ignore[union-attr,index]
                     return to_return
                 else:
                     # The request returned an error
-                    return attributes  # type: ignore
+                    return attributes  # type: ignore[return-value]
             return {'info': 'No hits.'}
         else:
             return {'error': 'Module not available or lookup not enabled.'}

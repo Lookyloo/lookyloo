@@ -8,7 +8,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-import flask_login  # type: ignore
+import flask_login  # type: ignore[import-untyped]
 from flask import Request
 from werkzeug.security import generate_password_hash
 

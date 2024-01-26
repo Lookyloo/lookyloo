@@ -448,7 +448,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             p.hset('lookup_dirs_archived', uuid, capture_dir_str)
 
         p.delete(capture_dir_str)
-        p.hset(capture_dir_str, mapping=cache)  # type: ignore
+        p.hset(capture_dir_str, mapping=cache)  # type: ignore[arg-type]
         p.execute()
         return CaptureCache(cache)
 
