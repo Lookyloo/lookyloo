@@ -73,7 +73,7 @@ pyfaup = "^1.2"
 chardet = "^5.2.0"
 pysecuritytxt = "^1.2.2"
 pylookyloomonitoring = "^1.1.3"
-pytz = {"version" = "^2023.3.post1", python = "<3.9"}
+pytz = {"version" = "^2023.4", python = "<3.9"}
 s3fs = "^2023.12.2"
 urllib3 = [
     {version = "<2", python = "<3.10"},
