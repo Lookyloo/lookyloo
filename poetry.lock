@@ -2221,13 +2221,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.0.20240125"
+version = "0.10.0.20240205"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.0.20240125-py2.py3-none-any.whl", hash = "sha256:cf9d83c5881b7348d5d9dc2d0e971832de5d5657df7fae048a544b8006859ab7"},
-    {file = "publicsuffixlist-0.10.0.20240125.tar.gz", hash = "sha256:971c948000ac4542f340b3725364c5acb751cdd49b433bc409345a6103fc3b4e"},
+    {file = "publicsuffixlist-0.10.0.20240205-py2.py3-none-any.whl", hash = "sha256:d8d15322b3813b0c34cbe13c6f626f85d7f89f0cb30de5c54f46508446510e0e"},
+    {file = "publicsuffixlist-0.10.0.20240205.tar.gz", hash = "sha256:cc7ab0562c25180aa53aec8fe3b4a47312aefaf15016201f593d0df94628cea1"},
 ]
 
 [package.extras]
@@ -3607,4 +3607,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.12"
-content-hash = "7bb828635edbbbee36a4faf1a820314a58fb1dfcb98b24046f79159e9e7eaa75"
+content-hash = "4025085d6d19fc7ac0d1bc0f39846f3953821899892d954f1eba164512325194"
