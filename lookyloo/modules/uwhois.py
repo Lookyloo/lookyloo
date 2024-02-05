@@ -7,7 +7,7 @@ import socket
 
 from typing import overload, Literal
 
-from har2tree import CrawledTree, Har2TreeError, HostNode  # type: ignore[attr-defined]
+from har2tree import CrawledTree, Har2TreeError, HostNode
 
 from .abstractmodule import AbstractModule
 

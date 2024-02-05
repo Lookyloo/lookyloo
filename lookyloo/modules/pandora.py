@@ -5,7 +5,7 @@ from __future__ import annotations
 from io import BytesIO
 from typing import Any
 
-from pypandora import PyPandora  # type: ignore[attr-defined]
+from pypandora import PyPandora
 
 from ..default import ConfigError
 from ..helpers import get_useragent_for_requests

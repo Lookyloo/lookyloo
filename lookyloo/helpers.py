@@ -17,7 +17,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 
-from har2tree import CrawledTree, HostNode, URLNode  # type: ignore[attr-defined]
+from har2tree import CrawledTree, HostNode, URLNode
 from playwrightcapture import get_devices
 from publicsuffixlist import PublicSuffixList  # type: ignore[import-untyped]
 from pytaxonomies import Taxonomies  # type: ignore[attr-defined]

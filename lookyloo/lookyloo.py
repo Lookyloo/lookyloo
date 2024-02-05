@@ -24,7 +24,7 @@ from uuid import uuid4
 from zipfile import ZipFile
 
 from defang import defang  # type: ignore[import-untyped]
-from har2tree import CrawledTree, HostNode, URLNode  # type: ignore[attr-defined]
+from har2tree import CrawledTree, HostNode, URLNode
 from lacuscore import (LacusCore,
                        CaptureStatus as CaptureStatusCore,
                        # CaptureResponse as CaptureResponseCore)
@@ -38,7 +38,7 @@ from pylacus import (PyLacus,
                      # CaptureResponseJson as CaptureResponseJsonPy,
                      # CaptureSettings as CaptureSettingsPy
                      )
-from pymisp import MISPAttribute, MISPEvent, MISPObject  # type: ignore[attr-defined]
+from pymisp import MISPAttribute, MISPEvent, MISPObject
 from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable
 from pylookyloomonitoring import PyLookylooMonitoring  # type: ignore[attr-defined]
 from redis import ConnectionPool, Redis

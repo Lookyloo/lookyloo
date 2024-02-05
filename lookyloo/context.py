@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
-from har2tree import CrawledTree, HostNode, URLNode  # type: ignore[attr-defined]
+from har2tree import CrawledTree, HostNode, URLNode
 from redis import Redis
 
 from .default import get_config, get_homedir, get_socket_path

@@ -10,9 +10,9 @@ from collections.abc import Mapping
 from typing import Any, TYPE_CHECKING, Iterator
 
 import requests
-from har2tree import HostNode, URLNode, Har2TreeError  # type: ignore[attr-defined]
-from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag  # type: ignore[attr-defined]
-from pymisp.tools import FileObject, URLObject  # type: ignore[attr-defined]
+from har2tree import HostNode, URLNode, Har2TreeError
+from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag
+from pymisp.tools import FileObject, URLObject
 
 from ..default import get_config, get_homedir
 from ..helpers import get_public_suffix_list
@@ -198,7 +198,7 @@ class MISP(AbstractModule):
             for tag in self.default_tags:
                 event.add_tag(tag)
             if auto_publish:
-                event.publish()  # type: ignore[no-untyped-call]
+                event.publish()
             events_to_push.append(event)
         return events_to_push
 
@@ -237,14 +237,14 @@ class MISP(AbstractModule):
 
     def get_existing_event_url(self, permaurl: str) -> str | None:
         attributes = self.client.search('attributes', value=permaurl, limit=1, page=1, pythonify=True)
-        if not attributes or not isinstance(attributes[0], MISPAttribute):
+        if not attributes or not isinstance(attributes, list) or not isinstance(attributes[0], MISPAttribute):
             return None
         url = f'{self.client.root_url}/events/{attributes[0].event_id}'
         return url
 
     def get_existing_event(self, permaurl: str) -> MISPEvent | None:
         attributes = self.client.search('attributes', value=permaurl, limit=1, page=1, pythonify=True)
-        if not attributes or not isinstance(attributes[0], MISPAttribute):
+        if not attributes or not isinstance(attributes, list) or not isinstance(attributes[0], MISPAttribute):
             return None
         event = self.client.get_event(attributes[0].event_id, pythonify=True)
         if isinstance(event, MISPEvent):

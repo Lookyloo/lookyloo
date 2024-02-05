@@ -9,7 +9,7 @@ from collections import defaultdict
 from typing import Iterable
 from urllib.parse import urlsplit
 
-from har2tree import CrawledTree  # type: ignore[attr-defined]
+from har2tree import CrawledTree
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from har2tree import CrawledTree  # type: ignore[attr-defined]
+from har2tree import CrawledTree
 from pyhashlookup import Hashlookup  # type: ignore[attr-defined]
 
 from ..default import ConfigError

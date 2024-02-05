@@ -7,7 +7,7 @@ import logging
 
 from typing import Any, TypedDict
 
-from har2tree import URLNode  # type: ignore[attr-defined]
+from har2tree import URLNode
 
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection

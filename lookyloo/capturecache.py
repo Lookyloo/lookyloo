@@ -22,7 +22,7 @@ from typing import Any, MutableMapping, Iterator
 
 import dns.rdatatype
 import dns.resolver
-from har2tree import CrawledTree, Har2TreeError, HarFile  # type: ignore[attr-defined]
+from har2tree import CrawledTree, Har2TreeError, HarFile
 from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
