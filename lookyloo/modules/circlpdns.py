@@ -8,7 +8,7 @@ from datetime import date
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-from pypdns import PyPDNS, PDNSRecord  # type: ignore[attr-defined]
+from pypdns import PyPDNS, PDNSRecord
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory

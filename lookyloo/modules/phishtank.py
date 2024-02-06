@@ -7,7 +7,7 @@ import json
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, TYPE_CHECKING
 
-from pyphishtanklookup import PhishtankLookup  # type: ignore[attr-defined]
+from pyphishtanklookup import PhishtankLookup
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory
