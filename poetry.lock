@@ -161,13 +161,13 @@ dev = ["black", "coverage", "isort", "pre-commit", "pyenchant", "pylint"]
 
 [[package]]
 name = "appnope"
-version = "0.1.3"
+version = "0.1.4"
 description = "Disable App Nap on macOS >= 10.9"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 files = [
-    {file = "appnope-0.1.3-py2.py3-none-any.whl", hash = "sha256:265a455292d0bd8a72453494fa24df5a11eb18373a60c7c0430889f22548605e"},
-    {file = "appnope-0.1.3.tar.gz", hash = "sha256:02bd91c4de869fbb1e1c50aafc4098827a7a54ab2f39d9dcba6c9547ed920e24"},
+    {file = "appnope-0.1.4-py2.py3-none-any.whl", hash = "sha256:502575ee11cd7a28c0205f379b525beefebab9d161b7c964670864014ed7213c"},
+    {file = "appnope-0.1.4.tar.gz", hash = "sha256:1de3860566df9caf38f01f86f65e0e13e379af54f9e4bee1e66b48f2efffd1ee"},
 ]
 
 [[package]]
@@ -1446,18 +1446,18 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.8.0"
+version = "1.8.1"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.8.0-py3-none-any.whl", hash = "sha256:04fa4734915d9c94010ef3c986cb6df106587814a5c95ea2ab429c53d0055c64"},
-    {file = "lacuscore-1.8.0.tar.gz", hash = "sha256:816b22043fca0e01d512eb1c69d90e65508e170f5f63de8ca9f84ebae7c81f19"},
+    {file = "lacuscore-1.8.1-py3-none-any.whl", hash = "sha256:8b4e2080f0884211cf37abff7a536ca7be84a58911492acc1c6c87f3fd4d06d1"},
+    {file = "lacuscore-1.8.1.tar.gz", hash = "sha256:e84bcce22e591c7445a7e9f761f1d7e35a83a01240394e3863265e1a79c48e43"},
 ]
 
 [package.dependencies]
 defang = ">=0.5.3,<0.6.0"
-playwrightcapture = {version = ">=1.23.0,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.23.1,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=5.0.1,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.31.0,<3.0.0"
 ua-parser = ">=0.18.0,<0.19.0"
@@ -2138,18 +2138,18 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4.3)", "pytest-
 
 [[package]]
 name = "playwright"
-version = "1.41.1"
+version = "1.41.2"
 description = "A high-level API to automate web browsers"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "playwright-1.41.1-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:b456f25db38e4d93afc3c671e1093f3995afb374f14cee284152a30f84cfff02"},
-    {file = "playwright-1.41.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:53ff152506dbd8527aa815e92757be72f5df60810e8000e9419d29fd4445f53c"},
-    {file = "playwright-1.41.1-py3-none-macosx_11_0_universal2.whl", hash = "sha256:70c432887b8b5e896fa804fb90ca2c8baf05b13a3590fb8bce8b3c3efba2842d"},
-    {file = "playwright-1.41.1-py3-none-manylinux1_x86_64.whl", hash = "sha256:f227a8d616fd3a02d45d68546ee69947dce4a058df134a9e7dc6167c543de3cd"},
-    {file = "playwright-1.41.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:475130f879b4ba38b9db7232a043dd5bc3a8bd1a84567fbea7e21a02ee2fcb13"},
-    {file = "playwright-1.41.1-py3-none-win32.whl", hash = "sha256:ef769414ea0ceb76085c67812ab6bc0cc6fac0adfc45aaa09d54ee161d7f637b"},
-    {file = "playwright-1.41.1-py3-none-win_amd64.whl", hash = "sha256:316e1ba0854a712e9288b3fe49509438e648d43bade77bf724899de8c24848de"},
+    {file = "playwright-1.41.2-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:cf68335a5dfa4038fa797a4ba0105faee0094ebbb372547d7a27feec5b23c672"},
+    {file = "playwright-1.41.2-py3-none-macosx_11_0_arm64.whl", hash = "sha256:431e3a05f8c99147995e2b3e8475d07818745294fd99f1510b61756e73bdcf68"},
+    {file = "playwright-1.41.2-py3-none-macosx_11_0_universal2.whl", hash = "sha256:0608717cbf291a625ba6f751061af0fc0cc9bdace217e69d87b1eb1383b03406"},
+    {file = "playwright-1.41.2-py3-none-manylinux1_x86_64.whl", hash = "sha256:4bf214d812092cf5b9b9648ba84611aa35e28685519911342a7da3a3031f9ed6"},
+    {file = "playwright-1.41.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:eaa17ab44622c447de26ed8f7d99912719568d8dbc3a9db0e07f0ae1487709d9"},
+    {file = "playwright-1.41.2-py3-none-win32.whl", hash = "sha256:edb210a015e70bb0d328bf1c9b65fa3a08361f33e4d7c4ddd1ad2adb6d9b4479"},
+    {file = "playwright-1.41.2-py3-none-win_amd64.whl", hash = "sha256:71ead0f33e00f5a8533c037c647938b99f219436a1b27d4ba4de4e6bf0567278"},
 ]
 
 [package.dependencies]
@@ -2176,19 +2176,19 @@ test = ["pytest"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.23.0"
+version = "1.23.1"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "playwrightcapture-1.23.0-py3-none-any.whl", hash = "sha256:908648fbbbd84dbaf5704e4549c3ea4ad0474367c041c0f8b0b44b09c2b3dc3e"},
-    {file = "playwrightcapture-1.23.0.tar.gz", hash = "sha256:79eb223d40d7b153e81f77fbc5e5ce3e3dff29d921642b5fdf4cb9860945138f"},
+    {file = "playwrightcapture-1.23.1-py3-none-any.whl", hash = "sha256:3e78e57e0b9ce00a4269d96e161997efcbb3071a090ab7269dc4fc8fc4a280b0"},
+    {file = "playwrightcapture-1.23.1.tar.gz", hash = "sha256:3043d9edffaba0cc4551134664fed6f512a7a996b9d3bc2b92502befae1bb7d3"},
 ]
 
 [package.dependencies]
 beautifulsoup4 = {version = ">=4.12.3,<5.0.0", extras = ["charset-normalizer", "lxml"]}
 dateparser = ">=1.2.0,<2.0.0"
-playwright = ">=1.41.1,<2.0.0"
+playwright = ">=1.41.2,<2.0.0"
 playwright-stealth = ">=1.0.6,<2.0.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
 pytz = {version = ">=2024.1,<2025.0", markers = "python_version < \"3.9\""}
@@ -2228,13 +2228,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.0.20240205"
+version = "0.10.0.20240207"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.0.20240205-py2.py3-none-any.whl", hash = "sha256:d8d15322b3813b0c34cbe13c6f626f85d7f89f0cb30de5c54f46508446510e0e"},
-    {file = "publicsuffixlist-0.10.0.20240205.tar.gz", hash = "sha256:cc7ab0562c25180aa53aec8fe3b4a47312aefaf15016201f593d0df94628cea1"},
+    {file = "publicsuffixlist-0.10.0.20240207-py2.py3-none-any.whl", hash = "sha256:803acd756d27b047adb309c33f130603294f0bad254b2c63227a18472bb1afaa"},
+    {file = "publicsuffixlist-0.10.0.20240207.tar.gz", hash = "sha256:3fd542eb2ee186120cefe0c2b4b0c32163b02d035dbdd3aa80b83f87e2409e1b"},
 ]
 
 [package.extras]
@@ -2415,13 +2415,13 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.23.0"
+version = "1.23.1"
 description = "Python CLI and module for Lookyloo"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pylookyloo-1.23.0-py3-none-any.whl", hash = "sha256:f0f71b16866b2f661f7b58675955c6b3627469413a9325fd14ef9bc69ce9361b"},
-    {file = "pylookyloo-1.23.0.tar.gz", hash = "sha256:b780cbca8a32df3fb0fd935e3efb327da2e882eb52e9fab926f64e861ce26e2e"},
+    {file = "pylookyloo-1.23.1-py3-none-any.whl", hash = "sha256:4dee9d701cb0d1ba20ac17fc5d0eba62cc2e533de4525b2dbe7c7c5179023860"},
+    {file = "pylookyloo-1.23.1.tar.gz", hash = "sha256:74a8e9c2ce544a00787cd623caaf4c03e1e161c1b17e2635efe993f07c460456"},
 ]
 
 [package.dependencies]
@@ -2449,13 +2449,13 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.184"
+version = "2.4.184.2"
 description = "Python API for MISP."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pymisp-2.4.184-py3-none-any.whl", hash = "sha256:ea91c8bcd896857b469f04a3eb4852eae9eb9a9e36771d20e7cdd40d4d573eb5"},
-    {file = "pymisp-2.4.184.tar.gz", hash = "sha256:fbd9089c867a63144562932862474910696ab57f4786a4b7c1a0b28ba204c0ae"},
+    {file = "pymisp-2.4.184.2-py3-none-any.whl", hash = "sha256:4e6d4eb00e8943a28fe5acf415421e72420e3107d2d600a3eefba39b64320cc7"},
+    {file = "pymisp-2.4.184.2.tar.gz", hash = "sha256:f85341b903cd32aca89d44f29522d0c02ee3d8404be0336c1b2cd9ca299af80a"},
 ]
 
 [package.dependencies]
@@ -3612,4 +3612,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "2a164d3559813cf7bcaeb2b8cfc9157d9ee6140c369e584f4895e065c76598d3"
+content-hash = "e14d060457dc27c2fe8182d0c892a1e1d56b35997572aa3dbc2a64bf7a77072c"
