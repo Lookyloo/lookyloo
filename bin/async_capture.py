@@ -54,8 +54,11 @@ class AsyncCapture(AbstractManager):
             capture_task.add_done_callback(self.captures.discard)
 
     def uuids_ready(self) -> list[str]:
-        return [uuid for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf')
-                if uuid and self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.DONE, CaptureStatusCore]]
+        '''Get the list of captures ready to be processed'''
+        # Only check if the top 50 in the priority list are done, as they are the most likely ones to be
+        # and if the list it very very long, iterating over it takes a very long time.
+        return [uuid for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf', start=0, num=50)
+                if uuid and self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.DONE, CaptureStatusCore.DONE]]
 
     def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
