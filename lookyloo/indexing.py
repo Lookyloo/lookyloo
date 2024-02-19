@@ -5,9 +5,11 @@ from __future__ import annotations
 import hashlib
 import logging
 # import re
+from io import BytesIO
 from collections import defaultdict
 from typing import Iterable
 from urllib.parse import urlsplit
+from zipfile import ZipFile
 
 from har2tree import CrawledTree
 from redis import ConnectionPool, Redis
@@ -22,11 +24,17 @@ class Indexing():
     def __init__(self) -> None:
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
+        self.redis_pool_bytes: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
+                                                               path=get_socket_path('indexing'))
         self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
                                                          path=get_socket_path('indexing'), decode_responses=True)
 
     def clear_indexes(self) -> None:
         self.redis.flushdb()
+
+    @property
+    def redis_bytes(self) -> Redis:  # type: ignore[type-arg]
+        return Redis(connection_pool=self.redis_pool_bytes)
 
     @property
     def redis(self) -> Redis:  # type: ignore[type-arg]
@@ -324,6 +332,42 @@ class Indexing():
 
     def get_captures_hostname(self, hostname: str) -> set[str]:
         return self.redis.smembers(f'hostnames|{hostname}|captures')
+
+    # ###### favicons ######
+
+    @property
+    def favicons(self) -> list[tuple[str, float]]:
+        return self.redis.zrevrange('favicons', 0, 200, withscores=True)
+
+    def favicon_number_captures(self, favicon_sha512: str) -> int:
+        return self.redis.scard(f'favicons|{favicon_sha512}|captures')
+
+    def index_favicons_capture(self, capture_uuid: str, favicons: BytesIO) -> None:
+        if self.redis.sismember('indexed_favicons', capture_uuid):
+            # Do not reindex
+            return
+        self.redis.sadd('indexed_favicons', capture_uuid)
+        pipeline = self.redis.pipeline()
+        with ZipFile(favicons, 'r') as myzip:
+            for name in myzip.namelist():
+                if not name.endswith('.ico'):
+                    continue
+                favicon = myzip.read(name)
+                if not favicon:
+                    # Empty file, ignore.
+                    continue
+                sha = hashlib.sha512(favicon).hexdigest()
+                pipeline.zincrby('favicons', 1, sha)
+                pipeline.sadd(f'favicons|{sha}|captures', capture_uuid)
+                # There is no easi access to the favicons unless we store them in redis
+                pipeline.set(f'favicons|{sha}', favicon)
+        pipeline.execute()
+
+    def get_captures_favicon(self, favicon_sha512: str) -> set[str]:
+        return self.redis.smembers(f'favicons|{favicon_sha512}|captures')
+
+    def get_favicon(self, favicon_sha512: str) -> bytes | None:
+        return self.redis_bytes.get(f'favicons|{favicon_sha512}')
 
     # ###### Categories ######
 

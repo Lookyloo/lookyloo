@@ -945,6 +945,19 @@ def hhhashes_lookup() -> str:
     return render_template('hhhashes.html', hhhashes=hhhashes)
 
 
+@app.route('/favicons', methods=['GET'])
+def favicons_lookup() -> str:
+    favicons = []
+    for sha512, freq in lookyloo.indexing.favicons:
+        favicon = lookyloo.indexing.get_favicon(sha512)
+        if not favicon:
+            continue
+        favicon_b64 = base64.b64encode(favicon).decode()
+        nb_captures = lookyloo.indexing.favicon_number_captures(sha512)
+        favicons.append((sha512, freq, nb_captures, favicon_b64))
+    return render_template('favicons.html', favicons=favicons)
+
+
 @app.route('/ressources', methods=['GET'])
 def ressources() -> str:
     ressources = []
@@ -1204,6 +1217,17 @@ def cookies_name_detail(cookie_name: str) -> str:
 def hhh_detail(hhh: str) -> str:
     captures, headers = lookyloo.get_hhh_investigator(hhh.strip())
     return render_template('hhh_details.html', hhh=hhh, captures=captures, headers=headers)
+
+
+@app.route('/favicon_details/<string:favicon_sha512>', methods=['GET'])
+def favicon_detail(favicon_sha512: str) -> str:
+    captures, favicon = lookyloo.get_favicon_investigator(favicon_sha512.strip())
+    if favicon:
+        b64_favicon = base64.b64encode(favicon).decode()
+    else:
+        b64_favicon = ''
+    return render_template('favicon_details.html', favicon_sha512=favicon_sha512,
+                           captures=captures, b64_favicon=b64_favicon)
 
 
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])

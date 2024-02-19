@@ -136,6 +136,7 @@ class BackgroundIndexer(AbstractManager):
             p.sismember('indexed_body_hashes', cache.uuid)
             p.sismember('indexed_cookies', cache.uuid)
             p.sismember('indexed_hhhashes', cache.uuid)
+            p.sismember('indexed_favicons', cache.uuid)
             indexed = p.execute()
             if all(indexed):
                 continue
@@ -158,6 +159,10 @@ class BackgroundIndexer(AbstractManager):
             if not indexed[3]:
                 self.logger.info(f'Indexing HH Hashes for {cache.uuid}')
                 self.lookyloo.indexing.index_http_headers_hashes_capture(ct)
+            if not indexed[4]:
+                self.logger.info(f'Indexing favicons for {cache.uuid}')
+                favicons = self.lookyloo.get_potential_favicons(cache.uuid, all_favicons=True, for_datauri=False)
+                self.lookyloo.indexing.index_favicons_capture(cache.uuid, favicons)
             # NOTE: categories aren't taken in account here, should be fixed(?)
             # see indexing.index_categories_capture(capture_uuid, categories)
         index_redis.delete('ongoing_indexing')

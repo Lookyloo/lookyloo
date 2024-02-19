@@ -1046,6 +1046,13 @@ class Lookyloo():
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
+    def get_favicon_investigator(self, favicon_sha512: str, /) -> tuple[list[tuple[str, str]], bytes | None]:
+        '''Returns all the captures related to a cookie name entry, used in the web interface.'''
+        cached_captures = self.sorted_capture_cache([uuid for uuid in self.indexing.get_captures_favicon(favicon_sha512)])
+        captures = [(cache.uuid, cache.title) for cache in cached_captures]
+        favicon = self.indexing.get_favicon(favicon_sha512)
+        return captures, favicon
+
     def get_hhh_investigator(self, hhh: str, /) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str]]]:
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''
         all_captures = dict(self.indexing.get_http_headers_hashes_captures(hhh))
