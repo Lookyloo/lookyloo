@@ -1046,10 +1046,10 @@ class Lookyloo():
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
-    def get_favicon_investigator(self, favicon_sha512: str, /) -> tuple[list[tuple[str, str]], bytes | None]:
+    def get_favicon_investigator(self, favicon_sha512: str, /) -> tuple[list[tuple[str, str, str]], bytes | None]:
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''
         cached_captures = self.sorted_capture_cache([uuid for uuid in self.indexing.get_captures_favicon(favicon_sha512)])
-        captures = [(cache.uuid, cache.title) for cache in cached_captures]
+        captures = [(cache.uuid, cache.title, cache.redirects[-1]) for cache in cached_captures]
         favicon = self.indexing.get_favicon(favicon_sha512)
         return captures, favicon
 

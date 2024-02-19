@@ -16,15 +16,19 @@
           <thead>
               <tr>
                   <th>Capture Title</th>
+                  <th>Landing page</th>
               </tr>
           </thead>
           <tbody>
-            {% for capture_uuid, title in captures %}
+            {% for capture_uuid, title, landing_page in captures %}
             <tr>
                 <td>
                     <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">
                         {{ title }}
                     </a>
+                </td>
+                <td>
+                    {{landing_page}}
                 </td>
             </tr>
             {% endfor %}
