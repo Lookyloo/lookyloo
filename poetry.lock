@@ -2837,6 +2837,7 @@ optional = false
 python-versions = "*"
 files = [
     {file = "requests-file-2.0.0.tar.gz", hash = "sha256:20c5931629c558fda566cacc10cfe2cd502433e628f568c34c80d96a0cc95972"},
+    {file = "requests_file-2.0.0-py2.py3-none-any.whl", hash = "sha256:3e493d390adb44aa102ebea827a48717336d5268968c370eaf19abaf5cae13bf"},
 ]
 
 [package.dependencies]
@@ -3206,13 +3207,13 @@ files = [
 
 [[package]]
 name = "types-redis"
-version = "4.6.0.20240106"
+version = "4.6.0.20240218"
 description = "Typing stubs for redis"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-redis-4.6.0.20240106.tar.gz", hash = "sha256:2b2fa3a78f84559616242d23f86de5f4130dfd6c3b83fb2d8ce3329e503f756e"},
-    {file = "types_redis-4.6.0.20240106-py3-none-any.whl", hash = "sha256:912de6507b631934bd225cdac310b04a58def94391003ba83939e5a10e99568d"},
+    {file = "types-redis-4.6.0.20240218.tar.gz", hash = "sha256:5103d7e690e5c74c974a161317b2d59ac2303cf8bef24175b04c2a4c3486cb39"},
+    {file = "types_redis-4.6.0.20240218-py3-none-any.whl", hash = "sha256:dc9c45a068240e33a04302aec5655cf41e80f91eecffccbb2df215b2f6fc375d"},
 ]
 
 [package.dependencies]
@@ -3629,4 +3630,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "4480af351c2a5fe5886271d21f449ddd4b2eb36b614656857f0e3afe0454d87e"
+content-hash = "806fb5818bb6e62f5242570bf4ae8f64ecf637ccc95a596762c3568c906a7027"
