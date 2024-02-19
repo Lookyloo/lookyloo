@@ -1,0 +1,35 @@
+{% extends "main.html" %}
+
+{% from 'bootstrap5/utils.html' import render_messages %}
+
+{% block title %}Favicon: {{ favicon_sha512 }}{% endblock %}
+
+{% block content %}
+  <center>
+      <h2>{{ favicon_sha512 }}</h2>
+      <img src="data:image/ico;base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
+  </center>
+  <p>The same favicon was seen in these captures:</p>
+  <ul>
+  <div class="table-responsive">
+      <table id="table" class="table">
+          <thead>
+              <tr>
+                  <th>Capture Title</th>
+              </tr>
+          </thead>
+          <tbody>
+            {% for capture_uuid, title in captures %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">
+                        {{ title }}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+      </table>
+  </div>
+  </ul>
+{% endblock %}

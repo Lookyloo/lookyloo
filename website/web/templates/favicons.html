@@ -1,0 +1,43 @@
+{% extends "main.html" %}
+
+{% from 'bootstrap5/utils.html' import render_messages %}
+
+{% block title %}HTTP Headers Hashes lookup{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+    $('#table').DataTable( {
+        "order": [[ 1, "desc" ]],
+        "pageLength": 500
+    });
+</script>
+
+{% endblock %}
+
+{% block content %}
+  <div class="table-responsive-sm">
+  <table id="table" class="table">
+    <thead>
+     <tr>
+       <th>Favicon</th>
+       <th style="width:10%">Frequency</th>
+       <th style="width:10%">Number of captures</th>
+     </tr>
+    </thead>
+    <tbody>
+      {% for favicon_sha512, freq, number_captures, b64_favicon in favicons %}
+      <tr>
+        <td >
+          <a href="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512) }}">
+              <img src="data:image/ico;base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
+          </a>
+        </td>
+        <td>{{ freq }}</td>
+        <td>{{ number_captures }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% endblock %}
