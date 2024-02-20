@@ -1,0 +1,53 @@
+<script type="text/javascript">
+    $('#faviconsTable')
+        .on('order.dt', () =>  {
+            $(function () {
+              $('[data-bs-toggle="tooltip"]').tooltip()
+            })
+        })
+        .on('search.dt', () => {
+            $(function () {
+              $('[data-bs-toggle="tooltip"]').tooltip()
+            })
+        })
+        .on('page.dt', () => {
+            $(function () {
+              $('[data-bs-toggle="tooltip"]').tooltip()
+            })
+        })
+        .DataTable( {
+          "order": [[ 1, "desc" ]],
+          "pageLength": 50
+        });
+</script>
+
+{% if from_popup %}
+<script type="text/javascript">
+    function openTreeInNewTab(treeUUID) {
+        window.opener.openTreeInNewTab(treeUUID);
+    };
+</script>
+{% endif %}
+
+<table id="faviconsTable" class="table w-auto">
+<thead>
+ <tr>
+   <th>Favicon</th>
+   <th>Frequency</th>
+   <th>Number of captures</th>
+ </tr>
+</thead>
+<tbody>
+  {% for favicon_sha512, freq, number_captures, b64_favicon in favicons %}
+  <tr>
+    <td>
+      <a href="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512) }}">
+        <img src="data:image/ico;base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
+      </a>
+    </td>
+    <td>{{ freq }}</td>
+    <td>{{ number_captures }}</td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>

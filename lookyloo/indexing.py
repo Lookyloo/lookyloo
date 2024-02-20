@@ -339,6 +339,9 @@ class Indexing():
     def favicons(self) -> list[tuple[str, float]]:
         return self.redis.zrevrange('favicons', 0, 200, withscores=True)
 
+    def favicon_frequency(self, favicon_sha512: str) -> float | None:
+        return self.redis.zscore('favicons', favicon_sha512)
+
     def favicon_number_captures(self, favicon_sha512: str) -> int:
         return self.redis.scard(f'favicons|{favicon_sha512}|captures')
 

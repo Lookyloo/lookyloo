@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import calendar
 import functools
+import hashlib
 import http
 import json
 import logging
@@ -831,6 +832,25 @@ def mark_as_legitimate(tree_uuid: str) -> Response:
     else:
         lookyloo.add_to_legitimate(tree_uuid)
     return jsonify({'message': 'Legitimate entry added.'})
+
+
+@app.route('/tree/<string:tree_uuid>/favicons', methods=['GET'])
+def tree_favicons(tree_uuid: str) -> str:
+    favicons = []
+    favicons_zip = lookyloo.get_potential_favicons(tree_uuid, all_favicons=True, for_datauri=False)
+    with ZipFile(favicons_zip, 'r') as myzip:
+        for name in myzip.namelist():
+            if not name.endswith('.ico'):
+                continue
+            favicon = myzip.read(name)
+            if not favicon:
+                continue
+            favicon_sha512 = hashlib.sha512(favicon).hexdigest()
+            frequency = lookyloo.indexing.favicon_frequency(favicon_sha512)
+            number_captures = lookyloo.indexing.favicon_number_captures(favicon_sha512)
+            b64_favicon = base64.b64encode(favicon).decode()
+            favicons.append((favicon_sha512, frequency, number_captures, b64_favicon))
+    return render_template('tree_favicons.html', tree_uuid=tree_uuid, favicons=favicons)
 
 
 @app.route('/tree/<string:tree_uuid>/body_hashes', methods=['GET'])

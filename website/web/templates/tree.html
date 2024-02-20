@@ -84,6 +84,13 @@
   });
   </script>
   <script>
+  $('#faviconsModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
   $('#bodyHashesModal').on('show.bs.modal', function(e) {
       var button = $(e.relatedTarget);
       var modal = $(this);
@@ -286,6 +293,10 @@
             <li class="list-group-item">
               <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button">Ressources Capture</a>
+            </li>
+            <li class="list-group-item">
+              <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Favicons Capture</a>
             </li>
           </ul>
         </div>
@@ -501,6 +512,23 @@
           </div>
           <div class="modal-body">
               ... loading statistics ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="faviconsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="faviconsModalLabel">Favicons in tree</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading favicons ...
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
