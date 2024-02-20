@@ -4,68 +4,75 @@
 {% if not circl_pdns and not riskiq %}
   No historical data available
 {%else%}
-{% if circl_pdns %}
-  <center>
-    <h1 class="display-4">CIRCL Passive DNS
-     <div class="help-tip" title="Click for more details"
-          onclick="location.href='https://www.circl.lu/services/passive-dns/';"
-          style="cursor: pointer;">
-     </div>
-    </h1>
-  {% for query, responses in circl_pdns.items() if responses %}
-  <div>
-    <h3>{{query}}</h3>
-    <table class="table">
+  {% if circl_pdns %}
+    <script type="text/javascript">
+      new DataTable('#CIRCL_pdns_table');
+    </script>
+
+    <center>
+      <h1 class="display-4">CIRCL Passive DNS
+       <div class="help-tip" title="Click for more details"
+            onclick="location.href='https://www.circl.lu/services/passive-dns/';"
+            style="cursor: pointer;">
+       </div>
+      </h1>
+    {% for query, responses in circl_pdns.items() if responses %}
+    <div>
+      <h3>{{query}}</h3>
+      <table id= "CIRCL_pdns_table" class="table table-striped" style="width:100%">
+        <thead>
+          <tr>
+            <th class="col-sm-2" scope="col">First seen</th>
+            <th class="col-sm-2" scope="col">Last seen</th>
+            <th class="col-sm-1" scope="col">RR Type</th>
+            <th class="col-sm-2" scope="col">R Data</th>
+            <th scope="col">RR Name</th>
+        </thead>
+        <tbody>
+          {%for response in responses %}
+          <tr>
+            <td>{{response.time_first_datetime}}</td>
+            <td>{{response.time_last_datetime}}</td>
+            <td>{{response.rrtype}}</td>
+            <td>{{response.rdata}}</td>
+            <td>{{response.rrname}}</td>
+          </tr>
+          {% endfor %}
+      </table>
+    </div>
+    {%endfor%}
+    </center>
+  {% endif%}
+  {% if riskiq %}
+    <hr>
+    <script type="text/javascript">
+      new DataTable('#RiskIQ_pdns_table');
+    </script>
+    <center>
+      <h1 class="display-4">RiskIQ</h1>
+    <div>
+    <h3>{{riskiq['queryValue']}}</h3>
+    <h4>{{riskiq['firstSeen']}} - {{ riskiq['lastSeen']}}</h4>
+    <table id="RiskIQ_pdns_table" class="table table-striped" style="width:100%">
       <thead>
         <tr>
           <th class="col-sm-2" scope="col">First seen</th>
           <th class="col-sm-2" scope="col">Last seen</th>
-          <th class="col-sm-1" scope="col">RR Type</th>
-          <th class="col-sm-2" scope="col">R Data</th>
-          <th scope="col">RR Name</th>
+          <th class="col-sm-1" scope="col">Type</th>
+          <th scope="col">Resolve</th>
       </thead>
       <tbody>
-        {%for response in responses %}
+        {% for entry in riskiq['results'] %}
         <tr>
-          <td>{{response.time_first_datetime}}</td>
-          <td>{{response.time_last_datetime}}</td>
-          <td>{{response.rrtype}}</td>
-          <td>{{response.rdata}}</td>
-          <td>{{response.rrname}}</td>
+          <td>{{entry['firstSeen']}}</td>
+          <td>{{entry['lastSeen']}}</td>
+          <td>{{entry['recordType']}}</td>
+          <td>{{entry['resolve']}}</td>
         </tr>
         {% endfor %}
     </table>
-  </div>
-  {%endfor%}
-  </center>
-{% endif%}
-{% if riskiq %}
-  <hr>
-  <center>
-    <h1 class="display-4">RiskIQ</h1>
-  <div>
-  <h3>{{riskiq['queryValue']}}</h3>
-  <h4>{{riskiq['firstSeen']}} - {{ riskiq['lastSeen']}}</h4>
-  <table class="table">
-    <thead>
-      <tr>
-        <th class="col-sm-2" scope="col">First seen</th>
-        <th class="col-sm-2" scope="col">Last seen</th>
-        <th class="col-sm-1" scope="col">Type</th>
-        <th scope="col">Resolve</th>
-    </thead>
-    <tbody>
-      {% for entry in riskiq['results'] %}
-      <tr>
-        <td>{{entry['firstSeen']}}</td>
-        <td>{{entry['lastSeen']}}</td>
-        <td>{{entry['recordType']}}</td>
-        <td>{{entry['resolve']}}</td>
-      </tr>
-      {% endfor %}
-  </table>
-  </div>
-  </center>
-{% endif%}
+    </div>
+    </center>
+  {% endif%}
 {% endif%}
 </div>

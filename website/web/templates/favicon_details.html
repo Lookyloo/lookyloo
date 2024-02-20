@@ -1,39 +1,37 @@
-{% extends "main.html" %}
+<script type="text/javascript">
+  new DataTable('#faviconDetailsTable', {
+    columnDefs: [{ width: '40%', targets: 0 },
+                 { width: '40%', targets: 1 },
+                 { width: '20%', targets: 2 }],
+  });
+</script>
 
-{% from 'bootstrap5/utils.html' import render_messages %}
-
-{% block title %}Favicon: {{ favicon_sha512 }}{% endblock %}
-
-{% block content %}
-  <center>
-      <h2>{{ favicon_sha512 }}</h2>
-      <img src="data:image/ico;base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
-  </center>
-  <p>The same favicon was seen in these captures:</p>
-  <ul>
-  <div class="table-responsive">
-      <table id="table" class="table">
-          <thead>
-              <tr>
-                  <th>Capture Title</th>
-                  <th>Landing page</th>
-              </tr>
-          </thead>
-          <tbody>
-            {% for capture_uuid, title, landing_page in captures %}
-            <tr>
-                <td>
-                    <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">
-                        {{ title }}
-                    </a>
-                </td>
-                <td>
-                    {{landing_page}}
-                </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-      </table>
-  </div>
-  </ul>
-{% endblock %}
+<center>
+  <img src="data:image/ico;base64,{{ b64_favicon }}" style="width:64px;height:64px;"/>
+</center>
+<table id="faviconDetailsTable" class="table table-striped" style="width:100%">
+  <thead>
+    <tr>
+      <th>Capture Title</th>
+      <th>Landing page</th>
+      <th>Capture Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for capture_uuid, title, landing_page, capture_time in captures %}
+    <tr>
+      <td>
+        <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">
+          {{ title }}
+        </a>
+      </td>
+      <td>
+        {{landing_page}}
+      </td>
+      <td>
+        {{capture_time}}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

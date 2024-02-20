@@ -1,35 +1,13 @@
 <script type="text/javascript">
-    $('#bodyHashesTable')
-        .on('order.dt', () =>  {
-            $(function () {
-              $('[data-bs-toggle="tooltip"]').tooltip()
-            })
-        })
-        .on('search.dt', () => {
-            $(function () {
-              $('[data-bs-toggle="tooltip"]').tooltip()
-            })
-        })
-        .on('page.dt', () => {
-            $(function () {
-              $('[data-bs-toggle="tooltip"]').tooltip()
-            })
-        })
-        .DataTable( {
-          "order": [[ 1, "desc" ]],
-          "pageLength": 50
-        });
+  new DataTable('#bodyHashesTable', {
+    columnDefs: [{ width: '10%', targets: 0 },
+                 { width: '10%', targets: 1 },
+                 { width: '60%', targets: 2 },
+                 { width: '20%', targets: 3 }],
+  });
 </script>
 
-{% if from_popup %}
-<script type="text/javascript">
-    function openTreeInNewTab(treeUUID) {
-        window.opener.openTreeInNewTab(treeUUID);
-    };
-</script>
-{% endif %}
-
-<table id="bodyHashesTable" class="table w-auto">
+<table id="bodyHashesTable" class="table table-striped" style="width:100%">
 <thead>
  <tr>
    <th>File type</th>
@@ -60,7 +38,10 @@
     <td><p class="text-break">{{ info['node'].name }}</p></td>
     <td>
       <span class="d-inline-block text-truncate" style="max-width: 200px;">
-        <a href="{{ url_for('body_hash_details', body_hash=body_hash) }}">{{body_hash}}</a>
+         <a href="#bodyHashDetailsModal" data-remote="{{ url_for('body_hash_details', body_hash=body_hash) }}"
+            data-bs-toggle="modal" data-bs-target="#bodyHashDetailsModal" role="button">
+            {{body_hash}}
+         </a>
       </span>
     </td>
   </tr>

@@ -1,35 +1,12 @@
 <script type="text/javascript">
-    $('#faviconsTable')
-        .on('order.dt', () =>  {
-            $(function () {
-              $('[data-bs-toggle="tooltip"]').tooltip()
-            })
-        })
-        .on('search.dt', () => {
-            $(function () {
-              $('[data-bs-toggle="tooltip"]').tooltip()
-            })
-        })
-        .on('page.dt', () => {
-            $(function () {
-              $('[data-bs-toggle="tooltip"]').tooltip()
-            })
-        })
-        .DataTable( {
-          "order": [[ 1, "desc" ]],
-          "pageLength": 50
-        });
+  new DataTable('#faviconsTable', {
+    columnDefs: [{ width: '20%', targets: 0 },
+                 { width: '40%', targets: 1 },
+                 { width: '40%', targets: 2 }],
+  });
 </script>
 
-{% if from_popup %}
-<script type="text/javascript">
-    function openTreeInNewTab(treeUUID) {
-        window.opener.openTreeInNewTab(treeUUID);
-    };
-</script>
-{% endif %}
-
-<table id="faviconsTable" class="table w-auto">
+<table id="faviconsTable" class="table table-striped" style="width:100%">
 <thead>
  <tr>
    <th>Favicon</th>
@@ -41,7 +18,8 @@
   {% for favicon_sha512, freq, number_captures, b64_favicon in favicons %}
   <tr>
     <td>
-      <a href="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512) }}">
+      <a href="#faviconDetailsModal" data-remote="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512) }}"
+         data-bs-toggle="modal" data-bs-target="#faviconDetailsModal" role="button">
         <img src="data:image/ico;base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
       </a>
     </td>
