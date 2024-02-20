@@ -848,12 +848,12 @@
               <input type="email" class="form-control" name="notification" id="notification" placeholder="Email address to receive the notification">
             </div>
             <div class="mb-3 form-check">
-                <input class="form-check-input" type="checkbox" name="confirm" onchange="document.getElementById('btn-notification-monitoring').disabled = !this.checked;"></input>
-                <label for="force_push" class="form-check-label">{{ confirm_message }}</label>
+                <input class="form-check-input" type="checkbox" name="confirm" id="monitoring_toc" required >
+                <label for="monitoring_toc" class="form-check-label">{{ confirm_message }}</label>
             </div>
           </div>
           <div class="modal-footer">
-              <button type="submit" class="btn btn-success" id="btn-notification-monitoring" disabled=true>Send to monitoring</button>
+              <button type="submit" class="btn btn-success" id="btn-notification-monitoring">Send to monitoring</button>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
@@ -887,12 +887,12 @@
               <textarea class="form-control" name="comment" id=comment rows="3"></textarea>
             </div>
             <div class="mb-3 form-check">
-                <input class="form-check-input" type="checkbox" name="confirm" onchange="document.getElementById('btn-notification-report').disabled = !this.checked;"></input>
-                <label for="force_push" class="form-check-label">{{ confirm_message }}</label>
+                <input class="form-check-input" type="checkbox" name="confirm" id="mail_notification_toc" required>
+                <label for="mail_notification_toc" class="form-check-label">{{ confirm_message }}</label>
             </div>
           </div>
           <div class="modal-footer">
-              <button type="submit" class="btn btn-success" id="btn-notification-report" disabled=true>Send email</button>
+              <button type="submit" class="btn btn-success" id="btn-notification-report">Send email</button>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
