@@ -15,6 +15,7 @@ import sys
 import time
 
 import filetype  # type: ignore[import-untyped]
+import magic
 
 from datetime import date, datetime, timedelta, timezone
 from importlib.metadata import version
@@ -838,6 +839,7 @@ def mark_as_legitimate(tree_uuid: str) -> Response:
 def tree_favicons(tree_uuid: str) -> str:
     favicons = []
     favicons_zip = lookyloo.get_potential_favicons(tree_uuid, all_favicons=True, for_datauri=False)
+    f = magic.Magic(mime=True)
     with ZipFile(favicons_zip, 'r') as myzip:
         for name in myzip.namelist():
             if not name.endswith('.ico'):
@@ -845,11 +847,12 @@ def tree_favicons(tree_uuid: str) -> str:
             favicon = myzip.read(name)
             if not favicon:
                 continue
+            mimetype = f.from_buffer(favicon)
             favicon_sha512 = hashlib.sha512(favicon).hexdigest()
             frequency = lookyloo.indexing.favicon_frequency(favicon_sha512)
             number_captures = lookyloo.indexing.favicon_number_captures(favicon_sha512)
             b64_favicon = base64.b64encode(favicon).decode()
-            favicons.append((favicon_sha512, frequency, number_captures, b64_favicon))
+            favicons.append((favicon_sha512, frequency, number_captures, mimetype, b64_favicon))
     return render_template('tree_favicons.html', tree_uuid=tree_uuid, favicons=favicons)
 
 
@@ -1243,11 +1246,14 @@ def hhh_detail(hhh: str) -> str:
 def favicon_detail(favicon_sha512: str) -> str:
     captures, favicon = lookyloo.get_favicon_investigator(favicon_sha512.strip())
     if favicon:
+        f = magic.Magic(mime=True)
+        mimetype = f.from_buffer(favicon)
         b64_favicon = base64.b64encode(favicon).decode()
     else:
         b64_favicon = ''
+        mimetype = ''
     return render_template('favicon_details.html', favicon_sha512=favicon_sha512,
-                           captures=captures, b64_favicon=b64_favicon)
+                           captures=captures, mimetype=mimetype, b64_favicon=b64_favicon)
 
 
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])

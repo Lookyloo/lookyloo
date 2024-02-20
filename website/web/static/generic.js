@@ -24,3 +24,18 @@ function checkAllBoxes(name) {
     checkboxs[i].checked = !checkboxs[i].checked;
   }
 }
+
+// Parameters:
+// contentType: The content type of your file.
+//              its like application/pdf or application/msword or image/jpeg or
+//              image/png and so on
+// base64Data: Its your actual base64 data
+// fileName: Its the file name of the file which will be downloaded.
+// Source: https://stackoverflow.com/questions/14011021/how-to-download-a-base64-encoded-image
+function downloadBase64File(contentType, base64Data, fileName) {
+     const linkSource = `data:${contentType};base64,${base64Data}`;
+     const downloadLink = document.createElement("a");
+     downloadLink.href = linkSource;
+     downloadLink.download = fileName;
+     downloadLink.click();
+}
