@@ -1,31 +1,39 @@
 <script type="text/javascript">
   new DataTable('#faviconsTable', {
-    columnDefs: [{ width: '20%', targets: 0 },
-                 { width: '40%', targets: 1 },
+    columnDefs: [{ width: '10%', targets: 0 },
+                 { width: '50%', targets: 1 },
                  { width: '40%', targets: 2 }],
   });
 </script>
 
+
+<h5 class="text-center">Click on the favicon to see the other captures it's been found in</h5>
 <table id="faviconsTable" class="table table-striped" style="width:100%">
 <thead>
  <tr>
-   <th>Favicon</th>
-   <th>Frequency</th>
    <th>Number of captures</th>
+   <th>Favicon</th>
+   <th>Download</th>
  </tr>
 </thead>
 <tbody>
   {% for favicon_sha512, freq, number_captures, mimetype, b64_favicon in favicons %}
   <tr>
+    <td>{{ number_captures }}</td>
     <td>
       <a href="#faviconDetailsModal" data-remote="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512) }}"
          data-bs-toggle="modal" data-bs-target="#faviconDetailsModal" role="button">
-        <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
+        <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"
+             title="Click to see other captures with the same favicon"/>
       </a>
-      <button type="button" class="btn btn-light" onclick="downloadBase64File('{{mimetype}}', '{{b64_favicon}}', 'favicon.ico')">Download favicon</button>
+      <br>
     </td>
-    <td>{{ freq }}</td>
-    <td>{{ number_captures }}</td>
+    <td>
+      <button type="button" class="btn btn-light" onclick="downloadBase64File('{{mimetype}}', '{{b64_favicon}}', 'favicon.ico')">
+        <img src="{{ url_for('static', filename='download.svg') }}" style="width:16px;height:16px;"
+             title="Download the favicon"/>
+      </button>
+    </td>
   </tr>
   {% endfor %}
 </tbody>

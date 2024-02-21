@@ -927,11 +927,15 @@ class Lookyloo():
         return sorted(set(ct.root_hartree.rendered_node.urls_in_rendered_page)
                       - set(ct.root_hartree.all_url_requests.keys()))
 
-    def get_body_hash_investigator(self, body_hash: str, /) -> tuple[list[tuple[str, str]], list[tuple[str, float]]]:
+    def get_body_hash_investigator(self, body_hash: str, /) -> tuple[list[tuple[str, str, datetime, str, str]], list[tuple[str, float]]]:
         '''Returns all the captures related to a hash (sha512), used in the web interface.'''
         total_captures, details = self.indexing.get_body_hash_captures(body_hash, limit=-1)
-        cached_captures = self.sorted_capture_cache([d[0] for d in details])
-        captures = [(cache.uuid, cache.title) for cache in cached_captures]
+        captures = []
+        for capture_uuid, hostnode_uuid, hostname, _, url in details:
+            cache = self.capture_cache(capture_uuid)
+            if not cache:
+                continue
+            captures.append((cache.uuid, cache.title, cache.timestamp, hostnode_uuid, url))
         domains = self.indexing.get_body_hash_domains(body_hash)
         return captures, domains
 
@@ -1079,7 +1083,7 @@ class Lookyloo():
         captures_list: dict[str, list[tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
         total_captures, details = self.indexing.get_body_hash_captures(blob_hash, url, filter_capture_uuid=capture_uuid, limit=-1,
                                                                        prefered_uuids=set(self._captures_index.keys()))
-        for h_capture_uuid, url_uuid, url_hostname, same_url in details:
+        for h_capture_uuid, url_uuid, url_hostname, same_url, url in details:
             cache = self.capture_cache(h_capture_uuid)
             if cache and hasattr(cache, 'title'):
                 if same_url:

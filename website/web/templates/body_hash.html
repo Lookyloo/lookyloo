@@ -1,3 +1,5 @@
+{% from "macros.html" import shorten_string %}
+
 {% if from_popup %}
 {% extends "main.html" %}
 
@@ -23,50 +25,70 @@
 {% endblock %}
 {%endif%}
 
+
 {% block content %}
 
 {% if from_popup %}
 <button onclick="window.history.back();" class="btn btn-primary" type="button">Go Back</button>
 {%endif%}
 
+<center>
+  <h6>{{ body_hash }}</h6>
+  <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">Download</a>
+</center>
+
 <script type="text/javascript">
-  new DataTable('#bodyHashDetailsTable', {
+  new DataTable('#freqHostTable', {
     columnDefs: [{ width: '20%', targets: 0 },
                  { width: '80%', targets: 1 }],
   });
 </script>
-<center>
-    <h4>{{ body_hash }}</h4>
-</center>
-<table id="bodyHashDetailsTable" class="table table-striped" style="width:100%">
+<script type="text/javascript">
+  new DataTable('#bodyHashDetailsTable', {
+    columnDefs: [{ width: '20%', targets: 0 },
+                 { width: '40%', targets: 1 },
+                 { width: '40%', targets: 2 }],
+  });
+</script>
+<table id="freqHostTable" class="table table-striped" style="width:100%">
   <thead>
    <tr>
-     <th>Hostname</th>
      <th>Frequency</th>
+     <th>Hostname</th>
    </tr>
   </thead>
   <tbody>
     {% for domain, freq in domains %}
     <tr>
-      <td>
-        {{ domain }}
-      </td>
       <td>{{ freq }}</td>
+      <td>{{ domain }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
-</div>
 <p>The same file was seen in these captures:</p>
-<ul>
-{% for capture_uuid, title in captures %}
-  <li>
-    {% if from_popup %}
-    <a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}')">{{ title }}</a>
-    {% else %}
-    <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">{{ title }}</a>
-    {% endif %}
-  </li>
-{% endfor %}
-</ul>
+<table id="bodyHashDetailsTable" class="table table-striped" style="width:100%">
+  <thead>
+   <tr>
+     <th>Timestamp</th>
+     <th>Title</th>
+     <th>URL</th>
+   </tr>
+  </thead>
+  <tbody>
+    {% for capture_uuid, title, timestamp, hostnode_uuid, url in captures %}
+    <tr>
+      <td>{{ timestamp }}</td>
+      <td>
+        {% if from_popup %}
+        <a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}')">{{ title }}</a>
+        {% else %}
+        <a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid) }}">{{ title }}</a>
+        {% endif %}
+      </td>
+      <td>{{ url }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

@@ -201,7 +201,7 @@ class Indexing():
     def get_body_hash_captures(self, body_hash: str, filter_url: str | None=None,
                                filter_capture_uuid: str | None=None,
                                limit: int=20,
-                               prefered_uuids: set[str]=set()) -> tuple[int, list[tuple[str, str, str, bool]]]:
+                               prefered_uuids: set[str]=set()) -> tuple[int, list[tuple[str, str, str, bool, str]]]:
         '''Get the captures matching the hash.
 
         :param filter_url: URL of the hash we're searching for
@@ -209,7 +209,7 @@ class Indexing():
         :param limit: Max matching captures to return, -1 means unlimited.
         :param prefered_uuids: UUID cached right now, so we don't rebuild trees.
         '''
-        to_return: list[tuple[str, str, str, bool]] = []
+        to_return: list[tuple[str, str, str, bool, str]] = []
         len_captures = self.redis.scard(f'bh|{body_hash}|captures')
         unlimited = False
         if limit == -1:
@@ -227,9 +227,9 @@ class Indexing():
                 url_uuid, hostnode_uuid, url = entry.split('|', 2)
                 hostname: str = urlsplit(url).hostname
                 if filter_url:
-                    to_return.append((capture_uuid, hostnode_uuid, hostname, url == filter_url))
+                    to_return.append((capture_uuid, hostnode_uuid, hostname, url == filter_url, url))
                 else:
-                    to_return.append((capture_uuid, hostnode_uuid, hostname, False))
+                    to_return.append((capture_uuid, hostnode_uuid, hostname, False, url))
             if not unlimited and limit <= 0:
                 break
         return len_captures, to_return

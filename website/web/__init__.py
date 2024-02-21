@@ -1052,6 +1052,13 @@ def recapture(tree_uuid: str) -> str | Response | WerkzeugResponse:
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
 
+@app.route('/ressource_by_hash/<string:sha512>', methods=['GET'])
+@file_response  # type: ignore[misc]
+def ressource_by_hash(sha512: str) -> Response:
+    details, body = lookyloo.get_body_hash_full(sha512)
+    return send_file(body, as_attachment=True, download_name='ressource.bin')
+
+
 # ################## Submit existing capture ##################
 
 @app.route('/submit_capture', methods=['GET', 'POST'])

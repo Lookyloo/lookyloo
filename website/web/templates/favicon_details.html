@@ -1,8 +1,10 @@
+{% from "macros.html" import shorten_string %}
+
 <script type="text/javascript">
   new DataTable('#faviconDetailsTable', {
-    columnDefs: [{ width: '40%', targets: 0 },
-                 { width: '40%', targets: 1 },
-                 { width: '20%', targets: 2 }],
+    columnDefs: [{ width: '30%', targets: 0 },
+                 { width: '30%', targets: 1 },
+                 { width: '50%', targets: 2 }],
   });
 </script>
 
@@ -12,24 +14,26 @@
 <table id="faviconDetailsTable" class="table table-striped" style="width:100%">
   <thead>
     <tr>
+      <th>Capture Time</th>
       <th>Capture Title</th>
       <th>Landing page</th>
-      <th>Capture Time</th>
     </tr>
   </thead>
   <tbody>
     {% for capture_uuid, title, landing_page, capture_time in captures %}
     <tr>
       <td>
+        {{capture_time}}
+      </td>
+      <td>
         <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">
           {{ title }}
         </a>
       </td>
       <td>
-        {{landing_page}}
-      </td>
-      <td>
-        {{capture_time}}
+        <span class="d-inline-block text-truncate" style="max-width: 400px;">
+          {{ shorten_string(landing_page, 300) }}
+        </span>
       </td>
     </tr>
     {% endfor %}

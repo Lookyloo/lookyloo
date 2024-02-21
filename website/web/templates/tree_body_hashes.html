@@ -10,9 +10,9 @@
 <table id="bodyHashesTable" class="table table-striped" style="width:100%">
 <thead>
  <tr>
-   <th>File type</th>
    <th>Captures total</th>
-   <th>Ressource</th>
+   <th>File type</th>
+   <th>Ressource URL in capture</th>
    <th>Hash (sha512)</th>
  </tr>
 </thead>
@@ -20,6 +20,7 @@
   {% for body_hash, info in body_hashes.items() %}
   {% set icon_info = get_icon(info['node'].generic_type) %}
   <tr>
+    <td>{{ info['total_captures'] }}</td>
     <td>
         <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=info['node'].uuid) }}">
           <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
@@ -34,7 +35,6 @@
           />
         </a>
     </td>
-    <td>{{ info['total_captures'] }}</td>
     <td><p class="text-break">{{ info['node'].name }}</p></td>
     <td>
       <span class="d-inline-block text-truncate" style="max-width: 200px;">
