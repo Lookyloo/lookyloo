@@ -65,7 +65,7 @@ passivetotal = "^2.5.9"
 werkzeug = "^3.0.1"
 filetype = "^1.2.0"
 pypandora = "^1.8.0"
-lacuscore = "^1.8.5"
+lacuscore = "^1.8.6"
 pylacus = "^1.8.0"
 pyipasnhistory = "^2.1.2"
 publicsuffixlist = "^0.10.0.20240205"
@@ -81,6 +81,7 @@ urllib3 = [
 ]
 pypdns = "^2.2.2"
 python-magic = "^0.4.27"
+mmh3 = "^4.1.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.8.0"
