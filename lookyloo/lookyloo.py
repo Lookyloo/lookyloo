@@ -23,6 +23,8 @@ from urllib.parse import urlparse
 from uuid import uuid4
 from zipfile import ZipFile
 
+import magic
+
 from defang import defang  # type: ignore[import-untyped]
 from har2tree import CrawledTree, HostNode, URLNode
 from lacuscore import (LacusCore,
@@ -850,18 +852,21 @@ class Lookyloo():
         return to_return
 
     @overload
-    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[False], for_datauri: Literal[True]) -> str:
+    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[False], for_datauri: Literal[True]) -> tuple[str, str]:
         ...
 
     @overload
     def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[True], for_datauri: Literal[False]) -> BytesIO:
         ...
 
-    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: bool=False, for_datauri: bool=False) -> BytesIO | str:
+    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: bool=False, for_datauri: bool=False) -> BytesIO | tuple[str, str]:
         '''Get rendered HTML'''
         fav = self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
         if not all_favicons and for_datauri:
-            return base64.b64encode(fav.getvalue()).decode()
+            favicon = fav.getvalue()
+            f = magic.Magic(mime=True)
+            mimetype = f.from_buffer(favicon)
+            return mimetype, base64.b64encode(favicon).decode()
         return fav
 
     def get_html(self, capture_uuid: str, /, all_html: bool=False) -> BytesIO:

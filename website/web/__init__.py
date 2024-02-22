@@ -769,7 +769,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
         meta = lookyloo.get_meta(tree_uuid)
         capture_settings = lookyloo.get_capture_settings(tree_uuid)
         # Get a potential favicon, if it exists
-        b64_potential_favicon = lookyloo.get_potential_favicons(tree_uuid, all_favicons=False, for_datauri=True)
+        mime_favicon, b64_potential_favicon = lookyloo.get_potential_favicons(tree_uuid, all_favicons=False, for_datauri=True)
         hostnode_to_highlight = None
         if node_uuid:
             try:
@@ -800,6 +800,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
                                screenshot_thumbnail=b64_thumbnail, page_title=cache.title if hasattr(cache, 'title') else '',
                                favicon=b64_potential_favicon,
+                               mime_favicon=mime_favicon,
                                screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_monitoring=lookyloo.monitoring_enabled,

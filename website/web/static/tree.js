@@ -595,7 +595,7 @@ function update(root, computed_node_width=0) {
                       .attr('id', 'favicon')
                       .attr("width", 32)
                       .attr("height", 32)
-                      .attr("xlink:href", `data:image/png;base64,${favicon}`)
+                      .attr("xlink:href", `data:${mime_favicon};base64,${favicon}`)
                       .attr('cursor', 'pointer')
                       .on('mouseover', (event, d) => {
                           d3.select('#tooltip')
