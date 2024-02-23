@@ -29,7 +29,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt install libfuzzy-dev
+        sudo apt install libfuzzy-dev libmagic1
         poetry install
         echo LOOKYLOO_HOME="`pwd`" >> .env
         poetry run tools/3rdparty.py
