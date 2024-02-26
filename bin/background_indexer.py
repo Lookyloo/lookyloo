@@ -33,7 +33,8 @@ class BackgroundIndexer(AbstractManager):
         all_done = self._build_missing_pickles()
         if all_done:
             self._check_indexes()
-            self._check_probabilistic_indexes()
+            # Disable probabilistic indexing for now, mmh3 isn't a fuzzy hash ago.
+            # self._check_probabilistic_indexes()
         self.lookyloo.update_tree_cache_info(os.getpid(), self.script_name)
 
     def _build_missing_pickles(self) -> bool:

@@ -13,21 +13,22 @@
  <tr>
    <th>Number of captures</th>
    <th>Favicon</th>
+   <th>Shodan MMH3</th>
    <th>Download</th>
  </tr>
 </thead>
 <tbody>
-  {% for favicon_sha512, freq, number_captures, mimetype, b64_favicon in favicons %}
+  {% for favicon_sha512, freq, number_captures, mimetype, b64_favicon, mmh3_shodan in favicons %}
   <tr>
     <td>{{ number_captures }}</td>
     <td>
-      <a href="#faviconDetailsModal" data-remote="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512) }}"
+      <a href="#faviconDetailsModal" data-remote="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512, get_probabilistic=0) }}"
          data-bs-toggle="modal" data-bs-target="#faviconDetailsModal" role="button">
         <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"
              title="Click to see other captures with the same favicon"/>
       </a>
-      <br>
     </td>
+    <td>{{ mmh3_shodan }}</td>
     <td>
       <button type="button" class="btn btn-light" onclick="downloadBase64File('{{mimetype}}', '{{b64_favicon}}', 'favicon.ico')">
         <img src="{{ url_for('static', filename='download.svg') }}" style="width:16px;height:16px;"

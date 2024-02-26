@@ -23,7 +23,7 @@ from urllib.parse import urlparse
 from uuid import uuid4
 from zipfile import ZipFile
 
-import magic
+import mmh3
 
 from defang import defang  # type: ignore[import-untyped]
 from har2tree import CrawledTree, HostNode, URLNode
@@ -865,8 +865,7 @@ class Lookyloo():
         fav = self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
         if not all_favicons and for_datauri:
             favicon = fav.getvalue()
-            f = magic.Magic(mime=True)
-            mimetype = f.from_buffer(favicon)
+            mimetype = from_string(favicon, mime=True)
             return mimetype, base64.b64encode(favicon).decode()
         return fav
 
@@ -1056,11 +1055,15 @@ class Lookyloo():
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
+    def compute_mmh3_shodan(self, favicon: bytes, /) -> str:
+        b64 = base64.encodebytes(favicon)
+        return str(mmh3.hash(b64))
+
     def get_favicon_investigator(self, favicon_sha512: str,
                                  /,
-                                 get_probabilistic=True) -> tuple[list[tuple[str, str, str, datetime]],
-                                                                  tuple[str, str],
-                                                                  dict[str, dict[str, dict[str, tuple[str, str]]]]]:
+                                 get_probabilistic: bool=False) -> tuple[list[tuple[str, str, str, datetime]],
+                                                                         tuple[str, str, str],
+                                                                         dict[str, dict[str, dict[str, tuple[str, str]]]]]:
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''
         cached_captures = self.sorted_capture_cache([uuid for uuid in self.indexing.get_captures_favicon(favicon_sha512)])
         captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
@@ -1068,6 +1071,7 @@ class Lookyloo():
         if favicon:
             mimetype = from_string(favicon, mime=True)
             b64_favicon = base64.b64encode(favicon).decode()
+            mmh3_shodan = self.compute_mmh3_shodan(favicon)
         else:
             mimetype = ''
             b64_favicon = ''
@@ -1095,7 +1099,7 @@ class Lookyloo():
                 if not probabilistic_favicons[algo]:
                     # remove entry if it has no hash
                     probabilistic_favicons.pop(algo)
-        return captures, (mimetype, b64_favicon), probabilistic_favicons
+        return captures, (mimetype, b64_favicon, mmh3_shodan), probabilistic_favicons
 
     def get_hhh_investigator(self, hhh: str, /) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str]]]:
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''

@@ -852,7 +852,8 @@ def tree_favicons(tree_uuid: str) -> str:
             frequency = lookyloo.indexing.favicon_frequency(favicon_sha512)
             number_captures = lookyloo.indexing.favicon_number_captures(favicon_sha512)
             b64_favicon = base64.b64encode(favicon).decode()
-            favicons.append((favicon_sha512, frequency, number_captures, mimetype, b64_favicon))
+            mmh3_shodan = lookyloo.compute_mmh3_shodan(favicon)
+            favicons.append((favicon_sha512, frequency, number_captures, mimetype, b64_favicon, mmh3_shodan))
     return render_template('tree_favicons.html', tree_uuid=tree_uuid, favicons=favicons)
 
 
@@ -1251,12 +1252,12 @@ def hhh_detail(hhh: str) -> str:
 
 @app.route('/favicon_details/<string:favicon_sha512>', methods=['GET'])
 @app.route('/favicon_details/<string:favicon_sha512>/<int:get_probabilistic>', methods=['GET'])
-def favicon_detail(favicon_sha512: str, get_probabilistic: int=1) -> str:
+def favicon_detail(favicon_sha512: str, get_probabilistic: int=0) -> str:
     _get_prob = bool(get_probabilistic)
     captures, favicon, probabilistic_favicons = lookyloo.get_favicon_investigator(favicon_sha512.strip(), get_probabilistic=_get_prob)
-    mimetype, b64_favicon = favicon
+    mimetype, b64_favicon, mmh3_shodan = favicon
     return render_template('favicon_details.html', favicon_sha512=favicon_sha512,
-                           captures=captures, mimetype=mimetype, b64_favicon=b64_favicon,
+                           captures=captures, mimetype=mimetype, b64_favicon=b64_favicon, mmh3_shodan=mmh3_shodan,
                            probabilistic_favicons=probabilistic_favicons)
 
 
