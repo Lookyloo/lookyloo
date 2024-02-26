@@ -15,7 +15,6 @@ import sys
 import time
 
 import filetype  # type: ignore[import-untyped]
-import magic
 
 from datetime import date, datetime, timedelta, timezone
 from importlib.metadata import version
@@ -32,6 +31,7 @@ from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus
+from puremagic import from_string  # type: ignore[import-untyped]
 from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
@@ -840,7 +840,6 @@ def mark_as_legitimate(tree_uuid: str) -> Response:
 def tree_favicons(tree_uuid: str) -> str:
     favicons = []
     favicons_zip = lookyloo.get_potential_favicons(tree_uuid, all_favicons=True, for_datauri=False)
-    f = magic.Magic(mime=True)
     with ZipFile(favicons_zip, 'r') as myzip:
         for name in myzip.namelist():
             if not name.endswith('.ico'):
@@ -848,7 +847,7 @@ def tree_favicons(tree_uuid: str) -> str:
             favicon = myzip.read(name)
             if not favicon:
                 continue
-            mimetype = f.from_buffer(favicon)
+            mimetype = from_string(favicon, mime=True)
             favicon_sha512 = hashlib.sha512(favicon).hexdigest()
             frequency = lookyloo.indexing.favicon_frequency(favicon_sha512)
             number_captures = lookyloo.indexing.favicon_number_captures(favicon_sha512)
@@ -1251,17 +1250,14 @@ def hhh_detail(hhh: str) -> str:
 
 
 @app.route('/favicon_details/<string:favicon_sha512>', methods=['GET'])
-def favicon_detail(favicon_sha512: str) -> str:
-    captures, favicon = lookyloo.get_favicon_investigator(favicon_sha512.strip())
-    if favicon:
-        f = magic.Magic(mime=True)
-        mimetype = f.from_buffer(favicon)
-        b64_favicon = base64.b64encode(favicon).decode()
-    else:
-        b64_favicon = ''
-        mimetype = ''
+@app.route('/favicon_details/<string:favicon_sha512>/<int:get_probabilistic>', methods=['GET'])
+def favicon_detail(favicon_sha512: str, get_probabilistic: int=1) -> str:
+    _get_prob = bool(get_probabilistic)
+    captures, favicon, probabilistic_favicons = lookyloo.get_favicon_investigator(favicon_sha512.strip(), get_probabilistic=_get_prob)
+    mimetype, b64_favicon = favicon
     return render_template('favicon_details.html', favicon_sha512=favicon_sha512,
-                           captures=captures, mimetype=mimetype, b64_favicon=b64_favicon)
+                           captures=captures, mimetype=mimetype, b64_favicon=b64_favicon,
+                           probabilistic_favicons=probabilistic_favicons)
 
 
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])

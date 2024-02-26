@@ -80,8 +80,8 @@ urllib3 = [
     {version = "^2.0.7", python = ">=3.10"}
 ]
 pypdns = "^2.2.2"
-python-magic = "^0.4.27"
 mmh3 = "^4.1.0"
+puremagic = "^1.21"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.8.0"

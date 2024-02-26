@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import logging
 # import re
@@ -10,6 +11,8 @@ from collections import defaultdict
 from typing import Iterable
 from urllib.parse import urlsplit
 from zipfile import ZipFile
+
+import mmh3
 
 from har2tree import CrawledTree
 from redis import ConnectionPool, Redis
@@ -371,6 +374,55 @@ class Indexing():
 
     def get_favicon(self, favicon_sha512: str) -> bytes | None:
         return self.redis_bytes.get(f'favicons|{favicon_sha512}')
+
+    # ###### favicons probabilistic hashes ######
+
+    def favicon_probabilistic_frequency(self, algorithm: str, phash: str) -> float | None:
+        return self.redis.zscore(f'favicons|{algorithm}', phash)
+
+    def index_favicons_probabilistic(self, capture_uuid: str, favicons: BytesIO, algorithm: str) -> None:
+        if self.redis.sismember(f'indexed_favicons_probabilistic|{algorithm}', capture_uuid):
+            # Do not reindex
+            return
+        self.redis.sadd(f'indexed_favicons_probabilistic|{algorithm}', capture_uuid)
+        pipeline = self.redis.pipeline()
+        with ZipFile(favicons, 'r') as myzip:
+            for name in myzip.namelist():
+                if not name.endswith('.ico'):
+                    continue
+                favicon = myzip.read(name)
+                if not favicon:
+                    # Empty file, ignore.
+                    continue
+                sha = hashlib.sha512(favicon).hexdigest()
+                if algorithm == 'mmh3-shodan':
+                    # Shodan uses a weird technique:
+                    # 1. encodes the image to base64, with newlines every 76 characters (as per RFC 2045)
+                    # 2. hashes the base64 string with mmh3
+                    b64 = base64.encodebytes(favicon)
+                    h = str(mmh3.hash(b64))
+                else:
+                    raise NotImplementedError(f'Unknown algorithm: {algorithm}')
+                pipeline.zincrby(f'favicons|{algorithm}', 1, h)
+                # All captures with this hash for this algorithm
+                pipeline.sadd(f'favicons|{algorithm}|{h}|captures', capture_uuid)
+                # All hashes with this hash for this algorithm
+                pipeline.sadd(f'favicons|{algorithm}|{h}|favicons', sha)
+                # reverse lookup to get probabilistic hashes related to a specific favicon
+                pipeline.sadd(f'favicons|{algorithm}|{sha}', h)
+        pipeline.execute()
+
+    def get_hashes_favicon_probablistic(self, algorithm: str, phash: str) -> set[str]:
+        '''All the favicon sha512 for this probabilistic hash for this algorithm'''
+        return self.redis.smembers(f'favicons|{algorithm}|{phash}|favicons')
+
+    def get_probabilistic_hashes_favicon(self, algorithm: str, favicon_sha512: str) -> set[str]:
+        '''All the probabilistic hashes for this favicon SHA512 for this algorithm'''''
+        return self.redis.smembers(f'favicons|{algorithm}|{favicon_sha512}')
+
+    def get_captures_favicon_probablistic(self, algorithm: str, phash: str) -> set[str]:
+        '''All the captures with this probabilistic hash for this algorithm'''
+        return self.redis.smembers(f'favicons|{algorithm}|{phash}|captures')
 
     # ###### Categories ######
 

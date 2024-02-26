@@ -33,6 +33,7 @@ class BackgroundIndexer(AbstractManager):
         all_done = self._build_missing_pickles()
         if all_done:
             self._check_indexes()
+            self._check_probabilistic_indexes()
         self.lookyloo.update_tree_cache_info(os.getpid(), self.script_name)
 
     def _build_missing_pickles(self) -> bool:
@@ -166,6 +167,33 @@ class BackgroundIndexer(AbstractManager):
             # NOTE: categories aren't taken in account here, should be fixed(?)
             # see indexing.index_categories_capture(capture_uuid, categories)
         index_redis.delete('ongoing_indexing')
+        self.logger.info('... done.')
+
+    def _check_probabilistic_indexes(self) -> None:
+        index_redis = self.lookyloo.indexing.redis
+        can_index = index_redis.set('ongoing_probalistic_indexing', 1, ex=3600, nx=True)
+        if not can_index:
+            # There is no reason to run this method in multiple scripts.
+            self.logger.info('Probalistic indexing already ongoing in another process.')
+            return None
+        self.logger.info('Check probabilistic indexes...')
+        algorithms = ['mmh3-shodan']
+        for cache in self.lookyloo.sorted_capture_cache(cached_captures_only=False):
+            if self.lookyloo.is_public_instance and cache.no_index:
+                # Capture unindexed
+                continue
+            p = index_redis.pipeline()
+            for algorithm in algorithms:
+                p.sismember(f'indexed_favicons_probabilistic|{algorithm}', cache.uuid)
+            indexed = p.execute()
+            if all(indexed):
+                continue
+            for i, algorithm in enumerate(algorithms):
+                if not indexed[i]:
+                    self.logger.info(f'Probabilistic indexing favicons for {cache.uuid} with {algorithm}')
+                    favicons = self.lookyloo.get_potential_favicons(cache.uuid, all_favicons=True, for_datauri=False)
+                    self.lookyloo.indexing.index_favicons_probabilistic(cache.uuid, favicons, algorithm)
+        index_redis.delete('ongoing_probalistic_indexing')
         self.logger.info('... done.')
 
 

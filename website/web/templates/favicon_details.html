@@ -1,7 +1,7 @@
 {% from "macros.html" import shorten_string %}
 
 <script type="text/javascript">
-  new DataTable('#faviconDetailsTable', {
+  new DataTable('#faviconDetailsTable_{{favicon_sha512}}', {
     columnDefs: [{ width: '30%', targets: 0 },
                  { width: '30%', targets: 1 },
                  { width: '50%', targets: 2 }],
@@ -11,7 +11,7 @@
 <center>
   <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:64px;height:64px;"/>
 </center>
-<table id="faviconDetailsTable" class="table table-striped" style="width:100%">
+<table id="faviconDetailsTable_{{favicon_sha512}}" class="table table-striped" style="width:100%">
   <thead>
     <tr>
       <th>Capture Time</th>
@@ -39,3 +39,18 @@
     {% endfor %}
   </tbody>
 </table>
+
+{%for probabilistic_hash_algo, entries in probabilistic_favicons.items() %}
+  <h3>Probabilistic Favicon Hashes ({{ probabilistic_hash_algo }})</h3>
+  {% for mm3h, favicons in entries.items() %}
+    <h4>MM3 Hash: {{ mm3h }}</h4>
+    {% for sha512, favicon in favicons.items() %}
+    <a href="#faviconDetailsProbabilisticHashModal" data-remote="{{ url_for('favicon_detail', favicon_sha512=sha512, get_probabilistic=0) }}"
+       data-bs-toggle="modal" data-bs-target="#faviconDetailsProbabilisticHashModal" role="button">
+      <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"
+           title="Click to see other captures with the same favicon"/>
+    </a>
+    <br>
+    {% endfor %}
+  {% endfor %}
+{% endfor %}

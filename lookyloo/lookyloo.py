@@ -34,6 +34,7 @@ from lacuscore import (LacusCore,
                        CaptureSettings as CaptureSettingsCore)
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
+from puremagic import from_string  # type: ignore[import-untyped]
 from pylacus import (PyLacus,
                      CaptureStatus as CaptureStatusPy
                      # CaptureResponse as CaptureResponsePy,
@@ -1055,12 +1056,46 @@ class Lookyloo():
                    for domain, freq in self.indexing.get_cookie_domains(cookie_name)]
         return captures, domains
 
-    def get_favicon_investigator(self, favicon_sha512: str, /) -> tuple[list[tuple[str, str, str, datetime]], bytes | None]:
+    def get_favicon_investigator(self, favicon_sha512: str,
+                                 /,
+                                 get_probabilistic=True) -> tuple[list[tuple[str, str, str, datetime]],
+                                                                  tuple[str, str],
+                                                                  dict[str, dict[str, dict[str, tuple[str, str]]]]]:
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''
         cached_captures = self.sorted_capture_cache([uuid for uuid in self.indexing.get_captures_favicon(favicon_sha512)])
         captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
         favicon = self.indexing.get_favicon(favicon_sha512)
-        return captures, favicon
+        if favicon:
+            mimetype = from_string(favicon, mime=True)
+            b64_favicon = base64.b64encode(favicon).decode()
+        else:
+            mimetype = ''
+            b64_favicon = ''
+
+        # For now, there is only one probabilistic hash algo for favicons, keeping it simple
+        probabilistic_hash_algos = ['mmh3-shodan']
+        probabilistic_favicons: dict[str, dict[str, dict[str, tuple[str, str]]]] = {}
+        if get_probabilistic:
+            for algo in probabilistic_hash_algos:
+                probabilistic_favicons[algo] = {}
+                for mm3hash in self.indexing.get_probabilistic_hashes_favicon(algo, favicon_sha512):
+                    probabilistic_favicons[algo][mm3hash] = {}
+                    for sha512 in self.indexing.get_hashes_favicon_probablistic(algo, mm3hash):
+                        if sha512 == favicon_sha512:
+                            # Skip entry if it is the same as the favicon we are investigating
+                            continue
+                        favicon = self.indexing.get_favicon(sha512)
+                        if favicon:
+                            mimetype = from_string(favicon, mime=True)
+                            b64_favicon = base64.b64encode(favicon).decode()
+                            probabilistic_favicons[algo][mm3hash][sha512] = (mimetype, b64_favicon)
+                    if not probabilistic_favicons[algo][mm3hash]:
+                        # remove entry if it has no favicon
+                        probabilistic_favicons[algo].pop(mm3hash)
+                if not probabilistic_favicons[algo]:
+                    # remove entry if it has no hash
+                    probabilistic_favicons.pop(algo)
+        return captures, (mimetype, b64_favicon), probabilistic_favicons
 
     def get_hhh_investigator(self, hhh: str, /) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str]]]:
         '''Returns all the captures related to a cookie name entry, used in the web interface.'''

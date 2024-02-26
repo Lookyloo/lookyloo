@@ -99,7 +99,7 @@ class Processing(AbstractManager):
                     to_requeue.append(uuid)
 
         for uuid in to_requeue:
-            if self.lookyloo.redis.zscore('to_capture', uuid) is None
+            if self.lookyloo.redis.zscore('to_capture', uuid) is None:
                 # The capture has been captured in the meantime.
                 continue
             self.logger.info(f'Found a non-queued capture ({uuid}), retrying now.')
