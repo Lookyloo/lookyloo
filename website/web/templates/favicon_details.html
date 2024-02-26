@@ -10,7 +10,7 @@
 
 <center>
   <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
-  <h5>Shodan MMH3 Hash: {{ mmh3_shodan }}</h5>
+  <h5>Shodan MMH3 Hash: <a href="https://www.shodan.io/search?query=http.favicon.hash%3A{{ mmh3_shodan }}" target="_blank">{{ mmh3_shodan }}</a></h5>
 </center>
 <table id="faviconDetailsTable_{{favicon_sha512}}" class="table table-striped" style="width:100%">
   <thead>
