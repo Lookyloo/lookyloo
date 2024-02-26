@@ -34,7 +34,7 @@ from lacuscore import (LacusCore,
                        CaptureSettings as CaptureSettingsCore)
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
-from puremagic import from_string  # type: ignore[import-untyped]
+from puremagic import from_string, PureError  # type: ignore[import-untyped]
 from pylacus import (PyLacus,
                      CaptureStatus as CaptureStatusPy
                      # CaptureResponse as CaptureResponsePy,
@@ -867,8 +867,12 @@ class Lookyloo():
             favicon = fav.getvalue()
             if not favicon:
                 return '', ''
-            mimetype = from_string(favicon, mime=True)
-            return mimetype, base64.b64encode(favicon).decode()
+            try:
+                mimetype = from_string(favicon, mime=True)
+                return mimetype, base64.b64encode(favicon).decode()
+            except PureError:
+                self.logger.warning(f'Unable to get the mimetype of the favicon for {capture_uuid}.')
+                return '', ''
         return fav
 
     def get_html(self, capture_uuid: str, /, all_html: bool=False) -> BytesIO:
