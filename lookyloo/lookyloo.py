@@ -865,6 +865,8 @@ class Lookyloo():
         fav = self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
         if not all_favicons and for_datauri:
             favicon = fav.getvalue()
+            if not favicon:
+                return '', ''
             mimetype = from_string(favicon, mime=True)
             return mimetype, base64.b64encode(favicon).decode()
         return fav
