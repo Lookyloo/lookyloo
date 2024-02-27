@@ -177,7 +177,9 @@
 <p>
   The same file was seen in <b>{{ total_captures }}</b> other captures.
   </br>
-  <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#captureslist_{{ identifier_for_toggle }}" aria-expanded="false" aria-controls="collapseExample">
+  <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#captureslist_{{ identifier_for_toggle }}"
+          aria-expanded="false" aria-controls="collapseExample">
     <span class="if-collapsed">Show other captures</span>
     <span class="if-not-collapsed">Hide other captures</span>
   </button>
@@ -190,7 +192,7 @@
     {# ... on other URLs #}
     <div>
       <p>The following captures get the same file from a <b>different URL</b></p>
-      {{ other_captures_table(other_captures['different_url'], 20) }}
+      {{ other_captures_table(other_captures['different_url'], 20, identifier_for_toggle + '_same') }}
     </div>
     {% endif %}
     </br>
@@ -198,7 +200,7 @@
     {# ... on the same URL #}
     <div>
       <p>The following captures get the same file from the <b>same URL</b></p>
-      {{ other_captures_table(other_captures['same_url'], 20) }}
+      {{ other_captures_table(other_captures['same_url'], 20, identifier_for_toggle + '_different') }}
     </div>
     {% endif %}
   </div>
@@ -206,9 +208,30 @@
 {% endif %}
 {% endmacro %}
 
-{% macro other_captures_table(entries, max_entries) %}
-<div class="table-responsive">
-  <table id="table_other_captures" class="table">
+{% macro other_captures_table(entries, max_entries, identifier) %}
+ <script type="text/javascript">
+   document.addEventListener("DOMContentLoaded", () => {
+   new DataTable('#table_other_captures{{identifier}}', {
+   "order": [[ 1, "desc" ]],
+   "paging": false,
+   "info": false,
+   "columns": [
+       { "orderable": false},
+       { "orderable": false},
+       { "orderable": false}
+   ],
+   "columnDefs": [{
+       "targets": 1,
+       "render": (data) => {
+           const date = new Date(data);
+           return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
+       }
+   }]
+   } );
+ });
+ </script>
+<div>
+  <table id="table_other_captures{{identifier}}" class="table table-striped" style="width:100%">
   <thead>
     <tr>
       <th>Title</th>

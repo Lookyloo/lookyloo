@@ -2,9 +2,17 @@
 
 <script type="text/javascript">
   new DataTable('#faviconDetailsTable_{{favicon_sha512}}', {
-    columnDefs: [{ width: '30%', targets: 0 },
+    order: [[ 0, "desc" ]],
+    columnDefs: [{ width: '30%',
+                   targets: 0,
+                   render: (data) => {
+                    const date = new Date(data);
+                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
+                   }
+                 },
                  { width: '30%', targets: 1 },
                  { width: '50%', targets: 2 }],
+
   });
 </script>
 
@@ -32,8 +40,8 @@
         </a>
       </td>
       <td>
-        <span class="d-inline-block text-truncate" style="max-width: 400px;">
-          {{ shorten_string(landing_page, 300) }}
+        <span class="d-inline-block text-break" style="max-width: 400px;">
+          {{ landing_page }}
         </span>
       </td>
     </tr>

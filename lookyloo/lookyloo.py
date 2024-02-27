@@ -1081,6 +1081,7 @@ class Lookyloo():
         else:
             mimetype = ''
             b64_favicon = ''
+            mmh3_shodan = ''
 
         # For now, there is only one probabilistic hash algo for favicons, keeping it simple
         probabilistic_hash_algos = ['mmh3-shodan']

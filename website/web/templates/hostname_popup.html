@@ -15,27 +15,6 @@
 
 {% block scripts %}
   {{ super() }}
-  <script type="text/javascript">
-  $(document).ready(() => {
-    $('table.table').DataTable( {
-    "order": [[ 1, "desc" ]],
-    "paging": false,
-    "info": false,
-    "columns": [
-        { "orderable": false},
-        { "orderable": false},
-        { "orderable": false}
-    ],
-    "columnDefs": [{
-        "targets": 1,
-        "render": (data) => {
-            const date = new Date(data);
-            return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-        }
-    }]
-    } );
-  });
-  </script>
   <script>
     let whereAmI = (hostnode_uuid) => window.opener.LocateNode(hostnode_uuid);
     let openTreeInNewTab = (capture_uuid, hostnode_uuid=Null) => {
@@ -46,7 +25,7 @@
     }
   </script>
   <script>
-  $(document).ready(() => {
+  document.addEventListener("DOMContentLoaded", () => {
     // Grab any text in the attribute 'data-copy' and pass it to the copy function
     $('.js-copy').tooltip();
     $('.js-copy').click(function() {
@@ -57,7 +36,7 @@
   });
   </script>
   <script>
-  $(document).ready(() => {
+  document.addEventListener("DOMContentLoaded", () => {
     $(function () {
       $('[data-bs-toggle="tooltip"]').tooltip()
     })
