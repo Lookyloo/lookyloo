@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import calendar
 import functools
+import gzip
 import hashlib
 import http
 import json
@@ -1090,7 +1091,11 @@ def submit_capture() -> str | Response | WerkzeugResponse:
             with ZipFile(BytesIO(request.files['full_capture'].stream.read()), 'r') as lookyloo_capture:
                 potential_favicons = set()
                 for filename in lookyloo_capture.namelist():
-                    if filename.endswith('0.har'):
+                    if filename.endswith('0.har.gz'):
+                        # new formal
+                        har = json.loads(gzip.decompress(lookyloo_capture.read(filename)))
+                    elif filename.endswith('0.har'):
+                        # old format
                         har = json.loads(lookyloo_capture.read(filename))
                     elif filename.endswith('0.html'):
                         html = lookyloo_capture.read(filename).decode()
