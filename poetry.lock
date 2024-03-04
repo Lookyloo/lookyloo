@@ -2668,13 +2668,13 @@ requests = ">=2.31.0,<3.0.0"
 
 [[package]]
 name = "pysecuritytxt"
-version = "1.2.2"
+version = "1.3.0"
 description = "Python CLI and module for querying security.txt files on domains."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pysecuritytxt-1.2.2-py3-none-any.whl", hash = "sha256:08d8750d82e9502ba949a6ea7bab355ca183cfc3cd722ed3e492ba35a8d4edda"},
-    {file = "pysecuritytxt-1.2.2.tar.gz", hash = "sha256:31d4ea4814e2cdeffce304e7b6f9d58580e7fb6578c8694bb6f8c0df59e65b3d"},
+    {file = "pysecuritytxt-1.3.0-py3-none-any.whl", hash = "sha256:9e4eb6b4fdca8f8471c80696c4d7642be24d44c8c3f627870ca9b7bd3f221cd5"},
+    {file = "pysecuritytxt-1.3.0.tar.gz", hash = "sha256:3669be69e90672ed0d448b385e5fef49cb3a6a611d7e386d673c4f0e1cc3e83b"},
 ]
 
 [package.dependencies]
@@ -2942,6 +2942,7 @@ optional = false
 python-versions = "*"
 files = [
     {file = "requests-file-2.0.0.tar.gz", hash = "sha256:20c5931629c558fda566cacc10cfe2cd502433e628f568c34c80d96a0cc95972"},
+    {file = "requests_file-2.0.0-py2.py3-none-any.whl", hash = "sha256:3e493d390adb44aa102ebea827a48717336d5268968c370eaf19abaf5cae13bf"},
 ]
 
 [package.dependencies]
@@ -3734,4 +3735,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "bc64701a9d95985f7d0c91086fabfc29a1c54affc60bfab612fecc3771d6acd4"
+content-hash = "d7ab3b72517b4378a5695ac871d7b90f0be517bc4ba71336d172a773320a1045"
