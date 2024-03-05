@@ -2,7 +2,7 @@
 
 from subprocess import Popen, run
 
-from lookyloo.default import get_homedir
+from lookyloo.default import get_homedir, get_config
 
 
 def main() -> None:
@@ -18,9 +18,16 @@ def main() -> None:
     print('Start asynchronous ingestor...')
     Popen(['async_capture'])
     print('done.')
+    print('Start background capture builder...')
+    Popen(['background_build_captures'])
+    print('done.')
     print('Start background indexer...')
     Popen(['background_indexer'])
     print('done.')
+    if get_config('generic', 'index_everything'):
+        print('Start background full indexer...')
+        Popen(['background_full_indexer'])
+        print('done.')
     print('Start background processing...')
     Popen(['processing'])
     print('done.')

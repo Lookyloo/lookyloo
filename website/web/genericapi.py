@@ -287,7 +287,9 @@ class TriggerModules(Resource):  # type: ignore[misc]
          params={'h': 'The hash (sha512)'})
 class HashInfo(Resource):  # type: ignore[misc]
     def get(self, h: str) -> dict[str, Any] | tuple[dict[str, Any], int]:
-        details, body = lookyloo.get_body_hash_full(h)
+        from . import get_body_hash_full
+
+        details, body = get_body_hash_full(h)
         if not details:
             return {'error': 'Unknown Hash.'}, 400
         to_return: dict[str, Any] = {'response': {'hash': h, 'details': details,
@@ -308,8 +310,9 @@ class URLInfo(Resource):  # type: ignore[misc]
 
     @api.doc(body=url_info_fields)  # type: ignore[misc]
     def post(self) -> list[dict[str, Any]]:
+        from . import get_url_occurrences
         to_query: dict[str, Any] = request.get_json(force=True)
-        occurrences = lookyloo.get_url_occurrences(to_query.pop('url'), **to_query)
+        occurrences = get_url_occurrences(to_query.pop('url'), **to_query)
         return occurrences
 
 
@@ -326,8 +329,9 @@ class HostnameInfo(Resource):  # type: ignore[misc]
 
     @api.doc(body=hostname_info_fields)  # type: ignore[misc]
     def post(self) -> list[dict[str, Any]]:
+        from . import get_hostname_occurrences
         to_query: dict[str, Any] = request.get_json(force=True)
-        return lookyloo.get_hostname_occurrences(to_query.pop('hostname'), **to_query)
+        return get_hostname_occurrences(to_query.pop('hostname'), **to_query)
 
 
 @api.route('/json/stats')

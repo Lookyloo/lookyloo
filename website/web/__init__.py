@@ -17,14 +17,16 @@ import time
 
 import filetype  # type: ignore[import-untyped]
 
+from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from importlib.metadata import version
 from io import BytesIO, StringIO
-from typing import Any, TypedDict
+from typing import Any, TypedDict, Iterable
 from urllib.parse import quote_plus, unquote_plus, urlparse
 from uuid import uuid4
 from zipfile import ZipFile
 
+from har2tree import HostNode, URLNode
 import flask_login  # type: ignore[import-untyped]
 from flask import (Flask, Response, Request, flash, jsonify, redirect, render_template,
                    request, send_file, url_for)
@@ -37,7 +39,8 @@ from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
-from lookyloo import Lookyloo, CaptureSettings
+from lookyloo import Lookyloo, CaptureSettings, Indexing
+from lookyloo.capturecache import CaptureCache
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
@@ -262,6 +265,353 @@ def file_response(func):  # type: ignore[no-untyped-def]
     return wrapper
 
 
+# ##### Methods querying the indexes #####
+
+@functools.cache
+def get_indexing(user: User | None) -> Indexing:
+    '''Depending if we're logged in or not, we (can) get different indexes:
+        if index_everything is enabled, we have an index in kvrocks that contains all
+        the indexes for all the captures.
+        It is only accessible to the admin user.
+    '''
+    if not get_config('generic', 'index_everything'):
+        return Indexing()
+
+    if not user or not user.is_authenticated:
+        # No user or anonymous
+        return Indexing()
+    # Logged in user
+    return Indexing(full_index=True)
+
+
+def _get_body_hash_investigator(body_hash: str, /) -> tuple[list[tuple[str, str, datetime, str, str]], list[tuple[str, float]]]:
+    '''Returns all the captures related to a hash (sha512), used in the web interface.'''
+    total_captures, details = get_indexing(flask_login.current_user).get_body_hash_captures(body_hash, limit=-1)
+    captures = []
+    for capture_uuid, hostnode_uuid, hostname, _, url in details:
+        cache = lookyloo.capture_cache(capture_uuid)
+        if not cache:
+            continue
+        captures.append((cache.uuid, cache.title, cache.timestamp, hostnode_uuid, url))
+    domains = get_indexing(flask_login.current_user).get_body_hash_domains(body_hash)
+    return captures, domains
+
+
+def get_body_hash_full(body_hash: str, /) -> tuple[dict[str, list[dict[str, str]]], BytesIO]:
+    '''Returns a lot of information about the hash (sha512) and the hits in the instance.
+    Also contains the data (base64 encoded)'''
+    details = get_indexing(flask_login.current_user).get_body_hash_urls(body_hash)
+
+    # Break immediately if we have the hash of the empty file
+    if body_hash == 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e':
+        return details, BytesIO()
+
+    # get the body from the first entry in the details list
+    for _, entries in details.items():
+        if not entries:
+            continue
+        ct = lookyloo.get_crawled_tree(entries[0]['capture'])
+        try:
+            urlnode = ct.root_hartree.get_url_node_by_uuid(entries[0]['urlnode'])
+        except Exception:
+            # Unable to find URLnode in the tree, it probably has been rebuild.
+            # TODO throw a log line or something
+            # self.logger.warning(f'Unable to find {entries[0]["urlnode"]} in entries[0]["capture"]')
+            # lookyloo._captures_index.remove_pickle(<capture UUID>)
+            continue
+
+        # From that point, we just try to get the content. Break as soon as we found one.
+        if urlnode.body_hash == body_hash:
+            # the hash we're looking for is the whole file
+            return details, urlnode.body
+        else:
+            # The hash is an embedded resource
+            for _, blobs in urlnode.embedded_ressources.items():
+                for h, b in blobs:
+                    if h == body_hash:
+                        return details, b
+
+    # TODO: Couldn't find the file anywhere. Maybe return a warning in the file?
+    return details, BytesIO()
+
+
+def get_all_body_hashes(capture_uuid: str, /) -> dict[str, dict[str, URLNode | int]]:
+    ct = lookyloo.get_crawled_tree(capture_uuid)
+    to_return: dict[str, dict[str, URLNode | int]] = defaultdict()
+    for node in ct.root_hartree.url_tree.traverse():
+        if node.empty_response or node.body_hash in to_return:
+            # If we have the same hash more than once, skip
+            continue
+        total_captures, details = get_indexing(flask_login.current_user).get_body_hash_captures(node.body_hash, limit=-1)
+        # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
+        to_return[node.body_hash] = {'node': node, 'total_captures': total_captures}
+    return to_return
+
+
+def get_latest_url_capture(url: str, /) -> CaptureCache | None:
+    '''Get the most recent capture with this URL'''
+    captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_url(url))
+    if captures:
+        return captures[0]
+    return None
+
+
+def get_url_occurrences(url: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
+    '''Get the most recent captures and URL nodes where the URL has been seen.'''
+    captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_url(url), cached_captures_only=cached_captures_only)
+
+    to_return: list[dict[str, Any]] = []
+    for capture in captures[:limit]:
+        ct = lookyloo.get_crawled_tree(capture.uuid)
+        to_append: dict[str, str | dict[str, Any]] = {'capture_uuid': capture.uuid,
+                                                      'start_timestamp': capture.timestamp.isoformat(),
+                                                      'title': capture.title}
+        urlnodes: dict[str, dict[str, str]] = {}
+        for urlnode in ct.root_hartree.url_tree.search_nodes(name=url):
+            urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
+                                      'hostnode_uuid': urlnode.hostnode_uuid}
+            if hasattr(urlnode, 'body_hash'):
+                urlnodes[urlnode.uuid]['hash'] = urlnode.body_hash
+        to_append['urlnodes'] = urlnodes
+        to_return.append(to_append)
+    return to_return
+
+
+def get_hostname_occurrences(hostname: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
+    '''Get the most recent captures and URL nodes where the hostname has been seen.'''
+    captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_hostname(hostname), cached_captures_only=cached_captures_only)
+
+    to_return: list[dict[str, Any]] = []
+    for capture in captures[:limit]:
+        ct = lookyloo.get_crawled_tree(capture.uuid)
+        to_append: dict[str, str | list[Any] | dict[str, Any]] = {
+            'capture_uuid': capture.uuid,
+            'start_timestamp': capture.timestamp.isoformat(),
+            'title': capture.title}
+        hostnodes: list[str] = []
+        if with_urls_occurrences:
+            urlnodes: dict[str, dict[str, str]] = {}
+        for hostnode in ct.root_hartree.hostname_tree.search_nodes(name=hostname):
+            hostnodes.append(hostnode.uuid)
+            if with_urls_occurrences:
+                for urlnode in hostnode.urls:
+                    urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
+                                              'url': urlnode.name,
+                                              'hostnode_uuid': urlnode.hostnode_uuid}
+                    if hasattr(urlnode, 'body_hash'):
+                        urlnodes[urlnode.uuid]['hash'] = urlnode.body_hash
+            to_append['hostnodes'] = hostnodes
+            if with_urls_occurrences:
+                to_append['urlnodes'] = urlnodes
+            to_return.append(to_append)
+    return to_return
+
+
+def get_cookie_name_investigator(cookie_name: str, /) -> tuple[list[tuple[str, str]], list[tuple[str, float, list[tuple[str, float]]]]]:
+    '''Returns all the captures related to a cookie name entry, used in the web interface.'''
+    cached_captures = lookyloo.sorted_capture_cache([entry[0] for entry in get_indexing(flask_login.current_user).get_cookies_names_captures(cookie_name)])
+    captures = [(cache.uuid, cache.title) for cache in cached_captures]
+    domains = [(domain, freq, get_indexing(flask_login.current_user).cookies_names_domains_values(cookie_name, domain))
+               for domain, freq in get_indexing(flask_login.current_user).get_cookie_domains(cookie_name)]
+    return captures, domains
+
+
+def get_favicon_investigator(favicon_sha512: str,
+                             /,
+                             get_probabilistic: bool=False) -> tuple[list[tuple[str, str, str, datetime]],
+                                                                     tuple[str, str, str],
+                                                                     dict[str, dict[str, dict[str, tuple[str, str]]]]]:
+    '''Returns all the captures related to a cookie name entry, used in the web interface.'''
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_favicon(favicon_sha512)])
+    captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
+    favicon = get_indexing(flask_login.current_user).get_favicon(favicon_sha512)
+    if favicon:
+        mimetype = from_string(favicon, mime=True)
+        b64_favicon = base64.b64encode(favicon).decode()
+        mmh3_shodan = lookyloo.compute_mmh3_shodan(favicon)
+    else:
+        mimetype = ''
+        b64_favicon = ''
+        mmh3_shodan = ''
+
+    # For now, there is only one probabilistic hash algo for favicons, keeping it simple
+    probabilistic_hash_algos = ['mmh3-shodan']
+    probabilistic_favicons: dict[str, dict[str, dict[str, tuple[str, str]]]] = {}
+    if get_probabilistic:
+        for algo in probabilistic_hash_algos:
+            probabilistic_favicons[algo] = {}
+            for mm3hash in get_indexing(flask_login.current_user).get_probabilistic_hashes_favicon(algo, favicon_sha512):
+                probabilistic_favicons[algo][mm3hash] = {}
+                for sha512 in get_indexing(flask_login.current_user).get_hashes_favicon_probablistic(algo, mm3hash):
+                    if sha512 == favicon_sha512:
+                        # Skip entry if it is the same as the favicon we are investigating
+                        continue
+                    favicon = get_indexing(flask_login.current_user).get_favicon(sha512)
+                    if favicon:
+                        mimetype = from_string(favicon, mime=True)
+                        b64_favicon = base64.b64encode(favicon).decode()
+                        probabilistic_favicons[algo][mm3hash][sha512] = (mimetype, b64_favicon)
+                if not probabilistic_favicons[algo][mm3hash]:
+                    # remove entry if it has no favicon
+                    probabilistic_favicons[algo].pop(mm3hash)
+            if not probabilistic_favicons[algo]:
+                # remove entry if it has no hash
+                probabilistic_favicons.pop(algo)
+    return captures, (mimetype, b64_favicon, mmh3_shodan), probabilistic_favicons
+
+
+def get_hhh_investigator(hhh: str, /) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str]]]:
+    '''Returns all the captures related to a cookie name entry, used in the web interface.'''
+    all_captures = dict(get_indexing(flask_login.current_user).get_http_headers_hashes_captures(hhh))
+    if cached_captures := lookyloo.sorted_capture_cache([entry for entry in all_captures]):
+        captures = []
+        for cache in cached_captures:
+            try:
+                urlnode = lookyloo.get_urlnode_from_tree(cache.uuid, all_captures[cache.uuid])
+            except Exception:
+                # NOTE: print a logline
+                # logger.warning(f'Cache for {cache.uuid} needs a rebuild: {e}.')
+                lookyloo._captures_index.remove_pickle(cache.uuid)
+                continue
+            captures.append((cache.uuid, urlnode.hostnode_uuid, urlnode.name, cache.title))
+        # get the headers and format them as they were in the response
+        urlnode = lookyloo.get_urlnode_from_tree(cached_captures[0].uuid, all_captures[cached_captures[0].uuid])
+        headers = [(header["name"], header["value"]) for header in urlnode.response['headers']]
+        return captures, headers
+    return [], []
+
+
+def hash_lookup(blob_hash: str, url: str, capture_uuid: str) -> tuple[int, dict[str, list[tuple[str, str, str, str, str]]]]:
+    '''Search all the captures a specific hash was seen.
+    If a URL is given, it splits the results if the hash is seen on the same URL or an other one.
+    Capture UUID avoids duplicates on the same capture'''
+    captures_list: dict[str, list[tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
+    total_captures, details = get_indexing(flask_login.current_user).get_body_hash_captures(blob_hash, url, filter_capture_uuid=capture_uuid, limit=-1,
+                                                                                            prefered_uuids=set(lookyloo._captures_index.keys()))
+    for h_capture_uuid, url_uuid, url_hostname, same_url, url in details:
+        cache = lookyloo.capture_cache(h_capture_uuid)
+        if cache and hasattr(cache, 'title'):
+            if same_url:
+                captures_list['same_url'].append((h_capture_uuid, url_uuid, cache.title, cache.timestamp.isoformat(), url_hostname))
+            else:
+                captures_list['different_url'].append((h_capture_uuid, url_uuid, cache.title, cache.timestamp.isoformat(), url_hostname))
+    # Sort by timestamp by default
+    captures_list['same_url'].sort(key=lambda y: y[3])
+    captures_list['different_url'].sort(key=lambda y: y[3])
+    return total_captures, captures_list
+
+
+def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[HostNode, list[dict[str, Any]]]:
+    '''Gather all the informations needed to display the Hostnode investigator popup.'''
+
+    def normalize_known_content(h: str, /, known_content: dict[str, Any], url: URLNode) -> tuple[str | list[Any] | None, tuple[bool, Any] | None]:
+        ''' There are a few different sources to figure out known vs. legitimate content,
+        this method normalize it for the web interface.'''
+        known: str | list[Any] | None = None
+        legitimate: tuple[bool, Any] | None = None
+        if h not in known_content:
+            return known, legitimate
+
+        if known_content[h]['type'] in ['generic', 'sanejs']:
+            known = known_content[h]['details']
+        elif known_content[h]['type'] == 'legitimate_on_domain':
+            legit = False
+            if url.hostname in known_content[h]['details']:
+                legit = True
+            legitimate = (legit, known_content[h]['details'])
+        elif known_content[h]['type'] == 'malicious':
+            legitimate = (False, known_content[h]['details'])
+
+        return known, legitimate
+
+    ct = lookyloo.get_crawled_tree(capture_uuid)
+    hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
+
+    known_content = lookyloo.context.find_known_content(hostnode)
+    lookyloo.uwhois.query_whois_hostnode(hostnode)
+
+    urls: list[dict[str, Any]] = []
+    for url in hostnode.urls:
+        # For the popup, we need:
+        # * https vs http
+        # * everything after the domain
+        # * the full URL
+        to_append: dict[str, Any] = {
+            'encrypted': url.name.startswith('https'),
+            'url_path': url.name.split('/', 3)[-1],
+            'url_object': url,
+        }
+
+        if not url.empty_response:
+            # Index lookup
+            # %%% Full body %%%
+            freq = get_indexing(flask_login.current_user).body_hash_fequency(url.body_hash)
+            to_append['body_hash_details'] = freq
+            if freq and 'hash_freq' in freq and freq['hash_freq'] and freq['hash_freq'] > 1:
+                to_append['body_hash_details']['other_captures'] = hash_lookup(url.body_hash, url.name, capture_uuid)
+
+            # %%% Embedded ressources %%%
+            if hasattr(url, 'embedded_ressources') and url.embedded_ressources:
+                to_append['embedded_ressources'] = {}
+                for mimetype, blobs in url.embedded_ressources.items():
+                    for h, blob in blobs:
+                        if h in to_append['embedded_ressources']:
+                            # Skip duplicates
+                            continue
+                        freq_embedded = get_indexing(flask_login.current_user).body_hash_fequency(h)
+                        to_append['embedded_ressources'][h] = freq_embedded
+                        to_append['embedded_ressources'][h]['body_size'] = blob.getbuffer().nbytes
+                        to_append['embedded_ressources'][h]['type'] = mimetype
+                        if freq_embedded['hash_freq'] > 1:
+                            to_append['embedded_ressources'][h]['other_captures'] = hash_lookup(h, url.name, capture_uuid)
+                for h in to_append['embedded_ressources'].keys():
+                    known, legitimate = normalize_known_content(h, known_content, url)
+                    if known:
+                        to_append['embedded_ressources'][h]['known_content'] = known
+                    elif legitimate:
+                        to_append['embedded_ressources'][h]['legitimacy'] = legitimate
+
+            known, legitimate = normalize_known_content(url.body_hash, known_content, url)
+            if known:
+                to_append['known_content'] = known
+            elif legitimate:
+                to_append['legitimacy'] = legitimate
+
+        # Optional: Cookies sent to server in request -> map to nodes who set the cookie in response
+        if hasattr(url, 'cookies_sent'):
+            to_display_sent: dict[str, set[Iterable[str | None]]] = defaultdict(set)
+            for cookie, contexts in url.cookies_sent.items():
+                if not contexts:
+                    # Locally created?
+                    to_display_sent[cookie].add(('Unknown origin', ))
+                    continue
+                for context in contexts:
+                    to_display_sent[cookie].add((context['setter'].hostname, context['setter'].hostnode_uuid))
+            to_append['cookies_sent'] = to_display_sent
+
+        # Optional: Cookies received from server in response -> map to nodes who send the cookie in request
+        if hasattr(url, 'cookies_received'):
+            to_display_received: dict[str, dict[str, set[Iterable[str | None]]]] = {'3rd_party': defaultdict(set), 'sent': defaultdict(set), 'not_sent': defaultdict(set)}
+            for domain, c_received, is_3rd_party in url.cookies_received:
+                if c_received not in ct.root_hartree.cookies_sent:
+                    # This cookie is never sent.
+                    if is_3rd_party:
+                        to_display_received['3rd_party'][c_received].add((domain, ))
+                    else:
+                        to_display_received['not_sent'][c_received].add((domain, ))
+                    continue
+
+                for url_node in ct.root_hartree.cookies_sent[c_received]:
+                    if is_3rd_party:
+                        to_display_received['3rd_party'][c_received].add((url_node.hostname, url_node.hostnode_uuid))
+                    else:
+                        to_display_received['sent'][c_received].add((url_node.hostname, url_node.hostnode_uuid))
+            to_append['cookies_received'] = to_display_received
+
+        urls.append(to_append)
+    return hostnode, urls
+
+
 # ##### Hostnode level methods #####
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>/hashes', methods=['GET'])
@@ -283,7 +633,7 @@ def urls_hostnode(tree_uuid: str, node_uuid: str) -> Response:
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>', methods=['GET'])
 def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | Response:
     try:
-        hostnode, urls = lookyloo.get_hostnode_investigator(tree_uuid, node_uuid)
+        hostnode, urls = get_hostnode_investigator(tree_uuid, node_uuid)
     except IndexError:
         return render_template('error.html', error_message='Sorry, this one is on us. The tree was rebuild, please reload the tree and try again.')
 
@@ -850,8 +1200,8 @@ def tree_favicons(tree_uuid: str) -> str:
                 continue
             mimetype = from_string(favicon, mime=True)
             favicon_sha512 = hashlib.sha512(favicon).hexdigest()
-            frequency = lookyloo.indexing.favicon_frequency(favicon_sha512)
-            number_captures = lookyloo.indexing.favicon_number_captures(favicon_sha512)
+            frequency = get_indexing(flask_login.current_user).favicon_frequency(favicon_sha512)
+            number_captures = get_indexing(flask_login.current_user).favicon_number_captures(favicon_sha512)
             b64_favicon = base64.b64encode(favicon).decode()
             mmh3_shodan = lookyloo.compute_mmh3_shodan(favicon)
             favicons.append((favicon_sha512, frequency, number_captures, mimetype, b64_favicon, mmh3_shodan))
@@ -860,7 +1210,7 @@ def tree_favicons(tree_uuid: str) -> str:
 
 @app.route('/tree/<string:tree_uuid>/body_hashes', methods=['GET'])
 def tree_body_hashes(tree_uuid: str) -> str:
-    body_hashes = lookyloo.get_all_body_hashes(tree_uuid)
+    body_hashes = get_all_body_hashes(tree_uuid)
     return render_template('tree_body_hashes.html', tree_uuid=tree_uuid, body_hashes=body_hashes)
 
 
@@ -958,27 +1308,27 @@ def index_hidden() -> str:
 
 @app.route('/cookies', methods=['GET'])
 def cookies_lookup() -> str:
-    cookies_names = [(name, freq, lookyloo.indexing.cookies_names_number_domains(name))
-                     for name, freq in lookyloo.indexing.cookies_names]
+    cookies_names = [(name, freq, get_indexing(flask_login.current_user).cookies_names_number_domains(name))
+                     for name, freq in get_indexing(flask_login.current_user).cookies_names]
     return render_template('cookies.html', cookies_names=cookies_names)
 
 
 @app.route('/hhhashes', methods=['GET'])
 def hhhashes_lookup() -> str:
-    hhhashes = [(hhh, freq, lookyloo.indexing.http_headers_hashes_number_captures(hhh))
-                for hhh, freq in lookyloo.indexing.http_headers_hashes]
+    hhhashes = [(hhh, freq, get_indexing(flask_login.current_user).http_headers_hashes_number_captures(hhh))
+                for hhh, freq in get_indexing(flask_login.current_user).http_headers_hashes]
     return render_template('hhhashes.html', hhhashes=hhhashes)
 
 
 @app.route('/favicons', methods=['GET'])
 def favicons_lookup() -> str:
     favicons = []
-    for sha512, freq in lookyloo.indexing.favicons:
-        favicon = lookyloo.indexing.get_favicon(sha512)
+    for sha512, freq in get_indexing(flask_login.current_user).favicons:
+        favicon = get_indexing(flask_login.current_user).get_favicon(sha512)
         if not favicon:
             continue
         favicon_b64 = base64.b64encode(favicon).decode()
-        nb_captures = lookyloo.indexing.favicon_number_captures(sha512)
+        nb_captures = get_indexing(flask_login.current_user).favicon_number_captures(sha512)
         favicons.append((sha512, freq, nb_captures, favicon_b64))
     return render_template('favicons.html', favicons=favicons)
 
@@ -986,10 +1336,10 @@ def favicons_lookup() -> str:
 @app.route('/ressources', methods=['GET'])
 def ressources() -> str:
     ressources = []
-    for h, freq in lookyloo.indexing.ressources:
-        domain_freq = lookyloo.indexing.ressources_number_domains(h)
+    for h, freq in get_indexing(flask_login.current_user).ressources:
+        domain_freq = get_indexing(flask_login.current_user).ressources_number_domains(h)
         context = lookyloo.context.find_known_content(h)
-        capture_uuid, url_uuid, hostnode_uuid = lookyloo.indexing.get_hash_uuids(h)
+        capture_uuid, url_uuid, hostnode_uuid = get_indexing(flask_login.current_user).get_hash_uuids(h)
         try:
             ressource = lookyloo.get_ressource(capture_uuid, url_uuid, h)
         except MissingUUID:
@@ -1003,7 +1353,7 @@ def ressources() -> str:
 
 @app.route('/categories', methods=['GET'])
 def categories() -> str:
-    return render_template('categories.html', categories=lookyloo.indexing.categories)
+    return render_template('categories.html', categories=get_indexing(flask_login.current_user).categories)
 
 
 @app.route('/rebuild_all')
@@ -1057,7 +1407,7 @@ def recapture(tree_uuid: str) -> str | Response | WerkzeugResponse:
 @app.route('/ressource_by_hash/<string:sha512>', methods=['GET'])
 @file_response  # type: ignore[misc]
 def ressource_by_hash(sha512: str) -> Response:
-    details, body = lookyloo.get_body_hash_full(sha512)
+    details, body = get_body_hash_full(sha512)
     return send_file(body, as_attachment=True, download_name='ressource.bin')
 
 
@@ -1245,13 +1595,13 @@ def capture_web() -> str | Response | WerkzeugResponse:
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
 def cookies_name_detail(cookie_name: str) -> str:
-    captures, domains = lookyloo.get_cookie_name_investigator(cookie_name.strip())
+    captures, domains = get_cookie_name_investigator(cookie_name.strip())
     return render_template('cookie_name.html', cookie_name=cookie_name, domains=domains, captures=captures)
 
 
 @app.route('/hhhdetails/<string:hhh>', methods=['GET'])
 def hhh_detail(hhh: str) -> str:
-    captures, headers = lookyloo.get_hhh_investigator(hhh.strip())
+    captures, headers = get_hhh_investigator(hhh.strip())
     return render_template('hhh_details.html', hhh=hhh, captures=captures, headers=headers)
 
 
@@ -1259,7 +1609,7 @@ def hhh_detail(hhh: str) -> str:
 @app.route('/favicon_details/<string:favicon_sha512>/<int:get_probabilistic>', methods=['GET'])
 def favicon_detail(favicon_sha512: str, get_probabilistic: int=0) -> str:
     _get_prob = bool(get_probabilistic)
-    captures, favicon, probabilistic_favicons = lookyloo.get_favicon_investigator(favicon_sha512.strip(), get_probabilistic=_get_prob)
+    captures, favicon, probabilistic_favicons = get_favicon_investigator(favicon_sha512.strip(), get_probabilistic=_get_prob)
     mimetype, b64_favicon, mmh3_shodan = favicon
     return render_template('favicon_details.html', favicon_sha512=favicon_sha512,
                            captures=captures, mimetype=mimetype, b64_favicon=b64_favicon, mmh3_shodan=mmh3_shodan,
@@ -1269,20 +1619,20 @@ def favicon_detail(favicon_sha512: str, get_probabilistic: int=0) -> str:
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])
 def body_hash_details(body_hash: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    captures, domains = lookyloo.get_body_hash_investigator(body_hash.strip())
+    captures, domains = _get_body_hash_investigator(body_hash.strip())
     return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures, from_popup=from_popup)
 
 
 @app.route('/urls/<string:url>', methods=['GET'])
 def url_details(url: str) -> str:
     url = unquote_plus(url).strip()
-    hits = lookyloo.get_url_occurrences(url, limit=50)
+    hits = get_url_occurrences(url, limit=50)
     return render_template('url.html', url=url, hits=hits)
 
 
 @app.route('/hostnames/<string:hostname>', methods=['GET'])
 def hostname_details(hostname: str) -> str:
-    hits = lookyloo.get_hostname_occurrences(hostname.strip(), with_urls_occurrences=True, limit=50)
+    hits = get_hostname_occurrences(hostname.strip(), with_urls_occurrences=True, limit=50)
     return render_template('hostname.html', hostname=hostname, hits=hits)
 
 

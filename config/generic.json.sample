@@ -79,6 +79,7 @@
       "bucket_name": ""
     }
   },
+  "index_everything": false,
   "_notes": {
     "loglevel": "(lookyloo) Can be one of the value listed here: https://docs.python.org/3/library/logging.html#levels",
     "only_global_lookups": "Set it to True if your instance is publicly available so users aren't able to scan your internal network",
@@ -110,6 +111,7 @@
     "archive": "The captures older than this value (in days) will be archived. They're not cached by default in the Lookyloo class.",
     "max_capture_time": "The very maximal time we allow a capture to keep going. Should only be triggered by captures that cause playwright to never quit.",
     "max_tree_create_time": "The max time the generation of a tree is allowed to take",
-    "s3fs": "The config to access a S3FS instance with the s3fs python module - it is not integrated properly for now as it requires urllib < 2.0 which is a non-started at this stage."
+    "s3fs": "The config to access a S3FS instance with the s3fs python module - it is not integrated properly for now as it requires urllib < 2.0 which is a non-started at this stage.",
+    "index_everything": "If true, index every capture, even if it's not public. This feature requires a dedicated kvrocks instance, and is only accessible when logged-in as admin."
   }
 }

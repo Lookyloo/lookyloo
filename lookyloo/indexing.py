@@ -24,24 +24,49 @@ from .default import get_socket_path, get_config
 
 class Indexing():
 
-    def __init__(self) -> None:
+    def __init__(self, full_index: bool=False) -> None:
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
-        self.redis_pool_bytes: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
-                                                               path=get_socket_path('indexing'))
-        self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
-                                                         path=get_socket_path('indexing'), decode_responses=True)
+        self.__redis_pool_bytes: ConnectionPool
+        self.__redis_pool: ConnectionPool
+        if full_index:
+            self.__redis_pool_bytes = ConnectionPool(connection_class=UnixDomainSocketConnection,
+                                                     path=get_socket_path('full_index'))
+            self.__redis_pool = ConnectionPool(connection_class=UnixDomainSocketConnection,
+                                               path=get_socket_path('full_index'), decode_responses=True)
+        else:
+            self.__redis_pool_bytes = ConnectionPool(connection_class=UnixDomainSocketConnection,
+                                                     path=get_socket_path('indexing'))
+            self.__redis_pool = ConnectionPool(connection_class=UnixDomainSocketConnection,
+                                               path=get_socket_path('indexing'), decode_responses=True)
 
     def clear_indexes(self) -> None:
         self.redis.flushdb()
 
     @property
     def redis_bytes(self) -> Redis:  # type: ignore[type-arg]
-        return Redis(connection_pool=self.redis_pool_bytes)
+        return Redis(connection_pool=self.__redis_pool_bytes)
 
     @property
     def redis(self) -> Redis:  # type: ignore[type-arg]
-        return Redis(connection_pool=self.redis_pool)
+        return Redis(connection_pool=self.__redis_pool)
+
+    @property
+    def can_index(self) -> bool:
+        return bool(self.redis.set('ongoing_indexing', 1, ex=3600, nx=True))
+
+    def indexing_done(self) -> None:
+        self.redis.delete('ongoing_indexing')
+
+    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool]:
+        p = self.redis.pipeline()
+        p.sismember('indexed_urls', capture_uuid)
+        p.sismember('indexed_body_hashes', capture_uuid)
+        p.sismember('indexed_cookies', capture_uuid)
+        p.sismember('indexed_hhhashes', capture_uuid)
+        p.sismember('indexed_favicons', capture_uuid)
+        # This call for sure returns a tuple of 5 booleans
+        return p.execute()  # type: ignore[return-value]
 
     def new_internal_uuids(self, crawled_tree: CrawledTree) -> None:
         # only trigger this method if the capture was already indexed.

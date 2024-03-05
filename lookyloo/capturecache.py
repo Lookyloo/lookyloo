@@ -94,6 +94,10 @@ class CaptureCache():
         self.referer: str | None = cache_entry.get('referer')
 
     @property
+    def tree_ready(self) -> bool:
+        return bool(_pickle_path(self.capture_dir))
+
+    @property
     def tree(self) -> CrawledTree:
         if not self.capture_dir.exists():
             raise MissingCaptureDirectory(f'The capture {self.uuid} does not exists in {self.capture_dir}.')
@@ -102,27 +106,36 @@ class CaptureCache():
         return load_pickle_tree(self.capture_dir, self.capture_dir.stat().st_mtime, self.logger)
 
 
-def remove_pickle_tree(capture_dir: Path) -> None:
-    pickle_file = capture_dir / 'tree.pickle'
+def _pickle_path(capture_dir: Path) -> Path | None:
     pickle_file_gz = capture_dir / 'tree.pickle.gz'
-    if pickle_file.exists():
-        pickle_file.unlink()
     if pickle_file_gz.exists():
-        pickle_file_gz.unlink()
+        return pickle_file_gz
+
+    pickle_file = capture_dir / 'tree.pickle'
+    if pickle_file.exists():
+        return pickle_file
+
+    return None
+
+
+def remove_pickle_tree(capture_dir: Path) -> None:
+    pickle_path = _pickle_path(capture_dir)
+    if pickle_path and pickle_path.exists():
+        pickle_path.unlink()
 
 
 @lru_cache(maxsize=64)
 def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> CrawledTree:
-    pickle_file = capture_dir / 'tree.pickle'
-    pickle_file_gz = capture_dir / 'tree.pickle.gz'
+    pickle_path = _pickle_path(capture_dir)
     tree = None
     try:
-        if pickle_file.exists():
-            with pickle_file.open('rb') as _p:
-                tree = pickle.load(_p)
-        elif pickle_file_gz.exists():
-            with gzip.open(pickle_file_gz, 'rb') as _pg:
-                tree = pickle.load(_pg)
+        if pickle_path:
+            if pickle_path.suffix == '.gz':
+                with gzip.open(pickle_path, 'rb') as _pg:
+                    tree = pickle.load(_pg)
+            else:  # not a GZ pickle
+                with pickle_path.open('rb') as _p:
+                    tree = pickle.load(_p)
     except pickle.UnpicklingError:
         remove_pickle_tree(capture_dir)
     except EOFError:
