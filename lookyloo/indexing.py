@@ -142,8 +142,6 @@ class Indexing():
                 pipeline.zincrby(f'cn|{name}', 1, domain)
                 pipeline.sadd(f'cn|{name}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
                 pipeline.zincrby(f'cn|{name}|{domain}', 1, value)
-
-                pipeline.sadd('lookyloo_domains', domain)
                 pipeline.sadd(domain, name)
         pipeline.execute()
 
