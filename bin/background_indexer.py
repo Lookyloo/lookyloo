@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import logging.config
-import os
 
 from lookyloo import Lookyloo, Indexing
 from lookyloo.default import AbstractManager, get_config
@@ -25,13 +24,11 @@ class BackgroundIndexer(AbstractManager):
             self.script_name = 'background_full_indexer'
         else:
             self.script_name = 'background_indexer'
-        # make sure discarded captures dir exists
-        self.discarded_captures_dir = self.lookyloo.capture_dir.parent / 'discarded_captures'
-        self.discarded_captures_dir.mkdir(parents=True, exist_ok=True)
 
     def _to_run_forever(self) -> None:
         self._check_indexes()
-        self.lookyloo.update_tree_cache_info(os.getpid(), self.script_name)
+        # Don't need the cache in this class.
+        self.lookyloo.clear_tree_cache()
 
     def _check_indexes(self) -> None:
         if not self.indexing.can_index:

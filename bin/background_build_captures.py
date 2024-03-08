@@ -9,10 +9,12 @@ import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from redis import Redis
+
 from lookyloo import Lookyloo
-from lookyloo.default import AbstractManager, get_config
+from lookyloo.default import AbstractManager, get_config, get_socket_path
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
-from lookyloo.helpers import is_locked, get_sorted_captures_from_disk, make_dirs_list
+from lookyloo.helpers import is_locked, get_sorted_captures_from_disk, make_dirs_list, get_captures_dir
 
 
 logging.config.dictConfig(get_config('logging'))
@@ -25,11 +27,17 @@ class BackgroundBuildCaptures(AbstractManager):
         self.lookyloo = Lookyloo()
         self.script_name = 'background_build_captures'
         # make sure discarded captures dir exists
-        self.discarded_captures_dir = self.lookyloo.capture_dir.parent / 'discarded_captures'
+        self.captures_dir = get_captures_dir()
+        self.discarded_captures_dir = self.captures_dir.parent / 'discarded_captures'
         self.discarded_captures_dir.mkdir(parents=True, exist_ok=True)
+
+        # Redis connector so we don't use the one from Lookyloo
+        self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
 
     def _to_run_forever(self) -> None:
         self._build_missing_pickles()
+        # Don't need the cache in this class.
+        self.lookyloo.clear_tree_cache()
 
     def _build_missing_pickles(self) -> bool:
         self.logger.debug('Build missing pickles...')
@@ -41,7 +49,7 @@ class BackgroundBuildCaptures(AbstractManager):
         # Initialize time where we do not want to build the pickles anymore.
         archive_interval = timedelta(days=get_config('generic', 'archive'))
         cut_time = (datetime.now() - archive_interval)
-        for month_dir in make_dirs_list(self.lookyloo.capture_dir):
+        for month_dir in make_dirs_list(self.captures_dir):
             __counter_shutdown = 0
             for capture_time, path in sorted(get_sorted_captures_from_disk(month_dir, cut_time=cut_time, keep_more_recent=True), reverse=True):
                 __counter_shutdown += 1
@@ -65,11 +73,11 @@ class BackgroundBuildCaptures(AbstractManager):
                 with (path / 'uuid').open() as f:
                     uuid = f.read()
 
-                if not self.lookyloo.redis.hexists('lookup_dirs', uuid):
+                if not self.redis.hexists('lookup_dirs', uuid):
                     # The capture with this UUID exists, but it is for some reason missing in lookup_dirs
-                    self.lookyloo.redis.hset('lookup_dirs', uuid, str(path))
+                    self.redis.hset('lookup_dirs', uuid, str(path))
                 else:
-                    cached_path = Path(self.lookyloo.redis.hget('lookup_dirs', uuid))  # type: ignore[arg-type]
+                    cached_path = Path(self.redis.hget('lookup_dirs', uuid))  # type: ignore[arg-type]
                     if cached_path != path:
                         # we have a duplicate UUID, it is proably related to some bad copy/paste
                         if cached_path.exists():
@@ -82,12 +90,15 @@ class BackgroundBuildCaptures(AbstractManager):
                             continue
                         else:
                             # The path in lookup_dirs for that UUID doesn't exists, just update it.
-                            self.lookyloo.redis.hset('lookup_dirs', uuid, str(path))
+                            self.redis.hset('lookup_dirs', uuid, str(path))
 
                 try:
                     self.logger.info(f'Build pickle for {uuid}: {path.name}')
                     self.lookyloo.get_crawled_tree(uuid)
-                    self.lookyloo.trigger_modules(uuid, auto_trigger=True)
+                    try:
+                        self.lookyloo.trigger_modules(uuid, auto_trigger=True)
+                    except Exception as e:
+                        self.logger.exception(f'Unable to trigger modules for {uuid}: {e}')
                     self.logger.info(f'Pickle for {uuid} built.')
                     got_new_captures = True
                     max_captures -= 1
@@ -102,7 +113,7 @@ class BackgroundBuildCaptures(AbstractManager):
                     # The capture is not working, moving it away.
                     try:
                         shutil.move(str(path), str(self.discarded_captures_dir / path.name))
-                        self.lookyloo.redis.hdel('lookup_dirs', uuid)
+                        self.redis.hdel('lookup_dirs', uuid)
                     except FileNotFoundError as e:
                         self.logger.warning(f'Unable to move capture: {e}')
                         continue

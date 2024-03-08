@@ -464,6 +464,9 @@ class Lookyloo():
     def update_tree_cache_info(self, process_id: int, classname: str) -> None:
         self.redis.hset('tree_cache', f'{process_id}|{classname}', str(self._captures_index.lru_cache_status()))
 
+    def clear_tree_cache(self) -> None:
+        self._captures_index.lru_cache_clear()
+
     def sorted_capture_cache(self, capture_uuids: Iterable[str] | None=None, cached_captures_only: bool=True, index_cut_time: datetime | None=None) -> list[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''

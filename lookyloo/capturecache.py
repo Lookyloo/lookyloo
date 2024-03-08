@@ -145,10 +145,14 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> C
         remove_pickle_tree(capture_dir)
 
     if tree:
-        if tree.root_hartree.har.path.exists():
-            return tree
-        else:
-            # The capture was moved.
+        try:
+            if tree.root_hartree.har.path.exists():
+                return tree
+            else:
+                # The capture was moved.
+                remove_pickle_tree(capture_dir)
+        except Exception as e:
+            logger.warning(f'The pickle is broken, removing: {e}')
             remove_pickle_tree(capture_dir)
 
     if list(capture_dir.rglob('*.har')) or list(capture_dir.rglob('*.har.gz')):
@@ -238,6 +242,9 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
 
     def lru_cache_status(self) -> CacheInfo:
         return load_pickle_tree.cache_info()
+
+    def lru_cache_clear(self) -> None:
+        load_pickle_tree.cache_clear()
 
     def _quick_init(self) -> None:
         '''Initialize the cache with a list of UUIDs, with less back and forth with redis.
