@@ -88,6 +88,8 @@ def main() -> None:
 def main_full_indexer() -> None:
     if not get_config('generic', 'index_everything'):
         raise Exception('Full indexer is disabled.')
+    # NOTE: for now, it only indexes the captures that aren't archived.
+    #       we will change that later, but for now, it's a good start.
     i = BackgroundIndexer(full=True)
     i.run(sleep_in_sec=60)
 
