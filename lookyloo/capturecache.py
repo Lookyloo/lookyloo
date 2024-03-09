@@ -95,7 +95,7 @@ class CaptureCache():
 
     @property
     def tree_ready(self) -> bool:
-        return bool(_pickle_path(self.capture_dir))
+        return bool(get_pickle_path(self.capture_dir))
 
     @property
     def tree(self) -> CrawledTree:
@@ -106,7 +106,9 @@ class CaptureCache():
         return load_pickle_tree(self.capture_dir, self.capture_dir.stat().st_mtime, self.logger)
 
 
-def _pickle_path(capture_dir: Path) -> Path | None:
+def get_pickle_path(capture_dir: Path | str) -> Path | None:
+    if isinstance(capture_dir, str):
+        capture_dir = Path(capture_dir)
     pickle_file_gz = capture_dir / 'tree.pickle.gz'
     if pickle_file_gz.exists():
         return pickle_file_gz
@@ -119,14 +121,14 @@ def _pickle_path(capture_dir: Path) -> Path | None:
 
 
 def remove_pickle_tree(capture_dir: Path) -> None:
-    pickle_path = _pickle_path(capture_dir)
+    pickle_path = get_pickle_path(capture_dir)
     if pickle_path and pickle_path.exists():
         pickle_path.unlink()
 
 
 @lru_cache(maxsize=64)
 def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> CrawledTree:
-    pickle_path = _pickle_path(capture_dir)
+    pickle_path = get_pickle_path(capture_dir)
     tree = None
     try:
         if pickle_path:
