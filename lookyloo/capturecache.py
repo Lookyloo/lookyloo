@@ -396,8 +396,9 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             logger.debug('Unable to rebuild the tree, the HAR files are broken.')
         except TreeNeedsRebuild:
             try:
+                logger.debug('The tree needs to be rebuilt.')
                 tree = self._create_pickle(capture_dir, logger)
-                self.indexing.new_internal_uuids(tree)
+                self.indexing.force_reindex(uuid)
             except NoValidHarFile:
                 logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are broken.')
                 tree = None

@@ -66,7 +66,7 @@ def shutdown_full_index(storage_directory: Path | None=None) -> None:
     if not storage_directory:
         storage_directory = get_homedir()
     r = Redis(unix_socket_path=get_socket_path('full_index'))
-    r.shutdown(save=True)
+    r.shutdown()
     print('Kvrocks full indexing database shutdown.')
 
 
