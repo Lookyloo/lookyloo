@@ -22,7 +22,7 @@
 {% if hits %}
   <ul>
   {% for event_id, values in hits.items() %}
-  <li><a href="{{root_url}}events/{{event_id}}">Event {{event_id}}</a>:
+  <li><a href="{{root_url}}/events/{{event_id}}">Event {{event_id}}</a>:
     <ul>
     {% for v in values|sort %}
       <li>{{ v }}</li>
