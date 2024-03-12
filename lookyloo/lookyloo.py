@@ -77,7 +77,12 @@ class CaptureSettings(CaptureSettingsCore, total=False):
 
 class Lookyloo():
 
-    def __init__(self) -> None:
+    def __init__(self, cache_max_size: int | None=None) -> None:
+        '''Initialize lookyloo.
+        :param cache_max_size: The maximum size of the cache. Alows to display captures metadata without getting it from redis
+                               This cache is *not* useful for background indexing or pickle building, only for the front end.
+                               So it should always be None *unless* we're running the background processes.
+        '''
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.user_agents = UserAgents()
@@ -149,7 +154,7 @@ class Lookyloo():
         self.context = Context()
         self.logger.info('Context initialized.')
         self.logger.info('Initializing index...')
-        self._captures_index = CapturesIndex(self.redis, self.context)
+        self._captures_index = CapturesIndex(self.redis, self.context, maxsize=cache_max_size)
         self.logger.info('Index initialized.')
 
         # init lacus

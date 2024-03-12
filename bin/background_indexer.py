@@ -21,7 +21,7 @@ class BackgroundIndexer(AbstractManager):
 
     def __init__(self, full: bool=False, loglevel: int | None=None):
         super().__init__(loglevel)
-        self.lookyloo = Lookyloo()
+        self.lookyloo = Lookyloo(cache_max_size=1)
         self.is_public_instance = get_config('generic', 'public_instance')
         self.full_indexer = full
         self.indexing = Indexing(full_index=self.full_indexer)

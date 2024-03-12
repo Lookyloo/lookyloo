@@ -13,6 +13,7 @@ import signal
 import sys
 import time
 
+from collections import OrderedDict
 from collections.abc import Mapping
 from datetime import datetime
 from functools import lru_cache, _CacheInfo as CacheInfo
@@ -172,13 +173,14 @@ def serialize_sets(obj: Any) -> Any:
 
 class CapturesIndex(Mapping):  # type: ignore[type-arg]
 
-    def __init__(self, redis: Redis, contextualizer: Context | None=None) -> None:  # type: ignore[type-arg]
+    def __init__(self, redis: Redis, contextualizer: Context | None=None, maxsize: int | None=None) -> None:  # type: ignore[type-arg]
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.redis = redis
         self.indexing = Indexing()
         self.contextualizer = contextualizer
-        self.__cache: dict[str, CaptureCache] = {}
+        self.__cache_max_size = maxsize
+        self.__cache: dict[str, CaptureCache] = OrderedDict()
         self._quick_init()
         self.timeout = get_config('generic', 'max_tree_create_time')
         try:
@@ -203,6 +205,8 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         return set(self.__cache.keys())
 
     def __getitem__(self, uuid: str) -> CaptureCache:
+        if self.__cache_max_size is not None and len(self.__cache) > self.__cache_max_size:
+            self.__cache.popitem()
         if uuid in self.__cache:
             if self.__cache[uuid].capture_dir.exists():
                 return self.__cache[uuid]
@@ -251,6 +255,9 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
     def _quick_init(self) -> None:
         '''Initialize the cache with a list of UUIDs, with less back and forth with redis.
         Only get recent captures.'''
+        if self.__cache_max_size is not None:
+            self.logger.info('Cache max size set, skip quick init.')
+            return None
         p = self.redis.pipeline()
         has_new_cached_captures = False
         for uuid, directory in self.redis.hscan_iter('lookup_dirs'):

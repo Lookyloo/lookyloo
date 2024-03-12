@@ -24,7 +24,7 @@ class BackgroundBuildCaptures(AbstractManager):
 
     def __init__(self, loglevel: int | None=None):
         super().__init__(loglevel)
-        self.lookyloo = Lookyloo()
+        self.lookyloo = Lookyloo(cache_max_size=1)
         self.script_name = 'background_build_captures'
         # make sure discarded captures dir exists
         self.captures_dir = get_captures_dir()
