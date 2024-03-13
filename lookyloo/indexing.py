@@ -65,16 +65,18 @@ class Indexing():
         p.srem('indexed_cookies', capture_uuid)
         p.srem('indexed_hhhashes', capture_uuid)
         p.srem('indexed_favicons', capture_uuid)
+        p.srem('indexed_identifiers', capture_uuid)
         p.execute()
 
-    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool]:
+    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool]:
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
         p.sismember('indexed_cookies', capture_uuid)
         p.sismember('indexed_hhhashes', capture_uuid)
         p.sismember('indexed_favicons', capture_uuid)
-        # This call for sure returns a tuple of 5 booleans
+        p.sismember('indexed_identifiers', capture_uuid)
+        # This call for sure returns a tuple of 6 booleans
         return p.execute()  # type: ignore[return-value]
 
     # ###### Cookies ######
@@ -364,6 +366,57 @@ class Indexing():
 
     def get_favicon(self, favicon_sha512: str) -> bytes | None:
         return self.redis_bytes.get(f'favicons|{favicon_sha512}')
+
+    # ###### identifiers ######
+
+    def identifiers_types(self) -> set[str]:
+        return self.redis.smembers('identifiers_types')
+
+    def identifiers(self, identifier_type: str) -> list[tuple[str, float]]:
+        return self.redis.zrevrange(f'identifiers|{identifier_type}', 0, 200, withscores=True)
+
+    def identifier_frequency(self, identifier_type: str, identifier: str) -> float | None:
+        return self.redis.zscore(f'identifiers|{identifier_type}', identifier)
+
+    def identifier_number_captures(self, identifier_type: str, identifier: str) -> int:
+        return self.redis.scard(f'identifiers|{identifier_type}|{identifier}|captures')
+
+    def index_identifiers_capture(self, crawled_tree: CrawledTree) -> None:
+        capture_uuid = crawled_tree.uuid
+        if self.redis.sismember('indexed_identifiers', capture_uuid):
+            # Do not reindex
+            return
+        self.redis.sadd('indexed_identifiers', capture_uuid)
+        if (not hasattr(crawled_tree.root_hartree.rendered_node, 'identifiers')
+                or not crawled_tree.root_hartree.rendered_node.identifiers):
+            return
+        pipeline = self.redis.pipeline()
+        # We have multiple identifiers types, this is the difference with the other indexes
+        for identifier_type, id_values in crawled_tree.root_hartree.rendered_node.identifiers.items():
+            pipeline.sadd('identifiers_types', identifier_type)  # no-op if already there
+            if self.redis.sismember(f'indexed_identifiers|{identifier_type}|captures', capture_uuid):
+                # Do not reindex the same identifier type for the same capture
+                continue
+            pipeline.sadd(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
+            self.logger.debug(f'Indexing identifiers {identifier_type} for {capture_uuid} ... ')
+            for identifier in id_values:
+                if self.redis.sismember(f'identifiers|{identifier_type}|{identifier}|captures', capture_uuid):
+                    # Already counted this specific identifier for this capture
+                    continue
+                pipeline.sadd(f'identifiers|{capture_uuid}', identifier_type)
+                pipeline.sadd(f'identifiers|{capture_uuid}|{identifier_type}', identifier)
+                pipeline.sadd(f'identifiers|{identifier_type}|{identifier}|captures', capture_uuid)
+                pipeline.zincrby(f'identifiers|{identifier_type}', 1, identifier)
+        pipeline.execute()
+
+    def get_identifiers_capture(self, capture_uuid: str) -> dict[str, set[str]]:
+        to_return = {}
+        for identifier_type in self.redis.smembers(f'identifiers|{capture_uuid}'):
+            to_return[identifier_type] = self.redis.smembers(f'identifiers|{capture_uuid}|{identifier_type}')
+        return to_return
+
+    def get_captures_identifier(self, identifier_type: str, identifier: str) -> set[str]:
+        return self.redis.smembers(f'identifiers|{identifier_type}|{identifier}|captures')
 
     # ###### favicons probabilistic hashes ######
 

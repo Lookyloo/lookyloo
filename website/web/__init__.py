@@ -416,6 +416,11 @@ def get_cookie_name_investigator(cookie_name: str, /) -> tuple[list[tuple[str, s
     return captures, domains
 
 
+def get_identifier_investigator(identifier_type: str, identifier: str) -> list[tuple[str, str, str, datetime]]:
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_identifier(identifier_type=identifier_type, identifier=identifier)])
+    return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
+
+
 def get_favicon_investigator(favicon_sha512: str,
                              /,
                              get_probabilistic: bool=False) -> tuple[list[tuple[str, str, str, datetime]],
@@ -1187,6 +1192,17 @@ def mark_as_legitimate(tree_uuid: str) -> Response:
     return jsonify({'message': 'Legitimate entry added.'})
 
 
+@app.route('/tree/<string:tree_uuid>/identifiers', methods=['GET'])
+def tree_identifiers(tree_uuid: str) -> str:
+    to_return: list[tuple[int, str, str]] = []
+
+    for id_type, identifiers in get_indexing(flask_login.current_user).get_identifiers_capture(tree_uuid).items():
+        for identifier in identifiers:
+            nb_captures = get_indexing(flask_login.current_user).identifier_number_captures(id_type, identifier)
+            to_return.append((nb_captures, id_type, identifier))
+    return render_template('tree_identifiers.html', tree_uuid=tree_uuid, identifiers=to_return)
+
+
 @app.route('/tree/<string:tree_uuid>/favicons', methods=['GET'])
 def tree_favicons(tree_uuid: str) -> str:
     favicons = []
@@ -1603,6 +1619,14 @@ def cookies_name_detail(cookie_name: str) -> str:
 def hhh_detail(hhh: str) -> str:
     captures, headers = get_hhh_investigator(hhh.strip())
     return render_template('hhh_details.html', hhh=hhh, captures=captures, headers=headers)
+
+
+@app.route('/identifier_details/<string:identifier_type>/<string:identifier>', methods=['GET'])
+def identifier_details(identifier_type: str, identifier: str) -> str:
+    captures = get_identifier_investigator(identifier_type, identifier)
+    return render_template('identifier_details.html', identifier_type=identifier_type,
+                           identifier=identifier,
+                           captures=captures)
 
 
 @app.route('/favicon_details/<string:favicon_sha512>', methods=['GET'])

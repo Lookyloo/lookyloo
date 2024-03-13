@@ -84,6 +84,20 @@
   });
   </script>
   <script>
+  $('#identifiersModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
+  $('#identifierDetailsModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
   $('#faviconsModal').on('show.bs.modal', function(e) {
       var button = $(e.relatedTarget);
       var modal = $(this);
@@ -320,6 +334,10 @@
               <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Favicons Capture</a>
             </li>
+            <li class="list-group-item">
+              <a href="#identifiersModal" data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button">Identifiers Capture</a>
+            </li>
           </ul>
         </div>
         {% if current_user.is_authenticated %}
@@ -536,6 +554,43 @@
               ... loading statistics ...
           </div>
           <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="identifiersModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="identifiersModalLabel">Identifiers found on the rendered page</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading identifiers ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="identifierDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="identifierDetailsModalLabel">Other occurrences of the identifier</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading identifier details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#identifiersModal"
+                 data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button">Back to capture's identifiers</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
