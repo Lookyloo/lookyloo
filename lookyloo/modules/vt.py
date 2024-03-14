@@ -33,7 +33,7 @@ class VirusTotal(AbstractModule):
             self.logger.info('Not enabled')
             return False
 
-        self.client = vt.Client(self.config['apikey'], trustenv=self.config.get('trustenv', False))
+        self.client = vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False))
 
         self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
         self.autosubmit = bool(self.config.get('autosubmit', False))
