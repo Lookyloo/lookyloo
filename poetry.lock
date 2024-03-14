@@ -1063,13 +1063,13 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.23.2"
+version = "1.23.3"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = ">=3.8,<3.13"
 files = [
-    {file = "har2tree-1.23.2-py3-none-any.whl", hash = "sha256:7d1fca109438b731e3f399b50c9fa8c555b3cf02c58bee8cb3577a28fe5b6757"},
-    {file = "har2tree-1.23.2.tar.gz", hash = "sha256:1e85431ad4bff23afc65f461ce909bf27ca7dba0f2c61ea6c3be8e483b80b607"},
+    {file = "har2tree-1.23.3-py3-none-any.whl", hash = "sha256:603c66f0bef1cdb6e6d9d0cdd5bfc74edb910bad840dbec7461c9bf255f4e5d9"},
+    {file = "har2tree-1.23.3.tar.gz", hash = "sha256:cb4cd3b5be25ee7b729162e642c1c5a40e084db57e3033008807f23e5d81f1c6"},
 ]
 
 [package.dependencies]
@@ -1463,21 +1463,21 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.8.8"
+version = "1.8.9"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lacuscore-1.8.8-py3-none-any.whl", hash = "sha256:04812225e101ec59b3d1dcc6d3474e3cd2f3fd656a72d619e7d7d238d00b5a27"},
-    {file = "lacuscore-1.8.8.tar.gz", hash = "sha256:41949ff67d056f8ba717b649d8b45307ff7d38d4c38291cb1a8b80ca2ce94f6f"},
+    {file = "lacuscore-1.8.9-py3-none-any.whl", hash = "sha256:8088a3ad164d8b6707889a8ee5ff8fded82a3ec193720f434a72cb98d998aba8"},
+    {file = "lacuscore-1.8.9.tar.gz", hash = "sha256:26c9a392caf57091bf0a9c866f8b617d3f65190592b9c8fe912206922cd8e530"},
 ]
 
 [package.dependencies]
 async-timeout = {version = ">=4.0.3,<5.0.0", markers = "python_version < \"3.11\""}
 defang = ">=0.5.3,<0.6.0"
 dnspython = ">=2.6.1,<3.0.0"
-playwrightcapture = {version = ">=1.23.9,<2.0.0", extras = ["recaptcha"]}
-redis = {version = ">=5.0.2,<6.0.0", extras = ["hiredis"]}
+playwrightcapture = {version = ">=1.23.10,<2.0.0", extras = ["recaptcha"]}
+redis = {version = ">=5.0.3,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.31.0,<3.0.0"
 ua-parser = ">=0.18.0,<0.19.0"
 
@@ -3735,4 +3735,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "5aaccf29e6d31645cce74d4adbf4a4cbb54e6473b7f628a2258149d5164462bb"
+content-hash = "689842ed51ad5e2aacd576f96bc1f482c8c93db15374d800553f51cc4af19d49"
