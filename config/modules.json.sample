@@ -1,6 +1,7 @@
 {
   "VirusTotal": {
     "apikey": null,
+    "trustenv": false,
     "autosubmit": false,
     "allow_auto_trigger": false
   },
