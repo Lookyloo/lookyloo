@@ -1,10 +1,17 @@
+{% from "macros.html" import popup_icons_response %}
+
 <script type="text/javascript">
-  new DataTable('#bodyHashesTable', {
+  var table = new DataTable('#bodyHashesTable', {
     order: [[ 0, "desc" ]],
     columnDefs: [{ width: '10%', targets: 0 },
                  { width: '10%', targets: 1 },
                  { width: '60%', targets: 2 },
                  { width: '20%', targets: 3 }],
+    initComplete: function (settings, json) {
+      $('[data-bs-toggle="tooltip"]').tooltip({html: true});
+    }
+  }).on('draw', function() {
+    $('[data-bs-toggle="tooltip"]').tooltip({html: true});
   });
 </script>
 
@@ -23,20 +30,12 @@
   <tr>
     <td>{{ info['total_captures'] }}</td>
     <td>
-        <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=info['node'].uuid) }}">
-          <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
-             width="21" height="21"
-          {% if info['node'].generic_type == "image" %}
-             data-bs-toggle="tooltip" data-bs-placement="left" data-bs-html="true" data-container="#bodyHashesTable"
-             title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=info['node'].uuid) }}"/> </br>Click to download.'
-          {% else %}
-             data-bs-toggle="tooltip" data-bs-placement="left" data-bs-html="true" data-container="#bodyHashesTable"
-             title="{{icon_info['tooltip']}} <br/>Click to download."
-          {% endif %}
-          />
-        </a>
+        {{popup_icons_response(info['node'], tree_uuid)}}
     </td>
-    <td><p class="text-break">{{ info['node'].name }}</p></td>
+    <td>
+      <p class="text-break">{{ info['node'].name }}</p>
+      <a href="#/" onclick="openTreeInNewTab('{{ tree_uuid }}', '{{ info['node'].uuid }}')">Show on tree</a>
+    </td>
     <td>
       <span class="d-inline-block text-truncate" style="max-width: 200px;">
          <a href="#bodyHashDetailsModal" data-remote="{{ url_for('body_hash_details', body_hash=body_hash) }}"
