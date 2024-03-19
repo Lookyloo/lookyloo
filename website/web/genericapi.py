@@ -385,6 +385,7 @@ submit_fields_post = api.model('SubmitFieldsPost', {
     'document': fields.String(description="A base64 encoded document, it can be anything a browser can display.", example=''),
     'document_name': fields.String(description="The name of the document.", example=''),
     'listing': fields.Integer(description="Display the capture on the index", min=0, max=1, example=1),
+    'allow_tracking': fields.Integer(description="Attempt to let the website violate your privacy", min=0, max=1, example=0),
     'user_agent': fields.String(description="User agent to use for the capture", example=''),
     'browser_name': fields.String(description="Use this browser. Must be chromium, firefox or webkit.", example=''),
     'device_name': fields.String(description="Use the pre-configured settings for this device. Get a list from /json/devices.", example=''),
@@ -401,6 +402,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
 
     @api.param('url', 'The URL to capture', required=True)  # type: ignore[misc]
     @api.param('listing', 'Display the capture on the index', default=1)  # type: ignore[misc]
+    @api.param('allow_tracking', 'Attempt to let the website violate your privacy', default=1)  # type: ignore[misc]
     @api.param('user_agent', 'User agent to use for the capture')  # type: ignore[misc]
     @api.param('browser_name', 'Use this browser. Must be chromium, firefox or webkit.')  # type: ignore[misc]
     @api.param('device_name', 'Use the pre-configured settings for this device')  # type: ignore[misc]
@@ -418,7 +420,9 @@ class SubmitCapture(Resource):  # type: ignore[misc]
 
         to_query: CaptureSettings = {
             'url': request.args['url'],
-            'listing': False if 'listing' in request.args and request.args['listing'] in [0, '0'] else True}
+            'listing': False if 'listing' in request.args and request.args['listing'] in [0, '0'] else True,
+            'allow_tracking': False if 'allow_tracking' in request.args and request.args['allow_tracking'] in [0, '0'] else True
+        }
         if request.args.get('user_agent'):
             to_query['user_agent'] = request.args['user_agent']
         if request.args.get('browser_name'):

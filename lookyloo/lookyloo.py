@@ -667,6 +667,7 @@ class Lookyloo():
                 color_scheme=query.get('color_scheme', None),
                 rendered_hostname_only=query.get('rendered_hostname_only', True),
                 with_favicon=query.get('with_favicon', True),
+                allow_tracking=query.get('allow_tracking', True),
                 # force=query.get('force', False),
                 # recapture_interval=query.get('recapture_interval', 300),
                 priority=priority

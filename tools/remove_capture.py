@@ -4,7 +4,7 @@ import argparse
 import shutil
 
 from lookyloo import Lookyloo
-from lookyloo.helpers import get_homedir
+from lookyloo.default import get_homedir
 
 removed_captures_dir = get_homedir() / 'removed_captures'
 

@@ -1530,6 +1530,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
             capture_query['browser'] = request.form['browser']
 
         capture_query['listing'] = True if request.form.get('listing') else False
+        capture_query['allow_tracking'] = True if request.form.get('allow_tracking') else False
 
         if request.form.get('referer'):
             capture_query['referer'] = request.form['referer']
