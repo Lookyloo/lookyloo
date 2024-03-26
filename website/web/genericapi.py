@@ -281,6 +281,7 @@ class TriggerModules(Resource):  # type: ignore[misc]
         force = True if parameters.get('force') else False
         return lookyloo.trigger_modules(capture_uuid, force=force)
 
+
 @api.route('/json/<string:tree_uuid>/modules')
 @api.doc(description='Get responses from the 3rd party modules',
          params={'tree_uuid': 'The UUID of the capture'})
