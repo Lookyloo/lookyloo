@@ -282,6 +282,14 @@ class TriggerModules(Resource):  # type: ignore[misc]
         return lookyloo.trigger_modules(capture_uuid, force=force)
 
 
+@api.route('/json/<string:tree_uuid>/modules')
+@api.doc(description='Get responses from the 3rd party modules',
+         params={'tree_uuid': 'The UUID of the capture'})
+class ModulesResponse(Resource):  # type: ignore[misc]
+    def get(self, tree_uuid: str) -> dict[str, Any]:
+        return lookyloo.get_modules_responses(tree_uuid)
+
+
 @api.route('/json/hash_info/<h>')
 @api.doc(description='Search for a ressource with a specific hash (sha512)',
          params={'h': 'The hash (sha512)'})

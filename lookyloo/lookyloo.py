@@ -371,15 +371,16 @@ class Lookyloo():
             to_return['URLhaus'] = self.urlhaus.capture_default_trigger(cache, auto_trigger=auto_trigger)
         return to_return
 
-    def get_modules_responses(self, capture_uuid: str, /) -> dict[str, Any] | None:
+    def get_modules_responses(self, capture_uuid: str, /) -> dict[str, Any]:
         '''Get the responses of the modules from the cached responses on the disk'''
         cache = self.capture_cache(capture_uuid)
+        # TODO: return a message when we cannot get the modules responses, update the code checking if it is falsy accordingly.
         if not cache:
             self.logger.warning(f'Unable to get the modules responses unless the capture {capture_uuid} is cached')
-            return None
+            return {}
         if not hasattr(cache, 'url'):
             self.logger.warning(f'The capture {capture_uuid} does not have a URL in the cache, it is broken.')
-            return None
+            return {}
 
         to_return: dict[str, Any] = {}
         if self.vt.available:
