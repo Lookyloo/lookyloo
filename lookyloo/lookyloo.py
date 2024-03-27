@@ -761,7 +761,7 @@ class Lookyloo():
         result.append(self.takedown_details(rendered_hostnode))
         return result
 
-    def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None) -> True | dict[str, Any]:
+    def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None) -> bool | dict[str, Any]:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
             return {"error": "Unable to send mail: mail notification disabled"}
