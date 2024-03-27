@@ -761,10 +761,10 @@ class Lookyloo():
         result.append(self.takedown_details(rendered_hostnode))
         return result
 
-    def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None) -> None:
+    def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None) -> bool | dict[str, Any]:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
-            return
+            return {"error": "Unable to send mail: mail notification disabled"}
 
         email_config = get_config('generic', 'email')
         smtp_auth = get_config('generic', 'email_smtp_auth')
@@ -828,6 +828,8 @@ class Lookyloo():
         except Exception as e:
             self.logger.exception(e)
             self.logger.warning(msg.as_string())
+            return {"error": "Unable to send mail"}
+        return True
 
     def _get_raw(self, capture_uuid: str, /, extension: str='*', all_files: bool=True) -> BytesIO:
         '''Get file(s) from the capture directory'''

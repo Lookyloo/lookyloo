@@ -381,7 +381,16 @@ class CaptureCookies(Resource):  # type: ignore[misc]
         return json.loads(lookyloo.get_cookies(capture_uuid).read())
 
 
-# Just text
+@api.route('/json/<string:capture_uuid>/report')
+@api.doc(description='Reports the url by sending an email to the investigation team',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureReport(Resource):  # type: ignore[misc]
+    @api.param('email', 'Email of the reporter, used by the analyst to get in touch.')  # type: ignore[misc]
+    @api.param('comment', 'Description of the URL, will be given to the analyst.')  # type: ignore[misc]
+    def post(self, capture_uuid: str) -> bool | dict[str, Any]:
+        parameters: dict[str, Any] = request.get_json(force=True)
+        return lookyloo.send_mail(capture_uuid, parameters.get('email', ''), parameters.get('comment'))
+
 
 auto_report_model = api.model('AutoReportModel', {
     'email': fields.String(description="Email of the reporter, used by the analyst to get in touch.", example=''),
