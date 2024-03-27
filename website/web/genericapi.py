@@ -386,13 +386,9 @@ class CaptureCookies(Resource):  # type: ignore[misc]
 class CaptureReport(Resource):  # type: ignore[misc]
     @api.param('email', 'Email of the reporter, used by the analyst to get in touch.')  # type: ignore[misc]
     @api.param('comment', 'Description of the URL, will be given to the analyst.')  # type: ignore[misc]
-    def post(self, capture_uuid) -> str:
+    def post(self, capture_uuid) -> True | dict[str, Any]:
         parameters: dict[str, Any] = request.get_json(force=True)
-        answer = lookyloo.send_mail(capture_uuid, parameters.get('email'), parameters.get('comment'))
-        if answer is None:
-            return "Successfully sent an email to the investigation"
-        else:
-            return "Error: " + str(answer)
+        return lookyloo.send_mail(capture_uuid, parameters.get('email'), parameters.get('comment'))
 # Just text
 
 auto_report_model = api.model('AutoReportModel', {
