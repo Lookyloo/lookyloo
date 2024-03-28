@@ -151,7 +151,7 @@ class MISP(AbstractModule):
 
     def module_init(self) -> bool:
         if not self.config.get('apikey'):
-            self.logger.info('No API key: {self.config}.')
+            self.logger.info(f'No API key: {self.config}.')
             return False
 
         try:
