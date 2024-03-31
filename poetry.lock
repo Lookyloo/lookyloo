@@ -1063,13 +1063,13 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.23.3"
+version = "1.24.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
-python-versions = ">=3.8,<3.13"
+python-versions = "<3.13,>=3.8"
 files = [
-    {file = "har2tree-1.23.3-py3-none-any.whl", hash = "sha256:603c66f0bef1cdb6e6d9d0cdd5bfc74edb910bad840dbec7461c9bf255f4e5d9"},
-    {file = "har2tree-1.23.3.tar.gz", hash = "sha256:cb4cd3b5be25ee7b729162e642c1c5a40e084db57e3033008807f23e5d81f1c6"},
+    {file = "har2tree-1.24.0-py3-none-any.whl", hash = "sha256:2410657549f5653ec4ce9e39a23e0536238025e02c9a3be93139e2839b92942a"},
+    {file = "har2tree-1.24.0.tar.gz", hash = "sha256:87bdfc4bbccabbdc106a29f5cfb50c3a6db40de07b4af3ee327161366396c4c5"},
 ]
 
 [package.dependencies]
@@ -2375,13 +2375,13 @@ files = [
 
 [[package]]
 name = "pycparser"
-version = "2.21"
+version = "2.22"
 description = "C parser in Python"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+python-versions = ">=3.8"
 files = [
-    {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
-    {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
+    {file = "pycparser-2.22-py3-none-any.whl", hash = "sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc"},
+    {file = "pycparser-2.22.tar.gz", hash = "sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6"},
 ]
 
 [[package]]
@@ -2533,13 +2533,13 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.23.1"
+version = "1.24.0"
 description = "Python CLI and module for Lookyloo"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "pylookyloo-1.23.1-py3-none-any.whl", hash = "sha256:4dee9d701cb0d1ba20ac17fc5d0eba62cc2e533de4525b2dbe7c7c5179023860"},
-    {file = "pylookyloo-1.23.1.tar.gz", hash = "sha256:74a8e9c2ce544a00787cd623caaf4c03e1e161c1b17e2635efe993f07c460456"},
+    {file = "pylookyloo-1.24.0-py3-none-any.whl", hash = "sha256:0eaee9d94ada1f0e43efe3e555c72ed72552cd196fbabb692ead0fce43af05ad"},
+    {file = "pylookyloo-1.24.0.tar.gz", hash = "sha256:ccc177fe3ffe6d37f5594759da8a8c1f0b3ebce725f25e4f367a2150455ced34"},
 ]
 
 [package.dependencies]
@@ -3131,13 +3131,13 @@ files = [
 
 [[package]]
 name = "speechrecognition"
-version = "3.10.2"
+version = "3.10.3"
 description = "Library for performing speech recognition, with support for several engines and APIs, online and offline."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "SpeechRecognition-3.10.2-py2.py3-none-any.whl", hash = "sha256:e3b3619918685507c41c44304344494b6d90a9bb464e41ac908e2ef40b73c691"},
-    {file = "SpeechRecognition-3.10.2.tar.gz", hash = "sha256:f2b7283dc2ea077f3f627d5fa267499907b4a01c3dde54ab793471c56ddf1d1f"},
+    {file = "SpeechRecognition-3.10.3-py2.py3-none-any.whl", hash = "sha256:038e81cdd42cb27ffc4dcf63d853418e5844fe060cc0d41123667a5b4420916a"},
+    {file = "SpeechRecognition-3.10.3.tar.gz", hash = "sha256:91b01ce7a0435d0d039435d714eede10712b0628b3695623cbb9fbe4d2e2b82d"},
 ]
 
 [package.dependencies]
@@ -3146,6 +3146,7 @@ typing-extensions = "*"
 
 [package.extras]
 whisper-api = ["openai"]
+whisper-local = ["openai-whisper", "soundfile"]
 
 [[package]]
 name = "stack-data"
@@ -3732,4 +3733,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "b6325ac44d2fa6d86133ce3e9d9deae72e93696968a38b7661617b8a575b555c"
+content-hash = "0b37177630e34b3c84a6cc5ebf2bd7a0c285ed5db394a8d6de4f0dbd49ba7437"
