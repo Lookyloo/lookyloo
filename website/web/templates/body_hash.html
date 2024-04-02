@@ -39,13 +39,20 @@
 
 <script type="text/javascript">
   new DataTable('#freqHostTable', {
+    order: [[ 0, "desc" ]],
     columnDefs: [{ width: '20%', targets: 0 },
                  { width: '80%', targets: 1 }],
   });
 </script>
 <script type="text/javascript">
   new DataTable('#bodyHashDetailsTable', {
-    columnDefs: [{ width: '20%', targets: 0 },
+    order: [[ 0, "desc" ]],
+    columnDefs: [{ width: '20%', targets: 0,
+                   render: (data) => {
+                    const date = new Date(data);
+                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
+                   }
+                 },
                  { width: '40%', targets: 1 },
                  { width: '40%', targets: 2 }],
   });
