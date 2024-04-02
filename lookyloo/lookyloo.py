@@ -8,6 +8,7 @@ import gzip
 import json
 import logging
 import operator
+import shutil
 import smtplib
 import ssl
 import time
@@ -466,6 +467,14 @@ class Lookyloo():
         self.redis.hset(str(capture_dir), 'no_index', 1)
         (capture_dir / 'no_index').touch()
         self._captures_index.reload_cache(capture_uuid)
+
+    def remove_capture(self, capture_uuid: str, /) -> None:
+        """Remove the capture, it won't be accessible anymore."""
+
+        removed_captures_dir = get_homedir() / 'removed_captures'
+        removed_captures_dir.mkdir(parents=True, exist_ok=True)
+        capture_dir = self._captures_index[capture_uuid].capture_dir
+        shutil.move(str(capture_dir), str(removed_captures_dir / capture_dir.name))
 
     def update_tree_cache_info(self, process_id: int, classname: str) -> None:
         self.redis.hset('tree_cache', f'{process_id}|{classname}', str(self._captures_index.lru_cache_status()))

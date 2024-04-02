@@ -1034,6 +1034,14 @@ def hide_capture(tree_uuid: str) -> WerkzeugResponse:
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
+@app.route('/tree/<string:tree_uuid>/remove', methods=['GET'])
+@flask_login.login_required  # type: ignore[misc]
+def remove_capture(tree_uuid: str) -> WerkzeugResponse:
+    lookyloo.remove_capture(tree_uuid)
+    flash(f'{tree_uuid} successfully removed.', 'success')
+    return redirect(url_for('index'))
+
+
 @app.route('/tree/<string:tree_uuid>/rebuild')
 @flask_login.login_required  # type: ignore[misc]
 def rebuild_tree(tree_uuid: str) -> WerkzeugResponse:
