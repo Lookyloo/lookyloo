@@ -251,7 +251,7 @@ class MISP(AbstractModule):
             return event
         return None
 
-    def lookup(self, node: URLNode, hostnode: HostNode) -> dict[str, set[str]] | dict[str, Any]:
+    def lookup(self, node: URLNode, hostnode: HostNode, time: bool=False) -> dict[str, set[str]] | dict[str, Any]:
         if self.available and self.enable_lookup:
             tld = self.psl.publicsuffix(hostnode.name)
             domain = re.sub(f'.{tld}$', '', hostnode.name).split('.')[-1]
@@ -271,6 +271,8 @@ class MISP(AbstractModule):
                     # NOTE: We have MISPAttribute in that list
                     for a in attributes:
                         to_return[a.event_id].add(a.value)  # type: ignore[union-attr,index]
+                        if time:
+                            to_return[a.event_id].add(a.timestamp)
                     return to_return
                 else:
                     # The request returned an error
