@@ -9,6 +9,7 @@ import gzip
 import json
 import logging
 import operator
+import shutil
 import re
 import smtplib
 import ssl
