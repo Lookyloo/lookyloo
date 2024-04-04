@@ -76,6 +76,9 @@ class UniversalWhois(AbstractModule):
         ...
 
     def whois(self, query: str, contact_email_only: bool=False) -> str | list[str]:
+        
+        EMAIL_REGEX = rb'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
+
         if not self.available:
             return ''
         bytes_whois = b''
@@ -87,7 +90,13 @@ class UniversalWhois(AbstractModule):
                 if not data:
                     break
                 bytes_whois += data
+        #if an abuse-c-Object is found in the whois entry, the result of its lookup will be returned
+        abuse_c = re.search(rb'abuse-c:\s+(.*)\s', bytes_whois)
+        if abuse_c is not None:
+            return self.whois(abuse_c.group(1).decode(), contact_email_only)
+        
         if not contact_email_only:
             return bytes_whois.decode()
-        emails = list(set(re.findall(rb'[\w\.-]+@[\w\.-]+', bytes_whois)))
+        emails = list(set(re.findall(EMAIL_REGEX, bytes_whois)))
         return [e.decode() for e in sorted(emails)]
+    
