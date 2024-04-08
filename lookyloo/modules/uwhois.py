@@ -90,11 +90,16 @@ class UniversalWhois(AbstractModule):
                 if not data:
                     break
                 bytes_whois += data
-        #if an abuse-c-Object is found in the whois entry, the result of its lookup will be returned
+
+        #if an abuse-c-Object is found in the whois entry, it will take precedence
         abuse_c = re.search(rb'abuse-c:\s+(.*)\s', bytes_whois)
-        if abuse_c is not None:
-            return self.whois(abuse_c.group(1).decode(), contact_email_only)
-        
+        if abuse_c:
+            abuse_c_query = self.whois(abuse_c.group(1).decode(), contact_email_only)
+            if contact_email_only:
+                return abuse_c_query
+            else:
+                return bytes_whois.decode() + abuse_c_query
+
         if not contact_email_only:
             return bytes_whois.decode()
         emails = list(set(re.findall(EMAIL_REGEX, bytes_whois)))
