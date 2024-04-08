@@ -766,14 +766,13 @@ class Lookyloo():
     def takedown_filtered(self, hostnode: HostNode) -> dict[str, Any] | None:
         config = configparser.ConfigParser()
         config.optionxform = str
-        config.read('config/domain.ini')
+        config.read('/home/amaraj/Stage/Workshop/domain.ini')
         #checking if domain should be ignored
         domains = config['domain']['ignore']
         pattern = r"(https?://)?(www\d?\.)?(?P<domain>[\w\.-]+\.\w+)(/\S*)?"
         match = re.match(pattern, hostnode.name)
-        if match:
-            if match.group("domain") in domains:
-                return None
+        if match and match.group("domain") in domains:
+            return None
         result = self.takedown_details(hostnode)
         #ignoring mails
         final_mails = []
@@ -783,7 +782,7 @@ class Lookyloo():
             # ignoring mails
             is_valid = True
             for regex in ignorelist:
-                if regex.strip() == '':
+                if not regex.strip():
                     continue
                 match = re.search(regex.strip(), mail)
                 if match:
@@ -804,11 +803,11 @@ class Lookyloo():
 
     def get_filtered_emails(self, capture_uuid, detailed=False) -> set[str] | dict[str, str]:
         info = self.contacts(capture_uuid)
-        if detailed:
+        if detailed: #emails in a dict with their hostname as key
             final_mails = {}
             for i in info:
                 final_mails[i['hostname']] = i['all_emails']
-        else:
+        else: #just all emails together
             final_mails = set()
             for i in info:
                 for mail in i['all_emails']:
@@ -861,11 +860,11 @@ class Lookyloo():
                     misp_url = occurrences[1]
                     for element in occurrences[0]:
                         for attribute in occurrences[0][element]:
-                            if isinstance(attribute, datetime):
+                            if attribute[0] == cache.url:
                                 now = datetime.now(timezone.utc)
-                                diff = now - attribute
+                                diff = now - attribute[1]
                                 if diff.days < 1:  # MISP event should not be older than 24hours
-                                    misp += str(attribute) + ': ' + misp_url + 'events/' + str(element) + '\n'
+                                    misp += f"\n{attribute[1]:%a %m-%d-%y %I:%M%p(%z %Z)} : {misp_url}events/{element}"
                                 break  # some events have more than just one timestamp, we just take the first one
         msg = EmailMessage()
         msg['From'] = email_config['from']
@@ -881,7 +880,7 @@ class Lookyloo():
             initial_url=initial_url,
             redirects=redirects,
             comment=comment if comment else '',
-            misp='MISP occurrences from the last 24h: \n' + misp if misp else '',
+            misp=f"MISP occurrences from the last 24h: {misp}" if misp else '',
             sender=msg['From'].addresses[0].display_name,
         )
         msg.set_content(body)

@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import datetime
 import re
 
 from io import BytesIO
 from collections import defaultdict
 from collections.abc import Mapping
-from typing import Any, TYPE_CHECKING, Iterator
+from typing import Any, TYPE_CHECKING, Iterator, Literal
 
 import requests
 from har2tree import HostNode, URLNode, Har2TreeError
@@ -270,9 +271,10 @@ class MISP(AbstractModule):
                     to_return: dict[str, set[str]] = defaultdict(set)
                     # NOTE: We have MISPAttribute in that list
                     for a in attributes:
-                        to_return[a.event_id].add(a.value)  # type: ignore[union-attr,index]
                         if time:
-                            to_return[a.event_id].add(a.timestamp)
+                            to_return[a.event_id].add((a.value,a.timestamp))
+                        else:
+                            to_return[a.event_id].add(a.value)  # type: ignore[union-attr,index]
                     return to_return
                 else:
                     # The request returned an error

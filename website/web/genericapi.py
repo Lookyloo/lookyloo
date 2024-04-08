@@ -284,10 +284,10 @@ class TriggerModules(Resource):  # type: ignore[misc]
 
 @api.route('/json/<string:tree_uuid>/modules')
 @api.doc(description='Get responses from the 3rd party modules',
-         params={'tree_uuid': 'The UUID of the capture'})
+         params={'capture_uuid': 'The UUID of the capture'})
 class ModulesResponse(Resource):  # type: ignore[misc]
-    def get(self, tree_uuid: str) -> dict[str, Any]:
-        return lookyloo.get_modules_responses(tree_uuid)
+    def get(self, capture_uuid: str) -> dict[str, Any]:
+        return lookyloo.get_modules_responses(capture_uuid)
 
 
 @api.route('/json/hash_info/<h>')
