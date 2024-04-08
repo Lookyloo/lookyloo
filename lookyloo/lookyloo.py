@@ -803,15 +803,10 @@ class Lookyloo():
 
     def get_filtered_emails(self, capture_uuid, detailed=False) -> set[str] | dict[str, str]:
         info = self.contacts(capture_uuid)
-        if detailed: #emails in a dict with their hostname as key
-            final_mails = {}
-            for i in info:
-                final_mails[i['hostname']] = i['all_emails']
-        else: #just all emails together
-            final_mails = set()
-            for i in info:
-                for mail in i['all_emails']:
-                    final_mails.add(mail)
+        final_mails = set()
+        for i in info:
+            for mail in i['all_emails']:
+                final_mails.add(mail)
         return final_mails
 
     def contacts(self, capture_uuid: str, /) -> list[dict[str, Any]]:
@@ -819,8 +814,8 @@ class Lookyloo():
         rendered_hostnode = self.get_hostnode_from_tree(capture_uuid, capture.root_hartree.rendered_node.hostnode_uuid)
         result = []
         for node in reversed(rendered_hostnode.get_ancestors()):
-            result.append(self.takedown_filtered(node))
-        result.append(self.takedown_filtered(rendered_hostnode))
+            result.append(self.takedown_details(node))
+        result.append(self.takedown_details(rendered_hostnode))
         return result
 
     def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None) -> bool | dict[str, Any]:
