@@ -766,7 +766,8 @@ class Lookyloo():
     def takedown_filtered(self, hostnode: HostNode) -> dict[str, Any] | None:
         config = configparser.ConfigParser()
         config.optionxform = str
-        config.read('/home/amaraj/Stage/Workshop/domain.ini')
+        ignorelist_path = get_homedir() / 'config' / 'ignore_list.ini'
+        config.read(ignorelist_path)
         #checking if domain should be ignored
         domains = config['domain']['ignore']
         pattern = r"(https?://)?(www\d?\.)?(?P<domain>[\w\.-]+\.\w+)(/\S*)?"
