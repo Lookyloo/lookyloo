@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import datetime
+from datetime import datetime
 import re
 
 from io import BytesIO
 from collections import defaultdict
 from collections.abc import Mapping
-from typing import Any, TYPE_CHECKING, Iterator, Literal
+from typing import Any, TYPE_CHECKING, Iterator
 
 import requests
 from har2tree import HostNode, URLNode, Har2TreeError
@@ -252,7 +252,7 @@ class MISP(AbstractModule):
             return event
         return None
 
-    def lookup(self, node: URLNode, hostnode: HostNode, time: bool=False) -> dict[str, set[str]] | dict[str, Any]:
+    def lookup(self, node: URLNode, hostnode: HostNode) -> dict[int | str, str | set[tuple[str, datetime]]]:
         if self.available and self.enable_lookup:
             tld = self.psl.publicsuffix(hostnode.name)
             domain = re.sub(f'.{tld}$', '', hostnode.name).split('.')[-1]
@@ -268,14 +268,16 @@ class MISP(AbstractModule):
             if attributes := self.client.search(controller='attributes', value=to_lookup,
                                                 enforce_warninglist=True, pythonify=True):
                 if isinstance(attributes, list):
-                    to_return: dict[str, set[str]] = defaultdict(set)
-                    # NOTE: We have MISPAttribute in that list
-                    for a in attributes:
-                        if time:
-                            to_return[a.event_id].add((a.value,a.timestamp))
+                    to_return: dict[int, set[tuple[str, datetime]]] = defaultdict(set)
+                    a: MISPAttribute
+                    for a in attributes:  # type: ignore[assignment]
+                        if isinstance(a.value, str):
+                            # a.timestamp is always a datetime in this situation
+                            to_return[a.event_id].add((a.value, a.timestamp))  # type: ignore[arg-type]
                         else:
-                            to_return[a.event_id].add(a.value)  # type: ignore[union-attr,index]
-                    return to_return
+                            # This shouldn't happen (?)
+                            self.logger.warning(f'Unexpected value type in MISP lookup: {type(a.value)}')
+                    return to_return  # type: ignore[return-value]
                 else:
                     # The request returned an error
                     return attributes  # type: ignore[return-value]

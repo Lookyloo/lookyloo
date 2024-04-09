@@ -765,21 +765,21 @@ class Lookyloo():
 
     def takedown_filtered(self, hostnode: HostNode) -> dict[str, Any] | None:
         config = configparser.ConfigParser()
-        config.optionxform = str
+        config.optionxform = str  # type: ignore[method-assign,assignment]
         ignorelist_path = get_homedir() / 'config' / 'ignore_list.ini'
         config.read(ignorelist_path)
-        #checking if domain should be ignored
+        # checking if domain should be ignored
         domains = config['domain']['ignore']
         pattern = r"(https?://)?(www\d?\.)?(?P<domain>[\w\.-]+\.\w+)(/\S*)?"
         match = re.match(pattern, hostnode.name)
         if match:
             for regex in domains:
                 ignore_domain = regex + "$"
-                ignore_subdomain = ".*\." + regex + "$"
+                ignore_subdomain = r".*\." + regex + "$"
                 if (re.match(ignore_domain, match.group("domain")) or re.match(ignore_subdomain, match.group("domain"))) and regex.strip():
                     return None
         result = self.takedown_details(hostnode)
-        #ignoring mails
+        # ignoring mails
         final_mails = []
         replacelist = config['replacelist']
         ignorelist = config['abuse']['ignore'].split('\n')
@@ -806,7 +806,7 @@ class Lookyloo():
         result['all_emails'] = final_mails
         return result
 
-    def get_filtered_emails(self, capture_uuid, detailed=False) -> set[str] | dict[str, str]:
+    def get_filtered_emails(self, capture_uuid: str, detailed: bool=False) -> set[str] | dict[str, str]:
         info = self.contacts(capture_uuid)
         final_mails = set()
         for i in info:
@@ -856,13 +856,17 @@ class Lookyloo():
             self.logger.info('There are no MISP instances available for a lookup.')
         else:
             for instance_name in self.misps.keys():
-                if occurrences := self.get_misp_occurrences(capture_uuid, instance_name=instance_name, time=True):
+                if occurrences := self.get_misp_occurrences(capture_uuid, instance_name=instance_name):
                     misp_url = occurrences[1]
                     for element in occurrences[0]:
                         for attribute in occurrences[0][element]:
-                            if attribute[0] == cache.url:
+                            if not isinstance(attribute, tuple):
+                                # Issue with the response of the search, ignore
+                                continue
+                            value, timestamp = attribute
+                            if value == initial_url:
                                 now = datetime.now(timezone.utc)
-                                diff = now - attribute[1]
+                                diff = now - timestamp
                                 if diff.days < 1:  # MISP event should not be older than 24hours
                                     misp += f"\n{attribute[1]:%a %m-%d-%y %I:%M%p(%z %Z)} : {misp_url}events/{element}"
                                 break  # some events have more than just one timestamp, we just take the first one
@@ -1147,7 +1151,7 @@ class Lookyloo():
 
         return [event]
 
-    def get_misp_occurrences(self, capture_uuid: str, /, *, instance_name: str | None=None, time: bool=False) -> tuple[dict[str, set[str]], str] | None:
+    def get_misp_occurrences(self, capture_uuid: str, /, *, instance_name: str | None=None) -> tuple[dict[int, set[tuple[str, datetime]]], str] | None:
         if instance_name is None:
             misp = self.misps.default_misp
         elif self.misps.get(instance_name) is not None:
@@ -1164,11 +1168,11 @@ class Lookyloo():
             self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_uuid}) is cached.')
             return None
         nodes_to_lookup = ct.root_hartree.rendered_node.get_ancestors() + [ct.root_hartree.rendered_node]
-        to_return: dict[str, set[str]] = defaultdict(set)
+        to_return: dict[int, set[tuple[str, datetime]]] = defaultdict(set)
         for node in nodes_to_lookup:
-            hits = misp.lookup(node, ct.root_hartree.get_host_node_by_uuid(node.hostnode_uuid), time)
+            hits = misp.lookup(node, ct.root_hartree.get_host_node_by_uuid(node.hostnode_uuid))
             for event_id, values in hits.items():
-                if not isinstance(values, set):
+                if not isinstance(event_id, int) or not isinstance(values, set):
                     continue
                 to_return[event_id].update(values)
         return to_return, misp.client.root_url
