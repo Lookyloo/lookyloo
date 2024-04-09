@@ -93,7 +93,7 @@ class UniversalWhois(AbstractModule):
 
         # if an abuse-c-Object is found in the whois entry, it will take precedence
         abuse_c = re.search(rb'abuse-c:\s+(.*)\s', bytes_whois)
-        if abuse_c and abuse_c.lastindex and abuse_c.lastindex > 0:  # make sure we have a match and avoid exception on None or missing group 1
+        if abuse_c and abuse_c.lastindex:  # make sure we have a match and avoid exception on None or missing group 1
             # The whois entry has an abuse-c object
             _obj_name: str = abuse_c.group(1).decode()
             abuse_c_query = self.whois(_obj_name, contact_email_only)
