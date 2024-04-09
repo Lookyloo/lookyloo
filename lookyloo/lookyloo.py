@@ -772,8 +772,11 @@ class Lookyloo():
         domains = config['domain']['ignore']
         pattern = r"(https?://)?(www\d?\.)?(?P<domain>[\w\.-]+\.\w+)(/\S*)?"
         match = re.match(pattern, hostnode.name)
-        if match and match.group("domain") in domains:
-            return None
+        if match:
+            for regex in domains:
+                ignore_domain = ".*\." + regex + "$"
+                if re.match(ignore_domain, match.group("domain")) and regex.strip():
+                    return None
         result = self.takedown_details(hostnode)
         #ignoring mails
         final_mails = []
