@@ -76,11 +76,9 @@ class UniversalWhois(AbstractModule):
         ...
 
     def whois(self, query: str, contact_email_only: bool=False) -> str | list[str]:
-
-        EMAIL_REGEX = rb'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
-
         if not self.available:
             return ''
+
         bytes_whois = b''
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect((self.server, self.port))
@@ -108,5 +106,5 @@ class UniversalWhois(AbstractModule):
         # We either dont have an abuse-c object or it does not exist
         if not contact_email_only:
             return bytes_whois.decode()
-        emails = list(set(re.findall(EMAIL_REGEX, bytes_whois)))
+        emails = list(set(re.findall(rb'[\w\.-]+@[\w\.-]+', bytes_whois)))
         return [e.decode() for e in sorted(emails)]

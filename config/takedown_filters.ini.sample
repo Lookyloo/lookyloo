@@ -1,0 +1,28 @@
+[abuse]
+ignore=
+    ripe.net$
+    arin.net$
+    apnic.net$
+    idnic.net$
+    peering@
+    domreg@
+    registrar-email
+    akamai.com$
+    google.com$
+    arin-noc@tucows.com
+    dnstech@tucows.com
+    avermeer@tucows.com
+    arin-maint@tucows.com
+    amzn-noc-contact@amazon.com
+    aws-routing-poc@amazon.com
+    aws-rpki-routing-poc@amazon.com
+
+[replacelist]
+noc@as5577.net=abuse@as5577.net
+abuse@godaddy.com=abuse@godaddy.com,phishing@godaddy.com,malware@godaddy.com
+
+[domain]
+ignore=
+    apple.com
+    paypal.com
+    google.com

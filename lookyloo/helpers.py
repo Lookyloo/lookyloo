@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import configparser
 import hashlib
 import json
 import logging
 import os
+import re
 import time
 
 from datetime import datetime, timedelta, date
@@ -53,29 +55,53 @@ def get_resources_hashes(har2tree_container: CrawledTree | HostNode | URLNode) -
     return all_ressources_hashes
 
 
-@lru_cache(64)
+@lru_cache
 def get_taxonomies() -> Taxonomies:
     return Taxonomies()
 
 
-@lru_cache(64)
+@lru_cache
 def get_public_suffix_list() -> PublicSuffixList:
     """Initialize Public Suffix List"""
     # TODO (?): fetch the list
     return PublicSuffixList()
 
 
-@lru_cache(64)
+@lru_cache
 def get_captures_dir() -> Path:
     capture_dir = get_homedir() / 'scraped'
     safe_create_dir(capture_dir)
     return capture_dir
 
 
-@lru_cache(64)
+@lru_cache
 def get_email_template() -> str:
     with (get_homedir() / 'config' / 'email.tmpl').open() as f:
         return f.read()
+
+
+@lru_cache
+def load_takedown_filters() -> tuple[re.Pattern[str], re.Pattern[str], dict[str, list[str]]]:
+    filter_ini_file = get_homedir() / 'config' / 'takedown_filters.ini'
+    if not filter_ini_file.exists():
+        raise LookylooException(f'Unable to find the takedown filters file: {filter_ini_file}')
+    config = configparser.ConfigParser()
+    config.optionxform = str  # type: ignore[method-assign,assignment]
+    config.read(filter_ini_file)
+    # compile the domains and subdomains to ignore
+    ignore_domains_list = []
+    for d in [d.strip() for d in config['domain']['ignore'].split('\n') if d.strip()]:
+        ignore_domain = f'{d}$'
+        ignore_subdomain = rf'.*\.{ignore_domain}'
+        ignore_domains_list.append(ignore_domain)
+        ignore_domains_list.append(ignore_subdomain)
+    ignore_domains = re.compile('|'.join(ignore_domains_list))
+    # Compile the emails addresses to ignore
+    ignore_emails = re.compile('|'.join([i.strip() for i in config['abuse']['ignore'].split('\n') if i.strip()]))
+    # Make the replace list a dictionary
+    replace_list = {to_replace: config['replacelist'][to_replace].split(',') for to_replace in config['replacelist']}
+
+    return ignore_domains, ignore_emails, replace_list
 
 
 def make_dirs_list(root_dir: Path) -> list[Path]:

@@ -118,6 +118,7 @@ dump.rdb
 # Local config files
 config/*.json
 config/*.json.bkp
+config/takedown_filters.ini
 
 # user defined known content
 known_content_user/

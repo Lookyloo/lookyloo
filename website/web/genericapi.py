@@ -582,6 +582,7 @@ class Comparables(Resource):  # type: ignore[misc]
 
 takedown_fields = api.model('TakedownFields', {
     'capture_uuid': fields.String(description="The UUID of the capture.", required=True),
+    'filter': fields.Boolean(description="If true, the response is a list of emails.", default=False),
 })
 
 
@@ -589,12 +590,17 @@ takedown_fields = api.model('TakedownFields', {
 @api.doc(description='Get information for triggering a takedown request')
 class Takedown(Resource):  # type: ignore[misc]
     @api.doc(body=takedown_fields)  # type: ignore[misc]
-    def post(self) -> list[dict[str, Any]] | dict[str, str]:
+    def post(self) -> list[dict[str, Any]] | dict[str, str] | list[str]:
+        if not lookyloo.uwhois.available:
+            return {'error': 'UWhois not available, cannot get contacts.'}
         parameters: dict[str, Any] = request.get_json(force=True)
         capture_uuid = parameters.get('capture_uuid')
         if not capture_uuid:
             return {'error': f'Invalid request: {parameters}'}
-        return lookyloo.contacts(capture_uuid)
+        if parameters.get('filter'):
+            return list(lookyloo.contacts_filtered(capture_uuid))
+        else:
+            return lookyloo.contacts(capture_uuid)
 
 
 # Admin stuff

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import base64
-import configparser
 import copy
 import gzip
 import json
@@ -58,7 +57,8 @@ from .exceptions import (MissingCaptureDirectory,
 from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, load_cookies, UserAgents,
-                      get_useragent_for_requests, make_ts_from_dirname)
+                      get_useragent_for_requests, make_ts_from_dirname, load_takedown_filters
+                      )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
                       RiskIQ, RiskIQError, Pandora, URLhaus, CIRCLPDNS)
@@ -722,6 +722,9 @@ class Lookyloo():
                      'asns': {},  # ASN: [list of contacts from whois]
                      'all_emails': set()
                      }
+
+        if to_return['contacts']:
+            to_return['all_emails'] |= set(to_return['contacts'])
         to_return['ips'] = {ip: self.uwhois.whois(ip, contact_email_only=True) for ip in set(hostnode.resolved_ips['v4']) | set(hostnode.resolved_ips['v6'])}
         to_return['asns'] = {asn['asn']: self.uwhois.whois(f'AS{asn["asn"]}', contact_email_only=True) for asn in hostnode.ipasn.values()}
 
@@ -763,56 +766,43 @@ class Lookyloo():
         to_return['all_emails'] = list(to_return['all_emails'])
         return to_return
 
-    def takedown_filtered(self, hostnode: HostNode) -> dict[str, Any] | None:
-        config = configparser.ConfigParser()
-        config.optionxform = str  # type: ignore[method-assign,assignment]
-        ignorelist_path = get_homedir() / 'config' / 'ignore_list.ini'
-        config.read(ignorelist_path)
+    def takedown_filtered(self, hostnode: HostNode) -> set[str] | None:
+        ignore_domains, ignore_emails, replace_list = load_takedown_filters()
         # checking if domain should be ignored
-        domains = config['domain']['ignore']
         pattern = r"(https?://)?(www\d?\.)?(?P<domain>[\w\.-]+\.\w+)(/\S*)?"
-        match = re.match(pattern, hostnode.name)
-        if match:
-            for regex in domains:
-                ignore_domain = regex + "$"
-                ignore_subdomain = r".*\." + regex + "$"
-                if (re.match(ignore_domain, match.group("domain")) or re.match(ignore_subdomain, match.group("domain"))) and regex.strip():
-                    return None
-        result = self.takedown_details(hostnode)
-        # ignoring mails
-        final_mails = []
-        replacelist = config['replacelist']
-        ignorelist = config['abuse']['ignore'].split('\n')
-        for mail in result['all_emails']:
-            # ignoring mails
-            is_valid = True
-            for regex in ignorelist:
-                if not regex.strip():
-                    continue
-                match = re.search(regex.strip(), mail)
-                if match:
-                    is_valid = False
-                    break
-            if is_valid:
-                # replacing emails
-                for replaceable in replacelist:
-                    if mail == replaceable:
-                        final_mails += replacelist[replaceable].split(',')
-                        is_valid = False
-                        break
-            if is_valid:
-                # mail is valid and can be added to the result
-                final_mails += [mail]
-        result['all_emails'] = final_mails
-        return result
+        if match := re.match(pattern, hostnode.name):
+            # NOTE: the name may not be a hostname if the capture is not a URL.
+            if re.search(ignore_domains, match.group("domain")):
+                self.logger.debug(f'{hostnode.name} is ignored')
+                return None
+        else:
+            # The name is not a domain, we won't have any contacts.
+            self.logger.debug(f'{hostnode.name} is not a domain, no contacts.')
+            return None
 
-    def get_filtered_emails(self, capture_uuid: str, detailed: bool=False) -> set[str] | dict[str, str]:
-        info = self.contacts(capture_uuid)
-        final_mails = set()
-        for i in info:
-            for mail in i['all_emails']:
+        result = self.takedown_details(hostnode)
+        # process mails
+        final_mails: set[str] = set()
+        for mail in result['all_emails']:
+            if re.search(ignore_emails, mail):
+                self.logger.debug(f'{mail} is ignored')
+                continue
+            if mail in replace_list:
+                final_mails |= set(replace_list[mail])
+            else:
                 final_mails.add(mail)
         return final_mails
+
+    def contacts_filtered(self, capture_uuid: str, /) -> set[str]:
+        capture = self.get_crawled_tree(capture_uuid)
+        rendered_hostnode = self.get_hostnode_from_tree(capture_uuid, capture.root_hartree.rendered_node.hostnode_uuid)
+        result: set[str] = set()
+        for node in reversed(rendered_hostnode.get_ancestors()):
+            if mails := self.takedown_filtered(node):
+                result |= mails
+        if mails := self.takedown_filtered(rendered_hostnode):
+            result |= mails
+        return result
 
     def contacts(self, capture_uuid: str, /) -> list[dict[str, Any]]:
         capture = self.get_crawled_tree(capture_uuid)
