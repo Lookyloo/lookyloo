@@ -774,8 +774,9 @@ class Lookyloo():
         match = re.match(pattern, hostnode.name)
         if match:
             for regex in domains:
-                ignore_domain = ".*\." + regex + "$"
-                if re.match(ignore_domain, match.group("domain")) and regex.strip():
+                ignore_domain = regex + "$"
+                ignore_subdomain = ".*\." + regex + "$"
+                if (re.match(ignore_domain, match.group("domain")) or re.match(ignore_subdomain, match.group("domain"))) and regex.strip():
                     return None
         result = self.takedown_details(hostnode)
         #ignoring mails
