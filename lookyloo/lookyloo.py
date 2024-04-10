@@ -822,6 +822,7 @@ class Lookyloo():
         smtp_auth = get_config('generic', 'email_smtp_auth')
         redirects = ''
         initial_url = ''
+        misp = ''
         if cache := self.capture_cache(capture_uuid):
             if hasattr(cache, 'url'):
                 if email_config['defang_urls']:
@@ -841,25 +842,21 @@ class Lookyloo():
                     redirects += '\n'.join(cache.redirects)
             else:
                 redirects = "No redirects."
-        misp = ''
-        if not self.misps.available:
-            self.logger.info('There are no MISP instances available for a lookup.')
-        else:
-            for instance_name in self.misps.keys():
-                if occurrences := self.get_misp_occurrences(capture_uuid, instance_name=instance_name):
-                    misp_url = occurrences[1]
-                    for element in occurrences[0]:
-                        for attribute in occurrences[0][element]:
-                            if not isinstance(attribute, tuple):
-                                # Issue with the response of the search, ignore
-                                continue
-                            value, timestamp = attribute
-                            if value == initial_url:
-                                now = datetime.now(timezone.utc)
-                                diff = now - timestamp
-                                if diff.days < 1:  # MISP event should not be older than 24hours
-                                    misp += f"\n{attribute[1]:%a %m-%d-%y %I:%M%p(%z %Z)} : {misp_url}events/{element}"
-                                break  # some events have more than just one timestamp, we just take the first one
+
+            if not self.misps.available:
+                self.logger.info('There are no MISP instances available for a lookup.')
+            else:
+                for instance_name in self.misps.keys():
+                    if occurrences := self.get_misp_occurrences(capture_uuid, instance_name=instance_name):
+                        elements, misp_url = occurrences
+                        for event_id, attributes in elements.items():
+                            for value, ts in attributes:
+                                if value == cache.url:
+                                    now = datetime.now(timezone.utc)
+                                    diff = now - ts
+                                    if diff.days < 1:  # MISP event should not be older than 24hours
+                                        misp += f"\n{ts.isoformat()} : {misp_url}events/{event_id}"
+                                    break  # some events have more than just one timestamp, we just take the first one
         msg = EmailMessage()
         msg['From'] = email_config['from']
         if email:
