@@ -62,7 +62,7 @@ jobs:
           echo UWHOISD_HOME="'`pwd`'" > .env
           poetry run start
           popd
-          popd
+
 
       - name: Install & run lookyloo
         run: |
