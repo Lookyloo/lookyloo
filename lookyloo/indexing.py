@@ -389,7 +389,7 @@ class Indexing():
         return sha256(to_hash).hexdigest()[:32]
 
     def captures_hashes_types(self) -> set[str]:
-        return set('certpl_html_structure_hash')
+        return {'certpl_html_structure_hash'}
     # return self.redis.smembers('capture_hash_types')
 
     def captures_hashes(self, hash_type: str) -> list[tuple[str, float]]:
