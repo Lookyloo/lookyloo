@@ -48,6 +48,25 @@ jobs:
           # playwright required deps.
           # sudo apt install libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libxkbcommon0 libxdamage1 libgbm1 libpango-1.0-0 libcairo2 libatspi2.0-0
 
+      - name: Clone uwhoisd
+        uses: actions/checkout@v4
+        with:
+          repository: Lookyloo/uwhoisd
+          path: uwhoisd-tmp
+
+      - name: Install uwhoisd
+        run: |
+          sudo apt install whois
+          mv uwhoisd-tmp ../uwhoisd
+          pushd ..
+          pushd uwhoisd
+          poetry install
+          echo UWHOISD_HOME="'`pwd`'" > .env
+          poetry run start
+          popd
+          popd
+
+
       - name: Install & run lookyloo
         run: |
           echo LOOKYLOO_HOME="'`pwd`'" > .env
@@ -59,6 +78,7 @@ jobs:
           poetry run tools/validate_config_files.py --check
           poetry run tools/validate_config_files.py --update
           poetry run tools/3rdparty.py
+          jq '.UniversalWhois.enabled = true' config/modules.json > temp.json && mv temp.json config/modules.json
           poetry run start
 
       - name: Clone PyLookyloo
