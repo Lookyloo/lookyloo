@@ -57,7 +57,6 @@ jobs:
       - name: Install uwhoisd
         run: |
           sudo apt install whois
-          pushd ..
           pushd uwhoisd
           poetry install
           echo UWHOISD_HOME="'`pwd`'" > .env
