@@ -51,16 +51,19 @@ jobs:
       - name: Clone uwhoisd
         uses: actions/checkout@v4
         with:
-          repository: Lookyloo/uwhoisd
-          path: uwhoisd
+          repository: uwhoisd/uwhoisd
+          path: uwhoisd-tmp
 
       - name: Install uwhoisd
         run: |
           sudo apt install whois
+          mv uwhoisd-tmp ../uwhoisd
+          pushd ..
           pushd uwhoisd
           poetry install
           echo UWHOISD_HOME="'`pwd`'" > .env
           poetry run start
+          popd
           popd
 
 
