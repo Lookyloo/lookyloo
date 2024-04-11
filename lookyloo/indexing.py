@@ -389,7 +389,7 @@ class Indexing():
         return sha256(to_hash).hexdigest()[:32]
 
     def captures_hashes_types(self) -> set[str]:
-        return set('certpl_html_structure_hash', )
+        return set('certpl_html_structure_hash')
     # return self.redis.smembers('capture_hash_types')
 
     def captures_hashes(self, hash_type: str) -> list[tuple[str, float]]:
@@ -420,6 +420,13 @@ class Indexing():
                     continue
                 # we have a rendered HTML, compute the hash
                 hash_to_index = self._compute_certpl_html_structure_hash(crawled_tree.root_hartree.rendered_node.rendered_html)
+            else:
+                self.logger.warning(f'Unknown hash type: {hash_type}')
+                continue
+
+            if not hash_to_index:
+                self.logger.info(f'No hash to index for {hash_type} in {capture_uuid} ... ')
+                continue
 
             if self.redis.sismember(f'capture_hash_types|{hash_type}|{hash_to_index}|captures', capture_uuid):
                 # Already counted this specific identifier for this capture
