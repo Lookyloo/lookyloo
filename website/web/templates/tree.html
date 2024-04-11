@@ -112,6 +112,20 @@
   });
   </script>
   <script>
+  $('#captureHashesTypesModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
+  $('#captureHashesTypesDetailsModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
   $('#faviconDetailsProbabilisticHashModal').on('show.bs.modal', function(e) {
       var button = $(e.relatedTarget);
       var modal = $(this);
@@ -333,6 +347,10 @@
             <li class="list-group-item">
               <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Favicons Capture</a>
+            </li>
+            <li class="list-group-item">
+              <a href="#captureHashesTypesModal" data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button">Capture hashes types</a>
             </li>
             <li class="list-group-item">
               <a href="#identifiersModal" data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid) }}"
@@ -628,6 +646,43 @@
               <a class="btn btn-primary" href="#faviconsModal"
                  data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Back to capture's favicons</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="captureHashesTypesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="captureHashesTypesModalLabel">Hashes of the rendered page</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading hash types ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="captureHashesTypesDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="captureHashesTypesDetailsModalLabel">Other occurrences of the hash</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading hash details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#captureHashesTypesModal"
+                 data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button">Back to capture's hahses</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>

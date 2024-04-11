@@ -421,6 +421,11 @@ def get_identifier_investigator(identifier_type: str, identifier: str) -> list[t
     return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
+def get_capture_hash_investigator(hash_type: str, h: str) -> list[tuple[str, str, str, datetime]]:
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_hash_type(hash_type=hash_type, h=h)])
+    return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
+
+
 def get_favicon_investigator(favicon_sha512: str,
                              /,
                              get_probabilistic: bool=False) -> tuple[list[tuple[str, str, str, datetime]],
@@ -1232,6 +1237,16 @@ def tree_favicons(tree_uuid: str) -> str:
     return render_template('tree_favicons.html', tree_uuid=tree_uuid, favicons=favicons)
 
 
+@app.route('/tree/<string:tree_uuid>/hashes_types', methods=['GET'])
+def tree_capture_hashes_types(tree_uuid: str) -> str:
+    to_return: list[tuple[int, str, str]] = []
+
+    for hash_type, h in get_indexing(flask_login.current_user).get_hashes_types_capture(tree_uuid).items():
+        nb_captures = get_indexing(flask_login.current_user).hash_number_captures(hash_type, h)
+        to_return.append((nb_captures, hash_type, h))
+    return render_template('tree_hashes_types.html', tree_uuid=tree_uuid, hashes=to_return)
+
+
 @app.route('/tree/<string:tree_uuid>/body_hashes', methods=['GET'])
 def tree_body_hashes(tree_uuid: str) -> str:
     body_hashes = get_all_body_hashes(tree_uuid)
@@ -1635,6 +1650,14 @@ def identifier_details(identifier_type: str, identifier: str) -> str:
     captures = get_identifier_investigator(identifier_type, identifier)
     return render_template('identifier_details.html', identifier_type=identifier_type,
                            identifier=identifier,
+                           captures=captures)
+
+
+@app.route('/capture_hash_details/<string:hash_type>/<string:h>', methods=['GET'])
+def capture_hash_details(hash_type: str, h: str) -> str:
+    captures = get_capture_hash_investigator(hash_type, h)
+    return render_template('identifier_details.html', hash_type=hash_type,
+                           h=h,
                            captures=captures)
 
 

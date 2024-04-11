@@ -38,7 +38,7 @@ class BackgroundIndexer(AbstractManager):
         # Don't need the cache in this class.
         self.lookyloo.clear_tree_cache()
 
-    def _to_index_no_cache(self) -> Generator[tuple[tuple[bool, bool, bool, bool, bool, bool], str], None, None]:
+    def _to_index_no_cache(self) -> Generator[tuple[tuple[bool, bool, bool, bool, bool, bool, bool], str], None, None]:
         # NOTE: only get the non-archived captures for now.
         for uuid, directory in self.redis.hscan_iter('lookup_dirs'):
             if not self.full_indexer:
@@ -88,6 +88,9 @@ class BackgroundIndexer(AbstractManager):
             if not indexed[5]:
                 self.logger.info(f'Indexing identifiers for {uuid_to_index}')
                 self.indexing.index_identifiers_capture(ct)
+            if not indexed[6]:
+                self.logger.info(f'Indexing hash types for {uuid_to_index}')
+                self.indexing.index_capture_hashes_types(ct)
             # NOTE: categories aren't taken in account here, should be fixed(?)
             # see indexing.index_categories_capture(capture_uuid, categories)
         self.indexing.indexing_done()

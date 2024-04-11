@@ -14,11 +14,14 @@ from zipfile import ZipFile
 
 import mmh3
 
+from bs4 import BeautifulSoup
+from hashlib import sha256
+
 from har2tree import CrawledTree
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
-from .default import get_socket_path, get_config
+from .default import get_socket_path
 # from .helpers import get_public_suffix_list
 
 
@@ -66,9 +69,13 @@ class Indexing():
         p.srem('indexed_hhhashes', capture_uuid)
         p.srem('indexed_favicons', capture_uuid)
         p.srem('indexed_identifiers', capture_uuid)
+        for identifier_type in self.identifiers_types():
+            p.srem(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
+        for hash_type in self.captures_hashes_types():
+            p.srem(f'indexed_hash_type|{hash_type}', capture_uuid)
         p.execute()
 
-    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool]:
+    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool]:
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
@@ -76,8 +83,12 @@ class Indexing():
         p.sismember('indexed_hhhashes', capture_uuid)
         p.sismember('indexed_favicons', capture_uuid)
         p.sismember('indexed_identifiers', capture_uuid)
-        # This call for sure returns a tuple of 6 booleans
-        return p.execute()  # type: ignore[return-value]
+        # We also need to check if the hash_type are all indexed for this capture
+        hash_types_indexed = all(self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid) for hash_type in self.captures_hashes_types())
+        to_return: list[bool] = p.execute()
+        to_return.append(hash_types_indexed)
+        # This call for sure returns a tuple of 7 booleans
+        return tuple(to_return)  # type: ignore[return-value]
 
     # ###### Cookies ######
 
@@ -366,6 +377,65 @@ class Indexing():
 
     def get_favicon(self, favicon_sha512: str) -> bytes | None:
         return self.redis_bytes.get(f'favicons|{favicon_sha512}')
+
+    # ###### Capture hashes ######
+
+    # This is where we define the indexing for the hashes generated for a whole capture (at most one hash per capture)
+    # certpl_html_structure_hash: concatenated list of all the tag names on the page - done on the rendered page
+
+    def _compute_certpl_html_structure_hash(self, html: str) -> str:
+        soup = BeautifulSoup(html, "lxml")
+        to_hash = "|".join(t.name for t in soup.findAll()).encode()
+        return sha256(to_hash).hexdigest()[:32]
+
+    def captures_hashes_types(self) -> set[str]:
+        return set('certpl_html_structure_hash', )
+    # return self.redis.smembers('capture_hash_types')
+
+    def captures_hashes(self, hash_type: str) -> list[tuple[str, float]]:
+        return self.redis.zrevrange(f'capture_hash_types|{hash_type}', 0, 200, withscores=True)
+
+    def hash_frequency(self, hash_type: str, h: str) -> float | None:
+        return self.redis.zscore(f'capture_hash_types|{hash_type}', h)
+
+    def hash_number_captures(self, hash_type: str, h: str) -> int:
+        return self.redis.scard(f'capture_hash_types|{hash_type}|{h}|captures')
+
+    def index_capture_hashes_types(self, crawled_tree: CrawledTree) -> None:
+        capture_uuid = crawled_tree.uuid
+        # NOTE: We will have multiple hash types for each captures, we want to make sure
+        # to reindex all the captures if there is a new hash type but only index the new
+        # captures on the existing hash types
+        # hashes = ('certpl_html_structure_hash', )
+        for hash_type in self.captures_hashes_types():
+            if self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid):
+                # Do not reindex
+                return
+            self.redis.sadd(f'indexed_hash_type|{hash_type}', capture_uuid)
+
+            if hash_type == 'certpl_html_structure_hash':
+                # we must have a rendered HTML for this hash to be relevant.
+                if (not hasattr(crawled_tree.root_hartree.rendered_node, 'rendered_html')
+                        or not crawled_tree.root_hartree.rendered_node.rendered_html):
+                    continue
+                # we have a rendered HTML, compute the hash
+                hash_to_index = self._compute_certpl_html_structure_hash(crawled_tree.root_hartree.rendered_node.rendered_html)
+
+            if self.redis.sismember(f'capture_hash_types|{hash_type}|{hash_to_index}|captures', capture_uuid):
+                # Already counted this specific identifier for this capture
+                continue
+            self.logger.debug(f'Indexing hash {hash_type} for {capture_uuid} ... ')
+            pipeline = self.redis.pipeline()
+            pipeline.hset(f'capture_hash_types|{capture_uuid}', hash_type, hash_to_index)
+            pipeline.sadd(f'capture_hash_types|{hash_type}|{hash_to_index}|captures', capture_uuid)
+            pipeline.zincrby(f'capture_hash_types|{hash_type}', 1, hash_to_index)
+            pipeline.execute()
+
+    def get_hashes_types_capture(self, capture_uuid: str) -> dict[str, str]:
+        return self.redis.hgetall(f'capture_hash_types|{capture_uuid}')
+
+    def get_captures_hash_type(self, hash_type: str, h: str) -> set[str]:
+        return self.redis.smembers(f'capture_hash_types|{hash_type}|{h}|captures')
 
     # ###### identifiers ######
 
