@@ -21,7 +21,7 @@ from har2tree import CrawledTree
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
-from .default import get_socket_path
+from .default import get_socket_path, get_config
 # from .helpers import get_public_suffix_list
 
 
