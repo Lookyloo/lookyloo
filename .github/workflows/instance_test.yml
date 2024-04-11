@@ -51,7 +51,7 @@ jobs:
       - name: Clone uwhoisd
         uses: actions/checkout@v4
         with:
-          repository: uwhoisd/uwhoisd
+          repository: Lookyloo/uwhoisd
           path: uwhoisd-tmp
 
       - name: Install uwhoisd
