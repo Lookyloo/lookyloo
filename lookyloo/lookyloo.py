@@ -918,7 +918,7 @@ class Lookyloo():
         body = get_email_template()
         body = body.format(
             recipient=msg['To'].addresses[0].display_name,
-            modules=modules,
+            modules=modules if modules else '',
             domain=self.public_domain,
             uuid=capture_uuid,
             initial_url=initial_url,
