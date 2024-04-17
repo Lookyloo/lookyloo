@@ -860,9 +860,9 @@ class Lookyloo():
                     # unable to run the query, probably an invalid key
                     pass
         if len(modules) == 0:
-            return f"Capture does not seem to be malicious"
+            return "Capture does not seem to be malicious"
 
-        return f"Malicious capture according to {len(modules)} module(s) {modules}"
+        return f"Malicious capture according to {len(modules)} module(s): {', '.join(modules)}"
 
     def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None) -> bool | dict[str, Any]:
         '''Send an email notification regarding a specific capture'''
