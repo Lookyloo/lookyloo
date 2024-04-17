@@ -813,6 +813,57 @@ class Lookyloo():
         result.append(self.takedown_details(rendered_hostnode))
         return result
 
+    def modules_filtered(self, capture_uuid: str, /) -> str | None:
+        response = self.get_modules_responses(capture_uuid)
+        if not response:
+            return None
+        modules = set()
+        if 'vt' in response:
+            vt = response.pop('vt')
+            for url, report in vt.items():
+                if not report:
+                    continue
+                for vendor, result in report['attributes']['last_analysis_results'].items():
+                    if result['category'] == 'malicious':
+                        modules.add(vendor)
+
+        if 'pi' in response:
+            pi = response.pop('pi')
+            for url, full_report in pi.items():
+                if not full_report:
+                    continue
+                modules.add('Phishing Initiative')
+
+        if 'phishtank' in response:
+            pt = response.pop('phishtank')
+            for url, full_report in pt['urls'].items():
+                if not full_report:
+                    continue
+                modules.add('Phishtank')
+
+        if 'urlhaus' in response:
+            uh = response.pop('urlhaus')
+            for url, results in uh['urls'].items():
+                if results:
+                    modules.add('URLhaus')
+
+        if 'urlscan' in response and response.get('urlscan'):
+            urlscan = response.pop('urlscan')
+            if 'error' not in urlscan['submission']:
+                if urlscan['submission'] and urlscan['submission'].get('result'):
+                    if urlscan['result']:
+                        if (urlscan['result'].get('verdicts')
+                                and urlscan['result']['verdicts'].get('overall')):
+                            if urlscan['result']['verdicts']['overall'].get('malicious'):
+                                modules.add('urlscan')
+                else:
+                    # unable to run the query, probably an invalid key
+                    pass
+        if len(modules) == 0:
+            return "Capture does not seem to be malicious"
+
+        return f"Malicious capture according to {len(modules)} module(s): {', '.join(modules)}"
+
     def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None) -> bool | dict[str, Any]:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
@@ -857,6 +908,7 @@ class Lookyloo():
                                     if diff.days < 1:  # MISP event should not be older than 24hours
                                         misp += f"\n{ts.isoformat()} : {misp_url}events/{event_id}"
                                     break  # some events have more than just one timestamp, we just take the first one
+        modules = self.modules_filtered(capture_uuid)
         msg = EmailMessage()
         msg['From'] = email_config['from']
         if email:
@@ -866,6 +918,7 @@ class Lookyloo():
         body = get_email_template()
         body = body.format(
             recipient=msg['To'].addresses[0].display_name,
+            modules=modules if modules else '',
             domain=self.public_domain,
             uuid=capture_uuid,
             initial_url=initial_url,
