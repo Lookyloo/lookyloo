@@ -248,45 +248,99 @@
       </a>
     </div>
     <hr/>
-    <div class="mx-auto" style="width: 52px;">
-      <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#menu_vertical_content">
-          <span class="if-collapsed">
-            <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-down" alt="Maximize menu" height="25" width="25" title="Expand">
-          </span>
-          <span class="if-not-collapsed">
-            <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize menu" height="25" width="25" title="Collapse">
-          </span>
-      </button>
+    <div class="mx-auto" style="text-align: center">
+        <b>Legend</b>
+        <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#menu_vertical_content">
+            <span class="if-collapsed">
+                <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-down" alt="Maximize menu" height="25" width="25" title="Expand">
+            </span>
+            <span class="if-not-collapsed">
+                <img src="{{ url_for('static', filename='up.jpg') }}" alt="Minimize menu" height="25" width="25" title="Collapse">
+            </span>
+        </button>
     </div>
-    <hr/>
+
     <div id=menu_vertical_content class="collapse show">
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">
-          <a href="#detailsModal" data-bs-toggle="modal" data-bs-target="#detailsModal" role="button">Capture Details</a>
-        </li>
-        <li class="list-group-item">
-          <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
-             data-bs-toggle="modal" data-bs-target="#statsModal" role="button">Statistics</a>
-        </li>
-        <li class="list-group-item">
-          <a href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button">Lookyloo Manual</a>
-        </li>
-        <li class="list-group-item">
-          <a href="{{ url_for('index') }}" role="button">Homepage</a>
-        </li>
-        {% if enable_monitoring %}
         <hr/>
-        <li class="list-group-item">
-          <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor capture</a>
-        </li>
-        {% endif %}
-        {% if enable_mail_notification %}
-        <hr/>
-        <li class="list-group-item">
-          <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious</br>capture</a>
-        </li>
-        {% endif %}
-      </ul>
+        <div title="The node contains at least one insecure (not HTTPS) request">
+            <img src="{{ url_for('static', filename='insecure.svg') }}" alt="Insecure requests"
+                height="20" width="20"> Unencrypted requests
+        </div>
+
+        <div title="This node contains only empty responses">
+            <img src="{{ url_for('static', filename='empty.svg') }}" alt="Empty responses"
+                height="20" width="20"> Empty responses
+        </div>
+
+      <div title="Number of cookies received in the responses of this node">
+        <img src="{{ url_for('static', filename='cookie_received.png') }}" alt="Cookie received"
+             height="20" width="20"> Cookie received
+      </div>
+
+      <div title="Number of cookies sent in the requests of this node">
+        <img src="{{ url_for('static', filename='cookie_read.png') }}" alt="Cookie read"
+             height="20" width="20"> Cookie read
+      </div>
+
+      <div title="Number of redirects initiated by the responses of this node">
+        <img src="{{ url_for('static', filename='redirect.png') }}" alt="Redirect"
+             height="20" width="20"> Redirect
+      </div>
+
+      <div title="Number of resources loaded from iFrames in the responses in this node">
+        <img src="{{ url_for('static', filename='ifr.png') }}" alt="iFrame"
+            height="20" width="20"> iFrame
+      </div>
+
+      <div title="Number of JavaScript in the responses in this node">
+        <img src="{{ url_for('static', filename='javascript.png') }}" alt="JavaScript"
+             height="20" width="20"> Javascript
+      </div>
+
+      <div title="Number of fonts in the responses in this node">
+        <img src="{{ url_for('static', filename='font.png') }}" alt="Font"
+             height="20" width="20"> Font
+      </div>
+
+      <div title="Number of HTML in the responses in this node">
+        <img src="{{ url_for('static', filename='html.png') }}" alt="HTML"
+             height="20" width="20"> HTML
+      </div>
+
+      <div title="Number of JSON in the responses in this node">
+        <img src="{{ url_for('static', filename='json.png') }}" alt="JSON"
+             height="20" width="20"> JSON
+      </div>
+
+      <div title="Number of CSS in the responses in this node">
+        <img src="{{ url_for('static', filename='css.png') }}" alt="CSS"
+             height="20" width="20"> CSS
+      </div>
+
+      <div title="Number of executables in the responses in this node">
+        <img src="{{ url_for('static', filename='exe.png') }}" alt="EXE"
+            height="20" width="20"> EXE
+      </div>
+
+      <div title="Number of images in the responses in this node">
+        <img src="{{ url_for('static', filename='img.png') }}" alt="Image"
+            height="20" width="20"> Image
+      </div>
+
+      <div title="Number of videos in the responses in this node">
+        <img src="{{ url_for('static', filename='video.png') }}" alt="Video"
+            height="20" width="20"> Video
+      </div>
+
+      <div title="Number of unknown resources in the responses in this node">
+        <img src="{{ url_for('static', filename='wtf.png') }}" alt="Content type not set/unknown"
+            height="20" width="20"> Unknown content
+        </div>
+
+      <div title="The node contains a downloaded file">
+        <img src="{{ url_for('static', filename='download.png') }}" alt="Contains a downloaded file"
+            height="20" width="20"> Downloaded file
+      </div>
     </div>
   </div>
 </div>
@@ -306,212 +360,107 @@
     <div id="menu_horizontal_content" class="collapse show flex-grow-1 ms-3 container">
         <div class="hstack gap-3">
           <div class="vr"></div>
-          <div class="col-md">
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item">
+          <div id="capture-menu" class="dropdown">
+              <button class="dropbtn">Capture</button>
+              <div id="capture-menu-content" class="dropdown-content">
+                <a href="#detailsModal" data-bs-toggle="modal" data-bs-target="#detailsModal" role="button">Capture Details</a>
+                <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
+                       data-bs-toggle="modal" data-bs-target="#statsModal" role="button">Statistics</a>
                 <a href="#screenshotModal" data-bs-toggle="modal"
-                   data-bs-target="#screenshotModal" role="button">Page Screenshot</a>
-              </li>
-              <li class="list-group-item">
-                <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
-                   data-bs-toggle="modal" data-bs-target="#modulesModal" role="button">Third Party Reports</a>
-              </li>
-              <li class="list-group-item">
-                <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
-                   data-bs-toggle="modal" data-bs-target="#historyModal" role="button">Historical lookups</a>
-              </li>
-              <li class="list-group-item">
-                <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
-                   data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button">Hashlookup hits</a>
-              </li>
-            </ul>
+                       data-bs-target="#screenshotModal" role="button">Page Screenshot</a>
+              </div>
           </div>
-        <div class="vr"></div>
-        <div class="col-md">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-              <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button">Subsequent Captures</a>
-            </li>
-            <li class="list-group-item">
-              <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button">Re-Capture</a>
-            </li>
-            <li class="list-group-item">
-              <a href="#downloadModal" data-bs-toggle="modal"
-                 data-bs-target="#downloadModal" role="button">Download elements</a>
-            </li>
-            <li class="list-group-item">
+          <div id="tools-menu" class="dropdown">
+            <button class="dropbtn">Analytical Tools</button>
+            <div id="tools-menu-content" class="dropdown-content">
+              <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
+                    data-bs-toggle="modal" data-bs-target="#modulesModal" role="button">Third Party Reports</a>
+              <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
+                    data-bs-toggle="modal" data-bs-target="#historyModal" role="button">Historical lookups</a>
+              <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
+                    data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button">Hashlookup hits</a>
               <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button">Ressources Capture</a>
-            </li>
-            <li class="list-group-item">
+                  data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button">Ressources Capture</a>
               <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Favicons Capture</a>
-            </li>
-            <li class="list-group-item">
+                  data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Favicons Capture</a>
               <a href="#captureHashesTypesModal" data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button">Capture hashes types</a>
-            </li>
-            <li class="list-group-item">
               <a href="#identifiersModal" data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button">Identifiers Capture</a>
-            </li>
-          </ul>
-        </div>
-        {% if current_user.is_authenticated %}
-        <div class="vr"></div>
-        <div class="col-md">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-              <a href="#adminModal" data-bs-toggle="modal"
-                 data-bs-target="#adminModal" role="button">Admin tasks</a>
-            </li>
-            {% if misp_push%}
-            <li class="list-group-item">
-              <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
-            </li>
-            {% endif %}
-            {% if misp_lookup%}
-            <li class="list-group-item">
-              <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
-            </li>
-            {% endif %}
-          </ul>
-        </div>
-        {% endif %}
-        {%if enable_categorization or enable_bookmark or enable_context_by_users %}
-        <div class="vr"></div>
-        <div class="col-md">
-          <ul class="list-group list-group-flush">
-            {% if enable_categorization %}
-            <li class="list-group-item">
-              <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
-            </li>
-            {% endif %}
-            {% if enable_bookmark %}
-            <li class="list-group-item">
-              <a href="#/" role="button" onclick="UnbookmarkAllNodes();">Unbookmark all nodes</a>
-            </li>
-            {% endif %}
-            {% if enable_context_by_users %}
-            <li class="list-group-item">
-              <a href="#/" role="button" onclick="MarkAsKnown('{{ tree_uuid }}');">Mark all the captures' entries as known</a>
-            </li>
-            {% endif %}
-          </ul>
-        </div>
-        {% endif %}
+            </div>
+          </div>
+          <div id="actions-menu" class="dropdown">
+            <button class="dropbtn">Actions</button>
+            <div id="actions-menu-content" class="dropdown-content">
+              <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
+                  data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button">Subsequent Captures</a>
+              <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button">Re-Capture</a>
+                <a href="#downloadModal" data-bs-toggle="modal"
+                  data-bs-target="#downloadModal" role="button">Download elements</a>
+            </div>
+          </div>
+          {% if current_user.is_authenticated %}
+            <div id="admin-menu" class="dropdown">
+              <button class="dropbtn">Admin only</button>
+              <div id="admin-menu-content" class="dropdown-content">
+                <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
+                <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
+                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button">Remove capture</a>
+                {% if misp_push%}
+                  <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
+                    data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
+                {% endif %}
+                {% if misp_lookup%}
+                  <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
+                    data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}" role="button" style="color: red">Logout</a>
+              </div>
+            </div>
+          {% endif %}
+
+          {%if enable_categorization or enable_bookmark or enable_context_by_users %}
+          <div class="vr"></div>
+          <div class="col-md">
+            <ul class="list-group list-group-flush">
+              {% if enable_categorization %}
+              <li class="list-group-item">
+                <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
+                  data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
+              </li>
+              {% endif %}
+              {% if enable_bookmark %}
+              <li class="list-group-item">
+                <a href="#/" role="button" onclick="UnbookmarkAllNodes();">Unbookmark all nodes</a>
+              </li>
+              {% endif %}
+              {% if enable_context_by_users %}
+              <li class="list-group-item">
+                <a href="#/" role="button" onclick="MarkAsKnown('{{ tree_uuid }}');">Mark all the captures' entries as known</a>
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+          {% endif %}
+
+
+          {% if enable_monitoring %}
+          <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info" title="Take regularily captures of the URL">Monitor capture</a>
+          {% endif %}
+
+          {% if enable_mail_notification %}
+          <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious</br>capture</a>
+          {% endif %}
+
+          <a id="help" href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button" title="Lookyloo Manual">?</a>
+
+
       </div>
     </div>
   </div>
 </div>
 
-<div id="legend_container" class="tree-panel-container">
-  <div id=legend class="collapse show">
-    <center>
-      <div style="display: inline">
-        <b>Legend</b>
-      </div>
-      <div style="display: inline;">
-        <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#legend">
-            <img src="{{ url_for('static', filename='down.jpg') }}" alt="Minimize legend" height="25" width="25" title="Collapse">
-        </button>
-      </div>
-    </center>
-  <hr/>
-  <div title="The node contains at least one insecure (not HTTPS) request">
-    <img src="{{ url_for('static', filename='insecure.svg') }}" alt="Insecure requests"
-         height="20" width="20"> Unencrypted requests
-  </div>
 
-  <div title="This node contains only empty responses">
-    <img src="{{ url_for('static', filename='empty.svg') }}" alt="Empty responses"
-         height="20" width="20"> Empty responses
-  </div>
-
-  <div title="Number of cookies received in the responses of this node">
-    <img src="{{ url_for('static', filename='cookie_received.png') }}" alt="Cookie received"
-         height="20" width="20"> Cookie received
-  </div>
-
-  <div title="Number of cookies sent in the requests of this node">
-    <img src="{{ url_for('static', filename='cookie_read.png') }}" alt="Cookie read"
-         height="20" width="20"> Cookie read
-  </div>
-
-  <div title="Number of redirects initiated by the responses of this node">
-    <img src="{{ url_for('static', filename='redirect.png') }}" alt="Redirect"
-         height="20" width="20"> Redirect
-  </div>
-
-  <div title="Number of resources loaded from iFrames in the responses in this node">
-    <img src="{{ url_for('static', filename='ifr.png') }}" alt="iFrame"
-        height="20" width="20"> iFrame
-  </div>
-
-  <div title="Number of JavaScript in the responses in this node">
-    <img src="{{ url_for('static', filename='javascript.png') }}" alt="JavaScript"
-         height="20" width="20"> Javascript
-  </div>
-
-  <div title="Number of fonts in the responses in this node">
-    <img src="{{ url_for('static', filename='font.png') }}" alt="Font"
-         height="20" width="20"> Font
-  </div>
-
-  <div title="Number of HTML in the responses in this node">
-    <img src="{{ url_for('static', filename='html.png') }}" alt="HTML"
-         height="20" width="20"> HTML
-  </div>
-
-  <div title="Number of JSON in the responses in this node">
-    <img src="{{ url_for('static', filename='json.png') }}" alt="JSON"
-         height="20" width="20"> JSON
-  </div>
-
-  <div title="Number of CSS in the responses in this node">
-    <img src="{{ url_for('static', filename='css.png') }}" alt="CSS"
-         height="20" width="20"> CSS
-  </div>
-
-  <div title="Number of executables in the responses in this node">
-    <img src="{{ url_for('static', filename='exe.png') }}" alt="EXE"
-        height="20" width="20"> EXE
-  </div>
-
-  <div title="Number of images in the responses in this node">
-    <img src="{{ url_for('static', filename='img.png') }}" alt="Image"
-        height="20" width="20"> Image
-  </div>
-
-  <div title="Number of videos in the responses in this node">
-    <img src="{{ url_for('static', filename='video.png') }}" alt="Video"
-        height="20" width="20"> Video
-  </div>
-
-  <div title="Number of unknown resources in the responses in this node">
-    <img src="{{ url_for('static', filename='wtf.png') }}" alt="Content type not set/unknown"
-        height="20" width="20"> Unknown content
-    </div>
-
-  <div title="The node contains a downloaded file">
-    <img src="{{ url_for('static', filename='download.png') }}" alt="Contains a downloaded file"
-        height="20" width="20"> Downloaded file
-    </div>
-  </div>
-
-  <div style="width: 70px; float: right;">
-    <center>
-    <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#legend">
-      <img src="{{ url_for('static', filename='up.jpg') }}" alt="Maximize legend" height="40" width="40" title="Expand">
-      <b>Legend</b>
-    </button>
-    </center>
-  </div>
-</div>
 
 <!-- Modals -->
 
