@@ -414,10 +414,11 @@
           {% if current_user.is_authenticated %}
             <div class="vr"></div>
             <div id="admin-menu" class="dropdown">
-              <button id="admin-menu-content" class="dropbtn">Admin Rights</button>
-              <div class="dropdown-content">
-                <a href="#adminModal" data-bs-toggle="modal"
-                    data-bs-target="#adminModal" role="button">Admin tasks</a>
+              <button class="dropbtn">Admin only</button>
+              <div id="admin-menu-content" class="dropdown-content">
+                <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
+                <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
+                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button">Remove capture</a>
                 {% if misp_push%}
                   <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
                     data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
@@ -426,6 +427,7 @@
                   <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
                     data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
                 {% endif %}
+                <a href="{{ url_for('logout') }}" role="button" style="color: red">Logout</a>
               </div>
             </div>
           {% endif %}
@@ -862,39 +864,6 @@
   </div>
 </div>
 
-<div class="modal fade" id="adminModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-xl" role="document">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h4 class="modal-title" id="adminModalLabel">
-                  RUn admin only tasks on the capture
-              </h4>
-              </br>
-              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          </br>
-          <div class="modal-body">
-          <ul>
-            <li>
-              <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
-            </li>
-            <li>
-              <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
-            </li>
-            <li>
-              <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button">Remove capture</a>
-            </li>
-            <li>
-              <a href="{{ url_for('logout') }}" role="button">Logout</a>
-            </li>
-          </ul>
-          </div>
-          <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-      </div>
-  </div>
-</div>
 <div class="modal fade" id="hashlookupModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
