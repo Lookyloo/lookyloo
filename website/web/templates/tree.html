@@ -271,12 +271,11 @@
             <img src="{{ url_for('static', filename='empty.svg') }}" alt="Empty responses"
                 height="20" width="20"> Empty responses
         </div>
-
       <div title="Number of cookies received in the responses of this node">
         <img src="{{ url_for('static', filename='cookie_received.png') }}" alt="Cookie received"
              height="20" width="20"> Cookie received
       </div>
-
+      
       <div title="Number of cookies sent in the requests of this node">
         <img src="{{ url_for('static', filename='cookie_read.png') }}" alt="Cookie read"
              height="20" width="20"> Cookie read
@@ -340,6 +339,7 @@
       <div title="The node contains a downloaded file">
         <img src="{{ url_for('static', filename='download.png') }}" alt="Contains a downloaded file"
             height="20" width="20"> Downloaded file
+
       </div>
     </div>
   </div>
@@ -370,6 +370,7 @@
                        data-bs-target="#screenshotModal" role="button">Page Screenshot</a>
               </div>
           </div>
+
           <div id="tools-menu" class="dropdown">
             <button class="dropbtn">Analytical Tools</button>
             <div id="tools-menu-content" class="dropdown-content">
@@ -389,6 +390,7 @@
                  data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button">Identifiers Capture</a>
             </div>
           </div>
+
           <div id="actions-menu" class="dropdown">
             <button class="dropbtn">Actions</button>
             <div id="actions-menu-content" class="dropdown-content">
@@ -400,6 +402,7 @@
             </div>
           </div>
           {% if current_user.is_authenticated %}
+
             <div id="admin-menu" class="dropdown">
               <button class="dropbtn">Admin only</button>
               <div id="admin-menu-content" class="dropdown-content">
@@ -443,7 +446,6 @@
           </div>
           {% endif %}
 
-
           {% if enable_monitoring %}
           <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info" title="Take regularily captures of the URL">Monitor capture</a>
           {% endif %}
@@ -453,7 +455,6 @@
           {% endif %}
 
           <a id="help" href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button" title="Lookyloo Manual">?</a>
-
 
       </div>
     </div>
@@ -851,39 +852,6 @@
   </div>
 </div>
 
-<div class="modal fade" id="adminModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-xl" role="document">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h4 class="modal-title" id="adminModalLabel">
-                  RUn admin only tasks on the capture
-              </h4>
-              </br>
-              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          </br>
-          <div class="modal-body">
-          <ul>
-            <li>
-              <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
-            </li>
-            <li>
-              <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
-            </li>
-            <li>
-              <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button">Remove capture</a>
-            </li>
-            <li>
-              <a href="{{ url_for('logout') }}" role="button">Logout</a>
-            </li>
-          </ul>
-          </div>
-          <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-      </div>
-  </div>
-</div>
 <div class="modal fade" id="hashlookupModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
