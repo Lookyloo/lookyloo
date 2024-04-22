@@ -31,13 +31,14 @@
 #help {
   text-align: center;
   border-style: solid;
-  border-color: blue;
+  border-color: #0d6efd;
   border-radius: 25px;
   text-decoration: none;
   height: 50px;
   width: 50px;
-  background-color: blue;
+  background-color: #0d6efd;
   color: white;
+  align-content: center;
 }
 
 #help:hover {
@@ -116,8 +117,12 @@ hr {
   padding: 5px;
 }
 
+.hstack{
+  height: 106.6px;
+}
+
 #menu_container_horizontal .container {
-  width: 800px;
+  width: 80%;
 }
 
 #menu_container_horizontal ul.components {
@@ -138,18 +143,19 @@ hr {
 /* NEW: Dropdown Menu */
 /* Dropdown Button */
 .dropbtn {
-  background-color: #3498db;
+  background-color: #0d6efd;
   color: white;
   font-size: 16px;
   border: none;
   cursor: pointer;
   width: 180px;
   text-align: center;
+  height: 40px;
 }
 
 /* Dropdown button on hover & focus */
 .dropbtn:hover, .dropbtn:focus {
-  background-color: #2980b9;
+  background-color: #0067fc;
 }
 
 /* The container <div> - needed to position the dropdown content */
