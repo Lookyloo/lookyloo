@@ -65,20 +65,14 @@ hr {
   left: 5px;
   background: white;
   border: 2px solid;
-  padding-top: 5px;
-  padding-right: 5px;
-  padding-bottom: 5px;
-  padding-left: 5px;
+  padding: 5px;
 }
 
 #menu_container_vertical {
   position: fixed;
   top: 5px;
   left: 5px;
-  padding-top: 5px;
-  padding-right: 5px;
-  padding-bottom: 5px;
-  padding-left: 5px;
+  padding: 5px;
 }
 
 #menu_container_vertical .menu-header {
@@ -91,14 +85,13 @@ hr {
     padding: 10px 0;
 }
 
+
 #menu_container_vertical ul li a {
     padding: 5px;
     font-size: 1.1em;
     display: block;
 }
 
-#menu_container_vertical ul li a:hover {
-}
 
 /* menu horizontal */
 #menu_horizontal {
@@ -115,18 +108,16 @@ hr {
   left: 5px;
   left: 217px;
   padding: 5px;
+  width: 80%;
 }
 
 .hstack{
   height: 106.6px;
 }
 
-#menu_container_horizontal .container {
-  width: 80%;
-}
 
 #menu_container_horizontal ul.components {
-    padding: 5px;
+  padding: 5px;
 }
 
 #menu_container_horizontal ul li a {
@@ -150,7 +141,7 @@ hr {
   cursor: pointer;
   width: 180px;
   text-align: center;
-  height: 40px;
+  height: 50px;
 }
 
 /* Dropdown button on hover & focus */
@@ -182,14 +173,11 @@ hr {
   display: block;
 }
 
-.dropdown-content.show {
-  display: block;
-}
 
 /* Change color of dropdown links on hover */
 .dropdown-content a:hover {background-color: #f1f1f1;}
 
-/* Show the dropdown menu on hover */
+/* Show the dropdown menus on hover */
 #capture-menu:hover #capture-menu-content {
   display: block;
 }
@@ -202,10 +190,8 @@ hr {
 #admin-menu:hover #admin-menu-content {
   display: block;
 }
-
-/* Change the background color of the dropdown button when the dropdown content is shown */
-.dropdown:hover .dropbtn {
-  background-color: #2980b9;
+#extra-menu:hover #extra-menu-content {
+  display: block;
 }
 
 
@@ -214,10 +200,7 @@ hr {
   position: fixed;
   bottom: 5px;
   right: 5px;
-  padding-top: 5px;
-  padding-right: 5px;
-  padding-bottom: 5px;
-  padding-left: 5px;
+  padding: 5px;
 }
 
 #legend {
@@ -226,8 +209,5 @@ hr {
   right: 5px;
   background: white;
   border: 2px solid;
-  padding-top: 5px;
-  padding-right: 5px;
-  padding-bottom: 5px;
-  padding-left: 5px;
+  padding: 5px;
 }
