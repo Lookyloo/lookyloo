@@ -709,13 +709,13 @@ files = [
 
 [[package]]
 name = "exceptiongroup"
-version = "1.2.0"
+version = "1.2.1"
 description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "exceptiongroup-1.2.0-py3-none-any.whl", hash = "sha256:4bfd3996ac73b41e9b9628b04e079f193850720ea5945fc96a08633c66912f14"},
-    {file = "exceptiongroup-1.2.0.tar.gz", hash = "sha256:91f5c769735f051a4290d52edd0858999b57e5876e9f85937691bd4c9fa3ed68"},
+    {file = "exceptiongroup-1.2.1-py3-none-any.whl", hash = "sha256:5258b9ed329c5bbdd31a309f53cbfb0b155341807f6ff7606a1e801a891b29ad"},
+    {file = "exceptiongroup-1.2.1.tar.gz", hash = "sha256:a4785e48b045528f5bfe627b6ad554ff32def154f42372786903b7abcfe1aa16"},
 ]
 
 [package.extras]
@@ -1466,20 +1466,20 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.9.1"
+version = "1.9.2"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "lacuscore-1.9.1-py3-none-any.whl", hash = "sha256:14c5fa653f288306b9b8987f598821a2224f8485c5019bb8aff6f173422e01e4"},
-    {file = "lacuscore-1.9.1.tar.gz", hash = "sha256:24d7651ba68e9411e4d69604cc43ad018188738e91be9ab3354f7ef1a1a44be5"},
+    {file = "lacuscore-1.9.2-py3-none-any.whl", hash = "sha256:131b1f236eb32169f8da4b182bfe120c5cbb60e4c20a90bf15747191886e3e36"},
+    {file = "lacuscore-1.9.2.tar.gz", hash = "sha256:d4f2ce96859552103db3e95fa6d053ebb44640480226e60aca917b02ba1ff07b"},
 ]
 
 [package.dependencies]
 async-timeout = {version = ">=4.0.3,<5.0.0", markers = "python_version < \"3.11\""}
 defang = ">=0.5.3,<0.6.0"
 dnspython = ">=2.6.1,<3.0.0"
-playwrightcapture = {version = ">=1.24.1,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.24.5,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=5.0.3,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.31.0,<3.0.0"
 ua-parser = ">=0.18.0,<0.19.0"
@@ -2367,13 +2367,13 @@ test = ["pytest"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.24.4"
+version = "1.24.5"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "playwrightcapture-1.24.4-py3-none-any.whl", hash = "sha256:afbae23a895d2f4becc60b331afd65fcc777a92bee340a91cc32cd8297d09a4a"},
-    {file = "playwrightcapture-1.24.4.tar.gz", hash = "sha256:1817fa193ac03312d28e08010cc2410318e06bb79a403f9477b0d204a5a8dfed"},
+    {file = "playwrightcapture-1.24.5-py3-none-any.whl", hash = "sha256:577b6831c02abbc6895248dd7a3c665a0ae2cb6396a8e11e8e286b31b33e5a60"},
+    {file = "playwrightcapture-1.24.5.tar.gz", hash = "sha256:0fdc6cd9ee18316614e6606f3025c5b88502800f1f250e291685edb312da6445"},
 ]
 
 [package.dependencies]
@@ -2420,13 +2420,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.0.20240416"
+version = "0.10.0.20240420"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.0.20240416-py2.py3-none-any.whl", hash = "sha256:724f44ade7f3a4a23a23e6cb21548b6d5723c5bf2309c4ecd999a4972b3aa03a"},
-    {file = "publicsuffixlist-0.10.0.20240416.tar.gz", hash = "sha256:63440ff5234940e30610a004783c0a353450b458b050e5862db906271eba4819"},
+    {file = "publicsuffixlist-0.10.0.20240420-py2.py3-none-any.whl", hash = "sha256:a1844f565c79b88ee78731c7f177dafd8d02d45cedbafb1fd6aa99c0e2c1693a"},
+    {file = "publicsuffixlist-0.10.0.20240420.tar.gz", hash = "sha256:b3cc4f91eb3fc4595e8ea7ce94c64e3cb98d2bdd9ed932cad7c5199afdff6ba2"},
 ]
 
 [package.extras]
@@ -2652,19 +2652,19 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.188"
+version = "2.4.190"
 description = "Python API for MISP."
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "pymisp-2.4.188-py3-none-any.whl", hash = "sha256:454746ee717841cd1a9425ec6cffdaf99de595d8672685e0a61b7a233659480a"},
-    {file = "pymisp-2.4.188.tar.gz", hash = "sha256:c2313d059a9f4d1221243fcda64fb8ae11603c1745e92d57c4071aad04336696"},
+    {file = "pymisp-2.4.190-py3-none-any.whl", hash = "sha256:0b63b3d7c497239987ad3220eb7bbbe9249e61461278c6c0d6575a6bb8619b40"},
+    {file = "pymisp-2.4.190.tar.gz", hash = "sha256:e7374295bfd8c7d25f56867e4395a029433360d95420e39b7f78eb1d4f8b48b4"},
 ]
 
 [package.dependencies]
 deprecated = ">=1.2.14,<2.0.0"
 lief = {version = ">=0.14.1,<0.15.0", optional = true, markers = "extra == \"fileobjects\""}
-publicsuffixlist = ">=0.10.0.20231214,<0.11.0.0"
+publicsuffixlist = ">=0.10.0.20240403,<0.11.0.0"
 pydeep2 = {version = ">=0.5.1,<0.6.0", optional = true, markers = "extra == \"fileobjects\""}
 pyfaup = {version = ">=1.2,<2.0", optional = true, markers = "extra == \"url\""}
 python-dateutil = ">=2.9.0.post0,<3.0.0"
@@ -2673,13 +2673,13 @@ requests = ">=2.31.0,<3.0.0"
 
 [package.extras]
 brotli = ["urllib3[brotli]"]
-docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)", "recommonmark (>=0.7.1,<0.8.0)", "sphinx-autodoc-typehints (>=2.0.0,<3.0.0)"]
-email = ["RTFDE (>=0.1.1,<0.2.0)", "extract_msg (>=0.48.0,<0.49.0)", "oletools (>=0.60.1,<0.61.0)"]
+docs = ["Sphinx (>=7.3.6,<8.0.0)", "docutils (>=0.21.1,<0.22.0)", "recommonmark (>=0.7.1,<0.8.0)", "sphinx-autodoc-typehints (>=2.1.0,<3.0.0)"]
+email = ["RTFDE (>=0.1.1,<0.2.0)", "extract_msg (>=0.48.5,<0.49.0)", "oletools (>=0.60.1,<0.61.0)"]
 fileobjects = ["lief (>=0.14.1,<0.15.0)", "pydeep2 (>=0.5.1,<0.6.0)", "python-magic (>=0.4.27,<0.5.0)"]
 openioc = ["beautifulsoup4 (>=4.12.3,<5.0.0)"]
 pdfexport = ["reportlab (>=4.1.0,<5.0.0)"]
 url = ["pyfaup (>=1.2,<2.0)"]
-virustotal = ["validators (>=0.23.0,<0.24.0)"]
+virustotal = ["validators (>=0.28.0,<0.29.0)"]
 
 [[package]]
 name = "pypandora"
@@ -3286,18 +3286,18 @@ files = [
 
 [[package]]
 name = "traitlets"
-version = "5.14.2"
+version = "5.14.3"
 description = "Traitlets Python configuration system"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "traitlets-5.14.2-py3-none-any.whl", hash = "sha256:fcdf85684a772ddeba87db2f398ce00b40ff550d1528c03c14dbf6a02003cd80"},
-    {file = "traitlets-5.14.2.tar.gz", hash = "sha256:8cdd83c040dab7d1dee822678e5f5d100b514f7b72b01615b26fc5718916fdf9"},
+    {file = "traitlets-5.14.3-py3-none-any.whl", hash = "sha256:b74e89e397b1ed28cc831db7aea759ba6640cb3de13090ca145426688ff1ac4f"},
+    {file = "traitlets-5.14.3.tar.gz", hash = "sha256:9ed0579d3502c94b4b3732ac120375cda96f923114522847de4b3bb98b96b6b7"},
 ]
 
 [package.extras]
 docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
-test = ["argcomplete (>=3.0.3)", "mypy (>=1.7.0)", "pre-commit", "pytest (>=7.0,<8.1)", "pytest-mock", "pytest-mypy-testing"]
+test = ["argcomplete (>=3.0.3)", "mypy (>=1.7.0)", "pre-commit", "pytest (>=7.0,<8.2)", "pytest-mock", "pytest-mypy-testing"]
 
 [[package]]
 name = "types-beautifulsoup4"
@@ -3351,13 +3351,13 @@ files = [
 
 [[package]]
 name = "types-pillow"
-version = "10.2.0.20240415"
+version = "10.2.0.20240423"
 description = "Typing stubs for Pillow"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-Pillow-10.2.0.20240415.tar.gz", hash = "sha256:dd6058027639bcdc66ba78b228cc25fdae42524c2150c78c804da427e7e76e70"},
-    {file = "types_Pillow-10.2.0.20240415-py3-none-any.whl", hash = "sha256:f933332b7e96010bae9b9cf82a4c9979ff0c270d63f5c5bbffb2d789b85cd00b"},
+    {file = "types-Pillow-10.2.0.20240423.tar.gz", hash = "sha256:696e68b9b6a58548fc307a8669830469237c5b11809ddf978ac77fafa79251cd"},
+    {file = "types_Pillow-10.2.0.20240423-py3-none-any.whl", hash = "sha256:bd12923093b96c91d523efcdb66967a307f1a843bcfaf2d5a529146c10a9ced3"},
 ]
 
 [[package]]
@@ -3410,13 +3410,13 @@ files = [
 
 [[package]]
 name = "types-redis"
-version = "4.6.0.20240417"
+version = "4.6.0.20240423"
 description = "Typing stubs for redis"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-redis-4.6.0.20240417.tar.gz", hash = "sha256:8be4b3e5945120acdef0a2348c04be42894e84c6d616288b908a3d8ed5e89a8d"},
-    {file = "types_redis-4.6.0.20240417-py3-none-any.whl", hash = "sha256:4c35cbd90ff18c8da6f97a05d2fe97eb3abfe09acf3a4357b6c5e2d4a59385a1"},
+    {file = "types-redis-4.6.0.20240423.tar.gz", hash = "sha256:f5e372d9db3c2109f579ff9de5073cb2f239689a2dfd68ef2ca8d244172b19a9"},
+    {file = "types_redis-4.6.0.20240423-py3-none-any.whl", hash = "sha256:963219f01e1a132bd05e6e7b328c432fb099ea885895900bfc6e2a44a449256c"},
 ]
 
 [package.dependencies]
@@ -3453,13 +3453,13 @@ urllib3 = ">=2"
 
 [[package]]
 name = "types-setuptools"
-version = "69.5.0.20240415"
+version = "69.5.0.20240423"
 description = "Typing stubs for setuptools"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-setuptools-69.5.0.20240415.tar.gz", hash = "sha256:ea64af0a96a674f8c40ba34c09c254f3c70bc3f218c6bffa1d0912bd91584a2f"},
-    {file = "types_setuptools-69.5.0.20240415-py3-none-any.whl", hash = "sha256:637cdb24a0d48a6ab362c09cfe3b89ecaa1c10666a8ba9452924e9a0ae00fa4a"},
+    {file = "types-setuptools-69.5.0.20240423.tar.gz", hash = "sha256:a7ba908f1746c4337d13f027fa0f4a5bcad6d1d92048219ba792b3295c58586d"},
+    {file = "types_setuptools-69.5.0.20240423-py3-none-any.whl", hash = "sha256:a4381e041510755a6c9210e26ad55b1629bc10237aeb9cb8b6bd24996b73db48"},
 ]
 
 [[package]]
@@ -3573,17 +3573,17 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.18.0"
+version = "0.18.2"
 description = "The official Python client library for VirusTotal"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "vt-py-0.18.0.tar.gz", hash = "sha256:aa1d481e85028bd2134ee6fb8885efb73256c659e2a125d7772fe68c2b0c7f6f"},
-    {file = "vt_py-0.18.0-py3-none-any.whl", hash = "sha256:a2cfaf523e906e6f0d833ffa627858ed9fdfa22ed27dc99d9bb46a2a4fe0c2f0"},
+    {file = "vt_py-0.18.2-py3-none-any.whl", hash = "sha256:68393b7543e4eebf185b4cef6afd77839104b0f92e45b710e7286bf6c01a6e41"},
+    {file = "vt_py-0.18.2.tar.gz", hash = "sha256:a4103f3a641eabccca7fbbaf42fe82a458eca25f58faa63af7a1fc1c170de730"},
 ]
 
 [package.dependencies]
-aiohttp = "*"
+aiohttp = {version = "*", markers = "python_version > \"3.7\""}
 
 [package.extras]
 test = ["pytest", "pytest-asyncio", "pytest-httpserver"]
@@ -3844,4 +3844,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "826080a818e45f230036a30c5383a62c719dbc9caac80351b4b16e6483d03812"
+content-hash = "9d287e321b10c8b1bf540b163746d3d5dd7a86dd55c6347e8ae668e7dd3281c6"
