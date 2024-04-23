@@ -90,6 +90,7 @@ hr {
     padding: 5px;
     font-size: 1.1em;
     display: block;
+    text-align: center;;
 }
 
 
@@ -116,46 +117,27 @@ hr {
 }
 
 
-#menu_container_horizontal ul.components {
-  padding: 5px;
-}
 
-#menu_container_horizontal ul li a {
-    padding: 1px;
-    font-size: 1.1em;
-    display: block;
-}
-
-#menu_container_horizontal ul li a:hover {
-    background: #fff;
-}
-
-
-/* NEW: Dropdown Menu */
-/* Dropdown Button */
+/* Dropdown Menus */
 .dropbtn {
   background-color: #0d6efd;
   color: white;
   font-size: 16px;
   border: none;
-  cursor: pointer;
   width: 180px;
   text-align: center;
   height: 50px;
 }
 
-/* Dropdown button on hover & focus */
 .dropbtn:hover, .dropbtn:focus {
   background-color: #0067fc;
 }
 
-/* The container <div> - needed to position the dropdown content */
 .dropdown {
   position: relative;
   display: inline-block;
 }
 
-/* Dropdown Content (Hidden by Default) */
 .dropdown-content {
   display: none;
   position: absolute;
@@ -165,7 +147,6 @@ hr {
   z-index: 1;
 }
 
-/* Links inside the dropdown */
 .dropdown-content a {
   color: black;
   padding: 12px 16px;
@@ -173,9 +154,9 @@ hr {
   display: block;
 }
 
-
-/* Change color of dropdown links on hover */
-.dropdown-content a:hover {background-color: #f1f1f1;}
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
 
 /* Show the dropdown menus on hover */
 #capture-menu:hover #capture-menu-content {

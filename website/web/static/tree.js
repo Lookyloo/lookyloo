@@ -9,7 +9,7 @@ let margin = {
     left: 90
 };
 
-let menuHeight = document.getElementById('menu_vertical').clientHeight;
+let menuHeight = document.getElementById('menu_vertical').clientHeight + 20;
 let width = 960 - margin.left - margin.right;
 let height = menuHeight * 2;
 
