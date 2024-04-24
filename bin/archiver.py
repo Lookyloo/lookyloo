@@ -117,6 +117,10 @@ class Archiver(AbstractManager):
                         sub_indexes.append(sub_index)
                 else:
                     # got a capture
+                    if len(self.s3fs_client.ls(entry, detail=False)) == 1:
+                        # empty capture directory
+                        self.s3fs_client.rm(entry)
+                        continue
                     if str(dir_on_disk) not in current_index_dirs:
                         new_captures.add(dir_on_disk)
                 current_dirs.add(dir_on_disk.name)
