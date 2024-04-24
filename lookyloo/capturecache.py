@@ -385,8 +385,15 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         '''Populate the redis cache for a capture. Mostly used on the index page.
         NOTE: Doesn't require the pickle.'''
         capture_dir = Path(capture_dir_str)
-        with (capture_dir / 'uuid').open() as f:
-            uuid = f.read().strip()
+        try:
+            with (capture_dir / 'uuid').open() as f:
+                uuid = f.read().strip()
+        except FileNotFoundError:
+            if not os.listdir(capture_dir_str):
+                # The directory is empty, removing it
+                os.rmdir(capture_dir_str)
+                raise MissingCaptureDirectory(f'Empty directory: {capture_dir_str}')
+            raise MissingCaptureDirectory(f'Unable to find the UUID file in {capture_dir}.')
 
         # Get capture settings as they were submitted
         capture_settings_file = capture_dir / 'capture_settings.json'
