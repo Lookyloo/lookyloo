@@ -102,19 +102,21 @@ class AsyncCapture(AbstractManager):
             )
 
             if 'auto_report' in to_capture:
+                send_report = True
                 settings = {}
                 if isinstance(to_capture['auto_report'], str):
                     if to_capture['auto_report'].isdigit():
                         # auto_report was a bool in the submission, it can be 1 or 0. 0 means no.
                         if to_capture['auto_report'] == '0':
-                            continue
+                            send_report = False
                     else:
                         settings = json.loads(to_capture['auto_report'])
                 elif isinstance(to_capture['auto_report'], dict):
                     settings = to_capture['auto_report']
 
-                self.lookyloo.send_mail(uuid, email=settings.get('email', ''),
-                                        comment=settings.get('comment'))
+                if send_report:
+                    self.lookyloo.send_mail(uuid, email=settings.get('email', ''),
+                                            comment=settings.get('comment'))
 
             lazy_cleanup = self.lookyloo.redis.pipeline()
             if queue and self.lookyloo.redis.zscore('queues', queue):
