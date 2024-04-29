@@ -6,17 +6,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}"
-          integrity="{{get_sri('static', 'favicon.ico')}}"
+          {{get_sri('static', 'favicon.ico')}}
           crossorigin="anonymous">
 
     {% block styles %}
     <!-- Bootstrap CSS -->
     {{ bootstrap.load_css() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='generic.css') }}"
-          integrity="{{get_sri('static', 'generic.css')}}"
+          {{get_sri('static', 'generic.css')}}
           crossorigin="anonymous">
     <link rel="stylesheet" href="{{ url_for('static', filename='datatables.min.css') }}"
-          integrity="{{get_sri('static', 'datatables.min.css')}}"
+          {{get_sri('static', 'datatables.min.css')}}
           crossorigin="anonymous">
     {% endblock %}
 
@@ -36,13 +36,13 @@
     <!-- Optional JavaScript -->
     {{ bootstrap.load_js() }}
     <script src='{{ url_for('static', filename='jquery.min.js') }}'
-            integrity="{{get_sri('static', 'jquery.min.js')}}"
+            {{get_sri('static', 'jquery.min.js')}}
             crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='datatables.min.js') }}'
-            integrity="{{get_sri('static', 'datatables.min.js')}}"
+            {{get_sri('static', 'datatables.min.js')}}
             crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='generic.js') }}'
-            integrity="{{get_sri('static', 'generic.js')}}"
+            {{get_sri('static', 'generic.js')}}
             crossorigin="anonymous"></script>
     {% endblock %}
   </body>

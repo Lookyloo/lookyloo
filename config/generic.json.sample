@@ -13,6 +13,7 @@
     "days": 0,
     "hours": 0
   },
+  "enable_ignore_sri": false,
   "async_capture_processes": 1,
   "use_user_agents_users": false,
   "enable_default_blur_screenshot": false,
