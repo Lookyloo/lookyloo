@@ -258,38 +258,29 @@
           </span>
       </button>
     </div>
-    <hr/>
+    
     <div id=menu_vertical_content class="collapse show">
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">
-          <a href="#detailsModal" data-bs-toggle="modal" data-bs-target="#detailsModal" role="button">Capture Details</a>
-        </li>
-        <li class="list-group-item">
-          <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}"
-             data-bs-toggle="modal" data-bs-target="#statsModal" role="button">Statistics</a>
-        </li>
-        <li class="list-group-item">
-          <a href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button">Lookyloo Manual</a>
-        </li>
-        <li class="list-group-item">
-          <a href="{{ url_for('index') }}" role="button">Homepage</a>
-        </li>
-        {% if enable_monitoring %}
-        <hr/>
-        <li class="list-group-item">
-          <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor capture</a>
-        </li>
-        {% endif %}
-        {% if enable_mail_notification %}
-        <hr/>
-        <li class="list-group-item">
-          <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious</br>capture</a>
-        </li>
-        {% endif %}
-      </ul>
+      <hr/>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            <a href="{{ url_for('capture_web') }}" role="button">New capture</a>
+          </li>
+          {% if enable_monitoring %}
+          <li class="list-group-item">
+            <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor capture</a>
+          </li>
+          {% endif %}
+          {% if enable_mail_notification %}
+          <li class="list-group-item">
+            <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious</br>capture</a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
     </div>
   </div>
 </div>
+
 
 <div id="menu_container_horizontal" class="tree-panel-container">
   <div id=menu_horizontal class="d-flex">
@@ -306,104 +297,109 @@
     <div id="menu_horizontal_content" class="collapse show flex-grow-1 ms-3 container">
         <div class="hstack gap-3">
           <div class="vr"></div>
-          <div class="col-md">
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item">
-                <a href="#screenshotModal" data-bs-toggle="modal"
-                   data-bs-target="#screenshotModal" role="button">Page Screenshot</a>
-              </li>
-              <li class="list-group-item">
-                <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
-                   data-bs-toggle="modal" data-bs-target="#modulesModal" role="button">Third Party Reports</a>
-              </li>
-              <li class="list-group-item">
-                <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
-                   data-bs-toggle="modal" data-bs-target="#historyModal" role="button">Historical lookups</a>
-              </li>
-              <li class="list-group-item">
-                <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
-                   data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button">Hashlookup hits</a>
-              </li>
-            </ul>
+
+          <div id="capture-menu" class="dropdown">
+              <button class="dropbtn">Capture</button>
+              <div id="capture-menu-content" class="dropdown-content">
+                <a href="#detailsModal" data-bs-toggle="modal" data-bs-target="#detailsModal"
+                    role="button" title="Details about the capture configuration">Capture Details</a>
+
+                <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}" data-bs-toggle="modal" 
+                    data-bs-target="#statsModal" role="button" title="The capture in numbers">Statistics</a>
+
+                <a href="#screenshotModal" data-bs-toggle="modal" data-bs-target="#screenshotModal" 
+                    role="button" title="Contains the URL rendered in the browser">Page Screenshot</a>
+              </div>
           </div>
-        <div class="vr"></div>
-        <div class="col-md">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-              <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button">Subsequent Captures</a>
-            </li>
-            <li class="list-group-item">
-              <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button">Re-Capture</a>
-            </li>
-            <li class="list-group-item">
-              <a href="#downloadModal" data-bs-toggle="modal"
-                 data-bs-target="#downloadModal" role="button">Download elements</a>
-            </li>
-            <li class="list-group-item">
+
+          <div id="tools-menu" class="dropdown">
+            <button class="dropbtn">Analytical Tools</button>
+            <div id="tools-menu-content" class="dropdown-content">
+              <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
+                  data-bs-toggle="modal" data-bs-target="#modulesModal" role="button"
+                  title="Lookups from supported 3rd party services">Third Party Reports</a>
+
+              <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
+                  data-bs-toggle="modal" data-bs-target="#historyModal" role="button"
+                  title="Historical data and context about this capture ">Historical lookups</a>
+
+              <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
+                  data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button"
+                  title="Hits in Hashlookup ">Hashlookup hits</a>
+
               <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button">Ressources Capture</a>
-            </li>
-            <li class="list-group-item">
+                  data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button"
+                  title="All ressources contained in the tree">Ressources Capture</a>
+
               <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Favicons Capture</a>
-            </li>
-            <li class="list-group-item">
+                  data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button"
+                  title="Favicons found on the rendered page">Favicons Capture</a>
+
               <a href="#captureHashesTypesModal" data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button">Capture hashes types</a>
-            </li>
-            <li class="list-group-item">
+                  data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button"
+                  title="Compare hashes of the rendered page">Capture hashes types</a>
+
               <a href="#identifiersModal" data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button">Identifiers Capture</a>
-            </li>
-          </ul>
-        </div>
-        {% if current_user.is_authenticated %}
-        <div class="vr"></div>
-        <div class="col-md">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-              <a href="#adminModal" data-bs-toggle="modal"
-                 data-bs-target="#adminModal" role="button">Admin tasks</a>
-            </li>
-            {% if misp_push%}
-            <li class="list-group-item">
-              <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
-            </li>
-            {% endif %}
-            {% if misp_lookup%}
-            <li class="list-group-item">
-              <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
-            </li>
-            {% endif %}
-          </ul>
-        </div>
-        {% endif %}
-        {%if enable_categorization or enable_bookmark or enable_context_by_users %}
-        <div class="vr"></div>
-        <div class="col-md">
-          <ul class="list-group list-group-flush">
-            {% if enable_categorization %}
-            <li class="list-group-item">
-              <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
-                 data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
-            </li>
-            {% endif %}
-            {% if enable_bookmark %}
-            <li class="list-group-item">
-              <a href="#/" role="button" onclick="UnbookmarkAllNodes();">Unbookmark all nodes</a>
-            </li>
-            {% endif %}
-            {% if enable_context_by_users %}
-            <li class="list-group-item">
-              <a href="#/" role="button" onclick="MarkAsKnown('{{ tree_uuid }}');">Mark all the captures' entries as known</a>
-            </li>
-            {% endif %}
-          </ul>
-        </div>
-        {% endif %}
+                  data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button"
+                  title="Identifiers found on the rendered page">Identifiers Capture</a>
+            </div>
+          </div>
+
+          <div id="actions-menu" class="dropdown">
+            <button class="dropbtn">Actions</button>
+            <div id="actions-menu-content" class="dropdown-content">
+              <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
+                  data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button"
+                  title="Start a capture from one of the URLs rendered in the page">Subsequent Captures</a>
+
+              <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button"
+                  title="Submit the URL again">Re-Capture</a>
+
+              <a href="#downloadModal" data-bs-toggle="modal" data-bs-target="#downloadModal" role="button"
+                  title="Download specific elements of the capture">Download elements</a>
+            </div>
+          </div>
+
+          {% if current_user.is_authenticated %}
+            <div id="admin-menu" class="dropdown">
+              <button class="dropbtn">Admin only</button>
+              <div id="admin-menu-content" class="dropdown-content">
+                <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
+                <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
+                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button">Remove capture</a>
+                {% if misp_push%}
+                  <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
+                    data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
+                {% endif %}
+                {% if misp_lookup%}
+                  <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
+                    data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}" role="button" style="color: red">Logout</a>
+              </div>
+            </div>
+          {% endif %}
+
+          {%if enable_categorization or enable_bookmark or enable_context_by_users %}
+            <div id="extra-menu" class="dropdown">
+              <button class="dropbtn">Extras</button>
+              <div id="extra-menu-content" class="dropdown-content">
+                {% if enable_categorization %}
+                    <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
+                    data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
+                {% endif %}
+                {% if enable_bookmark %}
+                    <a href="#/" role="button" onclick="UnbookmarkAllNodes();">Unbookmark all nodes</a>
+                {% endif %}
+                {% if enable_context_by_users %}
+                    <a href="#/" role="button" onclick="MarkAsKnown('{{ tree_uuid }}');">Mark all the captures' entries as known</a>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+
+          <a id="help" href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button" title="Lookyloo Manual">?</a>
+
       </div>
     </div>
   </div>
@@ -512,6 +508,7 @@
     </center>
   </div>
 </div>
+
 
 <!-- Modals -->
 
@@ -841,7 +838,7 @@
       <div class="modal-content">
           <div class="modal-header">
               <h4 class="modal-title" id="historyModalLabel">
-                  Historical data and contex about this capture
+                  Historical data and context about this capture
               </h4>
               </br>
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -902,39 +899,6 @@
   </div>
 </div>
 
-<div class="modal fade" id="adminModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-xl" role="document">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h4 class="modal-title" id="adminModalLabel">
-                  RUn admin only tasks on the capture
-              </h4>
-              </br>
-              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          </br>
-          <div class="modal-body">
-          <ul>
-            <li>
-              <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
-            </li>
-            <li>
-              <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
-            </li>
-            <li>
-              <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button">Remove capture</a>
-            </li>
-            <li>
-              <a href="{{ url_for('logout') }}" role="button">Logout</a>
-            </li>
-          </ul>
-          </div>
-          <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-      </div>
-  </div>
-</div>
 <div class="modal fade" id="hashlookupModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
