@@ -1632,6 +1632,30 @@ def capture_web() -> str | Response | WerkzeugResponse:
     # render template
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
+@app.route('/simple_capture', methods=['GET', 'POST'])
+def simple_capture() -> str | Response | WerkzeugResponse:
+    if flask_login.current_user.is_authenticated:
+        user = flask_login.current_user.get_id()
+    else:
+        user = src_request_ip(request)
+
+    if request.method == 'POST':
+        if not (request.form.get('url') or request.form.get('urls')):
+            flash('Invalid submission: please submit at least a URL.', 'error')
+            return render_template('simple_capture.html')
+        capture_query: CaptureSettings = {}
+        capture_query['url'] = request.form['url']
+
+        perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user,
+                                              authenticated=flask_login.current_user.is_authenticated)
+        if perma_uuid:
+            flash('Recording is in progress and is reported automatically.', 'success')
+        time.sleep(2)
+        return redirect(url_for('simple_capture'))
+
+    # render template
+    return render_template('simple_capture.html')
+
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
 def cookies_name_detail(cookie_name: str) -> str:

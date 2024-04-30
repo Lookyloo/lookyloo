@@ -1,0 +1,127 @@
+{% extends "main.html" %}
+{% from 'bootstrap5/utils.html' import render_messages %}
+{% block title %}Capture{% endblock %}
+
+{% block card %}
+<meta property="og:title" content="Lookyloo" />
+<meta property="og:type" content="website"/>
+<meta
+  property="og:description"
+  content="Lookyloo captures websites and let you investigate them."
+/>
+<meta
+  property="og:image"
+  content="https://{{public_domain}}{{ url_for('static', filename='lookyloo.jpeg') }}"
+/>
+<meta
+  property="og:url"
+  content="https://{{public_domain}}"
+/>
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <center>
+    <a href="{{ url_for('index') }}" title="Go back to index">
+      <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
+           alt="Lookyloo" width="25%">
+    </a>
+  </center>
+  {{ render_messages(container=True, dismissible=True) }}
+  <form role="form" action="{{ url_for('simple_capture') }}" method=post enctype=multipart/form-data>
+    <div class="row mb-3">
+      <div class="col-sm-10">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="listing" name="listing" {% if default_public %}checked="true"{% endif %}>
+          <label for="listing" class="form-check-label">Display results on public page</label>
+          </br>
+          <input class="form-check-input" id="auto_report" type="checkbox" name="auto_report" checked=checked>
+          <label for="auto_report" class="form-check-label">Auto report</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submission type -->
+
+    <div class="tab-content" id="nav-tabContent">
+      </br>
+      <div class="tab-pane fade show active" id="nav-url" role="tabpanel" aria-labelledby="nav-url-tab">
+        <div class="row input-group mb-3">
+          <label for="singleCaptureField" class="col-sm-1 col-form-label">URL(s):</label>
+          <input type="text" class="form-control col-auto" name="url" id=singleCaptureField
+                 placeholder="URL to capture" value="{{predefined_url_to_capture}}" required>
+
+          <textarea class="form-control col-auto d-none" placeholder="URLs to capture, one per line"
+                    name="urls" id=multipleCapturesField></textarea>
+
+          <span class="col-sm-2 input-group-text">
+            <div class="form-check">
+              <input class="form-check-input" name="multipleCaptures" id="multipleCaptures" type="checkbox"
+                     value="" aria-label="tick to enable multiple captures">
+              <label for="multipleCaptures" class="form-check-label">Multiple captures</label>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <!-- End of Submission type -->
+
+
+    <center>
+      <b>
+      {% if default_public %}
+        By default, the capture is private. If you do not want that, untick the box at the top of the form.
+      {% else %}
+        By default, the capture is private (not visible on the index page). If you want it to be public tick the box at the top of the form.
+      {% endif %}
+      </b>
+      </br>
+      </br>
+      <button type="submit" class="new-capture-button btn btn-primary" id="btn-looking">Start looking!</button>
+    </center>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src='{{ url_for('static', filename='capture.js') }}'
+          integrity="{{get_sri('static', 'capture.js')}}"
+          crossorigin="anonymous"></script>
+  <script>
+  $('#nav-url-tab').on('click', function(e) {
+    document.getElementById("singleCaptureField").required = true;
+    document.getElementById("document").required = false;
+    $("#singleCaptureField").removeClass("d-none");
+    document.getElementById('multipleCaptures').checked = false;
+    $("#multipleCapturesField").addClass("d-none");
+  });
+  $('#nav-doc-tab').on('click', function(e) {
+    document.getElementById("document").required = true;
+    document.getElementById("multipleCapturesField").required = false;
+    document.getElementById("singleCaptureField").required = false;
+  });
+  </script>
+  <script>
+      $('#multipleCaptures').on('click', function(e) {
+        if (document.getElementById('multipleCaptures').checked == true) {
+            document.getElementById('singleCaptureField').value = '';
+            $("#singleCaptureField").addClass("d-none");
+            document.getElementById("singleCaptureField").required = false;
+            $("#multipleCapturesField").removeClass("d-none");
+            document.getElementById("multipleCapturesField").required = true;
+        }
+        else {
+            document.getElementById('multipleCapturesField').value = '';
+            $("#singleCaptureField").removeClass("d-none");
+            document.getElementById("singleCaptureField").required = true;
+            $("#multipleCapturesField").addClass("d-none");
+            document.getElementById("multipleCapturesField").required = false;
+        }
+      })
+  </script>
+
+
+{% endblock %}
