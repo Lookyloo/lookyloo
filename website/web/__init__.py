@@ -41,7 +41,7 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from lookyloo import Lookyloo, CaptureSettings, Indexing
 from lookyloo.capturecache import CaptureCache
-from lookyloo.default import get_config
+from lookyloo.default import get_config, get_homedir
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
 
@@ -1632,7 +1632,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
     # render template
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
-@app.route('/simple_capture', methods=['GET', 'POST'])
+@app.route('/simple_capture', methods=['GET','POST'])
 def simple_capture() -> str | Response | WerkzeugResponse:
     if flask_login.current_user.is_authenticated:
         user = flask_login.current_user.get_id()
@@ -1644,15 +1644,32 @@ def simple_capture() -> str | Response | WerkzeugResponse:
             flash('Invalid submission: please submit at least a URL.', 'error')
             return render_template('simple_capture.html')
         capture_query: CaptureSettings = {}
-        capture_query['url'] = request.form['url']
-
-        perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user,
-                                              authenticated=flask_login.current_user.is_authenticated)
-        if perma_uuid:
-            flash('Recording is in progress and is reported automatically.', 'success')
-        time.sleep(2)
-        return redirect(url_for('simple_capture'))
-
+        if request.form.get('auto_report'):
+            path = get_homedir() /'config'/ 'users' / (user + ".json")
+            if os.path.isfile(path):
+                email = get_config(user, 'email')
+                capture_query['auto_report'] = {"email": email}
+            else:
+                capture_query['auto_report'] = True
+        if request.form.get('url'):
+            capture_query['url'] = request.form['url']
+            perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user,
+                                                  authenticated=flask_login.current_user.is_authenticated)
+            time.sleep(2)
+            if perma_uuid:
+                flash('Recording is in progress and is reported automatically.', 'success')
+            return redirect(url_for('simple_capture'))
+        elif request.form.get('urls'):
+            for url in request.form['urls'].strip().split('\n'):
+                if not url:
+                    continue
+                query = capture_query.copy()
+                query['url'] = url
+                new_capture_uuid = lookyloo.enqueue_capture(query, source='web', user=user,
+                                                            authenticated=flask_login.current_user.is_authenticated)
+                if new_capture_uuid:
+                    flash('Recording is in progress and is reported automatically.', 'success')
+            return redirect(url_for('simple_capture'))
     # render template
     return render_template('simple_capture.html')
 

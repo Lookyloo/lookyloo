@@ -864,7 +864,7 @@ class Lookyloo():
 
         return f"Malicious capture according to {len(modules)} module(s): {', '.join(modules)}"
 
-    def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None) -> bool | dict[str, Any]:
+    def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None, email_prio: str | None = None) -> bool | dict[str, Any]:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
             return {"error": "Unable to send mail: mail notification disabled"}
@@ -913,7 +913,7 @@ class Lookyloo():
         msg['From'] = email_config['from']
         if email:
             msg['Reply-To'] = email
-        msg['To'] = email_config['to']
+        msg['To'] = email_config['to'] if not email_prio else email_prio
         msg['Subject'] = email_config['subject']
         body = get_email_template()
         body = body.format(
