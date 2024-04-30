@@ -1644,6 +1644,7 @@ def simple_capture() -> str | Response | WerkzeugResponse:
             flash('Invalid submission: please submit at least a URL.', 'error')
             return render_template('simple_capture.html')
         capture_query: CaptureSettings = {}
+        capture_query['listing'] = False
         if request.form.get('auto_report'):
             path = get_homedir() /'config'/ 'users' / (user + ".json")
             if os.path.isfile(path):
