@@ -116,7 +116,7 @@ class AsyncCapture(AbstractManager):
 
                 if send_report:
                     self.lookyloo.send_mail(uuid, email=settings.get('email', ''),
-                                            comment=settings.get('comment'), email_prio= settings["email"] if settings["email"] else None)
+                                            comment=settings.get('comment'), recipient_mail= settings.get("recipient_mail"))
 
             lazy_cleanup = self.lookyloo.redis.pipeline()
             if queue and self.lookyloo.redis.zscore('queues', queue):

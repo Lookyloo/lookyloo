@@ -12,6 +12,7 @@ import json
 import logging
 import logging.config
 import os
+import re
 import sys
 import time
 
@@ -1638,8 +1639,10 @@ def simple_capture() -> str | Response | WerkzeugResponse:
         user = flask_login.current_user.get_id()
     else:
         user = src_request_ip(request)
-
     if request.method == 'POST':
+        if not re.match("^[A-Za-z]+$", user):
+            flash('User is not permitted.', 'error')
+            return redirect(url_for('simple_capture'))
         if not (request.form.get('url') or request.form.get('urls')):
             flash('Invalid submission: please submit at least a URL.', 'error')
             return render_template('simple_capture.html')
@@ -1649,7 +1652,7 @@ def simple_capture() -> str | Response | WerkzeugResponse:
             path = get_homedir() /'config'/ 'users' / (user + ".json")
             if os.path.isfile(path):
                 email = get_config(user, 'email')
-                capture_query['auto_report'] = {"email": email}
+                capture_query['auto_report'] = {"recipient_mail": email}
             else:
                 capture_query['auto_report'] = True
         if request.form.get('url'):
