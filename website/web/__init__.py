@@ -135,6 +135,7 @@ blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')
 
 use_own_ua = get_config('generic', 'use_user_agents_users')
 enable_mail_notification = get_config('generic', 'enable_mail_notification')
+enable_ignore_sri = get_config('generic', 'enable_ignore_sri')
 if enable_mail_notification:
     confirm_message = get_config('generic', 'email').get('confirm_message')
 else:
@@ -178,8 +179,10 @@ app.jinja_env.globals.update(month_name=month_name)
 
 
 def get_sri(directory: str, filename: str) -> str:
+    if enable_ignore_sri:
+        return ""
     sha512 = sri_load()[directory][filename]
-    return f'sha512-{sha512}'
+    return f'integrity=sha512-{sha512}'
 
 
 app.jinja_env.globals.update(get_sri=get_sri)
@@ -1173,6 +1176,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_monitoring=lookyloo.monitoring_enabled,
+                               ignore_sri_enable=enable_ignore_sri,
                                monitoring_settings=lookyloo.monitoring_settings if lookyloo.monitoring_enabled else None,
                                monitoring_collections=monitoring_collections if lookyloo.monitoring_enabled else [],
                                enable_context_by_users=enable_context_by_users,

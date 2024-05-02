@@ -70,16 +70,16 @@
 {% block scripts %}
 {{ super() }}
 <script src='{{ url_for('static', filename='d3.min.js') }}'
-        integrity="{{get_sri('static', 'd3.min.js')}}"
+        {{get_sri('static', 'd3.min.js')}}
         crossorigin="anonymous"></script>
 <script src='{{ url_for('static', filename='stats_graph.js') }}'
-        integrity="{{get_sri('static', 'stats_graph.js')}}"
+        {{get_sri('static', 'stats_graph.js')}}
         crossorigin="anonymous"></script>
 {% endblock %}
 
 {% block styles %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='stats.css') }}"
-      integrity="{{get_sri('static', 'stats.css')}}"
+      {{get_sri('static', 'stats.css')}}
       crossorigin="anonymous">
 {% endblock %}
