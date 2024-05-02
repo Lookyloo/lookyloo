@@ -53,7 +53,7 @@ else:
     all_timezones_set = available_timezones()
 
 from .genericapi import api as generic_api
-from .helpers import (User, build_users_table, get_secret_key,
+from .helpers import (User, valid_username, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load,
                       get_lookyloo_instance)
 from .proxied import ReverseProxied
@@ -107,6 +107,9 @@ def login() -> WerkzeugResponse | str | Response:
                '''
 
     username = request.form['username']
+    if not valid_username(username):
+        flash('User is not permitted.', 'error')
+        return redirect(url_for('login'))
     users_table = build_users_table()
     if username in users_table and check_password_hash(users_table[username]['password'], request.form['password']):
         user = User()
