@@ -49,6 +49,8 @@ def load_user_from_request(request: Request) -> User | None:
         return user
     return None
 
+def valid_username(username: str) -> bool:
+  return re.match("^[A-Za-z0-9]+$", username)
 
 @lru_cache(64)
 def build_keys_table() -> dict[str, str]:
