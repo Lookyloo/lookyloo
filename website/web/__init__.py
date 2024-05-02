@@ -53,7 +53,7 @@ else:
     all_timezones_set = available_timezones()
 
 from .genericapi import api as generic_api
-from .helpers import (User, valid_username, build_users_table, get_secret_key,
+from .helpers import (User, is_valid_username, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load,
                       get_lookyloo_instance)
 from .proxied import ReverseProxied
@@ -107,7 +107,7 @@ def login() -> WerkzeugResponse | str | Response:
                '''
 
     username = request.form['username']
-    if not valid_username(username):
+    if not is_valid_username(username):
         flash('User is not permitted.', 'error')
         return redirect(url_for('login'))
     users_table = build_users_table()
@@ -1640,7 +1640,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
 @flask_login.login_required  # type: ignore[misc]
 def simple_capture() -> str | Response | WerkzeugResponse:
     user = flask_login.current_user.get_id()
-    if not re.match("^[A-Za-z0-9]+$", user):
+    if not is_valid_username(user):
         # Username has been manipulated
         flash('User is not permitted.', 'error')
         return redirect(url_for('submit_capture'))
