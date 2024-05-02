@@ -1634,7 +1634,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
 @app.route('/simple_capture', methods=['GET','POST'])
-@flask_login.login_required
+@flask_login.login_required  # type: ignore[misc]
 def simple_capture() -> str | Response | WerkzeugResponse:
     if flask_login.current_user.is_authenticated:
         user = flask_login.current_user.get_id()
