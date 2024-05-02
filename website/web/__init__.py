@@ -1636,14 +1636,13 @@ def capture_web() -> str | Response | WerkzeugResponse:
 @app.route('/simple_capture', methods=['GET','POST'])
 @flask_login.login_required  # type: ignore[misc]
 def simple_capture() -> str | Response | WerkzeugResponse:
-    if flask_login.current_user.is_authenticated:
-        user = flask_login.current_user.get_id()
-    else:
-        user = src_request_ip(request)
+    user = flask_login.current_user.get_id()
+    if not re.match("^[A-Za-z0-9]+$", user):
+        # Username has been manipulated
+        flash('User is not permitted.', 'error')
+        return redirect(url_for('submit_capture'))
+      
     if request.method == 'POST':
-        if not re.match("^[A-Za-z]+$", user):
-            flash('User is not permitted.', 'error')
-            return redirect(url_for('simple_capture'))
         if not (request.form.get('url') or request.form.get('urls')):
             flash('Invalid submission: please submit at least a URL.', 'error')
             return render_template('simple_capture.html')
