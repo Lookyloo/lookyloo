@@ -13,7 +13,7 @@
     "days": 0,
     "hours": 0
   },
-  "enable_ignore_sri": false,
+  "ignore_sri": false,
   "async_capture_processes": 1,
   "use_user_agents_users": false,
   "enable_default_blur_screenshot": false,
@@ -114,6 +114,6 @@
     "max_tree_create_time": "The max time the generation of a tree is allowed to take",
     "s3fs": "The config to access a S3FS instance with the s3fs python module - it is not integrated properly for now as it requires urllib < 2.0 which is a non-started at this stage.",
     "index_everything": "If true, index every capture, even if it's not public. This feature requires a dedicated kvrocks instance, and is only accessible when logged-in as admin.",
-    "enable_ignore_sri": "If true, the sri values are ignored and not calculated so that there are no problems while developing and testing."
+    "ignore_sri": "If true, the sri values are ignored and not calculated so that there are no problems while developing and testing."
   }
 }
