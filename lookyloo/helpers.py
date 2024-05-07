@@ -29,6 +29,7 @@ from werkzeug.utils import cached_property
 
 from .default import get_homedir, safe_create_dir, get_config, LookylooException
 
+
 logger = logging.getLogger('Lookyloo - Helpers')
 
 

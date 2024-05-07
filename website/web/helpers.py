@@ -50,8 +50,10 @@ def load_user_from_request(request: Request) -> User | None:
         return user
     return None
 
+
 def is_valid_username(username: str) -> bool:
-  return bool(re.match("^[A-Za-z0-9]+$", username))
+    return bool(re.match("^[A-Za-z0-9]+$", username))
+
 
 @lru_cache(64)
 def build_keys_table() -> dict[str, str]:
@@ -75,6 +77,9 @@ def get_users() -> dict[str, str | list[str]]:
 def build_users_table() -> dict[str, dict[str, str]]:
     users_table: dict[str, dict[str, str]] = {}
     for username, authstuff in get_users().items():
+        if not is_valid_username(username):
+            raise Exception('Invalid username, can only contain characters and numbers.')
+
         if isinstance(authstuff, str):
             # just a password, make a key
             users_table[username] = {}

@@ -30,15 +30,6 @@
   </center>
   {{ render_messages(container=True, dismissible=True) }}
   <form role="form" action="{{ url_for('simple_capture') }}" method=post enctype=multipart/form-data>
-    <div class="row mb-3">
-      <div class="col-sm-10">
-        <div class="form-check">
-          <input class="form-check-input" id="auto_report" type="checkbox" name="auto_report" checked=checked>
-          <label for="auto_report" class="form-check-label">Auto report</label>
-        </div>
-      </div>
-    </div>
-
     <!-- Submission type -->
 
     <div class="tab-content" id="nav-tabContent">

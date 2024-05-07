@@ -12,7 +12,6 @@ import json
 import logging
 import logging.config
 import os
-import re
 import sys
 import time
 
@@ -42,7 +41,7 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from lookyloo import Lookyloo, CaptureSettings, Indexing
 from lookyloo.capturecache import CaptureCache
-from lookyloo.default import get_config, get_homedir
+from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
 
@@ -53,7 +52,7 @@ else:
     all_timezones_set = available_timezones()
 
 from .genericapi import api as generic_api
-from .helpers import (User, is_valid_username, build_users_table, get_secret_key,
+from .helpers import (User, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load,
                       get_lookyloo_instance)
 from .proxied import ReverseProxied
@@ -107,9 +106,6 @@ def login() -> WerkzeugResponse | str | Response:
                '''
 
     username = request.form['username']
-    if not is_valid_username(username):
-        flash('User is not permitted.', 'error')
-        return redirect(url_for('login'))
     users_table = build_users_table()
     if username in users_table and check_password_hash(users_table[username]['password'], request.form['password']):
         user = User()
@@ -1592,7 +1588,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
         if request.form.get('proxy'):
             parsed_proxy = urlparse(request.form['proxy'])
             if parsed_proxy.scheme and parsed_proxy.hostname and parsed_proxy.port:
-                if parsed_proxy.scheme in ['http', 'https', 'socks5']:
+                if parsed_proxy.scheme in ['http', 'https', 'socks5', 'socks5h']:
                     if (parsed_proxy.username and parsed_proxy.password) or (not parsed_proxy.username and not parsed_proxy.password):
                         capture_query['proxy'] = request.form['proxy']
                     else:
@@ -1640,28 +1636,16 @@ def capture_web() -> str | Response | WerkzeugResponse:
     # render template
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
-@app.route('/simple_capture', methods=['GET','POST'])
+
+@app.route('/simple_capture', methods=['GET', 'POST'])
 @flask_login.login_required  # type: ignore[misc]
 def simple_capture() -> str | Response | WerkzeugResponse:
     user = flask_login.current_user.get_id()
-    if not is_valid_username(user):
-        # Username has been manipulated
-        flash('User is not permitted.', 'error')
-        return redirect(url_for('submit_capture'))
-      
     if request.method == 'POST':
         if not (request.form.get('url') or request.form.get('urls')):
             flash('Invalid submission: please submit at least a URL.', 'error')
             return render_template('simple_capture.html')
         capture_query: CaptureSettings = {}
-        capture_query['listing'] = False
-        if request.form.get('auto_report'):
-            path = get_homedir() /'config'/ 'users' / (user + ".json")
-            if os.path.isfile(path):
-                email = get_config(user, 'email')
-                capture_query['auto_report'] = {"recipient_mail": email}
-            else:
-                capture_query['auto_report'] = True
         if request.form.get('url'):
             capture_query['url'] = request.form['url']
             perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user,
