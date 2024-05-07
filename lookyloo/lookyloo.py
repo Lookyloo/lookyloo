@@ -16,6 +16,7 @@ import time
 
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
+from functools import lru_cache
 from email.message import EmailMessage
 from functools import cached_property
 from io import BytesIO
@@ -76,6 +77,22 @@ class CaptureSettings(CaptureSettingsCore, total=False):
     browser_name: str | None
     os: str | None
     parent: str | None
+
+
+# overwrite set to True means the settings in the config file overwrite the settings
+# provided by the user. False will simply append the settings from the config file if they
+# don't exist.
+class UserCaptureSettings(CaptureSettings, total=False):
+    overwrite: bool
+
+
+@lru_cache(64)
+def load_user_config(username: str) -> UserCaptureSettings | None:
+    user_config_path = get_homedir() / 'config' / 'users' / f'{username}.json'
+    if not user_config_path.exists():
+        return None
+    with user_config_path.open() as _c:
+        return json.load(_c)
 
 
 class Lookyloo():
@@ -629,6 +646,26 @@ class Lookyloo():
                 query['document'] = document
         return query
 
+    def _apply_user_config(self, query: CaptureSettings, user_config: UserCaptureSettings) -> CaptureSettings:
+        def recursive_merge(dict1: CaptureSettings | UserCaptureSettings,
+                            dict2: CaptureSettings | UserCaptureSettings) -> CaptureSettings:
+            # dict2 overwrites dict1
+            for key, value in dict2.items():
+                if key in dict1 and isinstance(dict1[key], dict) and isinstance(value, dict):  # type: ignore[literal-required]
+                    # Recursively merge nested dictionaries
+                    dict1[key] = recursive_merge(dict1[key], value)  # type: ignore[literal-required,arg-type]
+                else:
+                    # Merge non-dictionary values
+                    dict1[key] = value  # type: ignore[literal-required]
+            return dict1
+
+        # merge
+        if user_config.pop('overwrite', None):
+            # config from file takes priority
+            return recursive_merge(query, user_config)
+        else:
+            return recursive_merge(user_config, query)
+
     def enqueue_capture(self, query: CaptureSettings, source: str, user: str, authenticated: bool) -> str:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
 
@@ -652,6 +689,9 @@ class Lookyloo():
                 query[key] = json.dumps(value) if value else None  # type: ignore[literal-required]
 
         query = self._prepare_lacus_query(query)
+        if authenticated:
+            if user_config := load_user_config(user):
+                query = self._apply_user_config(query, user_config)
 
         priority = get_priority(source, user, authenticated)
         if priority < -100:
@@ -864,7 +904,8 @@ class Lookyloo():
 
         return f"Malicious capture according to {len(modules)} module(s): {', '.join(modules)}"
 
-    def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None) -> bool | dict[str, Any]:
+    def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None,
+                  recipient_mail: str | None = None) -> bool | dict[str, Any]:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
             return {"error": "Unable to send mail: mail notification disabled"}
@@ -913,7 +954,7 @@ class Lookyloo():
         msg['From'] = email_config['from']
         if email:
             msg['Reply-To'] = email
-        msg['To'] = email_config['to']
+        msg['To'] = email_config['to'] if not recipient_mail else recipient_mail
         msg['Subject'] = email_config['subject']
         body = get_email_template()
         body = body.format(

@@ -57,6 +57,10 @@ def load_configs(path_to_config_files: str | Path | None=None) -> None:
     for path in config_path.glob('*.json'):
         with path.open() as _c:
             configs[path.stem] = json.load(_c)
+    user_path = config_path / 'users'
+    for path in user_path.glob('*.json'):
+        with path.open() as _c:
+            configs[path.stem] = json.load(_c)
 
 
 @lru_cache(64)

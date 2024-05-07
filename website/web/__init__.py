@@ -1588,7 +1588,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
         if request.form.get('proxy'):
             parsed_proxy = urlparse(request.form['proxy'])
             if parsed_proxy.scheme and parsed_proxy.hostname and parsed_proxy.port:
-                if parsed_proxy.scheme in ['http', 'https', 'socks5']:
+                if parsed_proxy.scheme in ['http', 'https', 'socks5', 'socks5h']:
                     if (parsed_proxy.username and parsed_proxy.password) or (not parsed_proxy.username and not parsed_proxy.password):
                         capture_query['proxy'] = request.form['proxy']
                     else:
@@ -1635,6 +1635,38 @@ def capture_web() -> str | Response | WerkzeugResponse:
 
     # render template
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
+
+
+@app.route('/simple_capture', methods=['GET', 'POST'])
+@flask_login.login_required  # type: ignore[misc]
+def simple_capture() -> str | Response | WerkzeugResponse:
+    user = flask_login.current_user.get_id()
+    if request.method == 'POST':
+        if not (request.form.get('url') or request.form.get('urls')):
+            flash('Invalid submission: please submit at least a URL.', 'error')
+            return render_template('simple_capture.html')
+        capture_query: CaptureSettings = {}
+        if request.form.get('url'):
+            capture_query['url'] = request.form['url']
+            perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user,
+                                                  authenticated=flask_login.current_user.is_authenticated)
+            time.sleep(2)
+            if perma_uuid:
+                flash('Recording is in progress and is reported automatically.', 'success')
+            return redirect(url_for('simple_capture'))
+        elif request.form.get('urls'):
+            for url in request.form['urls'].strip().split('\n'):
+                if not url:
+                    continue
+                query = capture_query.copy()
+                query['url'] = url
+                new_capture_uuid = lookyloo.enqueue_capture(query, source='web', user=user,
+                                                            authenticated=flask_login.current_user.is_authenticated)
+                if new_capture_uuid:
+                    flash('Recording is in progress and is reported automatically.', 'success')
+            return redirect(url_for('simple_capture'))
+    # render template
+    return render_template('simple_capture.html')
 
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
