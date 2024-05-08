@@ -81,6 +81,7 @@
     <hr>
     <!-- End of Submission type -->
 
+
     <div>
       <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfigBrowser"
               aria-expanded="false" aria-controls="collapseConfigBrowser">
@@ -356,6 +357,38 @@
 
     <hr>
 
+  {% if current_user.is_authenticated %}
+        <!-- admin only checkbox for autoreport -->
+        <div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox"  id="auto-report" name="auto-report" checked="false">
+              <label for="auto-report" class="form-check-label">Automatically submit to investigation team</label>
+            </div>
+        </div>
+        <div id="collapseMailConfiguration" class="collapse d-xl-block">
+            <div class="card card-body">
+                <div class="row mb-3">
+                    <label for="email" >Email of the sender (optional): </label>
+                    <div>
+                        <input type="text" id="email" name="email">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="comment">Comment (optional): </label>
+                    <div>
+                        <input type="text" id="comment" name="comment">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label for="recipient-mail">Email of the recipient (optional): </label>
+                    <div>
+                        <input type="text" id="recipient-mail" name="recipient-mail">
+                    </div>
+                </div>
+            </div>
+        </div>
+    {%  endif %}
+
     <center>
       <b>
       {% if default_public %}
@@ -377,6 +410,18 @@
   <script src='{{ url_for('static', filename='capture.js') }}'
           {{get_sri('static', 'capture.js')}}
           crossorigin="anonymous"></script>
+    <script>
+        const displayReportForm = function() {
+            let show_form = document.getElementById("auto-report").checked;
+            if(show_form){
+                document.getElementById("collapseMailConfiguration").style.display = "block";
+            } else {
+                document.getElementById("collapseMailConfiguration").style.display = "none";
+            }
+        }
+        displayReportForm()
+        document.getElementById("auto-report").addEventListener('change', displayReportForm);
+    </script>
   <script>
   $('#nav-url-tab').on('click', function(e) {
     document.getElementById("singleCaptureField").required = true;

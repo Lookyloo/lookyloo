@@ -1598,6 +1598,15 @@ def capture_web() -> str | Response | WerkzeugResponse:
             else:
                 flash('Invalid proxy: Check that you entered a scheme, a hostname and a port.', 'error')
 
+        # auto report
+        if flask_login.current_user.is_authenticated:
+            if request.form.get('auto-report'):
+                capture_query['auto_report'] = {
+                    'email': request.form.get('email'),
+                    'comment': request.form.get('comment'),
+                    'recipient_mail': request.form.get('recipient-mail')
+                }
+
         if request.form.get('url'):
             capture_query['url'] = request.form['url']
             perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
