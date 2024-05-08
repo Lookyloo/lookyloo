@@ -22,12 +22,12 @@
 
 {% block content %}
 <div class="container">
-  <center>
+
     <a href="{{ url_for('index') }}" title="Go back to index">
       <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
            alt="Lookyloo" width="25%">
     </a>
-  </center>
+
   {{ render_messages(container=True, dismissible=True) }}
   <form role="form" action="{{ url_for('capture_web') }}" method=post enctype=multipart/form-data>
     <div class="row mb-3">
@@ -356,7 +356,7 @@
 
     <hr>
 
-    <center>
+
       <b>
       {% if default_public %}
         By default, the capture is public. If you do not want that, untick the box at the top of the form.
@@ -367,7 +367,7 @@
       </br>
       </br>
       <button type="submit" class="new-capture-button btn btn-primary" id="btn-looking">Start looking!</button>
-    </center>
+
   </form>
 </div>
 {% endblock %}
@@ -377,92 +377,6 @@
   <script src='{{ url_for('static', filename='capture.js') }}'
           {{get_sri('static', 'capture.js')}}
           crossorigin="anonymous"></script>
-  <script>
-  $('#nav-url-tab').on('click', function(e) {
-    document.getElementById("singleCaptureField").required = true;
-    document.getElementById("document").required = false;
-    $("#singleCaptureField").removeClass("d-none");
-    document.getElementById('multipleCaptures').checked = false;
-    $("#multipleCapturesField").addClass("d-none");
-  });
-  $('#nav-doc-tab').on('click', function(e) {
-    document.getElementById("document").required = true;
-    document.getElementById("multipleCapturesField").required = false;
-    document.getElementById("singleCaptureField").required = false;
-  });
-  </script>
-  <script>
-      $('#multipleCaptures').on('click', function(e) {
-        if (document.getElementById('multipleCaptures').checked == true) {
-            document.getElementById('singleCaptureField').value = '';
-            $("#singleCaptureField").addClass("d-none");
-            document.getElementById("singleCaptureField").required = false;
-            $("#multipleCapturesField").removeClass("d-none");
-            document.getElementById("multipleCapturesField").required = true;
-        }
-        else {
-            document.getElementById('multipleCapturesField').value = '';
-            $("#singleCaptureField").removeClass("d-none");
-            document.getElementById("singleCaptureField").required = true;
-            $("#multipleCapturesField").addClass("d-none");
-            document.getElementById("multipleCapturesField").required = false;
-        }
-      })
-  </script>
-  <script>
-      $('#personal_ua_select').on('click', function(e) {
-        $('#personal_ua').prop("disabled", false);
-
-        $('#freetext_ua').prop("disabled", true);
-        disablePredefinedUA();
-      });
-
-      $('#predefined_ua_select').on('click', function(e) {
-        $('#os-type').val('desktop').trigger('change');
-
-        $('#freetext_ua').prop("disabled", true);
-        $('#personal_ua').prop("disabled", true);
-      });
-
-      $('#freetext_ua_select').on('click', function(e) {
-        $('#freetext_ua').prop("disabled", false);
-
-        $('#personal_ua').prop("disabled", true);
-        disablePredefinedUA();
-      });
-
-      const disablePredefinedUA = function() {
-        $('#os-type').prop("disabled", true);
-        $('#device-name-mobile').prop("disabled", true);
-        $('#os').prop("disabled", true);
-        $('select[name="browser"]').prop("disabled", true);
-        $('select[name="user_agent"]').prop("disabled", true);
-      };
-
-      $('#os-type').on('change', function() {
-          $('#os-type').prop("disabled", false);
-          if ( this.value == "mobile")
-          {
-            $("#mobiles-list").show();
-            $('#device-name-mobile').prop("disabled", false);
-
-            $("#desktops-list").hide();
-            $('#os').prop("disabled", true);
-            $('select[name="browser"]').prop("disabled", true);
-            $('select[name="user_agent"]').prop("disabled", true);
-          }
-          else
-          {
-            $("#desktops-list").show();
-            $('#os').prop("disabled", false);
-            $('select[name="browser"]:visible').prop("disabled", false);
-            $('select[name="user_agent"]:visible').prop("disabled", false);
-
-            $("#mobiles-list").hide();
-            $('#device-name-mobile').prop("disabled", true);
-          }
-        });
-  </script>
 
 
 {% endblock %}
