@@ -69,33 +69,19 @@
           {{get_sri('static', 'capture.js')}}
           crossorigin="anonymous"></script>
   <script>
-  $('#nav-url-tab').on('click', function(e) {
-    document.getElementById("singleCaptureField").required = true;
-    document.getElementById("document").required = false;
-    $("#singleCaptureField").removeClass("d-none");
-    document.getElementById('multipleCaptures').checked = false;
-    $("#multipleCapturesField").addClass("d-none");
-  });
-  $('#nav-doc-tab').on('click', function(e) {
-    document.getElementById("document").required = true;
-    document.getElementById("multipleCapturesField").required = false;
-    document.getElementById("singleCaptureField").required = false;
-  });
-  </script>
-  <script>
-      $('#multipleCaptures').on('click', function(e) {
+      document.getElementById('multipleCaptures').addEventListener('click', function(e) {
         if (document.getElementById('multipleCaptures').checked == true) {
             document.getElementById('singleCaptureField').value = '';
-            $("#singleCaptureField").addClass("d-none");
+            document.getElementById("singleCaptureField").classList.add("d-none");
             document.getElementById("singleCaptureField").required = false;
-            $("#multipleCapturesField").removeClass("d-none");
+            document.getElementById("multipleCapturesField").classList.remove("d-none");
             document.getElementById("multipleCapturesField").required = true;
         }
         else {
             document.getElementById('multipleCapturesField').value = '';
-            $("#singleCaptureField").removeClass("d-none");
+            document.getElementById("singleCaptureField").classList.remove("d-none");
             document.getElementById("singleCaptureField").required = true;
-            $("#multipleCapturesField").addClass("d-none");
+            document.getElementById("multipleCapturesField").classList.add("d-none");
             document.getElementById("multipleCapturesField").required = false;
         }
       })
