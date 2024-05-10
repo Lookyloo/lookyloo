@@ -258,7 +258,7 @@
           </span>
       </button>
     </div>
-    
+
     <div id=menu_vertical_content class="collapse show">
       <hr/>
         <ul class="list-group list-group-flush">
@@ -304,10 +304,10 @@
                 <a href="#detailsModal" data-bs-toggle="modal" data-bs-target="#detailsModal"
                     role="button" title="Details about the capture configuration">Capture Details</a>
 
-                <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}" data-bs-toggle="modal" 
+                <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
                     data-bs-target="#statsModal" role="button" title="The capture in numbers">Statistics</a>
 
-                <a href="#screenshotModal" data-bs-toggle="modal" data-bs-target="#screenshotModal" 
+                <a href="#screenshotModal" data-bs-toggle="modal" data-bs-target="#screenshotModal"
                     role="button" title="Contains the URL rendered in the browser">Page Screenshot</a>
               </div>
           </div>
@@ -366,7 +366,7 @@
               <div id="admin-menu-content" class="dropdown-content">
                 <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
                 <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
-                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button">Remove capture</a>
+                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button" onclick="return confirm('Are you sure you want to remove the capture?')">Remove capture</a>
                 {% if misp_push%}
                   <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
                     data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
