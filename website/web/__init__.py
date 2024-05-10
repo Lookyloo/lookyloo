@@ -1602,9 +1602,9 @@ def capture_web() -> str | Response | WerkzeugResponse:
         if flask_login.current_user.is_authenticated:
             if request.form.get('auto-report'):
                 capture_query['auto_report'] = {
-                    'email': request.form.get('email') if request.form.get('email') else '',
-                    'comment': request.form.get('comment') if request.form.get('comment') else '',
-                    'recipient_mail': request.form.get('recipient-mail') if request.form.get('recipient-mail') else ''
+                    'email': request.form.get('email', ""),
+                    'comment': request.form.get('comment', ""),
+                    'recipient_mail': request.form.get('recipient-mail', "")
                 }
 
         if request.form.get('url'):
