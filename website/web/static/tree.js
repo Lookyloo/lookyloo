@@ -839,8 +839,8 @@ function update(root, computed_node_width=0) {
 
 //download the tree as png file
 const downloadSvg = () => {
-    const svgElement = document.querySelector('svg');
-    const svgCopy = svgElement.cloneNode(true);
+    const svg = document.querySelector('svg');
+    const svgCopy = svg.cloneNode(true);
     const images = svgCopy.querySelectorAll('image');
     const promises = [];
     images.forEach((imageElement) => {
@@ -866,21 +866,21 @@ const downloadSvg = () => {
     });
 
     Promise.all(promises).then(() => {
-        var svgData = new XMLSerializer().serializeToString(svgCopy);
-        var svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-        var url = URL.createObjectURL(svgBlob);
-        var img = new Image();
+        let svgData = new XMLSerializer().serializeToString(svgCopy);
+        let svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        let url = URL.createObjectURL(svgBlob);
+        let img = new Image();
         img.onload = function() {
-            var canvas = document.createElement('canvas');
-            canvas.width = svgCopy.width.baseVal.value * 2;
-            canvas.height = svgCopy.height.baseVal.value * 2;
-            var ctx = canvas.getContext('2d');
+            let canvas = document.createElement('canvas');
+            canvas.width = svgCopy.width.baseVal.value;
+            canvas.height = svgCopy.height.baseVal.value;
+            let ctx = canvas.getContext('2d');
             ctx.fillStyle='white';
             ctx.fillRect(0,0,canvas.width,canvas.height)
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            var png = canvas.toDataURL('image/png');
-            var a = document.createElement('a');
+            let png = canvas.toDataURL('image/png');
+            let a = document.createElement('a');
             a.download = 'tree.png';
             a.href = png;
             a.click();
