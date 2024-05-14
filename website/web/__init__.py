@@ -39,8 +39,7 @@ from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
-from lookyloo import Lookyloo, CaptureSettings, Indexing
-from lookyloo.capturecache import CaptureCache
+from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
@@ -54,7 +53,7 @@ else:
 from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load,
-                      get_lookyloo_instance)
+                      get_lookyloo_instance, get_indexing)
 from .proxied import ReverseProxied
 
 logging.config.dictConfig(get_config('logging'))
@@ -270,23 +269,6 @@ def file_response(func):  # type: ignore[no-untyped-def]
 
 # ##### Methods querying the indexes #####
 
-@functools.cache
-def get_indexing(user: User | None) -> Indexing:
-    '''Depending if we're logged in or not, we (can) get different indexes:
-        if index_everything is enabled, we have an index in kvrocks that contains all
-        the indexes for all the captures.
-        It is only accessible to the admin user.
-    '''
-    if not get_config('generic', 'index_everything'):
-        return Indexing()
-
-    if not user or not user.is_authenticated:
-        # No user or anonymous
-        return Indexing()
-    # Logged in user
-    return Indexing(full_index=True)
-
-
 def _get_body_hash_investigator(body_hash: str, /) -> tuple[list[tuple[str, str, datetime, str, str]], list[tuple[str, float]]]:
     '''Returns all the captures related to a hash (sha512), used in the web interface.'''
     total_captures, details = get_indexing(flask_login.current_user).get_body_hash_captures(body_hash, limit=-1)
@@ -365,67 +347,30 @@ def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, int | list[UR
     return to_return
 
 
-def get_latest_url_capture(url: str, /) -> CaptureCache | None:
-    '''Get the most recent capture with this URL'''
-    captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_url(url))
-    if captures:
-        return captures[0]
-    return None
-
-
-def get_url_occurrences(url: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
-    '''Get the most recent captures and URL nodes where the URL has been seen.'''
-    captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_url(url), cached_captures_only=cached_captures_only)
-
-    to_return: list[dict[str, Any]] = []
-    for capture in captures[:limit]:
-        ct = lookyloo.get_crawled_tree(capture.uuid)
-        to_append: dict[str, str | dict[str, Any]] = {'capture_uuid': capture.uuid,
-                                                      'start_timestamp': capture.timestamp.isoformat(),
-                                                      'title': capture.title}
-        urlnodes: dict[str, dict[str, str]] = {}
-        for urlnode in ct.root_hartree.url_tree.search_nodes(name=url):
-            urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
-                                      'hostnode_uuid': urlnode.hostnode_uuid}
-            if hasattr(urlnode, 'body_hash'):
-                urlnodes[urlnode.uuid]['hash'] = urlnode.body_hash
-        to_append['urlnodes'] = urlnodes
-        to_return.append(to_append)
-    return to_return
-
-
-def get_hostname_occurrences(hostname: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
-    '''Get the most recent captures and URL nodes where the hostname has been seen.'''
-    captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_hostname(hostname), cached_captures_only=cached_captures_only)
-
-    to_return: list[dict[str, Any]] = []
-    for capture in captures[:limit]:
-        ct = lookyloo.get_crawled_tree(capture.uuid)
-        to_append: dict[str, str | list[Any] | dict[str, Any]] = {
-            'capture_uuid': capture.uuid,
-            'start_timestamp': capture.timestamp.isoformat(),
-            'title': capture.title}
-        hostnodes: list[str] = []
-        if with_urls_occurrences:
-            urlnodes: dict[str, dict[str, str]] = {}
-        for hostnode in ct.root_hartree.hostname_tree.search_nodes(name=hostname):
-            hostnodes.append(hostnode.uuid)
-            if with_urls_occurrences:
-                for urlnode in hostnode.urls:
-                    urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
-                                              'url': urlnode.name,
-                                              'hostnode_uuid': urlnode.hostnode_uuid}
-                    if hasattr(urlnode, 'body_hash'):
-                        urlnodes[urlnode.uuid]['hash'] = urlnode.body_hash
-            to_append['hostnodes'] = hostnodes
-            if with_urls_occurrences:
-                to_append['urlnodes'] = urlnodes
-            to_return.append(to_append)
+def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode] | str]]:
+    ct = lookyloo.get_crawled_tree(capture_uuid)
+    to_return: dict[str, dict[str, list[URLNode] | int | str]] = defaultdict()
+    for node in ct.root_hartree.url_tree.traverse():
+        if not node.name:
+            continue
+        captures = get_indexing(flask_login.current_user).get_captures_url(node.name)
+        # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
+        if node.hostname not in to_return:
+            to_return[node.name] = {'total_captures': len(captures), 'nodes': [],
+                                    'quoted_url': quote_plus(node.name)}
+        to_return[node.name]['nodes'].append(node)  # type: ignore[union-attr]
     return to_return
 
 
 def get_hostname_investigator(hostname: str) -> list[tuple[str, str, str, datetime]]:
+    '''Returns all the captures loading content from that hostname, used in the web interface.'''
     cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname)])
+    return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
+
+
+def get_url_investigator(url: str) -> list[tuple[str, str, str, datetime]]:
+    '''Returns all the captures loading content from that url, used in the web interface.'''
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_url(url=url)])
     return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
@@ -1282,6 +1227,12 @@ def tree_hostnames(tree_uuid: str) -> str:
     return render_template('tree_hostnames.html', tree_uuid=tree_uuid, hostnames=hostnames)
 
 
+@app.route('/tree/<string:tree_uuid>/urls', methods=['GET'])
+def tree_urls(tree_uuid: str) -> str:
+    urls = get_all_urls(tree_uuid)
+    return render_template('tree_urls.html', tree_uuid=tree_uuid, urls=urls)
+
+
 @app.route('/tree/<string:tree_uuid>/pandora', methods=['GET', 'POST'])
 def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
     node_uuid = None
@@ -1752,8 +1703,8 @@ def body_hash_details(body_hash: str) -> str:
 @app.route('/urls/<string:url>', methods=['GET'])
 def url_details(url: str) -> str:
     url = unquote_plus(url).strip()
-    hits = get_url_occurrences(url, limit=50)
-    return render_template('url.html', url=url, hits=hits)
+    captures = get_url_investigator(url)
+    return render_template('url.html', url=url, captures=captures)
 
 
 @app.route('/hostnames/<string:hostname>', methods=['GET'])

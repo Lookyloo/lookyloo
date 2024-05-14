@@ -1,0 +1,38 @@
+{% from "macros.html" import popup_icons_response %}
+
+<script type="text/javascript">
+  var table = new DataTable('#urlsTable', {
+    order: [[ 0, "desc" ]],
+    columnDefs: [{ width: '10%', targets: 0 },
+                 { width: '90%', targets: 1 }],
+    initComplete: function (settings, json) {
+      $('[data-bs-toggle="tooltip"]').tooltip({html: true});
+    }
+  }).on('draw', function() {
+    $('[data-bs-toggle="tooltip"]').tooltip({html: true});
+  });
+</script>
+
+<table id="urlsTable" class="table table-striped" style="width:100%">
+<thead>
+ <tr>
+   <th>Number of captures</th>
+   <th>URL</th>
+ </tr>
+</thead>
+<tbody>
+  {% for url, info in urls.items() %}
+  <tr>
+    <td>{{ info['total_captures'] }}</td>
+    <td>
+      <span class="d-inline-block text-break">
+         <a href="#urlDetailsModal" data-remote="{{ url_for('url_details', url=info['quoted_url']) }}"
+            data-bs-toggle="modal" data-bs-target="#urlDetailsModal" role="button">
+            {{url}}
+         </a>
+      </span>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>

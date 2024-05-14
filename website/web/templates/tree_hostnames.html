@@ -1,0 +1,64 @@
+{% from "macros.html" import popup_icons_response %}
+
+<script type="text/javascript">
+  var table = new DataTable('#hostnamesTable', {
+    order: [[ 0, "desc" ]],
+    columnDefs: [{ width: '10%', targets: 0 },
+                 { width: '40%', targets: 1 },
+                 { width: '50%', targets: 2 }],
+    initComplete: function (settings, json) {
+      $('[data-bs-toggle="tooltip"]').tooltip({html: true});
+    }
+  }).on('draw', function() {
+    $('[data-bs-toggle="tooltip"]').tooltip({html: true});
+  });
+</script>
+
+<table id="hostnamesTable" class="table table-striped" style="width:100%">
+<thead>
+ <tr>
+   <th>Number of captures</th>
+   <th>Hostname</th>
+   <th>URLs</th>
+ </tr>
+</thead>
+<tbody>
+  {% for hostname, info in hostnames.items() %}
+  <tr>
+    <td>{{ info['total_captures'] }}</td>
+    <td>
+      <span class="d-inline-block text-break">
+         <a href="#hostnameDetailsModal" data-remote="{{ url_for('hostname_details', hostname=hostname) }}"
+            data-bs-toggle="modal" data-bs-target="#hostnameDetailsModal" role="button">
+            {{hostname}}
+         </a>
+      </span>
+    </td>
+    <td>
+      <p class="d-inline-flex gap-1">
+        <button class="btn btn-primary" type="button"
+                data-bs-toggle="collapse" data-bs-target="#collapseAllNodes_{{loop.index}}"
+                aria-expanded="false" aria-controls="collapseAllNodes_{{loop.index}}">
+          Show
+        </button>
+      </p>
+      <div class="collapse" id="collapseAllNodes_{{loop.index}}">
+          <div class="card card-body">
+            <span class="d-inline-block text-break">
+              <ul>
+              {% for node in info['nodes'] %}
+                <li>
+                  <p class="text-break">{{ node.name }}</p>
+                  <a href="#/" onclick="openTreeInNewTab('{{ tree_uuid }}', '{{ node.uuid }}')">Show on tree</a>
+                </li>
+              {% endfor %}
+              <ul>
+            </span>
+          </div>
+        </div>
+      </div>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>

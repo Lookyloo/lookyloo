@@ -21,7 +21,7 @@ from lookyloo import CaptureSettings, Lookyloo
 from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 
-from .helpers import build_users_table, load_user_from_request, src_request_ip, get_lookyloo_instance
+from .helpers import build_users_table, load_user_from_request, src_request_ip, get_lookyloo_instance, get_indexing
 
 api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
@@ -305,6 +305,27 @@ class HashInfo(Resource):  # type: ignore[misc]
         return to_return
 
 
+def get_url_occurrences(url: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
+    '''Get the most recent captures and URL nodes where the URL has been seen.'''
+    captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_url(url), cached_captures_only=cached_captures_only)
+
+    to_return: list[dict[str, Any]] = []
+    for capture in captures[:limit]:
+        ct = lookyloo.get_crawled_tree(capture.uuid)
+        to_append: dict[str, str | dict[str, Any]] = {'capture_uuid': capture.uuid,
+                                                      'start_timestamp': capture.timestamp.isoformat(),
+                                                      'title': capture.title}
+        urlnodes: dict[str, dict[str, str]] = {}
+        for urlnode in ct.root_hartree.url_tree.search_nodes(name=url):
+            urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
+                                      'hostnode_uuid': urlnode.hostnode_uuid}
+            if hasattr(urlnode, 'body_hash'):
+                urlnodes[urlnode.uuid]['hash'] = urlnode.body_hash
+        to_append['urlnodes'] = urlnodes
+        to_return.append(to_append)
+    return to_return
+
+
 url_info_fields = api.model('URLInfoFields', {
     'url': fields.String(description="The URL to search", required=True),
     'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
@@ -318,10 +339,39 @@ class URLInfo(Resource):  # type: ignore[misc]
 
     @api.doc(body=url_info_fields)  # type: ignore[misc]
     def post(self) -> list[dict[str, Any]]:
-        from . import get_url_occurrences
         to_query: dict[str, Any] = request.get_json(force=True)
         occurrences = get_url_occurrences(to_query.pop('url'), **to_query)
         return occurrences
+
+
+def get_hostname_occurrences(hostname: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
+    '''Get the most recent captures and URL nodes where the hostname has been seen.'''
+    captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_hostname(hostname), cached_captures_only=cached_captures_only)
+
+    to_return: list[dict[str, Any]] = []
+    for capture in captures[:limit]:
+        ct = lookyloo.get_crawled_tree(capture.uuid)
+        to_append: dict[str, str | list[Any] | dict[str, Any]] = {
+            'capture_uuid': capture.uuid,
+            'start_timestamp': capture.timestamp.isoformat(),
+            'title': capture.title}
+        hostnodes: list[str] = []
+        if with_urls_occurrences:
+            urlnodes: dict[str, dict[str, str]] = {}
+        for hostnode in ct.root_hartree.hostname_tree.search_nodes(name=hostname):
+            hostnodes.append(hostnode.uuid)
+            if with_urls_occurrences:
+                for urlnode in hostnode.urls:
+                    urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
+                                              'url': urlnode.name,
+                                              'hostnode_uuid': urlnode.hostnode_uuid}
+                    if hasattr(urlnode, 'body_hash'):
+                        urlnodes[urlnode.uuid]['hash'] = urlnode.body_hash
+            to_append['hostnodes'] = hostnodes
+            if with_urls_occurrences:
+                to_append['urlnodes'] = urlnodes
+            to_return.append(to_append)
+    return to_return
 
 
 hostname_info_fields = api.model('HostnameInfoFields', {
@@ -337,7 +387,6 @@ class HostnameInfo(Resource):  # type: ignore[misc]
 
     @api.doc(body=hostname_info_fields)  # type: ignore[misc]
     def post(self) -> list[dict[str, Any]]:
-        from . import get_hostname_occurrences
         to_query: dict[str, Any] = request.get_json(force=True)
         return get_hostname_occurrences(to_query.pop('hostname'), **to_query)
 
