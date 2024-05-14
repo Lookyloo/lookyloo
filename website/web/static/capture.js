@@ -45,8 +45,8 @@ document.getElementById('multipleCaptures').addEventListener('click', function (
 
 document.getElementById("os").addEventListener("change", function () {
     let osSelect = document.getElementById("os");
-    let os_name = osSelect.options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g, "_");
-    let first_browser_name = document.querySelector("[id='" + os_name + "'] select option:first-child").value.replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g, "_");
+    let os_name = osSelect.options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
+    let first_browser_name = document.querySelector("[id='" + os_name + "'] select option:first-child").value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
 
     // Hide and disable everything
     document.querySelectorAll("#os option").forEach(function (option) {
@@ -72,12 +72,12 @@ document.getElementById("os").addEventListener("change", function () {
     });
 
     // Re-enable and show what makes sense
-    document.querySelector("[id='" + os_name + "']").style.display = 'block';
+    document.querySelector("[id='" + os_name + "']").style.display = 'flex';
     document.querySelectorAll("[id='" + os_name + "'] > div > select").forEach(function (select) {
         select.disabled = false;
         select.querySelector('option:first-child').selected = true;
     });
-    document.querySelector("[id='" + os_name + '_' + first_browser_name + "']").style.display = 'block';
+    document.querySelector("[id='" + os_name + '_' + first_browser_name + "']").style.display = 'flex';
     document.querySelectorAll("[id='" + os_name + '_' + first_browser_name + "'] > div > select").forEach(function (select) {
         select.disabled = false;
         select.querySelector('option:first-child').selected = true;
@@ -85,8 +85,9 @@ document.getElementById("os").addEventListener("change", function () {
 });
 
 document.querySelector('select[name="browser"]').addEventListener('click', function (e) {
-    let browser_name = document.querySelector('select[name="browser"]').options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g, "_");
-    let os_name = document.querySelector('select[name="browser"]').parentNode.parentNode.getAttribute("id").replace(/(:|\.|\[|\]|,|=)/g, "\\$1").replace(/ /g, "_");
+    let osSelect = document.getElementById("os");
+    let browser_name = document.querySelector('select[name="browser"]').options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
+    let os_name = document.querySelector('select[name="browser"]').parentNode.parentNode.getAttribute("id").replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
 
     // Hide what makes sense
     document.querySelectorAll(".style-sub-1 > div > select").forEach(function (select) {
@@ -103,7 +104,7 @@ document.querySelector('select[name="browser"]').addEventListener('click', funct
             option.removeAttribute('selected');
         });
     });
-    document.querySelector("[id='" + os_name + '_' + browser_name + "']").style.display = 'block';
+    document.querySelector("[id='" + os_name + '_' + browser_name + "']").style.display = 'flex';
     document.querySelectorAll("[id='" + os_name + '_' + browser_name + "'] > div > select").forEach(function (select) {
         select.disabled = false;
         select.querySelector('option:first-child').selected = true;
