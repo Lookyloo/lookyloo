@@ -824,7 +824,10 @@ function update(root, computed_node_width=0) {
         // Enter any new links at the parent's previous position.
         .insert('path', "g")
         .attr("class", "link")
-        .attr('d', diagonal),
+        .attr('d', diagonal)
+        .style('fill', 'none')
+        .style('stroke', '#ccc')
+        .style('stroke-width', '2px'),
     update => update,
     exit => exit.call(exit => exit.attr('d', diagonal).remove())
   ).call(link => link.attr('d', diagonal));
@@ -833,3 +836,57 @@ function update(root, computed_node_width=0) {
     update(root, node_width)
   }
 }
+
+//download the tree as png file
+const downloadSvg = () => {
+    const svgElement = document.querySelector('svg');
+    const svgCopy = svgElement.cloneNode(true);
+    const images = svgCopy.querySelectorAll('image');
+    const promises = [];
+    images.forEach((imageElement) => {
+        const promise = new Promise((resolve, reject) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            const image = new Image();
+            image.onload = function() {
+                canvas.width = image.width;
+                canvas.height = image.height;
+                ctx.drawImage(image, 0, 0);
+                const dataURL = canvas.toDataURL("image/svg+xml");
+                imageElement.setAttribute('href', dataURL);
+                resolve();
+            };
+            image.onerror = function() {
+                reject(new Error('Error'));
+            };
+            image.src = imageElement.getAttribute('href');
+        });
+        promises.push(promise);
+    });
+
+    Promise.all(promises).then(() => {
+        var svgData = new XMLSerializer().serializeToString(svgCopy);
+        var svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        var url = URL.createObjectURL(svgBlob);
+        var img = new Image();
+        img.onload = function() {
+            var canvas = document.createElement('canvas');
+            canvas.width = svgCopy.width.baseVal.value * 2;
+            canvas.height = svgCopy.height.baseVal.value * 2;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle='white';
+            ctx.fillRect(0,0,canvas.width,canvas.height)
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            var png = canvas.toDataURL('image/png');
+            var a = document.createElement('a');
+            a.download = 'tree.png';
+            a.href = png;
+            a.click();
+        };
+        img.src = url;
+    }).catch((error) => {
+        console.error('Error:', error);
+    });
+};
