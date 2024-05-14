@@ -51,13 +51,12 @@
       <br>
       <div class="tab-pane fade show active" id="nav-url" role="tabpanel" aria-labelledby="nav-url-tab">
         <div class="row input-group mb-3">
-          <label class="col-sm-1 col-form-label">URL:
+          <label for="url" class="col-sm-1 col-form-label">URL:</label>
           <input type="text" class="form-control col-auto" name="url" id=singleCaptureField
                  placeholder="URL to capture" value="{{predefined_url_to_capture}}" required>
 
           <textarea class="form-control col-auto d-none" placeholder="URLs to capture, one per line"
                     name="urls" id=multipleCapturesField></textarea>
-          </label>
 
           <div class="col-sm-2 input-group-text">
             <div class="form-check">
@@ -92,7 +91,7 @@
       <div class="help-tip" title="Lookyloo uses an emulated browser for all captures, click to configure the User-Agent"></div>
     </div>
 
-    <div id="collapseConfigBrowser" class="collapse d-xl-block">
+    <div id="collapseConfigBrowser" class="collapse show">
       <div class="card card-body">
         {% if personal_ua %}
         <div class="row mb-3">
@@ -149,7 +148,7 @@
               <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
               <div class="col-sm-10">
                 <!-- Disable all the selects not related to the default os -->
-                <select class="form-select" id="browser" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
+                <select class="form-select" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
                 {% for browser in browsers.keys()|sort(reverse=True) %}
                 <!-- Select the default browser -->
                 <option value="{{ browser }}" {% if browser==default['browser'] %}selected{% endif %}>{{ browser }}</option>
@@ -163,7 +162,7 @@
               <label for="user_agent" class="col-sm-2 col-form-label">User-Agent:</label>
               <div class="col-sm-10">
                 <!-- Disable all the selects, unless it is in default os and browser -->
-                <select class="form-select" id="user_agent" name="user_agent" {% if not os==default['os'] or not browser==default['browser']  %}disabled{%endif%}>
+                <select class="form-select" name="user_agent" {% if not os==default['os'] or not browser==default['browser']  %}disabled{%endif%}>
                   {% for user_agent in user_agents %}
                   <!-- Select the default ua -->
                   <option value="{{ user_agent }}" {% if user_agent==default['useragent'] %}selected{% endif %}>{{ user_agent }}</option>
@@ -364,26 +363,26 @@
               <input class="form-check-input" type="checkbox"  id="auto-report" name="auto-report" >
               <label for="auto-report" class="form-check-label">Automatically submit to investigation team</label>
             </div>
-            <div id="collapseMailConfiguration" class="collapse d-xl-block">
+            <div id="collapseMailConfiguration" class="collapse">
                 <div class="card card-body">
                     <div class="row mb-3">
-                        <label class="col-sm-5 col-form-label" for="email">Email of the sender (optional): </label>
-                        <div class="col-sm-7">
+                        <label class="col-sm-3 col-form-label" for="email">Email of the sender (optional): </label>
+                        <div class="col-sm-9">
                             <input class="form-control" type="text" id="email"
                                    name="email" placeholder="myself@example.com">
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <label class="col-sm-5 col-form-label" for="recipient-mail">
+                        <label class="col-sm-3 col-form-label" for="recipient-mail">
                             Email of the recipient (optional): </label>
-                        <div class="col-sm-7">
+                        <div class="col-sm-9">
                             <input class="form-control" type="text" id="recipient-mail"
                                    name="recipient-mail" placeholder="to-someone@example.com">
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <label class="col-sm-5 col-form-label" for="comment">Comment (optional): </label>
-                        <div class="col-sm-7">
+                        <label class="col-sm-3 col-form-label" for="comment">Comment (optional): </label>
+                        <div class="col-sm-9">
                             <textarea class="form-control" type="text" id="comment" name="comment" rows="3"></textarea>
                         </div>
                     </div>

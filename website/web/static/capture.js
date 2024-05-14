@@ -1,4 +1,4 @@
-// scripts for chosing what should be captured
+// scripts for the submission type
 
 document.getElementById('nav-url-tab').addEventListener('click', function (e) {
     // switch to tab for capture of URL(s)
@@ -84,33 +84,36 @@ document.getElementById("os").addEventListener("change", function () {
     });
 });
 
-document.querySelector('select[name="browser"]').addEventListener('click', function (e) {
-    let osSelect = document.getElementById("os");
-    let browser_name = document.querySelector('select[name="browser"]').options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
-    let os_name = document.querySelector('select[name="browser"]').parentNode.parentNode.getAttribute("id").replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
+document.querySelectorAll('select[name="browser"]').forEach( function(element)
+{
+    element.addEventListener('change', function (e) {
+        let browser_name = element.options[element.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
+        let osSelect = document.getElementById("os");
+        let os_name = osSelect.options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
 
-    // Hide what makes sense
-    document.querySelectorAll(".style-sub-1 > div > select").forEach(function (select) {
-        select.querySelectorAll('option').forEach(function (option) {
-            option.removeAttribute('selected');
+        // Hide and disable every useragent
+        document.querySelectorAll(".style-sub-1 > div > select").forEach(function (select) {
+            select.querySelectorAll('option').forEach(function (option) {
+                option.removeAttribute('selected');
+            });
         });
-    });
-    document.querySelectorAll(".style-sub-2").forEach(function (element) {
-        element.style.display = 'none';
-    });
-    document.querySelectorAll(".style-sub-2 > div > select").forEach(function (select) {
-        select.disabled = true;
-        select.querySelectorAll('option').forEach(function (option) {
-            option.removeAttribute('selected');
+        document.querySelectorAll(".style-sub-2").forEach(function (element) {
+            element.style.display = 'none';
         });
-    });
-    document.querySelector("[id='" + os_name + '_' + browser_name + "']").style.display = 'flex';
-    document.querySelectorAll("[id='" + os_name + '_' + browser_name + "'] > div > select").forEach(function (select) {
-        select.disabled = false;
-        select.querySelector('option:first-child').selected = true;
+        document.querySelectorAll(".style-sub-2 > div > select").forEach(function (select) {
+            select.disabled = true;
+            select.querySelectorAll('option').forEach(function (option) {
+                option.removeAttribute('selected');
+            });
+        });
+        // Show only the correct user-agent
+        document.querySelector("[id='" + os_name + '_' + browser_name + "']").style.display = 'flex';
+        document.querySelectorAll("[id='" + os_name + '_' + browser_name + "'] > div > select").forEach(function (select) {
+            select.disabled = false;
+            select.querySelector('option:first-child').selected = true;
+        });
     });
 });
-
 
 document.getElementById('personal_ua_select').addEventListener('click', function (e) {
     //disable select fields when personal useragent (ua) selected etc...
