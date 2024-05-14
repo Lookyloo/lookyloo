@@ -884,6 +884,7 @@ const downloadSvg = () => {
             a.download = 'tree.png';
             a.href = png;
             a.click();
+            URL.revokeObjectURL(url);
         };
         img.src = url;
     }).catch((error) => {
