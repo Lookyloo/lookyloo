@@ -147,6 +147,20 @@
   });
   </script>
   <script>
+  $('#hostnamesModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
+  $('#hostnameDetailsModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
   $('#mispPushModal').on('show.bs.modal', function(e) {
       var button = $(e.relatedTarget);
       var modal = $(this);
@@ -330,6 +344,10 @@
               <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
                   data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button"
                   title="All ressources contained in the tree">Ressources Capture</a>
+
+              <a href="#hostnamesModal" data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
+                  data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button"
+                  title="All hostnames contained in the tree">Hostnames Capture</a>
 
               <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
                   data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button"
@@ -737,6 +755,43 @@
               <a class="btn btn-primary" href="#bodyHashesModal"
                  data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button">Back to capture's ressources</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="hostnamesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="hostnamesModalLabel">Hostnames in tree</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading hostnames ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="hostnameDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="hostnameDetailsModalLabel">Other occurrences of the hostname</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading hostname details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#HostnamesModal"
+                 data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button">Back to capture's hostnames</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
