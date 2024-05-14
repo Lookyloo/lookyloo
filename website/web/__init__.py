@@ -351,6 +351,20 @@ def get_all_body_hashes(capture_uuid: str, /) -> dict[str, dict[str, URLNode | i
     return to_return
 
 
+def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode]]]:
+    ct = lookyloo.get_crawled_tree(capture_uuid)
+    to_return: dict[str, dict[str, list[URLNode] | int]] = defaultdict()
+    for node in ct.root_hartree.url_tree.traverse():
+        if not node.hostname:
+            continue
+        captures = get_indexing(flask_login.current_user).get_captures_hostname(node.hostname)
+        # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
+        if node.hostname not in to_return:
+            to_return[node.hostname] = {'total_captures': len(captures), 'nodes': []}
+        to_return[node.hostname]['nodes'].append(node)  # type: ignore[union-attr]
+    return to_return
+
+
 def get_latest_url_capture(url: str, /) -> CaptureCache | None:
     '''Get the most recent capture with this URL'''
     captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_url(url))
@@ -408,6 +422,11 @@ def get_hostname_occurrences(hostname: str, /, with_urls_occurrences: bool=False
                 to_append['urlnodes'] = urlnodes
             to_return.append(to_append)
     return to_return
+
+
+def get_hostname_investigator(hostname: str) -> list[tuple[str, str, str, datetime]]:
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname)])
+    return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
 def get_cookie_name_investigator(cookie_name: str, /) -> tuple[list[tuple[str, str]], list[tuple[str, float, list[tuple[str, float]]]]]:
@@ -1257,6 +1276,12 @@ def tree_body_hashes(tree_uuid: str) -> str:
     return render_template('tree_body_hashes.html', tree_uuid=tree_uuid, body_hashes=body_hashes)
 
 
+@app.route('/tree/<string:tree_uuid>/hostnames', methods=['GET'])
+def tree_hostnames(tree_uuid: str) -> str:
+    hostnames = get_all_hostnames(tree_uuid)
+    return render_template('tree_hostnames.html', tree_uuid=tree_uuid, hostnames=hostnames)
+
+
 @app.route('/tree/<string:tree_uuid>/pandora', methods=['GET', 'POST'])
 def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
     node_uuid = None
@@ -1733,8 +1758,8 @@ def url_details(url: str) -> str:
 
 @app.route('/hostnames/<string:hostname>', methods=['GET'])
 def hostname_details(hostname: str) -> str:
-    hits = get_hostname_occurrences(hostname.strip(), with_urls_occurrences=True, limit=50)
-    return render_template('hostname.html', hostname=hostname, hits=hits)
+    captures = get_hostname_investigator(hostname.strip())
+    return render_template('hostname.html', hostname=hostname, captures=captures)
 
 
 @app.route('/stats', methods=['GET'])
