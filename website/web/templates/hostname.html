@@ -1,41 +1,6 @@
 {% from "macros.html" import shorten_string %}
 
-{% if from_popup %}
-{% extends "main.html" %}
-
-{% from 'bootstrap5/utils.html' import render_messages %}
-
-{% block title %}{{ url }}{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<script type="text/javascript">
-    $('#table').DataTable( {
-        "order": [[ 0, "desc" ]],
-        "pageLength": 50,
-        "columnDefs": [{
-            "targets": 0,
-            "render": function ( data, type, row, meta ) {
-                let date = new Date(data);
-                return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-            }
-        }]
-    });
-</script>
-
-<script type="text/javascript">
-    function openTreeInNewTab(treeUUID) {
-        window.opener.openTreeInNewTab(treeUUID);
-    };
-</script>
-{% endblock %}
-{%endif%}
-
 {% block content %}
-
-{% if from_popup %}
-<button onclick="window.history.back();" class="btn btn-primary" type="button">Go Back</button>
-{%endif%}
 
 <center>
     <h4>{{ hostname }}</h4>
@@ -50,7 +15,8 @@
                     return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
                    }
                  },
-                 { width: '80%', targets: 1 }],
+                 { width: '40%', targets: 1 },
+                 { width: '40%', targets: 2 }],
   });
 </script>
 

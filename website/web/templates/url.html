@@ -1,70 +1,51 @@
-{% extends "main.html" %}
-
-{% from 'bootstrap5/utils.html' import render_messages %}
-
-{% block title %}{{ url }}{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<script type="text/javascript">
-    $('#table').DataTable( {
-        "order": [[ 0, "desc" ]],
-        "pageLength": 50,
-        "columnDefs": [{
-            "targets": 0,
-            "render": function ( data, type, row, meta ) {
-                let date = new Date(data);
-                return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.toTimeString();
-            }
-        }]
-    });
-</script>
-
-<script type="text/javascript">
-    function openTreeInNewTab(treeUUID) {
-        window.opener.openTreeInNewTab(treeUUID);
-    };
-</script>
-
-{% endblock %}
+{% from "macros.html" import shorten_string %}
 
 {% block content %}
-  <center>
-      <h4>{{ url }}</h4>
-      <button onclick="window.history.back();" class="btn btn-primary" type="button">Go Back</button>
-  </center>
-  <div class="table-responsive">
-  <table id="table" class="table" style="width:96%">
-    <thead>
-     <tr>
-       <th>Start timestamp</th>
-       <th>Captures</th>
-     </tr>
-    </thead>
-    <tbody>
-      {% for hit in hits %}
-      <tr>
-        <td>
-          {{ hit['start_timestamp'] }}
-        </td>
-        <td><a href="{{ url_for('tree', tree_uuid=hit['capture_uuid']) }}">{{ hit['title'] }}</a>
-            </br>
-            Nodes:
-            <ul>
-              {% for urlnode_uuid, data in hit['urlnodes'].items() %}
-              <li><a href="{{ url_for('tree', tree_uuid=hit['capture_uuid'], node_uuid=data['hostnode_uuid']) }}">{{ data['start_time'] }}</a></li>
-              {% endfor %}
-            </ul>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  </div>
-  <p>The same file was seen in these captures:</p>
-  <ul>
-  {% for capture_uuid, title in captures %}
-    <li><a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}')">{{ title }}</a></li>
-  {% endfor %}
-  </ul>
+
+<center>
+  <h4>{{ url }}</h4>
+</center>
+
+<script type="text/javascript">
+  new DataTable('#urlTable', {
+    order: [[ 0, "desc" ]],
+    columnDefs: [{ width: '20%', targets: 0,
+                   render: (data) => {
+                    const date = new Date(data);
+                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
+                   }
+                 },
+                 { width: '40%', targets: 1 },
+                 { width: '40%', targets: 2 }],
+  });
+</script>
+
+<table id="urlTable" class="table table-striped" style="width:100%">
+  <thead>
+   <tr>
+     <th>Capture Time</th>
+     <th>Capture Title</th>
+     <th>Landing page</th>
+   </tr>
+  </thead>
+  <tbody>
+    {% for capture_uuid, title, landing_page, capture_time in captures %}
+    <tr>
+      <td>
+        {{capture_time}}
+      </td>
+      <td>
+        <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">
+          {{ title }}
+        </a>
+      </td>
+      <td>
+        <span class="d-inline-block text-break" style="max-width: 400px;">
+          {{ landing_page }}
+        </span>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

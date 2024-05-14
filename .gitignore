@@ -112,11 +112,14 @@ FileSaver.js
 d3.v5.min.js
 d3.v5.js
 
-cache.pid
-dump.rdb
+*.pid
+*.rdb
+*log*
+full_index/db
 
 # Local config files
 config/*.json
+config/users/*.json
 config/*.json.bkp
 config/takedown_filters.ini
 
@@ -126,3 +129,25 @@ known_content_user/
 user_agents/
 
 .DS_Store
+
+.idea
+
+archived_captures
+discarded_captures
+removed_captures
+
+website/web/static/d3.min.js
+website/web/static/datatables.min.css
+website/web/static/datatables.min.js
+website/web/static/jquery.min.js
+
+# Modules
+circl_pypdns
+eupi
+own_user_agents
+phishtank
+riskiq
+sanejs
+urlhaus
+urlscan
+vt_url

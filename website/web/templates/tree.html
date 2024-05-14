@@ -161,6 +161,20 @@
   });
   </script>
   <script>
+  $('#urlsModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
+  $('#urlDetailsModal').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var modal = $(this);
+      modal.find('.modal-body').load(button.data("remote"));
+  });
+  </script>
+  <script>
   $('#mispPushModal').on('show.bs.modal', function(e) {
       var button = $(e.relatedTarget);
       var modal = $(this);
@@ -343,23 +357,27 @@
 
               <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
                   data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button"
-                  title="All ressources contained in the tree">Ressources Capture</a>
+                  title="All ressources contained in the tree">Ressources</a>
 
               <a href="#hostnamesModal" data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
                   data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button"
-                  title="All hostnames contained in the tree">Hostnames Capture</a>
+                  title="All hostnames contained in the tree">Hostnames</a>
+
+              <a href="#urlsModal" data-remote="{{ url_for('tree_urls', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#urlsModal" role="button"
+                 title="All URLs contained in the tree">URLs</a>
 
               <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
                   data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button"
-                  title="Favicons found on the rendered page">Favicons Capture</a>
+                  title="Favicons found on the rendered page">Favicons</a>
 
               <a href="#captureHashesTypesModal" data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid) }}"
                   data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button"
-                  title="Compare hashes of the rendered page">Capture hashes types</a>
+                  title="Compare hashes of the rendered page">(Fuzzy)Hashes types</a>
 
               <a href="#identifiersModal" data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid) }}"
                   data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button"
-                  title="Identifiers found on the rendered page">Identifiers Capture</a>
+                  title="Identifiers found on the rendered page">Other Identifiers</a>
             </div>
           </div>
 
@@ -792,6 +810,43 @@
               <a class="btn btn-primary" href="#HostnamesModal"
                  data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button">Back to capture's hostnames</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="urlsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="urlsModalLabel">URLs in tree</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading urls ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="urlDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="hostnameDetailsModalLabel">Other occurrences of the URL</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading url details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#HostnamesModal"
+                 data-remote="{{ url_for('tree_urls', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#urlsModal" role="button">Back to capture's URLs</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>
