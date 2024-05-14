@@ -1,7 +1,7 @@
 {
   "static": {
     "bomb.svg": "Tro3+kCLzfBNBve2gPnsmXsl+tHUQVrFz77zfrWwnAuTraehZaoAfVJgGOYdG8zceXdGLEKzXVi3GdtEXw0sYQ==",
-    "capture.js": "wdtRc1v2F4NwxeXo5UqHmiKB2vHNptTM0tLCxuIN5HdjgV2ITVNP5Zva0T5fQx00HGIefs5jBcUdjIl7LMb3vQ==",
+    "capture.js": "Y6vfKnC2rQFeFSEARNb1BgMEFCTTfEr35Xs0Hy0Gnmn5JiXrSDtWxFogq8xPUpZu0AhRJRk/N/dRCGJdhvFDMA==",
     "check.svg": "CRqUAM/yXxgJwpfg3TeoKD+CIqQj62lxqS3zeCmdPaV3dKftk4jk5Mqc1TGxL7i61X1sgV0/f+KJLEOKTw01ww==",
     "cookie_in_url.png": "hs/oNPnrR2DkDX9Yp6Daug/QqpWJHemJE6lXpxNafjgOYooezp3DpbqKqADT7QcfcTxxUfe1iPDZJlHOrNMAcw==",
     "cookie_read.png": "mdXCeuNFPvshSwIXAJLoR1xFjXb+K2Mgu47Q1fnUAO8j1N2c/uJuE8sGuBHHbS8HOyr/CbOC6Uf3zsm9KvAs8Q==",
@@ -31,6 +31,7 @@
     "json.png": "nE6ROpXE5iovHyd5oh8cnA4ozTa5bZjn1A6b+10b1Hb59O1NcMdcrv8Rqge3CAtSqJDKnrYbMChCT1j48yMwQw==",
     "loader.gif": "ZZKD5vLSKBWKeUpa2KI9qheUJ49iTI/UULmVU/AX28fBfH00K3lLc2v5pVJZ4qXG1BbB13LTXzRKKU35H2XfNg==",
     "lookyloo.jpeg": "i6wBj8CsIM5YAQLEMQfhs3CNOSKkErF8AMqqM6ZygSwCyQgv9CU8xt94veMZhM/ufBWoz7kAXmR+yywmxsTxug==",
+    "new_capture.js": "3m4sftkpEeUhaCLfl0suyCgxlArzsojs3/fsMu515VKY7pIDF6f15pdTBdRitZV6y243VcfMKdWnOGyYsm19ag==",
     "redirect.png": "PAjzlPV97rEFvH55mG1ZC9wRl98be3yMeX/nENuFkJcds6/AXgSR2ig/QyPULgobSnNgiYieLVWY/oqsgeywrQ==",
     "secure.svg": "H8ni7t0d60nCJDVGuZpuxC+RBy/ipAjWT627D12HlZGg6LUmjSwPTQTUekm3UJupEP7TUkhXyq6WHc5gy7QBjg==",
     "stats.css": "/kY943FwWBTne4IIyf7iBROSfbGd82TeBicEXqKkRwawMVRIvM/Pk5MRa7okUyGIxaDjFQGmV/U1vy+PhN6Jbw==",
