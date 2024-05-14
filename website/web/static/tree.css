@@ -8,12 +8,6 @@
   font: 12px sans-serif;
 }
 
-.link {
-  fill: none;
-  stroke: #ccc;
-  stroke-width: 2px;
-}
-
 .flashed-messages {
   position: fixed;
   bottom: 5px;
