@@ -46,7 +46,7 @@ document.getElementById('multipleCaptures').addEventListener('click', function (
 document.getElementById("os").addEventListener("change", function () {
     let osSelect = document.getElementById("os");
     let os_name = osSelect.options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
-    let first_browser_name = document.querySelector("[id='" + os_name + "'] select option:first-child").value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
+    let first_browser_name = document.querySelector(`[id='${os_name}'] select option:first-child`).value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
 
     // Hide and disable everything
     document.querySelectorAll("#os option").forEach(function (option) {
@@ -55,7 +55,7 @@ document.getElementById("os").addEventListener("change", function () {
     document.querySelectorAll(".style-sub-1").forEach(function (element) {
         element.style.display = 'none';
     });
-    document.querySelectorAll(".style-sub-1 > div > select").forEach(function (select) {
+    document.querySelectorAll(".style-sub-1 > label > span > select").forEach(function (select) {
         select.disabled = true;
         select.querySelectorAll('option').forEach(function (option) {
             option.removeAttribute('selected');
@@ -64,7 +64,7 @@ document.getElementById("os").addEventListener("change", function () {
     document.querySelectorAll(".style-sub-2").forEach(function (element) {
         element.style.display = 'none';
     });
-    document.querySelectorAll(".style-sub-2 > div > select").forEach(function (select) {
+    document.querySelectorAll(".style-sub-2 > label > span > select").forEach(function (select) {
         select.disabled = true;
         select.querySelectorAll('option').forEach(function (option) {
             option.removeAttribute('selected');
@@ -72,13 +72,13 @@ document.getElementById("os").addEventListener("change", function () {
     });
 
     // Re-enable and show what makes sense
-    document.querySelector("[id='" + os_name + "']").style.display = 'flex';
-    document.querySelectorAll("[id='" + os_name + "'] > div > select").forEach(function (select) {
+    document.querySelector(`[id='${os_name}']`).style.display = 'block';
+    document.querySelectorAll(`[id='${os_name}'] > label > span > select`).forEach(function (select) {
         select.disabled = false;
         select.querySelector('option:first-child').selected = true;
     });
-    document.querySelector("[id='" + os_name + '_' + first_browser_name + "']").style.display = 'flex';
-    document.querySelectorAll("[id='" + os_name + '_' + first_browser_name + "'] > div > select").forEach(function (select) {
+    document.querySelector(`[id='${os_name}_${first_browser_name}']`).style.display = 'block';
+    document.querySelectorAll(`[id='${os_name}_${first_browser_name}'] > label > span > select`).forEach(function (select) {
         select.disabled = false;
         select.querySelector('option:first-child').selected = true;
     });
@@ -91,24 +91,27 @@ document.querySelectorAll('select[name="browser"]').forEach( function(element)
         let osSelect = document.getElementById("os");
         let os_name = osSelect.options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
 
-        // Hide and disable every useragent
-        document.querySelectorAll(".style-sub-1 > div > select").forEach(function (select) {
+        // unselect every browser select here (unknown reason)
+        document.querySelectorAll(".style-sub-1 > label > span > select").forEach(function (select) {
             select.querySelectorAll('option').forEach(function (option) {
                 option.removeAttribute('selected');
             });
         });
+
+        // Hide and disable every useragent
         document.querySelectorAll(".style-sub-2").forEach(function (element) {
             element.style.display = 'none';
         });
-        document.querySelectorAll(".style-sub-2 > div > select").forEach(function (select) {
+        document.querySelectorAll(".style-sub-2 > label > span > select").forEach(function (select) {
             select.disabled = true;
             select.querySelectorAll('option').forEach(function (option) {
                 option.removeAttribute('selected');
             });
         });
+
         // Show only the correct user-agent
-        document.querySelector("[id='" + os_name + '_' + browser_name + "']").style.display = 'flex';
-        document.querySelectorAll("[id='" + os_name + '_' + browser_name + "'] > div > select").forEach(function (select) {
+        document.querySelector(`[id='${os_name}_${browser_name}']`).style.display = 'block';
+        document.querySelectorAll(`[id='${os_name}_${browser_name}'] > label > span > select`).forEach(function (select) {
             select.disabled = false;
             select.querySelector('option:first-child').selected = true;
         });
@@ -183,14 +186,16 @@ document.getElementById('os-type').addEventListener('change', function () {
 });
 
 // admin-only report-form
-const displayReportForm = function() {
-    let show_form = document.getElementById("auto-report").checked;
-    if(show_form) {
-    document.getElementById("collapseMailConfiguration").style.display = "block";
-    } else {
-        document.getElementById("collapseMailConfiguration").style.display = "none";
-    }
+let report_form = document.getElementById("auto-report");
+if (report_form) { // admin is logged in
+    report_form.addEventListener('change', function() {
+        let show_form = document.getElementById("auto-report").checked;
+        if(show_form) {
+        document.getElementById("collapseMailConfiguration").style.display = "block";
+        } else {
+            document.getElementById("collapseMailConfiguration").style.display = "none";
+        }
+    });
 }
-displayReportForm()
-document.getElementById("auto-report").addEventListener('change', displayReportForm);
+
 
