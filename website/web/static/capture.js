@@ -91,13 +91,6 @@ document.querySelectorAll('select[name="browser"]').forEach( function(element)
         let osSelect = document.getElementById("os");
         let os_name = osSelect.options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
 
-        // unselect every browser select here (unknown reason)
-        document.querySelectorAll(".style-sub-1 > label > span > select").forEach(function (select) {
-            select.querySelectorAll('option').forEach(function (option) {
-                option.removeAttribute('selected');
-            });
-        });
-
         // Hide and disable every useragent
         document.querySelectorAll(".style-sub-2").forEach(function (element) {
             element.style.display = 'none';
