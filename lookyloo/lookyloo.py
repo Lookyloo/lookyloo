@@ -72,7 +72,7 @@ class CaptureSettings(CaptureSettingsCore, total=False):
     '''The capture settings that can be passed to Lookyloo'''
     listing: int | None
     not_queued: int | None
-    auto_report: bool | str | dict[str, str] | None
+    auto_report: bool | str | dict[str, str] | None  # {'email': , 'comment': , 'recipient_mail':}
     dnt: str | None
     browser_name: str | None
     os: str | None

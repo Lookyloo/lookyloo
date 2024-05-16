@@ -22,7 +22,7 @@
 
 {% block content %}
 <div class="container">
-  <center>
+    <center>
     <a href="{{ url_for('index') }}" title="Go back to index">
       <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
            alt="Lookyloo" width="25%">
@@ -33,7 +33,7 @@
     <div class="row mb-3">
       <div class="col-sm-10">
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" name="listing" {% if default_public %}checked="true"{% endif %}></input>
+          <input class="form-check-input" type="checkbox" id="listing" name="listing" {% if default_public %}checked="checked"{% endif %}>
           <label for="listing" class="form-check-label">Display results on public page</label>
         </div>
       </div>
@@ -48,7 +48,7 @@
     </nav>
 
     <div class="tab-content" id="nav-tabContent">
-      </br>
+      <br>
       <div class="tab-pane fade show active" id="nav-url" role="tabpanel" aria-labelledby="nav-url-tab">
         <div class="row input-group mb-3">
           <label for="url" class="col-sm-1 col-form-label">URL:</label>
@@ -58,13 +58,13 @@
           <textarea class="form-control col-auto d-none" placeholder="URLs to capture, one per line"
                     name="urls" id=multipleCapturesField></textarea>
 
-          <span class="col-sm-2 input-group-text">
+          <div class="col-sm-2 input-group-text">
             <div class="form-check">
               <input class="form-check-input" name="multipleCaptures" id="multipleCaptures" type="checkbox"
                      value="" aria-label="tick to enable multiple captures">
               <label for="multipleCaptures" class="form-check-label">Multiple captures</label>
             </div>
-          </span>
+          </div>
         </div>
       </div>
 
@@ -83,26 +83,26 @@
 
     <div>
       <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfigBrowser"
-              aria-expanded="false" aria-controls="collapseConfigBrowser">
-          <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; color: black; text-decoration: underline; text-decoration-color: blue;">
-            <b>Browser Configuration</b>
-          </p>
+            aria-expanded="false" aria-controls="collapseConfigBrowser">
+        <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; color: black; text-decoration: underline; text-decoration-color: blue;">
+          <b>Browser Configuration</b>
+        </p>
       </button>
       <div class="help-tip" title="Lookyloo uses an emulated browser for all captures, click to configure the User-Agent"></div>
     </div>
 
-    <div id="collapseConfigBrowser" class="collapse d-xl-block">
+    <div id="collapseConfigBrowser" class="collapse show">
       <div class="card card-body">
         {% if personal_ua %}
         <div class="row mb-3">
           <div class="col-sm-10">
             <div class="form-check">
-              <input class="form-check-input" type="radio" id="personal_ua_select" name="user_agent_select"></input>
+              <input class="form-check-input" type="radio" id="personal_ua_select" name="user_agent_select">
               <label for="personal_ua_select" class="form-check-label">
-                  Use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser:</br>
+                  Use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser:<br>
                   {{ personal_ua }}
               </label>
-              <input class="visually-hidden" type="text" id="personal_ua" name="personal_ua" value="{{ personal_ua }}" disabled></input>
+              <input class="visually-hidden" type="text" id="personal_ua" name="personal_ua" value="{{ personal_ua }}" disabled>
             </div>
           </div>
         </div>
@@ -112,7 +112,7 @@
         <div class="row mb-3">
           <div class="col-sm-10">
             <div class="form-check">
-              <input class="form-check-input" type="radio" id="predefined_ua_select" name="user_agent_select" checked></input>
+              <input class="form-check-input" type="radio" id="predefined_ua_select" name="user_agent_select" checked>
               <label for="predefined_ua_select" class="form-check-label">Pick the <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your choice:</label>
             </div>
           </div>
@@ -144,31 +144,35 @@
 
             {% for os, browsers in user_agents.items() %}
             <!-- Hide the browsers that aren't part of the default os -->
-            <div id="{{os.replace(' ', '_')}}" class="style-sub-1 row mb-3" {% if not os==default['os'] %}style="display: none;"{%endif%}>
-              <label for="browser" class="col-sm-2 col-form-label">Browser Type:</label>
-              <div class="col-sm-10">
-                <!-- Disable all the selects not related to the default os -->
-                <select class="form-select" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
-                {% for browser in browsers.keys()|sort(reverse=True) %}
-                <!-- Select the default browser -->
-                <option value="{{ browser }}" {% if browser==default['browser'] %}selected{% endif %}>{{ browser }}</option>
-                {% endfor%}
-                </select>
-              </div>
+            <div id="{{os.replace(' ', '_')}}" class="style-sub-1" {% if not os==default['os'] %}style="display: none;"{%endif%}>
+              <label class="row mb-3">
+                <span class="col-sm-2 col-form-label">Browser Type:</span>
+                <span class="col-sm-10">
+                  <!-- Disable all the selects not related to the default os -->
+                  <select class="form-select" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
+                  {% for browser in browsers.keys()|sort(reverse=True) %}
+                  <!-- Select the default browser -->
+                  <option value="{{ browser }}" {% if browser==default['browser'] %}selected{% endif %}>{{ browser }}</option>
+                  {% endfor%}
+                  </select>
+                </span>
+              </label>
             </div>
             {% for browser, user_agents in browsers.items() %}
             <!-- Hide the user agents that aren't part of the default OS and browsers that aren't part of the default os -->
-            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2 row mb-3" {% if not os==default['os'] or not browser==default['browser']%} style="display: none;"{%endif%}>
-              <label for="user_agent" class="col-sm-2 col-form-label">User-Agent:</label>
-              <div class="col-sm-10">
-                <!-- Disable all the selects, unless it is in default os and browser -->
-                <select class="form-select" name="user_agent" {% if not os==default['os'] or not browser==default['browser']  %}disabled{%endif%}>
-                  {% for user_agent in user_agents %}
-                  <!-- Select the default ua -->
-                  <option value="{{ user_agent }}" {% if user_agent==default['useragent'] %}selected{% endif %}>{{ user_agent }}</option>
-                  {% endfor%}
-                </select>
-              </div>
+            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2" {% if not os==default['os'] or not browser==default['browser']%} style="display: none;"{%endif%}>
+              <label class="row mb-3">
+                <span class="col-sm-2 col-form-label">User-Agent:</span>
+                <span class="col-sm-10">
+                  <!-- Disable all the selects, unless it is in default os and browser -->
+                  <select class="form-select" name="user_agent" {% if not os==default['os'] or not browser==default['browser']  %}disabled{%endif%}>
+                    {% for user_agent in user_agents %}
+                    <!-- Select the default ua -->
+                    <option value="{{ user_agent }}" {% if user_agent==default['useragent'] %}selected{% endif %}>{{ user_agent }}</option>
+                    {% endfor%}
+                  </select>
+                </span>
+              </label>
             </div>
             {% endfor%}
             {% endfor%}
@@ -179,7 +183,7 @@
         <!-- Mobiles -->
         <div id="mobiles-list" style="display:none">
           <div class="row mb-3">
-            <label for="os" class="col-sm-2 col-form-label">Device name:</label>
+            <label for="device-name-mobile" class="col-sm-2 col-form-label">Device name:</label>
             <div class="col-sm-10">
               <select class="form-select" name="device_name" id="device-name-mobile" disabled>
                 {% for device_name in devices['mobile']['default'].keys() %}
@@ -195,7 +199,7 @@
         <div class="row mb-3">
           <div class="col-sm-10">
             <div class="form-check">
-              <input class="form-check-input" type="radio" id="freetext_ua_select" name="user_agent_select"></input>
+              <input class="form-check-input" type="radio" id="freetext_ua_select" name="user_agent_select">
               <label for="freetext_ua_select" class="form-check-label">Type the <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your choice:</label>
             </div>
           </div>
@@ -214,9 +218,9 @@
 
     <div>
       <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfigCapture" aria-expanded="false" aria-controls="collapseConfigCapture">
-          <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; color: black; text-decoration: underline; text-decoration-color: blue;">
-            <b>Capture Configuration</b>
-          </p>
+        <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; color: black; text-decoration: underline; text-decoration-color: blue;">
+          <b>Capture Configuration</b>
+        </p>
       </button>
       <div class="help-tip" title="Edit configuration options for the capture."></div>
     </div>
@@ -227,7 +231,7 @@
           <label for="allow_tracking" class="col-sm-2 col-form-check-label">Allow tracking:</label>
           <div class="col-sm-10">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="allow_tracking" aria-describedby="allow_tracking_help"></input>
+              <input class="form-check-input" type="checkbox" id="allow_tracking" name="allow_tracking" aria-describedby="allow_tracking_help">
               <div id="allow_tracking_help" class="form-text">We'll attempt to click on the button allowing the website captured to violate your privacy.</div>
             </div>
           </div>
@@ -246,7 +250,7 @@
           <label for="dnt" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/DNT">Do not Track</a>:</label>
           <div class="col-sm-10">
             <select class="form-select" name="dnt" id="dnt" aria-label="Select a value for the Do Not Track HTTP Header">
-              <option value="" selected>Select a value for the DNT header (header not set otherwise)</button>
+              <option value="" selected>Select a value for the DNT header (header not set otherwise)</option>
               <option value="0">0 (The user prefers to allow tracking on the target site.)</option>
               <option value="1">1 (The user prefers not to be tracked on the target site.)</option>
               <option value="null">null (The user has not specified a preference about tracking.)</option>
@@ -356,16 +360,53 @@
 
     <hr>
 
+  {% if current_user.is_authenticated %}
+    <!-- admin only checkbox for autoreport -->
+    <div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox"  id="auto-report" name="auto-report" >
+        <label for="auto-report" class="form-check-label">Automatically submit to investigation team</label>
+      </div>
+      <div id="collapseMailConfiguration" class="collapse">
+        <div class="card card-body">
+          <div class="row mb-3">
+            <label class="col-sm-3 col-form-label" for="email">Email of the sender (optional): </label>
+            <div class="col-sm-9">
+              <input class="form-control" type="text" id="email"
+                 name="email" placeholder="myself@example.com">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-3 col-form-label" for="recipient-mail">
+              Email of the recipient (optional): </label>
+            <div class="col-sm-9">
+              <input class="form-control" type="text" id="recipient-mail"
+                     name="recipient-mail" placeholder="to-someone@example.com">
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-3 col-form-label" for="comment">Comment (optional): </label>
+            <div class="col-sm-9">
+              <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <hr>
+  {%  endif %}
+
     <center>
       <b>
-      {% if default_public %}
-        By default, the capture is public. If you do not want that, untick the box at the top of the form.
-      {% else %}
-        By default, the capture is private (not visible on the index page). If you want it to be public tick the box at the top of the form.
-      {% endif %}
+        {% if default_public %}
+          By default, the capture is public. If you do not want that, untick the box at the top of the form.
+        {% else %}
+          By default, the capture is private (not visible on the index page). If you want it to be public tick the box at the top of the form.
+        {% endif %}
       </b>
-      </br>
-      </br>
+      <br>
+      <br>
       <button type="submit" class="new-capture-button btn btn-primary" id="btn-looking">Start looking!</button>
     </center>
   </form>
@@ -375,94 +416,7 @@
 {% block scripts %}
   {{ super() }}
   <script src='{{ url_for('static', filename='capture.js') }}'
-          {{get_sri('static', 'capture.js')}}
-          crossorigin="anonymous"></script>
-  <script>
-  $('#nav-url-tab').on('click', function(e) {
-    document.getElementById("singleCaptureField").required = true;
-    document.getElementById("document").required = false;
-    $("#singleCaptureField").removeClass("d-none");
-    document.getElementById('multipleCaptures').checked = false;
-    $("#multipleCapturesField").addClass("d-none");
-  });
-  $('#nav-doc-tab').on('click', function(e) {
-    document.getElementById("document").required = true;
-    document.getElementById("multipleCapturesField").required = false;
-    document.getElementById("singleCaptureField").required = false;
-  });
-  </script>
-  <script>
-      $('#multipleCaptures').on('click', function(e) {
-        if (document.getElementById('multipleCaptures').checked == true) {
-            document.getElementById('singleCaptureField').value = '';
-            $("#singleCaptureField").addClass("d-none");
-            document.getElementById("singleCaptureField").required = false;
-            $("#multipleCapturesField").removeClass("d-none");
-            document.getElementById("multipleCapturesField").required = true;
-        }
-        else {
-            document.getElementById('multipleCapturesField').value = '';
-            $("#singleCaptureField").removeClass("d-none");
-            document.getElementById("singleCaptureField").required = true;
-            $("#multipleCapturesField").addClass("d-none");
-            document.getElementById("multipleCapturesField").required = false;
-        }
-      })
-  </script>
-  <script>
-      $('#personal_ua_select').on('click', function(e) {
-        $('#personal_ua').prop("disabled", false);
-
-        $('#freetext_ua').prop("disabled", true);
-        disablePredefinedUA();
-      });
-
-      $('#predefined_ua_select').on('click', function(e) {
-        $('#os-type').val('desktop').trigger('change');
-
-        $('#freetext_ua').prop("disabled", true);
-        $('#personal_ua').prop("disabled", true);
-      });
-
-      $('#freetext_ua_select').on('click', function(e) {
-        $('#freetext_ua').prop("disabled", false);
-
-        $('#personal_ua').prop("disabled", true);
-        disablePredefinedUA();
-      });
-
-      const disablePredefinedUA = function() {
-        $('#os-type').prop("disabled", true);
-        $('#device-name-mobile').prop("disabled", true);
-        $('#os').prop("disabled", true);
-        $('select[name="browser"]').prop("disabled", true);
-        $('select[name="user_agent"]').prop("disabled", true);
-      };
-
-      $('#os-type').on('change', function() {
-          $('#os-type').prop("disabled", false);
-          if ( this.value == "mobile")
-          {
-            $("#mobiles-list").show();
-            $('#device-name-mobile').prop("disabled", false);
-
-            $("#desktops-list").hide();
-            $('#os').prop("disabled", true);
-            $('select[name="browser"]').prop("disabled", true);
-            $('select[name="user_agent"]').prop("disabled", true);
-          }
-          else
-          {
-            $("#desktops-list").show();
-            $('#os').prop("disabled", false);
-            $('select[name="browser"]:visible').prop("disabled", false);
-            $('select[name="user_agent"]:visible').prop("disabled", false);
-
-            $("#mobiles-list").hide();
-            $('#device-name-mobile').prop("disabled", true);
-          }
-        });
-  </script>
-
+    {{get_sri('static', 'capture.js')}}
+    crossorigin="anonymous"></script>
 
 {% endblock %}
