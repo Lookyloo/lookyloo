@@ -343,7 +343,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             # Some pickles require a pretty high recursion limit, this kindof fixes it.
             # If the capture is really broken (generally a refresh to self), the capture
             # is discarded in the RecursionError above.
-            sys.setrecursionlimit(int(default_recursion_limit * 1.1))
+            sys.setrecursionlimit(int(default_recursion_limit * 2))
             try:
                 with gzip.open(capture_dir / 'tree.pickle.gz', 'wb') as _p:
                     _p.write(pickletools.optimize(pickle.dumps(tree, protocol=5)))
