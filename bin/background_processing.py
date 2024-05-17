@@ -12,6 +12,7 @@ from typing import Any
 
 from lacuscore import CaptureStatus as CaptureStatusCore
 from lookyloo import Lookyloo
+from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 from pylacus import CaptureStatus as CaptureStatusPy
@@ -78,25 +79,29 @@ class Processing(AbstractManager):
     def _retry_failed_enqueue(self) -> None:
         '''If enqueuing failed, the settings are added, with a UUID in the 'to_capture key', and they have a UUID'''
         to_requeue: list[str] = []
-        for uuid, _ in self.lookyloo.redis.zscan_iter('to_capture'):
-            if self.lookyloo.redis.hexists(uuid, 'not_queued'):
-                # The capture is marked as not queued
-                to_requeue.append(uuid)
-            elif self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
-                # The capture is unknown on lacus side. It might be a race condition.
-                # Let's retry a few times.
-                retry = 3
-                while retry > 0:
-                    time.sleep(1)
-                    if self.lookyloo.lacus.get_capture_status(uuid) not in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
-                        # Was a race condition, the UUID has been or is being processed by Lacus
-                        self.logger.info(f'UUID {uuid} was only temporary unknown')
-                        break
-                    retry -= 1
-                else:
-                    # UUID is still unknown
-                    self.logger.info(f'UUID {uuid} is still unknown')
+        try:
+            for uuid, _ in self.lookyloo.redis.zscan_iter('to_capture'):
+                if self.lookyloo.redis.hexists(uuid, 'not_queued'):
+                    # The capture is marked as not queued
                     to_requeue.append(uuid)
+                elif self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                    # The capture is unknown on lacus side. It might be a race condition.
+                    # Let's retry a few times.
+                    retry = 3
+                    while retry > 0:
+                        time.sleep(1)
+                        if self.lookyloo.lacus.get_capture_status(uuid) not in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                            # Was a race condition, the UUID has been or is being processed by Lacus
+                            self.logger.info(f'UUID {uuid} was only temporary unknown')
+                            break
+                        retry -= 1
+                    else:
+                        # UUID is still unknown
+                        self.logger.info(f'UUID {uuid} is still unknown')
+                        to_requeue.append(uuid)
+        except LacusUnreachable:
+            self.logger.warning('Lacus still unreachable, trying again later')
+            return None
 
         for uuid in to_requeue:
             if self.lookyloo.redis.zscore('to_capture', uuid) is None:
@@ -130,6 +135,9 @@ class Processing(AbstractManager):
                 if new_uuid != uuid:
                     # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
                     self.logger.warning(f'Had to change the capture UUID (duplicate). Old: {uuid} / New: {new_uuid}')
+            except LacusUnreachable:
+                self.logger.warning('Lacus still unreachable.')
+                break
             except Exception as e:
                 self.logger.warning(f'Still unable to enqueue capture: {e}')
                 break

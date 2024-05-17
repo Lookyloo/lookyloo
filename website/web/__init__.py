@@ -41,7 +41,7 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import get_config
-from lookyloo.exceptions import MissingUUID, NoValidHarFile
+from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable
 from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
 
 if sys.version_info < (3, 9):
@@ -1084,18 +1084,22 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
     if tree_uuid == 'False':
         flash("Unable to process your request.", 'warning')
         return redirect(url_for('index'))
-    cache = lookyloo.capture_cache(tree_uuid, force_update=True)
-    if not cache:
-        status = lookyloo.get_capture_status(tree_uuid)
-        if status == CaptureStatus.UNKNOWN:
-            flash(f'Unable to find this UUID ({tree_uuid}).', 'warning')
-            return index_generic()
-        elif status == CaptureStatus.QUEUED:
-            message = "The capture is queued, but didn't start yet."
-        elif status in [CaptureStatus.ONGOING, CaptureStatus.DONE]:
-            # If CaptureStatus.DONE, the capture finished between the query to the cache and
-            # the request for a status. Give it an extra few seconds.
-            message = "The capture is ongoing."
+    try:
+        cache = lookyloo.capture_cache(tree_uuid, force_update=True)
+        if not cache:
+            status = lookyloo.get_capture_status(tree_uuid)
+            if status == CaptureStatus.UNKNOWN:
+                flash(f'Unable to find this UUID ({tree_uuid}).', 'warning')
+                return index_generic()
+            elif status == CaptureStatus.QUEUED:
+                message = "The capture is queued, but didn't start yet."
+            elif status in [CaptureStatus.ONGOING, CaptureStatus.DONE]:
+                # If CaptureStatus.DONE, the capture finished between the query to the cache and
+                # the request for a status. Give it an extra few seconds.
+                message = "The capture is ongoing."
+            return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid)
+    except LacusUnreachable:
+        message = "Unable to connect to the Lacus backend, the capture will start as soon as the administrator wakes up."
         return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid)
 
     try:

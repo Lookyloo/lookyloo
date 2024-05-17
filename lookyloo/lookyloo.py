@@ -54,7 +54,7 @@ from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
 from .default import LookylooException, get_homedir, get_config, get_socket_path, safe_create_dir
 from .exceptions import (MissingCaptureDirectory,
-                         MissingUUID, TreeNeedsRebuild, NoValidHarFile)
+                         MissingUUID, TreeNeedsRebuild, NoValidHarFile, LacusUnreachable)
 from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, load_cookies, UserAgents,
@@ -177,9 +177,6 @@ class Lookyloo():
         self._captures_index = CapturesIndex(self.redis, self.context, maxsize=cache_max_size)
         self.logger.info('Index initialized.')
 
-        # init lacus
-        self.lacus
-
     @property
     def redis(self) -> Redis:  # type: ignore[type-arg]
         return Redis(connection_pool=self.redis_pool)
@@ -192,7 +189,7 @@ class Lookyloo():
             remote_lacus_config = get_config('generic', 'remote_lacus')
             if remote_lacus_config.get('enable'):
                 self.logger.info("Remote lacus enabled, trying to set it up...")
-                lacus_retries = 10
+                lacus_retries = 2
                 while lacus_retries > 0:
                     remote_lacus_url = remote_lacus_config.get('url')
                     self._lacus = PyLacus(remote_lacus_url)
@@ -202,9 +199,9 @@ class Lookyloo():
                         break
                     lacus_retries -= 1
                     self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}, trying again {lacus_retries} more time(s).")
-                    time.sleep(10)
+                    time.sleep(3)
                 else:
-                    raise LookylooException('Remote lacus is enabled but unreachable.')
+                    raise LacusUnreachable('Remote lacus is enabled but unreachable.')
 
         if not has_remote_lacus:
             # We need a redis connector that doesn't decode.
@@ -544,6 +541,9 @@ class Lookyloo():
             return CaptureStatusCore.ONGOING
         try:
             lacus_status = self.lacus.get_capture_status(capture_uuid)
+        except LacusUnreachable as e:
+            self.logger.warning(f'Unable to connect to lacus: {e}')
+            raise e
         except Exception as e:
             self.logger.warning(f'Unable to get the status for {capture_uuid} from lacus: {e}')
             if self.redis.zscore('to_capture', capture_uuid) is not None:

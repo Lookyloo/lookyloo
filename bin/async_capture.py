@@ -14,6 +14,7 @@ from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResp
 from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 
 from lookyloo import Lookyloo, CaptureSettings
+from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config
 from lookyloo.helpers import get_captures_dir
 
@@ -31,8 +32,7 @@ class AsyncCapture(AbstractManager):
         self.capture_dir: Path = get_captures_dir()
         self.lookyloo = Lookyloo()
 
-        if isinstance(self.lookyloo.lacus, LacusCore):
-            self.captures: set[asyncio.Task] = set()  # type: ignore[type-arg]
+        self.captures: set[asyncio.Task] = set()  # type: ignore[type-arg]
 
         self.fox = FOX(config_name='FOX')
         if not self.fox.available:
@@ -135,24 +135,30 @@ class AsyncCapture(AbstractManager):
         if self.force_stop:
             return None
 
-        if isinstance(self.lookyloo.lacus, LacusCore):
-            await self._trigger_captures()
-            # NOTE: +1 because running this method also counts for one and will
-            #       be decremented when it finishes
-            self.set_running(len(self.captures) + 1)
+        try:
+            if isinstance(self.lookyloo.lacus, LacusCore):
+                await self._trigger_captures()
+                # NOTE: +1 because running this method also counts for one and will
+                #       be decremented when it finishes
+                self.set_running(len(self.captures) + 1)
 
-        self.process_capture_queue()
+            self.process_capture_queue()
+        except LacusUnreachable:
+            self.logger.error('Lacus is unreachable, retrying later.')
 
     async def _wait_to_finish_async(self) -> None:
-        if isinstance(self.lookyloo.lacus, LacusCore):
-            while self.captures:
-                self.logger.info(f'Waiting for {len(self.captures)} capture(s) to finish...')
-                await asyncio.sleep(5)
-                # NOTE: +1 so we don't quit before the final process capture queue
-                self.set_running(len(self.captures) + 1)
-            self.process_capture_queue()
-            self.unset_running()
-        self.logger.info('No more captures')
+        try:
+            if isinstance(self.lookyloo.lacus, LacusCore):
+                while self.captures:
+                    self.logger.info(f'Waiting for {len(self.captures)} capture(s) to finish...')
+                    await asyncio.sleep(5)
+                    # NOTE: +1 so we don't quit before the final process capture queue
+                    self.set_running(len(self.captures) + 1)
+                self.process_capture_queue()
+                self.unset_running()
+            self.logger.info('No more captures')
+        except LacusUnreachable:
+            self.logger.error('Lacus is unreachable, nothing to wait for')
 
 
 def main() -> None:
