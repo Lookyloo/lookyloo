@@ -21,3 +21,7 @@ class TreeNeedsRebuild(LookylooException):
 
 class ModuleError(LookylooException):
     pass
+
+
+class LacusUnreachable(LookylooException):
+    pass
