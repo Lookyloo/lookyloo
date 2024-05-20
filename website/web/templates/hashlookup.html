@@ -1,4 +1,8 @@
 <div>
+{% if not merged %}
+  No result data available or hashlookup module not enabled.
+{%else%}
+
   <b>Total Hits</b>: {{ merged|length }}</br>
   <b>Total ressources</b>: {{total_ressources}}</br></br>
   {% for sha1, entries in merged.items() %}
@@ -25,4 +29,5 @@
       </dd>
     </dl>
   {% endfor %}
+{%endif%}
 </div>
