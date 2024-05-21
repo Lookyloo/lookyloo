@@ -78,6 +78,15 @@ login_manager.init_app(app)
 # User agents manager
 user_agents = UserAgents()
 
+if get_config('generic', 'index_is_capture'):
+    @app.route('/', methods=['GET'])
+    def landing_page() -> WerkzeugResponse:
+        return redirect(url_for('capture_web'))
+else:
+    @app.route('/', methods=['GET'])
+    def landing_page() -> WerkzeugResponse:
+        return redirect(url_for('index'))
+
 
 @login_manager.user_loader  # type: ignore[misc]
 def user_loader(username: str) -> User | None:
@@ -1317,7 +1326,7 @@ def get_index_params(request: Request) -> tuple[bool, str]:
 
 # ##### Index level methods #####
 
-@app.route('/', methods=['GET'])
+@app.route('/index', methods=['GET'])
 def index() -> str:
     if request.method == 'HEAD':
         # Just returns ack if the webserver is running

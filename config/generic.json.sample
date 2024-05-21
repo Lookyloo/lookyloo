@@ -7,6 +7,7 @@
   "website_listen_port": 5100,
   "systemd_service_name": "lookyloo",
   "default_public": true,
+  "index_is_capture": false,
   "users": {},
   "time_delta_on_index": {
     "weeks": 1,
@@ -90,6 +91,7 @@
     "website_listen_port": "Port Flask will listen on.",
     "systemd_service_name": "(Optional) Name of the systemd service if your project has one.",
     "default_public": "If true, the capture is public and will be visible on the index page by default (can be unticked on the capture page).",
+    "index_is_capture": "If true, the capture page is the default landing page (faster for big instances).",
     "users": "It is some kind of an admin accounts. Format: {username: password}",
     "time_delta_on_index": "Time interval of the capture displayed on the index",
     "async_capture_processes": "Number of async_capture processes to start. This should not be higher than the number of splash instances you have running. A very high number will use *a lot* of ram.",
