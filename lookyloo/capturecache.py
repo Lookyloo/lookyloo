@@ -28,7 +28,7 @@ from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
 from .context import Context
-from .helpers import get_captures_dir, is_locked
+from .helpers import get_captures_dir, is_locked, make_ts_from_dirname
 from .indexing import Indexing
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
@@ -260,11 +260,13 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             return None
         p = self.redis.pipeline()
         has_new_cached_captures = False
+        recent_captures = {}
         for uuid, directory in self.redis.hscan_iter('lookup_dirs'):
             if uuid in self.__cache:
                 continue
             has_new_cached_captures = True
             p.hgetall(directory)
+            recent_captures[uuid] = make_ts_from_dirname(directory.rsplit('/', 1)[-1]).timestamp()
         if not has_new_cached_captures:
             return
         for cache in p.execute():
@@ -276,6 +278,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 self.logger.warning(f'Unable to initialize the cache: {e}')
                 continue
             self.__cache[cc.uuid] = cc
+        self.redis.zadd('recent_captures', recent_captures)
 
     def _get_capture_dir(self, uuid: str) -> str:
         # Try to get from the recent captures cache in redis
@@ -285,6 +288,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 return capture_dir
             # The capture was either removed or archived, cleaning up
             self.redis.hdel('lookup_dirs', uuid)
+            self.redis.zrem('recent_captures', uuid)
             self.redis.delete(capture_dir)
 
         # Try to get from the archived captures cache in redis
