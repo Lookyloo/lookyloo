@@ -81,10 +81,16 @@ user_agents = UserAgents()
 if get_config('generic', 'index_is_capture'):
     @app.route('/', methods=['GET'])
     def landing_page() -> WerkzeugResponse:
+        if request.method == 'HEAD':
+            # Just returns ack if the webserver is running
+            return 'Ack'
         return redirect(url_for('capture_web'))
 else:
     @app.route('/', methods=['GET'])
     def landing_page() -> WerkzeugResponse:
+        if request.method == 'HEAD':
+            # Just returns ack if the webserver is running
+            return 'Ack'
         return redirect(url_for('index'))
 
 
@@ -1328,9 +1334,6 @@ def get_index_params(request: Request) -> tuple[bool, str]:
 
 @app.route('/index', methods=['GET'])
 def index() -> str:
-    if request.method == 'HEAD':
-        # Just returns ack if the webserver is running
-        return 'Ack'
     show_error, category = get_index_params(request)
     return index_generic(show_error=show_error)
 
