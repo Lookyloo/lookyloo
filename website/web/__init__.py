@@ -968,8 +968,8 @@ def hashlookup(tree_uuid: str) -> str | WerkzeugResponse | Response:
         for sha1, entries in merged.items():
             entries['nodes'] = {node.name for node in entries['nodes']}
     except Exception:  # error or module not enabled
-        merged = []
-        total_ressources = []
+        merged = {}
+        total_ressources = 0
     return render_template('hashlookup.html', base_tree_uuid=tree_uuid, merged=merged, total_ressources=total_ressources)
 
 
