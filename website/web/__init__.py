@@ -962,10 +962,14 @@ def urls_rendered_page(tree_uuid: str) -> WerkzeugResponse | str | Response:
 
 @app.route('/tree/<string:tree_uuid>/hashlookup', methods=['GET'])
 def hashlookup(tree_uuid: str) -> str | WerkzeugResponse | Response:
-    merged, total_ressources = lookyloo.merge_hashlookup_tree(tree_uuid)
-    # We only want unique URLs for the template
-    for sha1, entries in merged.items():
-        entries['nodes'] = {node.name for node in entries['nodes']}
+    try:
+        merged, total_ressources = lookyloo.merge_hashlookup_tree(tree_uuid)
+        # We only want unique URLs for the template
+        for sha1, entries in merged.items():
+            entries['nodes'] = {node.name for node in entries['nodes']}
+    except Exception:  # error or module not enabled
+        merged = {}
+        total_ressources = 0
     return render_template('hashlookup.html', base_tree_uuid=tree_uuid, merged=merged, total_ressources=total_ressources)
 
 
