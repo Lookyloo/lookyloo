@@ -58,7 +58,7 @@ from .exceptions import (MissingCaptureDirectory,
 from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, load_cookies, UserAgents,
-                      get_useragent_for_requests, make_ts_from_dirname, load_takedown_filters
+                      get_useragent_for_requests, load_takedown_filters
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -510,8 +510,7 @@ class Lookyloo():
             index_cut_time = cut_time
 
         if capture_uuids is None:
-            capture_uuids = {uuid for uuid, directory in self.redis.hscan_iter('lookup_dirs')
-                             if make_ts_from_dirname(directory.rsplit('/', 1)[-1]) > index_cut_time}
+            capture_uuids = self.redis.zrevrangebyscore('recent_captures', '+inf', index_cut_time.timestamp())
             # NOTE: we absolutely have to respect the cached_captures_only setting and
             #       never overwrite it. This method is called to display the index
             #       and if we try to display everything, including the non-cached entries,
@@ -1503,3 +1502,4 @@ class Lookyloo():
                     _fw.write(favicon)
 
         self.redis.hset('lookup_dirs', uuid, str(dirpath))
+        self.redis.zadd('recent_captures', {uuid: now.timestamp()})
