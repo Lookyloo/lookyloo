@@ -80,14 +80,14 @@ user_agents = UserAgents()
 
 if get_config('generic', 'index_is_capture'):
     @app.route('/', methods=['GET'])
-    def landing_page() -> WerkzeugResponse:
+    def landing_page() -> WerkzeugResponse | str:
         if request.method == 'HEAD':
             # Just returns ack if the webserver is running
             return 'Ack'
         return redirect(url_for('capture_web'))
 else:
     @app.route('/', methods=['GET'])
-    def landing_page() -> WerkzeugResponse:
+    def landing_page() -> WerkzeugResponse | str:
         if request.method == 'HEAD':
             # Just returns ack if the webserver is running
             return 'Ack'

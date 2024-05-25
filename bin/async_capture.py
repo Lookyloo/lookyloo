@@ -30,7 +30,7 @@ class AsyncCapture(AbstractManager):
         self.script_name = 'async_capture'
         self.only_global_lookups: bool = get_config('generic', 'only_global_lookups')
         self.capture_dir: Path = get_captures_dir()
-        self.lookyloo = Lookyloo()
+        self.lookyloo = Lookyloo(cache_max_size=1)
 
         self.captures: set[asyncio.Task] = set()  # type: ignore[type-arg]
 
