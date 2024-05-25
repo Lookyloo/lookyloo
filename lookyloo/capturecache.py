@@ -28,7 +28,7 @@ from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
 from .context import Context
-from .helpers import get_captures_dir, is_locked, make_ts_from_dirname
+from .helpers import get_captures_dir, is_locked
 from .indexing import Indexing
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
@@ -187,6 +187,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             self.ipasnhistory: IPASNHistory | None = IPASNHistory()
             if not self.ipasnhistory.is_up:
                 self.ipasnhistory = None
+            self.logger.info('IPASN History ready')
         except Exception as e:
             # Unable to setup IPASN History
             self.logger.warning(f'Unable to setup IPASN History: {e}')
@@ -195,6 +196,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             self.cloudflare: Cloudflare | None = Cloudflare()
             if not self.cloudflare.available:
                 self.cloudflare = None
+            self.logger.info('Cloudflare ready')
         except Exception as e:
             self.logger.warning(f'Unable to setup Cloudflare: {e}')
             self.cloudflare = None
@@ -266,7 +268,6 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 continue
             has_new_cached_captures = True
             p.hgetall(directory)
-            recent_captures[uuid] = make_ts_from_dirname(directory.rsplit('/', 1)[-1]).timestamp()
         if not has_new_cached_captures:
             return
         for cache in p.execute():
@@ -278,7 +279,10 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 self.logger.warning(f'Unable to initialize the cache: {e}')
                 continue
             self.__cache[cc.uuid] = cc
-        self.redis.zadd('recent_captures', recent_captures)
+            if hasattr(cc, 'timestamp'):
+                recent_captures[uuid] = cc.timestamp.timestamp()
+        if recent_captures:
+            self.redis.zadd('recent_captures', recent_captures)
 
     def _get_capture_dir(self, uuid: str) -> str:
         # Try to get from the recent captures cache in redis
