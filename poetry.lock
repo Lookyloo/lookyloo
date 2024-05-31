@@ -1632,22 +1632,22 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.9.4"
+version = "1.9.5"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "lacuscore-1.9.4-py3-none-any.whl", hash = "sha256:6df6592ca71e3cb326a578c2372b334d418f93eac8a0457eae403dd07f8081ed"},
-    {file = "lacuscore-1.9.4.tar.gz", hash = "sha256:4f0177de607bf492b39deaa96b40c01513c97b53e2618fb87b8ef0dbf5ae8f7c"},
+    {file = "lacuscore-1.9.5-py3-none-any.whl", hash = "sha256:f9b3860d474af9c1e26158da92cc23b47f85270078853c141330a42e74cd4e4f"},
+    {file = "lacuscore-1.9.5.tar.gz", hash = "sha256:d868b0abd3694f35770c380dd8e903974f80d9761128153f2b71bc4a9f08dd49"},
 ]
 
 [package.dependencies]
 async-timeout = {version = ">=4.0.3,<5.0.0", markers = "python_version < \"3.11\""}
 defang = ">=0.5.3,<0.6.0"
 dnspython = ">=2.6.1,<3.0.0"
-playwrightcapture = {version = ">=1.24.10,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.24.11,<2.0.0", extras = ["recaptcha"]}
 redis = {version = ">=5.0.4,<6.0.0", extras = ["hiredis"]}
-requests = ">=2.32.1,<3.0.0"
+requests = ">=2.32.3,<3.0.0"
 ua-parser = ">=0.18.0,<0.19.0"
 
 [package.extras]
@@ -2518,13 +2518,13 @@ test = ["pytest"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.24.10"
+version = "1.24.11"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "playwrightcapture-1.24.10-py3-none-any.whl", hash = "sha256:3f1b2c3194f4a033de7b9390a7236f19521a0607da96515b03ee0567a1da95e6"},
-    {file = "playwrightcapture-1.24.10.tar.gz", hash = "sha256:2b3f7d3abee127c11db6ffe8703b88544e8e6bd3cbfddaa1a5c1e055d889fef9"},
+    {file = "playwrightcapture-1.24.11-py3-none-any.whl", hash = "sha256:674a72886bce65b1d529f6dcfce447873c25b50c9e174e523fbff20732682875"},
+    {file = "playwrightcapture-1.24.11.tar.gz", hash = "sha256:263222b3add96fbce5c9a4f334d2c029789dbce2808634cb0eb919eb24ad4f57"},
 ]
 
 [package.dependencies]
@@ -2538,7 +2538,7 @@ playwright-stealth = ">=1.0.6,<2.0.0"
 puremagic = ">=1.23,<2.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
 pytz = {version = ">=2024.1,<2025.0", markers = "python_version < \"3.9\""}
-setuptools = ">=69.5.1,<70.0.0"
+setuptools = ">=70.0.0,<71.0.0"
 SpeechRecognition = {version = ">=3.10.4,<4.0.0", optional = true, markers = "extra == \"recaptcha\""}
 tzdata = ">=2024.1,<2025.0"
 w3lib = ">=2.1.2,<3.0.0"
@@ -2548,13 +2548,13 @@ recaptcha = ["SpeechRecognition (>=3.10.4,<4.0.0)", "pydub (>=0.25.1,<0.26.0)"]
 
 [[package]]
 name = "prompt-toolkit"
-version = "3.0.44"
+version = "3.0.45"
 description = "Library for building powerful interactive command lines in Python"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "prompt_toolkit-3.0.44-py3-none-any.whl", hash = "sha256:205a20669633d042d3722a528b8e7cd3f4dbd9e1450935f596c2cc61166762dd"},
-    {file = "prompt_toolkit-3.0.44.tar.gz", hash = "sha256:c1dfd082c4259964bc8bcce1f8460d9dbeb5d4a37bfc25b8082bc02cd41c8af6"},
+    {file = "prompt_toolkit-3.0.45-py3-none-any.whl", hash = "sha256:a29b89160e494e3ea8622b09fa5897610b437884dcdcd054fdc1308883326c2a"},
+    {file = "prompt_toolkit-3.0.45.tar.gz", hash = "sha256:07c60ee4ab7b7e90824b61afa840c8f5aad2d46b3e2e10acc33d8ecc94a49089"},
 ]
 
 [package.dependencies]
@@ -2967,17 +2967,17 @@ requests = ">=2.31.0,<3.0.0"
 
 [[package]]
 name = "pysecuritytxt"
-version = "1.3.0"
+version = "1.3.1"
 description = "Python CLI and module for querying security.txt files on domains."
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "pysecuritytxt-1.3.0-py3-none-any.whl", hash = "sha256:9e4eb6b4fdca8f8471c80696c4d7642be24d44c8c3f627870ca9b7bd3f221cd5"},
-    {file = "pysecuritytxt-1.3.0.tar.gz", hash = "sha256:3669be69e90672ed0d448b385e5fef49cb3a6a611d7e386d673c4f0e1cc3e83b"},
+    {file = "pysecuritytxt-1.3.1-py3-none-any.whl", hash = "sha256:f29e7966981bf81c3d285f576a8e54b34d0532c5d373d09a0a4e4e5e39b3b2f1"},
+    {file = "pysecuritytxt-1.3.1.tar.gz", hash = "sha256:ea0b9bf8cff329a7f96eaee458b60445230db52c85fbd2e4874a094cc67b0bfa"},
 ]
 
 [package.dependencies]
-requests = ">=2.31.0,<3.0.0"
+requests = ">=2.32.3,<3.0.0"
 
 [package.extras]
 docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
@@ -3177,13 +3177,13 @@ files = [
 
 [[package]]
 name = "requests"
-version = "2.32.2"
+version = "2.32.3"
 description = "Python HTTP for Humans."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "requests-2.32.2-py3-none-any.whl", hash = "sha256:fc06670dd0ed212426dfeb94fc1b983d917c4f9847c863f313c9dfaaffb7c23c"},
-    {file = "requests-2.32.2.tar.gz", hash = "sha256:dd951ff5ecf3e3b3aa26b40703ba77495dab41da839ae72ef3c8e5d8e2433289"},
+    {file = "requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6"},
+    {file = "requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760"},
 ]
 
 [package.dependencies]
@@ -3389,19 +3389,18 @@ boto3 = ["aiobotocore[boto3] (>=2.5.4,<3.0.0)"]
 
 [[package]]
 name = "setuptools"
-version = "69.5.1"
+version = "70.0.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-69.5.1-py3-none-any.whl", hash = "sha256:c636ac361bc47580504644275c9ad802c50415c7522212252c033bd15f301f32"},
-    {file = "setuptools-69.5.1.tar.gz", hash = "sha256:6c1fccdac05a97e598fb0ae3bbed5904ccb317337a51139dcd51453611bbb987"},
+    {file = "setuptools-70.0.0-py3-none-any.whl", hash = "sha256:54faa7f2e8d2d11bcd2c07bed282eef1046b5c080d1c32add737d7b5817b1ad4"},
+    {file = "setuptools-70.0.0.tar.gz", hash = "sha256:f211a66637b8fa059bb28183da127d4e86396c991a942b028c6650d4319c3fd0"},
 ]
 
 [package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
-testing = ["build[virtualenv]", "filelock (>=3.4.0)", "importlib-metadata", "ini2toml[lite] (>=0.9)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "mypy (==1.9)", "packaging (>=23.2)", "pip (>=19.1)", "pytest (>=6,!=8.1.1)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-home (>=0.5)", "pytest-mypy", "pytest-perf", "pytest-ruff (>=0.2.1)", "pytest-timeout", "pytest-xdist (>=3)", "tomli", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
-testing-integration = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "packaging (>=23.2)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
+testing = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "importlib-metadata", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "mypy (==1.9)", "packaging (>=23.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.1)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-home (>=0.5)", "pytest-mypy", "pytest-perf", "pytest-ruff (>=0.2.1)", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
 
 [[package]]
 name = "six"
@@ -4056,4 +4055,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "46400bccee6f332ed246090489b9dbe883bbe2f0c7665f0d499b5e58d4b355a2"
+content-hash = "ee0e750cb86ff41cdea7aabac0457c80a66eb479622beaaa3e7f11a0fa9fe126"
