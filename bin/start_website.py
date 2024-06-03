@@ -28,7 +28,7 @@ class Website(AbstractManager):
                       '--graceful-timeout', '2', '--timeout', '300',
                       '-b', f'{ip}:{port}',
                       '--log-level', 'info',
-                      '--max-requests', '10000',
+                      '--max-requests-jitter', '10000',
                       'web:app'],
                      cwd=website_dir)
 
