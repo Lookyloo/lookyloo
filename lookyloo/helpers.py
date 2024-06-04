@@ -347,6 +347,9 @@ def is_locked(locked_dir_path: Path, /) -> bool:
             logger.info(f'Old lock ({lock_ts.isoformat()}) {lock_file}, removing it.')
             lock_file.unlink(missing_ok=True)
             return False
+    except FileNotFoundError:
+        logger.debug('Lock found and removed by another process.')
+        return False
     except Exception as e:
         logger.critical(f'Lock found, but unable process it: {e}.')
         return False
