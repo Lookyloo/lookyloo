@@ -459,17 +459,24 @@ class UploadCapture(Resource):  # type: ignore[misc]
         if 'har_file' in parameters and parameters.get('har_file'):
             try:
                 har_decoded = base64.b64decode(parameters['har_file'])
+                try:
+                    # new format
+                    har_uncompressed = gzip.decompress(har_decoded)
+                except gzip.BadGzipFile:
+                    # old format
+                    har_uncompressed = har_decoded
+
+                har = json.loads(har_uncompressed)
+                last_redirected_url = parameters.get('landing_page')
+                if 'screenshot_file' in parameters:
+                    screenshot = base64.b64decode(parameters['screenshot_file'])
+                if 'html_file' in parameters:
+                    html = base64.b64decode(parameters['html_file']).decode()
+                lookyloo.store_capture(uuid, is_public=listing, har=har,
+                                       last_redirected_url=last_redirected_url,
+                                       png=screenshot, html=html)
             except Exception as e:
-                return {'error': "Invalid base64-encoding"}, 400
-            har = json.loads(gzip.decompress(har_decoded))
-            last_redirected_url = parameters.get('landing_page')
-            if 'screenshot_file' in parameters:
-                screenshot = base64.b64decode(parameters['screenshot_file'])
-            if 'html_file' in parameters:
-                html = base64.b64decode(parameters['html_file']).decode()
-            lookyloo.store_capture(uuid, is_public=listing, har=har,
-                                   last_redirected_url=last_redirected_url,
-                                   png=screenshot, html=html)
+                return {'error': f"Invalid encodings"}, 400
             return uuid
 
         elif 'full_capture' in parameters and parameters.get('full_capture'):
@@ -501,8 +508,8 @@ class UploadCapture(Resource):  # type: ignore[misc]
                     elif filename.endswith('potential_favicons.ico'):
                         # We may have more than one favicon
                         potential_favicons.add(lookyloo_capture.read(filename))
-            if not har or not html or not last_redirected_url or not screenshot:
-                has_error = True
+                if not har or not html or not last_redirected_url or not screenshot:
+                    has_error = True
             if not has_error:
                 lookyloo.store_capture(uuid, is_public=listing, har=har,
                                        last_redirected_url=last_redirected_url,
