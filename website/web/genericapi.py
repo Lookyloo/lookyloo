@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import base64
+import gzip
 import hashlib
+import io
 import json
 
 from io import BytesIO
 from typing import Any
+from uuid import uuid4
 from zipfile import ZipFile
 
 import flask_login  # type: ignore[import-untyped]
@@ -439,6 +442,77 @@ class CaptureReport(Resource):  # type: ignore[misc]
     def post(self, capture_uuid: str) -> bool | dict[str, Any]:
         parameters: dict[str, Any] = request.get_json(force=True)
         return lookyloo.send_mail(capture_uuid, parameters.get('email', ''), parameters.get('comment'))
+
+
+@api.route('/json/upload')
+@api.doc(description='Submits a capture from another instance')
+class UploadCapture(Resource):  # type: ignore[misc]
+    def post(self) -> str | tuple[dict[str, Any], int]:
+        parameters: dict[str, Any] = request.get_json(force=True)
+        uuid = str(uuid4())  # NOTE: new UUID, because we do not want duplicates
+        listing = True if parameters['listing'] else False
+        har: dict[str, Any] | None = None
+        html: str | None = None
+        last_redirected_url: str | None = None
+        screenshot: bytes | None = None
+
+        if 'har_file' in parameters and parameters.get('har_file'):
+            try:
+                har_decoded = base64.b64decode(parameters['har_file'])
+            except Exception as e:
+                return {'error': "Invalid base64-encoding"}, 400
+            har = json.loads(gzip.decompress(har_decoded))
+            last_redirected_url = parameters.get('landing_page')
+            if 'screenshot_file' in parameters:
+                screenshot = base64.b64decode(parameters['screenshot_file'])
+            if 'html_file' in parameters:
+                html = base64.b64decode(parameters['html_file']).decode()
+            lookyloo.store_capture(uuid, is_public=listing, har=har,
+                                   last_redirected_url=last_redirected_url,
+                                   png=screenshot, html=html)
+            return uuid
+
+        elif 'full_capture' in parameters and parameters.get('full_capture'):
+            try:
+                zipped_capture = base64.b64decode(parameters['full_capture'].encode())
+            except Exception as e:
+                return {'error': "Invalid base64-encoding"}, 400
+            # it *only* accepts a lookyloo export.
+            cookies: list[dict[str, str]] | None = None
+            has_error = False
+            with ZipFile(BytesIO(zipped_capture), 'r') as lookyloo_capture:
+                potential_favicons = set()
+                for filename in lookyloo_capture.namelist():
+                    if filename.endswith('0.har.gz'):
+                        # new formal
+                        har = json.loads(gzip.decompress(lookyloo_capture.read(filename)))
+                    elif filename.endswith('0.har'):
+                        # old format
+                        har = json.loads(lookyloo_capture.read(filename))
+                    elif filename.endswith('0.html'):
+                        html = lookyloo_capture.read(filename).decode()
+                    elif filename.endswith('0.last_redirect.txt'):
+                        last_redirected_url = lookyloo_capture.read(filename).decode()
+                    elif filename.endswith('0.png'):
+                        screenshot = lookyloo_capture.read(filename)
+                    elif filename.endswith('0.cookies.json'):
+                        # Not required
+                        cookies = json.loads(lookyloo_capture.read(filename))
+                    elif filename.endswith('potential_favicons.ico'):
+                        # We may have more than one favicon
+                        potential_favicons.add(lookyloo_capture.read(filename))
+            if not har or not html or not last_redirected_url or not screenshot:
+                has_error = True
+            if not has_error:
+                lookyloo.store_capture(uuid, is_public=listing, har=har,
+                                       last_redirected_url=last_redirected_url,
+                                       png=screenshot, html=html, cookies=cookies,
+                                       potential_favicons=potential_favicons)
+                return uuid
+            return {'error': "Capture has error"}, 400
+
+        else:
+            return {'error': "Full capture or at least har-file is required"}, 400
 
 
 auto_report_model = api.model('AutoReportModel', {
