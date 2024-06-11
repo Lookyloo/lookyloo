@@ -5,7 +5,6 @@ from __future__ import annotations
 import base64
 import gzip
 import hashlib
-import io
 import json
 
 from io import BytesIO
@@ -15,7 +14,7 @@ from zipfile import ZipFile
 
 import flask_login  # type: ignore[import-untyped]
 from flask import request, send_file, Response
-from flask_restx import Namespace, Resource, abort, fields  # type: ignore[import-untyped]
+from flask_restx import Namespace, Resource, fields  # type: ignore[import-untyped]
 from werkzeug.security import check_password_hash
 
 from lacuscore import CaptureStatus as CaptureStatusCore
@@ -35,7 +34,7 @@ comparator: Comparator = Comparator()
 def api_auth_check(method):  # type: ignore[no-untyped-def]
     if flask_login.current_user.is_authenticated or load_user_from_request(request):
         return method
-    abort(403, 'Authentication required.')
+    return 'Authentication required.', 403
 
 
 token_request_fields = api.model('AuthTokenFields', {
@@ -447,9 +446,8 @@ class CaptureReport(Resource):  # type: ignore[misc]
 @api.route('/json/upload')
 @api.doc(description='Submits a capture from another instance')
 class UploadCapture(Resource):  # type: ignore[misc]
-    def post(self) -> str | tuple[dict[str, Any], int]:
+    def post(self) -> dict[str, str | dict[str, list[str]]] | tuple[dict[str, str], int]:
         parameters: dict[str, Any] = request.get_json(force=True)
-        uuid = str(uuid4())  # NOTE: new UUID, because we do not want duplicates
         listing = True if parameters['listing'] else False
         har: dict[str, Any] | None = None
         html: str | None = None
@@ -457,6 +455,7 @@ class UploadCapture(Resource):  # type: ignore[misc]
         screenshot: bytes | None = None
 
         if 'har_file' in parameters and parameters.get('har_file'):
+            uuid = str(uuid4())
             try:
                 har_decoded = base64.b64decode(parameters['har_file'])
                 try:
@@ -476,50 +475,21 @@ class UploadCapture(Resource):  # type: ignore[misc]
                                        last_redirected_url=last_redirected_url,
                                        png=screenshot, html=html)
             except Exception as e:
-                return {'error': f"Invalid encodings"}, 400
-            return uuid
+                return {'error': f'Unable to process the upload: {e}'}, 400
+            return {'uuid': uuid}
 
         elif 'full_capture' in parameters and parameters.get('full_capture'):
             try:
                 zipped_capture = base64.b64decode(parameters['full_capture'].encode())
-            except Exception as e:
-                return {'error': "Invalid base64-encoding"}, 400
-            # it *only* accepts a lookyloo export.
-            cookies: list[dict[str, str]] | None = None
-            has_error = False
-            with ZipFile(BytesIO(zipped_capture), 'r') as lookyloo_capture:
-                potential_favicons = set()
-                for filename in lookyloo_capture.namelist():
-                    if filename.endswith('0.har.gz'):
-                        # new formal
-                        har = json.loads(gzip.decompress(lookyloo_capture.read(filename)))
-                    elif filename.endswith('0.har'):
-                        # old format
-                        har = json.loads(lookyloo_capture.read(filename))
-                    elif filename.endswith('0.html'):
-                        html = lookyloo_capture.read(filename).decode()
-                    elif filename.endswith('0.last_redirect.txt'):
-                        last_redirected_url = lookyloo_capture.read(filename).decode()
-                    elif filename.endswith('0.png'):
-                        screenshot = lookyloo_capture.read(filename)
-                    elif filename.endswith('0.cookies.json'):
-                        # Not required
-                        cookies = json.loads(lookyloo_capture.read(filename))
-                    elif filename.endswith('potential_favicons.ico'):
-                        # We may have more than one favicon
-                        potential_favicons.add(lookyloo_capture.read(filename))
-                if not har or not html or not last_redirected_url or not screenshot:
-                    has_error = True
-            if not has_error:
-                lookyloo.store_capture(uuid, is_public=listing, har=har,
-                                       last_redirected_url=last_redirected_url,
-                                       png=screenshot, html=html, cookies=cookies,
-                                       potential_favicons=potential_favicons)
-                return uuid
-            return {'error': "Capture has error"}, 400
-
+            except Exception:
+                return {'error': 'Invalid base64-encoding'}, 400
+            full_capture_file = BytesIO(zipped_capture)
+            uuid, messages = lookyloo.unpack_full_capture_archive(full_capture_file, listing=listing)
+            if 'errors' in messages and messages['errors']:
+                return {'error': ', '.join(messages['errors'])}, 400
+            return {'uuid': uuid, 'messages': messages}
         else:
-            return {'error': "Full capture or at least har-file is required"}, 400
+            return {'error': 'Full capture or at least har-file is required'}, 400
 
 
 auto_report_model = api.model('AutoReportModel', {
@@ -556,14 +526,14 @@ class SubmitCapture(Resource):  # type: ignore[misc]
     @api.param('referer', 'Referer to pass to the capture')  # type: ignore[misc]
     @api.param('proxy', 'Proxy to use for the the capture')  # type: ignore[misc]
     @api.produces(['text/text'])  # type: ignore[misc]
-    def get(self) -> str | tuple[str, int]:
+    def get(self) -> str | tuple[dict[str, str], int]:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
         else:
             user = src_request_ip(request)
 
         if 'url' not in request.args or not request.args.get('url'):
-            return 'No "url" in the URL params, nothting to capture.', 400
+            return {'error': 'No "url" in the URL params, nothting to capture.'}, 400
 
         to_query: CaptureSettings = {
             'url': request.args['url'],
@@ -745,9 +715,8 @@ class RebuildAll(Resource):  # type: ignore[misc]
         try:
             lookyloo.rebuild_all()
         except Exception as e:
-            return {'error': f'Unable to rebuild all captures: {e}.'}, 400
-        else:
-            return {'info': 'Captures successfully rebuilt.'}
+            return {'error': f'Unable to rebuild all captures: {e}'}, 400
+        return {'info': 'Captures successfully rebuilt.'}
 
 
 @api.route('/admin/rebuild_all_cache')
@@ -760,9 +729,8 @@ class RebuildAllCache(Resource):  # type: ignore[misc]
         try:
             lookyloo.rebuild_cache()
         except Exception as e:
-            return {'error': f'Unable to rebuild all the caches: {e}.'}, 400
-        else:
-            return {'info': 'All caches successfully rebuilt.'}
+            return {'error': f'Unable to rebuild all the caches: {e}'}, 400
+        return {'info': 'All caches successfully rebuilt.'}
 
 
 @api.route('/admin/<string:capture_uuid>/rebuild')
@@ -777,9 +745,8 @@ class CaptureRebuildTree(Resource):  # type: ignore[misc]
             lookyloo.remove_pickle(capture_uuid)
             lookyloo.get_crawled_tree(capture_uuid)
         except Exception as e:
-            return {'error': f'Unable to rebuild tree: {e}.'}, 400
-        else:
-            return {'info': f'Tree {capture_uuid} successfully rebuilt.'}
+            return {'error': f'Unable to rebuild tree: {e}'}, 400
+        return {'info': f'Tree {capture_uuid} successfully rebuilt.'}
 
 
 @api.route('/admin/<string:capture_uuid>/hide')
@@ -793,6 +760,5 @@ class CaptureHide(Resource):  # type: ignore[misc]
         try:
             lookyloo.hide_capture(capture_uuid)
         except Exception as e:
-            return {'error': f'Unable to hide the tree: {e}.'}, 400
-        else:
-            return {'info': f'Capture {capture_uuid} successfully hidden.'}
+            return {'error': f'Unable to hide the tree: {e}'}, 400
+        return {'info': f'Capture {capture_uuid} successfully hidden.'}
