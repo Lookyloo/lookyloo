@@ -1416,6 +1416,98 @@ class Lookyloo():
 
         return statistics
 
+    def unpack_full_capture_archive(self, archive: BytesIO, listing: bool) -> tuple[str, dict[str, list[str]]]:
+        unrecoverable_error = False
+        messages: dict[str, list[str]] = {'errors': [], 'warnings': []}
+        os: str | None = None
+        browser: str | None = None
+        parent: str | None = None
+        downloaded_filename: str | None = None
+        downloaded_file: bytes | None = None
+        error: str | None = None
+        har: dict[str, Any] | None = None
+        screenshot: bytes | None = None
+        html: str | None = None
+        last_redirected_url: str | None = None
+        cookies: list[Cookie] | list[dict[str, str]] | None = None
+        capture_settings: CaptureSettings | None = None
+        potential_favicons: set[bytes] | None = None
+
+        files_to_skip = ['cnames.json', 'ipasn.json', 'ips.json']
+
+        with ZipFile(archive, 'r') as lookyloo_capture:
+            potential_favicons = set()
+            for filename in lookyloo_capture.namelist():
+                if filename.endswith('0.har.gz'):
+                    # new formal
+                    har = json.loads(gzip.decompress(lookyloo_capture.read(filename)))
+                elif filename.endswith('0.har'):
+                    # old format
+                    har = json.loads(lookyloo_capture.read(filename))
+                elif filename.endswith('0.html'):
+                    html = lookyloo_capture.read(filename).decode()
+                elif filename.endswith('0.last_redirect.txt'):
+                    last_redirected_url = lookyloo_capture.read(filename).decode()
+                elif filename.endswith('0.png'):
+                    screenshot = lookyloo_capture.read(filename)
+                elif filename.endswith('0.cookies.json'):
+                    # Not required
+                    cookies = json.loads(lookyloo_capture.read(filename))
+                elif filename.endswith('potential_favicons.ico'):
+                    # We may have more than one favicon
+                    potential_favicons.add(lookyloo_capture.read(filename))
+                elif filename.endswith('uuid'):
+                    uuid = lookyloo_capture.read(filename).decode()
+                    if self._captures_index.uuid_exists(uuid):
+                        messages['warnings'].append(f'UUID {uuid} already exists, set a new one.')
+                        uuid = str(uuid4())
+                elif filename.endswith('meta'):
+                    meta = json.loads(lookyloo_capture.read(filename))
+                    if 'os' in meta:
+                        os = meta['os']
+                    if 'browser' in meta:
+                        browser = meta['browser']
+                elif filename.endswith('no_index'):
+                    # Force it to false regardless the form
+                    listing = False
+                elif filename.endswith('parent'):
+                    parent = lookyloo_capture.read(filename).decode()
+                elif filename.endswith('0.data.filename'):
+                    downloaded_filename = lookyloo_capture.read(filename).decode()
+                elif filename.endswith('0.data'):
+                    downloaded_file = lookyloo_capture.read(filename)
+                elif filename.endswith('error.txt'):
+                    error = lookyloo_capture.read(filename).decode()
+                elif filename.endswith('capture_settings.json'):
+                    capture_settings = json.loads(lookyloo_capture.read(filename))
+                else:
+                    for to_skip in files_to_skip:
+                        if filename.endswith(to_skip):
+                            break
+                    else:
+                        messages['warnings'].append(f'Unexpected file in the capture archive: {filename}')
+            if not har or not html or not last_redirected_url or not screenshot:
+                # If we don't have these 4 files, the archive is incomplete and we should not store it.
+                unrecoverable_error = True
+                if not har:
+                    messages['errors'].append('Invalid submission: missing HAR file')
+                if not html:
+                    messages['errors'].append('Invalid submission: missing HTML file')
+                if not last_redirected_url:
+                    messages['errors'].append('Invalid submission: missing landing page')
+                if not screenshot:
+                    messages['errors'].append('Invalid submission: missing screenshot')
+            if not unrecoverable_error:
+                self.store_capture(uuid, is_public=listing,
+                                   os=os, browser=browser, parent=parent,
+                                   downloaded_filename=downloaded_filename, downloaded_file=downloaded_file,
+                                   error=error, har=har, png=screenshot, html=html,
+                                   last_redirected_url=last_redirected_url,
+                                   cookies=cookies,
+                                   capture_settings=capture_settings,
+                                   potential_favicons=potential_favicons)
+            return uuid, messages
+
     def store_capture(self, uuid: str, is_public: bool,
                       os: str | None=None, browser: str | None=None,
                       parent: str | None=None,

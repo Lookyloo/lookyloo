@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 import base64
+import gzip
 import hashlib
 import json
 
 from io import BytesIO
 from typing import Any
+from uuid import uuid4
 from zipfile import ZipFile
 
 import flask_login  # type: ignore[import-untyped]
 from flask import request, send_file, Response
-from flask_restx import Namespace, Resource, abort, fields  # type: ignore[import-untyped]
+from flask_restx import Namespace, Resource, fields  # type: ignore[import-untyped]
 from werkzeug.security import check_password_hash
 
 from lacuscore import CaptureStatus as CaptureStatusCore
@@ -32,7 +34,7 @@ comparator: Comparator = Comparator()
 def api_auth_check(method):  # type: ignore[no-untyped-def]
     if flask_login.current_user.is_authenticated or load_user_from_request(request):
         return method
-    abort(403, 'Authentication required.')
+    return 'Authentication required.', 403
 
 
 token_request_fields = api.model('AuthTokenFields', {
@@ -441,6 +443,55 @@ class CaptureReport(Resource):  # type: ignore[misc]
         return lookyloo.send_mail(capture_uuid, parameters.get('email', ''), parameters.get('comment'))
 
 
+@api.route('/json/upload')
+@api.doc(description='Submits a capture from another instance')
+class UploadCapture(Resource):  # type: ignore[misc]
+    def post(self) -> dict[str, str | dict[str, list[str]]] | tuple[dict[str, str], int]:
+        parameters: dict[str, Any] = request.get_json(force=True)
+        listing = True if parameters['listing'] else False
+        har: dict[str, Any] | None = None
+        html: str | None = None
+        last_redirected_url: str | None = None
+        screenshot: bytes | None = None
+
+        if 'har_file' in parameters and parameters.get('har_file'):
+            uuid = str(uuid4())
+            try:
+                har_decoded = base64.b64decode(parameters['har_file'])
+                try:
+                    # new format
+                    har_uncompressed = gzip.decompress(har_decoded)
+                except gzip.BadGzipFile:
+                    # old format
+                    har_uncompressed = har_decoded
+
+                har = json.loads(har_uncompressed)
+                last_redirected_url = parameters.get('landing_page')
+                if 'screenshot_file' in parameters:
+                    screenshot = base64.b64decode(parameters['screenshot_file'])
+                if 'html_file' in parameters:
+                    html = base64.b64decode(parameters['html_file']).decode()
+                lookyloo.store_capture(uuid, is_public=listing, har=har,
+                                       last_redirected_url=last_redirected_url,
+                                       png=screenshot, html=html)
+            except Exception as e:
+                return {'error': f'Unable to process the upload: {e}'}, 400
+            return {'uuid': uuid}
+
+        elif 'full_capture' in parameters and parameters.get('full_capture'):
+            try:
+                zipped_capture = base64.b64decode(parameters['full_capture'].encode())
+            except Exception:
+                return {'error': 'Invalid base64-encoding'}, 400
+            full_capture_file = BytesIO(zipped_capture)
+            uuid, messages = lookyloo.unpack_full_capture_archive(full_capture_file, listing=listing)
+            if 'errors' in messages and messages['errors']:
+                return {'error': ', '.join(messages['errors'])}, 400
+            return {'uuid': uuid, 'messages': messages}
+        else:
+            return {'error': 'Full capture or at least har-file is required'}, 400
+
+
 auto_report_model = api.model('AutoReportModel', {
     'email': fields.String(description="Email of the reporter, used by the analyst to get in touch.", example=''),
     'comment': fields.String(description="Description of the URL, will be given to the analyst.", example='')
@@ -475,14 +526,14 @@ class SubmitCapture(Resource):  # type: ignore[misc]
     @api.param('referer', 'Referer to pass to the capture')  # type: ignore[misc]
     @api.param('proxy', 'Proxy to use for the the capture')  # type: ignore[misc]
     @api.produces(['text/text'])  # type: ignore[misc]
-    def get(self) -> str | tuple[str, int]:
+    def get(self) -> str | tuple[dict[str, str], int]:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
         else:
             user = src_request_ip(request)
 
         if 'url' not in request.args or not request.args.get('url'):
-            return 'No "url" in the URL params, nothting to capture.', 400
+            return {'error': 'No "url" in the URL params, nothting to capture.'}, 400
 
         to_query: CaptureSettings = {
             'url': request.args['url'],
@@ -664,9 +715,8 @@ class RebuildAll(Resource):  # type: ignore[misc]
         try:
             lookyloo.rebuild_all()
         except Exception as e:
-            return {'error': f'Unable to rebuild all captures: {e}.'}, 400
-        else:
-            return {'info': 'Captures successfully rebuilt.'}
+            return {'error': f'Unable to rebuild all captures: {e}'}, 400
+        return {'info': 'Captures successfully rebuilt.'}
 
 
 @api.route('/admin/rebuild_all_cache')
@@ -679,9 +729,8 @@ class RebuildAllCache(Resource):  # type: ignore[misc]
         try:
             lookyloo.rebuild_cache()
         except Exception as e:
-            return {'error': f'Unable to rebuild all the caches: {e}.'}, 400
-        else:
-            return {'info': 'All caches successfully rebuilt.'}
+            return {'error': f'Unable to rebuild all the caches: {e}'}, 400
+        return {'info': 'All caches successfully rebuilt.'}
 
 
 @api.route('/admin/<string:capture_uuid>/rebuild')
@@ -696,9 +745,8 @@ class CaptureRebuildTree(Resource):  # type: ignore[misc]
             lookyloo.remove_pickle(capture_uuid)
             lookyloo.get_crawled_tree(capture_uuid)
         except Exception as e:
-            return {'error': f'Unable to rebuild tree: {e}.'}, 400
-        else:
-            return {'info': f'Tree {capture_uuid} successfully rebuilt.'}
+            return {'error': f'Unable to rebuild tree: {e}'}, 400
+        return {'info': f'Tree {capture_uuid} successfully rebuilt.'}
 
 
 @api.route('/admin/<string:capture_uuid>/hide')
@@ -712,6 +760,5 @@ class CaptureHide(Resource):  # type: ignore[misc]
         try:
             lookyloo.hide_capture(capture_uuid)
         except Exception as e:
-            return {'error': f'Unable to hide the tree: {e}.'}, 400
-        else:
-            return {'info': f'Capture {capture_uuid} successfully hidden.'}
+            return {'error': f'Unable to hide the tree: {e}'}, 400
+        return {'info': f'Capture {capture_uuid} successfully hidden.'}

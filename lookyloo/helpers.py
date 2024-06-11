@@ -322,7 +322,7 @@ def is_locked(locked_dir_path: Path, /) -> bool:
         max_wait_content = 5
         while max_wait_content > 0:
             with lock_file.open('r') as f:
-                if content := f.read():
+                if content := f.read().strip():
                     break
             # The file is empty, we're between the creation and setting the content
             logger.info(f'Lock file empty ({lock_file}), waiting...')

@@ -254,6 +254,15 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
     def lru_cache_clear(self) -> None:
         load_pickle_tree.cache_clear()
 
+    def uuid_exists(self, uuid: str) -> bool:
+        if uuid in self.__cache:
+            return True
+        if self.redis.hexists('lookup_dirs', uuid):
+            return True
+        if self.redis.hexists('lookup_dirs_archived', uuid):
+            return True
+        return False
+
     def _quick_init(self) -> None:
         '''Initialize the cache with a list of UUIDs, with less back and forth with redis.
         Only get recent captures.'''

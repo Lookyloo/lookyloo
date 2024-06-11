@@ -5,7 +5,6 @@ from __future__ import annotations
 import base64
 import calendar
 import functools
-import gzip
 import hashlib
 import http
 import json
@@ -1457,12 +1456,12 @@ def submit_capture() -> str | Response | WerkzeugResponse:
 
     if request.method == 'POST':
         listing = True if request.form.get('listing') else False
-        uuid = str(uuid4())  # NOTE: new UUID, because we do not want duplicates
         har: dict[str, Any] | None = None
         html: str | None = None
         last_redirected_url: str | None = None
         screenshot: bytes | None = None
         if 'har_file' in request.files and request.files['har_file']:
+            uuid = str(uuid4())
             har = json.loads(request.files['har_file'].stream.read())
             last_redirected_url = request.form.get('landing_page')
             if 'screenshot_file' in request.files:
@@ -1475,44 +1474,15 @@ def submit_capture() -> str | Response | WerkzeugResponse:
             return redirect(url_for('tree', tree_uuid=uuid))
         elif 'full_capture' in request.files and request.files['full_capture']:
             # it *only* accepts a lookyloo export.
-            cookies: list[dict[str, str]] | None = None
-            has_error = False
-            with ZipFile(BytesIO(request.files['full_capture'].stream.read()), 'r') as lookyloo_capture:
-                potential_favicons = set()
-                for filename in lookyloo_capture.namelist():
-                    if filename.endswith('0.har.gz'):
-                        # new formal
-                        har = json.loads(gzip.decompress(lookyloo_capture.read(filename)))
-                    elif filename.endswith('0.har'):
-                        # old format
-                        har = json.loads(lookyloo_capture.read(filename))
-                    elif filename.endswith('0.html'):
-                        html = lookyloo_capture.read(filename).decode()
-                    elif filename.endswith('0.last_redirect.txt'):
-                        last_redirected_url = lookyloo_capture.read(filename).decode()
-                    elif filename.endswith('0.png'):
-                        screenshot = lookyloo_capture.read(filename)
-                    elif filename.endswith('0.cookies.json'):
-                        # Not required
-                        cookies = json.loads(lookyloo_capture.read(filename))
-                    elif filename.endswith('potential_favicons.ico'):
-                        # We may have more than one favicon
-                        potential_favicons.add(lookyloo_capture.read(filename))
-                if not har or not html or not last_redirected_url or not screenshot:
-                    has_error = True
-                    if not har:
-                        flash('Invalid submission: missing HAR file', 'error')
-                    if not html:
-                        flash('Invalid submission: missing HTML file', 'error')
-                    if not last_redirected_url:
-                        flash('Invalid submission: missing landing page', 'error')
-                    if not screenshot:
-                        flash('Invalid submission: missing screenshot', 'error')
-            if not has_error:
-                lookyloo.store_capture(uuid, is_public=listing, har=har,
-                                       last_redirected_url=last_redirected_url,
-                                       png=screenshot, html=html, cookies=cookies,
-                                       potential_favicons=potential_favicons)
+            full_capture_file = BytesIO(request.files['full_capture'].stream.read())
+            uuid, messages = lookyloo.unpack_full_capture_archive(full_capture_file, listing)
+            if 'errors' in messages and messages['errors']:
+                for error in messages['errors']:
+                    flash(error, 'error')
+            else:
+                if 'warnings' in messages:
+                    for warning in messages['warnings']:
+                        flash(warning, 'warning')
                 return redirect(url_for('tree', tree_uuid=uuid))
         else:
             flash('Invalid submission: please submit at least an HAR file.', 'error')

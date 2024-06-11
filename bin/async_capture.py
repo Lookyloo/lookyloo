@@ -15,7 +15,7 @@ from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse a
 
 from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.exceptions import LacusUnreachable
-from lookyloo.default import AbstractManager, get_config
+from lookyloo.default import AbstractManager, get_config, LookylooException
 from lookyloo.helpers import get_captures_dir
 
 from lookyloo.modules import FOX
@@ -69,7 +69,7 @@ class AsyncCapture(AbstractManager):
             elif isinstance(self.lookyloo.lacus, PyLacus):
                 entries = self.lookyloo.lacus.get_capture(uuid)
             else:
-                raise Exception('Something is broken.')
+                raise LookylooException(f'lacus must be LacusCore or PyLacus, not {type(self.lookyloo.lacus)}.')
             log = f'Got the capture for {uuid} from Lacus'
             if runtime := entries.get('runtime'):
                 log = f'{log} - Runtime: {runtime}'
