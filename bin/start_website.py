@@ -30,7 +30,7 @@ class Website(AbstractManager):
                       '--log-level', 'info',
                       '--max-requests', '2000',
                       '--max-requests-jitter', '100',
-                      '--name', 'website_lookyloo'
+                      '--name', 'website_lookyloo',
                       'web:app'],
                      cwd=website_dir)
 
