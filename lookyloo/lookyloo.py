@@ -165,10 +165,13 @@ class Lookyloo():
             if monitoring_config['enable']:
                 self.monitoring = PyLookylooMonitoring(monitoring_config['url'], get_useragent_for_requests())
                 if self.monitoring.is_up:
-                    self.monitoring_enabled = True
-                    # NOTE: maybe move that somewhere else: we'll need to restart the webserver
-                    # if we change the settings in the monitoring instance
-                    self.monitoring_settings = self.monitoring.instance_settings()
+                    try:
+                        # NOTE: maybe move that somewhere else: we'll need to restart the webserver
+                        # if we change the settings in the monitoring instance
+                        self.monitoring_settings = self.monitoring.instance_settings()
+                        self.monitoring_enabled = True
+                    except Exception as e:
+                        self.logger.critical(f'Unable to initialize the monitoring instance: {e}')
 
         self.logger.info('Initializing context...')
         self.context = Context()
