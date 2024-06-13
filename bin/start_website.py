@@ -28,7 +28,9 @@ class Website(AbstractManager):
                       '--graceful-timeout', '2', '--timeout', '300',
                       '-b', f'{ip}:{port}',
                       '--log-level', 'info',
-                      '--max-requests-jitter', '10000',
+                      '--max-requests', '2000',
+                      '--max-requests-jitter', '100',
+                      '--name', 'website_lookyloo'
                       'web:app'],
                      cwd=website_dir)
 
