@@ -900,18 +900,18 @@ tests = ["asttokens (>=2.1.0)", "coverage", "coverage-enable-subprocess", "ipyth
 
 [[package]]
 name = "filelock"
-version = "3.14.0"
+version = "3.15.1"
 description = "A platform independent file lock."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "filelock-3.14.0-py3-none-any.whl", hash = "sha256:43339835842f110ca7ae60f1e1c160714c5a6afd15a2873419ab185334975c0f"},
-    {file = "filelock-3.14.0.tar.gz", hash = "sha256:6ea72da3be9b8c82afd3edcf99f2fffbb5076335a5ae4d03248bb5b6c3eae78a"},
+    {file = "filelock-3.15.1-py3-none-any.whl", hash = "sha256:71b3102950e91dfc1bb4209b64be4dc8854f40e5f534428d8684f953ac847fac"},
+    {file = "filelock-3.15.1.tar.gz", hash = "sha256:58a2549afdf9e02e10720eaa4d4470f56386d7a6f72edd7d0596337af8ed7ad8"},
 ]
 
 [package.extras]
 docs = ["furo (>=2023.9.10)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.25.2)"]
-testing = ["covdefaults (>=2.3)", "coverage (>=7.3.2)", "diff-cover (>=8.0.1)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)", "pytest-timeout (>=2.2)"]
+testing = ["covdefaults (>=2.3)", "coverage (>=7.3.2)", "diff-cover (>=8.0.1)", "pytest (>=7.4.3)", "pytest-asyncio (>=0.21)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)", "pytest-timeout (>=2.2)"]
 typing = ["typing-extensions (>=4.8)"]
 
 [[package]]
@@ -2574,13 +2574,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.1.20240605"
+version = "0.10.1.20240612"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.1.20240605-py2.py3-none-any.whl", hash = "sha256:cdf988a73cbfccc8410db84b5f0161e5040d0cde539eadfc17479bba57dfda5a"},
-    {file = "publicsuffixlist-0.10.1.20240605.tar.gz", hash = "sha256:ae8ec48bd8a3beadb05fc944ebe609865d9ca362ecf2aa5c9fee2051f4a66356"},
+    {file = "publicsuffixlist-0.10.1.20240612-py2.py3-none-any.whl", hash = "sha256:63d1406f301e2a770efbabba2136e81390da9a65b53bd38324e317881ef1442c"},
+    {file = "publicsuffixlist-0.10.1.20240612.tar.gz", hash = "sha256:b5f647128f773e66a19567962c78dddbc43fbe65110fa4f3c9977b4ad0eeb67c"},
 ]
 
 [package.extras]
@@ -3802,13 +3802,13 @@ test = ["pytest", "pytest-asyncio", "pytest-httpserver"]
 
 [[package]]
 name = "w3lib"
-version = "2.2.0"
+version = "2.2.1"
 description = "Library of web-related functions"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "w3lib-2.2.0-py3-none-any.whl", hash = "sha256:a969d68e98f1c95f1efa1b51db73da6480f53269a65bf8180b0f43327723fa24"},
-    {file = "w3lib-2.2.0.tar.gz", hash = "sha256:09a11148a8e25d63bac836bedd4e82fdb3fc77e91889eab07e132c17d023af0d"},
+    {file = "w3lib-2.2.1-py3-none-any.whl", hash = "sha256:e56d81c6a6bf507d7039e0c95745ab80abd24b465eb0f248af81e3eaa46eb510"},
+    {file = "w3lib-2.2.1.tar.gz", hash = "sha256:756ff2d94c64e41c8d7c0c59fea12a5d0bc55e33a531c7988b4a163deb9b07dd"},
 ]
 
 [[package]]
