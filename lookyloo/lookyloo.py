@@ -16,7 +16,6 @@ import time
 
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
-from functools import lru_cache
 from email.message import EmailMessage
 from functools import cached_property
 from io import BytesIO
@@ -34,7 +33,8 @@ from lacuscore import (LacusCore,
                        CaptureStatus as CaptureStatusCore,
                        # CaptureResponse as CaptureResponseCore)
                        # CaptureResponseJson as CaptureResponseJsonCore,
-                       CaptureSettings as CaptureSettingsCore)
+                       # CaptureSettings as CaptureSettingsCore
+                       )
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
 from puremagic import from_string, PureError  # type: ignore[import-untyped]
@@ -58,7 +58,8 @@ from .exceptions import (MissingCaptureDirectory,
 from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, load_cookies, UserAgents,
-                      get_useragent_for_requests, load_takedown_filters
+                      get_useragent_for_requests, load_takedown_filters,
+                      CaptureSettings, UserCaptureSettings, load_user_config
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -66,33 +67,6 @@ from .modules import (MISPs, PhishingInitiative, UniversalWhois,
 
 if TYPE_CHECKING:
     from playwright.async_api import Cookie
-
-
-class CaptureSettings(CaptureSettingsCore, total=False):
-    '''The capture settings that can be passed to Lookyloo'''
-    listing: int | None
-    not_queued: int | None
-    auto_report: bool | str | dict[str, str] | None  # {'email': , 'comment': , 'recipient_mail':}
-    dnt: str | None
-    browser_name: str | None
-    os: str | None
-    parent: str | None
-
-
-# overwrite set to True means the settings in the config file overwrite the settings
-# provided by the user. False will simply append the settings from the config file if they
-# don't exist.
-class UserCaptureSettings(CaptureSettings, total=False):
-    overwrite: bool
-
-
-@lru_cache(64)
-def load_user_config(username: str) -> UserCaptureSettings | None:
-    user_config_path = get_homedir() / 'config' / 'users' / f'{username}.json'
-    if not user_config_path.exists():
-        return None
-    with user_config_path.open() as _c:
-        return json.load(_c)
 
 
 class Lookyloo():

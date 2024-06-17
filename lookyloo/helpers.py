@@ -20,6 +20,7 @@ from urllib.parse import urlparse
 
 
 from har2tree import CrawledTree, HostNode, URLNode
+from lacuscore import CaptureSettings as LacuscoreCaptureSettings
 from playwrightcapture import get_devices
 from publicsuffixlist import PublicSuffixList  # type: ignore[import-untyped]
 from pytaxonomies import Taxonomies  # type: ignore[attr-defined]
@@ -392,3 +393,30 @@ class ParsedUserAgent(UserAgent):
 
     def __str__(self) -> str:
         return f'OS: {self.platform} - Browser: {self.browser} {self.version} - UA: {self.string}'
+
+
+class CaptureSettings(LacuscoreCaptureSettings, total=False):
+    '''The capture settings that can be passed to Lookyloo'''
+    listing: int | None
+    not_queued: int | None
+    auto_report: bool | str | dict[str, str] | None  # {'email': , 'comment': , 'recipient_mail':}
+    dnt: str | None
+    browser_name: str | None
+    os: str | None
+    parent: str | None
+
+
+# overwrite set to True means the settings in the config file overwrite the settings
+# provided by the user. False will simply append the settings from the config file if they
+# don't exist.
+class UserCaptureSettings(CaptureSettings, total=False):
+    overwrite: bool
+
+
+@lru_cache(64)
+def load_user_config(username: str) -> UserCaptureSettings | None:
+    user_config_path = get_homedir() / 'config' / 'users' / f'{username}.json'
+    if not user_config_path.exists():
+        return None
+    with user_config_path.open() as _c:
+        return json.load(_c)

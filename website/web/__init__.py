@@ -41,7 +41,7 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable
-from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies
+from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies, UserCaptureSettings, load_user_config
 
 if sys.version_info < (3, 9):
     from pytz import all_timezones_set
@@ -52,7 +52,7 @@ else:
 from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load,
-                      get_lookyloo_instance, get_indexing)
+                      get_lookyloo_instance, get_indexing, build_keys_table)
 from .proxied import ReverseProxied
 
 logging.config.dictConfig(get_config('logging'))
@@ -73,6 +73,7 @@ pkg_version = version('lookyloo')
 # Auth stuff
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
+build_keys_table()
 
 # User agents manager
 user_agents = UserAgents()
@@ -1314,6 +1315,7 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: str 
                        cached.redirects))
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
     return render_template('index.html', titles=titles, public_domain=lookyloo.public_domain,
+                           show_hidden=show_hidden,
                            show_project_page=get_config('generic', 'show_project_page'),
                            version=pkg_version)
 
@@ -1422,13 +1424,14 @@ def search() -> str | Response | WerkzeugResponse:
     return render_template('search.html')
 
 
-def _prepare_capture_template(user_ua: str | None, predefined_url: str | None=None) -> str:
+def _prepare_capture_template(user_ua: str | None, predefined_url: str | None=None, *, user_config: UserCaptureSettings | None=None) -> str:
     return render_template('capture.html', user_agents=user_agents.user_agents,
                            default=user_agents.default,
                            personal_ua=user_ua,
                            default_public=get_config('generic', 'default_public'),
                            devices=lookyloo.get_playwright_devices(),
                            predefined_url_to_capture=predefined_url if predefined_url else '',
+                           user_config=user_config,
                            has_global_proxy=True if lookyloo.global_proxy else False)
 
 
@@ -1496,8 +1499,10 @@ def submit_capture() -> str | Response | WerkzeugResponse:
 
 @app.route('/capture', methods=['GET', 'POST'])
 def capture_web() -> str | Response | WerkzeugResponse:
+    user_config: UserCaptureSettings | None = None
     if flask_login.current_user.is_authenticated:
         user = flask_login.current_user.get_id()
+        user_config = load_user_config(user)
     else:
         user = src_request_ip(request)
 
@@ -1609,7 +1614,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
         return redirect(url_for('tree', tree_uuid=perma_uuid))
 
     # render template
-    return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
+    return _prepare_capture_template(user_ua=request.headers.get('User-Agent'), user_config=user_config)
 
 
 @app.route('/simple_capture', methods=['GET', 'POST'])

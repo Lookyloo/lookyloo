@@ -14,7 +14,7 @@ from flask import Request
 from werkzeug.security import generate_password_hash
 
 from lookyloo import Lookyloo, Indexing
-from lookyloo.default import get_config, get_homedir
+from lookyloo.default import get_config, get_homedir, LookylooException
 
 __global_lookyloo_instance = None
 
@@ -57,9 +57,12 @@ def is_valid_username(username: str) -> bool:
 
 @lru_cache(64)
 def build_keys_table() -> dict[str, str]:
-    keys_table = {}
+    keys_table: dict[str, str] = {}
     for username, authstuff in build_users_table().items():
         if 'authkey' in authstuff:
+            if authstuff['authkey'] in keys_table:
+                existing_user = keys_table[authstuff['authkey']]
+                raise LookylooException(f'Duplicate authkey found for {existing_user} and {username}.')
             keys_table[authstuff['authkey']] = username
     return keys_table
 
@@ -85,7 +88,7 @@ def build_users_table() -> dict[str, dict[str, str]]:
             users_table[username] = {}
             users_table[username]['password'] = generate_password_hash(authstuff)
             users_table[username]['authkey'] = hashlib.pbkdf2_hmac('sha256', get_secret_key(),
-                                                                   authstuff.encode(),
+                                                                   f'{username}{authstuff}'.encode(),
                                                                    100000).hex()
 
         elif isinstance(authstuff, list) and len(authstuff) == 2:

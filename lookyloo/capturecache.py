@@ -291,7 +291,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             if hasattr(cc, 'timestamp'):
                 recent_captures[uuid] = cc.timestamp.timestamp()
         if recent_captures:
-            self.redis.zadd('recent_captures', recent_captures)
+            self.redis.zadd('recent_captures', recent_captures, nx=True)
 
     def _get_capture_dir(self, uuid: str) -> str:
         # Try to get from the recent captures cache in redis

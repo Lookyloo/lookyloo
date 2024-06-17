@@ -14,7 +14,7 @@ from zipfile import ZipFile
 
 import flask_login  # type: ignore[import-untyped]
 from flask import request, send_file, Response
-from flask_restx import Namespace, Resource, fields  # type: ignore[import-untyped]
+from flask_restx import Namespace, Resource, fields, abort  # type: ignore[import-untyped]
 from werkzeug.security import check_password_hash
 
 from lacuscore import CaptureStatus as CaptureStatusCore
@@ -22,8 +22,10 @@ from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo import CaptureSettings, Lookyloo
 from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
+from lookyloo.helpers import load_user_config, UserCaptureSettings
 
-from .helpers import build_users_table, load_user_from_request, src_request_ip, get_lookyloo_instance, get_indexing
+from .helpers import (build_users_table, load_user_from_request, src_request_ip,
+                      get_lookyloo_instance, get_indexing)
 
 api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
@@ -34,7 +36,7 @@ comparator: Comparator = Comparator()
 def api_auth_check(method):  # type: ignore[no-untyped-def]
     if flask_login.current_user.is_authenticated or load_user_from_request(request):
         return method
-    return 'Authentication required.', 403
+    abort(403, 'Authentication required.')
 
 
 token_request_fields = api.model('AuthTokenFields', {
@@ -47,6 +49,17 @@ token_request_fields = api.model('AuthTokenFields', {
 def handle_no_HAR_file_exception(error: Any) -> tuple[dict[str, str], int]:
     '''The capture has no HAR file, it failed for some reason.'''
     return {'message': str(error)}, 400
+
+
+@api.route('/json/get_user_config')
+@api.doc(description='Get the configuration of the user (if any)', security='apikey')
+class UserConfig(Resource):  # type: ignore[misc]
+    method_decorators = [api_auth_check]
+
+    def get(self) -> UserCaptureSettings | None | tuple[dict[str, str], int]:
+        if not flask_login.current_user.is_authenticated:
+            return {'error': 'User not authenticated.'}, 401
+        return load_user_config(flask_login.current_user.get_id())
 
 
 @api.route('/json/get_token')

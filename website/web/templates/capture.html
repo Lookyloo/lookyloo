@@ -29,6 +29,37 @@
     </a>
   </center>
   {{ render_messages(container=True, dismissible=True) }}
+  {% if current_user.is_authenticated %}
+  <p class="lead">You are logged-in as <strong>{{ current_user.id }}</strong>
+  </br>
+  {% if user_config %}
+    {% if user_config['overwrite'] == true %}
+      The settings in your users configuration file will overwrite the settings you configure in the form below.
+    {% else %}
+      The settings in your users configuration file will only be used if you don't overwrite them in the form below.
+    {% endif %}
+    <p>
+    <dl class="row">
+      {% for key, value in user_config.items() %}
+        {% if key != 'overwrite' %}
+         <dt class="col-sm-3">{{ key }}</dt>
+         <dd class="col-sm-9">
+         {% if value is mapping %}
+          <dl class="row">
+           {% for sub_key, sub_value in value.items() %}
+            <dt class="col-sm-4">{{ sub_key}}</dt>
+            <dd class="col-sm-8">{{ sub_value }}</dd>
+           {% endfor %}
+          </dl>
+         {% else %}
+          {{ value }}
+         {% endif %}
+         <dd>
+        {% endif %}
+      {% endfor %}
+    <dl>
+    {% endif %}
+  {% endif %}
   <form role="form" action="{{ url_for('capture_web') }}" method=post enctype=multipart/form-data>
     <div class="row mb-3">
       <div class="col-sm-10">

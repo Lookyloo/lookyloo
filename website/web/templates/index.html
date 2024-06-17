@@ -87,8 +87,17 @@ $(document).ready(function () {
     <a href="{{ url_for('simple_capture') }}">
       <button class="new-capture-button btn btn-primary">Takedown process</button>
     </a>
+    <br>
+    <p class="lead">
+    You are logged-in as <strong>{{ current_user.id }}</strong>,
+      {% if show_hidden == false %}
+      and you can check the <a href="{{ url_for('index_hidden') }}">hidden</a> captures.
+      {% else %}
+      and you're looking at the hidden captures. Go back to the <a href="{{ url_for('index') }}">public</a> captures.
+      {% endif %}
+    <p>
     {% endif %}
-    <br><br>
+    <br>
     {{ render_messages(container=True, dismissible=True) }}
   </center>
 
