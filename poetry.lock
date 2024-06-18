@@ -1633,13 +1633,13 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.9.5"
+version = "1.9.6"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "lacuscore-1.9.5-py3-none-any.whl", hash = "sha256:f9b3860d474af9c1e26158da92cc23b47f85270078853c141330a42e74cd4e4f"},
-    {file = "lacuscore-1.9.5.tar.gz", hash = "sha256:d868b0abd3694f35770c380dd8e903974f80d9761128153f2b71bc4a9f08dd49"},
+    {file = "lacuscore-1.9.6-py3-none-any.whl", hash = "sha256:495c7ae1aef2f19ded769ca5312a1fb78357173b90a14dbf1e891a57daf513e8"},
+    {file = "lacuscore-1.9.6.tar.gz", hash = "sha256:e7dfc892682e907272a4f0bd9fbe5afce071050a3f63142be8f930c343d0297c"},
 ]
 
 [package.dependencies]
@@ -1647,7 +1647,7 @@ async-timeout = {version = ">=4.0.3,<5.0.0", markers = "python_version < \"3.11\
 defang = ">=0.5.3,<0.6.0"
 dnspython = ">=2.6.1,<3.0.0"
 playwrightcapture = {version = ">=1.24.11,<2.0.0", extras = ["recaptcha"]}
-redis = {version = ">=5.0.4,<6.0.0", extras = ["hiredis"]}
+redis = {version = ">=5.0.6,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.32.3,<3.0.0"
 ua-parser = ">=0.18.0,<0.19.0"
 
@@ -2574,13 +2574,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "0.10.1.20240612"
+version = "0.10.1.20240618"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=2.6"
 files = [
-    {file = "publicsuffixlist-0.10.1.20240612-py2.py3-none-any.whl", hash = "sha256:63d1406f301e2a770efbabba2136e81390da9a65b53bd38324e317881ef1442c"},
-    {file = "publicsuffixlist-0.10.1.20240612.tar.gz", hash = "sha256:b5f647128f773e66a19567962c78dddbc43fbe65110fa4f3c9977b4ad0eeb67c"},
+    {file = "publicsuffixlist-0.10.1.20240618-py2.py3-none-any.whl", hash = "sha256:2b65ca8101e14082c70471c855d67cbba83bd8554a2e566e96cfb15524647600"},
+    {file = "publicsuffixlist-0.10.1.20240618.tar.gz", hash = "sha256:fb02681ffbc2c0d3e642541f8a40e69ea6cd42530b037d7937e53862fcbf98cc"},
 ]
 
 [package.extras]
@@ -2603,13 +2603,13 @@ tests = ["pytest"]
 
 [[package]]
 name = "puremagic"
-version = "1.23"
+version = "1.24"
 description = "Pure python implementation of magic file detection"
 optional = false
 python-versions = "*"
 files = [
-    {file = "puremagic-1.23-py3-none-any.whl", hash = "sha256:f67ba60a1820ae154016a0fe6a9fdfa11961f14602939b37b0165d59bd2c26ad"},
-    {file = "puremagic-1.23.tar.gz", hash = "sha256:e0bb7dc814b9d606225b57d4d49175d27c24fb745de1a7b3506067f2be54438f"},
+    {file = "puremagic-1.24-py3-none-any.whl", hash = "sha256:f389a8d69f2637fdf00cf121846893e3ba31cf2daa920b04cc2ad250c6d0c6a5"},
+    {file = "puremagic-1.24.tar.gz", hash = "sha256:a4b664ba213d454e29a6ef997896977e207e51a28ca41171b8cf345bedf15963"},
 ]
 
 [[package]]
@@ -3056,13 +3056,13 @@ files = [
 
 [[package]]
 name = "redis"
-version = "5.0.5"
+version = "5.0.6"
 description = "Python client for Redis database and key-value store"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "redis-5.0.5-py3-none-any.whl", hash = "sha256:30b47d4ebb6b7a0b9b40c1275a19b87bb6f46b3bed82a89012cf56dea4024ada"},
-    {file = "redis-5.0.5.tar.gz", hash = "sha256:3417688621acf6ee368dec4a04dd95881be24efd34c79f00d31f62bb528800ae"},
+    {file = "redis-5.0.6-py3-none-any.whl", hash = "sha256:c0d6d990850c627bbf7be01c5c4cbaadf67b48593e913bb71c9819c30df37eee"},
+    {file = "redis-5.0.6.tar.gz", hash = "sha256:38473cd7c6389ad3e44a91f4c3eaf6bcb8a9f746007f29bf4fb20824ff0b2197"},
 ]
 
 [package.dependencies]
@@ -3852,13 +3852,13 @@ six = "*"
 
 [[package]]
 name = "urllib3"
-version = "1.26.18"
+version = "1.26.19"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
 files = [
-    {file = "urllib3-1.26.18-py2.py3-none-any.whl", hash = "sha256:34b97092d7e0a3a8cf7cd10e386f401b3737364026c45e622aa02903dffe0f07"},
-    {file = "urllib3-1.26.18.tar.gz", hash = "sha256:f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0"},
+    {file = "urllib3-1.26.19-py2.py3-none-any.whl", hash = "sha256:37a0344459b199fce0e80b0d3569837ec6b6937435c5244e7fd73fa6006830f3"},
+    {file = "urllib3-1.26.19.tar.gz", hash = "sha256:3e3d753a8618b86d7de333b4223005f68720bcd6a7d2bcb9fbd2229ec7c1e429"},
 ]
 
 [package.extras]
@@ -3868,13 +3868,13 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "urllib3"
-version = "2.2.1"
+version = "2.2.2"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "urllib3-2.2.1-py3-none-any.whl", hash = "sha256:450b20ec296a467077128bff42b73080516e71b56ff59a60a02bef2232c4fa9d"},
-    {file = "urllib3-2.2.1.tar.gz", hash = "sha256:d0570876c61ab9e520d776c38acbbb5b05a776d3f9ff98a5c8fd5162a444cf19"},
+    {file = "urllib3-2.2.2-py3-none-any.whl", hash = "sha256:a448b2f64d686155468037e1ace9f2d2199776e17f0a46610480d311f73e3472"},
+    {file = "urllib3-2.2.2.tar.gz", hash = "sha256:dd505485549a7a552833da5e6063639d0d177c04f23bc3864e41e5dc5f612168"},
 ]
 
 [package.extras]
@@ -4156,4 +4156,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "6f7c09e61440b19d23c2cb2a17a7c10354ec72a64ceb895c5c2dfb203b52a3c2"
+content-hash = "c251c1e958de40991439cf3c625aed601fa7d3e4203cf1989fa7d2948f163b1f"
