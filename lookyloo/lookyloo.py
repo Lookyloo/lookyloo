@@ -475,6 +475,23 @@ class Lookyloo():
     def clear_tree_cache(self) -> None:
         self._captures_index.lru_cache_clear()
 
+    def get_recent_captures(self, /, *, since: datetime | str | float | None=None,
+                            before: datetime | float | str | None=None) -> list[str]:
+        '''Get the captures that were done between two dates
+        :param since: the oldest date to get captures from, None will start from the oldest capture
+        :param before: the newest date to get captures from, None will end on the newest capture
+        '''
+        if not since:
+            since = '-Inf'
+        elif isinstance(since, datetime):
+            since = since.timestamp()
+
+        if not before:
+            before = '+Inf'
+        elif isinstance(before, datetime):
+            before = before.timestamp()
+        return self.redis.zrevrangebyscore('recent_captures', before, since)
+
     def sorted_capture_cache(self, capture_uuids: Iterable[str] | None=None, cached_captures_only: bool=True, index_cut_time: datetime | None=None) -> list[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''
@@ -487,7 +504,7 @@ class Lookyloo():
             index_cut_time = cut_time
 
         if capture_uuids is None:
-            capture_uuids = self.redis.zrevrangebyscore('recent_captures', '+inf', index_cut_time.timestamp())
+            capture_uuids = self.get_recent_captures(since=index_cut_time)
             # NOTE: we absolutely have to respect the cached_captures_only setting and
             #       never overwrite it. This method is called to display the index
             #       and if we try to display everything, including the non-cached entries,
