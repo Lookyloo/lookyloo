@@ -780,5 +780,5 @@ class CaptureHide(Resource):  # type: ignore[misc]
 @api.route('/json/recent_captures')
 @api.doc(description='Get uuids of the most recent captures.')
 class RecentCaptures(Resource): # type: ignore[misc]
-    def get(self):
+    def get(self) -> list:
         return lookyloo.redis.zrange('recent_captures',0, -1)
