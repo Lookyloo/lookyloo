@@ -775,3 +775,10 @@ class CaptureHide(Resource):  # type: ignore[misc]
         except Exception as e:
             return {'error': f'Unable to hide the tree: {e}'}, 400
         return {'info': f'Capture {capture_uuid} successfully hidden.'}
+
+
+@api.route('/json/recent_captures')
+@api.doc(description='Get uuids of the most recent captures.')
+class RecentCaptures(Resource): # type: ignore[misc]
+    def get(self):
+        return lookyloo.redis.zrange('recent_captures',0, -1)
