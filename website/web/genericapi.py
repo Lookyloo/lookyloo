@@ -781,5 +781,5 @@ class CaptureHide(Resource):  # type: ignore[misc]
 @api.doc(description='Get uuids of the most recent captures.',
          params={'timestamp': 'The timestamp up to which we want to have the current captures'})
 class RecentCaptures(Resource): # type: ignore[misc]
-    def get(self, timestamp: str) -> list:
+    def get(self, timestamp: str) -> list[str]:
         return lookyloo.redis.zrangebyscore('recent_captures', timestamp, '+inf')
