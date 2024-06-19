@@ -777,8 +777,9 @@ class CaptureHide(Resource):  # type: ignore[misc]
         return {'info': f'Capture {capture_uuid} successfully hidden.'}
 
 
-@api.route('/json/recent_captures')
-@api.doc(description='Get uuids of the most recent captures.')
+@api.route('/json/recent_captures/<string:timestamp>')
+@api.doc(description='Get uuids of the most recent captures.',
+         params={'timestamp': 'The timestamp up to which we want to have the current captures'})
 class RecentCaptures(Resource): # type: ignore[misc]
-    def get(self) -> list:
-        return lookyloo.redis.zrange('recent_captures',0, -1)
+    def get(self, timestamp: str) -> list:
+        return lookyloo.redis.zrangebyscore('recent_captures', timestamp, '+inf')
