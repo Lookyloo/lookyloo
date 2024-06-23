@@ -308,7 +308,12 @@ class Archiver(AbstractManager):
             capture_time_isoformat = os.path.basename(path)
             if not capture_time_isoformat:
                 continue
-            capture_time = make_ts_from_dirname(capture_time_isoformat)
+            try:
+                capture_time = make_ts_from_dirname(capture_time_isoformat)
+            except ValueError:
+                self.logger.warning(f'Invalid capture time for {uuid}: {capture_time_isoformat}')
+                self.redis.hdel('lookup_dirs', uuid)
+                continue
             if capture_time >= cut_time:
                 continue
             # archive the capture.
