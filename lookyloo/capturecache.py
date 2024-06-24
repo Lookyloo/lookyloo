@@ -271,7 +271,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             return None
         p = self.redis.pipeline()
         has_new_cached_captures = False
-        recent_captures = {}
+        recent_captures: dict[str, float] = {}
         for uuid, directory in self.redis.hscan_iter('lookup_dirs'):
             if uuid in self.__cache:
                 continue
@@ -291,7 +291,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             if hasattr(cc, 'timestamp'):
                 recent_captures[cc.uuid] = cc.timestamp.timestamp()
         if recent_captures:
-            self.redis.zadd('recent_captures', recent_captures, nx=True)
+            self.redis.zadd('recent_captures', mapping=recent_captures, nx=True)  # type: ignore[arg-type]
 
     def _get_capture_dir(self, uuid: str) -> str:
         # Try to get from the recent captures cache in redis
