@@ -79,7 +79,11 @@ class Archiver(AbstractManager):
             logmsg = f'{logmsg} (s3fs)'
         self.logger.info(logmsg)
 
+        # Flip that variable is we need to write the index
+        rewrite_index: bool = False
+
         current_index: dict[str, str] = {}
+        current_sub_index: set[str] = set()
         index_file = root_dir / 'index'
         if index_file.exists():
             try:
@@ -87,12 +91,17 @@ class Archiver(AbstractManager):
             except Exception as e:
                 # the index file is broken, it will be recreated.
                 self.logger.warning(f'Index for {root_dir} broken, recreating it: {e}')
-            if not current_index:
-                # The file is either empty or only contains subs
-                # NOTE: should we remove if it has subs?
+
+            # Check if we have sub_index entries, they're skipped from the call above.
+            with index_file.open() as _i:
+                for key, path_name in csv.reader(_i):
+                    if key == 'sub_index':
+                        current_sub_index.add(path_name)
+
+            if not current_index and not current_sub_index:
+                # The file is empty
                 index_file.unlink()
 
-        sub_indexes: list[Path] = []
         current_index_dirs: set[str] = set(current_index.values())
         new_captures: set[Path] = set()
         # Directories that are actually in the listing.
@@ -112,9 +121,13 @@ class Archiver(AbstractManager):
                     continue
                 dir_on_disk = root_dir / entry.rsplit('/', 1)[-1]
                 if dir_on_disk.name.isdigit():
-                    if sub_index := self._update_index(dir_on_disk, s3fs_parent_dir=s3fs_dir):
+                    if self._update_index(dir_on_disk, s3fs_parent_dir=s3fs_dir):
                         # got a day directory that contains captures
-                        sub_indexes.append(sub_index)
+                        if dir_on_disk.name not in current_sub_index:
+                            # ... and it's not in the index
+                            rewrite_index = True
+                            current_sub_index.add(dir_on_disk.name)
+                            self.logger.info(f'Adding sub index {dir_on_disk.name} to {index_file}')
                 else:
                     # got a capture
                     if len(self.s3fs_client.ls(entry, detail=False)) == 1:
@@ -135,9 +148,13 @@ class Archiver(AbstractManager):
                         continue
                     dir_on_disk = Path(entry)
                     if dir_on_disk.name.isdigit():
-                        if sub_index := self._update_index(dir_on_disk):
+                        if self._update_index(dir_on_disk):
                             # got a day directory that contains captures
-                            sub_indexes.append(sub_index)
+                            if dir_on_disk.name not in current_sub_index:
+                                # ... and it's not in the index
+                                rewrite_index = True
+                                current_sub_index.add(dir_on_disk.name)
+                                self.logger.info(f'Adding sub index {dir_on_disk.name} to {index_file}')
                     else:
                         # isoformat
                         if str(dir_on_disk) not in current_index_dirs:
@@ -150,8 +167,15 @@ class Archiver(AbstractManager):
         if non_existing_dirs := current_index_dirs - current_dirs:
             self.logger.info(f'Got {len(non_existing_dirs)} non existing dirs in {root_dir}, removing them from the index.')
             current_index = {uuid: Path(path).name for uuid, path in current_index.items() if path not in non_existing_dirs}
+            rewrite_index = True
 
-        if not current_index and not new_captures and not sub_indexes:
+        # Make sure all the sub_index directories exist on the disk
+        if old_subindexes := {sub_index for sub_index in current_sub_index if sub_index not in current_dirs}:
+            self.logger.warning(f'Sub index {', '.join(old_subindexes)} do not exist, removing them from the index.')
+            rewrite_index = True
+            current_sub_index -= old_subindexes
+
+        if not current_index and not new_captures and not current_sub_index:
             # No captures at all in the directory and subdirectories, quitting
             logmsg = f'No captures in {root_dir}'
             if s3fs_parent_dir:
@@ -198,22 +222,25 @@ class Archiver(AbstractManager):
             except OSError as e:
                 self.logger.warning(f'Error when discarding capture {capture_dir}: {e}')
                 continue
+            rewrite_index = True
             current_index[uuid] = capture_dir.name
 
-        if not current_index and not sub_indexes:
+        if not current_index and not current_sub_index:
             # The directory has been archived. It is probably safe to unlink, but
             # if it's not, we will lose a whole buch of captures. Moving instead for safety.
             shutil.move(str(root_dir), str(get_homedir() / 'discarded_captures' / root_dir.parent / root_dir.name))
             self.logger.warning(f'Nothing to index in {root_dir}')
             return None
 
-        with index_file.open('w') as _f:
-            index_writer = csv.writer(_f)
-            for uuid, dirname in current_index.items():
-                index_writer.writerow([uuid, dirname])
-            for sub_path in sub_indexes:
-                # Only keep the dir name
-                index_writer.writerow(['sub_index', sub_path.parent.name])
+        if rewrite_index:
+            self.logger.info(f'Writing index {index_file}.')
+            with index_file.open('w') as _f:
+                index_writer = csv.writer(_f)
+                for uuid, dirname in current_index.items():
+                    index_writer.writerow([uuid, Path(dirname).name])
+                for sub_path in sorted(current_sub_index):
+                    # Only keep the dir name
+                    index_writer.writerow(['sub_index', sub_path])
 
         return index_file
 
@@ -356,7 +383,10 @@ class Archiver(AbstractManager):
         indexed_captures = {}
         with index_path.open() as _i:
             for key, path_name in csv.reader(_i):
-                if key == 'sub_index' and not ignore_sub:
+                if key == 'sub_index' and ignore_sub:
+                    # We're not interested in the sub indexes and don't want them to land in indexed_captures
+                    continue
+                elif key == 'sub_index' and not ignore_sub:
                     sub_index_file = index_path.parent / path_name / 'index'
                     if sub_index_file.exists():
                         indexed_captures.update(self.__load_index(sub_index_file))
