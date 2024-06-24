@@ -171,7 +171,7 @@ class Archiver(AbstractManager):
 
         # Make sure all the sub_index directories exist on the disk
         if old_subindexes := {sub_index for sub_index in current_sub_index if sub_index not in current_dirs}:
-            self.logger.warning(f'Sub index {', '.join(old_subindexes)} do not exist, removing them from the index.')
+            self.logger.warning(f'Sub index {", ".join(old_subindexes)} do not exist, removing them from the index.')
             rewrite_index = True
             current_sub_index -= old_subindexes
 
