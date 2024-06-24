@@ -684,7 +684,7 @@ def uncategorize_capture(tree_uuid: str, category: str) -> str | WerkzeugRespons
     if not enable_categorization:
         return jsonify({'response': 'Categorization not enabled.'})
     lookyloo.uncategorize_capture(tree_uuid, category)
-    return jsonify({'response': f'{category} successfully added to {tree_uuid}'})
+    return jsonify({'response': f'{category} successfully removed from {tree_uuid}'})
 
 
 @app.route('/tree/<string:tree_uuid>/categorize/', defaults={'category': ''})
@@ -693,7 +693,7 @@ def categorize_capture(tree_uuid: str, category: str) -> str | WerkzeugResponse 
     if not enable_categorization:
         return jsonify({'response': 'Categorization not enabled.'})
     lookyloo.categorize_capture(tree_uuid, category)
-    return jsonify({'response': f'{category} successfully removed from {tree_uuid}'})
+    return jsonify({'response': f'{category} successfully added to {tree_uuid}'})
 
 
 @app.route('/tree/<string:tree_uuid>/stats', methods=['GET'])
