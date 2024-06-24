@@ -65,11 +65,11 @@
   $('#categoriesModal').on('show.bs.modal', function(e) {
       var button = $(e.relatedTarget);
       var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
+      modal.find('#categoriesModal .modal-body').load(button.data("remote"));
   });
   $('#searchCategories').submit(function(event){
     var query = $("#query").val();
-    $('.modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}" + query, function() {
+    $('#categoriesModal .modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}" + query, function() {
       $('#categoriesModal').modal({show:true});
     });
     event.preventDefault();
@@ -1033,8 +1033,9 @@
   </div>
 </div>
 
-{% if enable_context_by_users %}
+{% if enable_categorization %}
 <div class="modal fade" id="categoriesModal" tabindex="-1" role="dialog">
+<!-- bla -->
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
           <div class="modal-header">
