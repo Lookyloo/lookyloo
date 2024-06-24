@@ -289,7 +289,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 continue
             self.__cache[cc.uuid] = cc
             if hasattr(cc, 'timestamp'):
-                recent_captures[uuid] = cc.timestamp.timestamp()
+                recent_captures[cc.uuid] = cc.timestamp.timestamp()
         if recent_captures:
             self.redis.zadd('recent_captures', recent_captures, nx=True)
 
