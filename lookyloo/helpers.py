@@ -82,6 +82,15 @@ def get_email_template() -> str:
         return f.read()
 
 
+@lru_cache(256)
+def load_capture_settings(capture_dir: Path) -> CaptureSettings:
+    capture_settings_file = capture_dir / 'capture_settings.json'
+    if capture_settings_file.exists():
+        with capture_settings_file.open() as f:
+            return json.load(f)
+    return {}
+
+
 @lru_cache
 def load_takedown_filters() -> tuple[re.Pattern[str], re.Pattern[str], dict[str, list[str]]]:
     filter_ini_file = get_homedir() / 'config' / 'takedown_filters.ini'

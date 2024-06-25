@@ -41,7 +41,9 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable
-from lookyloo.helpers import get_taxonomies, UserAgents, load_cookies, UserCaptureSettings, load_user_config
+from lookyloo.helpers import (get_taxonomies, UserAgents, load_cookies,
+                              UserCaptureSettings, load_user_config,
+                              load_capture_settings)
 
 if sys.version_info < (3, 9):
     from pytz import all_timezones_set
@@ -1424,14 +1426,14 @@ def search() -> str | Response | WerkzeugResponse:
     return render_template('search.html')
 
 
-def _prepare_capture_template(user_ua: str | None, predefined_url: str | None=None, *,
+def _prepare_capture_template(user_ua: str | None, predefined_settings: CaptureSettings | None=None, *,
                               user_config: UserCaptureSettings | None=None) -> str:
     return render_template('capture.html', user_agents=user_agents.user_agents,
                            default=user_agents.default,
                            personal_ua=user_ua,
                            default_public=get_config('generic', 'default_public'),
                            devices=lookyloo.get_playwright_devices(),
-                           predefined_url_to_capture=predefined_url if predefined_url else '',
+                           predefined_settings=predefined_settings if predefined_settings else {},
                            user_config=user_config,
                            show_project_page=get_config('generic', 'show_project_page'),
                            version=pkg_version,
@@ -1441,9 +1443,10 @@ def _prepare_capture_template(user_ua: str | None, predefined_url: str | None=No
 @app.route('/recapture/<string:tree_uuid>', methods=['GET'])
 def recapture(tree_uuid: str) -> str | Response | WerkzeugResponse:
     cache = lookyloo.capture_cache(tree_uuid)
-    if cache and hasattr(cache, 'url'):
+    if cache and hasattr(cache, 'capture_dir'):
+        capture_settings = load_capture_settings(cache.capture_dir)
         return _prepare_capture_template(user_ua=request.headers.get('User-Agent'),
-                                         predefined_url=cache.url)
+                                         predefined_settings=capture_settings)
     flash(f'Unable to find the capture {tree_uuid} in the cache.', 'error')
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 

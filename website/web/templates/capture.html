@@ -82,7 +82,8 @@
     <div class="row mb-3">
       <div class="col-sm-10">
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="listing" name="listing" {% if default_public %}checked="checked"{% endif %}>
+          <input class="form-check-input" type="checkbox" id="listing" name="listing"
+            {% if default_public or predefined_settings.get('listing') is true %}checked="checked"{% endif %}>
           <label for="listing" class="form-check-label">Display results on public page</label>
         </div>
       </div>
@@ -102,7 +103,7 @@
         <div class="row input-group mb-3">
           <label for="url" class="col-sm-1 col-form-label">URL:</label>
           <input type="text" class="form-control col-auto" name="url" id=singleCaptureField
-                 placeholder="URL to capture" value="{{predefined_url_to_capture}}" required>
+                 placeholder="URL to capture" value="{{predefined_settings.get('url', '')}}" required>
 
           <textarea class="form-control col-auto d-none" placeholder="URLs to capture, one per line"
                     name="urls" id=multipleCapturesField></textarea>
@@ -280,7 +281,8 @@
           <label for="allow_tracking" class="col-sm-2 col-form-check-label">Allow tracking:</label>
           <div class="col-sm-10">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="allow_tracking" name="allow_tracking" aria-describedby="allow_tracking_help">
+              <input class="form-check-input" type="checkbox" id="allow_tracking" name="allow_tracking" aria-describedby="allow_tracking_help"
+                {% if predefined_settings.get('allow_tracking') is true %}checked="checked"{% endif %}>
               <div id="allow_tracking_help" class="form-text">We'll attempt to click on the button allowing the website captured to violate your privacy.</div>
             </div>
           </div>

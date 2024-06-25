@@ -28,7 +28,7 @@ from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
 from .context import Context
-from .helpers import get_captures_dir, is_locked
+from .helpers import get_captures_dir, is_locked, load_capture_settings
 from .indexing import Indexing
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
@@ -413,12 +413,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             raise MissingCaptureDirectory(f'Unable to find the UUID file in {capture_dir}.')
 
         # Get capture settings as they were submitted
-        capture_settings_file = capture_dir / 'capture_settings.json'
-        if capture_settings_file.exists():
-            with capture_settings_file.open() as f:
-                capture_settings = json.load(f)
-        else:
-            capture_settings = {}
+        capture_settings = load_capture_settings(capture_dir)
 
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
         try:
@@ -435,7 +430,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 tree = None
 
         cache: dict[str, str | int] = {'uuid': uuid, 'capture_dir': capture_dir_str}
-        if capture_settings.get('url'):
+        if capture_settings.get('url') and capture_settings['url'] is not None:
             cache['url'] = capture_settings['url']
 
         if (capture_dir / 'error.txt').exists():
