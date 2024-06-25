@@ -20,7 +20,25 @@
 <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
 
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"
+      {{get_sri('static', 'index.css')}}
+      crossorigin="anonymous">
+{% endblock %}
+
 {% block content %}
+<div class="corner-ribbon top-left sticky white shadow">
+  <a href="https://www.lookyloo.eu/docs/main/index.html">Documentation</a>
+</div>
+<div class="corner-ribbon bottom-left sticky white shadow">
+    <a href="https://github.com/Lookyloo/lookyloo/releases/tag/v{{version}}">Changelog</br>(v{{version}})</a>
+</div>
+{% if show_project_page %}
+<div class="corner-ribbon top-right sticky white shadow">
+  <a href="https://github.com/Lookyloo">Project page</a>
+</div>
+{% endif%}
 <div class="container">
     <center>
     <a href="{{ url_for('index') }}" title="Go back to index">

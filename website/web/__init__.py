@@ -1424,7 +1424,8 @@ def search() -> str | Response | WerkzeugResponse:
     return render_template('search.html')
 
 
-def _prepare_capture_template(user_ua: str | None, predefined_url: str | None=None, *, user_config: UserCaptureSettings | None=None) -> str:
+def _prepare_capture_template(user_ua: str | None, predefined_url: str | None=None, *,
+                              user_config: UserCaptureSettings | None=None) -> str:
     return render_template('capture.html', user_agents=user_agents.user_agents,
                            default=user_agents.default,
                            personal_ua=user_ua,
@@ -1432,6 +1433,8 @@ def _prepare_capture_template(user_ua: str | None, predefined_url: str | None=No
                            devices=lookyloo.get_playwright_devices(),
                            predefined_url_to_capture=predefined_url if predefined_url else '',
                            user_config=user_config,
+                           show_project_page=get_config('generic', 'show_project_page'),
+                           version=pkg_version,
                            has_global_proxy=True if lookyloo.global_proxy else False)
 
 
@@ -1614,7 +1617,8 @@ def capture_web() -> str | Response | WerkzeugResponse:
         return redirect(url_for('tree', tree_uuid=perma_uuid))
 
     # render template
-    return _prepare_capture_template(user_ua=request.headers.get('User-Agent'), user_config=user_config)
+    return _prepare_capture_template(user_ua=request.headers.get('User-Agent'),
+                                     user_config=user_config)
 
 
 @app.route('/simple_capture', methods=['GET', 'POST'])
