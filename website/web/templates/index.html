@@ -83,7 +83,7 @@ $(document).ready(function () {
     <a href="{{ url_for('submit_capture') }}">
       <button class="new-capture-button btn btn-primary">Submit capture</button>
     </a>
-    {% if current_user.is_authenticated %}
+    {% if current_user.is_authenticated and enable_takedown_form == true %}
     <a href="{{ url_for('simple_capture') }}">
       <button class="new-capture-button btn btn-primary">Takedown process</button>
     </a>

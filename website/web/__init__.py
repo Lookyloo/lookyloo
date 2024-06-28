@@ -1319,6 +1319,7 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: str 
     return render_template('index.html', titles=titles, public_domain=lookyloo.public_domain,
                            show_hidden=show_hidden,
                            show_project_page=get_config('generic', 'show_project_page'),
+                           enable_takedown_form=get_config('generic', 'enable_takedown_form'),
                            version=pkg_version)
 
 

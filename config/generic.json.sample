@@ -22,6 +22,7 @@
   "enable_context_by_users": false,
   "enable_categorization": false,
   "enable_bookmark": false,
+  "enable_takedown_form": false,
   "auto_trigger_modules": false,
   "enable_mail_notification": false,
   "remote_lacus": {
