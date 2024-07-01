@@ -52,7 +52,10 @@ class Phishtank(AbstractModule):
             return json.load(f)
 
     def lookup_ips_capture(self, cache: CaptureCache) -> dict[str, list[dict[str, Any]]]:
-        with (cache.capture_dir / 'ips.json').open() as f:
+        ips_file = cache.capture_dir / 'ips.json'
+        if not ips_file.exists():
+            return {}
+        with ips_file.open() as f:
             ips_dump = json.load(f)
         to_return: dict[str, list[dict[str, Any]]] = {}
         for ip in {ip for ips_list in ips_dump.values() for ip in ips_list}:
@@ -96,7 +99,10 @@ class Phishtank(AbstractModule):
             self.url_lookup(cache.url)
 
         # Check all the IPs in the ips file of the capture
-        with (cache.capture_dir / 'ips.json').open() as f:
+        ips_file = cache.capture_dir / 'ips.json'
+        if not ips_file.exists():
+            return {'error': 'No IP file found in the capture'}
+        with ips_file.open() as f:
             ips_dump = json.load(f)
         for ip in {ip for ips_list in ips_dump.values() for ip in ips_list}:
             self.ip_lookup(ip)
