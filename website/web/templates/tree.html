@@ -65,15 +65,79 @@
   $('#categoriesModal').on('show.bs.modal', function(e) {
       var button = $(e.relatedTarget);
       var modal = $(this);
-      modal.find('#categoriesModal .modal-body').load(button.data("remote"));
+      modal.find('.modal-body').load(button.data("remote"));
   });
-  $('#searchCategories').submit(function(event){
+  /*$('#searchCategories').submit(function(event){
     var query = $("#query").val();
-    $('#categoriesModal .modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}" + query, function() {
+    $('#categoriesModal .modal-body').load("{ url_for('categories_capture', tree_uuid=tree_uuid) }}" + query, function() {
       $('#categoriesModal').modal({show:true});
     });
     event.preventDefault();
   });
+  */
+
+  $('#fast-categories').submit(function(event){
+    event.preventDefault();
+    var query = $('#fast-categories').serialize(); // Serialize form data
+
+    $.ajax({
+        type: 'POST',
+        url: '{{ url_for('categories_capture', tree_uuid=tree_uuid) }}',
+        data: query,
+        success: function(response) {
+            $('#categoriesModal .modal-body').html(response);
+            $('#categoriesModal').modal({show:true});
+        },
+        error: function(error) {
+            console.log("An error occurred: ", error);
+        }
+    });
+  });
+
+    // Fast categories
+  document.getElementById("legitime").addEventListener('change', function(){
+    if (this.checked){
+      disableInput(document.getElementById('malicious-categories'));
+      enableInput(document.getElementById('legitime-categories'));
+    }
+  });
+  document.getElementById("malicious").addEventListener('change', function(){
+    if (this.checked){
+      enableInput(document.getElementById('malicious-categories'));
+      disableInput(document.getElementById('legitime-categories'));
+    }
+  });
+  document.getElementById("unclear").addEventListener('change', function(){
+    if (this.checked){
+      disableInput(document.getElementById('malicious-categories'));
+      disableInput(document.getElementById('legitime-categories'));
+    }
+  });
+  document.getElementById("legitime-categories").addEventListener('click', function(){
+     if (this.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
+       document.getElementById("legitime").checked = true;
+     }
+  });
+  document.getElementById("malicious-categories").addEventListener('click', function(){
+     if (this.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
+       document.getElementById("malicious").checked = true;
+     }
+  });
+
+  function disableInput(container) {
+      const Input = container.querySelectorAll('input');
+      Input.forEach(function(checkbox){
+        checkbox.disabled = true;
+        checkbox.checked = false;
+      });
+      container.hidden = true;
+  }
+
+  function enableInput(container) {
+      const Input = container.querySelectorAll('input');
+      Input.forEach(checkbox => checkbox.disabled = false);
+      container.hidden = false;
+  }
   </script>
 
   <script>
@@ -917,6 +981,7 @@
   </div>
   </div>
 </div>
+############# got it  ####
 
 <div class="modal fade" id="modulesModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
@@ -1035,7 +1100,6 @@
 
 {% if enable_categorization %}
 <div class="modal fade" id="categoriesModal" tabindex="-1" role="dialog">
-<!-- bla -->
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
           <div class="modal-header">
@@ -1046,11 +1110,53 @@
               ... loading the categorization options ...
           </div>
           <p>
-            <form id=searchCategories>
+          <form id="fast-categories" class="fast-categories">
+            <fieldset id="verification-status">
+              <input type="radio" id="legitime" name="verification-status" value="legitime">
+              <label for="legitime">legitime</label>
+              <input type="radio" id="malicious" name="verification-status" value="malicious">
+              <label for="malicious">malicious</label>
+              <input type="radio" id="unclear" name="verification-status" value="unclear">
+              <label for="unclear">unclear</label>
+            </fieldset>
+
+            <div id="content-categoies">
+
+              <p>Content Categories (Multiple Choices possible)</p>
+              <fieldset id="legitime-categories">
+                <p>Only if legitime:</p>
+                <input type="checkbox" id="parking-page" name="parking-page" value="parking-page">
+                <label for="parking-page">parking-page</label><br>
+                <input type="checkbox" id="default-page" name="default-page" value="default-page">
+                <label for="default-page">default-page</label><br>
+                <input type="checkbox" id="institution" name="institution" value="institution">
+                <label for="institution">institution / company</label><br>
+                <!-- the name of the institution/company could be added here in the future, maybe with propositions
+                 <label for="institution-name">Enter the name of the institution/company:</label><br>
+                 <input type="text" id="institution-name" name="institution-name">
+                -->
+              </fieldset>
+              <fieldset id="malicious-categories">
+                <p>Only if malicious:</p>
+                <input type="checkbox" id="clone" name="clone" value="clone">
+                <label for="clone">clone</label><br>
+                <input type="checkbox" id="phishing" name="phishing" value="phishing">
+                <label for="phishing">phishing</label><br>
+              </fieldset>
+              <input type="checkbox" id="captcha" name="captcha" value="captcha">
+              <label for="captcha">captcha</label><br>
+              <input type="checkbox" id="authentication-form" name="authentication-form" value="authentication-form">
+              <label for="authentication-form">authentication-form</label><br>
+              <input type="checkbox" id="adult-content" name="adult-content" value="adult-content">
+              <label for="adult-content">adult-content</label><br>
+              <input type="checkbox" id="shop" name="shop" value="shop">
+              <label for="shop">shop</label><br>
+            </div>
+
             <label for="query" class="form-label">Category to search</label>
             <input type="text" class="form-control" name="query" id="query" placeholder="Query">
-            <button type="submit" class="btn btn-success">Search</button>
-            </form>
+            <button type="submit" class="btn btn-success" name="submit">Submit</button>
+          </form>
           </p>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

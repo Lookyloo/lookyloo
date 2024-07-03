@@ -660,19 +660,31 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
                            circl_pdns=data.get('circl_pdns'))
 
 
-@app.route('/tree/<string:tree_uuid>/categories_capture/', defaults={'query': ''})
+@app.route('/tree/<string:tree_uuid>/categories_capture/', defaults={'query': ''}, methods=['GET', 'POST'])
 @app.route('/tree/<string:tree_uuid>/categories_capture/<string:query>', methods=['GET'])
 def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    current_categories = lookyloo.categories_capture(tree_uuid)
     matching_categories = None
-    if query:
+    if 'verification-status' in request.form:
+        # fast categories
+        categories = []
+        possible_ctgs = {'legitime': ["parking-page", "default-page", 'institution', 'captcha', 'authentication-form', 'adult-content', 'shop'],
+             'malicious': ['clone', 'phishing', 'captcha', 'authentication-form', 'adult-content', 'shop'],
+             'unclear': ['captcha', 'authentication-form', 'adult-content', 'shop']}
+        if request.form.get('verification-status') in possible_ctgs.keys():
+            for category in possible_ctgs[request.form.get('verification-status')]:
+                if category in request.form:
+                    categories.append(category)
+        for category in categories:
+            lookyloo.categorize_capture(tree_uuid, category)
+    if 'query' in request.form and request.form.get('query').strip():
         matching_categories = {}
         t = get_taxonomies()
         entries = t.search(query)
         if entries:
             matching_categories = {e: t.revert_machinetag(e) for e in entries}
+    current_categories = lookyloo.categories_capture(tree_uuid)
     return render_template('categories_capture.html', tree_uuid=tree_uuid,
                            current_categories=current_categories,
                            matching_categories=matching_categories)
