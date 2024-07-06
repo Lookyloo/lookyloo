@@ -518,13 +518,13 @@ ujson = ["ujson (>=5.7.0)"]
 
 [[package]]
 name = "certifi"
-version = "2024.6.2"
+version = "2024.7.4"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.6.2-py3-none-any.whl", hash = "sha256:ddc6c8ce995e6987e7faf5e3f1b02b302836a0e5d98ece18392cb1a36c72ad56"},
-    {file = "certifi-2024.6.2.tar.gz", hash = "sha256:3cd43f1c6fa7dedc5899d69d3ad0398fd018ad1a17fba83ddaf78aa46c747516"},
+    {file = "certifi-2024.7.4-py3-none-any.whl", hash = "sha256:c198e21b1289c2ab85ee4e67bb4b4ef3ead0892059901a8d5b622f24a1101e90"},
+    {file = "certifi-2024.7.4.tar.gz", hash = "sha256:5a1e7645bc0ec61a09e26c36f6106dd4cf40c6db3a1fb6352b0244e7fb057c7b"},
 ]
 
 [[package]]
@@ -2864,17 +2864,17 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.24.0"
+version = "1.25.0"
 description = "Python CLI and module for Lookyloo"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "pylookyloo-1.24.0-py3-none-any.whl", hash = "sha256:0eaee9d94ada1f0e43efe3e555c72ed72552cd196fbabb692ead0fce43af05ad"},
-    {file = "pylookyloo-1.24.0.tar.gz", hash = "sha256:ccc177fe3ffe6d37f5594759da8a8c1f0b3ebce725f25e4f367a2150455ced34"},
+    {file = "pylookyloo-1.25.0-py3-none-any.whl", hash = "sha256:946677205ffaac43a238b5152476b7173b8a85fd3f64622c2174cbcf678fdaa7"},
+    {file = "pylookyloo-1.25.0.tar.gz", hash = "sha256:e8e47c79919b3451e00a3d73faa980738e5a531fccbcb5bb8e79f504200d5650"},
 ]
 
 [package.dependencies]
-requests = ">=2.31.0,<3.0.0"
+requests = ">=2.32.3,<3.0.0"
 
 [package.extras]
 docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
@@ -2964,20 +2964,21 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
 
 [[package]]
 name = "pyphishtanklookup"
-version = "1.3.2"
+version = "1.4.0"
 description = "Python CLI and module for PhishtankLookup"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "pyphishtanklookup-1.3.2-py3-none-any.whl", hash = "sha256:3faa39648f7e6c95b51c89a3a3ae4030b3aea9777e0aeccfd0ebfdc16a4c85eb"},
-    {file = "pyphishtanklookup-1.3.2.tar.gz", hash = "sha256:873e97d2fa69d70d07ef04805b6bea80b8b5482a77b332bc6094a744421699e5"},
+    {file = "pyphishtanklookup-1.4.0-py3-none-any.whl", hash = "sha256:59e5c9b2dfcdface937015f1f68da6fdf53a49f17d416afd93306683bde60721"},
+    {file = "pyphishtanklookup-1.4.0.tar.gz", hash = "sha256:4b311cea6c71483604bf17c216e6e0d545629296a27b17172895695af7fcbf5c"},
 ]
 
 [package.dependencies]
-requests = ">=2.31.0,<3.0.0"
+requests = ">=2.32.3,<3.0.0"
 
 [package.extras]
 docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
+lookyloo-example = ["pylookyloo (>=1.25.0,<2.0.0)"]
 
 [[package]]
 name = "pysanejs"
@@ -3792,13 +3793,13 @@ urllib3 = ">=2"
 
 [[package]]
 name = "types-setuptools"
-version = "70.1.0.20240627"
+version = "70.2.0.20240704"
 description = "Typing stubs for setuptools"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-setuptools-70.1.0.20240627.tar.gz", hash = "sha256:385907a47b5cf302b928ce07953cd91147d5de6f3da604c31905fdf0ec309e83"},
-    {file = "types_setuptools-70.1.0.20240627-py3-none-any.whl", hash = "sha256:c7bdf05cd0a8b66868b4774c7b3c079d01ae025d8c9562bfc8bf2ff44d263c9c"},
+    {file = "types-setuptools-70.2.0.20240704.tar.gz", hash = "sha256:2f8d28d16ca1607080f9fdf19595bd49c942884b2bbd6529c9b8a9a8fc8db911"},
+    {file = "types_setuptools-70.2.0.20240704-py3-none-any.whl", hash = "sha256:6b892d5441c2ed58dd255724516e3df1db54892fb20597599aea66d04c3e4d7f"},
 ]
 
 [[package]]
@@ -4183,4 +4184,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "c919a67c2886af9aad86607479e88ee4d2771224f441720b548facccf9800936"
+content-hash = "1fa1ad1b1feaf75f42af12981607a136df40636faa54a601bff4468d01e35dd7"
