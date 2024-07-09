@@ -87,6 +87,8 @@ $(document).ready(function () {
     <a href="{{ url_for('simple_capture') }}">
       <button class="new-capture-button btn btn-primary">Takedown process</button>
     </a>
+    {% endif %}
+    {% if current_user.is_authenticated %}
     <br>
     <p class="lead">
     You are logged-in as <strong>{{ current_user.id }}</strong>,
