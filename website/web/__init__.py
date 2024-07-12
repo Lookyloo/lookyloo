@@ -667,18 +667,22 @@ def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | R
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     matching_categories = None
     if 'verification-status' in request.form:
+        status = request.form.get('verification-status')
         # fast categories
         categories = []
-        possible_ctgs = {'legitime': ["parking-page", "default-page", 'institution', 'captcha', 'authentication-form', 'adult-content', 'shop'],
+        possible_ctgs = {
+            'legitimate': ["parking-page", "default-page", 'institution', 'captcha', 'authentication-form', 'adult-content', 'shop'],
              'malicious': ['clone', 'phishing', 'captcha', 'authentication-form', 'adult-content', 'shop'],
-             'unclear': ['captcha', 'authentication-form', 'adult-content', 'shop']}
-        if request.form.get('verification-status') in possible_ctgs.keys():
-            for category in possible_ctgs[request.form.get('verification-status')]:
+             'unclear': ['captcha', 'authentication-form', 'adult-content', 'shop']
+        }
+        if status in possible_ctgs.keys():
+            lookyloo.categorize_capture(tree_uuid, status)
+            for category in possible_ctgs[status]:
                 if category in request.form:
                     categories.append(category)
         for category in categories:
             lookyloo.categorize_capture(tree_uuid, category)
-    if 'query' in request.form and request.form.get('query').strip():
+    if 'query' in request.form and request.form.get('query', '').strip():
         matching_categories = {}
         t = get_taxonomies()
         entries = t.search(query)

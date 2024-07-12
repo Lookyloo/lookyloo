@@ -95,27 +95,27 @@
   });
 
     // Fast categories
-  document.getElementById("legitime").addEventListener('change', function(){
+  document.getElementById("legitimate").addEventListener('change', function(){
     if (this.checked){
       disableInput(document.getElementById('malicious-categories'));
-      enableInput(document.getElementById('legitime-categories'));
+      enableInput(document.getElementById('legitimate-categories'));
     }
   });
   document.getElementById("malicious").addEventListener('change', function(){
     if (this.checked){
       enableInput(document.getElementById('malicious-categories'));
-      disableInput(document.getElementById('legitime-categories'));
+      disableInput(document.getElementById('legitimate-categories'));
     }
   });
   document.getElementById("unclear").addEventListener('change', function(){
     if (this.checked){
       disableInput(document.getElementById('malicious-categories'));
-      disableInput(document.getElementById('legitime-categories'));
+      disableInput(document.getElementById('legitimate-categories'));
     }
   });
-  document.getElementById("legitime-categories").addEventListener('click', function(){
+  document.getElementById("legitimate-categories").addEventListener('click', function(){
      if (this.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
-       document.getElementById("legitime").checked = true;
+       document.getElementById("legitimate").checked = true;
      }
   });
   document.getElementById("malicious-categories").addEventListener('click', function(){
@@ -981,7 +981,6 @@
   </div>
   </div>
 </div>
-############# got it  ####
 
 <div class="modal fade" id="modulesModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
@@ -1112,8 +1111,8 @@
           <p>
           <form id="fast-categories" class="fast-categories">
             <fieldset id="verification-status">
-              <input type="radio" id="legitime" name="verification-status" value="legitime">
-              <label for="legitime">legitime</label>
+              <input type="radio" id="legitimate" name="verification-status" value="legitimate">
+              <label for="legitimate">legitimate</label>
               <input type="radio" id="malicious" name="verification-status" value="malicious">
               <label for="malicious">malicious</label>
               <input type="radio" id="unclear" name="verification-status" value="unclear">
@@ -1123,8 +1122,8 @@
             <div id="content-categoies">
 
               <p>Content Categories (Multiple Choices possible)</p>
-              <fieldset id="legitime-categories">
-                <p>Only if legitime:</p>
+              <fieldset id="legitimate-categories">
+                <p>Only if legitimate:</p>
                 <input type="checkbox" id="parking-page" name="parking-page" value="parking-page">
                 <label for="parking-page">parking-page</label><br>
                 <input type="checkbox" id="default-page" name="default-page" value="default-page">
