@@ -78,7 +78,7 @@ class AsyncCapture(AbstractManager):
             self.lookyloo.redis.sadd('ongoing', uuid)
             queue: str | None = self.lookyloo.redis.getdel(f'{uuid}_mgmt')
 
-            to_capture: CaptureSettings = self.lookyloo.redis.hgetall(uuid)  # type: ignore[assignment]
+            to_capture: CaptureSettings = self.lookyloo.get_capture_settings(uuid)
 
             if get_config('generic', 'default_public'):
                 # By default, the captures are on the index, unless the user mark them as un-listed

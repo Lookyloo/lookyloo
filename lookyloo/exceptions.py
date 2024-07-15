@@ -25,3 +25,7 @@ class ModuleError(LookylooException):
 
 class LacusUnreachable(LookylooException):
     pass
+
+
+class InvalidCaptureSetting(LookylooException):
+    pass

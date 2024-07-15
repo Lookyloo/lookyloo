@@ -37,7 +37,7 @@ from lacuscore import (LacusCore,
                        )
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
-from puremagic import from_string, PureError  # type: ignore[import-untyped]
+from puremagic import from_string, PureError
 from pylacus import (PyLacus,
                      CaptureStatus as CaptureStatusPy
                      # CaptureResponse as CaptureResponsePy,
@@ -59,7 +59,8 @@ from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, load_cookies, UserAgents,
                       get_useragent_for_requests, load_takedown_filters,
-                      CaptureSettings, UserCaptureSettings, load_user_config
+                      CaptureSettings, UserCaptureSettings, load_user_config,
+                      cast_capture_settings
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -287,13 +288,15 @@ class Lookyloo():
         return meta
 
     def get_capture_settings(self, capture_uuid: str, /) -> CaptureSettings:
+        if capture_settings := self.redis.hgetall(capture_uuid):
+            return cast_capture_settings(capture_settings)
         cache = self.capture_cache(capture_uuid)
         if not cache:
             return {}
         cs_file = cache.capture_dir / 'capture_settings.json'
         if cs_file.exists():
             with cs_file.open('r') as f:
-                return json.load(f)
+                return cast_capture_settings(json.load(f))
         return {}
 
     def categories_capture(self, capture_uuid: str, /) -> dict[str, Any]:
@@ -691,12 +694,12 @@ class Lookyloo():
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query['listing'] = 0
         try:
-            perma_uuid = self.lacus.enqueue(  # type: ignore[misc]
+            perma_uuid = self.lacus.enqueue(
                 url=query.get('url', None),
                 document_name=query.get('document_name', None),
                 document=query.get('document', None),
                 # depth=query.get('depth', 0),
-                browser=query.get('browser', None),  # type: ignore[arg-type]
+                browser=query.get('browser', None),
                 device_name=query.get('device_name', None),
                 user_agent=query.get('user_agent', None),
                 proxy=self.global_proxy if self.global_proxy else query.get('proxy', None),
