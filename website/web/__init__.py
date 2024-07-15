@@ -33,7 +33,7 @@ from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus
-from puremagic import from_string  # type: ignore[import-untyped]
+from puremagic import from_string
 from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
@@ -42,8 +42,7 @@ from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable
 from lookyloo.helpers import (get_taxonomies, UserAgents, load_cookies,
-                              UserCaptureSettings, load_user_config,
-                              load_capture_settings)
+                              UserCaptureSettings, load_user_config)
 
 if sys.version_info < (3, 9):
     from pytz import all_timezones_set
@@ -1461,7 +1460,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: CaptureS
 def recapture(tree_uuid: str) -> str | Response | WerkzeugResponse:
     cache = lookyloo.capture_cache(tree_uuid)
     if cache and hasattr(cache, 'capture_dir'):
-        capture_settings = load_capture_settings(cache.capture_dir)
+        capture_settings = lookyloo.get_capture_settings(tree_uuid)
         return _prepare_capture_template(user_ua=request.headers.get('User-Agent'),
                                          predefined_settings=capture_settings)
     flash(f'Unable to find the capture {tree_uuid} in the cache.', 'error')
@@ -1548,7 +1547,10 @@ def capture_web() -> str | Response | WerkzeugResponse:
         else:
             capture_query['user_agent'] = request.form['user_agent']
             capture_query['os'] = request.form['os']
-            capture_query['browser'] = request.form['browser']
+            browser = request.form['browser']
+            if browser in ['chromium', 'firefox', 'webkit']:
+                # Will be guessed otherwise.
+                capture_query['browser'] = browser  # type: ignore[typeddict-item]
 
         capture_query['listing'] = True if request.form.get('listing') else False
         capture_query['allow_tracking'] = True if request.form.get('allow_tracking') else False

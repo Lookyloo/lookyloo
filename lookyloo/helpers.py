@@ -29,6 +29,7 @@ from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
 from .default import get_homedir, safe_create_dir, get_config, LookylooException
+from .exceptions import InvalidCaptureSetting
 
 
 logger = logging.getLogger('Lookyloo - Helpers')
@@ -82,13 +83,64 @@ def get_email_template() -> str:
         return f.read()
 
 
-@lru_cache(256)
-def load_capture_settings(capture_dir: Path) -> CaptureSettings:
-    capture_settings_file = capture_dir / 'capture_settings.json'
-    if capture_settings_file.exists():
-        with capture_settings_file.open() as f:
-            return json.load(f)
-    return {}
+def cast_capture_settings(capture_settings: dict[str, str]) -> CaptureSettings:
+    to_return: CaptureSettings = {}
+    # NOTE: Replace the if / else below with a case / match as soon as we require python 3.10+
+    for setting_key, setting_value in capture_settings.items():
+        if setting_key == 'listing':
+            to_return['listing'] = bool(int(setting_value))
+        elif setting_key == 'not_queued':
+            to_return['not_queued'] = bool(int(setting_value))
+        elif setting_key == 'auto_report':
+            if isinstance(setting_value, str) and setting_value:
+                if setting_value.startswith('{'):
+                    to_return['auto_report'] = json.loads(setting_value)
+                elif setting_value.isdigit():
+                    to_return['auto_report'] = bool(int(setting_value))
+                else:
+                    to_return['auto_report'] = setting_value
+        elif setting_key == 'proxy' and setting_value:
+            if setting_value.startswith('{'):
+                to_return['proxy'] = json.loads(setting_value)
+            else:
+                to_return['proxy'] = setting_value
+        elif setting_key in ('dnt', 'browser_name', 'os', 'parent'):
+            to_return[setting_key] = setting_value  # type: ignore[literal-required]
+        # Lacus core keys
+        elif setting_key == 'general_timeout_in_sec':
+            to_return['general_timeout_in_sec'] = int(setting_value)
+        elif setting_key == 'cookies':
+            to_return['cookies'] = load_cookies(setting_value)
+        elif setting_key == 'headers':
+            to_return['headers'] = json.loads(setting_value)
+        elif setting_key == 'http_credentials':
+            to_return['http_credentials'] = json.loads(setting_value)
+        elif setting_key == 'geolocation':
+            to_return['geolocation'] = json.loads(setting_value)
+        elif setting_key == 'viewport':
+            to_return['viewport'] = json.loads(setting_value)
+        elif setting_key == 'with_favicon':
+            to_return['with_favicon'] = bool(int(setting_value))
+        elif setting_key == 'allow_tracking':
+            to_return['allow_tracking'] = bool(int(setting_value))
+        elif setting_key == 'force':
+            to_return['force'] = bool(int(setting_value))
+        elif setting_key == 'recapture_interval':
+            to_return['recapture_interval'] = int(setting_value)
+        elif setting_key == 'priority':
+            to_return['priority'] = int(setting_value)
+        elif setting_key == 'depth':
+            to_return['depth'] = int(setting_value)
+        elif setting_key == 'rendered_hostname_only':
+            to_return['rendered_hostname_only'] = bool(int(setting_value))
+        elif setting_key in ('url', 'document_name', 'document', 'browser', 'device_name',
+                             'user_agent', 'timezone_id', 'locale', 'color_scheme', 'referer',
+                             'uuid') and setting_value:
+            # Value is a non-empty string, keep it as-is
+            to_return[setting_key] = setting_value  # type: ignore[literal-required]
+        else:
+            raise InvalidCaptureSetting(f'Unknown setting: {setting_key} with value: {setting_value}')
+    return to_return
 
 
 @lru_cache
@@ -406,8 +458,8 @@ class ParsedUserAgent(UserAgent):
 
 class CaptureSettings(LacuscoreCaptureSettings, total=False):
     '''The capture settings that can be passed to Lookyloo'''
-    listing: int | None
-    not_queued: int | None
+    listing: bool | int | None
+    not_queued: bool | int | None
     auto_report: bool | str | dict[str, str] | None  # {'email': , 'comment': , 'recipient_mail':}
     dnt: str | None
     browser_name: str | None
