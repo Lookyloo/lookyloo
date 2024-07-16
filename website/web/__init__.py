@@ -659,19 +659,36 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
                            circl_pdns=data.get('circl_pdns'))
 
 
-@app.route('/tree/<string:tree_uuid>/categories_capture/', defaults={'query': ''})
+@app.route('/tree/<string:tree_uuid>/categories_capture/', defaults={'query': ''}, methods=['GET', 'POST'])
 @app.route('/tree/<string:tree_uuid>/categories_capture/<string:query>', methods=['GET'])
+@flask_login.login_required  # type: ignore[misc]
 def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    current_categories = lookyloo.categories_capture(tree_uuid)
     matching_categories = None
-    if query:
+    if 'verification-status' in request.form:
+        status = request.form.get('verification-status')
+        # fast categories
+        categories = []
+        possible_ctgs = {
+            'legitimate': ["parking-page", "default-page", 'institution', 'captcha', 'authentication-form', 'adult-content', 'shop'],
+            'malicious': ['clone', 'phishing', 'captcha', 'authentication-form', 'adult-content', 'shop'],
+            'unclear': ['captcha', 'authentication-form', 'adult-content', 'shop']
+        }
+        if status in possible_ctgs.keys():
+            lookyloo.categorize_capture(tree_uuid, status)
+            for category in possible_ctgs[status]:
+                if category in request.form:
+                    categories.append(category)
+        for category in categories:
+            lookyloo.categorize_capture(tree_uuid, category)
+    if 'query' in request.form and request.form.get('query', '').strip():
         matching_categories = {}
         t = get_taxonomies()
         entries = t.search(query)
         if entries:
             matching_categories = {e: t.revert_machinetag(e) for e in entries}
+    current_categories = lookyloo.categories_capture(tree_uuid)
     return render_template('categories_capture.html', tree_uuid=tree_uuid,
                            current_categories=current_categories,
                            matching_categories=matching_categories)
@@ -679,20 +696,22 @@ def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | R
 
 @app.route('/tree/<string:tree_uuid>/uncategorize/', defaults={'category': ''})
 @app.route('/tree/<string:tree_uuid>/uncategorize/<string:category>', methods=['GET'])
+@flask_login.login_required  # type: ignore[misc]
 def uncategorize_capture(tree_uuid: str, category: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
         return jsonify({'response': 'Categorization not enabled.'})
     lookyloo.uncategorize_capture(tree_uuid, category)
-    return jsonify({'response': f'{category} successfully added to {tree_uuid}'})
+    return jsonify({'response': f'{category} successfully removed from {tree_uuid}'})
 
 
 @app.route('/tree/<string:tree_uuid>/categorize/', defaults={'category': ''})
 @app.route('/tree/<string:tree_uuid>/categorize/<string:category>', methods=['GET'])
+@flask_login.login_required  # type: ignore[misc]
 def categorize_capture(tree_uuid: str, category: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
         return jsonify({'response': 'Categorization not enabled.'})
     lookyloo.categorize_capture(tree_uuid, category)
-    return jsonify({'response': f'{category} successfully removed from {tree_uuid}'})
+    return jsonify({'response': f'{category} successfully added to {tree_uuid}'})
 
 
 @app.route('/tree/<string:tree_uuid>/stats', methods=['GET'])

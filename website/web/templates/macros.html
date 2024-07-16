@@ -49,12 +49,12 @@
   $('.categorize_capture').on('click',function(e){
     var button = $(this);
     $.get("{{ url_for('categorize_capture', tree_uuid=tree_uuid) }}" + button.val())
-    $('.modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}")
+    $('#categoriesModal .modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}")
   });
   $('.uncategorize_capture').on('click',function(e){
     var button = $(this);
     $.get("{{ url_for('uncategorize_capture', tree_uuid=tree_uuid) }}" + button.val())
-    $('.modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}")
+    $('#categoriesModal .modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}")
   });
 </script>
 {% endmacro %}

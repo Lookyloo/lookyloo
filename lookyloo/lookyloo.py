@@ -306,7 +306,8 @@ class Lookyloo():
         if categ_file.exists():
             with categ_file.open() as f:
                 current_categories = [line.strip() for line in f.readlines()]
-            return {e: self.taxonomies.revert_machinetag(e) for e in current_categories}
+            # return {e: self.taxonomies.revert_machinetag(e) for e in current_categories}
+            return {e: e for e in current_categories}
         return {}
 
     def categorize_capture(self, capture_uuid: str, /, category: str) -> None:
@@ -314,7 +315,7 @@ class Lookyloo():
         if not get_config('generic', 'enable_categorization'):
             return
         # Make sure the category is mappable to a taxonomy.
-        self.taxonomies.revert_machinetag(category)
+        # self.taxonomies.revert_machinetag(category)
 
         categ_file = self._captures_index[capture_uuid].capture_dir / 'categories'
         # get existing categories if possible
@@ -338,9 +339,10 @@ class Lookyloo():
                 current_categories = {line.strip() for line in f.readlines()}
         else:
             current_categories = set()
-        current_categories.remove(category)
-        with categ_file.open('w') as f:
-            f.writelines(f'{t}\n' for t in current_categories)
+        if category in current_categories:
+            current_categories.remove(category)
+            with categ_file.open('w') as f:
+                f.writelines(f'{t}\n' for t in current_categories)
 
     def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False) -> dict[str, Any]:
         '''Launch the 3rd party modules on a capture.

@@ -67,13 +67,77 @@
       var modal = $(this);
       modal.find('.modal-body').load(button.data("remote"));
   });
-  $('#searchCategories').submit(function(event){
+  /*$('#searchCategories').submit(function(event){
     var query = $("#query").val();
-    $('.modal-body').load("{{ url_for('categories_capture', tree_uuid=tree_uuid) }}" + query, function() {
+    $('#categoriesModal .modal-body').load("{ url_for('categories_capture', tree_uuid=tree_uuid) }}" + query, function() {
       $('#categoriesModal').modal({show:true});
     });
     event.preventDefault();
   });
+  */
+
+  $('#fast-categories').submit(function(event){
+    event.preventDefault();
+    var query = $('#fast-categories').serialize(); // Serialize form data
+
+    $.ajax({
+        type: 'POST',
+        url: '{{ url_for('categories_capture', tree_uuid=tree_uuid) }}',
+        data: query,
+        success: function(response) {
+            $('#categoriesModal .modal-body').html(response);
+            $('#categoriesModal').modal({show:true});
+        },
+        error: function(error) {
+            console.log("An error occurred: ", error);
+        }
+    });
+  });
+
+    // Fast categories
+  document.getElementById("legitimate").addEventListener('change', function(){
+    if (this.checked){
+      disableInput(document.getElementById('malicious-categories'));
+      enableInput(document.getElementById('legitimate-categories'));
+    }
+  });
+  document.getElementById("malicious").addEventListener('change', function(){
+    if (this.checked){
+      enableInput(document.getElementById('malicious-categories'));
+      disableInput(document.getElementById('legitimate-categories'));
+    }
+  });
+  document.getElementById("unclear").addEventListener('change', function(){
+    if (this.checked){
+      disableInput(document.getElementById('malicious-categories'));
+      disableInput(document.getElementById('legitimate-categories'));
+    }
+  });
+  document.getElementById("legitimate-categories").addEventListener('click', function(){
+     if (this.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
+       document.getElementById("legitimate").checked = true;
+     }
+  });
+  document.getElementById("malicious-categories").addEventListener('click', function(){
+     if (this.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
+       document.getElementById("malicious").checked = true;
+     }
+  });
+
+  function disableInput(container) {
+      const Input = container.querySelectorAll('input');
+      Input.forEach(function(checkbox){
+        checkbox.disabled = true;
+        checkbox.checked = false;
+      });
+      container.hidden = true;
+  }
+
+  function enableInput(container) {
+      const Input = container.querySelectorAll('input');
+      Input.forEach(checkbox => checkbox.disabled = false);
+      container.hidden = false;
+  }
   </script>
 
   <script>
@@ -420,7 +484,7 @@
             <div id="extra-menu" class="dropdown">
               <button class="dropbtn">Extras</button>
               <div id="extra-menu-content" class="dropdown-content">
-                {% if enable_categorization %}
+                {% if enable_categorization and current_user.is_authenticated %}
                     <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
                     data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
                 {% endif %}
@@ -1033,7 +1097,7 @@
   </div>
 </div>
 
-{% if enable_context_by_users %}
+{% if enable_categorization %}
 <div class="modal fade" id="categoriesModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
@@ -1045,11 +1109,76 @@
               ... loading the categorization options ...
           </div>
           <p>
-            <form id=searchCategories>
+          <form role="form" id="fast-categories" class="fast-categories">
+            <fieldset id="verification-status">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="legitimate" name="verification-status" value="legitimate">
+                <label class="form-check-label" for="legitimate">legitimate</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="malicious" name="verification-status" value="malicious">
+                <label class="form-check-label" for="malicious">malicious</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="unclear" name="verification-status" value="unclear" checked>
+                <label class="form-check-label" for="unclear">unclear</label>
+              </div>
+            </fieldset>
+
+            <div id="content-categoies">
+              <p>Content Categories (Multiple Choices possible)</p>
+              <fieldset id="legitimate-categories" hidden>
+                <p>Only if legitimate:</p>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="parking-page" name="parking-page" value="parking-page">
+                  <label class="form-check-label" for="parking-page">parking-page</label><br>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="default-page" name="default-page" value="default-page">
+                  <label class="form-check-label" for="default-page">default-page</label><br>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="institution" name="institution" value="institution">
+                  <label class="form-check-label" for="institution">institution / company</label><br>
+                </div>
+                <!-- the name of the institution/company could be added here in the future, maybe with propositions
+                 <label for="institution-name">Enter the name of the institution/company:</label><br>
+                 <input type="text" id="institution-name" name="institution-name">
+                -->
+              </fieldset>
+              <fieldset id="malicious-categories" hidden>
+                <p>Only if malicious:</p>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="clone" name="clone" value="clone">
+                  <label class="form-check-label" for="clone">clone</label><br>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="phishing" name="phishing" value="phishing">
+                  <label class="form-check-label" for="phishing">phishing</label><br>
+                </div>
+              </fieldset>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="captcha" name="captcha" value="captcha">
+                <label class="form-check-label" for="captcha">captcha</label><br>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="authentication-form" name="authentication-form" value="authentication-form">
+                <label class="form-check-label" for="authentication-form">authentication-form</label><br>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="adult-content" name="adult-content" value="adult-content">
+                <label class="form-check-label" for="adult-content">adult-content</label><br>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="shop" name="shop" value="shop">
+                <label class="form-check-label" for="shop">shop</label><br>
+              </div>
+            </div>
+
             <label for="query" class="form-label">Category to search</label>
             <input type="text" class="form-control" name="query" id="query" placeholder="Query">
-            <button type="submit" class="btn btn-success">Search</button>
-            </form>
+            <button type="submit" class="btn btn-success" name="submit">Submit</button>
+          </form>
           </p>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

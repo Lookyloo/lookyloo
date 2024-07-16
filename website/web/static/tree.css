@@ -186,3 +186,15 @@ hr {
   border: 2px solid;
   padding: 5px;
 }
+
+/* Fast categories*/ 
+.fast-categories {
+  border: 2px solid;
+  margin: 5px;
+  padding: 5px;
+}
+
+.fast-categories fieldset {
+  border: 1px solid;
+  padding: 5px;
+}
