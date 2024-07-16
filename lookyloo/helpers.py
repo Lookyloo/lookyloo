@@ -29,7 +29,7 @@ from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
 from .default import get_homedir, safe_create_dir, get_config, LookylooException
-from .exceptions import InvalidCaptureSetting
+# from .exceptions import InvalidCaptureSetting
 
 
 logger = logging.getLogger('Lookyloo - Helpers')
@@ -139,7 +139,9 @@ def cast_capture_settings(capture_settings: dict[str, str]) -> CaptureSettings:
             # Value is a non-empty string, keep it as-is
             to_return[setting_key] = setting_value  # type: ignore[literal-required]
         else:
-            raise InvalidCaptureSetting(f'Unknown setting: {setting_key} with value: {setting_value}')
+            # NOTE: we may have to add more settings here, will be fixed with pydantic soon.
+            # raise InvalidCaptureSetting(f'Unknown setting: {setting_key} with value: {setting_value}')
+            print(f'Unknown setting: {setting_key} with value: {setting_value}')
     return to_return
 
 
