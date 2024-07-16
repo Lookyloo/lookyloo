@@ -433,8 +433,8 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             with capture_settings_file.open() as f:
                 capture_settings = json.loads(f.read())
 
-        if capture_settings.get('url') and capture_settings['url'] is not None:
-            cache['url'] = capture_settings['url']
+            if capture_settings.get('url') and capture_settings['url'] is not None:
+                cache['url'] = capture_settings['url']
 
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
