@@ -661,6 +661,7 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
 
 @app.route('/tree/<string:tree_uuid>/categories_capture/', defaults={'query': ''}, methods=['GET', 'POST'])
 @app.route('/tree/<string:tree_uuid>/categories_capture/<string:query>', methods=['GET'])
+@flask_login.login_required  # type: ignore[misc]
 def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
@@ -671,8 +672,8 @@ def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | R
         categories = []
         possible_ctgs = {
             'legitimate': ["parking-page", "default-page", 'institution', 'captcha', 'authentication-form', 'adult-content', 'shop'],
-             'malicious': ['clone', 'phishing', 'captcha', 'authentication-form', 'adult-content', 'shop'],
-             'unclear': ['captcha', 'authentication-form', 'adult-content', 'shop']
+            'malicious': ['clone', 'phishing', 'captcha', 'authentication-form', 'adult-content', 'shop'],
+            'unclear': ['captcha', 'authentication-form', 'adult-content', 'shop']
         }
         if status in possible_ctgs.keys():
             lookyloo.categorize_capture(tree_uuid, status)
@@ -695,6 +696,7 @@ def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | R
 
 @app.route('/tree/<string:tree_uuid>/uncategorize/', defaults={'category': ''})
 @app.route('/tree/<string:tree_uuid>/uncategorize/<string:category>', methods=['GET'])
+@flask_login.login_required  # type: ignore[misc]
 def uncategorize_capture(tree_uuid: str, category: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
         return jsonify({'response': 'Categorization not enabled.'})
@@ -704,6 +706,7 @@ def uncategorize_capture(tree_uuid: str, category: str) -> str | WerkzeugRespons
 
 @app.route('/tree/<string:tree_uuid>/categorize/', defaults={'category': ''})
 @app.route('/tree/<string:tree_uuid>/categorize/<string:category>', methods=['GET'])
+@flask_login.login_required  # type: ignore[misc]
 def categorize_capture(tree_uuid: str, category: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
         return jsonify({'response': 'Categorization not enabled.'})
