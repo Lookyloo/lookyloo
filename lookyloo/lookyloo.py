@@ -645,11 +645,9 @@ class Lookyloo():
 
         # merge DNT into headers
         if query.dnt:
-            print('DNT - ######', query.dnt)
             if query.headers is None:
                 query.headers = {}
             query.headers['dnt'] = query.dnt
-        print('Header', query.headers)
         if authenticated:
             if user_config := load_user_config(user):
                 query = self._apply_user_config(query, user_config)
