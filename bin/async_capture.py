@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import logging.config
 import signal
@@ -78,19 +77,14 @@ class AsyncCapture(AbstractManager):
             self.lookyloo.redis.sadd('ongoing', uuid)
             queue: str | None = self.lookyloo.redis.getdel(f'{uuid}_mgmt')
 
-            to_capture: CaptureSettings = self.lookyloo.get_capture_settings(uuid)
-
-            if get_config('generic', 'default_public'):
-                # By default, the captures are on the index, unless the user mark them as un-listed
-                listing = False if ('listing' in to_capture and to_capture['listing'] == 0) else True
-            else:
-                # By default, the captures are not on the index, unless the user mark them as listed
-                listing = True if ('listing' in to_capture and to_capture['listing'] == 1) else False
+            to_capture: CaptureSettings | None = self.lookyloo.get_capture_settings(uuid)
+            if not to_capture:
+                continue
 
             self.lookyloo.store_capture(
-                uuid, listing,
-                os=to_capture.get('os'), browser=to_capture.get('browser'),
-                parent=to_capture.get('parent'),
+                uuid, to_capture.listing,
+                os=to_capture.os, browser=to_capture.browser,
+                parent=to_capture.parent,
                 downloaded_filename=entries.get('downloaded_filename'),
                 downloaded_file=entries.get('downloaded_file'),
                 error=entries.get('error'), har=entries.get('har'),
@@ -101,18 +95,11 @@ class AsyncCapture(AbstractManager):
                 potential_favicons=entries.get('potential_favicons')
             )
 
-            if 'auto_report' in to_capture:
+            if to_capture.auto_report:
                 send_report = True
                 settings = {}
-                if isinstance(to_capture['auto_report'], str):
-                    if to_capture['auto_report'].isdigit():
-                        # auto_report was a bool in the submission, it can be 1 or 0. 0 means no.
-                        if to_capture['auto_report'] == '0':
-                            send_report = False
-                    else:
-                        settings = json.loads(to_capture['auto_report'])
-                elif isinstance(to_capture['auto_report'], dict):
-                    settings = to_capture['auto_report']
+                if isinstance(to_capture.auto_report, dict):
+                    settings = to_capture.auto_report
 
                 if send_report:
                     self.lookyloo.send_mail(uuid, email=settings.get('email', ''),

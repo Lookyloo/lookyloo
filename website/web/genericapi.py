@@ -22,7 +22,7 @@ from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo import CaptureSettings, Lookyloo
 from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
-from lookyloo.helpers import load_user_config, UserCaptureSettings
+from lookyloo.helpers import load_user_config
 
 from .helpers import (build_users_table, load_user_from_request, src_request_ip,
                       get_lookyloo_instance, get_indexing)
@@ -56,7 +56,7 @@ def handle_no_HAR_file_exception(error: Any) -> tuple[dict[str, str], int]:
 class UserConfig(Resource):  # type: ignore[misc]
     method_decorators = [api_auth_check]
 
-    def get(self) -> UserCaptureSettings | None | tuple[dict[str, str], int]:
+    def get(self) -> dict[str, Any] | None | tuple[dict[str, str], int]:
         if not flask_login.current_user.is_authenticated:
             return {'error': 'User not authenticated.'}, 401
         return load_user_config(flask_login.current_user.get_id())
@@ -548,7 +548,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
         if 'url' not in request.args or not request.args.get('url'):
             return {'error': 'No "url" in the URL params, nothting to capture.'}, 400
 
-        to_query: CaptureSettings = {
+        to_query: dict[str, Any] = {
             'url': request.args['url'],
             'listing': False if 'listing' in request.args and request.args['listing'] in [0, '0'] else True,
             'allow_tracking': False if 'allow_tracking' in request.args and request.args['allow_tracking'] in [0, '0'] else True
@@ -566,7 +566,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
         if request.args.get('proxy'):
             to_query['proxy'] = request.args['proxy']
 
-        perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
+        perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**to_query), source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
         return perma_uuid
 
     @api.doc(body=submit_fields_post)  # type: ignore[misc]
@@ -576,8 +576,8 @@ class SubmitCapture(Resource):  # type: ignore[misc]
             user = flask_login.current_user.get_id()
         else:
             user = src_request_ip(request)
-        to_query: CaptureSettings = request.get_json(force=True)
-        perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
+        to_query: dict[str, Any] = request.get_json(force=True)
+        perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**to_query), source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
         return perma_uuid
 
 

@@ -14,7 +14,7 @@ from lacuscore import CaptureStatus as CaptureStatusCore
 from lookyloo import Lookyloo
 from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
-from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings
+from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 from pylacus import CaptureStatus as CaptureStatusPy
 
 logging.config.dictConfig(get_config('logging'))
@@ -109,41 +109,41 @@ class Processing(AbstractManager):
                 continue
             self.logger.info(f'Found a non-queued capture ({uuid}), retrying now.')
             # This capture couldn't be queued and we created the uuid locally
-            query: CaptureSettings = self.lookyloo.get_capture_settings(uuid)
-            try:
-                new_uuid = self.lookyloo.lacus.enqueue(
-                    url=query.get('url', None),
-                    document_name=query.get('document_name', None),
-                    document=query.get('document', None),
-                    # depth=query.get('depth', 0),
-                    browser=query.get('browser', None),
-                    device_name=query.get('device_name', None),
-                    user_agent=query.get('user_agent', None),
-                    proxy=query.get('proxy', None),
-                    general_timeout_in_sec=query.get('general_timeout_in_sec', None),
-                    cookies=query.get('cookies', None),
-                    headers=query.get('headers', None),
-                    http_credentials=query.get('http_credentials', None),
-                    viewport=query.get('viewport', None),
-                    referer=query.get('referer', None),
-                    rendered_hostname_only=query.get('rendered_hostname_only', True),
-                    # force=query.get('force', False),
-                    # recapture_interval=query.get('recapture_interval', 300),
-                    priority=query.get('priority', 0),
-                    uuid=uuid
-                )
-                if new_uuid != uuid:
-                    # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
-                    self.logger.warning(f'Had to change the capture UUID (duplicate). Old: {uuid} / New: {new_uuid}')
-            except LacusUnreachable:
-                self.logger.warning('Lacus still unreachable.')
-                break
-            except Exception as e:
-                self.logger.warning(f'Still unable to enqueue capture: {e}')
-                break
-            else:
-                self.lookyloo.redis.hdel(uuid, 'not_queued')
-                self.logger.info(f'{uuid} enqueued.')
+            if query := self.lookyloo.get_capture_settings(uuid):
+                try:
+                    new_uuid = self.lookyloo.lacus.enqueue(
+                        url=query.url,
+                        document_name=query.document_name,
+                        document=query.document,
+                        # depth=query.depth,
+                        browser=query.browser,
+                        device_name=query.device_name,
+                        user_agent=query.user_agent,
+                        proxy=query.proxy,
+                        general_timeout_in_sec=query.general_timeout_in_sec,
+                        cookies=query.cookies,
+                        headers=query.headers,
+                        http_credentials=query.http_credentials,
+                        viewport=query.viewport,
+                        referer=query.referer,
+                        rendered_hostname_only=query.rendered_hostname_only,
+                        # force=query.force,
+                        # recapture_interval=query.recapture_interval,
+                        priority=query.priority,
+                        uuid=uuid
+                    )
+                    if new_uuid != uuid:
+                        # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
+                        self.logger.warning(f'Had to change the capture UUID (duplicate). Old: {uuid} / New: {new_uuid}')
+                except LacusUnreachable:
+                    self.logger.warning('Lacus still unreachable.')
+                    break
+                except Exception as e:
+                    self.logger.warning(f'Still unable to enqueue capture: {e}')
+                    break
+                else:
+                    self.lookyloo.redis.hdel(uuid, 'not_queued')
+                    self.logger.info(f'{uuid} enqueued.')
 
 
 def main() -> None:

@@ -57,10 +57,9 @@ from .exceptions import (MissingCaptureDirectory,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile, LacusUnreachable)
 from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
-                      uniq_domains, ParsedUserAgent, load_cookies, UserAgents,
+                      uniq_domains, ParsedUserAgent, UserAgents,
                       get_useragent_for_requests, load_takedown_filters,
-                      CaptureSettings, UserCaptureSettings, load_user_config,
-                      cast_capture_settings
+                      CaptureSettings, load_user_config
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -287,17 +286,17 @@ class Lookyloo():
             json.dump(meta, f)
         return meta
 
-    def get_capture_settings(self, capture_uuid: str, /) -> CaptureSettings:
+    def get_capture_settings(self, capture_uuid: str, /) -> CaptureSettings | None:
         if capture_settings := self.redis.hgetall(capture_uuid):
-            return cast_capture_settings(capture_settings)
+            return CaptureSettings(**capture_settings)
         cache = self.capture_cache(capture_uuid)
         if not cache:
-            return {}
+            return None
         cs_file = cache.capture_dir / 'capture_settings.json'
         if cs_file.exists():
             with cs_file.open('r') as f:
-                return cast_capture_settings(json.load(f))
-        return {}
+                return CaptureSettings(**json.load(f))
+        return None
 
     def categories_capture(self, capture_uuid: str, /) -> dict[str, Any]:
         '''Get all the categories related to a capture, in MISP Taxonomies format'''
@@ -602,67 +601,24 @@ class Lookyloo():
             self._captures_index.reload_cache(capture_uuid)
             return self._captures_index[capture_uuid].tree
 
-    def _prepare_lacus_query(self, query: CaptureSettings) -> CaptureSettings:
-        # Remove the none, it makes redis unhappy
-        query = {k: v for k, v in query.items() if v is not None}  # type: ignore[assignment]
-
-        if 'url' in query and query['url'] is not None:
-            # Make sure the URL does not have any space or newline
-            query['url'] = query['url'].strip()
-
-        # NOTE: Lookyloo' capture can pass a do not track header independently from the default headers, merging it here
-        headers = query.pop('headers', {})
-        if 'dnt' in query:
-            if isinstance(headers, str):
-                headers += f'\nDNT: {query.pop("dnt")}'
-                headers = headers.strip()
-            elif isinstance(headers, dict):
-                dnt_entry = query.pop("dnt")
-                if dnt_entry:
-                    headers['DNT'] = dnt_entry.strip()
-
-        if headers:
-            query['headers'] = headers
-
-        # NOTE: Lookyloo can get the cookies in somewhat weird formats, mornalizing them
-        query['cookies'] = load_cookies(query.pop('cookies', None))
-
-        # NOTE: Make sure we have a useragent
-        user_agent = query.pop('user_agent', None)
-        if not user_agent:
-            # Catch case where the UA is broken on the UI, and the async submission.
-            self.user_agents.user_agents  # triggers an update of the default UAs
-        if 'device_name' not in query:
-            query['user_agent'] = user_agent if user_agent else self.user_agents.default['useragent']
-
-        # NOTE: the document must be base64 encoded
-        document: str | bytes | None = query.pop('document', None)
-        if document:
-            if isinstance(document, bytes):
-                query['document'] = base64.b64encode(document).decode()
-            else:
-                query['document'] = document
-        return query
-
-    def _apply_user_config(self, query: CaptureSettings, user_config: UserCaptureSettings) -> CaptureSettings:
-        def recursive_merge(dict1: CaptureSettings | UserCaptureSettings,
-                            dict2: CaptureSettings | UserCaptureSettings) -> CaptureSettings:
+    def _apply_user_config(self, query: CaptureSettings, user_config: dict[str, Any]) -> CaptureSettings:
+        def recursive_merge(dict1: dict[str, Any], dict2: dict[str, Any]) -> dict[str, Any]:
             # dict2 overwrites dict1
             for key, value in dict2.items():
-                if key in dict1 and isinstance(dict1[key], dict) and isinstance(value, dict):  # type: ignore[literal-required]
+                if key in dict1 and isinstance(dict1[key], dict) and isinstance(value, dict):
                     # Recursively merge nested dictionaries
-                    dict1[key] = recursive_merge(dict1[key], value)  # type: ignore[literal-required,arg-type]
+                    dict1[key] = recursive_merge(dict1[key], value)
                 else:
                     # Merge non-dictionary values
-                    dict1[key] = value  # type: ignore[literal-required]
+                    dict1[key] = value
             return dict1
 
         # merge
-        if user_config.pop('overwrite', None):
+        if user_config.get('overwrite'):
             # config from file takes priority
-            return recursive_merge(query, user_config)
+            return CaptureSettings(**recursive_merge(query.model_dump(), user_config))
         else:
-            return recursive_merge(user_config, query)
+            return CaptureSettings(**recursive_merge(user_config, query.model_dump()))
 
     def enqueue_capture(self, query: CaptureSettings, source: str, user: str, authenticated: bool) -> str:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
@@ -680,13 +636,20 @@ class Lookyloo():
                 usr_prio = self._priority['users'][user] if self._priority['users'].get(user) else self._priority['users']['_default_auth']
             return src_prio + usr_prio
 
-        for key, value in query.items():
-            if isinstance(value, bool):
-                query[key] = 1 if value else 0  # type: ignore[literal-required]
-            elif isinstance(value, (list, dict)):
-                query[key] = json.dumps(value) if value else None  # type: ignore[literal-required]
+        # NOTE: Make sure we have a useragent
+        if not query.user_agent:
+            # Catch case where the UA is broken on the UI, and the async submission.
+            self.user_agents.user_agents  # triggers an update of the default UAs
+        if not query.device_name and not query.user_agent:
+            query.user_agent = self.user_agents.default['useragent']
 
-        query = self._prepare_lacus_query(query)
+        # merge DNT into headers
+        if query.dnt:
+            print('DNT - ######', query.dnt)
+            if query.headers is None:
+                query.headers = {}
+            query.headers['dnt'] = query.dnt
+        print('Header', query.headers)
         if authenticated:
             if user_config := load_user_config(user):
                 query = self._apply_user_config(query, user_config)
@@ -694,56 +657,45 @@ class Lookyloo():
         priority = get_priority(source, user, authenticated)
         if priority < -100:
             # Someone is probably abusing the system with useless URLs, remove them from the index
-            query['listing'] = 0
+            query.listing = False
         try:
             perma_uuid = self.lacus.enqueue(
-                url=query.get('url', None),
-                document_name=query.get('document_name', None),
-                document=query.get('document', None),
-                # depth=query.get('depth', 0),
-                browser=query.get('browser', None),
-                device_name=query.get('device_name', None),
-                user_agent=query.get('user_agent', None),
-                proxy=self.global_proxy if self.global_proxy else query.get('proxy', None),
-                general_timeout_in_sec=query.get('general_timeout_in_sec', None),
-                cookies=query.get('cookies', None),
-                headers=query.get('headers', None),
-                http_credentials=query.get('http_credentials', None),
-                viewport=query.get('viewport', None),
-                referer=query.get('referer', None),
-                timezone_id=query.get('timezone_id', None),
-                locale=query.get('locale', None),
-                geolocation=query.get('geolocation', None),
-                color_scheme=query.get('color_scheme', None),
-                rendered_hostname_only=query.get('rendered_hostname_only', True),
-                with_favicon=query.get('with_favicon', True),
-                allow_tracking=query.get('allow_tracking', True),
-                # force=query.get('force', False),
-                # recapture_interval=query.get('recapture_interval', 300),
+                url=query.url,
+                document_name=query.document_name,
+                document=query.document,
+                # depth=query.depth,
+                browser=query.browser,
+                device_name=query.device_name,
+                user_agent=query.user_agent,
+                proxy=self.global_proxy if self.global_proxy else query.proxy,
+                general_timeout_in_sec=query.general_timeout_in_sec,
+                cookies=query.cookies,
+                headers=query.headers,
+                http_credentials=query.http_credentials,
+                viewport=query.viewport,
+                referer=query.referer,
+                timezone_id=query.timezone_id,
+                locale=query.locale,
+                geolocation=query.geolocation,
+                color_scheme=query.color_scheme,
+                rendered_hostname_only=query.rendered_hostname_only,
+                with_favicon=query.with_favicon,
+                allow_tracking=query.allow_tracking,
+                # force=query.force,
+                # recapture_interval=query.recapture_interval,
                 priority=priority
             )
         except Exception as e:
             self.logger.critical(f'Unable to enqueue capture: {e}')
             perma_uuid = str(uuid4())
-            query['not_queued'] = 1
+            query.not_queued = True
         finally:
             if (not self.redis.hexists('lookup_dirs', perma_uuid)  # already captured
                     and self.redis.zscore('to_capture', perma_uuid) is None):  # capture ongoing
 
-                # Make the settings redis compatible
-                mapping_capture: dict[str, bytes | float | int | str] = {}
-                for key, value in query.items():
-                    if isinstance(value, bool):
-                        mapping_capture[key] = 1 if value else 0
-                    elif isinstance(value, (list, dict)):
-                        if value:
-                            mapping_capture[key] = json.dumps(value)
-                    elif value is not None:
-                        mapping_capture[key] = value  # type: ignore[assignment]
-
                 p = self.redis.pipeline()
                 p.zadd('to_capture', {perma_uuid: priority})
-                p.hset(perma_uuid, mapping=mapping_capture)  # type: ignore[arg-type]
+                p.hset(perma_uuid, mapping=query.redis_dump())
                 p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
                 p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
                 p.execute()
@@ -1478,7 +1430,8 @@ class Lookyloo():
                 elif filename.endswith('error.txt'):
                     error = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('capture_settings.json'):
-                    capture_settings = json.loads(lookyloo_capture.read(filename))
+                    _capture_settings = json.loads(lookyloo_capture.read(filename))
+                    capture_settings = CaptureSettings(**_capture_settings)
                 else:
                     for to_skip in files_to_skip:
                         if filename.endswith(to_skip):
@@ -1503,7 +1456,7 @@ class Lookyloo():
                                    error=error, har=har, png=screenshot, html=html,
                                    last_redirected_url=last_redirected_url,
                                    cookies=cookies,
-                                   capture_settings=capture_settings,
+                                   capture_settings=capture_settings if capture_settings else None,
                                    potential_favicons=potential_favicons)
             return uuid, messages
 
@@ -1585,7 +1538,7 @@ class Lookyloo():
 
         if capture_settings:
             with (dirpath / 'capture_settings.json').open('w') as _cs:
-                json.dump(capture_settings, _cs)
+                _cs.write(capture_settings.model_dump_json(indent=2, exclude_none=True))
 
         if potential_favicons:
             for f_id, favicon in enumerate(potential_favicons):

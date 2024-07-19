@@ -431,8 +431,13 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         capture_settings_file = capture_dir / 'capture_settings.json'
         if capture_settings_file.exists():
             with capture_settings_file.open() as f:
-                capture_settings = json.loads(f.read())
-
+                _s = f.read()
+                try:
+                    capture_settings = json.loads(_s)
+                    capture_settings.get('url')
+                except AttributeError:
+                    # That's if we have broken dumps that are twice json encoded
+                    capture_settings = json.load(capture_settings)
             if capture_settings.get('url') and capture_settings['url'] is not None:
                 cache['url'] = capture_settings['url']
 

@@ -42,7 +42,7 @@ from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable
 from lookyloo.helpers import (get_taxonomies, UserAgents, load_cookies,
-                              UserCaptureSettings, load_user_config)
+                              load_user_config)
 
 if sys.version_info < (3, 9):
     from pytz import all_timezones_set
@@ -1023,7 +1023,7 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
     cookies = load_cookies(lookyloo.get_cookies(base_tree_uuid))
     bulk_captures = []
     for url in [urls[int(selected_id) - 1] for selected_id in selected_urls]:
-        capture: CaptureSettings = {
+        capture: dict[str, Any] = {
             'url': url,
             'cookies': cookies,
             'referer': cache.redirects[-1] if cache.redirects else cache.url,
@@ -1031,7 +1031,7 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
             'parent': base_tree_uuid,
             'listing': False if cache and cache.no_index else True
         }
-        new_capture_uuid = lookyloo.enqueue_capture(capture, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+        new_capture_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         bulk_captures.append((new_capture_uuid, url))
 
     return render_template('bulk_captures.html', uuid=base_tree_uuid, bulk_captures=bulk_captures)
@@ -1196,7 +1196,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                confirm_message=confirm_message if confirm_message else 'Tick to confirm.',
                                parent_uuid=cache.parent,
                                has_redirects=True if cache.redirects else False,
-                               capture_settings=capture_settings)
+                               capture_settings=capture_settings.model_dump(exclude_none=True) if capture_settings else {})
 
     except NoValidHarFile:
         flash(f'Unable to build a tree for {tree_uuid}: {cache.error}.', 'warning')
@@ -1445,8 +1445,8 @@ def search() -> str | Response | WerkzeugResponse:
     return render_template('search.html')
 
 
-def _prepare_capture_template(user_ua: str | None, predefined_settings: CaptureSettings | None=None, *,
-                              user_config: UserCaptureSettings | None=None) -> str:
+def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str, Any] | None=None, *,
+                              user_config: dict[str, Any] | None=None) -> str:
     return render_template('capture.html', user_agents=user_agents.user_agents,
                            default=user_agents.default,
                            personal_ua=user_ua,
@@ -1463,9 +1463,9 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: CaptureS
 def recapture(tree_uuid: str) -> str | Response | WerkzeugResponse:
     cache = lookyloo.capture_cache(tree_uuid)
     if cache and hasattr(cache, 'capture_dir'):
-        capture_settings = lookyloo.get_capture_settings(tree_uuid)
-        return _prepare_capture_template(user_ua=request.headers.get('User-Agent'),
-                                         predefined_settings=capture_settings)
+        if capture_settings := lookyloo.get_capture_settings(tree_uuid):
+            return _prepare_capture_template(user_ua=request.headers.get('User-Agent'),
+                                             predefined_settings=capture_settings.model_dump(exclude_none=True))
     flash(f'Unable to find the capture {tree_uuid} in the cache.', 'error')
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
@@ -1524,7 +1524,7 @@ def submit_capture() -> str | Response | WerkzeugResponse:
 
 @app.route('/capture', methods=['GET', 'POST'])
 def capture_web() -> str | Response | WerkzeugResponse:
-    user_config: UserCaptureSettings | None = None
+    user_config: dict[str, Any] | None = None
     if flask_login.current_user.is_authenticated:
         user = flask_login.current_user.get_id()
         user_config = load_user_config(user)
@@ -1536,7 +1536,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
             flash('Invalid submission: please submit at least a URL or a document.', 'error')
             return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
-        capture_query: CaptureSettings = {}
+        capture_query: dict[str, Any] = {}
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
             capture_query['cookies'] = load_cookies(request.files['cookies'].stream.read())
@@ -1553,7 +1553,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
             browser = request.form['browser']
             if browser in ['chromium', 'firefox', 'webkit']:
                 # Will be guessed otherwise.
-                capture_query['browser'] = browser  # type: ignore[typeddict-item]
+                capture_query['browser'] = browser
 
         capture_query['listing'] = True if request.form.get('listing') else False
         capture_query['allow_tracking'] = True if request.form.get('allow_tracking') else False
@@ -1608,7 +1608,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
 
         if request.form.get('url'):
             capture_query['url'] = request.form['url']
-            perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+            perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture_query), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
             time.sleep(2)
             return redirect(url_for('tree', tree_uuid=perma_uuid))
         elif request.form.get('urls'):
@@ -1619,7 +1619,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
                     continue
                 query = capture_query.copy()
                 query['url'] = url
-                new_capture_uuid = lookyloo.enqueue_capture(query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+                new_capture_uuid = lookyloo.enqueue_capture(CaptureSettings(**query), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
                 bulk_captures.append((new_capture_uuid, url))
 
             return render_template('bulk_captures.html', bulk_captures=bulk_captures)
@@ -1630,7 +1630,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
                 capture_query['document_name'] = request.files['document'].filename
             else:
                 capture_query['document_name'] = 'unknown_name.bin'
-            perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+            perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture_query), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
             time.sleep(2)
             return redirect(url_for('tree', tree_uuid=perma_uuid))
         else:
@@ -1638,7 +1638,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
     elif request.method == 'GET' and request.args.get('url'):
         url = unquote_plus(request.args['url']).strip()
         capture_query = {'url': url}
-        perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+        perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture_query), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         return redirect(url_for('tree', tree_uuid=perma_uuid))
 
     # render template
@@ -1654,10 +1654,10 @@ def simple_capture() -> str | Response | WerkzeugResponse:
         if not (request.form.get('url') or request.form.get('urls')):
             flash('Invalid submission: please submit at least a URL.', 'error')
             return render_template('simple_capture.html')
-        capture_query: CaptureSettings = {}
+        capture_query: dict[str, Any] = {}
         if request.form.get('url'):
             capture_query['url'] = request.form['url']
-            perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user,
+            perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture_query), source='web', user=user,
                                                   authenticated=flask_login.current_user.is_authenticated)
             time.sleep(2)
             if perma_uuid:
@@ -1669,7 +1669,7 @@ def simple_capture() -> str | Response | WerkzeugResponse:
                     continue
                 query = capture_query.copy()
                 query['url'] = url
-                new_capture_uuid = lookyloo.enqueue_capture(query, source='web', user=user,
+                new_capture_uuid = lookyloo.enqueue_capture(CaptureSettings(**query), source='web', user=user,
                                                             authenticated=flask_login.current_user.is_authenticated)
                 if new_capture_uuid:
                     flash('Recording is in progress and is reported automatically.', 'success')

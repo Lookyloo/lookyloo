@@ -15,6 +15,8 @@ from functools import lru_cache
 from importlib.metadata import version
 from io import BufferedIOBase
 from pathlib import Path
+from pydantic import field_validator
+from pydantic_core import from_json
 from typing import Any
 from urllib.parse import urlparse
 
@@ -81,68 +83,6 @@ def get_captures_dir() -> Path:
 def get_email_template() -> str:
     with (get_homedir() / 'config' / 'email.tmpl').open() as f:
         return f.read()
-
-
-def cast_capture_settings(capture_settings: dict[str, str]) -> CaptureSettings:
-    to_return: CaptureSettings = {}
-    # NOTE: Replace the if / else below with a case / match as soon as we require python 3.10+
-    for setting_key, setting_value in capture_settings.items():
-        if setting_key == 'listing':
-            to_return['listing'] = bool(int(setting_value))
-        elif setting_key == 'not_queued':
-            to_return['not_queued'] = bool(int(setting_value))
-        elif setting_key == 'auto_report':
-            if isinstance(setting_value, str) and setting_value:
-                if setting_value.startswith('{'):
-                    to_return['auto_report'] = json.loads(setting_value)
-                elif setting_value.isdigit():
-                    to_return['auto_report'] = bool(int(setting_value))
-                else:
-                    to_return['auto_report'] = setting_value
-        elif setting_key == 'proxy' and setting_value:
-            if setting_value.startswith('{'):
-                to_return['proxy'] = json.loads(setting_value)
-            else:
-                to_return['proxy'] = setting_value
-        elif setting_key in ('dnt', 'browser_name', 'os', 'parent'):
-            to_return[setting_key] = setting_value  # type: ignore[literal-required]
-        # Lacus core keys
-        elif setting_key == 'general_timeout_in_sec':
-            to_return['general_timeout_in_sec'] = int(setting_value)
-        elif setting_key == 'cookies':
-            to_return['cookies'] = load_cookies(setting_value)
-        elif setting_key == 'headers':
-            to_return['headers'] = json.loads(setting_value)
-        elif setting_key == 'http_credentials':
-            to_return['http_credentials'] = json.loads(setting_value)
-        elif setting_key == 'geolocation':
-            to_return['geolocation'] = json.loads(setting_value)
-        elif setting_key == 'viewport':
-            to_return['viewport'] = json.loads(setting_value)
-        elif setting_key == 'with_favicon':
-            to_return['with_favicon'] = bool(int(setting_value))
-        elif setting_key == 'allow_tracking':
-            to_return['allow_tracking'] = bool(int(setting_value))
-        elif setting_key == 'force':
-            to_return['force'] = bool(int(setting_value))
-        elif setting_key == 'recapture_interval':
-            to_return['recapture_interval'] = int(setting_value)
-        elif setting_key == 'priority':
-            to_return['priority'] = int(setting_value)
-        elif setting_key == 'depth':
-            to_return['depth'] = int(setting_value)
-        elif setting_key == 'rendered_hostname_only':
-            to_return['rendered_hostname_only'] = bool(int(setting_value))
-        elif setting_key in ('url', 'document_name', 'document', 'browser', 'device_name',
-                             'user_agent', 'timezone_id', 'locale', 'color_scheme', 'referer',
-                             'uuid') and setting_value:
-            # Value is a non-empty string, keep it as-is
-            to_return[setting_key] = setting_value  # type: ignore[literal-required]
-        else:
-            # NOTE: we may have to add more settings here, will be fixed with pydantic soon.
-            # raise InvalidCaptureSetting(f'Unknown setting: {setting_key} with value: {setting_value}')
-            print(f'Unknown setting: {setting_key} with value: {setting_value}')
-    return to_return
 
 
 @lru_cache
@@ -458,26 +398,39 @@ class ParsedUserAgent(UserAgent):
         return f'OS: {self.platform} - Browser: {self.browser} {self.version} - UA: {self.string}'
 
 
-class CaptureSettings(LacuscoreCaptureSettings, total=False):
+class CaptureSettings(LacuscoreCaptureSettings):
     '''The capture settings that can be passed to Lookyloo'''
-    listing: bool | int | None
-    not_queued: bool | int | None
-    auto_report: bool | str | dict[str, str] | None  # {'email': , 'comment': , 'recipient_mail':}
-    dnt: str | None
-    browser_name: str | None
-    os: str | None
-    parent: str | None
+    listing: bool = get_config('generic', 'default_public')
+    not_queued: bool = False
+    auto_report: bool | dict[str, str] | None = None  # {'email': , 'comment': , 'recipient_mail':}
+    dnt: str | None = None
+    browser_name: str | None = None
+    os: str | None = None
+    parent: str | None = None
 
+    @field_validator('auto_report', mode='before')
+    @classmethod
+    def load_auto_report_json(cls, v: Any) -> bool | dict[str, str] | None:
+        if isinstance(v, str):
+            if v.isdigit():
+                return bool(v)
+            elif v.startswith('{'):
+                return from_json(v)
+        elif isinstance(v, dict):
+            return v
+        return v
 
-# overwrite set to True means the settings in the config file overwrite the settings
-# provided by the user. False will simply append the settings from the config file if they
-# don't exist.
-class UserCaptureSettings(CaptureSettings, total=False):
-    overwrite: bool
+    @field_validator('cookies', mode='before')
+    @classmethod
+    def load_cookies(cls, v: Any) -> list[dict[str, Any]] | None:
+        # NOTE: Lookyloo can get the cookies in somewhat weird formats, mornalizing them
+        if v:
+            return load_cookies(v)
+        return None
 
 
 @lru_cache(64)
-def load_user_config(username: str) -> UserCaptureSettings | None:
+def load_user_config(username: str) -> dict[str, Any] | None:
     user_config_path = get_homedir() / 'config' / 'users' / f'{username}.json'
     if not user_config_path.exists():
         return None
