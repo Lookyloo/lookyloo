@@ -727,12 +727,16 @@ class Lookyloo():
 
         if to_return['contacts']:
             to_return['all_emails'] |= set(to_return['contacts'])
-        to_return['ips'] = {ip: self.uwhois.whois(ip, contact_email_only=True) for ip in set(hostnode.resolved_ips['v4']) | set(hostnode.resolved_ips['v6'])}
+
+        if hasattr(hostnode, 'resolved_ips'):
+            to_return['ips'] = {ip: self.uwhois.whois(ip, contact_email_only=True) for ip in set(hostnode.resolved_ips['v4']) | set(hostnode.resolved_ips['v6'])}
+        else:
+            self.logger.warning(f'No resolved IPs for {hostnode.name}')
+
         if hasattr(hostnode, 'ipasn'):
             to_return['asns'] = {asn['asn']: self.uwhois.whois(f'AS{asn["asn"]}', contact_email_only=True) for asn in hostnode.ipasn.values()}
         else:
             self.logger.warning(f'No IPASN for {hostnode.name}')
-            to_return['asns'] = {}
 
         # try to get contact from security.txt file
         try:
