@@ -308,16 +308,15 @@ class Lookyloo():
 
         return None
 
-    def categories_capture(self, capture_uuid: str, /) -> dict[str, Any]:
+    def categories_capture(self, capture_uuid: str, /) -> list[str]:
         '''Get all the categories related to a capture, in MISP Taxonomies format'''
         categ_file = self._captures_index[capture_uuid].capture_dir / 'categories'
         # get existing categories if possible
         if categ_file.exists():
             with categ_file.open() as f:
-                current_categories = [line.strip() for line in f.readlines()]
+                return [line.strip() for line in f.readlines()]
             # return {e: self.taxonomies.revert_machinetag(e) for e in current_categories}
-            return {e: e for e in current_categories}
-        return {}
+        return []
 
     def categorize_capture(self, capture_uuid: str, /, category: str) -> None:
         '''Add a category (MISP Taxonomy tag) to a capture.'''

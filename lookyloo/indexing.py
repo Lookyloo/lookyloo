@@ -8,7 +8,6 @@ import logging
 # import re
 from io import BytesIO
 from collections import defaultdict
-from typing import Iterable
 from urllib.parse import urlsplit
 from zipfile import ZipFile
 
@@ -69,13 +68,14 @@ class Indexing():
         p.srem('indexed_hhhashes', capture_uuid)
         p.srem('indexed_favicons', capture_uuid)
         p.srem('indexed_identifiers', capture_uuid)
+        p.srem('indexed_categories', capture_uuid)
         for identifier_type in self.identifiers_types():
             p.srem(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
         for hash_type in self.captures_hashes_types():
             p.srem(f'indexed_hash_type|{hash_type}', capture_uuid)
         p.execute()
 
-    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool]:
+    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool, bool]:
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
@@ -83,6 +83,7 @@ class Indexing():
         p.sismember('indexed_hhhashes', capture_uuid)
         p.sismember('indexed_favicons', capture_uuid)
         p.sismember('indexed_identifiers', capture_uuid)
+        p.sismember('indexed_categories', capture_uuid)
         # We also need to check if the hash_type are all indexed for this capture
         hash_types_indexed = all(self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid) for hash_type in self.captures_hashes_types())
         to_return: list[bool] = p.execute()
@@ -548,24 +549,34 @@ class Indexing():
     # ###### Categories ######
 
     @property
-    def categories(self) -> list[tuple[str, int]]:
-        return [(c, int(score))
-                for c, score in self.redis.zrevrange('categories', 0, 200, withscores=True)]
+    def categories(self) -> set[str]:
+        return self.redis.smembers('categories')
 
-    def index_categories_capture(self, capture_uuid: str, categories: Iterable[str]) -> None:
-        if not categories:
-            return
+    def index_categories_capture(self, capture_uuid: str, capture_categories: list[str]) -> None:
         if self.redis.sismember('indexed_categories', capture_uuid):
             # do not reindex
             return
         self.redis.sadd('indexed_categories', capture_uuid)
-        if not categories:
-            return
+        added_in_existing_categories = set()
         pipeline = self.redis.pipeline()
-        for category in categories:
-            pipeline.zincrby('categories', 1, category)
-            pipeline.sadd(category, capture_uuid)
+        for c in self.categories:
+            if c in capture_categories:
+                pipeline.sadd(c, capture_uuid)
+                added_in_existing_categories.add(c)
+            else:
+                # the capture is not in that category, srem is as cheap as exists if not in the set
+                pipeline.srem(c, capture_uuid)
+        # Handle the new categories
+        for new_c in set(capture_categories) - added_in_existing_categories:
+            pipeline.sadd(new_c, capture_uuid)
+            pipeline.sadd('categories', new_c)
         pipeline.execute()
 
     def get_captures_category(self, category: str) -> set[str]:
         return self.redis.smembers(category)
+
+    def capture_in_category(self, capture_uuid: str, category: str) -> bool:
+        return self.redis.sismember(category, capture_uuid)
+
+    def reindex_categories_capture(self, capture_uuid: str) -> None:
+        self.redis.srem('indexed_categories', capture_uuid)

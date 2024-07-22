@@ -14,6 +14,7 @@
       </tr>
     </thead>
     <tbody>
+    {% if categories_info is mapping %}
     {% for mt, val in categories_info.items() %}
       <tr>
         <td><a href="https://www.misp-project.org/taxonomies.html#_{{ val[0].name }}">{{ val[0].name }}</a></td>
@@ -42,6 +43,25 @@
         </td>
       </tr>
     {% endfor %}
+    {% else %}
+    {% for mt in categories_info %}
+      <tr>
+        <td></td>
+        <td>
+        </td>
+        <td>{{ mt }}</td>
+        <td>
+          <button type="button" class="btn btn-primary {% if add_category %}categorize_capture{% else %}uncategorize_capture{% endif %}" value="{{ mt }}">
+          {% if add_category %}
+          Categorize capture.
+          {% else %}
+          Uncategorize capture.
+          {% endif %}
+          </button>
+        </td>
+      </tr>
+    {% endfor %}
+    {% endif %}
     </tbody>
   </table>
 </div>

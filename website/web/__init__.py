@@ -41,8 +41,10 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable
-from lookyloo.helpers import (get_taxonomies, UserAgents, load_cookies,
-                              load_user_config)
+from lookyloo.helpers import (UserAgents, load_cookies,
+                              load_user_config,
+                              get_taxonomies
+                              )
 
 if sys.version_info < (3, 9):
     from pytz import all_timezones_set
@@ -675,7 +677,7 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
 def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    matching_categories = None
+    matching_categories: dict[str, Any] = {}
     if 'verification-status' in request.form:
         status = request.form.get('verification-status')
         # fast categories
@@ -692,6 +694,7 @@ def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | R
                     categories.append(category)
         for category in categories:
             lookyloo.categorize_capture(tree_uuid, category)
+        get_indexing(flask_login.current_user).reindex_categories_capture(tree_uuid)
     if 'query' in request.form and request.form.get('query', '').strip():
         matching_categories = {}
         t = get_taxonomies()
@@ -711,6 +714,7 @@ def uncategorize_capture(tree_uuid: str, category: str) -> str | WerkzeugRespons
     if not enable_categorization:
         return jsonify({'response': 'Categorization not enabled.'})
     lookyloo.uncategorize_capture(tree_uuid, category)
+    get_indexing(flask_login.current_user).reindex_categories_capture(tree_uuid)
     return jsonify({'response': f'{category} successfully removed from {tree_uuid}'})
 
 
@@ -721,6 +725,7 @@ def categorize_capture(tree_uuid: str, category: str) -> str | WerkzeugResponse 
     if not enable_categorization:
         return jsonify({'response': 'Categorization not enabled.'})
     lookyloo.categorize_capture(tree_uuid, category)
+    get_indexing(flask_login.current_user).reindex_categories_capture(tree_uuid)
     return jsonify({'response': f'{category} successfully added to {tree_uuid}'})
 
 
@@ -1327,9 +1332,8 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: str 
         if cut_time and cached.timestamp < cut_time_with_tz:
             continue
 
-        if category:
-            if not cached.categories or category not in cached.categories:
-                continue
+        if category and not get_indexing(flask_login.current_user).capture_in_category(cached.uuid, category):
+            continue
 
         if show_hidden:
             # Only display the hidden ones
@@ -1367,7 +1371,7 @@ def get_index_params(request: Request) -> tuple[bool, str]:
 @app.route('/index', methods=['GET'])
 def index() -> str:
     show_error, category = get_index_params(request)
-    return index_generic(show_error=show_error)
+    return index_generic(show_error=show_error, category=category)
 
 
 @app.route('/hidden', methods=['GET'])

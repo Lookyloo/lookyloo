@@ -47,7 +47,7 @@ class LookylooCacheLogAdapter(LoggerAdapter):  # type: ignore[type-arg]
 
 class CaptureCache():
     __slots__ = ('uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir',
-                 'error', 'no_index', 'categories', 'parent',
+                 'error', 'no_index', 'parent',
                  'user_agent', 'referer', 'logger')
 
     def __init__(self, cache_entry: dict[str, Any]):
@@ -89,7 +89,6 @@ class CaptureCache():
         # if the keys in __default_cache_keys are present, it was an HTTP error and we still need to pass the error along
         self.error: str | None = cache_entry.get('error')
         self.no_index: bool = True if cache_entry.get('no_index') in [1, '1'] else False
-        self.categories: list[str] = json.loads(cache_entry['categories']) if cache_entry.get('categories') else []
         self.parent: str | None = cache_entry.get('parent')
         self.user_agent: str | None = cache_entry.get('user_agent')
         self.referer: str | None = cache_entry.get('referer')
@@ -483,10 +482,6 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 and 'HTTP Error' not in cache['error']
                 and "No har files in" not in cache['error']):
             logger.info(cache['error'])
-
-        if (capture_dir / 'categories').exists():
-            with (capture_dir / 'categories').open() as _categories:
-                cache['categories'] = json.dumps([c.strip() for c in _categories.readlines()])
 
         if (capture_dir / 'no_index').exists():
             # If the folders claims anonymity
