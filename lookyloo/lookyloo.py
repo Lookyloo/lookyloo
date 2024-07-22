@@ -29,7 +29,7 @@ import mmh3
 
 from defang import defang  # type: ignore[import-untyped]
 from har2tree import CrawledTree, HostNode, URLNode
-from lacuscore import (LacusCore,
+from lacuscore import (LacusCore, CaptureSettingsError,
                        CaptureStatus as CaptureStatusCore,
                        # CaptureResponse as CaptureResponseCore)
                        # CaptureResponseJson as CaptureResponseJsonCore,
@@ -287,15 +287,25 @@ class Lookyloo():
         return meta
 
     def get_capture_settings(self, capture_uuid: str, /) -> CaptureSettings | None:
-        if capture_settings := self.redis.hgetall(capture_uuid):
-            return CaptureSettings(**capture_settings)
+        '''Get the capture settings from the cache or the disk.'''
+        try:
+            if capture_settings := self.redis.hgetall(capture_uuid):
+                return CaptureSettings(**capture_settings)
+        except CaptureSettingsError as e:
+            self.logger.warning(f'Invalid capture settings for {capture_uuid}: {e}')
+            return None
         cache = self.capture_cache(capture_uuid)
         if not cache:
             return None
         cs_file = cache.capture_dir / 'capture_settings.json'
         if cs_file.exists():
-            with cs_file.open('r') as f:
-                return CaptureSettings(**json.load(f))
+            try:
+                with cs_file.open('r') as f:
+                    return CaptureSettings(**json.load(f))
+            except CaptureSettingsError as e:
+                self.logger.warning(f'[In file!] Invalid capture settings for {capture_uuid}: {e}')
+                return None
+
         return None
 
     def categories_capture(self, capture_uuid: str, /) -> dict[str, Any]:
@@ -650,7 +660,11 @@ class Lookyloo():
             query.headers['dnt'] = query.dnt
         if authenticated:
             if user_config := load_user_config(user):
-                query = self._apply_user_config(query, user_config)
+                try:
+                    query = self._apply_user_config(query, user_config)
+                except CaptureSettingsError as e:
+                    self.logger.critical(f'Unable to apply user config for {user}: {e}')
+                    raise e
 
         priority = get_priority(source, user, authenticated)
         if priority < -100:
@@ -714,7 +728,11 @@ class Lookyloo():
         if to_return['contacts']:
             to_return['all_emails'] |= set(to_return['contacts'])
         to_return['ips'] = {ip: self.uwhois.whois(ip, contact_email_only=True) for ip in set(hostnode.resolved_ips['v4']) | set(hostnode.resolved_ips['v6'])}
-        to_return['asns'] = {asn['asn']: self.uwhois.whois(f'AS{asn["asn"]}', contact_email_only=True) for asn in hostnode.ipasn.values()}
+        if hasattr(hostnode, 'ipasn'):
+            to_return['asns'] = {asn['asn']: self.uwhois.whois(f'AS{asn["asn"]}', contact_email_only=True) for asn in hostnode.ipasn.values()}
+        else:
+            self.logger.warning(f'No IPASN for {hostnode.name}')
+            to_return['asns'] = {}
 
         # try to get contact from security.txt file
         try:
@@ -1429,7 +1447,11 @@ class Lookyloo():
                     error = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('capture_settings.json'):
                     _capture_settings = json.loads(lookyloo_capture.read(filename))
-                    capture_settings = CaptureSettings(**_capture_settings)
+                    try:
+                        capture_settings = CaptureSettings(**_capture_settings)
+                    except CaptureSettingsError as e:
+                        unrecoverable_error = True
+                        messages['errors'].append(f'Invalid Capture Settings: {e}')
                 else:
                     for to_skip in files_to_skip:
                         if filename.endswith(to_skip):

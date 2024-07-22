@@ -17,7 +17,7 @@ from flask import request, send_file, Response
 from flask_restx import Namespace, Resource, fields, abort  # type: ignore[import-untyped]
 from werkzeug.security import check_password_hash
 
-from lacuscore import CaptureStatus as CaptureStatusCore
+from lacuscore import CaptureStatus as CaptureStatusCore, CaptureSettingsError
 from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo import CaptureSettings, Lookyloo
 from lookyloo.comparator import Comparator
@@ -48,6 +48,15 @@ token_request_fields = api.model('AuthTokenFields', {
 @api.errorhandler(NoValidHarFile)  # type: ignore[misc]
 def handle_no_HAR_file_exception(error: Any) -> tuple[dict[str, str], int]:
     '''The capture has no HAR file, it failed for some reason.'''
+    return {'message': str(error)}, 400
+
+
+@api.errorhandler(CaptureSettingsError)  # type: ignore[misc]
+def handle_pydandic_validation_exception(error: CaptureSettingsError) -> tuple[dict[str, Any], int]:
+    '''Return the validation error message and 400 status code'''
+    if error.pydantic_validation_errors:
+        return {'message': 'Unable to validate capture settings.',
+                'details': error.pydantic_validation_errors.errors()}, 400
     return {'message': str(error)}, 400
 
 

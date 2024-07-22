@@ -32,7 +32,7 @@ from flask import (Flask, Response, Request, flash, jsonify, redirect, render_te
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
-from lacuscore import CaptureStatus
+from lacuscore import CaptureStatus, CaptureSettingsError
 from puremagic import from_string
 from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
 from werkzeug.security import check_password_hash
@@ -281,6 +281,16 @@ def file_response(func):  # type: ignore[no-untyped-def]
                              mimetype='test/plain', as_attachment=True, download_name='error.txt')
 
     return wrapper
+
+
+@app.errorhandler(CaptureSettingsError)
+def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Response | str | WerkzeugResponse:
+    '''Return the validation error message and 400 status code'''
+    if error.pydantic_validation_errors:
+        flash(f'Unable to validate capture settings: {error.pydantic_validation_errors.errors()}')
+    else:
+        flash(str(error))
+    return redirect(url_for('landing_page'))
 
 
 # ##### Methods querying the indexes #####
