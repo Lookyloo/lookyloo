@@ -802,23 +802,11 @@ class RecentCaptures(Resource):  # type: ignore[misc]
          params={'category': 'The category according to which the uuids are to be returned.'},
          required=False)
 class CategoriesCaptures(Resource):  # type: ignore[misc]
-    def get(self, category: str | None=None) -> list[str] | dict[str, Any]:
-        categories = ['legitimate', 'parking-page', 'default-page', 'insti_usertution', 'captcha',
-                      'authentication-form', 'adult-content', 'shop', 'malicious', 'clone', 'phishing', 'unclear']
-        if not category:
-            all_categorized_uuids: dict[str, set[str]] = {}
-            for c in categories:
-                one_categorie = get_indexing(flask_login.current_user).get_captures_category(c)
-                if not one_categorie:
-                    continue
-                for uuid in one_categorie:
-                    if uuid not in all_categorized_uuids:
-                        all_categorized_uuids[uuid] = {c}
-                    else:
-                        all_categorized_uuids[uuid].add(c)
-            all_categorized_uuids_list = {uuid: list(categories) for uuid, categories in all_categorized_uuids.items()}
-            return all_categorized_uuids_list
-        if not category in categories:
-            return {'error': f'Invalid category: {category}'}
-        return list(get_indexing(flask_login.current_user).get_captures_category(category))
-
+    def get(self, category: str | None=None) -> list[str] | dict[str, list[str]] | tuple[dict[str, str], int]:
+        existing_categories = get_indexing(flask_login.current_user).categories
+        if category:
+            if category not in existing_categories:
+                return {'error': f'Invalid category: {category}, must be in {", ".join(existing_categories)}.'}, 400
+            return list(get_indexing(flask_login.current_user).get_captures_category(category))
+        return {c: list(get_indexing(flask_login.current_user).get_captures_category(c))
+                for c in existing_categories}

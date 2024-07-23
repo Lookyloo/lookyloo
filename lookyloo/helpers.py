@@ -11,7 +11,7 @@ import re
 import time
 
 from datetime import datetime, timedelta, date
-from functools import lru_cache
+from functools import lru_cache, cache
 from importlib.metadata import version
 from io import BufferedIOBase
 from pathlib import Path
@@ -31,6 +31,7 @@ from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
 from .default import get_homedir, safe_create_dir, get_config, LookylooException
+from .indexing import Indexing
 # from .exceptions import InvalidCaptureSetting
 
 
@@ -436,3 +437,12 @@ def load_user_config(username: str) -> dict[str, Any] | None:
         return None
     with user_config_path.open() as _c:
         return json.load(_c)
+
+
+@cache
+def get_indexing(full: bool=False) -> Indexing:
+    if not get_config('generic', 'index_everything'):
+        return Indexing()
+    if full:
+        return Indexing(full_index=True)
+    return Indexing()

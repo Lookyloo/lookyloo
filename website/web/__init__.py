@@ -694,7 +694,6 @@ def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | R
                     categories.append(category)
         for category in categories:
             lookyloo.categorize_capture(tree_uuid, category)
-        get_indexing(flask_login.current_user).reindex_categories_capture(tree_uuid)
     if 'query' in request.form and request.form.get('query', '').strip():
         matching_categories = {}
         t = get_taxonomies()
@@ -714,7 +713,6 @@ def uncategorize_capture(tree_uuid: str, category: str) -> str | WerkzeugRespons
     if not enable_categorization:
         return jsonify({'response': 'Categorization not enabled.'})
     lookyloo.uncategorize_capture(tree_uuid, category)
-    get_indexing(flask_login.current_user).reindex_categories_capture(tree_uuid)
     return jsonify({'response': f'{category} successfully removed from {tree_uuid}'})
 
 
@@ -725,7 +723,6 @@ def categorize_capture(tree_uuid: str, category: str) -> str | WerkzeugResponse 
     if not enable_categorization:
         return jsonify({'response': 'Categorization not enabled.'})
     lookyloo.categorize_capture(tree_uuid, category)
-    get_indexing(flask_login.current_user).reindex_categories_capture(tree_uuid)
     return jsonify({'response': f'{category} successfully added to {tree_uuid}'})
 
 

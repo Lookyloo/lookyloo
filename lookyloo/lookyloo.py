@@ -59,7 +59,8 @@ from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, UserAgents,
                       get_useragent_for_requests, load_takedown_filters,
-                      CaptureSettings, load_user_config
+                      CaptureSettings, load_user_config,
+                      get_indexing
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -335,6 +336,9 @@ class Lookyloo():
         current_categories.add(category)
         with categ_file.open('w') as f:
             f.writelines(f'{t}\n' for t in current_categories)
+        get_indexing().reindex_categories_capture(capture_uuid)
+        if get_config('generic', 'index_everything'):
+            get_indexing(full=True).reindex_categories_capture(capture_uuid)
 
     def uncategorize_capture(self, capture_uuid: str, /, category: str) -> None:
         '''Remove a category (MISP Taxonomy tag) from a capture.'''
@@ -351,6 +355,9 @@ class Lookyloo():
             current_categories.remove(category)
             with categ_file.open('w') as f:
                 f.writelines(f'{t}\n' for t in current_categories)
+        get_indexing().reindex_categories_capture(capture_uuid)
+        if get_config('generic', 'index_everything'):
+            get_indexing(full=True).reindex_categories_capture(capture_uuid)
 
     def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False) -> dict[str, Any]:
         '''Launch the 3rd party modules on a capture.
