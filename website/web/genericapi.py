@@ -802,7 +802,7 @@ class RecentCaptures(Resource):  # type: ignore[misc]
          params={'category': 'The category according to which the uuids are to be returned.'},
          required=False)
 class CategoriesCaptures(Resource):  # type: ignore[misc]
-    def get(self, category: str | None=None) -> list[str] | dict[str, any]:
+    def get(self, category: str | None=None) -> list[str] | dict[str, Any]:
         categories = ['legitimate', 'parking-page', 'default-page', 'insti_usertution', 'captcha',
                       'authentication-form', 'adult-content', 'shop', 'malicious', 'clone', 'phishing', 'unclear']
         if not category:
