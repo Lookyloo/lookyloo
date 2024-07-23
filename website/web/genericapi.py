@@ -802,7 +802,7 @@ class RecentCaptures(Resource):  # type: ignore[misc]
          params={'category': 'The category according to which the uuids are to be returned.'},
          required=False)
 class CategoriesCaptures(Resource):  # type: ignore[misc]
-    def get(self, category: str | None=None) -> list[str] | dict[str, list[str]] | None:
+    def get(self, category: str | None=None) -> list[str] | dict[str, any]:
         categories = ['legitimate', 'parking-page', 'default-page', 'insti_usertution', 'captcha',
                       'authentication-form', 'adult-content', 'shop', 'malicious', 'clone', 'phishing', 'unclear']
         if not category:
@@ -816,8 +816,8 @@ class CategoriesCaptures(Resource):  # type: ignore[misc]
                         all_categorized_uuids[uuid] = {c}
                     else:
                         all_categorized_uuids[uuid].add(c)
-            all_categorized_uuids = {uuid: list(categories) for uuid, categories in all_categorized_uuids.items()}
-            return all_categorized_uuids
+            all_categorized_uuids_list = {uuid: list(categories) for uuid, categories in all_categorized_uuids.items()}
+            return all_categorized_uuids_list
         if not category in categories:
             return {'error': f'Invalid category: {category}'}
         return list(get_indexing(flask_login.current_user).get_captures_category(category))
