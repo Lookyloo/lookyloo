@@ -81,7 +81,7 @@ class Processing(AbstractManager):
         to_requeue: list[str] = []
         try:
             for uuid, _ in self.lookyloo.redis.zscan_iter('to_capture'):
-                if self.lookyloo.redis.hexists(uuid, 'not_queued'):
+                if self.lookyloo.redis.hget(uuid, 'not_queued') == '1':
                     # The capture is marked as not queued
                     to_requeue.append(uuid)
                 elif self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
