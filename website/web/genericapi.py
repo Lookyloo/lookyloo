@@ -784,6 +784,21 @@ class CaptureHide(Resource):  # type: ignore[misc]
         except Exception as e:
             return {'error': f'Unable to hide the tree: {e}'}, 400
         return {'info': f'Capture {capture_uuid} successfully hidden.'}
+    
+
+@api.route('/admin/<string:capture_uuid>/remove')
+@api.doc(description='Remove the capture from the index.',
+         params={'capture_uuid': 'The UUID of the capture'},
+         security='apikey')
+class CaptureRemove(Resource):  # type: ignore[misc]
+    method_decorators = [api_auth_check]
+
+    def post(self, capture_uuid: str) -> dict[str, str] | tuple[dict[str, str], int]:
+        try:
+            lookyloo.remove_capture(capture_uuid)
+        except Exception as e:
+            return {'error': f'Unable to remove the tree: {e}'}, 400
+        return {'info': f'Capture {capture_uuid} successfully removed.'}
 
 
 @api.route('/json/recent_captures')
