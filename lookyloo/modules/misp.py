@@ -119,7 +119,7 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
             redirects[-1].comment = f'Last redirect ({nb})'
 
         if redirects:
-            prec_object = initial_url
+            prec_object = initial_obj
             for u_object in redirects:
                 prec_object.add_reference(u_object, 'redirects-to')
                 prec_object = u_object
