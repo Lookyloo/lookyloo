@@ -498,6 +498,7 @@ class Lookyloo():
     def get_recent_captures(self, /, *, since: datetime | str | float | None=None,
                             before: datetime | float | str | None=None) -> list[str]:
         '''Get the captures that were done between two dates
+
         :param since: the oldest date to get captures from, None will start from the oldest capture
         :param before: the newest date to get captures from, None will end on the newest capture
         '''
