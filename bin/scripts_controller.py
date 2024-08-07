@@ -32,17 +32,15 @@ def main() -> None:
         except FileNotFoundError:
             print('Redis is down.')
     else:
-        if args.action == 'restart':
-            # we need to keep the cmdline for the restart
-            try:
-                running_services = AbstractManager.is_running()
-            except KeyError:
-                print(f'{args.script} is not running.')
-                return
-            for name, numbers, pids in running_services:
-                if name == args.script:
-                    to_restart = _get_cmdline(pids.pop())
-                    break
+        # we need to keep the cmdline for the restart
+        # And if it doesn't exist, we want to inform the user.
+        for name, numbers, pids in AbstractManager.is_running():
+            if name == args.script:
+                to_restart = _get_cmdline(pids.pop())
+                break
+        else:
+            print(f'{args.script} is not running or does not exists.')
+            to_restart = []
 
         print(f'Request {args.script} to {args.action}...')
         r = Redis(unix_socket_path=get_socket_path('cache'), db=1)
@@ -53,7 +51,7 @@ def main() -> None:
         print('done.')
         r.srem('shutdown_manual', args.script)
 
-        if args.action == 'restart':
+        if args.action == 'restart' and to_restart:
             print(f'Start {args.script}...')
             Popen(to_restart)
             print('done.')
