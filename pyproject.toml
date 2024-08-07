@@ -34,6 +34,7 @@ background_full_indexer = "bin.background_indexer:main_full_indexer"
 archiver = "bin.archiver:main"
 processing = "bin.background_processing:main"
 start_website = "bin.start_website:main"
+scripts_controller = "bin.scripts_controller:main"
 
 
 [tool.poetry.dependencies]

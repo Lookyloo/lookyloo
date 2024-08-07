@@ -123,8 +123,8 @@ if __name__ == '__main__':
 
     console.print('Services currently running:')
     running = AbstractManager.is_running()
-    for service, number in running:
-        s = Padding(f'{service} ({int(number)} service(s))', (0, 2))
+    for service, number, pids in running:
+        s = Padding(f'{service} ({int(number)} service(s)) - PIDs: {", ".join(pids)}', (0, 2))
         console.print(s)
 
     console.print('Current cache status:')

@@ -33,9 +33,10 @@ class AbstractManager(ABC):
         self.force_stop = False
 
     @staticmethod
-    def is_running() -> list[tuple[str, float]]:
+    def is_running() -> list[tuple[str, float, set[str]]]:
         try:
             r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
+            running_scripts: dict[str, set[str]] = {}
             for script_name, score in r.zrangebyscore('running', '-inf', '+inf', withscores=True):
                 for pid in r.smembers(f'service|{script_name}'):
                     try:
@@ -48,7 +49,8 @@ class AbstractManager(ABC):
                             r.zadd('running', {script_name: other_same_services})
                         else:
                             r.zrem('running', script_name)
-            return r.zrangebyscore('running', '-inf', '+inf', withscores=True)
+                running_scripts[script_name] = r.smembers(f'service|{script_name}')
+            return [(name, rank, running_scripts[name] if name in running_scripts else set()) for name, rank in r.zrangebyscore('running', '-inf', '+inf', withscores=True)]
         except RedisConnectionError:
             print('Unable to connect to redis, the system is down.')
             return []
@@ -104,7 +106,8 @@ class AbstractManager(ABC):
 
     def shutdown_requested(self) -> bool:
         try:
-            return bool(self.__redis.exists('shutdown'))
+            return (bool(self.__redis.exists('shutdown'))
+                    or bool(self.__redis.sismember('shutdown_manual', self.script_name)))
         except ConnectionRefusedError:
             return True
         except RedisConnectionError:
@@ -133,6 +136,7 @@ class AbstractManager(ABC):
     def run(self, sleep_in_sec: int) -> None:
         self.logger.info(f'Launching {self.__class__.__name__}')
         try:
+            self.set_running()
             while not self.force_stop:
                 if self.shutdown_requested():
                     break
@@ -142,15 +146,9 @@ class AbstractManager(ABC):
                             self.logger.critical(f'Unable to start {self.script_name}.')
                             break
                     else:
-                        self.set_running()
                         self._to_run_forever()
                 except Exception:  # nosec B110
                     self.logger.exception(f'Something went terribly wrong in {self.__class__.__name__}.')
-                finally:
-                    if not self.process:
-                        # self.process means we run an external script, all the time,
-                        # do not unset between sleep.
-                        self.unset_running()
                 if not self.long_sleep(sleep_in_sec):
                     break
         except KeyboardInterrupt:
@@ -187,6 +185,7 @@ class AbstractManager(ABC):
     async def run_async(self, sleep_in_sec: int) -> None:
         self.logger.info(f'Launching {self.__class__.__name__}')
         try:
+            self.set_running()
             while not self.force_stop:
                 if self.shutdown_requested():
                     break
@@ -196,15 +195,9 @@ class AbstractManager(ABC):
                             self.logger.critical(f'Unable to start {self.script_name}.')
                             break
                     else:
-                        self.set_running()
                         await self._to_run_forever_async()
                 except Exception:  # nosec B110
                     self.logger.exception(f'Something went terribly wrong in {self.__class__.__name__}.')
-                finally:
-                    if not self.process:
-                        # self.process means we run an external script, all the time,
-                        # do not unset between sleep.
-                        self.unset_running()
                 if not await self.long_sleep_async(sleep_in_sec):
                     break
         except KeyboardInterrupt:

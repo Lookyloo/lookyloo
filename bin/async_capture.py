@@ -7,6 +7,7 @@ import logging
 import logging.config
 import signal
 
+from asyncio import Task
 from pathlib import Path
 
 from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
@@ -43,6 +44,10 @@ class AsyncCapture(AbstractManager):
 
     async def _trigger_captures(self) -> None:
         # Only called if LacusCore is used
+        def clear_list_callback(task: Task) -> None:  # type: ignore[type-arg]
+            self.captures.discard(task)
+            self.unset_running()
+
         max_new_captures = get_config('generic', 'async_capture_processes') - len(self.captures)
         self.logger.debug(f'{len(self.captures)} ongoing captures.')
         if max_new_captures <= 0:
@@ -50,7 +55,8 @@ class AsyncCapture(AbstractManager):
             return None
         for capture_task in self.lookyloo.lacus.consume_queue(max_new_captures):  # type: ignore[union-attr]
             self.captures.add(capture_task)
-            capture_task.add_done_callback(self.captures.discard)
+            self.set_running()
+            capture_task.add_done_callback(clear_list_callback)
 
     def uuids_ready(self) -> list[str]:
         '''Get the list of captures ready to be processed'''
@@ -115,7 +121,6 @@ class AsyncCapture(AbstractManager):
             # make sure to expire the key if nothing was processed for a while (= queues empty)
             lazy_cleanup.expire('queues', 600)
             lazy_cleanup.execute()
-            self.unset_running()
             self.logger.info(f'Done with {uuid}')
 
     async def _to_run_forever_async(self) -> None:
@@ -125,10 +130,6 @@ class AsyncCapture(AbstractManager):
         try:
             if isinstance(self.lookyloo.lacus, LacusCore):
                 await self._trigger_captures()
-                # NOTE: +1 because running this method also counts for one and will
-                #       be decremented when it finishes
-                self.set_running(len(self.captures) + 1)
-
             self.process_capture_queue()
         except LacusUnreachable:
             self.logger.error('Lacus is unreachable, retrying later.')
@@ -139,10 +140,7 @@ class AsyncCapture(AbstractManager):
                 while self.captures:
                     self.logger.info(f'Waiting for {len(self.captures)} capture(s) to finish...')
                     await asyncio.sleep(5)
-                    # NOTE: +1 so we don't quit before the final process capture queue
-                    self.set_running(len(self.captures) + 1)
                 self.process_capture_queue()
-                self.unset_running()
             self.logger.info('No more captures')
         except LacusUnreachable:
             self.logger.error('Lacus is unreachable, nothing to wait for')
