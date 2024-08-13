@@ -28,6 +28,7 @@ RUN mkdir cache user_agents scraped logs
 RUN echo LOOKYLOO_HOME="'`pwd`'" > .env
 RUN cat .env
 RUN poetry install
+RUN poetry run playwright install-deps
 RUN poetry run playwright install
 RUN poetry run tools/3rdparty.py
 RUN poetry run tools/generate_sri.py
