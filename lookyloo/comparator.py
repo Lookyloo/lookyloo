@@ -85,6 +85,17 @@ class Comparator():
             raise MissingUUID(f'{capture_uuid} does not exists.')
 
         capture = self._captures_index[capture_uuid]
+
+        # Makes sure the tree is built and valid, force a rebuild otherwise
+        try:
+            _ = capture.tree
+        except TreeNeedsRebuild:
+            self.logger.warning(f"The tree for {capture_uuid} has to be rebuilt.")
+            self._captures_index.remove_pickle(capture_uuid)
+            capture = self._captures_index[capture_uuid]
+        except LookylooException as e:
+            return {'error': str(e)}
+
         to_return: dict[str, Any]
         try:
             if capture.error:
