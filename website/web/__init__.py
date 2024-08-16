@@ -1033,17 +1033,30 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
         flash('Unable to find capture {base_tree_uuid} in cache.', 'error')
         return redirect(url_for('tree', tree_uuid=base_tree_uuid))
     cookies = load_cookies(lookyloo.get_cookies(base_tree_uuid))
+    original_capture_settings = lookyloo.get_capture_settings(base_tree_uuid)
     bulk_captures = []
     for url in [urls[int(selected_id) - 1] for selected_id in selected_urls]:
-        capture: dict[str, Any] = {
-            'url': url,
-            'cookies': cookies,
-            'referer': cache.redirects[-1] if cache.redirects else cache.url,
-            'user_agent': cache.user_agent,
-            'parent': base_tree_uuid,
-            'listing': False if cache and cache.no_index else True
-        }
-        new_capture_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+        if original_capture_settings:
+            capture = original_capture_settings.model_copy(
+                update={
+                    'url': url,
+                    'cookies': cookies,
+                    'referer': cache.redirects[-1] if cache.redirects else cache.url,
+                    'user_agent': cache.user_agent,
+                    'parent': base_tree_uuid,
+                    'listing': False if cache and cache.no_index else True
+                })
+        else:
+            _capture: dict[str, Any] = {
+                'url': url,
+                'cookies': cookies,
+                'referer': cache.redirects[-1] if cache.redirects else cache.url,
+                'user_agent': cache.user_agent,
+                'parent': base_tree_uuid,
+                'listing': False if cache and cache.no_index else True
+            }
+            capture = CaptureSettings(**_capture)
+        new_capture_uuid = lookyloo.enqueue_capture(capture, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         bulk_captures.append((new_capture_uuid, url))
 
     return render_template('bulk_captures.html', uuid=base_tree_uuid, bulk_captures=bulk_captures)
