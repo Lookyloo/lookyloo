@@ -46,7 +46,7 @@ from pylacus import (PyLacus,
                      )
 from pymisp import MISPAttribute, MISPEvent, MISPObject
 from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable
-from pylookyloomonitoring import PyLookylooMonitoring  # type: ignore[attr-defined]
+from pylookyloomonitoring import PyLookylooMonitoring
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
