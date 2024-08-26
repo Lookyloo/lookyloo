@@ -1725,7 +1725,7 @@ def identifier_details(identifier_type: str, identifier: str) -> str:
 @app.route('/capture_hash_details/<string:hash_type>/<string:h>', methods=['GET'])
 def capture_hash_details(hash_type: str, h: str) -> str:
     captures = get_capture_hash_investigator(hash_type, h)
-    return render_template('identifier_details.html', hash_type=hash_type,
+    return render_template('hash_type_details.html', hash_type=hash_type,
                            h=h,
                            captures=captures)
 
