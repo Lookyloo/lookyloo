@@ -99,6 +99,9 @@ class Indexing():
         return tuple(to_return)  # type: ignore[return-value]
 
     def index_capture(self, uuid_to_index: str, directory: Path) -> None:
+        if self.redis.sismember('nothing_to_index', uuid_to_index):
+            # No HAR file in the capture, break immediately.
+            return
         if not self.can_index(uuid_to_index):
             self.logger.info(f'Indexing on {uuid_to_index} ongoing, skipping. ')
             return
@@ -108,9 +111,14 @@ class Indexing():
             if all(indexed):
                 return
 
+            if not list(directory.rglob('*.har.gz')) and not list(directory.rglob('*.har')):
+                self.logger.debug(f'No harfile in {uuid_to_index} - {directory}, nothing to index. ')
+                self.redis.sadd('nothing_to_index', uuid_to_index)
+                return
+
             if not any((directory / pickle_name).exists()
                        for pickle_name in ['tree.pickle.gz', 'tree.pickle']):
-                self.logger.warning(f'No pickle for {uuid_to_index}, skipping. ')
+                self.logger.warning(f'No pickle for {uuid_to_index} - {directory}, skipping. ')
                 return
 
             # do the indexing
