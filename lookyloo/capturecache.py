@@ -16,8 +16,8 @@ import time
 from collections import OrderedDict
 from collections.abc import Mapping
 from datetime import datetime
-from functools import lru_cache, _CacheInfo as CacheInfo
-from logging import Logger, LoggerAdapter
+from functools import _CacheInfo as CacheInfo
+from logging import LoggerAdapter
 from pathlib import Path
 from typing import Any, MutableMapping, Iterator
 
@@ -28,7 +28,7 @@ from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
 from .context import Context
-from .helpers import get_captures_dir, is_locked
+from .helpers import get_captures_dir, is_locked, load_pickle_tree, get_pickle_path, remove_pickle_tree
 from .indexing import Indexing
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
@@ -104,63 +104,6 @@ class CaptureCache():
         while is_locked(self.capture_dir):
             time.sleep(5)
         return load_pickle_tree(self.capture_dir, self.capture_dir.stat().st_mtime, self.logger)
-
-
-def get_pickle_path(capture_dir: Path | str) -> Path | None:
-    if isinstance(capture_dir, str):
-        capture_dir = Path(capture_dir)
-    pickle_file_gz = capture_dir / 'tree.pickle.gz'
-    if pickle_file_gz.exists():
-        return pickle_file_gz
-
-    pickle_file = capture_dir / 'tree.pickle'
-    if pickle_file.exists():
-        return pickle_file
-
-    return None
-
-
-def remove_pickle_tree(capture_dir: Path) -> None:
-    pickle_path = get_pickle_path(capture_dir)
-    if pickle_path and pickle_path.exists():
-        pickle_path.unlink()
-
-
-@lru_cache(maxsize=64)
-def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> CrawledTree:
-    pickle_path = get_pickle_path(capture_dir)
-    tree = None
-    try:
-        if pickle_path:
-            if pickle_path.suffix == '.gz':
-                with gzip.open(pickle_path, 'rb') as _pg:
-                    tree = pickle.load(_pg)
-            else:  # not a GZ pickle
-                with pickle_path.open('rb') as _p:
-                    tree = pickle.load(_p)
-    except pickle.UnpicklingError:
-        remove_pickle_tree(capture_dir)
-    except EOFError:
-        remove_pickle_tree(capture_dir)
-    except Exception:
-        logger.exception('Unexpected exception when unpickling.')
-        remove_pickle_tree(capture_dir)
-
-    if tree:
-        try:
-            if tree.root_hartree.har.path.exists():
-                return tree
-            else:
-                # The capture was moved.
-                remove_pickle_tree(capture_dir)
-        except Exception as e:
-            logger.warning(f'The pickle is broken, removing: {e}')
-            remove_pickle_tree(capture_dir)
-
-    if list(capture_dir.rglob('*.har')) or list(capture_dir.rglob('*.har.gz')):
-        raise TreeNeedsRebuild('We have HAR files and need to rebuild the tree.')
-    # The tree doesn't need to be rebuilt if there are no HAR files.
-    raise NoValidHarFile("Couldn't find HAR files")
 
 
 def serialize_sets(obj: Any) -> Any:

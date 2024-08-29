@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import configparser
+import gzip
 import hashlib
 import json
 import logging
 import os
+import pickle
 import re
 import time
 
@@ -14,10 +16,11 @@ from datetime import datetime, timedelta, date
 from functools import lru_cache, cache
 from importlib.metadata import version
 from io import BufferedIOBase
+from logging import Logger
 from pathlib import Path
 from pydantic import field_validator
 from pydantic_core import from_json
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from urllib.parse import urlparse
 
 
@@ -31,9 +34,10 @@ from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
 from .default import get_homedir, safe_create_dir, get_config, LookylooException
-from .indexing import Indexing
-# from .exceptions import InvalidCaptureSetting
+from .exceptions import NoValidHarFile, TreeNeedsRebuild
 
+if TYPE_CHECKING:
+    from .indexing import Indexing
 
 logger = logging.getLogger('Lookyloo - Helpers')
 
@@ -441,8 +445,66 @@ def load_user_config(username: str) -> dict[str, Any] | None:
 
 @cache
 def get_indexing(full: bool=False) -> Indexing:
+    from .indexing import Indexing
     if not get_config('generic', 'index_everything'):
         return Indexing()
     if full:
         return Indexing(full_index=True)
     return Indexing()
+
+
+def get_pickle_path(capture_dir: Path | str) -> Path | None:
+    if isinstance(capture_dir, str):
+        capture_dir = Path(capture_dir)
+    pickle_file_gz = capture_dir / 'tree.pickle.gz'
+    if pickle_file_gz.exists():
+        return pickle_file_gz
+
+    pickle_file = capture_dir / 'tree.pickle'
+    if pickle_file.exists():
+        return pickle_file
+
+    return None
+
+
+def remove_pickle_tree(capture_dir: Path) -> None:
+    pickle_path = get_pickle_path(capture_dir)
+    if pickle_path and pickle_path.exists():
+        pickle_path.unlink()
+
+
+@lru_cache(maxsize=64)
+def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> CrawledTree:
+    pickle_path = get_pickle_path(capture_dir)
+    tree = None
+    try:
+        if pickle_path:
+            if pickle_path.suffix == '.gz':
+                with gzip.open(pickle_path, 'rb') as _pg:
+                    tree = pickle.load(_pg)
+            else:  # not a GZ pickle
+                with pickle_path.open('rb') as _p:
+                    tree = pickle.load(_p)
+    except pickle.UnpicklingError:
+        remove_pickle_tree(capture_dir)
+    except EOFError:
+        remove_pickle_tree(capture_dir)
+    except Exception:
+        logger.exception('Unexpected exception when unpickling.')
+        remove_pickle_tree(capture_dir)
+
+    if tree:
+        try:
+            if tree.root_hartree.har.path.exists():
+                return tree
+            else:
+                # The capture was moved.
+                remove_pickle_tree(capture_dir)
+        except Exception as e:
+            logger.warning(f'The pickle is broken, removing: {e}')
+            remove_pickle_tree(capture_dir)
+
+    if list(capture_dir.rglob('*.har')) or list(capture_dir.rglob('*.har.gz')):
+        raise TreeNeedsRebuild('We have HAR files and need to rebuild the tree.')
+    # The tree doesn't need to be rebuilt if there are no HAR files.
+    raise NoValidHarFile("Couldn't find HAR files")

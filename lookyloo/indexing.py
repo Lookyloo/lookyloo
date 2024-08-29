@@ -15,13 +15,15 @@ import mmh3
 
 from bs4 import BeautifulSoup
 from hashlib import sha256
+from pathlib import Path
 
 from har2tree import CrawledTree
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
+from .exceptions import NoValidHarFile, TreeNeedsRebuild
+from .helpers import load_pickle_tree
 from .default import get_socket_path, get_config
-# from .helpers import get_public_suffix_list
 
 
 class Indexing():
@@ -53,12 +55,17 @@ class Indexing():
     def redis(self) -> Redis:  # type: ignore[type-arg]
         return Redis(connection_pool=self.__redis_pool)
 
-    @property
-    def can_index(self) -> bool:
+    def can_index(self, capture_uuid: str | None=None) -> bool:
+        if capture_uuid:
+            return bool(self.redis.set(f'ongoing_indexing|{capture_uuid}', 1, ex=360, nx=True))
+
         return bool(self.redis.set('ongoing_indexing', 1, ex=3600, nx=True))
 
-    def indexing_done(self) -> None:
-        self.redis.delete('ongoing_indexing')
+    def indexing_done(self, capture_uuid: str | None=None) -> None:
+        if capture_uuid:
+            self.redis.delete(f'ongoing_indexing|{capture_uuid}')
+        else:
+            self.redis.delete('ongoing_indexing')
 
     def force_reindex(self, capture_uuid: str) -> None:
         p = self.redis.pipeline()
@@ -90,6 +97,55 @@ class Indexing():
         to_return.append(hash_types_indexed)
         # This call for sure returns a tuple of 7 booleans
         return tuple(to_return)  # type: ignore[return-value]
+
+    def index_capture(self, uuid_to_index: str, directory: Path) -> None:
+        if not self.can_index(uuid_to_index):
+            self.logger.info(f'Indexing on {uuid_to_index} ongoing, skipping. ')
+            return
+
+        try:
+            indexed = self.capture_indexed(uuid_to_index)
+            if all(indexed):
+                return
+
+            if not any((directory / pickle_name).exists()
+                       for pickle_name in ['tree.pickle.gz', 'tree.pickle']):
+                self.logger.warning(f'No pickle for {uuid_to_index}, skipping. ')
+                return
+
+            # do the indexing
+            ct = load_pickle_tree(directory, directory.stat().st_mtime, self.logger)
+            if not indexed[0]:
+                self.logger.info(f'Indexing urls for {uuid_to_index}')
+                self.index_url_capture(ct)
+            if not indexed[1]:
+                self.logger.info(f'Indexing resources for {uuid_to_index}')
+                self.index_body_hashes_capture(ct)
+            if not indexed[2]:
+                self.logger.info(f'Indexing cookies for {uuid_to_index}')
+                self.index_cookies_capture(ct)
+            if not indexed[3]:
+                self.logger.info(f'Indexing HH Hashes for {uuid_to_index}')
+                self.index_http_headers_hashes_capture(ct)
+            if not indexed[4]:
+                self.logger.info(f'Indexing favicons for {uuid_to_index}')
+                self.index_favicons_capture(uuid_to_index, directory)
+            if not indexed[5]:
+                self.logger.info(f'Indexing identifiers for {uuid_to_index}')
+                self.index_identifiers_capture(ct)
+            if not indexed[6]:
+                self.logger.info(f'Indexing categories for {uuid_to_index}')
+                self.index_categories_capture(uuid_to_index, directory)
+            if not indexed[7]:
+                self.logger.info(f'Indexing hash types for {uuid_to_index}')
+                self.index_capture_hashes_types(ct)
+
+        except (TreeNeedsRebuild, NoValidHarFile) as e:
+            self.logger.warning(f'Error loading the pickle for {uuid_to_index}: {e}')
+        except Exception as e:
+            self.logger.warning(f'Error during indexing for {uuid_to_index}: {e}')
+        finally:
+            self.indexing_done(uuid_to_index)
 
     # ###### Cookies ######
 
@@ -349,18 +405,16 @@ class Indexing():
     def favicon_number_captures(self, favicon_sha512: str) -> int:
         return self.redis.scard(f'favicons|{favicon_sha512}|captures')
 
-    def index_favicons_capture(self, capture_uuid: str, favicons: BytesIO) -> None:
+    def index_favicons_capture(self, capture_uuid: str, capture_dir: Path) -> None:
         if self.redis.sismember('indexed_favicons', capture_uuid):
             # Do not reindex
             return
         self.redis.sadd('indexed_favicons', capture_uuid)
         self.logger.debug(f'Indexing favicons for {capture_uuid} ... ')
         pipeline = self.redis.pipeline()
-        with ZipFile(favicons, 'r') as myzip:
-            for name in myzip.namelist():
-                if not name.endswith('.ico'):
-                    continue
-                favicon = myzip.read(name)
+        for favicon_path in sorted(list(capture_dir.glob('*.potential_favicons.ico'))):
+            with favicon_path.open('rb') as f:
+                favicon = f.read()
                 if not favicon:
                     # Empty file, ignore.
                     continue
@@ -552,11 +606,20 @@ class Indexing():
     def categories(self) -> set[str]:
         return self.redis.smembers('categories')
 
-    def index_categories_capture(self, capture_uuid: str, capture_categories: list[str]) -> None:
+    def index_categories_capture(self, capture_uuid: str, capture_dir: Path) -> None:
         if self.redis.sismember('indexed_categories', capture_uuid):
             # do not reindex
             return
+        # Make sure we don't reindex
         self.redis.sadd('indexed_categories', capture_uuid)
+
+        categ_file = capture_dir / 'categories'
+        if categ_file.exists():
+            with categ_file.open('r') as f:
+                capture_categories = [c.strip() for c in f.readlines()]
+        else:
+            return
+
         added_in_existing_categories = set()
         pipeline = self.redis.pipeline()
         for c in self.categories:

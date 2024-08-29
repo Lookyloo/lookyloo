@@ -1142,6 +1142,14 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
+@app.route('/tree/<string:tree_uuid>/trigger_indexing', methods=['POST', 'GET'])
+def trigger_indexing(tree_uuid: str) -> WerkzeugResponse:
+    cache = lookyloo.capture_cache(tree_uuid)
+    if cache and hasattr(cache, 'capture_dir'):
+        get_indexing(flask_login.current_user).index_capture(tree_uuid, cache.capture_dir)
+    return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+
 @app.route('/tree/<string:tree_uuid>', methods=['GET'])
 @app.route('/tree/<string:tree_uuid>/<string:node_uuid>', methods=['GET'])
 def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | WerkzeugResponse:
@@ -1199,6 +1207,11 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                 monitoring_collections = []
                 flash(f'Unable to get existing connections from the monitoring : {e}', 'warning')
 
+        # Check if the capture has been indexed yet. Print a warning if not.
+        capture_indexed = all(get_indexing(flask_login.current_user).capture_indexed(tree_uuid))
+        if not capture_indexed:
+            flash('The capture has not been indexed yet. Some correlations will be missing.', 'warning')
+
         return render_template('tree.html', tree_json=ct.to_json(),
                                info=cache,
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
@@ -1221,6 +1234,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                confirm_message=confirm_message if confirm_message else 'Tick to confirm.',
                                parent_uuid=cache.parent,
                                has_redirects=True if cache.redirects else False,
+                               capture_indexed=capture_indexed,
                                capture_settings=capture_settings.model_dump(exclude_none=True) if capture_settings else {})
 
     except NoValidHarFile:
