@@ -7,7 +7,7 @@
 
 {% block scripts %}
 {{ super() }}
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
     $('#table').DataTable( {
         "order": [[ 0, "desc" ]],
         "pageLength": 50,
@@ -15,7 +15,7 @@
         "paging": false
     });
 </script>
-<script>
+<script nonce="{{ csp_nonce() }}">
   async function update_status() {
     let capture_status = document.getElementsByClassName('capture_status');
     let capture_error = document.getElementsByClassName('capture_error');
@@ -54,7 +54,7 @@
 {% block content %}
   <center>
       <h4>Ongoing captures</h4>
-      <button onclick="window.history.back();" class="btn btn-primary" type="button">Go Back</button>
+      <button class="btn btn-primary goBack" type="button">Go Back</button>
   </center>
   <div>The captures below are queued, it will take a few minutes before the links are working</div>
   <div class="table-responsive">

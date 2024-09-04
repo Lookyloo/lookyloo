@@ -65,7 +65,7 @@
     </tbody>
   </table>
 </div>
-<script>
+<script nonce="{{ csp_nonce() }}">
   $('.categorize_capture').on('click',function(e){
     var button = $(this);
     $.get("{{ url_for('categorize_capture', tree_uuid=tree_uuid) }}" + button.val())
@@ -229,7 +229,7 @@
 {% endmacro %}
 
 {% macro other_captures_table(entries, max_entries, identifier) %}
- <script type="text/javascript">
+ <script type="text/javascript" nonce="{{ csp_nonce() }}">
    document.addEventListener("DOMContentLoaded", () => {
    new DataTable('#table_other_captures{{identifier}}', {
    "order": [[ 1, "desc" ]],
@@ -250,6 +250,7 @@
    } );
  });
  </script>
+
 <div>
   <table id="table_other_captures{{identifier}}" class="table table-striped" style="width:100%">
   <thead>
@@ -263,7 +264,7 @@
   {% for capture_uuid, urlnode_uuid, title, timestamp, hostname in entries[:max_entries] %}
   <tr>
     <td>
-      <a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}', '{{ urlnode_uuid }}')">{{ title }}</a>
+      <button type="button" class="btn btn-link openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{urlnode_uuid}}">{{ title }}</button>
     </td>
     <td>{{ timestamp }}</td>
     <td>{{ hostname }}</td>
@@ -292,7 +293,7 @@
           {{ cookie_name_value[0] }}</a>={{ shorten_string(cookie_name_value[1], 200) }} -
         </br>
         {{ button_text }}
-        <button type="button" class="btn btn-primary" onclick="whereAmI('{{ detail[1] }}')">Locate</button>
+        <button type="button" class="btn btn-primary locateInTree" data-hostnode="{{ detail[1] }}">Locate</button>
     </li>
     {% endif %}
   {% endfor %}
@@ -317,15 +318,12 @@
 
 {% macro pandora_submit(node_uuid, ressource_hash) %}
 <div class="col-sm-8">
-  <button id="pandora_submit_button" type="button" class="btn btn-primary btn-sm" title="open a new tab with the pandora report"
-  {% if node_uuid and ressource_hash %}
-    onclick="submit_pandora('{{node_uuid}}', '{{ressource_hash}}')"
-  {% elif node_uuid %}
-    onclick="submit_pandora('{{node_uuid}}')"
-  {% else %}
-    onclick="submit_pandora()"
-  {% endif %}
-  >Submit to Pandora</button>
+  <button type="button" class="btn btn-primary btn-sm submitPandoraButton"
+                        title="open a new tab with the pandora report"
+                        data-hostnode="{{ node_uuid }}"
+                        data-hash="{{ ressource_hash }}">
+    Submit to Pandora
+  </button>
 </div>
 {% endmacro %}
 
@@ -366,9 +364,9 @@
   {% for child in urlnode.children if child.name == urlnode.redirect_url %}
   <div title='{{ urlnode.redirect_url }}'>
     <b>Redirect to</b>: {{ shorten_string(urlnode.redirect_url, 50) }}
-    <a href="#/" role="button" onclick="whereAmI('{{ child.hostnode_uuid }}')" title="See the node the URL redirects to.">
+    <button type="button" class="btn btn-link locateInTree" data-hostnode="{{ child.hostnode_uuid }}" title="See the node the URL redirects to.">
       <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}" width="21" height="21"/>
-    </a>
+    </button>
   </div>
   {% else %}
   <img src="{{ url_for('static', filename=icon_info['icon']) }}"

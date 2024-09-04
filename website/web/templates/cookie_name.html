@@ -6,25 +6,27 @@
 
 {% block scripts %}
 {{ super() }}
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
     $('#table').DataTable( {
         "order": [[ 1, "desc" ]],
         "pageLength": 500
     });
 </script>
 
-<script type="text/javascript">
-    function openTreeInNewTab(treeUUID) {
-            window.opener.openTreeInNewTab(treeUUID);
-    };
+<script type="text/javascript"  nonce="{{ csp_nonce() }}">
+    const openNewTabButtons = document.querySelectorAll('.openNewTab');
+    if (openNewTabButtons) {
+        openNewTabButtons.forEach(el => el.addEventListener('click', event => {
+            window.opener.openTreeInNewTab(el.dataset.capture);
+        }));
+    }
 </script>
-
 {% endblock %}
 
 {% block content %}
   <center>
       <h2>{{ cookie_name }}</h2>
-      <button onclick="window.history.back();" class="btn btn-primary" type="button">Go Back</button>
+      <button class="btn btn-primary goBack" type="button">Go Back</button>
   </center>
   <div class="table-responsive">
   <table id="table" class="table" style="width:96%">
@@ -57,7 +59,9 @@
   <p>A cookie with that name was seen in these captures:</p>
   <ul>
   {% for capture_uuid, title in captures %}
-    <li><a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}')">{{ title }}</a></li>
+    <li>
+        <button type="button" class="btn btn-link openNewTab" data-capture="{{capture_uuid}}">{{ title }}</button>
+    </li>
   {% endfor %}
   </ul>
 {% endblock %}

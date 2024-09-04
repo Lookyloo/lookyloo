@@ -9,18 +9,22 @@
 
 {% block scripts %}
 {{ super() }}
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
     $('#table').DataTable( {
         "order": [[ 1, "desc" ]],
         "pageLength": 500
     });
 </script>
 
-<script type="text/javascript">
-    function openTreeInNewTab(treeUUID) {
-        window.opener.openTreeInNewTab(treeUUID);
-    };
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
+    const openNewTabButtons = document.querySelectorAll('.openNewTab');
+    if (openNewTabButtons) {
+        openNewTabButtons.forEach(el => el.addEventListener('click', event => {
+            window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
+        }));
+    }
 </script>
+
 
 {% endblock %}
 {%endif%}
@@ -29,7 +33,7 @@
 {% block content %}
 
 {% if from_popup %}
-<button onclick="window.history.back();" class="btn btn-primary" type="button">Go Back</button>
+<button class="btn btn-primary goBack" type="button">Go Back</button>
 {%endif%}
 
 <center>
@@ -37,14 +41,14 @@
   <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">Download</a>
 </center>
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
   new DataTable('#freqHostTable', {
     order: [[ 0, "desc" ]],
     columnDefs: [{ width: '20%', targets: 0 },
                  { width: '80%', targets: 1 }],
   });
 </script>
-<script type="text/javascript">
+<script type="text/javascript"  nonce="{{ csp_nonce() }}">
   new DataTable('#bodyHashDetailsTable', {
     order: [[ 0, "desc" ]],
     columnDefs: [{ width: '20%', targets: 0,
@@ -88,7 +92,7 @@
       <td>{{ timestamp }}</td>
       <td>
         {% if from_popup %}
-        <a href="#/" onclick="openTreeInNewTab('{{ capture_uuid }}')">{{ title }}</a>
+        <button type="button" class="btn btn-link openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{hostnode_uuid}}">{{ title }}</button>
         {% else %}
         <a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid) }}">{{ title }}</a>
         {% endif %}

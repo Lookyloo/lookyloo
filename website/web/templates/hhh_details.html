@@ -1,10 +1,28 @@
+{% if from_popup %}
 {% extends "main.html" %}
 
 {% from 'bootstrap5/utils.html' import render_messages %}
 
 {% block title %}{{ hhh }}{% endblock %}
 
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
+    const openNewTabButtons = document.querySelectorAll('.openNewTab');
+    if (openNewTabButtons) {
+        openNewTabButtons.forEach(el => el.addEventListener('click', event => {
+            window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
+        }));
+    }
+</script>
+{% endblock %}
+
+{%endif%}
+
 {% block content %}
+{% if from_popup %}
+<button class="btn btn-primary goBack" type="button">Go Back</button>
+{%endif%}
   <center>
       <h2>{{ hhh }}</h2>
   </center>
@@ -40,9 +58,11 @@
             {% for capture_uuid, hostnode_uuid, url, title in captures %}
             <tr>
                 <td>
-                    <a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid) }}">
-                        {{ title }}
-                    </a>
+                    {% if from_popup %}
+                    <button type="button" class="btn btn-link openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{hostnode_uuid}}">{{ title }}</button>
+                    {% else %}
+                    <a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid) }}">{{ title }}</a>
+                    {% endif %}
                 </td>
                 <td>{{url}}</td>
             </tr>

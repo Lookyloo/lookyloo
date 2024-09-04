@@ -171,7 +171,7 @@ function openTreeInNewTab(capture_uuid, hostnode_uuid=null) {
     if (hostnode_uuid != null) {
         url += `/${hostnode_uuid}`;
     }
-    openURLInNewTab(url);
+    return openURLInNewTab(url);
 }
 
 function open_hostnode_popup(hostnode_uuid) {
@@ -891,3 +891,8 @@ const downloadSvg = () => {
         console.error('Error:', error);
     });
 };
+
+const dlTreeAsSVG = document.getElementById("dlTreeAsSVG")
+if (dlTreeAsSVG) {
+    dlTreeAsSVG.addEventListener("click", downloadSvg)
+}

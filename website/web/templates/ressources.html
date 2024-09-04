@@ -9,13 +9,13 @@
 
 {% block scripts %}
 {{ super() }}
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
     $('#table').DataTable( {
         "order": [[ 2, "desc" ]],
         "pageLength": 500
     });
 </script>
-<script>
+<script nonce="{{ csp_nonce() }}">
   $(document).ready(() => {
     $(function () {
       $('[data-bs-toggle="tooltip"]').tooltip()

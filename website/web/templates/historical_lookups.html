@@ -5,7 +5,7 @@
   No historical data available
 {%else%}
   {% if circl_pdns %}
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="{{ csp_nonce() }}">
       new DataTable('#CIRCL_pdns_table', {
         order: [[ 1, "desc" ]],
         autoWidth: false,
@@ -19,10 +19,9 @@
 
     <center>
       <h1 class="display-4">CIRCL Passive DNS
-       <div class="help-tip" title="Click for more details"
-            onclick="location.href='https://www.circl.lu/services/passive-dns/';"
-            style="cursor: pointer;">
-       </div>
+        <a href='https://www.circl.lu/services/passive-dns/' target="_blank">
+          <div class="help-tip" title="Click for more details" style="cursor: pointer;"></div>
+        </a>
       </h1>
     {% for query, responses in circl_pdns.items() if responses %}
     <div>
@@ -53,7 +52,7 @@
   {% endif%}
   {% if riskiq %}
     <hr>
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="{{ csp_nonce() }}">
       new DataTable('#RiskIQ_pdns_table', {
         order: [[ 1, "desc" ]],
         autoWidth: false,

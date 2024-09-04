@@ -30,249 +30,47 @@
   {{ super() }}
   <script src='{{ url_for('static', filename='d3.min.js') }}'
           {{get_sri('static', 'd3.min.js')}}
+          nonce="{{ csp_nonce() }}"
           crossorigin="anonymous"></script>
   <script src='{{ url_for('static', filename='tree.js') }}'
           {{get_sri('static', 'tree.js')}}
+          nonce="{{ csp_nonce() }}"
+          crossorigin="anonymous"></script>
+  <script src='{{ url_for('static', filename='tree_modals.js') }}'
+          {{get_sri('static', 'tree_modals.js')}}
+          nonce="{{ csp_nonce() }}"
           crossorigin="anonymous"></script>
 
-  <script>
-    $('#hashlookupModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-    });
-  </script>
-  <script>
-  $('#modulesModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  $('#historyModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  $('.modulesForceRefresh').on('click',function(){
+  <script nonce="{{ csp_nonce() }}">
+    $('.modulesForceRefresh').on('click',function(){
       $('#modulesModal .modal-body').text("Reloading modules, please wait...")
       $('#modulesModal .modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}", function(){
         $('#modulesModal').modal({show:true});
       });
-  });
-  </script>
-
-  <script>
-  $('#categoriesModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  /*$('#searchCategories').submit(function(event){
-    var query = $("#query").val();
-    $('#categoriesModal .modal-body').load("{ url_for('categories_capture', tree_uuid=tree_uuid) }}" + query, function() {
-      $('#categoriesModal').modal({show:true});
     });
-    event.preventDefault();
-  });
-  */
+  </script>
 
-  $('#fast-categories').submit(function(event){
+  <script nonce="{{ csp_nonce() }}">
+    $('#fast-categories').submit(function(event){
     event.preventDefault();
-    var query = $('#fast-categories').serialize(); // Serialize form data
+      var query = $('#fast-categories').serialize(); // Serialize form data
 
-    $.ajax({
-        type: 'POST',
-        url: '{{ url_for('categories_capture', tree_uuid=tree_uuid) }}',
-        data: query,
-        success: function(response) {
-            $('#categoriesModal .modal-body').html(response);
-            $('#categoriesModal').modal({show:true});
-        },
-        error: function(error) {
-            console.log("An error occurred: ", error);
-        }
+      $.ajax({
+          type: 'POST',
+          url: '{{ url_for('categories_capture', tree_uuid=tree_uuid) }}',
+          data: query,
+          success: function(response) {
+           $('#categoriesModal .modal-body').html(response);
+              $('#categoriesModal').modal({show:true});
+          },
+          error: function(error) {
+              console.log("An error occurred: ", error);
+          }
+      });
     });
-  });
-
-    // Fast categories
-  document.getElementById("legitimate").addEventListener('change', function(){
-    if (this.checked){
-      disableInput(document.getElementById('malicious-categories'));
-      enableInput(document.getElementById('legitimate-categories'));
-    }
-  });
-  document.getElementById("malicious").addEventListener('change', function(){
-    if (this.checked){
-      enableInput(document.getElementById('malicious-categories'));
-      disableInput(document.getElementById('legitimate-categories'));
-    }
-  });
-  document.getElementById("unclear").addEventListener('change', function(){
-    if (this.checked){
-      disableInput(document.getElementById('malicious-categories'));
-      disableInput(document.getElementById('legitimate-categories'));
-    }
-  });
-  document.getElementById("legitimate-categories").addEventListener('click', function(){
-     if (this.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
-       document.getElementById("legitimate").checked = true;
-     }
-  });
-  document.getElementById("malicious-categories").addEventListener('click', function(){
-     if (this.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
-       document.getElementById("malicious").checked = true;
-     }
-  });
-
-  function disableInput(container) {
-      const Input = container.querySelectorAll('input');
-      Input.forEach(function(checkbox){
-        checkbox.disabled = true;
-        checkbox.checked = false;
-      });
-      container.hidden = true;
-  }
-
-  function enableInput(container) {
-      const Input = container.querySelectorAll('input');
-      Input.forEach(checkbox => checkbox.disabled = false);
-      container.hidden = false;
-  }
   </script>
 
-  <script>
-  $('#statsModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#identifiersModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#identifierDetailsModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#faviconsModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#faviconDetailsModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#captureHashesTypesModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#captureHashesTypesDetailsModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#faviconDetailsProbabilisticHashModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#bodyHashesModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#bodyHashDetailsModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#hostnamesModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#hostnameDetailsModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#urlsModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#urlDetailsModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-  <script>
-  $('#mispPushModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"), function(result){
-          $('#mispSelector button').on('click', function(e){
-            var thisBtn = $(this);
-            thisBtn.addClass('active').siblings().removeClass('active');
-            $(`#${thisBtn.val()}`).show().siblings().hide()
-          });
-      });
-  });
-  </script>
-  <script>
-  $('#mispLookupModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"), function(result){
-          $('#mispSelector button').on('click', function(e){
-            var thisBtn = $(this);
-            thisBtn.addClass('active').siblings().removeClass('active');
-            $(`#${thisBtn.val()}`).show().siblings().hide()
-          });
-      });
-  });
-  </script>
-  <script>
-  $('#urlsInPageModal').on('show.bs.modal', function(e) {
-      var button = $(e.relatedTarget);
-      var modal = $(this);
-      modal.find('.modal-body').load(button.data("remote"));
-  });
-  </script>
-
-  <script>
+  <script nonce="{{ csp_nonce() }}">
   {% if urlnode_uuid %}
   history.scrollRestoration = "manual";
   window.addEventListener('DOMContentLoaded', (event) => {
@@ -287,12 +85,12 @@
   </script>
 
   {% if auto_trigger_modules %}
-  <script>
+  <script nonce="{{ csp_nonce() }}">
     $.get("{{ url_for('trigger_modules', tree_uuid=tree_uuid, auto_trigger=True) }}")
   </script>
   {% endif%}
   {% if enable_monitoring %}
-  <script>
+  <script nonce="{{ csp_nonce() }}">
     const today = new Date()
     let tomorrow =  new Date()
     tomorrow.setDate(today.getDate() + 1)
@@ -306,14 +104,16 @@
 
 {% block styles %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='tree.css') }}">
+  <link rel="stylesheet"
+        {{get_sri('static', 'tree.css')}}
+        href="{{ url_for('static', filename='tree.css') }}">
 {% endblock %}
 
 
 {% block content %}
 {{super()}}
 
-<script>
+<script nonce="{{ csp_nonce() }}">
   var treeUUID = "{{ tree_uuid }}";
   var screenshot_thumbnail = "{{ screenshot_thumbnail }}";
   var favicon = "{{ favicon }}";
@@ -470,7 +270,7 @@
               <div id="admin-menu-content" class="dropdown-content">
                 <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
                 <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
-                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button" onclick="return confirm('Are you sure you want to remove the capture?')">Remove capture</a>
+                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button" id="removeCapture">Remove capture</a>
                 {% if misp_push%}
                   <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
                     data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
@@ -493,10 +293,10 @@
                     data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
                 {% endif %}
                 {% if enable_bookmark %}
-                    <a href="#/" role="button" onclick="UnbookmarkAllNodes();">Unbookmark all nodes</a>
+                    <a href="#/" role="button" id="unbookmarkAllNodes">Unbookmark all nodes</a>
                 {% endif %}
                 {% if enable_context_by_users %}
-                    <a href="#/" role="button" onclick="MarkAsKnown('{{ tree_uuid }}');">Mark all the captures' entries as known</a>
+                    <a href="#/" role="button" id="markAsKnown">Mark all the captures' entries as known</a>
                 {% endif %}
               </div>
             </div>
@@ -970,7 +770,7 @@
         </br>
       {% endif %}
       {% if blur_screenshot %}
-      <button type="button" class="btn btn-primary" onclick="$('#screenshot').removeClass('blur')">Unblur</button>
+      <button type="button" class="btn btn-primary" id="blurScreenshot">Unblur</button>
       {% endif %}
       <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button" class="btn btn-primary">Download</a>
       </br>
@@ -1046,7 +846,7 @@
           <div class="modal-body">
           <ul>
             <li>
-              <a href="#" onclick="downloadSvg()" role="button">Download tree as PNG</a>
+              <a href="#" id="dlTreeAsSVG" role="button">Download tree as PNG</a>
             </li>
             <li>
               <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">Download screenshot</a>

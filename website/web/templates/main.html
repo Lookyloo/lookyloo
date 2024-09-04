@@ -34,15 +34,18 @@
 
     {% block scripts %}
     <!-- Optional JavaScript -->
-    {{ bootstrap.load_js() }}
+    {{ bootstrap.load_js(nonce=csp_nonce()) }}
     <script src='{{ url_for('static', filename='jquery.min.js') }}'
             {{get_sri('static', 'jquery.min.js')}}
+            nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='datatables.min.js') }}'
             {{get_sri('static', 'datatables.min.js')}}
+            nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='generic.js') }}'
             {{get_sri('static', 'generic.js')}}
+            nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
     {% endblock %}
   </body>

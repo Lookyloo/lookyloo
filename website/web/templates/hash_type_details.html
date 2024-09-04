@@ -1,6 +1,6 @@
 {% from "macros.html" import shorten_string %}
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
   new DataTable('#hashTypeDetailsTable', {
     order: [[ 0, "desc" ]],
     columnDefs: [{ width: '30%',

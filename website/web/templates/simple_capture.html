@@ -67,8 +67,9 @@
   {{ super() }}
   <script src='{{ url_for('static', filename='capture.js') }}'
           {{get_sri('static', 'capture.js')}}
+          nonce="{{ csp_nonce() }}"
           crossorigin="anonymous"></script>
-  <script>
+  <script nonce="{{ csp_nonce() }}">
       document.getElementById('multipleCaptures').addEventListener('click', function(e) {
         if (document.getElementById('multipleCaptures').checked == true) {
             document.getElementById('singleCaptureField').value = '';

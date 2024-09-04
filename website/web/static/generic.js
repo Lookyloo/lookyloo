@@ -25,6 +25,11 @@ function checkAllBoxes(name) {
   }
 }
 
+const goBackButtons = document.querySelectorAll('.goBack');
+goBackButtons.forEach(el => el.addEventListener('click', event => {
+  window.history.back();
+}));
+
 // Parameters:
 // contentType: The content type of your file.
 //              its like application/pdf or application/msword or image/jpeg or

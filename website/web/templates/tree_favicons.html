@@ -1,10 +1,19 @@
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
   new DataTable('#faviconsTable', {
     columnDefs: [{ width: '10%', targets: 0 },
                  { width: '40%', targets: 1 },
                  { width: '40%', targets: 2 },
                  { width: '10%', targets: 3 }],
   });
+</script>
+
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
+const downloadFavicons = document.querySelectorAll(".downloadFaviconButton")
+if (downloadFavicons) {
+    downloadFavicons.forEach(el => el.addEventListener('click', event => {
+        downloadBase64File(el.dataset.mimetype, el.dataset.b64favicon, el.dataset.filename);
+    }));
+}
 </script>
 
 
@@ -31,7 +40,9 @@
     </td>
     <td><a href="https://www.shodan.io/search?query=http.favicon.hash%3A{{ mmh3_shodan }}" target="_blank">{{ mmh3_shodan }}</a></td>
     <td>
-      <button type="button" class="btn btn-light" onclick="downloadBase64File('{{mimetype}}', '{{b64_favicon}}', 'favicon.ico')">
+      <button type="button" class="btn btn-light downloadFaviconButton"
+              data-mimetype="{{mimetype}}" data-b64favicon="{{b64_favicon}}"
+                                           data-filename="favicon.ico">
         <img src="{{ url_for('static', filename='download.svg') }}" style="width:16px;height:16px;"
              title="Download the favicon"/>
       </button>

@@ -6,7 +6,7 @@
   <h4>{{ url }}</h4>
 </center>
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
   new DataTable('#urlTable', {
     order: [[ 0, "desc" ]],
     columnDefs: [{ width: '20%', targets: 0,

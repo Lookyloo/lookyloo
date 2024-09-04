@@ -1,9 +1,7 @@
 <div>
   <h4>Select below the URLs you want to capture.</h4>
 	<hr>
-	<button type="button" class="btn btn-secondary" id="toggleSelection"
-					onclick="checkAllBoxes('url')"
-					title="(un)select all URLs">
+	<button type="button" class="btn btn-secondary" id="toggleURLs" title="(un)select all URLs">
 		Toggle selection
 	</button>
 	<hr>
@@ -17,3 +15,12 @@
     <button type="submit" class="btn btn-primary" id="btn-capture-urls">Capture selected URLs</button>
   </form>
 </div>
+
+<script nonce="{{ csp_nonce() }}">
+  const toggleURLs = document.getElementById("toggleURLs");
+  if (toggleURLs) {
+    toggleURLs.addEventListener("click", function() {
+      checkAllBoxes("url");
+    });
+  }
+</script>

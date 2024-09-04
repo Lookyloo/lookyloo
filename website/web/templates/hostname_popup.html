@@ -15,66 +15,10 @@
 
 {% block scripts %}
   {{ super() }}
-  <script>
-    let whereAmI = (hostnode_uuid) => window.opener.LocateNode(hostnode_uuid);
-    let openTreeInNewTab = (capture_uuid, hostnode_uuid=Null) => {
-      let success = window.opener.openTreeInNewTab(capture_uuid, hostnode_uuid);
-      if (! success) {
-          alert("Your browser doesn't allow Lookyloo to open a new tab. There should be an icon on the right side of your URL bar *in the main window* to allow it.");
-      }
-    }
-  </script>
-  <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    // Grab any text in the attribute 'data-copy' and pass it to the copy function
-    $('.js-copy').tooltip();
-    $('.js-copy').click(function() {
-      const text = $(this).attr('data-copy');
-      const el = $(this);
-      copyToClipboard(text, el);
-    });
-  });
-  </script>
-  <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    $(function () {
-      $('[data-bs-toggle="tooltip"]').tooltip()
-    })
-  });
-  </script>
-  <script>
-  function submit_pandora(node_uuid, ressource_hash){
-    let data = {};
-    if (node_uuid) {
-        data.node_uuid = node_uuid;
-    };
-    if (ressource_hash) {
-        data.ressource_hash = ressource_hash;
-    };
-    fetch("{{ url_for('pandora_submit', tree_uuid=tree_uuid)}}", {
-        method: "POST",
-        body: JSON.stringify(data),
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(data.link);
-        }
-        openURLInNewTab(data.link);
-      })
-      .catch((error) => {
-          throw new Error(error);
-      });
-  };
-
-  let openURLInNewTab = (url) => {
-    let success = window.opener.openURLInNewTab(url);
-    if (! success) {
-        alert("Your browser doesn't allow Lookyloo to open a new tab. There should be an icon on the right side of your URL bar *in the main window* to allow it.");
-    }
-  }
-  </script>
-
+  <script src='{{ url_for('static', filename='hostname_popup.js') }}'
+        {{get_sri('static', 'hostname_popup.js')}}
+        nonce="{{ csp_nonce() }}"
+        crossorigin="anonymous"></script>
 {% endblock %}
 
 {% block content %}
@@ -88,7 +32,7 @@
       <h3>{{hostnode.name}}</h3>
     {% endif %}
     </br>
-    <button type="button" class="btn btn-primary" onclick="whereAmI('{{ hostnode_uuid }}')">Locate in tree</button>
+    <button type="button" class="btn btn-primary locateInTree" data-hostnode="{{ hostnode_uuid }}">Locate in tree</button>
     {% if uwhois_available %}
     <a href="{{ url_for('whois', query=hostnode.name) }}" class="btn btn-primary" role="button">
         Download whois entry
@@ -286,7 +230,11 @@
             </p>
           </div>
           {% if url['url_object'].hhhash %}
-            <button type="button" class="btn btn-sm btn-link" onclick="openURLInNewTab('{{ url_for('hhh_detail', hhh=url['url_object'].hhhash) }}')">See other captures with the same HTTP Headers Hash</button>
+              <p>
+                <a href="{{ url_for('hhh_detail', hhh=url['url_object'].hhhash, from_popup=True) }}">
+                See other captures with the same HTTP Headers Hash
+                </a>
+              </p>
           {% endif %}
 
           {% endif %}

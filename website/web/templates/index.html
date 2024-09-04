@@ -25,7 +25,7 @@
 
 {% block scripts %}
 {{ super() }}
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
 $(document).ready(function () {
   $('#table').DataTable( {
     "order": [[ 1, "desc" ]],

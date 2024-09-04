@@ -63,5 +63,6 @@
   {{ super() }}
   <script src='{{ url_for('static', filename='capture.js') }}'
           {{get_sri('static', 'capture.js')}}
+          nonce="{{ csp_nonce() }}"
           crossorigin="anonymous"></script>
 {% endblock %}

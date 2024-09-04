@@ -32,6 +32,7 @@ from flask import (Flask, Response, Request, flash, jsonify, redirect, render_te
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
+from flask_talisman import Talisman  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus, CaptureSettingsError
 from puremagic import from_string
 from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
@@ -69,7 +70,46 @@ Bootstrap5(app)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
-app.debug = False
+app.debug = bool(os.environ.get('DEBUG', False))
+
+SELF = "'self'"
+Talisman(app,
+         content_security_policy_nonce_in=['script-src', 'script-src-elem'],
+         content_security_policy={
+             'default-src': SELF,
+             'base-uri': SELF,
+             'img-src': [
+                 SELF,
+                 "data:",
+                 "blob:",
+                 "'unsafe-inline'"
+             ],
+             'script-src': [
+                 SELF,
+                 "'strict-dynamic'",
+                 "'unsafe-inline'",
+                 "http:",
+                 "https:"
+             ],
+             'script-src-elem': [
+                 SELF,
+                 "'strict-dynamic'",
+                 "'unsafe-inline'",
+             ],
+             'style-src': [
+                 SELF,
+                 "'unsafe-inline'"
+             ],
+             'media-src': [
+                 SELF,
+                 "data:",
+                 "blob:",
+                 "'unsafe-inline'"
+             ],
+             'frame-ancestors': [
+                 SELF,
+             ],
+         })
 
 pkg_version = version('lookyloo')
 
@@ -1724,8 +1764,9 @@ def cookies_name_detail(cookie_name: str) -> str:
 
 @app.route('/hhhdetails/<string:hhh>', methods=['GET'])
 def hhh_detail(hhh: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     captures, headers = get_hhh_investigator(hhh.strip())
-    return render_template('hhh_details.html', hhh=hhh, captures=captures, headers=headers)
+    return render_template('hhh_details.html', hhh=hhh, captures=captures, headers=headers, from_popup=from_popup)
 
 
 @app.route('/identifier_details/<string:identifier_type>/<string:identifier>', methods=['GET'])
