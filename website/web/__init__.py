@@ -74,6 +74,7 @@ app.debug = bool(os.environ.get('DEBUG', False))
 
 SELF = "'self'"
 Talisman(app,
+         force_https=False,
          content_security_policy_nonce_in=['script-src', 'script-src-elem'],
          content_security_policy={
              'default-src': SELF,
