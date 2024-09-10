@@ -75,7 +75,10 @@ app.debug = bool(os.environ.get('DEBUG', False))
 SELF = "'self'"
 Talisman(app,
          force_https=False,
-         content_security_policy_nonce_in=['script-src', 'script-src-elem'],
+         content_security_policy_nonce_in=['script-src',
+                                           # Cannot enable that because https://github.com/python-restx/flask-restx/issues/252
+                                           # 'script-src-elem'
+                                           ],
          content_security_policy={
              'default-src': SELF,
              'base-uri': SELF,
@@ -94,7 +97,8 @@ Talisman(app,
              ],
              'script-src-elem': [
                  SELF,
-                 "'strict-dynamic'",
+                 # Cannot enable that because https://github.com/python-restx/flask-restx/issues/252
+                 # "'strict-dynamic'",
                  "'unsafe-inline'",
              ],
              'style-src': [
