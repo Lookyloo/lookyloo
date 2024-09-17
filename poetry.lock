@@ -1313,13 +1313,13 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.25.2"
+version = "1.26.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<3.13,>=3.8"
 files = [
-    {file = "har2tree-1.25.2-py3-none-any.whl", hash = "sha256:7dd1128b94971ceb20c56c6d116af1457dcb488646ba11c2648ff72173027f18"},
-    {file = "har2tree-1.25.2.tar.gz", hash = "sha256:a6c979f1cb502c427f8256f261959100e8c666a2eb4ad13a54f814b6a8bda8c1"},
+    {file = "har2tree-1.26.0-py3-none-any.whl", hash = "sha256:c7951eba1620bb7ea2b5dc2b01154c4f4eaa13fd3432e456f9ad75f5a63a35b6"},
+    {file = "har2tree-1.26.0.tar.gz", hash = "sha256:2193035899de8ad94e82250f622e59ceee083c7b651e46dc6f52a49772ee95a0"},
 ]
 
 [package.dependencies]
@@ -1332,7 +1332,7 @@ numpy = [
     {version = ">=2,<3", markers = "python_version >= \"3.9\" and python_version < \"3.10\""},
     {version = ">=2.1,<3", markers = "python_version >= \"3.10\""},
 ]
-publicsuffixlist = ">=1.0.2.20240906,<2.0.0.0"
+publicsuffixlist = ">=1.0.2.20240915,<2.0.0.0"
 w3lib = ">=2.2.1,<3.0.0"
 
 [package.extras]
@@ -1443,14 +1443,17 @@ files = [
 
 [[package]]
 name = "idna"
-version = "3.8"
+version = "3.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "idna-3.8-py3-none-any.whl", hash = "sha256:050b4e5baadcd44d760cedbd2b8e639f2ff89bbc7a5730fcc662954303377aac"},
-    {file = "idna-3.8.tar.gz", hash = "sha256:d838c2c0ed6fced7693d5e8ab8e734d5f8fda53a039c0164afb0b82e771e3603"},
+    {file = "idna-3.10-py3-none-any.whl", hash = "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3"},
+    {file = "idna-3.10.tar.gz", hash = "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9"},
 ]
+
+[package.extras]
+all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2)"]
 
 [[package]]
 name = "importlib-metadata"
@@ -1709,13 +1712,13 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.10.13"
+version = "1.11.0"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "lacuscore-1.10.13-py3-none-any.whl", hash = "sha256:5a326c6715cf7639d413773d952a2b4d2da0107dd791d7e3cbff4a2beb1358de"},
-    {file = "lacuscore-1.10.13.tar.gz", hash = "sha256:2043663125869f387422dffe1880e625f27e56ab6a19ba84a441c6fe2d0a09e0"},
+    {file = "lacuscore-1.11.0-py3-none-any.whl", hash = "sha256:1950e127f772e19e9cead68a789533d1508c4a345b105e74b830267a7110eb6f"},
+    {file = "lacuscore-1.11.0.tar.gz", hash = "sha256:e9dbc065462be95843a2f697be14875ed3cc7601653d5fb2c700e5935c8f52ee"},
 ]
 
 [package.dependencies]
@@ -1723,7 +1726,7 @@ async-timeout = {version = ">=4.0.3,<5.0.0", markers = "python_version < \"3.11\
 defang = ">=0.5.3,<0.6.0"
 dnspython = ">=2.6.1,<3.0.0"
 eval-type-backport = {version = ">=0.2.0,<0.3.0", markers = "python_version < \"3.10\""}
-playwrightcapture = {version = ">=1.25.15,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.26.0,<2.0.0", extras = ["recaptcha"]}
 pydantic = ">=2.9.1,<3.0.0"
 redis = {version = ">=5.0.8,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.32.3,<3.0.0"
@@ -2641,13 +2644,13 @@ files = [
 
 [[package]]
 name = "platformdirs"
-version = "4.3.2"
+version = "4.3.3"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "platformdirs-4.3.2-py3-none-any.whl", hash = "sha256:eb1c8582560b34ed4ba105009a4badf7f6f85768b30126f351328507b2beb617"},
-    {file = "platformdirs-4.3.2.tar.gz", hash = "sha256:9e5e27a08aa095dd127b9f2e764d74254f482fef22b0970773bfba79d091ab8c"},
+    {file = "platformdirs-4.3.3-py3-none-any.whl", hash = "sha256:50a5450e2e84f44539718293cbb1da0a0885c9d14adf21b77bae4e66fc99d9b5"},
+    {file = "platformdirs-4.3.3.tar.gz", hash = "sha256:d4e0b7d8ec176b341fb03cb11ca12d0276faa8c485f9cd218f613840463fc2c0"},
 ]
 
 [package.extras]
@@ -2694,13 +2697,13 @@ test = ["pytest"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.25.15"
+version = "1.26.0"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "playwrightcapture-1.25.15-py3-none-any.whl", hash = "sha256:75e99a2e79e29ce13fa209cf6eca8220feec81675083e2177cafb9255048efde"},
-    {file = "playwrightcapture-1.25.15.tar.gz", hash = "sha256:6f87193e287df54d47e0c0e0224def884a9914156d492fd20b2384d47b663058"},
+    {file = "playwrightcapture-1.26.0-py3-none-any.whl", hash = "sha256:2694fe7d1fe6a5347de6395e9edb8a45c8e7c41adc30a1651355cba7ff1388e5"},
+    {file = "playwrightcapture-1.26.0.tar.gz", hash = "sha256:f149edbddab605d9c2659487c8a1d8dad388dc0f4919790b7ff99605524ee093"},
 ]
 
 [package.dependencies]
@@ -2714,7 +2717,7 @@ playwright-stealth = ">=1.0.6,<2.0.0"
 puremagic = ">=1.27,<2.0"
 pydub = {version = ">=0.25.1,<0.26.0", optional = true, markers = "extra == \"recaptcha\""}
 pytz = {version = ">=2024.2,<2025.0", markers = "python_version < \"3.9\""}
-setuptools = ">=74.1.2,<75.0.0"
+setuptools = ">=75.1.0,<76.0.0"
 SpeechRecognition = {version = ">=3.10.4,<4.0.0", optional = true, markers = "extra == \"recaptcha\""}
 tzdata = ">=2024.1,<2025.0"
 w3lib = ">=2.2.1,<3.0.0"
@@ -2778,13 +2781,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20240913"
+version = "1.0.2.20240915"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "publicsuffixlist-1.0.2.20240913-py2.py3-none-any.whl", hash = "sha256:dfb109e165d9421c1c245f09045249ce395c88612b5d9e78953613c41ffe4d3a"},
-    {file = "publicsuffixlist-1.0.2.20240913.tar.gz", hash = "sha256:1fbf87485d1729f00e03c2c8fbf3b729ee3de5886bc1bd8b580cf86ddd850b5f"},
+    {file = "publicsuffixlist-1.0.2.20240915-py2.py3-none-any.whl", hash = "sha256:e56ebed1a2b3d22dd160d8fdf1bbd1a27d1fe712cc44dfe986f8d747ec467d54"},
+    {file = "publicsuffixlist-1.0.2.20240915.tar.gz", hash = "sha256:7d4a3a0f6405d533290b4e049bded5d500ca378981ab96c9ccb6ce4f9c666553"},
 ]
 
 [package.extras]
@@ -3197,19 +3200,19 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)", "Sphinx (>=8,<9)"]
 
 [[package]]
 name = "pymisp"
-version = "2.4.197"
+version = "2.4.198"
 description = "Python API for MISP."
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "pymisp-2.4.197-py3-none-any.whl", hash = "sha256:6e9078dbe4066701318ff8d5de2723db33bfac79677e16b274c517f0adec74a2"},
-    {file = "pymisp-2.4.197.tar.gz", hash = "sha256:840881779d1762803e9329ae5129a88abb0e6110afb43c9e3e6e3877e5931a6c"},
+    {file = "pymisp-2.4.198-py3-none-any.whl", hash = "sha256:10fcf0033bd73dcae1b7f286bb1243e00fed6a8d9a5c4765a3c81274c1e0a8f5"},
+    {file = "pymisp-2.4.198.tar.gz", hash = "sha256:f5583263c2fcd380570c084b21c4e4812a01c32daa7baafcdc3f87153edc9303"},
 ]
 
 [package.dependencies]
 deprecated = ">=1.2.14,<2.0.0"
 lief = {version = ">=0.15.0,<0.16.0", optional = true, markers = "extra == \"fileobjects\""}
-publicsuffixlist = ">=1.0.2.20240827,<2.0.0.0"
+publicsuffixlist = ">=1.0.2.20240913,<2.0.0.0"
 pydeep2 = {version = ">=0.5.1,<0.6.0", optional = true, markers = "extra == \"fileobjects\""}
 pyfaup = {version = ">=1.2,<2.0", optional = true, markers = "extra == \"url\""}
 python-dateutil = ">=2.9.0.post0,<3.0.0"
@@ -3218,13 +3221,13 @@ requests = ">=2.32.3,<3.0.0"
 
 [package.extras]
 brotli = ["urllib3[brotli]"]
-docs = ["Sphinx (>=7.2,<8.0)", "Sphinx (>=8,<9)", "docutils (>=0.21.1,<0.22.0)", "recommonmark (>=0.7.1,<0.8.0)", "sphinx-autodoc-typehints (>=2.3.0,<3.0.0)"]
+docs = ["Sphinx (>=8,<9)", "docutils (>=0.21.1,<0.22.0)", "recommonmark (>=0.7.1,<0.8.0)", "sphinx-autodoc-typehints (>=2.4.1,<3.0.0)"]
 email = ["RTFDE (>=0.1.1,<0.2.0)", "extract_msg (>=0.49,<0.50)", "oletools (>=0.60.1,<0.61.0)"]
 fileobjects = ["lief (>=0.15.0,<0.16.0)", "pydeep2 (>=0.5.1,<0.6.0)", "python-magic (>=0.4.27,<0.5.0)"]
 openioc = ["beautifulsoup4 (>=4.12.3,<5.0.0)"]
 pdfexport = ["reportlab (>=4.2.2,<5.0.0)"]
 url = ["pyfaup (>=1.2,<2.0)"]
-virustotal = ["validators (>=0.33.0,<0.34.0)"]
+virustotal = ["validators (>=0.34.0,<0.35.0)"]
 
 [[package]]
 name = "pypandora"
@@ -3836,18 +3839,18 @@ test = ["pytest"]
 
 [[package]]
 name = "setuptools"
-version = "74.1.2"
+version = "75.1.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-74.1.2-py3-none-any.whl", hash = "sha256:5f4c08aa4d3ebcb57a50c33b1b07e94315d7fc7230f7115e47fc99776c8ce308"},
-    {file = "setuptools-74.1.2.tar.gz", hash = "sha256:95b40ed940a1c67eb70fc099094bd6e99c6ee7c23aa2306f4d2697ba7916f9c6"},
+    {file = "setuptools-75.1.0-py3-none-any.whl", hash = "sha256:35ab7fd3bcd95e6b7fd704e4a1539513edad446c097797f2985e0e4b960772f2"},
+    {file = "setuptools-75.1.0.tar.gz", hash = "sha256:d59a21b17a275fb872a9c3dae73963160ae079f1049ed956880cd7c09b120538"},
 ]
 
 [package.extras]
 check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1)", "ruff (>=0.5.2)"]
-core = ["importlib-metadata (>=6)", "importlib-resources (>=5.10.2)", "jaraco.text (>=3.7)", "more-itertools (>=8.8)", "packaging (>=24)", "platformdirs (>=2.6.2)", "tomli (>=2.0.1)", "wheel (>=0.43.0)"]
+core = ["importlib-metadata (>=6)", "importlib-resources (>=5.10.2)", "jaraco.collections", "jaraco.functools", "jaraco.text (>=3.7)", "more-itertools", "more-itertools (>=8.8)", "packaging", "packaging (>=24)", "platformdirs (>=2.6.2)", "tomli (>=2.0.1)", "wheel (>=0.43.0)"]
 cover = ["pytest-cov"]
 doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
 enabler = ["pytest-enabler (>=2.2)"]
@@ -4102,13 +4105,13 @@ types-urllib3 = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.32.0.20240907"
+version = "2.32.0.20240914"
 description = "Typing stubs for requests"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-requests-2.32.0.20240907.tar.gz", hash = "sha256:ff33935f061b5e81ec87997e91050f7b4af4f82027a7a7a9d9aaea04a963fdf8"},
-    {file = "types_requests-2.32.0.20240907-py3-none-any.whl", hash = "sha256:1d1e79faeaf9d42def77f3c304893dea17a97cae98168ac69f3cb465516ee8da"},
+    {file = "types-requests-2.32.0.20240914.tar.gz", hash = "sha256:2850e178db3919d9bf809e434eef65ba49d0e7e33ac92d588f4a5e295fffd405"},
+    {file = "types_requests-2.32.0.20240914-py3-none-any.whl", hash = "sha256:59c2f673eb55f32a99b2894faf6020e1a9f4a402ad0f192bfee0b64469054310"},
 ]
 
 [package.dependencies]
@@ -4116,13 +4119,13 @@ urllib3 = ">=2"
 
 [[package]]
 name = "types-setuptools"
-version = "74.1.0.20240907"
+version = "75.1.0.20240917"
 description = "Typing stubs for setuptools"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-setuptools-74.1.0.20240907.tar.gz", hash = "sha256:0abdb082552ca966c1e5fc244e4853adc62971f6cd724fb1d8a3713b580e5a65"},
-    {file = "types_setuptools-74.1.0.20240907-py3-none-any.whl", hash = "sha256:15b38c8e63ca34f42f6063ff4b1dd662ea20086166d5ad6a102e670a52574120"},
+    {file = "types-setuptools-75.1.0.20240917.tar.gz", hash = "sha256:12f12a165e7ed383f31def705e5c0fa1c26215dd466b0af34bd042f7d5331f55"},
+    {file = "types_setuptools-75.1.0.20240917-py3-none-any.whl", hash = "sha256:06f78307e68d1bbde6938072c57b81cf8a99bc84bd6dc7e4c5014730b097dc0c"},
 ]
 
 [[package]]
@@ -4236,13 +4239,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "vt-py"
-version = "0.18.3"
+version = "0.18.4"
 description = "The official Python client library for VirusTotal"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "vt_py-0.18.3-py3-none-any.whl", hash = "sha256:90630a8916cea0d6cc3ed7ebfdd82dd71640ac0f12429cac2ca93645562d84d4"},
-    {file = "vt_py-0.18.3.tar.gz", hash = "sha256:187304b7dac378c71cddf82d34045ddbfea0e25e7ade0156feda36d408858186"},
+    {file = "vt_py-0.18.4-py3-none-any.whl", hash = "sha256:0107e2e949ac80e0010e2078e12c9cbe7ee0f1050bd2ce86a11bc155ed6769b3"},
+    {file = "vt_py-0.18.4.tar.gz", hash = "sha256:4ec89365d4da4d70b5be5c6bc7baa3fa12037065ef22de3eb4210d1957d31aa9"},
 ]
 
 [package.dependencies]
@@ -4493,13 +4496,13 @@ multidict = ">=4.0"
 
 [[package]]
 name = "zipp"
-version = "3.20.1"
+version = "3.20.2"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "zipp-3.20.1-py3-none-any.whl", hash = "sha256:9960cd8967c8f85a56f920d5d507274e74f9ff813a0ab8889a5b5be2daf44064"},
-    {file = "zipp-3.20.1.tar.gz", hash = "sha256:c22b14cc4763c5a5b04134207736c107db42e9d3ef2d9779d465f5f1bcba572b"},
+    {file = "zipp-3.20.2-py3-none-any.whl", hash = "sha256:a817ac80d6cf4b23bf7f2828b7cabf326f15a001bea8b1f9b49631780ba28350"},
+    {file = "zipp-3.20.2.tar.gz", hash = "sha256:bc9eb26f4506fda01b81bcde0ca78103b6e62f991b381fec825435c836edbc29"},
 ]
 
 [package.extras]
@@ -4513,4 +4516,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "e48c5efea4dda041601241ef1890399cb671fa49bb63fd178130ecf792f22dd9"
+content-hash = "6d82a82535d0b1bb47613b78b7dc2d1e7466fff950e2397148b95dfc134cbde8"
