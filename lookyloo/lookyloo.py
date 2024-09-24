@@ -223,10 +223,20 @@ class Lookyloo():
         ct = self.get_crawled_tree(capture_uuid)
         return ct.root_hartree.get_url_node_by_uuid(node_uuid)
 
+    def get_urlnodes_from_tree(self, capture_uuid: str, /, node_uuids: Iterable[str]) -> list[URLNode]:
+        '''Get a list of URL nodes from a tree, by UUID'''
+        ct = self.get_crawled_tree(capture_uuid)
+        return [ct.root_hartree.get_url_node_by_uuid(node_uuid) for node_uuid in node_uuids]
+
     def get_hostnode_from_tree(self, capture_uuid: str, /, node_uuid: str) -> HostNode:
         '''Get a host node from a tree, by UUID'''
         ct = self.get_crawled_tree(capture_uuid)
         return ct.root_hartree.get_host_node_by_uuid(node_uuid)
+
+    def get_hostnodes_from_tree(self, capture_uuid: str, /, node_uuids: Iterable[str]) -> list[HostNode]:
+        '''Get a list of host nodes from a tree, by UUID'''
+        ct = self.get_crawled_tree(capture_uuid)
+        return [ct.root_hartree.get_host_node_by_uuid(node_uuid) for node_uuid in node_uuids]
 
     def get_statistics(self, capture_uuid: str, /) -> dict[str, Any]:
         '''Get the statistics of a capture.'''

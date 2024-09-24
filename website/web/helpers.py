@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 import re
-from functools import lru_cache, cache
+from functools import lru_cache
 from pathlib import Path
 
 import flask_login  # type: ignore[import-untyped]
@@ -14,6 +14,7 @@ from flask import Request
 from werkzeug.security import generate_password_hash
 
 from lookyloo import Lookyloo, Indexing
+from lookyloo.helpers import get_indexing as get_indexing_cache
 from lookyloo.default import get_config, get_homedir, LookylooException
 
 __global_lookyloo_instance = None
@@ -118,18 +119,10 @@ def sri_load() -> dict[str, dict[str, str]]:
         return json.load(f)
 
 
-@cache
 def get_indexing(user: User | None) -> Indexing:
     '''Depending if we're logged in or not, we (can) get different indexes:
         if index_everything is enabled, we have an index in kvrocks that contains all
         the indexes for all the captures.
         It is only accessible to the admin user.
     '''
-    if not get_config('generic', 'index_everything'):
-        return Indexing()
-
-    if not user or not user.is_authenticated:
-        # No user or anonymous
-        return Indexing()
-    # Logged in user
-    return Indexing(full_index=True)
+    return get_indexing_cache(full=bool(user and user.is_authenticated))

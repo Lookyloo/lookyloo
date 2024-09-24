@@ -5,9 +5,10 @@ from __future__ import annotations
 import base64
 import hashlib
 import logging
-# import re
+
 from io import BytesIO
 from collections import defaultdict
+from datetime import datetime, timedelta
 from urllib.parse import urlsplit
 from zipfile import ZipFile
 
@@ -76,13 +77,22 @@ class Indexing():
         p.srem('indexed_favicons', capture_uuid)
         p.srem('indexed_identifiers', capture_uuid)
         p.srem('indexed_categories', capture_uuid)
+        p.srem('indexed_tlds', capture_uuid)
         for identifier_type in self.identifiers_types():
             p.srem(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
         for hash_type in self.captures_hashes_types():
             p.srem(f'indexed_hash_type|{hash_type}', capture_uuid)
+        for internal_index in self.redis.smembers(f'capture_indexes|{capture_uuid}'):
+            # internal_index can be "tlds"
+            for entry in self.redis.smembers(f'capture_indexes|{capture_uuid}|{internal_index}'):
+                # entry can be a "com", we delete a set of UUIDs, remove from the captures set
+                p.delete(f'capture_indexes|{capture_uuid}|{internal_index}|{entry}')
+                p.zrem(f'{internal_index}|{entry}|captures', capture_uuid)
+            p.delete(f'capture_indexes|{capture_uuid}|{internal_index}')
+        p.delete(f'capture_indexes|{capture_uuid}')
         p.execute()
 
-    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool, bool]:
+    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool, bool, bool]:
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
@@ -91,11 +101,12 @@ class Indexing():
         p.sismember('indexed_favicons', capture_uuid)
         p.sismember('indexed_identifiers', capture_uuid)
         p.sismember('indexed_categories', capture_uuid)
+        p.sismember('indexed_tlds', capture_uuid)
         # We also need to check if the hash_type are all indexed for this capture
         hash_types_indexed = all(self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid) for hash_type in self.captures_hashes_types())
         to_return: list[bool] = p.execute()
         to_return.append(hash_types_indexed)
-        # This call for sure returns a tuple of 7 booleans
+        # This call for sure returns a tuple of 8 booleans
         return tuple(to_return)  # type: ignore[return-value]
 
     def index_capture(self, uuid_to_index: str, directory: Path) -> None:
@@ -145,6 +156,9 @@ class Indexing():
                 self.logger.info(f'Indexing categories for {uuid_to_index}')
                 self.index_categories_capture(uuid_to_index, directory)
             if not indexed[7]:
+                self.logger.info(f'Indexing TLDs for {uuid_to_index}')
+                self.index_tld_capture(ct)
+            if not indexed[8]:
                 self.logger.info(f'Indexing hash types for {uuid_to_index}')
                 self.index_capture_hashes_types(ct)
 
@@ -345,7 +359,7 @@ class Indexing():
             if 'hhhash' not in urlnode.features:
                 continue
             if urlnode.hhhash in already_loaded:
-                # Only add cookie name once / capture
+                # Only add HTTP header Hash once / capture
                 continue
             already_loaded.add(urlnode.hhhash)
             if urlnode.hhhash not in already_cleaned_up:
@@ -400,6 +414,65 @@ class Indexing():
 
     def get_captures_hostname(self, hostname: str) -> set[str]:
         return self.redis.smembers(f'hostnames|{hostname}|captures')
+
+    # ###### TLDs ######
+
+    @property
+    def tlds(self) -> set[str]:
+        return self.redis.smembers('tlds')
+
+    def index_tld_capture(self, crawled_tree: CrawledTree) -> None:
+        if self.redis.sismember('indexed_tlds', crawled_tree.uuid):
+            # Do not reindex
+            return
+        self.redis.sadd('indexed_tlds', crawled_tree.uuid)
+        self.logger.debug(f'Indexing TLDs for {crawled_tree.uuid} ... ')
+        pipeline = self.redis.pipeline()
+
+        # Add the tlds key in internal indexes set
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'tlds')
+
+        already_indexed_global: set[str] = set()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            if not hasattr(urlnode, 'known_tld'):
+                # No TLD in the node.
+                continue
+            if urlnode.known_tld not in already_indexed_global:
+                # TLD hasn't been indexed in that run yet
+                already_indexed_global.add(urlnode.known_tld)
+                pipeline.sadd(f'{internal_index}|tlds', urlnode.known_tld)  # Only used to delete index
+                pipeline.sadd('tlds', urlnode.known_tld)
+                pipeline.zadd(f'tlds|{urlnode.known_tld}|captures',
+                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+            # Add hostnode UUID in internal index
+            pipeline.sadd(f'{internal_index}|tlds|{urlnode.known_tld}', urlnode.uuid)
+
+        pipeline.execute()
+        self.logger.debug(f'done with TLDs for {crawled_tree.uuid}.')
+
+    def get_captures_tld(self, tld: str, most_recent_capture: datetime | None = None,
+                         oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+        """Get all the captures for a specific TLD, on a time interval starting from the most recent one.
+
+        :param tld: The TLD
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 5 days ago.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=5)).timestamp()
+        return self.redis.zrevrangebyscore(f'tlds|{tld}|captures', max_score, min_score, withscores=True)
+
+    def get_capture_tld_counter(self, capture_uuid: str, tld: str) -> int:
+        # NOTE: what to do when the capture isn't indexed yet? Raise an exception?
+        # For now, return 0
+        return self.redis.scard(f'capture_indexes|{capture_uuid}|tlds|{tld}')
+
+    def get_capture_tld_nodes(self, capture_uuid: str, tld: str) -> set[str]:
+        if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|tlds|{tld}'):
+            return set(url_nodes)
+        return set()
 
     # ###### favicons ######
 

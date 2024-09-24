@@ -446,9 +446,7 @@ def load_user_config(username: str) -> dict[str, Any] | None:
 @cache
 def get_indexing(full: bool=False) -> Indexing:
     from .indexing import Indexing
-    if not get_config('generic', 'index_everything'):
-        return Indexing()
-    if full:
+    if get_config('generic', 'index_everything') and full:
         return Indexing(full_index=True)
     return Indexing()
 

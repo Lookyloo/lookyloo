@@ -6,6 +6,8 @@ import base64
 import gzip
 import hashlib
 import json
+import logging
+import logging.config
 
 from io import BytesIO
 from typing import Any
@@ -20,6 +22,7 @@ from werkzeug.security import check_password_hash
 from lacuscore import CaptureStatus as CaptureStatusCore, CaptureSettingsError
 from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo import CaptureSettings, Lookyloo
+from lookyloo.default import get_config
 from lookyloo.comparator import Comparator
 from lookyloo.exceptions import MissingUUID, NoValidHarFile
 from lookyloo.helpers import load_user_config
@@ -31,6 +34,7 @@ api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
 lookyloo: Lookyloo = get_lookyloo_instance()
 comparator: Comparator = Comparator()
+logging.config.dictConfig(get_config('logging'))
 
 
 def api_auth_check(method):  # type: ignore[no-untyped-def]
@@ -784,7 +788,7 @@ class CaptureHide(Resource):  # type: ignore[misc]
         except Exception as e:
             return {'error': f'Unable to hide the tree: {e}'}, 400
         return {'info': f'Capture {capture_uuid} successfully hidden.'}
-    
+
 
 @api.route('/admin/<string:capture_uuid>/remove')
 @api.doc(description='Remove the capture from the index.',
@@ -825,3 +829,37 @@ class CategoriesCaptures(Resource):  # type: ignore[misc]
             return list(get_indexing(flask_login.current_user).get_captures_category(category))
         return {c: list(get_indexing(flask_login.current_user).get_captures_category(c))
                 for c in existing_categories}
+
+
+# NOTE: there are a few extra paramaters we may want to add in the future: most recent/oldest capture
+@api.route('/json/tlds')
+@api.doc(description='Get captures with hits on a specific TLD, to TLD returns the a list of most frequent TLDs.')
+class TLDCaptures(Resource):  # type: ignore[misc]
+
+    @api.param('tld', 'Get captures with a specific TLD and their capture timestamp.')  # type: ignore[misc]
+    @api.param('urls_only', 'Returns recent URLs with that TLD, regardless the capture.')  # type: ignore[misc]
+    def get(self) -> list[tuple[str, float]] | list[str]:
+        tld: str | None = request.args['tld'] if request.args.get('tld') else None
+        urls_only: bool | None = True if request.args.get('urls_only') else None
+        if not tld:
+            return list(get_indexing(flask_login.current_user).tlds)
+        recent_captures_with_tld = get_indexing(flask_login.current_user).get_captures_tld(tld)
+        if not recent_captures_with_tld:
+            return []
+        if not urls_only:
+            return recent_captures_with_tld
+        # get the capture, get the node uuids, get the names, make it a list
+        to_return: set[str] = set()
+        # Make sure to only get the captures with a pickle ready
+        cache = lookyloo.sorted_capture_cache([uuid for uuid, _ in recent_captures_with_tld], cached_captures_only=True)
+        for c in cache:
+            uuid = c.uuid
+            nodes_with_tld = get_indexing(flask_login.current_user).get_capture_tld_nodes(uuid, tld)
+            try:
+                to_return.update(node.name for node in lookyloo.get_urlnodes_from_tree(uuid, nodes_with_tld))
+            except IndexError:
+                # The capture needs to be re-indexed
+                # NOTE: If this warning it printed on a loop for a capture, we have a problem with the index.
+                logging.warning(f'Capture {uuid} needs to be re-indexed.')
+                get_indexing(flask_login.current_user).force_reindex(uuid)
+        return list(to_return)

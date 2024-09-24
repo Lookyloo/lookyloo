@@ -28,8 +28,7 @@ from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
 from .context import Context
-from .helpers import get_captures_dir, is_locked, load_pickle_tree, get_pickle_path, remove_pickle_tree
-from .indexing import Indexing
+from .helpers import get_captures_dir, is_locked, load_pickle_tree, get_pickle_path, remove_pickle_tree, get_indexing
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
 from .modules import Cloudflare
@@ -119,7 +118,6 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.redis = redis
-        self.indexing = Indexing()
         self.contextualizer = contextualizer
         self.__cache_max_size = maxsize
         self.__cache: dict[str, CaptureCache] = OrderedDict()
@@ -363,7 +361,10 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             try:
                 logger.debug('The tree needs to be rebuilt.')
                 tree = self._create_pickle(capture_dir, logger)
-                self.indexing.force_reindex(uuid)
+                # Force the reindexing in the public and full index (if enabled)
+                get_indexing().force_reindex(uuid)
+                if get_config('generic', 'index_everything'):
+                    get_indexing(full=True).force_reindex(uuid)
             except NoValidHarFile:
                 logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are broken.')
                 tree = None
