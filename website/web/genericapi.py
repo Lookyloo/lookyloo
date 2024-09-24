@@ -9,6 +9,7 @@ import json
 import logging
 import logging.config
 
+from datetime import datetime
 from io import BytesIO
 from typing import Any
 from uuid import uuid4
@@ -838,12 +839,30 @@ class TLDCaptures(Resource):  # type: ignore[misc]
 
     @api.param('tld', 'Get captures with a specific TLD and their capture timestamp.')  # type: ignore[misc]
     @api.param('urls_only', 'Returns recent URLs with that TLD, regardless the capture.')  # type: ignore[misc]
+    @api.param('most_recent_capture', 'Timestamp of the most recent capture to check for a TLD (fallback to now)')  # type: ignore[misc]
+    @api.param('oldest_capture', 'Timestamp of the oldest capture to check for a TLD (fallback to 5 days ago)')  # type: ignore[misc]
     def get(self) -> list[tuple[str, float]] | list[str]:
         tld: str | None = request.args['tld'] if request.args.get('tld') else None
-        urls_only: bool | None = True if request.args.get('urls_only') else None
         if not tld:
             return list(get_indexing(flask_login.current_user).tlds)
-        recent_captures_with_tld = get_indexing(flask_login.current_user).get_captures_tld(tld)
+
+        urls_only: bool | None = True if request.args.get('urls_only') else None
+        most_recent_capture: datetime | None
+        oldest_capture: datetime | None = None
+        if _most_recent := request.args.get('most_recent_capture'):
+            try:
+                most_recent_capture = datetime.fromtimestamp(float(_most_recent))
+            except Exception:
+                most_recent_capture = None
+        else:
+            most_recent_capture = None
+        if _oldest := request.args.get('oldest_capture'):
+            try:
+                oldest_capture = datetime.fromtimestamp(float(_oldest))
+            except Exception:
+                oldest_capture = None
+
+        recent_captures_with_tld = get_indexing(flask_login.current_user).get_captures_tld(tld, most_recent_capture, oldest_capture)
         if not recent_captures_with_tld:
             return []
         if not urls_only:
