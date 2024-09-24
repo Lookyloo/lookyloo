@@ -14,7 +14,7 @@ from lacuscore import CaptureStatus as CaptureStatusCore, CaptureSettingsError
 from lookyloo import Lookyloo
 from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
-from lookyloo.helpers import ParsedUserAgent, serialize_to_json
+from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings
 from pylacus import CaptureStatus as CaptureStatusPy
 
 logging.config.dictConfig(get_config('logging'))
@@ -110,7 +110,8 @@ class Processing(AbstractManager):
             self.logger.info(f'Found a non-queued capture ({uuid}), retrying now.')
             # This capture couldn't be queued and we created the uuid locally
             try:
-                if query := self.lookyloo.get_capture_settings(uuid):
+                if capture_settings := self.lookyloo.redis.hgetall(uuid):
+                    query = CaptureSettings(**capture_settings)
                     try:
                         new_uuid = self.lookyloo.lacus.enqueue(
                             url=query.url,
