@@ -20,6 +20,7 @@ from logging import Logger
 from pathlib import Path
 from pydantic import field_validator
 from pydantic_core import from_json
+from string import punctuation
 from typing import Any, TYPE_CHECKING
 from urllib.parse import urlparse
 
@@ -436,6 +437,9 @@ class CaptureSettings(LacuscoreCaptureSettings):
 
 @lru_cache(64)
 def load_user_config(username: str) -> dict[str, Any] | None:
+    if any(c in punctuation for c in username):
+        # The username is invalid. This should never happen, but let's be safe.
+        return None
     user_config_path = get_homedir() / 'config' / 'users' / f'{username}.json'
     if not user_config_path.exists():
         return None
