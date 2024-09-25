@@ -465,7 +465,7 @@ class Indexing():
         if self.redis.type(f'urls|{md5}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'urls|{md5}|captures'))
-            return []
+            return 0
         return self.redis.zcard(f'urls|{md5}|captures')
 
     def get_captures_hostname(self, hostname: str, most_recent_capture: datetime | None = None,
@@ -488,7 +488,7 @@ class Indexing():
         if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'hostnames|{hostname}|captures'))
-            return []
+            return 0
         return self.redis.zcard(f'hostnames|{hostname}|captures')
 
     def get_capture_url_counter(self, capture_uuid: str, url: str) -> int:
