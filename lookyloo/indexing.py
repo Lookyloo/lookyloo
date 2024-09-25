@@ -379,13 +379,28 @@ class Indexing():
 
     # ###### URLs and Domains ######
 
-    @property
-    def urls(self) -> list[tuple[str, float]]:
-        return self.redis.zrevrange('urls', 0, 200, withscores=True)
+    def _reindex_urls_domains(self, hostname: str, md5_url: str) -> None:
+        # We changed the format of the indexes, so we need to make sure they're re-triggered.
+        pipeline = self.redis.pipeline()
+        if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]
+            pipeline.srem('indexed_urls', *self.redis.smembers(f'hostnames|{hostname}|captures'))
+            pipeline.delete(f'hostnames|{hostname}|captures')
+        if self.redis.type(f'urls|{md5_url}|captures') == 'set':  # type: ignore[no-untyped-call]
+            pipeline.srem('indexed_urls', *self.redis.smembers(f'urls|{md5_url}|captures'))
+            pipeline.delete(f'urls|{md5_url}|captures')
+        if self.redis.type('hostnames') == 'zset':  # type: ignore[no-untyped-call]
+            pipeline.delete('hostnames')
+        if self.redis.type('urls') == 'zset':  # type: ignore[no-untyped-call]
+            pipeline.delete('urls')
+        pipeline.execute()
 
     @property
-    def hostnames(self) -> list[tuple[str, float]]:
-        return self.redis.zrevrange('hostnames', 0, 200, withscores=True)
+    def urls(self) -> set[str]:
+        return self.redis.smembers('urls')
+
+    @property
+    def hostnames(self) -> set[str]:
+        return self.redis.smembers('hostnames')
 
     def index_url_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_urls', crawled_tree.uuid):
@@ -394,26 +409,101 @@ class Indexing():
         self.redis.sadd('indexed_urls', crawled_tree.uuid)
         self.logger.debug(f'Indexing URLs for {crawled_tree.uuid} ... ')
         pipeline = self.redis.pipeline()
+
+        # Add the hostnames and urls key in internal indexes set
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'hostnames')
+        pipeline.sadd(internal_index, 'urls')
+
+        already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             if not urlnode.hostname or not urlnode.name:
+                # no hostname or URL, skip
                 continue
-            if not self.redis.sismember(f'hostnames|{urlnode.hostname}|captures', crawled_tree.uuid):
-                pipeline.zincrby('hostnames', 1, urlnode.hostname)
-                pipeline.zincrby('urls', 1, urlnode.name)
-                pipeline.sadd(f'hostnames|{urlnode.hostname}|captures', crawled_tree.uuid)
-                # set of all captures with this URL
-                # We need to make sure the keys in redis aren't too long.
-                md5 = hashlib.md5(urlnode.name.encode()).hexdigest()
-                pipeline.sadd(f'urls|{md5}|captures', crawled_tree.uuid)
+
+            md5_url = hashlib.md5(urlnode.name.encode()).hexdigest()
+            self._reindex_urls_domains(urlnode.hostname, md5_url)
+
+            if md5_url not in already_indexed_global:
+                # The URL hasn't been indexed in that run yet
+                already_indexed_global.add(md5_url)
+                pipeline.sadd(f'{internal_index}|urls', urlnode.name)  # Only used to delete index
+                pipeline.sadd(f'{internal_index}|hostnames', urlnode.hostname)  # Only used to delete index
+                pipeline.sadd('urls', urlnode.name)
+                pipeline.sadd('hostnames', urlnode.hostname)
+                pipeline.zadd(f'urls|{md5_url}|captures',
+                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+                pipeline.zadd(f'hostnames|{urlnode.hostname}|captures',
+                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+            # Add hostnode UUID in internal index
+            pipeline.sadd(f'{internal_index}|urls|{md5_url}', urlnode.uuid)
+            pipeline.sadd(f'{internal_index}|hostnames|{urlnode.hostname}', urlnode.uuid)
+
         pipeline.execute()
         self.logger.debug(f'done with URLs for {crawled_tree.uuid}.')
 
-    def get_captures_url(self, url: str) -> set[str]:
-        md5 = hashlib.md5(url.encode()).hexdigest()
-        return self.redis.smembers(f'urls|{md5}|captures')
+    def get_captures_url(self, url: str, most_recent_capture: datetime | None = None,
+                         oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+        """Get all the captures for a specific URL, on a time interval starting from the most recent one.
 
-    def get_captures_hostname(self, hostname: str) -> set[str]:
-        return self.redis.smembers(f'hostnames|{hostname}|captures')
+        :param url: The URL
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 15 days ago.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        md5 = hashlib.md5(url.encode()).hexdigest()
+        if self.redis.type(f'urls|{md5}|captures') == 'set':  # type: ignore[no-untyped-call]
+            # triggers the re-index soon.
+            self.redis.srem('indexed_urls', *self.redis.smembers(f'urls|{md5}|captures'))
+            return []
+        return self.redis.zrevrangebyscore(f'urls|{md5}|captures', max_score, min_score, withscores=True)
+
+    def get_captures_url_count(self, url: str) -> int:
+        md5 = hashlib.md5(url.encode()).hexdigest()
+        return self.redis.zcard(f'urls|{md5}|captures')
+
+    def get_captures_hostname(self, hostname: str, most_recent_capture: datetime | None = None,
+                              oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+        """Get all the captures for a specific hostname, on a time interval starting from the most recent one.
+
+        :param url: The URL
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 15 days ago.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]
+            # triggers the re-index soon.
+            self.redis.srem('indexed_urls', *self.redis.smembers(f'hostnames|{hostname}|captures'))
+            return []
+        return self.redis.zrevrangebyscore(f'hostnames|{hostname}|captures', max_score, min_score, withscores=True)
+
+    def get_captures_hostname_count(self, hostname: str) -> int:
+        return self.redis.zcard(f'hostnames|{hostname}|captures')
+
+    def get_capture_url_counter(self, capture_uuid: str, url: str) -> int:
+        # NOTE: what to do when the capture isn't indexed yet? Raise an exception?
+        # For now, return 0
+        md5 = hashlib.md5(url.encode()).hexdigest()
+        return self.redis.scard(f'capture_indexes|{capture_uuid}|urls|{md5}')
+
+    def get_capture_hostname_counter(self, capture_uuid: str, hostname: str) -> int:
+        # NOTE: what to do when the capture isn't indexed yet? Raise an exception?
+        # For now, return 0
+        return self.redis.scard(f'capture_indexes|{capture_uuid}|hostnames|{hostname}')
+
+    def get_capture_url_nodes(self, capture_uuid: str, url: str) -> set[str]:
+        md5 = hashlib.md5(url.encode()).hexdigest()
+        if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|urls|{md5}'):
+            return set(url_nodes)
+        return set()
+
+    def get_capture_hostname_nodes(self, capture_uuid: str, hostname: str) -> set[str]:
+        if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|hostnames|{hostname}'):
+            return set(url_nodes)
+        return set()
 
     # ###### TLDs ######
 

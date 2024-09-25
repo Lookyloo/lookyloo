@@ -412,10 +412,10 @@ def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, int | list[UR
     for node in ct.root_hartree.url_tree.traverse():
         if not node.hostname:
             continue
-        captures = get_indexing(flask_login.current_user).get_captures_hostname(node.hostname)
+        captures_count = get_indexing(flask_login.current_user).get_captures_hostname_count(node.hostname)
         # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
         if node.hostname not in to_return:
-            to_return[node.hostname] = {'total_captures': len(captures), 'nodes': []}
+            to_return[node.hostname] = {'total_captures': captures_count, 'nodes': []}
         to_return[node.hostname]['nodes'].append(node)  # type: ignore[union-attr]
     return to_return
 
@@ -426,10 +426,10 @@ def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode
     for node in ct.root_hartree.url_tree.traverse():
         if not node.name:
             continue
-        captures = get_indexing(flask_login.current_user).get_captures_url(node.name)
+        captures_count = get_indexing(flask_login.current_user).get_captures_url_count(node.name)
         # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
         if node.hostname not in to_return:
-            to_return[node.name] = {'total_captures': len(captures), 'nodes': [],
+            to_return[node.name] = {'total_captures': captures_count, 'nodes': [],
                                     'quoted_url': quote_plus(node.name)}
         to_return[node.name]['nodes'].append(node)  # type: ignore[union-attr]
     return to_return
@@ -437,13 +437,17 @@ def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode
 
 def get_hostname_investigator(hostname: str) -> list[tuple[str, str, str, datetime]]:
     '''Returns all the captures loading content from that hostname, used in the web interface.'''
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname)])
+    cached_captures = lookyloo.sorted_capture_cache(
+        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname)],
+        cached_captures_only=True)
     return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
 def get_url_investigator(url: str) -> list[tuple[str, str, str, datetime]]:
     '''Returns all the captures loading content from that url, used in the web interface.'''
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_url(url=url)])
+    cached_captures = lookyloo.sorted_capture_cache(
+        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_url(url=url)],
+        cached_captures_only=True)
     return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 

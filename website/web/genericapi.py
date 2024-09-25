@@ -336,10 +336,12 @@ class HashInfo(Resource):  # type: ignore[misc]
 
 def get_url_occurrences(url: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
     '''Get the most recent captures and URL nodes where the URL has been seen.'''
-    captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_url(url), cached_captures_only=cached_captures_only)
+    captures = lookyloo.sorted_capture_cache(
+        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_url(url)],
+        cached_captures_only=cached_captures_only)
 
     to_return: list[dict[str, Any]] = []
-    for capture in captures[:limit]:
+    for capture in captures:
         ct = lookyloo.get_crawled_tree(capture.uuid)
         to_append: dict[str, str | dict[str, Any]] = {'capture_uuid': capture.uuid,
                                                       'start_timestamp': capture.timestamp.isoformat(),
@@ -375,10 +377,12 @@ class URLInfo(Resource):  # type: ignore[misc]
 
 def get_hostname_occurrences(hostname: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
     '''Get the most recent captures and URL nodes where the hostname has been seen.'''
-    captures = lookyloo.sorted_capture_cache(get_indexing(flask_login.current_user).get_captures_hostname(hostname), cached_captures_only=cached_captures_only)
+    captures = lookyloo.sorted_capture_cache(
+        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_hostname(hostname)],
+        cached_captures_only=cached_captures_only)
 
     to_return: list[dict[str, Any]] = []
-    for capture in captures[:limit]:
+    for capture in captures:
         ct = lookyloo.get_crawled_tree(capture.uuid)
         to_append: dict[str, str | list[Any] | dict[str, Any]] = {
             'capture_uuid': capture.uuid,
