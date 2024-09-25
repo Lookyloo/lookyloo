@@ -30,7 +30,7 @@
    </tr>
   </thead>
   <tbody>
-    {% for capture_uuid, title, landing_page, capture_time in captures %}
+    {% for capture_uuid, title, landing_page, capture_time, nodes in captures %}
     <tr>
       <td>
         {{capture_time}}
@@ -39,6 +39,17 @@
         <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">
           {{ title }}
         </a>
+        <br>
+        The capture contains this hostname in {{ nodes|length }} nodes, click below to see them on the tree:
+        <ul>
+            {% for node in nodes %}
+            <li>
+                <a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=node) }}">
+                {{ shorten_string(node, 50) }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
       </td>
       <td>
         <span class="d-inline-block text-break" style="max-width: 400px;">

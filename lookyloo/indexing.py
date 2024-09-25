@@ -427,7 +427,7 @@ class Indexing():
             if md5_url not in already_indexed_global:
                 # The URL hasn't been indexed in that run yet
                 already_indexed_global.add(md5_url)
-                pipeline.sadd(f'{internal_index}|urls', urlnode.name)  # Only used to delete index
+                pipeline.sadd(f'{internal_index}|urls', md5_url)  # Only used to delete index
                 pipeline.sadd(f'{internal_index}|hostnames', urlnode.hostname)  # Only used to delete index
                 pipeline.sadd('urls', urlnode.name)
                 pipeline.sadd('hostnames', urlnode.hostname)

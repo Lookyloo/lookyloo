@@ -435,20 +435,24 @@ def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode
     return to_return
 
 
-def get_hostname_investigator(hostname: str) -> list[tuple[str, str, str, datetime]]:
+def get_hostname_investigator(hostname: str) -> list[tuple[str, str, str, datetime, set[str]]]:
     '''Returns all the captures loading content from that hostname, used in the web interface.'''
     cached_captures = lookyloo.sorted_capture_cache(
         [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname)],
         cached_captures_only=True)
-    return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
+    return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp,
+            get_indexing(flask_login.current_user).get_capture_hostname_nodes(cache.uuid, hostname)
+             ) for cache in cached_captures]
 
 
-def get_url_investigator(url: str) -> list[tuple[str, str, str, datetime]]:
+def get_url_investigator(url: str) -> list[tuple[str, str, str, datetime, set[str]]]:
     '''Returns all the captures loading content from that url, used in the web interface.'''
     cached_captures = lookyloo.sorted_capture_cache(
         [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_url(url=url)],
         cached_captures_only=True)
-    return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
+    return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp,
+             get_indexing(flask_login.current_user).get_capture_url_nodes(cache.uuid, url)
+             ) for cache in cached_captures]
 
 
 def get_cookie_name_investigator(cookie_name: str, /) -> tuple[list[tuple[str, str]], list[tuple[str, float, list[tuple[str, float]]]]]:
@@ -1245,7 +1249,6 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                         hostnode_to_highlight = hostnode.uuid
                 except IndexError as e:
                     logging.info(f'Invalid uuid ({e}): {node_uuid}')
-                    pass
         if cache.error:
             flash(cache.error, 'warning')
 
