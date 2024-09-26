@@ -2831,13 +2831,13 @@ tests = ["pytest"]
 
 [[package]]
 name = "puremagic"
-version = "1.27"
+version = "1.28"
 description = "Pure python implementation of magic file detection"
 optional = false
 python-versions = "*"
 files = [
-    {file = "puremagic-1.27-py3-none-any.whl", hash = "sha256:b5519ad89e9b7c96a5fd9947d9a907e44f97cc30eae6dcf746d90a58e3681936"},
-    {file = "puremagic-1.27.tar.gz", hash = "sha256:7cb316f40912f56f34149f8ebdd77a91d099212d2ed936feb2feacfc7cbce2c1"},
+    {file = "puremagic-1.28-py3-none-any.whl", hash = "sha256:e16cb9708ee2007142c37931c58f07f7eca956b3472489106a7245e5c3aa1241"},
+    {file = "puremagic-1.28.tar.gz", hash = "sha256:195893fc129657f611b86b959aab337207d6df7f25372209269ed9e303c1a8c0"},
 ]
 
 [[package]]
@@ -4537,4 +4537,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "c13b0c4414c0cef489dd028de301f29948ad7fd233cba439870af2a8e4694d6e"
+content-hash = "72e46c055b1d8822ecd570e15e6072e1cf520bfe2fd956ea6afd14732c4402e7"
