@@ -40,16 +40,21 @@ class BackgroundIndexer(AbstractManager):
             return None
         self.logger.info(f'Check {self.script_name}...')
         # NOTE: only get the non-archived captures for now.
+        __counter_shutdown = 0
         for uuid, d in self.redis.hscan_iter('lookup_dirs'):
             if not self.full_indexer:
                 # If we're not running the full indexer, check if the capture should be indexed.
                 if self.is_public_instance and self.redis.hexists(d, 'no_index'):
                     # Capture unindexed
                     continue
-
+            __counter_shutdown += 1
             self.indexing.index_capture(uuid, Path(d))
+            if __counter_shutdown % 10 and self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
+        else:
+            self.logger.info('... done.')
         self.indexing.indexing_done()
-        self.logger.info('... done.')
 
 
 def main() -> None:
