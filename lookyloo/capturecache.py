@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import gzip
 import json
@@ -22,7 +23,8 @@ from pathlib import Path
 from typing import Any, MutableMapping, Iterator
 
 import dns.rdatatype
-import dns.resolver
+from dns.resolver import Cache
+from dns.asyncresolver import Resolver
 from har2tree import CrawledTree, Har2TreeError, HarFile
 from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
@@ -123,6 +125,12 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         self.__cache: dict[str, CaptureCache] = OrderedDict()
         self._quick_init()
         self.timeout = get_config('generic', 'max_tree_create_time')
+
+        self.dnsresolver: Resolver = Resolver()
+        self.dnsresolver.cache = Cache(900)
+        self.dnsresolver.timeout = 4
+        self.dnsresolver.lifetime = 6
+
         try:
             self.ipasnhistory: IPASNHistory | None = IPASNHistory()
             if not self.ipasnhistory.is_up:
@@ -163,7 +171,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                          or (cc.capture_dir / 'tree.pickle').exists())):
                 self.__cache[uuid] = cc
                 return self.__cache[uuid]
-        self.__cache[uuid] = self._set_capture_cache(capture_dir)
+        self.__cache[uuid] = asyncio.run(self._set_capture_cache(capture_dir))
         return self.__cache[uuid]
 
     def __iter__(self) -> Iterator[dict[str, CaptureCache]]:
@@ -256,7 +264,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             raise MissingCaptureDirectory(f'UUID ({uuid}) linked to a missing directory ({capture_dir}).')
         raise MissingUUID(f'Unable to find UUID {uuid}.')
 
-    def _create_pickle(self, capture_dir: Path, logger: LookylooCacheLogAdapter) -> CrawledTree:
+    async def _create_pickle(self, capture_dir: Path, logger: LookylooCacheLogAdapter) -> CrawledTree:
         with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
@@ -281,7 +289,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             default_recursion_limit = sys.getrecursionlimit()
             with self._timeout_context():
                 tree = CrawledTree(har_files, uuid)
-            self.__resolve_dns(tree, logger)
+            await self.__resolve_dns(tree, logger)
             if self.contextualizer:
                 self.contextualizer.contextualize_tree(tree)
         except Har2TreeError as e:
@@ -338,7 +346,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         else:
             yield
 
-    def _set_capture_cache(self, capture_dir_str: str) -> CaptureCache:
+    async def _set_capture_cache(self, capture_dir_str: str) -> CaptureCache:
         '''Populate the redis cache for a capture. Mostly used on the index page.
         NOTE: Doesn't require the pickle.'''
         capture_dir = Path(capture_dir_str)
@@ -360,7 +368,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         except TreeNeedsRebuild:
             try:
                 logger.debug('The tree needs to be rebuilt.')
-                tree = self._create_pickle(capture_dir, logger)
+                tree = await self._create_pickle(capture_dir, logger)
                 # Force the reindexing in the public and full index (if enabled)
                 get_indexing().force_reindex(uuid)
                 if get_config('generic', 'index_everything'):
@@ -448,7 +456,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         p.execute()
         return CaptureCache(cache)
 
-    def __resolve_dns(self, ct: CrawledTree, logger: LookylooCacheLogAdapter) -> CrawledTree:
+    async def __resolve_dns(self, ct: CrawledTree, logger: LookylooCacheLogAdapter) -> None:
         '''Resolves all domains of the tree, keeps A (IPv4), AAAA (IPv6), and CNAME entries
         and store them in ips.json and cnames.json, in the capture directory.
         Updates the nodes of the tree accordingly so the information is available.
@@ -467,6 +475,15 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 cnames.append(known_cnames[to_search])
                 to_search = known_cnames[to_search]
             return cnames
+
+        async def _dns_query(hostname: str) -> None:
+            query_types = [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]
+            # dns.rdatatype.RdataType.SOA, dns.rdatatype.RdataType.NS]
+            for qt in query_types:
+                try:
+                    await self.dnsresolver.resolve(hostname, qt, search=True, raise_on_no_answer=False)
+                except Exception as e:
+                    logger.warning(f'Unable to resolve DNS {hostname} - {qt}: {e}')
 
         cnames_path = ct.root_hartree.har.path.parent / 'cnames.json'
         ips_path = ct.root_hartree.har.path.parent / 'ips.json'
@@ -500,6 +517,14 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 ipasn = {}
 
         _all_ips = set()
+        _all_hostnames = {node.name for node in ct.root_hartree.hostname_tree.traverse()
+                             if not getattr(node, 'hostname_is_ip', False)}
+        self.dnsresolver.cache.flush()
+        logger.info(f'Resolving DNS: {len(_all_hostnames)} hostnames.')
+        all_requests = [_dns_query(hostname) for hostname in _all_hostnames]
+        # tun all the requests, cache them and let the rest of the code deal.
+        await asyncio.gather(*all_requests)
+        logger.info('Done resolving DNS.')
         for node in ct.root_hartree.hostname_tree.traverse():
             if 'hostname_is_ip' in node.features and node.hostname_is_ip:
                 continue
@@ -509,7 +534,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 # Resolve and cache
                 for query_type in [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]:
                     try:
-                        response = dns.resolver.resolve(node.name, query_type, search=True, raise_on_no_answer=False)
+                        response = await self.dnsresolver.resolve(node.name, query_type, search=True, raise_on_no_answer=False)
                     except Exception as e:
                         logger.warning(f'Unable to resolve DNS: {e}')
                         continue
@@ -601,4 +626,3 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             json.dump(host_ips, f, default=serialize_sets)
         with ipasn_path.open('w') as f:
             json.dump(ipasn, f)
-        return ct
