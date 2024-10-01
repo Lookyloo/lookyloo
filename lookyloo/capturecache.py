@@ -26,6 +26,7 @@ import dns.rdatatype
 from dns.resolver import Cache
 from dns.asyncresolver import Resolver
 from har2tree import CrawledTree, Har2TreeError, HarFile
+from publicsuffixlist import PublicSuffixList  # type: ignore[import-untyped]
 from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
@@ -126,10 +127,14 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         self._quick_init()
         self.timeout = get_config('generic', 'max_tree_create_time')
 
+        self.psl = PublicSuffixList()
         self.dnsresolver: Resolver = Resolver()
         self.dnsresolver.cache = Cache(900)
         self.dnsresolver.timeout = 4
         self.dnsresolver.lifetime = 6
+        self.query_types = [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA,
+                            dns.rdatatype.RdataType.SOA, dns.rdatatype.RdataType.NS,
+                            dns.rdatatype.RdataType.MX]
 
         try:
             self.ipasnhistory: IPASNHistory | None = IPASNHistory()
@@ -476,18 +481,22 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 to_search = known_cnames[to_search]
             return cnames
 
-        async def _dns_query(hostname: str) -> None:
-            query_types = [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]
-            # dns.rdatatype.RdataType.SOA, dns.rdatatype.RdataType.NS]
-            for qt in query_types:
-                try:
-                    await self.dnsresolver.resolve(hostname, qt, search=True, raise_on_no_answer=False)
-                except Exception as e:
-                    logger.warning(f'Unable to resolve DNS {hostname} - {qt}: {e}')
+        async def _dns_query(hostname: str, semaphore: asyncio.Semaphore) -> None:
+            domain = self.psl.privatesuffix(hostname)
+            async with semaphore:
+                for qt in self.query_types:
+                    try:
+                        await self.dnsresolver.resolve(hostname, qt, search=True, raise_on_no_answer=False)
+                        await self.dnsresolver.resolve(domain, qt, search=True, raise_on_no_answer=False)
+                    except Exception as e:
+                        logger.warning(f'Unable to resolve DNS {hostname} - {qt}: {e}')
 
         cnames_path = ct.root_hartree.har.path.parent / 'cnames.json'
         ips_path = ct.root_hartree.har.path.parent / 'ips.json'
         ipasn_path = ct.root_hartree.har.path.parent / 'ipasn.json'
+        soa_path = ct.root_hartree.har.path.parent / 'soa.json'
+        ns_path = ct.root_hartree.har.path.parent / 'nameservers.json'
+        mx_path = ct.root_hartree.har.path.parent / 'mx.json'
 
         host_cnames: dict[str, str] = {}
         if cnames_path.exists():
@@ -503,6 +512,20 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             try:
                 with ips_path.open() as f:
                     host_ips = json.load(f)
+                    for host, _ips in host_ips.items():
+                        if 'v4' in _ips and 'v6' in _ips:
+                            _ips['v4'] = set(_ips['v4'])
+                            _ips['v6'] = set(_ips['v6'])
+                        else:
+                            # old format
+                            old_ips = _ips
+                            _ips = {'v4': set(), 'v6': set()}
+                            for ip in old_ips:
+                                if '.' in ip:
+                                    _ips['v4'].add(ip)
+                                elif ':' in ip:
+                                    _ips['v6'].add(ip)
+                        host_ips[host] = _ips
             except json.decoder.JSONDecodeError:
                 # The json is broken, delete and re-trigger the requests
                 host_ips = {}
@@ -516,109 +539,253 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 # The json is broken, delete and re-trigger the requests
                 ipasn = {}
 
+        host_soa: dict[str, set[str]] = {}
+        if soa_path.exists():
+            try:
+                with soa_path.open() as f:
+                    host_soa = {k: set(v) for k, v in json.load(f).items()}
+            except json.decoder.JSONDecodeError:
+                # The json is broken, delete and re-trigger the requests
+                host_soa = {}
+
+        host_mx: dict[str, set[str]] = {}
+        if mx_path.exists():
+            try:
+                with mx_path.open() as f:
+                    host_mx = {k: set(v) for k, v in json.load(f).items()}
+            except json.decoder.JSONDecodeError:
+                # The json is broken, delete and re-trigger the requests
+                host_mx = {}
+
+        host_ns: dict[str, set[str]] = {}
+        if ns_path.exists():
+            try:
+                with ns_path.open() as f:
+                    host_ns = {k: set(v) for k, v in json.load(f).items()}
+            except json.decoder.JSONDecodeError:
+                # The json is broken, delete and re-trigger the requests
+                host_ns = {}
+
         _all_ips = set()
-        _all_hostnames = {node.name for node in ct.root_hartree.hostname_tree.traverse()
-                             if not getattr(node, 'hostname_is_ip', False)}
+        _all_hostnames: set[str] = {node.name for node in ct.root_hartree.hostname_tree.traverse()
+                                    if not getattr(node, 'hostname_is_ip', False)}
         self.dnsresolver.cache.flush()
         logger.info(f'Resolving DNS: {len(_all_hostnames)} hostnames.')
-        all_requests = [_dns_query(hostname) for hostname in _all_hostnames]
-        # tun all the requests, cache them and let the rest of the code deal.
+        semaphore = asyncio.Semaphore(20)
+        all_requests = [_dns_query(hostname, semaphore) for hostname in _all_hostnames]
+        # run all the requests, cache them and let the rest of the code deal.
+        # And if a few fail due to network issues, we retry later.
         await asyncio.gather(*all_requests)
         logger.info('Done resolving DNS.')
         for node in ct.root_hartree.hostname_tree.traverse():
             if 'hostname_is_ip' in node.features and node.hostname_is_ip:
                 continue
-            if node.name not in host_cnames or node.name not in host_ips:
-                host_cnames[node.name] = ''
-                host_ips[node.name] = {'v4': set(), 'v6': set()}
-                # Resolve and cache
-                for query_type in [dns.rdatatype.RdataType.A, dns.rdatatype.RdataType.AAAA]:
-                    try:
-                        response = await self.dnsresolver.resolve(node.name, query_type, search=True, raise_on_no_answer=False)
-                    except Exception as e:
-                        logger.warning(f'Unable to resolve DNS: {e}')
+            domain = self.psl.privatesuffix(node.name)
+
+            # A and AAAA records, they contain the CNAME responses, even if there are no A or AAAA records.
+            try:
+                a_response = await self.dnsresolver.resolve(node.name, dns.rdatatype.RdataType.A, search=True, raise_on_no_answer=False)
+            except Exception as e:
+                logger.info(f'[A record] Unable to resolve DNS: {e}')
+                a_response = None
+
+            try:
+                aaaa_response = await self.dnsresolver.resolve(node.name, dns.rdatatype.RdataType.AAAA, search=True, raise_on_no_answer=False)
+            except Exception as e:
+                logger.info(f'[AAAA record] Unable to resolve DNS: {e}')
+                aaaa_response = None
+
+            if a_response is None and aaaa_response is None:
+                # No A, AAAA or CNAME record, skip node
+                continue
+
+            answers = []
+            if a_response:
+                answers += a_response.response.answer
+            if aaaa_response:
+                answers += aaaa_response.response.answer
+
+            for answer in answers:
+                name_to_cache = str(answer.name).rstrip('.')
+                if name_to_cache not in host_ips:
+                    host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
+
+                if answer.rdtype == dns.rdatatype.RdataType.A:
+                    _all_ips |= {str(b) for b in answer}
+                    host_ips[name_to_cache]['v4'] |= {str(b) for b in answer}
+                elif answer.rdtype == dns.rdatatype.RdataType.AAAA:
+                    _all_ips |= {str(b) for b in answer}
+                    host_ips[name_to_cache]['v6'] |= {str(b) for b in answer}
+                elif answer.rdtype == dns.rdatatype.RdataType.CNAME:
+                    host_cnames[name_to_cache] = str(answer[0].target).rstrip('.')
+
+            # SOA section will be either in the answer (query on domain)
+            # or in the authority section (query on hostname)
+            # NOTE: the SOA will be the one of the *domain* of the last CNAME in the chain,
+            # and will vary depending on the subdomain queried. We cannot attach it to a domain.
+            try:
+                soa_response = await self.dnsresolver.resolve(node.name, dns.rdatatype.RdataType.SOA, search=True, raise_on_no_answer=False)
+            except Exception as e:
+                logger.warning(f'[SOA record] Unable to resolve DNS: {e}')
+            else:
+                for answer in soa_response.response.answer + soa_response.response.authority:
+                    if answer.rdtype != dns.rdatatype.RdataType.SOA:
                         continue
-                    for answer in response.response.answer:
-                        name_to_cache = str(answer.name).rstrip('.')
-                        if name_to_cache not in host_ips:
-                            host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
-                        else:
-                            if 'v4' in host_ips[name_to_cache] and 'v6' in host_ips[name_to_cache]:
-                                host_ips[name_to_cache]['v4'] = set(host_ips[name_to_cache]['v4'])
-                                host_ips[name_to_cache]['v6'] = set(host_ips[name_to_cache]['v6'])
-                            else:
-                                # old format
-                                old_ips = host_ips[name_to_cache]
-                                host_ips[name_to_cache] = {'v4': set(), 'v6': set()}
-                                for ip in old_ips:
-                                    if '.' in ip:
-                                        host_ips[name_to_cache]['v4'].add(ip)
-                                    elif ':' in ip:
-                                        host_ips[name_to_cache]['v6'].add(ip)
+                    name_to_cache = str(answer.name).rstrip('.')
+                    if name_to_cache not in host_soa:
+                        host_soa[name_to_cache] = set()
+                    host_soa[name_to_cache].add(str(answer[0]))
+                    # we also need to map the request with the response,
+                    # because the answer.name may be different from the node.name AND the last CNAME in the chain.
+                    if node.name not in host_soa:
+                        host_soa[node.name] = set()
+                    host_soa[node.name].add(str(answer[0]))
 
-                        if answer.rdtype == dns.rdatatype.RdataType.CNAME:
-                            host_cnames[name_to_cache] = str(answer[0].target).rstrip('.')
-                        else:
-                            host_cnames[name_to_cache] = ''
-
-                        if answer.rdtype == dns.rdatatype.RdataType.A:
-                            _all_ips |= {str(b) for b in answer}
-                            host_ips[name_to_cache]['v4'] |= {str(b) for b in answer}
-                        elif answer.rdtype == dns.rdatatype.RdataType.AAAA:
-                            _all_ips |= {str(b) for b in answer}
-                            host_ips[name_to_cache]['v6'] |= {str(b) for b in answer}
-
-            if (cnames := _build_cname_chain(host_cnames, node.name)):
-                node.add_feature('cname', cnames)
-                if cnames[-1] in host_ips:
-                    node.add_feature('resolved_ips', host_ips[cnames[-1]])
-            elif node.name in host_ips:
-                node.add_feature('resolved_ips', host_ips[node.name])
-
-        cflare_hits = {}
-        if self.cloudflare:
-            cflare_hits = self.cloudflare.ips_lookup(_all_ips)
-
-        if self.ipasnhistory:
-            # Throw all the IPs to IPASN History for query later.
-            if ips := [{'ip': ip} for ip in _all_ips]:
+            # NS, and MX records that may not be in the response for the hostname
+            # trigger the request on domains if needed.
+            try:
+                mx_response = await self.dnsresolver.resolve(node.name, dns.rdatatype.RdataType.MX, search=True, raise_on_no_answer=True)
+            except dns.resolver.NoAnswer:
+                # logger.info(f'No MX record for {node.name}.')
+                # Try again on the domain
                 try:
-                    self.ipasnhistory.mass_cache(ips)
+                    mx_response = await self.dnsresolver.resolve(domain, dns.rdatatype.RdataType.MX, search=True, raise_on_no_answer=True)
+                except dns.resolver.NoAnswer:
+                    logger.debug(f'No MX record for {domain}.')
+                    mx_response = None
+                except Exception as e:
+                    logger.warning(f'[MX record] Unable to resolve DNS: {e}')
+                    mx_response = None
+            except Exception as e:
+                logger.warning(f'[MX record] Unable to resolve DNS: {e}')
+                mx_response = None
+
+            if mx_response:
+                for answer in mx_response.response.answer:
+                    name_to_cache = str(answer.name).rstrip('.')
+                    if name_to_cache not in host_mx:
+                        host_mx[name_to_cache] = set()
+                    host_mx[name_to_cache] |= {str(b.exchange) for b in answer}
+
+            try:
+                ns_response = await self.dnsresolver.resolve(node.name, dns.rdatatype.RdataType.NS, search=True, raise_on_no_answer=True)
+            except dns.resolver.NoAnswer:
+                # logger.info(f'No NS record for {node.name}.')
+                # Try again on the domain
+                try:
+                    ns_response = await self.dnsresolver.resolve(domain, dns.rdatatype.RdataType.NS, search=True, raise_on_no_answer=True)
+                except dns.resolver.NoAnswer:
+                    logger.info(f'No NS record for {domain}.')
+                    ns_response = None
+                except Exception as e:
+                    logger.warning(f'[NS record] Unable to resolve DNS: {e}')
+                    ns_response = None
+            except Exception as e:
+                logger.warning(f'[NS record] Unable to resolve DNS: {e}')
+                ns_response = None
+
+            if ns_response:
+                for answer in ns_response.response.answer:
+                    name_to_cache = str(answer.name).rstrip('.')
+                    if name_to_cache not in host_ns:
+                        host_ns[name_to_cache] = set()
+                    host_ns[name_to_cache] |= {str(b) for b in answer}
+
+            cnames = _build_cname_chain(host_cnames, node.name)
+
+            if cnames:
+                # NOTE: if we have cnames, the relevant DNS lookups are the ones related to the last one in the chain.
+                last_cname = cnames[-1]
+                last_cname_domain = self.psl.privatesuffix(last_cname)
+                node.add_feature('cname', cnames)
+                if last_cname in host_ips:
+                    node.add_feature('resolved_ips', host_ips[last_cname])
+                if last_cname in host_soa:
+                    node.add_feature('soa', (last_cname, host_soa[last_cname]))
+                elif last_cname_domain in host_soa:
+                    node.add_feature('soa', (last_cname_domain, host_soa[last_cname_domain]))
+                elif node.name in host_soa:
+                    # if the last CNAME in the chain has no SOA, we use the SOA of the node.
+                    node.add_feature('soa', (node.name, host_soa[node.name]))
+
+                if last_cname in host_mx:
+                    node.add_feature('mx', (last_cname, host_mx[last_cname]))
+                elif last_cname_domain in host_mx:
+                    node.add_feature('mx', (last_cname_domain, host_mx[last_cname_domain]))
+                if last_cname in host_ns:
+                    node.add_feature('ns', (last_cname, host_ns[last_cname]))
+                elif last_cname_domain in host_ns:
+                    node.add_feature('ns', (last_cname_domain, host_ns[last_cname_domain]))
+
+            else:
+                if node.name in host_ips:
+                    node.add_feature('resolved_ips', host_ips[node.name])
+
+                if node.name in host_soa:
+                    node.add_feature('soa', (node.name, host_soa[node.name]))
+                elif domain in host_soa:
+                    node.add_feature('soa', (domain, host_soa[domain]))
+
+                if node.name in host_mx:
+                    node.add_feature('mx', (node.name, host_mx[node.name]))
+                elif domain in host_mx:
+                    node.add_feature('mx', (domain, host_mx[domain]))
+
+                if node.name in host_ns:
+                    node.add_feature('ns', (node.name, host_ns[node.name]))
+                elif domain in host_ns:
+                    node.add_feature('ns', (domain, host_ns[domain]))
+
+            _all_nodes_ips = set()
+            if 'resolved_ips' in node.features:
+                if 'v4' in node.resolved_ips and 'v6' in node.resolved_ips:
+                    _all_nodes_ips = set(node.resolved_ips['v4']) | set(node.resolved_ips['v6'])
+                else:
+                    # old format
+                    _all_nodes_ips = node.resolved_ips
+
+            if not _all_nodes_ips:
+                # No IPs in the node.
+                continue
+
+            # check if the resolved IPs are cloudflare IPs
+            if self.cloudflare:
+                # we just want the cloudflare IPs
+                if hits := {ip: hit for ip, hit in self.cloudflare.ips_lookup(_all_nodes_ips).items() if hit}:
+                    node.add_feature('cloudflare', hits)
+
+            # trigger ipasnhistory cache in that loop
+            if self.ipasnhistory:
+                try:
+                    self.ipasnhistory.mass_cache([{'ip': ip} for ip in _all_nodes_ips])
                 except Exception as e:
                     logger.warning(f'Unable to submit IPs to IPASNHistory, disabling: {e}')
                     self.ipasnhistory = None
-                else:
-                    time.sleep(2)
-                    ipasn_responses = self.ipasnhistory.mass_query(ips)
-                    if 'responses' in ipasn_responses:
-                        for response in ipasn_responses['responses']:
-                            ip = response['meta']['ip']
-                            if responses := list(response['response'].values()):
-                                if ip not in ipasn and responses[0]:
-                                    ipasn[ip] = responses[0]
 
-        if ipasn or cflare_hits:
+        # for performances reasons, we need to batch the requests to IPASN History,
+        # and re-traverse the tree.
+        if self.ipasnhistory:
+            if query_ips := [{'ip': ip} for ip in _all_ips]:
+                ipasn_responses = self.ipasnhistory.mass_query(query_ips)
+                if 'responses' in ipasn_responses:
+                    for response in ipasn_responses['responses']:
+                        ip = response['meta']['ip']
+                        if responses := list(response['response'].values()):
+                            if ip not in ipasn and responses[0]:
+                                ipasn[ip] = responses[0]
+
+        if ipasn:
             # retraverse tree to populate it with the features
             for node in ct.root_hartree.hostname_tree.traverse():
                 if 'resolved_ips' not in node.features:
                     continue
-                ipasn_entries = {}
-                cflare_entries = {}
                 if 'v4' in node.resolved_ips and 'v6' in node.resolved_ips:
-                    _all_ips = set(node.resolved_ips['v4']) | set(node.resolved_ips['v6'])
+                    _all_nodes_ips = set(node.resolved_ips['v4']) | set(node.resolved_ips['v6'])
                 else:
                     # old format
-                    _all_ips = node.resolved_ips
-                for ip in _all_ips:
-                    if ip in ipasn:
-                        ipasn_entries[ip] = ipasn[ip]
-                    if ip in cflare_hits and cflare_hits[ip] is True:
-                        cflare_entries[ip] = True
-
-                if ipasn_entries:
+                    _all_nodes_ips = node.resolved_ips
+                if ipasn_entries := {ip: ipasn[ip] for ip in _all_nodes_ips if ip in ipasn}:
                     node.add_feature('ipasn', ipasn_entries)
-                if cflare_entries:
-                    node.add_feature('cloudflare', cflare_entries)
 
         with cnames_path.open('w') as f:
             json.dump(host_cnames, f)
@@ -626,3 +793,11 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             json.dump(host_ips, f, default=serialize_sets)
         with ipasn_path.open('w') as f:
             json.dump(ipasn, f)
+        with soa_path.open('w') as f:
+            json.dump(host_soa, f, default=serialize_sets)
+        with ns_path.open('w') as f:
+            json.dump(host_ns, f, default=serialize_sets)
+        with mx_path.open('w') as f:
+            json.dump(host_mx, f, default=serialize_sets)
+
+        logger.info('Done with DNS.')

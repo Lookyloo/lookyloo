@@ -46,46 +46,89 @@
     </a>
   </center>
   </br>
-  <div>
-  {% if hostnode.cname %}
-    <h5>CNAME(s) for this domain:</h5>
-    <ul>
-    {% for cname in hostnode.cname %}
-      <li>{{ cname }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=cname)}}">whois</a>){% endif %}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-  {% if hostnode.resolved_ips %}
-    <h5>Domain IPs from a standalone DNS lookup:</h5>
-    {% if 'v4' in hostnode.resolved_ips and 'v6' in hostnode.resolved_ips%}
-    <ul>
-        {% for ip in hostnode.resolved_ips['v4'] %}
+  <div class="accordion" id="accordionDNS">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDNS" aria-expanded="false" aria-controls="collapseDNS">
+        Show DNS details from standalone queries
+      </button>
+    </h2>
+    <div id="collapseDNS" class="accordion-collapse collapse" data-bs-parent="#accordionDNS">
+      <div class="accordion-body">
+      {% if hostnode.cname %}
+        <h5>Chain of CNAME(s) for this domain:</h5>
+        <ul>
+        {% for cname in hostnode.cname %}
+          <li>{{ cname }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=cname)}}">whois</a>){% endif %}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+      {% if hostnode.resolved_ips %}
+      <div>
+        <h5>Domain IPs from a standalone DNS lookup:</h5>
+        {% if 'v4' in hostnode.resolved_ips and 'v6' in hostnode.resolved_ips%}
+        <ul>
+            {% for ip in hostnode.resolved_ips['v4'] %}
+              <li>
+                  {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
+                  {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
+                  {% if 'cloudflare' in hostnode.features and hostnode.cloudflare.get(ip) %} - Known Cloudflare IP{% endif %}
+              </li>
+            {% endfor %}
+            {% for ip in hostnode.resolved_ips['v6'] %}
+              <li>
+                  {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
+                  {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
+                  {% if 'cloudflare' in hostnode.features and hostnode.cloudflare.get(ip) %} - Known Cloudflare IP{% endif %}
+              </li>
+            {% endfor %}
+        </ul>
+        {%else%}
+        <ul>
+        {% for ip in hostnode.resolved_ips %}
           <li>
               {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
               {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
-              {% if 'cloudflare' in hostnode.features and hostnode.cloudflare.get(ip) %} - Known Cloudflare IP{% endif %}
           </li>
         {% endfor %}
-        {% for ip in hostnode.resolved_ips['v6'] %}
-          <li>
-              {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
-              {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
-              {% if 'cloudflare' in hostnode.features and hostnode.cloudflare.get(ip) %} - Known Cloudflare IP{% endif %}
-          </li>
-        {% endfor %}
-    </ul>
-    {%else%}
-    <ul>
-    {% for ip in hostnode.resolved_ips %}
-      <li>
-          {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
-          {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
-      </li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-  {% endif %}
+        </ul>
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if hostnode.mx %}
+      <div>
+        <h5>MX record for {{hostnode.mx[0]}}:</h5>
+        <ul>
+          {% for record in hostnode.mx[1] %}
+          <li>{{ record }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      {% if hostnode.ns %}
+      <div>
+        <h5>NS record for {{hostnode.ns[0]}}:</h5>
+        <ul>
+          {% for record in hostnode.ns[1] %}
+          <li>{{ record }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      {% if hostnode.soa %}
+      <div>
+        <h5>SOA record for {{hostnode.soa[0]}}:</h5>
+        <ul>
+          {% for record in hostnode.soa[1] %}
+          <li>{{ record }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      </div>
+    </div>
   </div>
+  <br>
   {# Start list of URLs #}
   <ul class="list-group-flush">
     {% for url in urls %}
