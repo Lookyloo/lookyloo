@@ -665,7 +665,10 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                     name_to_cache = str(answer.name).rstrip('.')
                     if name_to_cache not in host_mx:
                         host_mx[name_to_cache] = set()
-                    host_mx[name_to_cache] |= {str(b.exchange) for b in answer}
+                    try:
+                        host_mx[name_to_cache] |= {str(b.exchange) for b in answer}
+                    except Exception as e:
+                        logger.warning(f'[MX record] broken: {e}')
 
             try:
                 ns_response = await self.dnsresolver.resolve(node.name, dns.rdatatype.RdataType.NS, search=True, raise_on_no_answer=True)
