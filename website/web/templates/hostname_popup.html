@@ -95,6 +95,14 @@
         {% endif %}
       </div>
       {% endif %}
+      {% if hostnode.soa %}
+      <div>
+        <h5>SOA record for {{hostnode.soa[0]}}:</h5>
+        <ul>
+          <li>{{ hostnode.soa[1] }}</li>
+        </ul>
+      </div>
+      {% endif %}
       {% if hostnode.mx %}
       <div>
         <h5>MX record for {{hostnode.mx[0]}}:</h5>
@@ -110,16 +118,6 @@
         <h5>NS record for {{hostnode.ns[0]}}:</h5>
         <ul>
           {% for record in hostnode.ns[1] %}
-          <li>{{ record }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-      {% endif %}
-      {% if hostnode.soa %}
-      <div>
-        <h5>SOA record for {{hostnode.soa[0]}}:</h5>
-        <ul>
-          {% for record in hostnode.soa[1] %}
           <li>{{ record }}</li>
           {% endfor %}
         </ul>
