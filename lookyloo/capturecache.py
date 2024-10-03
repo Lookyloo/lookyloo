@@ -586,13 +586,13 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             try:
                 a_response = await self.dnsresolver.resolve(node.name, dns.rdatatype.RdataType.A, search=True, raise_on_no_answer=False)
             except Exception as e:
-                logger.info(f'[A record] Unable to resolve DNS: {e}')
+                logger.info(f'[A record] Unable to resolve: {e}')
                 a_response = None
 
             try:
                 aaaa_response = await self.dnsresolver.resolve(node.name, dns.rdatatype.RdataType.AAAA, search=True, raise_on_no_answer=False)
             except Exception as e:
-                logger.info(f'[AAAA record] Unable to resolve DNS: {e}')
+                logger.info(f'[AAAA record] Unable to resolve: {e}')
                 aaaa_response = None
 
             if a_response is None and aaaa_response is None:
@@ -630,7 +630,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                     # Should only have one
                     break
             except Exception as e:
-                logger.warning(f'[SOA record] Unable to resolve DNS: {e}')
+                logger.warning(f'[SOA record] Unable to resolve: {e}')
 
             # NS, and MX records that may not be in the response for the hostname
             # trigger the request on domains if needed.
@@ -645,10 +645,10 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                     logger.debug(f'No MX record for {domain}.')
                     mx_response = None
                 except Exception as e:
-                    logger.warning(f'[MX record] Unable to resolve DNS: {e}')
+                    logger.warning(f'[MX record] Unable to resolve: {e}')
                     mx_response = None
             except Exception as e:
-                logger.warning(f'[MX record] Unable to resolve DNS: {e}')
+                logger.warning(f'[MX record] Unable to resolve: {e}')
                 mx_response = None
 
             if mx_response:
@@ -684,10 +684,11 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                         to_query = to_query[to_query.index('.') + 1:]
                         continue
                     except Exception as e:
-                        logger.warning(f'[NS record] Unable to resolve DNS: {e}')
+                        logger.warning(f'[NS record] Unable to resolve: {e}')
                         ns_response = None
+                        break
             except Exception as e:
-                logger.warning(f'[NS record] Unable to resolve DNS: {e}')
+                logger.warning(f'[NS record] Unable to resolve: {e}')
                 ns_response = None
 
             if ns_response:
