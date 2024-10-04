@@ -99,7 +99,7 @@ types-requests = [
     {version = "<2.31", python = "<3.10"},
     {version = "^2.31.0.10", python = ">=3.10"}
 ]
-types-redis = {version = "^4.6.0.20240903"}
+types-redis = {version = "^4.6.0.20241004"}
 types-Deprecated = "^1.2.9.20240311"
 types-python-dateutil = "^2.9.0.20240906"
 types-beautifulsoup4 = "^4.12.0.20240907"
