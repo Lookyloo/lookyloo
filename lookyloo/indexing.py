@@ -328,7 +328,7 @@ class Indexing():
         # We changed the format of the indexes, so we need to make sure they're re-triggered.
         pipeline = self.redis.pipeline()
         if self.redis.type(f'hhhashes|{hhh}|captures') == 'set':  # type: ignore[no-untyped-call]
-            pipeline.srem('indexed_hhhashes', *self.redis.smembers(f'hhhashes|{hhh}|captures'))
+            pipeline.srem('indexed_hhhashes', *[entry.split('|')[0] for entry in self.redis.smembers(f'hhhashes|{hhh}|captures')])
             pipeline.delete(f'hhhashes|{hhh}|captures')
         if self.redis.type('hhhashes') == 'zset':  # type: ignore[no-untyped-call]
             pipeline.delete('hhhashes')
@@ -346,7 +346,7 @@ class Indexing():
         self.logger.debug(f'Indexing HHHashes for {crawled_tree.uuid} ... ')
         pipeline = self.redis.pipeline()
 
-        # Add the tlds key in internal indexes set
+        # Add the hhashes key in internal indexes set
         internal_index = f'capture_indexes|{crawled_tree.uuid}'
         pipeline.sadd(internal_index, 'hhhashes')
 
