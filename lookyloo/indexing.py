@@ -170,21 +170,24 @@ class Indexing():
 
     # ###### Cookies ######
 
+    def _reindex_cookies(self, cookie_name: str) -> None:
+        # We changed the format of the indexes, so we need to make sure they're re-triggered.
+        pipeline = self.redis.pipeline()
+        if self.redis.type(f'cn|{cookie_name}|captures') == 'set':  # type: ignore[no-untyped-call]
+            pipeline.srem('indexed_cookies', *[entry.split('|')[0] for entry in self.redis.smembers(f'cn|{cookie_name}|captures')])
+            pipeline.delete(f'cn|{cookie_name}|captures')
+        if self.redis.type(f'cn|{cookie_name}') == 'zset':  # type: ignore[no-untyped-call]
+            for domain in self.redis.zrevrangebyscore(f'cn|{cookie_name}', '+inf', '-inf'):
+                pipeline.delete(f'cn|{cookie_name}|{domain}')
+                pipeline.delete(domain)
+            pipeline.delete(f'cn|{cookie_name}')
+        if self.redis.type('cookies_names') == 'zset':  # type: ignore[no-untyped-call]
+            pipeline.delete('cookies_names')
+        pipeline.execute()
+
     @property
-    def cookies_names(self) -> list[tuple[str, float]]:
-        return self.redis.zrevrange('cookies_names', 0, -1, withscores=True)
-
-    def cookies_names_number_domains(self, cookie_name: str) -> int:
-        return self.redis.zcard(f'cn|{cookie_name}')
-
-    def cookies_names_domains_values(self, cookie_name: str, domain: str) -> list[tuple[str, float]]:
-        return self.redis.zrevrange(f'cn|{cookie_name}|{domain}', 0, -1, withscores=True)
-
-    def get_cookie_domains(self, cookie_name: str) -> list[tuple[str, float]]:
-        return self.redis.zrevrange(f'cn|{cookie_name}', 0, -1, withscores=True)
-
-    def get_cookies_names_captures(self, cookie_name: str) -> list[tuple[str, str]]:
-        return [uuids.split('|') for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]  # type: ignore[misc]
+    def cookies_names(self) -> set[str]:
+        return self.redis.smembers('cookies_names')
 
     def index_cookies_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
@@ -192,38 +195,61 @@ class Indexing():
             return
         self.logger.debug(f'Indexing cookies for {crawled_tree.uuid} ... ')
         self.redis.sadd('indexed_cookies', crawled_tree.uuid)
-
         pipeline = self.redis.pipeline()
-        already_loaded: set[tuple[str, str]] = set()
-        # used if we need to reindex a capture
-        already_cleaned_up: set[str] = set()
-        is_reindex = False
+
+        # Add the cookies_names key in internal indexes set
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'cookies_names')
+
+        already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             if 'cookies_received' not in urlnode.features:
                 continue
             for domain, cookie, _ in urlnode.cookies_received:
                 name, value = cookie.split('=', 1)
-                if (name, domain) in already_loaded:
-                    # Only add cookie name once / capture
-                    continue
-                already_loaded.add((name, domain))
-                if name not in already_cleaned_up:
-                    # We only run this srem once per name for a capture,
-                    # before adding it for the first time
-                    to_remove = [key for key in self.redis.sscan_iter(f'cn|{name}|captures', f'{crawled_tree.uuid}|*')]
-                    if to_remove:
-                        pipeline.srem(f'cn|{name}|captures', *to_remove)
-                        is_reindex = True
-                        self.logger.debug(f'reindexing cookies for {crawled_tree.uuid} ... ')
-                    already_cleaned_up.add(name)
-                pipeline.sadd(f'cn|{name}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
-                if not is_reindex:
-                    pipeline.zincrby('cookies_names', 1, name)
-                    pipeline.zincrby(f'cn|{name}', 1, domain)
-                    pipeline.zincrby(f'cn|{name}|{domain}', 1, value)
-                    pipeline.sadd(domain, name)
+                self._reindex_cookies(name)
+                if name not in already_indexed_global:
+                    # The cookie hasn't been indexed in that run yet
+                    already_indexed_global.add(name)
+                    pipeline.sadd(f'{internal_index}|cookies_names', name)
+                    pipeline.sadd('cookies_names', name)
+                    pipeline.zadd(f'cookies_names|{name}|captures',
+                                  mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+                # Add hostnode UUID in internal index
+                pipeline.sadd(f'{internal_index}|cookies_names|{name}', urlnode.uuid)
         pipeline.execute()
         self.logger.debug(f'done with cookies for {crawled_tree.uuid}.')
+
+    def get_captures_cookies_name(self, cookie_name: str, most_recent_capture: datetime | None = None,
+                                  oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+        """Get all the captures for a specific cookie name, on a time interval starting from the most recent one.
+
+        :param cookie_name: The cookie name
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 15 days ago.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        if self.redis.type(f'cookies_names|{cookie_name}|captures') == 'set':  # type: ignore[no-untyped-call]
+            # triggers the re-index soon.
+            self.redis.srem('indexed_cookies', *[entry.split('|')[0] for entry in self.redis.smembers(f'cn|{cookie_name}|captures')])
+            return []
+        return self.redis.zrevrangebyscore(f'cookies_names|{cookie_name}|captures', max_score, min_score, withscores=True)
+
+    def get_captures_cookie_name_count(self, cookie_name: str) -> int:
+        return self.redis.zcard(f'cookies_names|{cookie_name}|captures')
+
+    def get_capture_cookie_name_nodes(self, capture_uuid: str, cookie_name: str) -> set[str]:
+        if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|cookies_names|{cookie_name}'):
+            return set(url_nodes)
+        return set()
+
+    def cookies_names_domains_values(self, cookie_name: str, domain: str) -> list[tuple[str, float]]:
+        return self.redis.zrevrange(f'cn|{cookie_name}|{domain}', 0, -1, withscores=True)
+
+    def get_cookie_domains(self, cookie_name: str) -> list[tuple[str, float]]:
+        return self.redis.zrevrange(f'cn|{cookie_name}', 0, -1, withscores=True)
 
     # ###### Body hashes ######
 
@@ -381,7 +407,7 @@ class Indexing():
         min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
         if self.redis.type(f'hhhashes|{hhh}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
-            self.redis.srem('indexed_urls', *self.redis.smembers(f'hhhashes|{hhh}|captures'))
+            self.redis.srem('indexed_hhhashes', *self.redis.smembers(f'hhhashes|{hhh}|captures'))
             return []
         return self.redis.zrevrangebyscore(f'hhhashes|{hhh}|captures', max_score, min_score, withscores=True)
 

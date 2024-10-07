@@ -1,67 +1,66 @@
 {% extends "main.html" %}
 
-{% from 'bootstrap5/utils.html' import render_messages %}
-
-{% block title %}{{ cookie_name }}{% endblock %}
+{% from "macros.html" import shorten_string %}
 
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript" nonce="{{ csp_nonce() }}">
-    $('#table').DataTable( {
-        "order": [[ 1, "desc" ]],
-        "pageLength": 500
-    });
+  new DataTable('#cookieNameTable', {
+    order: [[ 0, "desc" ]],
+    columnDefs: [{ width: '30%', targets: 0,
+                   render: (data) => {
+                    const date = new Date(data);
+                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
+                   }
+                 },
+                 { width: '70%', targets: 1 }]
+  });
 </script>
-
-<script type="text/javascript"  nonce="{{ csp_nonce() }}">
+<script type="text/javascript" nonce="{{ csp_nonce() }}">
     const openNewTabButtons = document.querySelectorAll('.openNewTab');
     if (openNewTabButtons) {
         openNewTabButtons.forEach(el => el.addEventListener('click', event => {
-            window.opener.openTreeInNewTab(el.dataset.capture);
+            window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
         }));
     }
 </script>
 {% endblock %}
 
 {% block content %}
-  <center>
-      <h2>{{ cookie_name }}</h2>
-      <button class="btn btn-primary goBack" type="button">Go Back</button>
-  </center>
-  <div class="table-responsive">
-  <table id="table" class="table" style="width:96%">
-    <thead>
-     <tr>
-       <th>Domain name</th>
-       <th>Frequency</th>
-       <th>Value</th>
-     </tr>
-    </thead>
-    <tbody>
-      {% for domain, freq, values in domains %}
-      <tr>
-        <td>
-          {{ domain }}
-        </td>
-        <td>{{ freq }}</td>
-        <td>
-          <ul>
-          {% for value, freq in values %}
-            <li>{{ value }} - {{ freq }}</li>
-          {% endfor %}
-          </ul>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  </div>
-  <p>A cookie with that name was seen in these captures:</p>
-  <ul>
-  {% for capture_uuid, title in captures %}
-    <li>
-        <button type="button" class="btn btn-link openNewTab" data-capture="{{capture_uuid}}">{{ title }}</button>
-    </li>
-  {% endfor %}
-  </ul>
+<center>
+  <h4>{{ cookie_name }}</h4>
+  <h6>Only the most recent captures are listed below, this will change soon.</h6>
+</center>
+
+<table id="cookieNameTable" class="table table-striped" style="width:100%">
+  <thead>
+   <tr>
+     <th>Capture Time</th>
+     <th>Capture Title</th>
+   </tr>
+  </thead>
+  <tbody>
+    {% for capture_uuid, title, capture_time, nodes in captures %}
+    <tr>
+      <td>
+        {{capture_time}}
+      </td>
+      <td>
+        <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">
+          {{ title }}
+        </a>
+        <br>
+        The capture contains this URL in {{ nodes|length }} nodes, click below to see them on the tree:
+        <ul>
+            {% for node in nodes %}
+            <li>
+                <button type="button" class="btn btn-link openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{node}}">{{ node }}</button>
+            </li>
+            {% endfor %}
+        </ul>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

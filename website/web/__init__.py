@@ -417,13 +417,13 @@ def get_url_investigator(url: str) -> list[tuple[str, str, str, datetime, set[st
              ) for cache in cached_captures]
 
 
-def get_cookie_name_investigator(cookie_name: str, /) -> tuple[list[tuple[str, str]], list[tuple[str, float, list[tuple[str, float]]]]]:
+def get_cookie_name_investigator(cookie_name: str, /) -> list[tuple[str, str, datetime, set[str]]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
-    cached_captures = lookyloo.sorted_capture_cache([entry[0] for entry in get_indexing(flask_login.current_user).get_cookies_names_captures(cookie_name)])
-    captures = [(cache.uuid, cache.title) for cache in cached_captures]
-    domains = [(domain, freq, get_indexing(flask_login.current_user).cookies_names_domains_values(cookie_name, domain))
-               for domain, freq in get_indexing(flask_login.current_user).get_cookie_domains(cookie_name)]
-    return captures, domains
+    cached_captures = lookyloo.sorted_capture_cache(
+        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_cookies_name(cookie_name=cookie_name)],
+        cached_captures_only=True)
+    captures = [(cache.uuid, cache.title, cache.timestamp, get_indexing(flask_login.current_user).get_capture_cookie_name_nodes(cache.uuid, cookie_name)) for cache in cached_captures]
+    return captures
 
 
 def get_identifier_investigator(identifier_type: str, identifier: str) -> list[tuple[str, str, str, datetime]]:
@@ -1420,8 +1420,9 @@ def index_hidden() -> str:
 
 @app.route('/cookies', methods=['GET'])
 def cookies_lookup() -> str:
-    cookies_names = [(name, freq, get_indexing(flask_login.current_user).cookies_names_number_domains(name))
-                     for name, freq in get_indexing(flask_login.current_user).cookies_names]
+    cookies_names = []
+    for name in get_indexing(flask_login.current_user).cookies_names:
+        cookies_names.append((name, get_indexing(flask_login.current_user).get_captures_cookie_name_count(name)))
     return render_template('cookies.html', cookies_names=cookies_names)
 
 
@@ -1737,8 +1738,8 @@ def simple_capture() -> str | Response | WerkzeugResponse:
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
 def cookies_name_detail(cookie_name: str) -> str:
-    captures, domains = get_cookie_name_investigator(cookie_name.strip())
-    return render_template('cookie_name.html', cookie_name=cookie_name, domains=domains, captures=captures)
+    captures = get_cookie_name_investigator(cookie_name.strip())
+    return render_template('cookie_name.html', cookie_name=cookie_name, captures=captures)
 
 
 @app.route('/hhhdetails/<string:hhh>', methods=['GET'])
