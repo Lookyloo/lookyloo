@@ -344,14 +344,18 @@ def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Respons
 
 def _get_body_hash_investigator(body_hash: str, /) -> list[tuple[str, str, datetime, str, str]]:
     '''Returns all the captures related to a hash (sha512), used in the web interface.'''
-    _captures = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash)
+    cached_captures = lookyloo.sorted_capture_cache(
+        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_body_hash(body_hash)],
+        cached_captures_only=True)
     captures = []
-    for capture_uuid, capture_ts in _captures:
-        cache = lookyloo.capture_cache(capture_uuid)
+    for cache in cached_captures:
         if not cache:
             continue
-        for urlnode_uuid in get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, body_hash):
-            urlnode = lookyloo.get_urlnode_from_tree(capture_uuid, urlnode_uuid)
+        for urlnode_uuid in get_indexing(flask_login.current_user).get_capture_body_hash_nodes(cache.uuid, body_hash):
+            try:
+                urlnode = lookyloo.get_urlnode_from_tree(cache.uuid, urlnode_uuid)
+            except IndexError:
+                continue
             captures.append((cache.uuid, cache.title, cache.timestamp, urlnode.hostnode_uuid, urlnode.name))
     return captures
 
@@ -482,15 +486,19 @@ def get_favicon_investigator(favicon_sha512: str,
 
 def get_hhh_investigator(hhh: str, /) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str]]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
-    _captures = get_indexing(flask_login.current_user).get_captures_hhhash(hhh)
+    cached_captures = lookyloo.sorted_capture_cache(
+        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_hhhash(hhh)],
+        cached_captures_only=True)
     captures = []
     headers: list[tuple[str, str]] = []
-    for capture_uuid, capture_ts in _captures:
-        cache = lookyloo.capture_cache(capture_uuid)
+    for cache in cached_captures:
         if not cache:
             continue
-        for urlnode_uuid in get_indexing(flask_login.current_user).get_capture_hhhash_nodes(capture_uuid, hhh):
-            urlnode = lookyloo.get_urlnode_from_tree(capture_uuid, urlnode_uuid)
+        for urlnode_uuid in get_indexing(flask_login.current_user).get_capture_hhhash_nodes(cache.uuid, hhh):
+            try:
+                urlnode = lookyloo.get_urlnode_from_tree(cache.uuid, urlnode_uuid)
+            except IndexError:
+                continue
             captures.append((cache.uuid, urlnode.hostnode_uuid, urlnode.name, cache.title))
             if not headers:
                 # Just do that once.
@@ -511,7 +519,10 @@ def hash_lookup(blob_hash: str, url: str, current_capture_uuid: str) -> tuple[in
         if not cache:
             continue
         for urlnode_uuid in get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, blob_hash):
-            urlnode = lookyloo.get_urlnode_from_tree(capture_uuid, urlnode_uuid)
+            try:
+                urlnode = lookyloo.get_urlnode_from_tree(cache.uuid, urlnode_uuid)
+            except IndexError:
+                continue
             if url == urlnode.name:
                 captures_list['same_url'].append((capture_uuid, urlnode_uuid, cache.title, cache.timestamp.isoformat(), urlnode.hostname))
             else:
