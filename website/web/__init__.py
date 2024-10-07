@@ -482,23 +482,20 @@ def get_favicon_investigator(favicon_sha512: str,
 
 def get_hhh_investigator(hhh: str, /) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str]]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
-    all_captures = dict(get_indexing(flask_login.current_user).get_http_headers_hashes_captures(hhh))
-    if cached_captures := lookyloo.sorted_capture_cache([entry for entry in all_captures]):
-        captures = []
-        for cache in cached_captures:
-            try:
-                urlnode = lookyloo.get_urlnode_from_tree(cache.uuid, all_captures[cache.uuid])
-            except Exception:
-                # NOTE: print a logline
-                # logger.warning(f'Cache for {cache.uuid} needs a rebuild: {e}.')
-                lookyloo._captures_index.remove_pickle(cache.uuid)
-                continue
+    _captures = get_indexing(flask_login.current_user).get_captures_hhhash(hhh)
+    captures = []
+    headers: list[tuple[str, str]] = []
+    for capture_uuid, capture_ts in _captures:
+        cache = lookyloo.capture_cache(capture_uuid)
+        if not cache:
+            continue
+        for urlnode_uuid in get_indexing(flask_login.current_user).get_capture_hhhash_nodes(capture_uuid, hhh):
+            urlnode = lookyloo.get_urlnode_from_tree(capture_uuid, urlnode_uuid)
             captures.append((cache.uuid, urlnode.hostnode_uuid, urlnode.name, cache.title))
-        # get the headers and format them as they were in the response
-        urlnode = lookyloo.get_urlnode_from_tree(cached_captures[0].uuid, all_captures[cached_captures[0].uuid])
-        headers = [(header["name"], header["value"]) for header in urlnode.response['headers']]
-        return captures, headers
-    return [], []
+            if not headers:
+                # Just do that once.
+                headers = [(header["name"], header["value"]) for header in urlnode.response['headers']]
+    return captures, headers
 
 
 def hash_lookup(blob_hash: str, url: str, current_capture_uuid: str) -> tuple[int, dict[str, list[tuple[str, str, str, str, str]]]]:
@@ -1430,8 +1427,9 @@ def cookies_lookup() -> str:
 
 @app.route('/hhhashes', methods=['GET'])
 def hhhashes_lookup() -> str:
-    hhhashes = [(hhh, freq, get_indexing(flask_login.current_user).http_headers_hashes_number_captures(hhh))
-                for hhh, freq in get_indexing(flask_login.current_user).http_headers_hashes]
+    hhhashes = []
+    for hhh in get_indexing(flask_login.current_user).http_headers_hashes:
+        hhhashes.append((hhh, get_indexing(flask_login.current_user).get_captures_hhhash_count(hhh)))
     return render_template('hhhashes.html', hhhashes=hhhashes)
 
 

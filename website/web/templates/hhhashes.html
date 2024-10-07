@@ -21,17 +21,15 @@
     <thead>
      <tr>
        <th>HH Hash</th>
-       <th style="width:10%">Frequency</th>
        <th style="width:10%">Number of captures</th>
      </tr>
     </thead>
     <tbody>
-      {% for hhh, freq, number_captures in hhhashes %}
+      {% for hhh, number_captures in hhhashes %}
       <tr>
         <td >
           <a href="{{ url_for('hhh_detail', hhh=hhh) }}">{{ hhh }}</a>
         </td>
-        <td>{{ freq }}</td>
         <td>{{ number_captures }}</td>
       </tr>
       {% endfor %}

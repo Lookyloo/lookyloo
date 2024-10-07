@@ -144,7 +144,7 @@ class Indexing():
                 self.index_cookies_capture(ct)
             if not indexed[3]:
                 self.logger.info(f'Indexing HH Hashes for {uuid_to_index}')
-                self.index_http_headers_hashes_capture(ct)
+                self.index_hhhashes_capture(ct)
             if not indexed[4]:
                 self.logger.info(f'Indexing favicons for {uuid_to_index}')
                 self.index_favicons_capture(uuid_to_index, directory)
@@ -324,48 +324,74 @@ class Indexing():
 
     # ###### HTTP Headers Hashes ######
 
+    def _reindex_hhhashes(self, hhh: str) -> None:
+        # We changed the format of the indexes, so we need to make sure they're re-triggered.
+        pipeline = self.redis.pipeline()
+        if self.redis.type(f'hhhashes|{hhh}|captures') == 'set':  # type: ignore[no-untyped-call]
+            pipeline.srem('indexed_hhhashes', *self.redis.smembers(f'hhhashes|{hhh}|captures'))
+            pipeline.delete(f'hhhashes|{hhh}|captures')
+        if self.redis.type('hhhashes') == 'zset':  # type: ignore[no-untyped-call]
+            pipeline.delete('hhhashes')
+        pipeline.execute()
+
     @property
-    def http_headers_hashes(self) -> list[tuple[str, float]]:
-        return self.redis.zrevrange('hhhashes', 0, -1, withscores=True)
+    def http_headers_hashes(self) -> set[str]:
+        return self.redis.smembers('hhhashes')
 
-    def http_headers_hashes_number_captures(self, hhh: str) -> int:
-        return self.redis.scard(f'hhhashes|{hhh}|captures')
-
-    def get_http_headers_hashes_captures(self, hhh: str) -> list[tuple[str, str]]:
-        return [uuids.split('|') for uuids in self.redis.smembers(f'hhhashes|{hhh}|captures')]  # type: ignore[misc]
-
-    def index_http_headers_hashes_capture(self, crawled_tree: CrawledTree) -> None:
+    def index_hhhashes_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_hhhashes', crawled_tree.uuid):
             # Do not reindex
             return
         self.redis.sadd('indexed_hhhashes', crawled_tree.uuid)
-        self.logger.debug(f'Indexing http headers hashes for {crawled_tree.uuid} ... ')
-
+        self.logger.debug(f'Indexing HHHashes for {crawled_tree.uuid} ... ')
         pipeline = self.redis.pipeline()
-        already_loaded: set[str] = set()
-        already_cleaned_up: set[str] = set()
-        is_reindex = False
+
+        # Add the tlds key in internal indexes set
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'hhhashes')
+
+        already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             if 'hhhash' not in urlnode.features:
                 continue
-            if urlnode.hhhash in already_loaded:
-                # Only add HTTP header Hash once / capture
-                continue
-            already_loaded.add(urlnode.hhhash)
-            if urlnode.hhhash not in already_cleaned_up:
-                # We only run this srem once per name for a capture,
-                # before adding it for the first time
-                to_remove = [key for key in self.redis.sscan_iter(f'hhhashes|{urlnode.hhhash}|captures', f'{crawled_tree.uuid}|*')]
-                if to_remove:
-                    pipeline.srem(f'hhhashes|{urlnode.hhhash}|captures', * to_remove)
-                    is_reindex = True
-                    self.logger.debug(f'reindexing http headers hashes for {crawled_tree.uuid} ... ')
-                already_cleaned_up.add(urlnode.hhhash)
-            pipeline.sadd(f'hhhashes|{urlnode.hhhash}|captures', f'{crawled_tree.uuid}|{urlnode.uuid}')
-            if not is_reindex:
-                pipeline.zincrby('hhhashes', 1, urlnode.hhhash)
+            self._reindex_hhhashes(urlnode.hhhash)
+            if urlnode.hhhash not in already_indexed_global:
+                # HHH hasn't been indexed in that run yet
+                already_indexed_global.add(urlnode.hhhash)
+                pipeline.sadd(f'{internal_index}|hhhashes', urlnode.hhhash)  # Only used to delete index
+                pipeline.sadd('hhhashes', urlnode.hhhash)
+                pipeline.zadd(f'hhhashes|{urlnode.hhhash}|captures',
+                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+            # Add hostnode UUID in internal index
+            pipeline.sadd(f'{internal_index}|hhhashes|{urlnode.hhhash}', urlnode.uuid)
+
         pipeline.execute()
-        self.logger.debug(f'done with http headers hashes for {crawled_tree.uuid}.')
+        self.logger.debug(f'done with HHHashes for {crawled_tree.uuid}.')
+
+    def get_captures_hhhash(self, hhh: str, most_recent_capture: datetime | None = None,
+                            oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+        """Get all the captures for a specific HTTP Header Hash, on a time interval starting from the most recent one.
+
+        :param hhh: The HTTP Header Hash
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 15 days ago.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        if self.redis.type(f'hhhashes|{hhh}|captures') == 'set':  # type: ignore[no-untyped-call]
+            # triggers the re-index soon.
+            self.redis.srem('indexed_urls', *self.redis.smembers(f'hhhashes|{hhh}|captures'))
+            return []
+        return self.redis.zrevrangebyscore(f'hhhashes|{hhh}|captures', max_score, min_score, withscores=True)
+
+    def get_captures_hhhash_count(self, hhh: str) -> int:
+        return self.redis.zcard(f'hhhashes|{hhh}|captures')
+
+    def get_capture_hhhash_nodes(self, capture_uuid: str, hhh: str) -> set[str]:
+        if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|hhhashes|{hhh}'):
+            return set(url_nodes)
+        return set()
 
     # ###### URLs and Domains ######
 
