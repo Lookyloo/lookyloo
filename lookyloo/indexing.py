@@ -7,9 +7,7 @@ import hashlib
 import logging
 
 from io import BytesIO
-from collections import defaultdict
 from datetime import datetime, timedelta
-from urllib.parse import urlsplit
 from zipfile import ZipFile
 
 import mmh3
@@ -49,12 +47,12 @@ class Indexing():
         self.redis.flushdb()
 
     @property
-    def redis_bytes(self) -> Redis:  # type: ignore[type-arg]
+    def redis_bytes(self) -> Redis[bytes]:
         return Redis(connection_pool=self.__redis_pool_bytes)
 
     @property
-    def redis(self) -> Redis:  # type: ignore[type-arg]
-        return Redis(connection_pool=self.__redis_pool)
+    def redis(self) -> Redis[str]:
+        return Redis(connection_pool=self.__redis_pool)  # type: ignore[return-value]
 
     def can_index(self, capture_uuid: str | None=None) -> bool:
         if capture_uuid:
@@ -83,6 +81,7 @@ class Indexing():
         for hash_type in self.captures_hashes_types():
             p.srem(f'indexed_hash_type|{hash_type}', capture_uuid)
         for internal_index in self.redis.smembers(f'capture_indexes|{capture_uuid}'):
+            # NOTE: these ones need to be removed because the node UUIDs are recreated on tree rebuild
             # internal_index can be "tlds"
             for entry in self.redis.smembers(f'capture_indexes|{capture_uuid}|{internal_index}'):
                 # entry can be a "com", we delete a set of UUIDs, remove from the captures set
@@ -185,7 +184,7 @@ class Indexing():
         return self.redis.zrevrange(f'cn|{cookie_name}', 0, -1, withscores=True)
 
     def get_cookies_names_captures(self, cookie_name: str) -> list[tuple[str, str]]:
-        return [uuids.split('|') for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]
+        return [uuids.split('|') for uuids in self.redis.smembers(f'cn|{cookie_name}|captures')]  # type: ignore[misc]
 
     def index_cookies_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
@@ -228,24 +227,25 @@ class Indexing():
 
     # ###### Body hashes ######
 
-    @property
-    def ressources(self) -> list[tuple[str, float]]:
-        return self.redis.zrevrange('body_hashes', 0, 200, withscores=True)
-
-    def ressources_number_domains(self, h: str) -> int:
-        return self.redis.zcard(f'bh|{h}')
-
-    def body_hash_fequency(self, body_hash: str) -> dict[str, int]:
+    def _reindex_ressources(self, h: str) -> None:
+        # We changed the format of the indexes, so we need to make sure they're re-triggered.
         pipeline = self.redis.pipeline()
-        pipeline.zscore('body_hashes', body_hash)
-        pipeline.zcard(f'bh|{body_hash}')
-        hash_freq, hash_domains_freq = pipeline.execute()
-        to_return = {'hash_freq': 0, 'hash_domains_freq': 0}
-        if hash_freq:
-            to_return['hash_freq'] = int(hash_freq)
-        if hash_domains_freq:
-            to_return['hash_domains_freq'] = int(hash_domains_freq)
-        return to_return
+        if self.redis.type(f'bh|{h}|captures') == 'set':  # type: ignore[no-untyped-call]
+            uuids_to_reindex = self.redis.smembers(f'bh|{h}|captures')
+            pipeline.srem('indexed_body_hashes', *uuids_to_reindex)
+            # deprecated index
+            pipeline.delete(*[f'bh|{h}|captures|{uuid}' for uuid in uuids_to_reindex])
+            pipeline.delete(f'bh|{h}|captures')
+        if self.redis.type(f'bh|{h}') == 'zset':  # type: ignore[no-untyped-call]
+            pipeline.delete(f'bh|{h}')
+
+        if self.redis.type('body_hashes') == 'zset':  # type: ignore[no-untyped-call]
+            pipeline.delete('body_hashes')
+        pipeline.execute()
+
+    @property
+    def ressources(self) -> set[str]:
+        return self.redis.smembers('body_hashes')
 
     def index_body_hashes_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
@@ -253,84 +253,74 @@ class Indexing():
             return
         self.redis.sadd('indexed_body_hashes', crawled_tree.uuid)
         self.logger.debug(f'Indexing body hashes for {crawled_tree.uuid} ... ')
-
-        cleaned_up_hashes: set[str] = set()
         pipeline = self.redis.pipeline()
-        is_reindex = False
+
+        # Add the body hashes key in internal indexes set
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'body_hashes')
+
+        already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             for h in urlnode.resources_hashes:
-                if h not in cleaned_up_hashes:
-                    # Delete the hash for that capture the first time we see it.
-                    if self.redis.exists(f'bh|{h}|captures|{crawled_tree.uuid}'):
-                        pipeline.delete(f'bh|{h}|captures|{crawled_tree.uuid}')
-                        cleaned_up_hashes.add(h)
-                        is_reindex = True
-                        self.logger.debug(f'reindexing body hashes for {crawled_tree.uuid} ... ')
-                # ZSet of all urlnode_UUIDs|full_url
-                pipeline.zincrby(f'bh|{h}|captures|{crawled_tree.uuid}', 1,
-                                 f'{urlnode.uuid}|{urlnode.hostnode_uuid}|{urlnode.name}')
-                if not is_reindex:
-                    pipeline.zincrby('body_hashes', 1, h)
-                    pipeline.zincrby(f'bh|{h}', 1, urlnode.hostname)
-                    # set of all captures with this hash
-                    pipeline.sadd(f'bh|{h}|captures', crawled_tree.uuid)
+
+                self._reindex_ressources(h)
+
+                if h not in already_indexed_global:
+                    # The hash hasn't been indexed in that run yet
+                    already_indexed_global.add(h)
+                    pipeline.sadd(f'{internal_index}|body_hashes', h)  # Only used to delete index
+                    pipeline.sadd('body_hashes', h)
+                    pipeline.zadd(f'body_hashes|{h}|captures',
+                                  mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+                # Add hostnode UUID in internal index
+                pipeline.sadd(f'{internal_index}|body_hashes|{h}', urlnode.uuid)
+
         pipeline.execute()
         self.logger.debug(f'done with body hashes for {crawled_tree.uuid}.')
 
-    def get_hash_uuids(self, body_hash: str) -> tuple[str, str, str]:
-        """Use that to get a reference allowing to fetch a resource from one of the capture."""
-        capture_uuid = str(self.redis.srandmember(f'bh|{body_hash}|captures'))
-        entry = self.redis.zrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, 1)[0]
-        urlnode_uuid, hostnode_uuid, url = entry.split('|', 2)
-        return capture_uuid, urlnode_uuid, hostnode_uuid
+    def get_captures_body_hash_count(self, h: str) -> int:
+        # NOTE: the old name was bh instead of body_hashes
+        if self.redis.type(f'bh|{h}|captures') == 'set':  # type: ignore[no-untyped-call]
+            # triggers the re-index soon.
+            self.redis.srem('indexed_body_hashes', *self.redis.smembers(f'bh|{h}|captures'))
+            return 0
+        return self.redis.zcard(f'body_hashes|{h}|captures')
 
-    def get_body_hash_captures(self, body_hash: str, filter_url: str | None=None,
-                               filter_capture_uuid: str | None=None,
-                               limit: int=20,
-                               prefered_uuids: set[str]=set()) -> tuple[int, list[tuple[str, str, str, bool, str]]]:
+    def get_hash_uuids(self, body_hash: str) -> tuple[str, str] | None:
+        """Use that to get a reference allowing to fetch a resource from one of the capture."""
+        if capture_uuids := self.redis.zrevrange(f'body_hashes|{body_hash}|captures', 0, 0, withscores=False):
+            capture_uuid = capture_uuids[0]
+            internal_index = f'capture_indexes|{capture_uuid}'
+            if urlnode_uuid := self.redis.srandmember(f'{internal_index}|body_hashes|{body_hash}'):
+                return str(capture_uuid), str(urlnode_uuid)
+        return None
+
+    def get_captures_body_hash(self, body_hash: str, most_recent_capture: datetime | None = None,
+                               oldest_capture: datetime | None = None) -> list[tuple[str, float]]:
         '''Get the captures matching the hash.
 
-        :param filter_url: URL of the hash we're searching for
+        :param body_hash: The hash to search for
         :param filter_capture_uuid: UUID of the capture the hash was found in
-        :param limit: Max matching captures to return, -1 means unlimited.
-        :param prefered_uuids: UUID cached right now, so we don't rebuild trees.
         '''
-        to_return: list[tuple[str, str, str, bool, str]] = []
-        len_captures = self.redis.scard(f'bh|{body_hash}|captures')
-        unlimited = False
-        if limit == -1:
-            unlimited = True
-        for capture_uuid in self.redis.sscan_iter(f'bh|{body_hash}|captures'):
-            if capture_uuid == filter_capture_uuid:
-                # Used to skip hits in current capture
-                len_captures -= 1
-                continue
-            if prefered_uuids and capture_uuid not in prefered_uuids:
-                continue
-            if not unlimited:
-                limit -= 1
-            for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
-                url_uuid, hostnode_uuid, url = entry.split('|', 2)
-                hostname: str = urlsplit(url).hostname
-                if filter_url:
-                    to_return.append((capture_uuid, hostnode_uuid, hostname, url == filter_url, url))
-                else:
-                    to_return.append((capture_uuid, hostnode_uuid, hostname, False, url))
-            if not unlimited and limit <= 0:
-                break
-        return len_captures, to_return
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
 
-    def get_body_hash_domains(self, body_hash: str) -> list[tuple[str, float]]:
-        return self.redis.zrevrange(f'bh|{body_hash}', 0, -1, withscores=True)
+        if self.redis.type(f'bh|{body_hash}|captures') == 'set':  # type: ignore[no-untyped-call]
+            # triggers the re-index soon.
+            self.redis.srem('indexed_body_hashes', *self.redis.smembers(f'bh|{body_hash}|captures'))
+            self.redis.delete(f'bh|{body_hash}|captures')
+            return []
+        return self.redis.zrevrangebyscore(f'body_hashes|{body_hash}|captures', max_score, min_score, withscores=True)
 
-    def get_body_hash_urls(self, body_hash: str) -> dict[str, list[dict[str, str]]]:
-        all_captures: set[str] = self.redis.smembers(f'bh|{body_hash}|captures')
-        urls = defaultdict(list)
-        for capture_uuid in list(all_captures):
-            for entry in self.redis.zrevrange(f'bh|{body_hash}|captures|{capture_uuid}', 0, -1):
-                url_uuid, hostnode_uuid, url = entry.split('|', 2)
-                urls[url].append({'capture': capture_uuid, 'hostnode': hostnode_uuid, 'urlnode': url_uuid})
-        return urls
+    def get_capture_body_hash_nodes(self, capture_uuid: str, body_hash: str) -> set[str]:
+        if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|body_hashes|{body_hash}'):
+            return set(url_nodes)
+        return set()
+
+    def get_body_hash_urlnodes(self, body_hash: str) -> dict[str, set[str]]:
+        return {capture_uuid: self.redis.smembers(f'capture_indexes|{capture_uuid}|body_hashes|{body_hash}')
+                for capture_uuid, capture_ts in self.get_captures_body_hash(body_hash)}
 
     # ###### HTTP Headers Hashes ######
 
@@ -342,7 +332,7 @@ class Indexing():
         return self.redis.scard(f'hhhashes|{hhh}|captures')
 
     def get_http_headers_hashes_captures(self, hhh: str) -> list[tuple[str, str]]:
-        return [uuids.split('|') for uuids in self.redis.smembers(f'hhhashes|{hhh}|captures')]
+        return [uuids.split('|') for uuids in self.redis.smembers(f'hhhashes|{hhh}|captures')]  # type: ignore[misc]
 
     def index_http_headers_hashes_capture(self, crawled_tree: CrawledTree) -> None:
         if self.redis.sismember('indexed_hhhashes', crawled_tree.uuid):

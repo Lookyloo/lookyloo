@@ -256,7 +256,7 @@
           {% if url['body_hash_details'] and url['body_hash_details']['hash_freq'] %}
           <div>
             This file can be found <b>{{ url['body_hash_details']['hash_freq'] }}</b> times
-            across all the captures on this lookyloo instance, in <b>{{ url['body_hash_details']['hash_domains_freq'] }}</b> unique domains.
+            across all the captures on this lookyloo instance.
 
             {# other captures related with the same content #}
             {% if 'other_captures' in url['body_hash_details'] %}
@@ -281,7 +281,8 @@
           {% endif %}
           {% if enable_context_by_users %}
             </br>
-            {{ context_form(tree_uuid, url['url_object'].uuid, hostnode_uuid, url['url_object'].body_hash, 'hostnode_popup') }}
+            {{ context_form(tree_uuid, url['url_object'].uuid,
+                            url['url_object'].body_hash, 'hostnode_popup') }}
           {% endif %}
 
           {% if url['embedded_ressources'] %}
@@ -306,13 +307,13 @@
               {% endif %}
               <div>
                 This file {% if details['type'] %}(<b>{{ details['type'] }}</b>){% endif %} can be found <b>{{ details['hash_freq'] }}</b> times
-                across all the captures on this lookyloo instance, in <b>{{ details['hash_domains_freq'] }}</b> unique domains.
+                across all the captures on this lookyloo instance.
                 {{ get_ressource_button(tree_uuid, url['url_object'].uuid, hash,
                                         'Download the embedded ressource',
                                         details['type'] and details['type'].startswith('image')) }}
                 </br>
                 {% if enable_context_by_users %}
-                  {{ context_form(tree_uuid, url['url_object'].uuid, hostnode_uuid, hash, 'hostnode_popup') }}
+                  {{ context_form(tree_uuid, url['url_object'].uuid, hash, 'hostnode_popup') }}
                 {% endif %}
 
                 {% if 'other_captures' in details %}

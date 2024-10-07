@@ -94,7 +94,7 @@
 </div>
 {% endmacro %}
 
-{% macro context_form(tree_uuid, urlnode_uuid, hostnode_uuid, hash, callback_str) %}
+{% macro context_form(tree_uuid, urlnode_uuid, hash, callback_str) %}
 <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#context_response_{{ urlnode_uuid }}" aria-expanded="false" aria-controls="collapseContextForm">
   <span class="if-collapsed">Add context</span>
   <span class="if-not-collapsed">Hide context form</span>
@@ -143,7 +143,6 @@
           </div>
         </div>
         <input type="hidden" id="hash_to_contextualize" name="hash_to_contextualize" value="{{ hash }}">
-        <input type="hidden" id="hostnode_uuid" name="hostnode_uuid" value="{{ hostnode_uuid }}">
         <input type="hidden" id="callback_str" name="callback_str" value="{{ callback_str }}">
         <button type="submit" class="btn btn-primary" id="btn-looking">Submit context</button>
       </form>
@@ -193,15 +192,15 @@
 {% set total_captures = details[0] %}
 {% set other_captures = details[1] %}
 {# Only show details if the hits are in an other capture #}
-{% if total_captures > 0  %}
+{% if total_captures > 1  %}
 <p>
-  The same file was seen in <b>{{ total_captures }}</b> other captures.
+  The same file was seen in <b>{{ total_captures - 1 }}</b> other captures.
   </br>
   <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse"
           data-bs-target="#captureslist_{{ identifier_for_toggle }}"
           aria-expanded="false" aria-controls="collapseExample">
-    <span class="if-collapsed">Show other captures</span>
-    <span class="if-not-collapsed">Hide other captures</span>
+    <span class="if-collapsed">Show other recent captures</span>
+    <span class="if-not-collapsed">Hide other recent captures</span>
   </button>
 </p>
 {# Lists of other captures loading the same content... #}

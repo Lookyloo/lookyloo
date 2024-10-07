@@ -32,23 +32,21 @@
      <tr>
        <th>SHA 521</th>
        <th>Frequency</th>
-       <th>Number unique domains</th>
        <th>Context</th>
        <th>Mimetype</th>
        <th>Filename</th>
      </tr>
     </thead>
     <tbody>
-      {% for h, freq, number_domains, context, capture_uuid, urlnode_uuid, hostnode_uuid, filename, mimetype in ressources %}
+      {% for h, freq, context, capture_uuid, urlnode_uuid, filename, mimetype in ressources %}
       <tr>
         <td>
           <a href="{{ url_for('body_hash_details', body_hash=h) }}">{{ shorten_string(h, 10) }}</a></br>
           {{ get_ressource_button(capture_uuid, urlnode_uuid, h, 'Download sample', mimetype and mimetype.startswith('image')) }}
         </td>
         <td>{{ freq }}</td>
-        <td>{{ number_domains }}</td>
         <td> {{ context['type'] }} - {{ context['details'] }}</br>
-          {{ context_form(capture_uuid, urlnode_uuid, hostnode_uuid, h, 'ressources') }}
+          {{ context_form(capture_uuid, urlnode_uuid, h, 'ressources') }}
         </td>
         <td>{{ mimetype }}</td>
         <td>{{ shorten_string(filename, 10) }}</td>

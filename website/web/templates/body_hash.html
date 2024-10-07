@@ -38,16 +38,10 @@
 
 <center>
   <h6>{{ body_hash }}</h6>
+  <h6>Only the most recent captures are listed below, this will change soon.</h6>
   <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">Download</a>
 </center>
 
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-  new DataTable('#freqHostTable', {
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '20%', targets: 0 },
-                 { width: '80%', targets: 1 }],
-  });
-</script>
 <script type="text/javascript"  nonce="{{ csp_nonce() }}">
   new DataTable('#bodyHashDetailsTable', {
     order: [[ 0, "desc" ]],
@@ -61,23 +55,7 @@
                  { width: '40%', targets: 2 }],
   });
 </script>
-<table id="freqHostTable" class="table table-striped" style="width:100%">
-  <thead>
-   <tr>
-     <th>Frequency</th>
-     <th>Hostname</th>
-   </tr>
-  </thead>
-  <tbody>
-    {% for domain, freq in domains %}
-    <tr>
-      <td>{{ freq }}</td>
-      <td>{{ domain }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-<p>The same file was seen in these captures:</p>
+<p>The same file was seen in these captures recently:</p>
 <table id="bodyHashDetailsTable" class="table table-striped" style="width:100%">
   <thead>
    <tr>

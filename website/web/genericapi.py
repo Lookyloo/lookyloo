@@ -324,14 +324,16 @@ class ModulesResponse(Resource):  # type: ignore[misc]
          params={'h': 'The hash (sha512)'})
 class HashInfo(Resource):  # type: ignore[misc]
     def get(self, h: str) -> dict[str, Any] | tuple[dict[str, Any], int]:
-        from . import get_body_hash_full
-
-        details, body = get_body_hash_full(h)
-        if not details:
-            return {'error': 'Unknown Hash.'}, 400
-        to_return: dict[str, Any] = {'response': {'hash': h, 'details': details,
-                                                  'body': base64.b64encode(body.getvalue()).decode()}}
-        return to_return
+        if uuids := get_indexing(flask_login.current_user).get_hash_uuids(h):
+            # got UUIDs for this hash
+            capture_uuid, urlnode_uuid = uuids
+            if ressource := lookyloo.get_ressource(capture_uuid, urlnode_uuid, h):
+                filename, body, mimetype = ressource
+                details = get_indexing(flask_login.current_user).get_body_hash_urlnodes(h)
+                return {'response': {'hash': h, 'details': details,
+                                     'body': base64.b64encode(body.getvalue()).decode()}}
+            return {'error': 'Unable to get ressource'}, 400
+        return {'error': 'Unknown Hash.'}, 400
 
 
 def get_url_occurrences(url: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:

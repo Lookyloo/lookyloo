@@ -342,55 +342,18 @@ def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Respons
 
 # ##### Methods querying the indexes #####
 
-def _get_body_hash_investigator(body_hash: str, /) -> tuple[list[tuple[str, str, datetime, str, str]], list[tuple[str, float]]]:
+def _get_body_hash_investigator(body_hash: str, /) -> list[tuple[str, str, datetime, str, str]]:
     '''Returns all the captures related to a hash (sha512), used in the web interface.'''
-    total_captures, details = get_indexing(flask_login.current_user).get_body_hash_captures(body_hash, limit=-1)
+    _captures = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash)
     captures = []
-    for capture_uuid, hostnode_uuid, hostname, _, url in details:
+    for capture_uuid, capture_ts in _captures:
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
             continue
-        captures.append((cache.uuid, cache.title, cache.timestamp, hostnode_uuid, url))
-    domains = get_indexing(flask_login.current_user).get_body_hash_domains(body_hash)
-    return captures, domains
-
-
-def get_body_hash_full(body_hash: str, /) -> tuple[dict[str, list[dict[str, str]]], BytesIO]:
-    '''Returns a lot of information about the hash (sha512) and the hits in the instance.
-    Also contains the data (base64 encoded)'''
-    details = get_indexing(flask_login.current_user).get_body_hash_urls(body_hash)
-
-    # Break immediately if we have the hash of the empty file
-    if body_hash == 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e':
-        return details, BytesIO()
-
-    # get the body from the first entry in the details list
-    for _, entries in details.items():
-        if not entries:
-            continue
-        ct = lookyloo.get_crawled_tree(entries[0]['capture'])
-        try:
-            urlnode = ct.root_hartree.get_url_node_by_uuid(entries[0]['urlnode'])
-        except Exception:
-            # Unable to find URLnode in the tree, it probably has been rebuild.
-            # TODO throw a log line or something
-            # self.logger.warning(f'Unable to find {entries[0]["urlnode"]} in entries[0]["capture"]')
-            # lookyloo._captures_index.remove_pickle(<capture UUID>)
-            continue
-
-        # From that point, we just try to get the content. Break as soon as we found one.
-        if urlnode.body_hash == body_hash:
-            # the hash we're looking for is the whole file
-            return details, urlnode.body
-        else:
-            # The hash is an embedded resource
-            for _, blobs in urlnode.embedded_ressources.items():
-                for h, b in blobs:
-                    if h == body_hash:
-                        return details, b
-
-    # TODO: Couldn't find the file anywhere. Maybe return a warning in the file?
-    return details, BytesIO()
+        for urlnode_uuid in get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, body_hash):
+            urlnode = lookyloo.get_urlnode_from_tree(capture_uuid, urlnode_uuid)
+            captures.append((cache.uuid, cache.title, cache.timestamp, urlnode.hostnode_uuid, urlnode.name))
+    return captures
 
 
 def get_all_body_hashes(capture_uuid: str, /) -> dict[str, dict[str, URLNode | int]]:
@@ -400,8 +363,7 @@ def get_all_body_hashes(capture_uuid: str, /) -> dict[str, dict[str, URLNode | i
         if node.empty_response or node.body_hash in to_return:
             # If we have the same hash more than once, skip
             continue
-        total_captures, details = get_indexing(flask_login.current_user).get_body_hash_captures(node.body_hash, limit=-1)
-        # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
+        total_captures = get_indexing(flask_login.current_user).get_captures_body_hash_count(node.body_hash)
         to_return[node.body_hash] = {'node': node, 'total_captures': total_captures}
     return to_return
 
@@ -539,23 +501,28 @@ def get_hhh_investigator(hhh: str, /) -> tuple[list[tuple[str, str, str, str]], 
     return [], []
 
 
-def hash_lookup(blob_hash: str, url: str, capture_uuid: str) -> tuple[int, dict[str, list[tuple[str, str, str, str, str]]]]:
+def hash_lookup(blob_hash: str, url: str, current_capture_uuid: str) -> tuple[int, dict[str, list[tuple[str, str, str, str, str]]]]:
     '''Search all the captures a specific hash was seen.
     If a URL is given, it splits the results if the hash is seen on the same URL or an other one.
     Capture UUID avoids duplicates on the same capture'''
     captures_list: dict[str, list[tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
-    total_captures, details = get_indexing(flask_login.current_user).get_body_hash_captures(blob_hash, url, filter_capture_uuid=capture_uuid, limit=-1,
-                                                                                            prefered_uuids=set(lookyloo._captures_index.keys()))
-    for h_capture_uuid, url_uuid, url_hostname, same_url, url in details:
-        cache = lookyloo.capture_cache(h_capture_uuid)
-        if cache and hasattr(cache, 'title'):
-            if same_url:
-                captures_list['same_url'].append((h_capture_uuid, url_uuid, cache.title, cache.timestamp.isoformat(), url_hostname))
+    _captures = get_indexing(flask_login.current_user).get_captures_body_hash(blob_hash)
+    for capture_uuid, capture_ts in _captures:
+        if capture_uuid == current_capture_uuid:
+            continue
+        cache = lookyloo.capture_cache(capture_uuid)
+        if not cache:
+            continue
+        for urlnode_uuid in get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, blob_hash):
+            urlnode = lookyloo.get_urlnode_from_tree(capture_uuid, urlnode_uuid)
+            if url == urlnode.name:
+                captures_list['same_url'].append((capture_uuid, urlnode_uuid, cache.title, cache.timestamp.isoformat(), urlnode.hostname))
             else:
-                captures_list['different_url'].append((h_capture_uuid, url_uuid, cache.title, cache.timestamp.isoformat(), url_hostname))
+                captures_list['different_url'].append((capture_uuid, urlnode_uuid, cache.title, cache.timestamp.isoformat(), urlnode.hostname))
     # Sort by timestamp by default
     captures_list['same_url'].sort(key=lambda y: y[3])
     captures_list['different_url'].sort(key=lambda y: y[3])
+    total_captures = get_indexing(flask_login.current_user).get_captures_body_hash_count(blob_hash)
     return total_captures, captures_list
 
 
@@ -603,9 +570,8 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
         if not url.empty_response:
             # Index lookup
             # %%% Full body %%%
-            freq = get_indexing(flask_login.current_user).body_hash_fequency(url.body_hash)
-            to_append['body_hash_details'] = freq
-            if freq and 'hash_freq' in freq and freq['hash_freq'] and freq['hash_freq'] > 1:
+            if freq := get_indexing(flask_login.current_user).get_captures_body_hash_count(url.body_hash):
+                to_append['body_hash_details'] = {'hash_freq': freq}
                 to_append['body_hash_details']['other_captures'] = hash_lookup(url.body_hash, url.name, capture_uuid)
 
             # %%% Embedded ressources %%%
@@ -616,11 +582,9 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
                         if h in to_append['embedded_ressources']:
                             # Skip duplicates
                             continue
-                        freq_embedded = get_indexing(flask_login.current_user).body_hash_fequency(h)
-                        to_append['embedded_ressources'][h] = freq_embedded
-                        to_append['embedded_ressources'][h]['body_size'] = blob.getbuffer().nbytes
-                        to_append['embedded_ressources'][h]['type'] = mimetype
-                        if freq_embedded['hash_freq'] > 1:
+                        to_append['embedded_ressources'][h] = {'body_size': blob.getbuffer().nbytes, 'type': mimetype}
+                        if freq := get_indexing(flask_login.current_user).get_captures_body_hash_count(h):
+                            to_append['embedded_ressources'][h]['hash_freq'] = freq
                             to_append['embedded_ressources'][h]['other_captures'] = hash_lookup(h, url.name, capture_uuid)
                 for h in to_append['embedded_ressources'].keys():
                     known, legitimate = normalize_known_content(h, known_content, url)
@@ -1487,18 +1451,19 @@ def favicons_lookup() -> str:
 @app.route('/ressources', methods=['GET'])
 def ressources() -> str:
     ressources = []
-    for h, freq in get_indexing(flask_login.current_user).ressources:
-        domain_freq = get_indexing(flask_login.current_user).ressources_number_domains(h)
+    for h in get_indexing(flask_login.current_user).ressources:
+        freq = get_indexing(flask_login.current_user).get_captures_body_hash_count(h)
         context = lookyloo.context.find_known_content(h)
-        capture_uuid, url_uuid, hostnode_uuid = get_indexing(flask_login.current_user).get_hash_uuids(h)
-        try:
-            ressource = lookyloo.get_ressource(capture_uuid, url_uuid, h)
-        except MissingUUID:
-            pass
-        if ressource:
-            ressources.append((h, freq, domain_freq, context.get(h), capture_uuid, url_uuid, hostnode_uuid, ressource[0], ressource[2]))
-        else:
-            ressources.append((h, freq, domain_freq, context.get(h), capture_uuid, url_uuid, hostnode_uuid, 'unknown', 'unknown'))
+        # Only get the recent captures
+        for capture_uuid, capture_ts in get_indexing(flask_login.current_user).get_captures_body_hash(h):
+            url_nodes = get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, h)
+            print(url_nodes)
+            url_node = url_nodes.pop()
+            print(capture_uuid, url_node, h)
+            ressource = lookyloo.get_ressource(capture_uuid, url_node, h)
+            if not ressource:
+                continue
+            ressources.append((h, freq, context.get(h), capture_uuid, url_node, ressource[0], ressource[2]))
     return render_template('ressources.html', ressources=ressources)
 
 
@@ -1563,8 +1528,14 @@ def recapture(tree_uuid: str) -> str | Response | WerkzeugResponse:
 @app.route('/ressource_by_hash/<string:sha512>', methods=['GET'])
 @file_response  # type: ignore[misc]
 def ressource_by_hash(sha512: str) -> Response:
-    details, body = get_body_hash_full(sha512)
-    return send_file(body, as_attachment=True, download_name='ressource.bin')
+    if uuids := get_indexing(flask_login.current_user).get_hash_uuids(sha512):
+        # got UUIDs for this hash
+        capture_uuid, urlnode_uuid = uuids
+        if ressource := lookyloo.get_ressource(capture_uuid, urlnode_uuid, sha512):
+            filename, body, mimetype = ressource
+            return send_file(body, as_attachment=True, download_name=filename)
+
+    return send_file(f'Unable to find {sha512}', as_attachment=True, download_name='Hash unknown.')
 
 
 # ################## Submit existing capture ##################
@@ -1811,8 +1782,8 @@ def favicon_detail(favicon_sha512: str, get_probabilistic: int=0) -> str:
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])
 def body_hash_details(body_hash: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    captures, domains = _get_body_hash_investigator(body_hash.strip())
-    return render_template('body_hash.html', body_hash=body_hash, domains=domains, captures=captures, from_popup=from_popup)
+    captures = _get_body_hash_investigator(body_hash.strip())
+    return render_template('body_hash.html', body_hash=body_hash, captures=captures, from_popup=from_popup)
 
 
 @app.route('/urls/<string:url>', methods=['GET'])
@@ -1976,7 +1947,6 @@ def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
 
     context_data = request.form
     ressource_hash: str = context_data['hash_to_contextualize']
-    hostnode_uuid: str = context_data['hostnode_uuid']
     callback_str: str = context_data['callback_str']
     legitimate: bool = True if context_data.get('legitimate') else False
     malicious: bool = True if context_data.get('malicious') else False
@@ -1998,6 +1968,7 @@ def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
     lookyloo.add_context(tree_uuid, urlnode_uuid=node_uuid, ressource_hash=ressource_hash,
                          legitimate=legitimate, malicious=malicious, details=details)
     if callback_str == 'hostnode_popup':
+        hostnode_uuid = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid).hostnode_uuid
         return redirect(url_for('hostnode_popup', tree_uuid=tree_uuid, node_uuid=hostnode_uuid))
     elif callback_str == 'ressources':
         return redirect(url_for('ressources'))
