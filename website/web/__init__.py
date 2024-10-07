@@ -1457,9 +1457,7 @@ def ressources() -> str:
         # Only get the recent captures
         for capture_uuid, capture_ts in get_indexing(flask_login.current_user).get_captures_body_hash(h):
             url_nodes = get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, h)
-            print(url_nodes)
             url_node = url_nodes.pop()
-            print(capture_uuid, url_node, h)
             ressource = lookyloo.get_ressource(capture_uuid, url_node, h)
             if not ressource:
                 continue
