@@ -192,7 +192,7 @@
 {% set total_captures = details[0] %}
 {% set other_captures = details[1] %}
 {# Only show details if the hits are in an other capture #}
-{% if total_captures > 1  %}
+{% if total_captures > 1 %}
 <p>
   The same file was seen in <b>{{ total_captures - 1 }}</b> other captures.
   </br>
@@ -206,7 +206,7 @@
 {# Lists of other captures loading the same content... #}
 <div class="collapse" id="captureslist_{{ identifier_for_toggle }}">
   <div class="card card-body">
-    Note that only the most recent cached captures are displayed here.
+    Note that only the most recent cached captures are displayed here, click on the link below to see more.
     {% if other_captures['different_url']|length > 0 %}
     {# ... on other URLs #}
     <div>

@@ -234,6 +234,7 @@ class Indexing():
         if self.redis.type(f'cookies_names|{cookie_name}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_cookies', *[entry.split('|')[0] for entry in self.redis.smembers(f'cn|{cookie_name}|captures')])
+            self.redis.delete(f'cookies_names|{cookie_name}|captures')
             return []
         return self.redis.zrevrangebyscore(f'cookies_names|{cookie_name}|captures', max_score, min_score, withscores=True)
 
@@ -310,6 +311,7 @@ class Indexing():
         if self.redis.type(f'bh|{h}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_body_hashes', *self.redis.smembers(f'bh|{h}|captures'))
+            self.redis.delete(f'bh|{h}|captures')
             return 0
         return self.redis.zcard(f'body_hashes|{h}|captures')
 
@@ -408,6 +410,7 @@ class Indexing():
         if self.redis.type(f'hhhashes|{hhh}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_hhhashes', *self.redis.smembers(f'hhhashes|{hhh}|captures'))
+            self.redis.delete(f'hhhashes|{hhh}|captures')
             return []
         return self.redis.zrevrangebyscore(f'hhhashes|{hhh}|captures', max_score, min_score, withscores=True)
 
@@ -499,6 +502,7 @@ class Indexing():
         if self.redis.type(f'urls|{md5}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'urls|{md5}|captures'))
+            self.redis.delete(f'urls|{md5}|captures')
             return []
         return self.redis.zrevrangebyscore(f'urls|{md5}|captures', max_score, min_score, withscores=True)
 
@@ -507,6 +511,7 @@ class Indexing():
         if self.redis.type(f'urls|{md5}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'urls|{md5}|captures'))
+            self.redis.delete(f'urls|{md5}|captures')
             return 0
         return self.redis.zcard(f'urls|{md5}|captures')
 
@@ -523,6 +528,7 @@ class Indexing():
         if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'hostnames|{hostname}|captures'))
+            self.redis.delete(f'hostnames|{hostname}|captures')
             return []
         return self.redis.zrevrangebyscore(f'hostnames|{hostname}|captures', max_score, min_score, withscores=True)
 
@@ -530,6 +536,7 @@ class Indexing():
         if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'hostnames|{hostname}|captures'))
+            self.redis.delete(f'hostnames|{hostname}|captures')
             return 0
         return self.redis.zcard(f'hostnames|{hostname}|captures')
 
