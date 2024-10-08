@@ -511,22 +511,21 @@ def hash_lookup(blob_hash: str, url: str, current_capture_uuid: str) -> tuple[in
     If a URL is given, it splits the results if the hash is seen on the same URL or an other one.
     Capture UUID avoids duplicates on the same capture'''
     captures_list: dict[str, list[tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
-    _captures = get_indexing(flask_login.current_user).get_captures_body_hash(blob_hash)
-    for capture_uuid, capture_ts in _captures:
-        if capture_uuid == current_capture_uuid:
+    cached_captures = lookyloo.sorted_capture_cache(
+        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_body_hash(blob_hash)],
+        cached_captures_only=True)
+    for cache in cached_captures:
+        if cache.uuid == current_capture_uuid:
             continue
-        cache = lookyloo.capture_cache(capture_uuid)
-        if not cache:
-            continue
-        for urlnode_uuid in get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, blob_hash):
+        for urlnode_uuid in get_indexing(flask_login.current_user).get_capture_body_hash_nodes(cache.uuid, blob_hash):
             try:
                 urlnode = lookyloo.get_urlnode_from_tree(cache.uuid, urlnode_uuid)
             except IndexError:
                 continue
             if url == urlnode.name:
-                captures_list['same_url'].append((capture_uuid, urlnode_uuid, cache.title, cache.timestamp.isoformat(), urlnode.hostname))
+                captures_list['same_url'].append((cache.uuid, urlnode_uuid, cache.title, cache.timestamp.isoformat(), urlnode.hostname))
             else:
-                captures_list['different_url'].append((capture_uuid, urlnode_uuid, cache.title, cache.timestamp.isoformat(), urlnode.hostname))
+                captures_list['different_url'].append((cache.uuid, urlnode_uuid, cache.title, cache.timestamp.isoformat(), urlnode.hostname))
     # Sort by timestamp by default
     captures_list['same_url'].sort(key=lambda y: y[3])
     captures_list['different_url'].sort(key=lambda y: y[3])
