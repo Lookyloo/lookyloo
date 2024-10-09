@@ -1426,7 +1426,8 @@ class Lookyloo():
         capture_settings: CaptureSettings | None = None
         potential_favicons: set[bytes] | None = None
 
-        files_to_skip = ['cnames.json', 'ipasn.json', 'ips.json']
+        files_to_skip = ['cnames.json', 'ipasn.json', 'ips.json', 'mx.json',
+                         'nameservers.json', 'soa.json']
 
         with ZipFile(archive, 'r') as lookyloo_capture:
             potential_favicons = set()
