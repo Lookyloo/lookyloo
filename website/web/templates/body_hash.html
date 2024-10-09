@@ -9,12 +9,6 @@
 
 {% block scripts %}
 {{ super() }}
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-    $('#table').DataTable( {
-        "order": [[ 1, "desc" ]],
-        "pageLength": 500
-    });
-</script>
 
 <script type="text/javascript" nonce="{{ csp_nonce() }}">
     const openNewTabButtons = document.querySelectorAll('.openNewTab');
@@ -24,23 +18,6 @@
         }));
     }
 </script>
-
-
-{% endblock %}
-{%endif%}
-
-
-{% block content %}
-
-{% if from_popup %}
-<button class="btn btn-primary goBack" type="button">Go Back</button>
-{%endif%}
-
-<center>
-  <h6>{{ body_hash }}</h6>
-  <h6>Only the most recent captures are listed below, this will change soon.</h6>
-  <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">Download</a>
-</center>
 
 <script type="text/javascript"  nonce="{{ csp_nonce() }}">
   new DataTable('#bodyHashDetailsTable', {
@@ -55,6 +32,40 @@
                  { width: '40%', targets: 2 }],
   });
 </script>
+
+{% endblock %}
+
+{%else%}
+
+<script type="text/javascript"  nonce="{{ csp_nonce() }}">
+  new DataTable('#bodyHashDetailsTable', {
+    order: [[ 0, "desc" ]],
+    columnDefs: [{ width: '20%', targets: 0,
+                   render: (data) => {
+                    const date = new Date(data);
+                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
+                   }
+                 },
+                 { width: '40%', targets: 1 },
+                 { width: '40%', targets: 2 }],
+  });
+</script>
+
+{%endif%}
+
+
+{% block content %}
+
+{% if from_popup %}
+<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
+{%endif%}
+
+<center>
+  <h6>{{ body_hash }}</h6>
+  <h6>Only the most recent captures are listed below, this will change soon.</h6>
+  <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">Download</a>
+</center>
+
 <p>The same file was seen in these captures recently:</p>
 <table id="bodyHashDetailsTable" class="table table-striped" style="width:100%">
   <thead>
