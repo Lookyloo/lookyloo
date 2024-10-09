@@ -317,7 +317,7 @@
                 {% endif %}
 
                 {% if 'other_captures' in details %}
-                  {{ indexed_hash(details['other_captures'], hash) }}
+                  {{ indexed_hash(details['other_captures'], url['url_object'].uuid + '_' + loop.index|string) }}
                 {% endif %}
                 <p><a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash, from_popup=True) }}">
                   Show more information about this embedded content.

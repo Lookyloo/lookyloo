@@ -230,7 +230,7 @@
 {% macro other_captures_table(entries, max_entries, identifier) %}
  <script type="text/javascript" nonce="{{ csp_nonce() }}">
    document.addEventListener("DOMContentLoaded", () => {
-   new DataTable('#table_other_captures{{identifier}}', {
+   new DataTable('#table_other_captures_{{identifier}}', {
    "order": [[ 1, "desc" ]],
    "paging": false,
    "info": false,
@@ -251,7 +251,7 @@
  </script>
 
 <div>
-  <table id="table_other_captures{{identifier}}" class="table table-striped" style="width:100%">
+  <table id="table_other_captures_{{identifier}}" class="table table-striped" style="width:100%">
   <thead>
     <tr>
       <th>Title</th>
