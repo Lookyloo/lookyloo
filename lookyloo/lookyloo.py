@@ -190,6 +190,11 @@ class Lookyloo():
                                     loglevel=get_config('generic', 'loglevel'))
         return self._lacus
 
+    def update_cache_index(self) -> None:
+        '''Update the cache index with the latest captures'''
+        # NOTE: This call is moderately expensive as it iterates over all the non-archived captures
+        self._captures_index._quick_init()
+
     def add_context(self, capture_uuid: str, /, urlnode_uuid: str, *, ressource_hash: str,
                     legitimate: bool, malicious: bool, details: dict[str, dict[str, str]]) -> None:
         '''Adds context information to a capture or a URL node'''

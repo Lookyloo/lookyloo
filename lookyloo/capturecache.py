@@ -156,7 +156,6 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
 
     @property
     def cached_captures(self) -> set[str]:
-        self._quick_init()
         return set(self.__cache.keys())
 
     def __getitem__(self, uuid: str) -> CaptureCache:

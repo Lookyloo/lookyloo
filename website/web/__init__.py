@@ -1381,6 +1381,7 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: str 
         cut_time = (datetime.now() - timedelta(**time_delta_on_index))
         cut_time_with_tz = cut_time.replace(tzinfo=timezone.utc)
 
+    lookyloo.update_cache_index()
     for cached in lookyloo.sorted_capture_cache(index_cut_time=cut_time):
         if cut_time and cached.timestamp < cut_time_with_tz:
             continue
@@ -1548,7 +1549,7 @@ def ressource_by_hash(sha512: str) -> Response:
             filename, body, mimetype = ressource
             return send_file(body, as_attachment=True, download_name=filename)
 
-    return send_file(BytesIO(f'Unable to find {sha512}'.encode()), as_attachment=True, download_name='Hash unknown.')
+    return send_file(BytesIO(f'Unable to find {sha512}'.encode()), as_attachment=True, download_name='Unknown_Hash.txt')
 
 
 # ################## Submit existing capture ##################
