@@ -1548,7 +1548,7 @@ def ressource_by_hash(sha512: str) -> Response:
             filename, body, mimetype = ressource
             return send_file(body, as_attachment=True, download_name=filename)
 
-    return send_file(f'Unable to find {sha512}', as_attachment=True, download_name='Hash unknown.')
+    return send_file(BytesIO(f'Unable to find {sha512}'.encode()), as_attachment=True, download_name='Hash unknown.')
 
 
 # ################## Submit existing capture ##################
