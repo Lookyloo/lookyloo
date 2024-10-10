@@ -288,6 +288,16 @@
           </div>
         </div>
 
+        <div class="row mb-3">
+          <label for="java_script_enabled" class="col-sm-2 col-form-check-label">Enable JavaScript:</label>
+          <div class="col-sm-10">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="java_script_enabled" name="java_script_enabled" aria-describedby="java_script_enabled_help"
+                {% if predefined_settings.get('java_script_enabled', true) is true %}checked="checked"{% endif %}>
+              <div id="java_script_enabled_help" class="form-text">If disabled, the browser will not run any JavaScript when rendering the page.</div>
+            </div>
+          </div>
+        </div>
 
         <!-- Referer -->
         <div class="row mb-3">
