@@ -3334,20 +3334,20 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)", "Sphinx (>=8,<9)"]
 
 [[package]]
 name = "pylookyloo"
-version = "1.25.0"
+version = "1.26.1"
 description = "Python CLI and module for Lookyloo"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "pylookyloo-1.25.0-py3-none-any.whl", hash = "sha256:946677205ffaac43a238b5152476b7173b8a85fd3f64622c2174cbcf678fdaa7"},
-    {file = "pylookyloo-1.25.0.tar.gz", hash = "sha256:e8e47c79919b3451e00a3d73faa980738e5a531fccbcb5bb8e79f504200d5650"},
+    {file = "pylookyloo-1.26.1-py3-none-any.whl", hash = "sha256:5b7072a0703b5c32197e3ee1008c084c30060179880232d4933f44b2d3b9f29a"},
+    {file = "pylookyloo-1.26.1.tar.gz", hash = "sha256:5e963cf24d8d85446efabea4f3460a69294108b29377c0bc7c063a6569f4aebc"},
 ]
 
 [package.dependencies]
 requests = ">=2.32.3,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
+docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)", "Sphinx (>=8,<9)"]
 
 [[package]]
 name = "pylookyloomonitoring"
@@ -4686,4 +4686,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "c84695c8ec738d2984f09f6b99f6f3b69ca40b78f0ccba59e373acb44096ae41"
+content-hash = "e82c318f74b0e8bf94041f5a6be396fd05c8a3f2f350716424f6599f71b6657c"
