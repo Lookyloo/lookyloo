@@ -289,7 +289,7 @@
         </div>
 
         <div class="row mb-3">
-          <label for="java_script_enabled" class="col-sm-2 col-form-check-label">Enable JavaScript:</label>
+          <label for="java_script_enabled" class="col-sm-2 col-form-check-label">Enable <a href="https://playwright.dev/python/docs/emulation#javascript-enabled">JavaScript</a>:</label>
           <div class="col-sm-10">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="java_script_enabled" name="java_script_enabled" aria-describedby="java_script_enabled_help"
@@ -303,34 +303,42 @@
         <div class="row mb-3">
           <label for="referer" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer">Referer</a>:</label>
           <div class="col-sm-10">
-            <input type="text" class="form-control" name="referer" id=referer placeholder="Pass referer of the URL">
+            <input type="text" class="form-control" name="referer" id=referer placeholder="https://my.website.org/path">
+            <div class="alert alert-info" role="alert">
+                Sets the Referrer HTTP header.
+            </div>
           </div>
         </div>
 
         <div class="row mb-3">
-          <label for="dnt" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/DNT">Do not Track</a>:</label>
+          <label for="locale" class="col-sm-2 col-form-label">Browser <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language">locale</a> (Accept-Language):</label>
           <div class="col-sm-10">
-            <select class="form-select" name="dnt" id="dnt" aria-label="Select a value for the Do Not Track HTTP Header">
-              <option value="" selected>Select a value for the DNT header (header not set otherwise)</option>
-              <option value="0">0 (The user prefers to allow tracking on the target site.)</option>
-              <option value="1">1 (The user prefers not to be tracked on the target site.)</option>
-              <option value="null">null (The user has not specified a preference about tracking.)</option>
-            </select>
+            <input type="text" class="form-control" name="locale" id="locale" placeholder="fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5">
+            <div class="alert alert-info" role="alert">
+                Sets the Accept-Language HTTP header.
+            </div>
           </div>
         </div>
 
         <div class="row mb-3">
-          <label for="headers" class="col-sm-2 col-form-label">Other HTTP headers:</label>
+          <label for="headers" class="col-sm-2 col-form-label">Other <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers">HTTP headers</a>:</label>
           <div class="col-sm-10">
-            <textarea class="form-control" name="headers" id=headers rows=3 placeholder="Accept-Language: en-US;q=0.5, fr-FR;q=0.4"></textarea>
+            <textarea class="form-control" name="headers" id=headers rows=3 placeholder="X-Auth-Token: YWJjcmFjYWRhYnJh"></textarea>
+            <div class="alert alert-warning" role="alert">
+              The headers will be added to the request. One header per line.<br>
+              For <strong>Referrer</strong>, <strong>Accept-Language</strong> (Locale),
+              <strong>Authorization</strong> (HTTP Authentication), <strong>Cookie</strong>,
+              and <strong>DNT</strong> (Do Not Track),
+              please use the dedicated fields in this form.
+            </div>
           </div>
         </div>
 
         <div class="row mb-3">
           {% set local_TZ, local_UTC_offset, all_timezones = tz_info() %}
-          <label for="timezone_id" class="col-sm-2 col-form-label">Timezone (defaults to {{local_TZ}} - {{local_UTC_offset}}):</label>
+          <label for="timezone_id" class="col-sm-2 col-form-label"><a href="https://playwright.dev/python/docs/emulation#locale--timezone">Timezone</a> (defaults to {{local_TZ}} - {{local_UTC_offset}}):</label>
           <div class="col-sm-10">
-            <input class="form-control" list="tzOptions" name="timezone_id" id="timezone_id" aria-label="Pick the timezone for the capture">
+            <input class="form-control" list="tzOptions" name="timezone_id" id="timezone_id" aria-label="Pick the timezone for the capture" placeholder="Europe/Vatican">
             <datalist id="tzOptions">
               {% for tz in all_timezones %}
               <option value="{{tz}}">{{tz}}</option>
@@ -340,14 +348,7 @@
         </div>
 
         <div class="row mb-3">
-          <label for="locale" class="col-sm-2 col-form-label">Locale:</label>
-          <div class="col-sm-10">
-            <input type="text" class="form-control" name="locale" id="locale" placeholder="Pass a language locale to the capture">
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label for="color_scheme" class="col-sm-2 col-form-label">Color scheme:</label>
+          <label for="color_scheme" class="col-sm-2 col-form-label"><a href="https://playwright.dev/python/docs/emulation#color-scheme-and-media">Color scheme</a>:</label>
           <div class="col-sm-10">
             <select class="form-select" id="color_scheme" name="color_scheme" aria-label="Select a prefered color scheme">
               <option value="" selected>Select a color scheme</option>
@@ -359,7 +360,7 @@
         </div>
 
         <div class="row mb-3">
-          <label for="geoloc" class="col-sm-2 col-form-label">Geolocation:</label>
+          <label for="geoloc" class="col-sm-2 col-form-label"><a href="https://playwright.dev/python/docs/emulation#geolocation">Geolocation</a>:</label>
           <div class="col-sm-10" id="geoloc">
             <div class="row g-3">
               <div class="col">
@@ -382,7 +383,7 @@
         {%endif%}
 
         <div class="row mb-3">
-          <label for="httpauth" class="col-sm-2 col-form-label">HTTP Authentication</label>
+          <label for="httpauth" class="col-sm-2 col-form-label">HTTP Basic Authentication</label>
           <div class="col-sm-10" id="httpauth">
             <div class="row g-3">
               <div class="col">
@@ -416,7 +417,23 @@
             </div>
           </div>
         </div>
+        <div class="row mb-3">
+          <label for="dnt" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/DNT">Do not Track</a> (discontinued):</label>
+          <div class="col-sm-10">
+            <select class="form-select" name="dnt" id="dnt" aria-label="Select a value for the Do Not Track HTTP Header">
+              <option value="" selected>Select a value for the DNT header (header not set otherwise)</option>
+              <option value="0">0 (The user prefers to allow tracking on the target site.)</option>
+              <option value="1">1 (The user prefers not to be tracked on the target site.)</option>
+              <option value="null">null (The user has not specified a preference about tracking.)</option>
+            </select>
+            <div class="alert alert-info" role="alert">
+                Sets the DNT HTTP header.
+            </div>
+          </div>
+        </div>
+
       </div>
+
     </div>
 
     <hr>
