@@ -2947,13 +2947,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20241010"
+version = "1.0.2.20241015"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "publicsuffixlist-1.0.2.20241010-py2.py3-none-any.whl", hash = "sha256:f3c5ba727344e1956cc39d7c13c1aa13d5e16a374aa8ce100aa411d485ee6d6d"},
-    {file = "publicsuffixlist-1.0.2.20241010.tar.gz", hash = "sha256:a726d826bc3b6704995ce0ca144d87768060e18e1df39e6e57f2c645671c0df9"},
+    {file = "publicsuffixlist-1.0.2.20241015-py2.py3-none-any.whl", hash = "sha256:ca405fb3e40ef11cedbd38192447d28fd994eb0e93c00bbea5b585c0bc98a1b4"},
+    {file = "publicsuffixlist-1.0.2.20241015.tar.gz", hash = "sha256:aba38be392cbbcc97286a8250c0405fcf81c7a9f3346fa0ae7c48e55512682f3"},
 ]
 
 [package.extras]
@@ -4686,4 +4686,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.13"
-content-hash = "c84695c8ec738d2984f09f6b99f6f3b69ca40b78f0ccba59e373acb44096ae41"
+content-hash = "1645ff2062830d859f3ca65ebda5c36d0b4b29d2b2cf7226a2d914c2bf475bca"
