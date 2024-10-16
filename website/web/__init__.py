@@ -1542,14 +1542,16 @@ def recapture(tree_uuid: str) -> str | Response | WerkzeugResponse:
 @app.route('/ressource_by_hash/<string:sha512>', methods=['GET'])
 @file_response  # type: ignore[misc]
 def ressource_by_hash(sha512: str) -> Response:
+    content_fallback = f'Unable to find "{sha512}"'
     if uuids := get_indexing(flask_login.current_user).get_hash_uuids(sha512):
         # got UUIDs for this hash
         capture_uuid, urlnode_uuid = uuids
+        content_fallback += f' in capture "{capture_uuid}" and node "{urlnode_uuid}"'
         if ressource := lookyloo.get_ressource(capture_uuid, urlnode_uuid, sha512):
             filename, body, mimetype = ressource
             return send_file(body, as_attachment=True, download_name=filename)
 
-    return send_file(BytesIO(f'Unable to find {sha512}'.encode()), as_attachment=True, download_name='Unknown_Hash.txt')
+    return send_file(BytesIO(content_fallback.encode()), as_attachment=True, download_name='Unknown_Hash.txt')
 
 
 # ################## Submit existing capture ##################

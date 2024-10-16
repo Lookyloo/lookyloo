@@ -1118,12 +1118,15 @@ class Lookyloo():
             url = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
         except IndexError:
             # unable to find the uuid, the cache is probably in a weird state.
+            self.logger.info(f'Unable to find node "{urlnode_uuid}" in "{tree_uuid}"')
             return None
         except NoValidHarFile as e:
             # something went poorly when rebuilding the tree (probably a recursive error)
             self.logger.warning(e)
             return None
+
         if url.empty_response:
+            self.logger.info(f'The response for node "{urlnode_uuid}" in "{tree_uuid}" is empty.')
             return None
         if not h or h == url.body_hash:
             # we want the body
@@ -1131,11 +1134,13 @@ class Lookyloo():
 
         # We want an embedded ressource
         if h not in url.resources_hashes:
+            self.logger.info(f'Unable to find "{h}" in capture "{tree_uuid}" - node "{urlnode_uuid}".')
             return None
         for mimetype, blobs in url.embedded_ressources.items():
             for ressource_h, blob in blobs:
                 if ressource_h == h:
                     return 'embedded_ressource.bin', BytesIO(blob.getvalue()), mimetype
+        self.logger.info(f'Unable to find "{h}" in capture "{tree_uuid}" - node "{urlnode_uuid}", but in a weird way.')
         return None
 
     def __misp_add_vt_to_URLObject(self, obj: MISPObject) -> MISPObject | None:
