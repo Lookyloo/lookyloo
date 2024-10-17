@@ -128,6 +128,9 @@ class Archiver(AbstractManager):
                             rewrite_index = True
                             current_sub_index.add(dir_on_disk.name)
                             self.logger.info(f'Adding sub index {dir_on_disk.name} to {index_file}')
+                            if self.shutdown_requested():
+                                self.logger.warning('Shutdown requested, breaking.')
+                                break
                 else:
                     # got a capture
                     if len(self.s3fs_client.ls(entry, detail=False)) == 1:
@@ -155,6 +158,9 @@ class Archiver(AbstractManager):
                                 rewrite_index = True
                                 current_sub_index.add(dir_on_disk.name)
                                 self.logger.info(f'Adding sub index {dir_on_disk.name} to {index_file}')
+                                if self.shutdown_requested():
+                                    self.logger.warning('Shutdown requested, breaking.')
+                                    break
                     else:
                         # isoformat
                         if str(dir_on_disk) not in current_index_dirs:
