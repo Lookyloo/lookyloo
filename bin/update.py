@@ -65,6 +65,11 @@ def main() -> None:
 
     old_hash = compute_hash_self()
 
+    print('* Lookyloo requires valkey 8.0 or more recent. If you are updating from an existing instance, make sure to update/migrate to valkey 8.0.')
+    print('* If you do not do that, restarting will not work but you will not loose anything, just need to install valkey 8.0.')
+    print('* Installing valkey 8.0 simply means cloning valkey, and runnig make.')
+    keep_going(args.yes)
+
     print('* Update repository.')
     keep_going(args.yes)
     run_command('git pull')
