@@ -26,18 +26,18 @@ jobs:
       - name: Install poetry
         run: pipx install poetry
 
-      - name: Clone Redis
+      - name: Clone Valkey
         uses: actions/checkout@v4
         with:
-          repository: redis/redis
-          path: redis-tmp
-          ref: 7.2
+          repository: valkey-io/valkey
+          path: valkey-tmp
+          ref: "8.0"
 
-      - name: Install and setup redis
+      - name: Install and setup valkey
         run: |
-          mv redis-tmp ../redis
+          mv valkey-tmp ../valkey
           pushd ..
-          pushd redis
+          pushd valkey
           make
           popd
           popd
