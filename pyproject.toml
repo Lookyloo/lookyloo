@@ -91,7 +91,7 @@ urllib3 = [
 pypdns = "^2.2.6"
 mmh3 = "^5.0.1"
 puremagic = "^1.28"
-psutil = "^6.0.0"
+psutil = "^6.1.0"
 flask-talisman = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
