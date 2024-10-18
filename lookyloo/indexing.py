@@ -320,8 +320,9 @@ class Indexing():
         if capture_uuids := self.redis.zrevrange(f'body_hashes|{body_hash}|captures', 0, 0, withscores=False):
             capture_uuid = capture_uuids[0]
             internal_index = f'capture_indexes|{capture_uuid}'
-            if urlnode_uuid := self.redis.srandmember(f'{internal_index}|body_hashes|{body_hash}'):
-                return str(capture_uuid), str(urlnode_uuid)
+            urlnode_uuid: list[bytes | float | int | str]
+            if urlnode_uuid := self.redis.srandmember(f'{internal_index}|body_hashes|{body_hash}', 1):
+                return str(capture_uuid), str(urlnode_uuid[0])
         return None
 
     def get_captures_body_hash(self, body_hash: str, most_recent_capture: datetime | None = None,
