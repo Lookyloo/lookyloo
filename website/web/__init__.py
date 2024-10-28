@@ -436,7 +436,9 @@ def get_identifier_investigator(identifier_type: str, identifier: str) -> list[t
 
 
 def get_capture_hash_investigator(hash_type: str, h: str) -> list[tuple[str, str, str, datetime]]:
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_hash_type(hash_type=hash_type, h=h)])
+    cached_captures = lookyloo.sorted_capture_cache(
+        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_hash_type(hash_type=hash_type, h=h)],
+        cached_captures_only=True)
     return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
@@ -1321,7 +1323,7 @@ def tree_capture_hashes_types(tree_uuid: str) -> str:
     to_return: list[tuple[int, str, str]] = []
 
     for hash_type, h in get_indexing(flask_login.current_user).get_hashes_types_capture(tree_uuid).items():
-        nb_captures = get_indexing(flask_login.current_user).hash_number_captures(hash_type, h)
+        nb_captures = get_indexing(flask_login.current_user).get_captures_hash_type_count(hash_type, h)
         to_return.append((nb_captures, hash_type, h))
     return render_template('tree_hashes_types.html', tree_uuid=tree_uuid, hashes=to_return)
 

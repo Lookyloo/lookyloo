@@ -12,8 +12,6 @@ from zipfile import ZipFile
 
 import mmh3
 
-from bs4 import BeautifulSoup
-from hashlib import sha256
 from pathlib import Path
 
 from har2tree import CrawledTree
@@ -79,7 +77,10 @@ class Indexing():
         for identifier_type in self.identifiers_types():
             p.srem(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
         for hash_type in self.captures_hashes_types():
-            p.srem(f'indexed_hash_type|{hash_type}', capture_uuid)
+            if hash_type == 'certpl_html_structure_hash':
+                self._rename_certpl_hash_domhash()
+            else:
+                p.srem(f'indexed_hash_type|{hash_type}', capture_uuid)
         for internal_index in self.redis.smembers(f'capture_indexes|{capture_uuid}'):
             # NOTE: these ones need to be removed because the node UUIDs are recreated on tree rebuild
             # internal_index can be "tlds"
@@ -164,7 +165,7 @@ class Indexing():
         except (TreeNeedsRebuild, NoValidHarFile) as e:
             self.logger.warning(f'Error loading the pickle for {uuid_to_index}: {e}')
         except Exception as e:
-            self.logger.warning(f'Error during indexing for {uuid_to_index}: {e}')
+            self.logger.exception(f'Error during indexing for {uuid_to_index}: {e}')
         finally:
             self.indexing_done(uuid_to_index)
 
@@ -665,45 +666,54 @@ class Indexing():
     # ###### Capture hashes ######
 
     # This is where we define the indexing for the hashes generated for a whole capture (at most one hash per capture)
-    # certpl_html_structure_hash: concatenated list of all the tag names on the page - done on the rendered page
+    # domhash (formerly known as certpl_html_structure_hash): concatenated list of all the tag names on the page - done on the rendered page
 
-    def _compute_certpl_html_structure_hash(self, html: str) -> str:
-        soup = BeautifulSoup(html, "lxml")
-        to_hash = "|".join(t.name for t in soup.findAll()).encode()
-        return sha256(to_hash).hexdigest()[:32]
+    def _rename_certpl_hash_domhash(self) -> None:
+        # This is a one shot call that gets rid of all the old certpl_html_structure_hash and they will be replaced by domhash
+        if (not self.redis.exists('capture_hash_types|certpl_html_structure_hash')
+                and not self.redis.exists('indexed_hash_type|certpl_html_structure_hash')):
+            # Already cleaned up
+            return
+        pipeline = self.redis.pipeline()
+        domhashes = set()
+        for capture_uuid in self.redis.sscan_iter('indexed_hash_type|certpl_html_structure_hash'):
+            domhash = self.redis.hget(f'capture_hash_types|{capture_uuid}', 'certpl_html_structure_hash')
+            if domhash not in domhashes:
+                # delete the whole key containing all the uuids
+                pipeline.delete(f'capture_hash_types|certpl_html_structure_hash|{domhash}|captures')
+            domhashes.add(domhash)
+            pipeline.hdel(f'capture_hash_types|{capture_uuid}', 'certpl_html_structure_hash')
+        pipeline.delete('capture_hash_types|certpl_html_structure_hash')
+        pipeline.delete('indexed_hash_type|certpl_html_structure_hash')
+        pipeline.execute()
 
     def captures_hashes_types(self) -> set[str]:
-        return {'certpl_html_structure_hash'}
+        return {'domhash'}
     # return self.redis.smembers('capture_hash_types')
 
-    def captures_hashes(self, hash_type: str) -> list[tuple[str, float]]:
-        return self.redis.zrevrange(f'capture_hash_types|{hash_type}', 0, 200, withscores=True)
-
-    def hash_frequency(self, hash_type: str, h: str) -> float | None:
-        return self.redis.zscore(f'capture_hash_types|{hash_type}', h)
-
-    def hash_number_captures(self, hash_type: str, h: str) -> int:
-        return self.redis.scard(f'capture_hash_types|{hash_type}|{h}|captures')
+    def captures_hashes(self, hash_type: str) -> set[str]:
+        return self.redis.smembers(f'capture_hash_types|{hash_type}')
 
     def index_capture_hashes_types(self, crawled_tree: CrawledTree) -> None:
         capture_uuid = crawled_tree.uuid
         # NOTE: We will have multiple hash types for each captures, we want to make sure
         # to reindex all the captures if there is a new hash type but only index the new
         # captures on the existing hash types
-        # hashes = ('certpl_html_structure_hash', )
         for hash_type in self.captures_hashes_types():
+            if hash_type == 'certpl_html_structure_hash':
+                self._rename_certpl_hash_domhash()
+                continue
             if self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid):
                 # Do not reindex
                 return
             self.redis.sadd(f'indexed_hash_type|{hash_type}', capture_uuid)
 
-            if hash_type == 'certpl_html_structure_hash':
-                # we must have a rendered HTML for this hash to be relevant.
-                if (not hasattr(crawled_tree.root_hartree.rendered_node, 'rendered_html')
-                        or not crawled_tree.root_hartree.rendered_node.rendered_html):
+            if hash_type == 'domhash':
+                # the hash is computed in har2tree, we just check if it exists.
+                if not hasattr(crawled_tree.root_hartree.rendered_node, 'domhash'):
                     continue
                 # we have a rendered HTML, compute the hash
-                hash_to_index = self._compute_certpl_html_structure_hash(crawled_tree.root_hartree.rendered_node.rendered_html)
+                hash_to_index = crawled_tree.root_hartree.rendered_node.domhash
             else:
                 self.logger.warning(f'Unknown hash type: {hash_type}')
                 continue
@@ -712,21 +722,42 @@ class Indexing():
                 self.logger.info(f'No hash to index for {hash_type} in {capture_uuid} ... ')
                 continue
 
-            if self.redis.sismember(f'capture_hash_types|{hash_type}|{hash_to_index}|captures', capture_uuid):
+            if self.redis.zscore(f'capture_hash_types|{hash_type}|{hash_to_index}|captures', capture_uuid) is not None:
                 # Already counted this specific identifier for this capture
                 continue
             self.logger.debug(f'Indexing hash {hash_type} for {capture_uuid} ... ')
             pipeline = self.redis.pipeline()
             pipeline.hset(f'capture_hash_types|{capture_uuid}', hash_type, hash_to_index)
-            pipeline.sadd(f'capture_hash_types|{hash_type}|{hash_to_index}|captures', capture_uuid)
-            pipeline.zincrby(f'capture_hash_types|{hash_type}', 1, hash_to_index)
+            pipeline.sadd(f'capture_hash_types|{hash_type}', hash_to_index)
+            pipeline.zadd(f'capture_hash_types|{hash_type}|{hash_to_index}|captures',
+                          mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
             pipeline.execute()
 
     def get_hashes_types_capture(self, capture_uuid: str) -> dict[str, str]:
-        return self.redis.hgetall(f'capture_hash_types|{capture_uuid}')
+        to_return = self.redis.hgetall(f'capture_hash_types|{capture_uuid}')
+        if to_return.pop('certpl_html_structure_hash', None):
+            # This one should be removed
+            self._rename_certpl_hash_domhash()
+        return to_return
 
-    def get_captures_hash_type(self, hash_type: str, h: str) -> set[str]:
-        return self.redis.smembers(f'capture_hash_types|{hash_type}|{h}|captures')
+    def get_captures_hash_type(self, hash_type: str, h: str, most_recent_capture: datetime | None = None,
+                               oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+        """Get all the captures for a hash of a specific type, on a time interval starting from the most recent one.
+
+        :param hash_type: The type of hash
+        :param h: The hash
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 5 days ago.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=5)).timestamp()
+        return self.redis.zrevrangebyscore(f'capture_hash_types|{hash_type}|{h}|captures', max_score, min_score, withscores=True)
+
+    def get_captures_hash_type_count(self, hash_type: str, h: str) -> int:
+        if hash_type == 'certpl_html_structure_hash':
+            # that one should be removed
+            return 0
+        return self.redis.zcard(f'capture_hash_types|{hash_type}|{h}|captures')
 
     # ###### identifiers ######
 
