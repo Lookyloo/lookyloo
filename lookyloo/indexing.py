@@ -676,6 +676,7 @@ class Indexing():
             return
         pipeline = self.redis.pipeline()
         domhashes = set()
+        i = 0
         for capture_uuid in self.redis.sscan_iter('indexed_hash_type|certpl_html_structure_hash'):
             domhash = self.redis.hget(f'capture_hash_types|{capture_uuid}', 'certpl_html_structure_hash')
             if domhash not in domhashes:
@@ -683,6 +684,10 @@ class Indexing():
                 pipeline.delete(f'capture_hash_types|certpl_html_structure_hash|{domhash}|captures')
             domhashes.add(domhash)
             pipeline.hdel(f'capture_hash_types|{capture_uuid}', 'certpl_html_structure_hash')
+            if i % 1000 == 0:
+                pipeline.execute()
+                pipeline = self.redis.pipeline()
+
         pipeline.delete('capture_hash_types|certpl_html_structure_hash')
         pipeline.delete('indexed_hash_type|certpl_html_structure_hash')
         pipeline.execute()
