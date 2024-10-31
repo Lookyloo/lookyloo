@@ -48,18 +48,3 @@
     {% endfor %}
   </tbody>
 </table>
-
-{%for probabilistic_hash_algo, entries in probabilistic_favicons.items() %}
-  <h3>Probabilistic Favicon Hashes ({{ probabilistic_hash_algo }})</h3>
-  {% for mm3h, favicons in entries.items() %}
-    <h4>MM3 Hash: {{ mm3h }}</h4>
-    {% for sha512, favicon in favicons.items() %}
-    <a href="#faviconDetailsProbabilisticHashModal" data-remote="{{ url_for('favicon_detail', favicon_sha512=sha512, get_probabilistic=0) }}"
-       data-bs-toggle="modal" data-bs-target="#faviconDetailsProbabilisticHashModal" role="button">
-      <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"
-           title="Click to see other captures with the same favicon"/>
-    </a>
-    <br>
-    {% endfor %}
-  {% endfor %}
-{% endfor %}

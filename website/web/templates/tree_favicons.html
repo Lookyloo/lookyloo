@@ -32,7 +32,7 @@ if (downloadFavicons) {
   <tr>
     <td>{{ number_captures }}</td>
     <td>
-      <a href="#faviconDetailsModal" data-remote="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512, get_probabilistic=0) }}"
+      <a href="#faviconDetailsModal" data-remote="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512) }}"
          data-bs-toggle="modal" data-bs-target="#faviconDetailsModal" role="button">
         <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"
              title="Click to see other captures with the same favicon"/>

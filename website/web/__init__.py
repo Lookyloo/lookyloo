@@ -443,10 +443,8 @@ def get_capture_hash_investigator(hash_type: str, h: str) -> list[tuple[str, str
 
 
 def get_favicon_investigator(favicon_sha512: str,
-                             /,
-                             get_probabilistic: bool=False) -> tuple[list[tuple[str, str, str, datetime]],
-                                                                     tuple[str, str, str],
-                                                                     dict[str, dict[str, dict[str, tuple[str, str]]]]]:
+                             /) -> tuple[list[tuple[str, str, str, datetime]],
+                                         tuple[str, str, str]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
     cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_favicon(favicon_sha512)])
     captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
@@ -460,30 +458,7 @@ def get_favicon_investigator(favicon_sha512: str,
         b64_favicon = ''
         mmh3_shodan = ''
 
-    # For now, there is only one probabilistic hash algo for favicons, keeping it simple
-    probabilistic_hash_algos = ['mmh3-shodan']
-    probabilistic_favicons: dict[str, dict[str, dict[str, tuple[str, str]]]] = {}
-    if get_probabilistic:
-        for algo in probabilistic_hash_algos:
-            probabilistic_favicons[algo] = {}
-            for mm3hash in get_indexing(flask_login.current_user).get_probabilistic_hashes_favicon(algo, favicon_sha512):
-                probabilistic_favicons[algo][mm3hash] = {}
-                for sha512 in get_indexing(flask_login.current_user).get_hashes_favicon_probablistic(algo, mm3hash):
-                    if sha512 == favicon_sha512:
-                        # Skip entry if it is the same as the favicon we are investigating
-                        continue
-                    favicon = get_indexing(flask_login.current_user).get_favicon(sha512)
-                    if favicon:
-                        mimetype = from_string(favicon, mime=True)
-                        b64_favicon = base64.b64encode(favicon).decode()
-                        probabilistic_favicons[algo][mm3hash][sha512] = (mimetype, b64_favicon)
-                if not probabilistic_favicons[algo][mm3hash]:
-                    # remove entry if it has no favicon
-                    probabilistic_favicons[algo].pop(mm3hash)
-            if not probabilistic_favicons[algo]:
-                # remove entry if it has no hash
-                probabilistic_favicons.pop(algo)
-    return captures, (mimetype, b64_favicon, mmh3_shodan), probabilistic_favicons
+    return captures, (mimetype, b64_favicon, mmh3_shodan)
 
 
 def get_hhh_investigator(hhh: str, /) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str]]]:
@@ -1787,14 +1762,12 @@ def capture_hash_details(hash_type: str, h: str) -> str:
 
 
 @app.route('/favicon_details/<string:favicon_sha512>', methods=['GET'])
-@app.route('/favicon_details/<string:favicon_sha512>/<int:get_probabilistic>', methods=['GET'])
-def favicon_detail(favicon_sha512: str, get_probabilistic: int=0) -> str:
-    _get_prob = bool(get_probabilistic)
-    captures, favicon, probabilistic_favicons = get_favicon_investigator(favicon_sha512.strip(), get_probabilistic=_get_prob)
+def favicon_detail(favicon_sha512: str) -> str:
+    captures, favicon = get_favicon_investigator(favicon_sha512.strip())
     mimetype, b64_favicon, mmh3_shodan = favicon
     return render_template('favicon_details.html', favicon_sha512=favicon_sha512,
-                           captures=captures, mimetype=mimetype, b64_favicon=b64_favicon, mmh3_shodan=mmh3_shodan,
-                           probabilistic_favicons=probabilistic_favicons)
+                           captures=captures, mimetype=mimetype, b64_favicon=b64_favicon,
+                           mmh3_shodan=mmh3_shodan)
 
 
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])
