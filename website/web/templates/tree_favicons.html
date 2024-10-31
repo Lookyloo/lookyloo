@@ -28,7 +28,7 @@ if (downloadFavicons) {
  </tr>
 </thead>
 <tbody>
-  {% for favicon_sha512, freq, number_captures, mimetype, b64_favicon, mmh3_shodan in favicons %}
+  {% for favicon_sha512, number_captures, mimetype, b64_favicon, mmh3_shodan in favicons %}
   <tr>
     <td>{{ number_captures }}</td>
     <td>

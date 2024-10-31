@@ -446,7 +446,7 @@ def get_favicon_investigator(favicon_sha512: str,
                              /) -> tuple[list[tuple[str, str, str, datetime]],
                                          tuple[str, str, str]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_favicon(favicon_sha512)])
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_favicon(favicon_sha512)])
     captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
     favicon = get_indexing(flask_login.current_user).get_favicon(favicon_sha512)
     if favicon:
@@ -1285,11 +1285,10 @@ def tree_favicons(tree_uuid: str) -> str:
                 continue
             mimetype = from_string(favicon, mime=True)
             favicon_sha512 = hashlib.sha512(favicon).hexdigest()
-            frequency = get_indexing(flask_login.current_user).favicon_frequency(favicon_sha512)
-            number_captures = get_indexing(flask_login.current_user).favicon_number_captures(favicon_sha512)
+            number_captures = get_indexing(flask_login.current_user).get_captures_favicon_count(favicon_sha512)
             b64_favicon = base64.b64encode(favicon).decode()
             mmh3_shodan = lookyloo.compute_mmh3_shodan(favicon)
-            favicons.append((favicon_sha512, frequency, number_captures, mimetype, b64_favicon, mmh3_shodan))
+            favicons.append((favicon_sha512, number_captures, mimetype, b64_favicon, mmh3_shodan))
     return render_template('tree_favicons.html', tree_uuid=tree_uuid, favicons=favicons)
 
 
@@ -1431,13 +1430,13 @@ def hhhashes_lookup() -> str:
 @app.route('/favicons', methods=['GET'])
 def favicons_lookup() -> str:
     favicons = []
-    for sha512, freq in get_indexing(flask_login.current_user).favicons:
+    for sha512 in get_indexing(flask_login.current_user).favicons:
         favicon = get_indexing(flask_login.current_user).get_favicon(sha512)
         if not favicon:
             continue
         favicon_b64 = base64.b64encode(favicon).decode()
-        nb_captures = get_indexing(flask_login.current_user).favicon_number_captures(sha512)
-        favicons.append((sha512, freq, nb_captures, favicon_b64))
+        nb_captures = get_indexing(flask_login.current_user).get_captures_favicon_count(sha512)
+        favicons.append((sha512, nb_captures, favicon_b64))
     return render_template('favicons.html', favicons=favicons)
 
 

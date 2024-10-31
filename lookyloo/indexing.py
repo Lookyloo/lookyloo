@@ -147,7 +147,7 @@ class Indexing():
                 self.index_hhhashes_capture(ct)
             if not indexed[4]:
                 self.logger.info(f'Indexing favicons for {uuid_to_index}')
-                self.index_favicons_capture(uuid_to_index, directory)
+                self.index_favicons_capture(ct, directory)
             if not indexed[5]:
                 self.logger.info(f'Indexing identifiers for {uuid_to_index}')
                 self.index_identifiers_capture(ct)
@@ -618,22 +618,27 @@ class Indexing():
 
     # ###### favicons ######
 
+    def _reindex_favicons(self, favicon_sha512: str) -> None:
+        # We changed the format of the indexes, so we need to make sure they're re-triggered.
+        pipeline = self.redis.pipeline()
+        if self.redis.type(f'favicons|{favicon_sha512}|captures') == 'set':  # type: ignore[no-untyped-call]
+            pipeline.srem('indexed_favicons', *self.redis.smembers(f'favicons|{favicon_sha512}|captures'))
+            pipeline.delete(f'favicons|{favicon_sha512}|captures')
+        if self.redis.type('favicons') == 'zset':  # type: ignore[no-untyped-call]
+            pipeline.delete('favicons')
+        pipeline.execute()
+
     @property
-    def favicons(self) -> list[tuple[str, float]]:
-        return self.redis.zrevrange('favicons', 0, 200, withscores=True)
+    def favicons(self) -> set[str]:
+        return self.redis.smembers('favicons')
 
-    def favicon_frequency(self, favicon_sha512: str) -> float | None:
-        return self.redis.zscore('favicons', favicon_sha512)
-
-    def favicon_number_captures(self, favicon_sha512: str) -> int:
-        return self.redis.scard(f'favicons|{favicon_sha512}|captures')
-
-    def index_favicons_capture(self, capture_uuid: str, capture_dir: Path) -> None:
-        if self.redis.sismember('indexed_favicons', capture_uuid):
+    def index_favicons_capture(self, crawled_tree: CrawledTree, capture_dir: Path) -> None:
+        if self.redis.sismember('indexed_favicons', crawled_tree.uuid):
             # Do not reindex
             return
-        self.redis.sadd('indexed_favicons', capture_uuid)
-        self.logger.debug(f'Indexing favicons for {capture_uuid} ... ')
+        self.redis.sadd('indexed_favicons', crawled_tree.uuid)
+        self.logger.debug(f'Indexing favicons for {crawled_tree.uuid} ... ')
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
         pipeline = self.redis.pipeline()
         for favicon_path in sorted(list(capture_dir.glob('*.potential_favicons.ico'))):
             with favicon_path.open('rb') as f:
@@ -642,16 +647,35 @@ class Indexing():
                     # Empty file, ignore.
                     continue
                 sha = hashlib.sha512(favicon).hexdigest()
-                if not self.redis.sismember('favicons|{sha}|captures', capture_uuid):
-                    # Do not count the same favicon more than once for the same capture
-                    pipeline.zincrby('favicons', 1, sha)
-                    pipeline.sadd(f'favicons|{sha}|captures', capture_uuid)
-                    # There is no easi access to the favicons unless we store them in redis
+                self._reindex_favicons(sha)
+                pipeline.sadd(f'{internal_index}|favicons', sha)  # Only used to delete index
+                pipeline.zadd(f'favicons|{sha}|captures',
+                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+                if not self.redis.sismember('favicon', sha):
+                    pipeline.sadd('favicons', sha)
+                    # There is no easy access to the favicons unless we store them in redis
                     pipeline.set(f'favicons|{sha}', favicon)
         pipeline.execute()
 
-    def get_captures_favicon(self, favicon_sha512: str) -> set[str]:
-        return self.redis.smembers(f'favicons|{favicon_sha512}|captures')
+    def get_captures_favicon(self, favicon_sha512: str, most_recent_capture: datetime | None=None,
+                             oldest_capture: datetime | None = None) -> list[tuple[str, float]]:
+        """Get all the captures for a specific favicon, on a time interval starting from the most recent one.
+
+        :param favicon_sha512: The favicon hash
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 15 days ago.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        return self.redis.zrevrangebyscore(f'favicons|{favicon_sha512}|captures', max_score, min_score, withscores=True)
+
+    def get_captures_favicon_count(self, favicon_sha512: str) -> int:
+        if self.redis.type(f'favicons|{favicon_sha512}|captures') == 'set':  # type: ignore[no-untyped-call]
+            # triggers the re-index soon.
+            self.redis.srem('indexed_favicons', *self.redis.smembers(f'favicons|{favicon_sha512}|captures'))
+            self.redis.delete(f'favicons|{favicon_sha512}|captures')
+            return 0
+        return self.redis.zcard(f'favicons|{favicon_sha512}|captures')
 
     def get_favicon(self, favicon_sha512: str) -> bytes | None:
         return self.redis_bytes.get(f'favicons|{favicon_sha512}')

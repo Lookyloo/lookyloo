@@ -21,19 +21,17 @@
     <thead>
      <tr>
        <th>Favicon</th>
-       <th style="width:10%">Frequency</th>
        <th style="width:10%">Number of captures</th>
      </tr>
     </thead>
     <tbody>
-      {% for favicon_sha512, freq, number_captures, b64_favicon in favicons %}
+      {% for favicon_sha512, number_captures, b64_favicon in favicons %}
       <tr>
         <td >
           <a href="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512) }}">
               <img src="data:image/ico;base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
           </a>
         </td>
-        <td>{{ freq }}</td>
         <td>{{ number_captures }}</td>
       </tr>
       {% endfor %}
