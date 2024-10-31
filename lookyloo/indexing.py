@@ -86,6 +86,10 @@ class Indexing():
             # internal_index can be "tlds"
             for entry in self.redis.smembers(f'capture_indexes|{capture_uuid}|{internal_index}'):
                 # entry can be a "com", we delete a set of UUIDs, remove from the captures set
+                for i in self.redis.smembers(f'capture_indexes|{capture_uuid}|{internal_index}|{entry}'):
+                    # optional, but present in the identifiers, entry is the itentifier type,
+                    # i is the value
+                    p.zrem(f'identifiers|{entry}|{i}|captures', capture_uuid)
                 p.delete(f'capture_indexes|{capture_uuid}|{internal_index}|{entry}')
                 p.zrem(f'{internal_index}|{entry}|captures', capture_uuid)
             p.delete(f'capture_indexes|{capture_uuid}|{internal_index}')
@@ -246,12 +250,6 @@ class Indexing():
         if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|cookies_names|{cookie_name}'):
             return set(url_nodes)
         return set()
-
-    def cookies_names_domains_values(self, cookie_name: str, domain: str) -> list[tuple[str, float]]:
-        return self.redis.zrevrange(f'cn|{cookie_name}|{domain}', 0, -1, withscores=True)
-
-    def get_cookie_domains(self, cookie_name: str) -> list[tuple[str, float]]:
-        return self.redis.zrevrange(f'cn|{cookie_name}', 0, -1, withscores=True)
 
     # ###### Body hashes ######
 
@@ -766,54 +764,86 @@ class Indexing():
 
     # ###### identifiers ######
 
+    def _reindex_identifiers(self, identifier_type: str, identifier: str) -> None:
+        # We changed the format of the indexes, so we need to make sure they're re-triggered.
+        if self.redis.type(f'identifiers|{identifier_type}|{identifier}|captures') == 'set':  # type: ignore[no-untyped-call]
+            all_uuids = self.redis.smembers(f'identifiers|{identifier_type}|{identifier}|captures')
+            self.redis.srem('indexed_identifiers', *all_uuids)
+            self.redis.delete(f'identifiers|{identifier_type}|{identifier}|captures')
+        if self.redis.type(f'identifiers|{identifier_type}') == 'zset':  # type: ignore[no-untyped-call]
+            self.redis.delete(f'identifiers|{identifier_type}')
+
     def identifiers_types(self) -> set[str]:
         return self.redis.smembers('identifiers_types')
 
-    def identifiers(self, identifier_type: str) -> list[tuple[str, float]]:
-        return self.redis.zrevrange(f'identifiers|{identifier_type}', 0, 200, withscores=True)
-
-    def identifier_frequency(self, identifier_type: str, identifier: str) -> float | None:
-        return self.redis.zscore(f'identifiers|{identifier_type}', identifier)
-
-    def identifier_number_captures(self, identifier_type: str, identifier: str) -> int:
-        return self.redis.scard(f'identifiers|{identifier_type}|{identifier}|captures')
+    def identifiers(self, identifier_type: str) -> set[str]:
+        return self.redis.smembers(f'identifiers|{identifier_type}')
 
     def index_identifiers_capture(self, crawled_tree: CrawledTree) -> None:
-        capture_uuid = crawled_tree.uuid
-        if self.redis.sismember('indexed_identifiers', capture_uuid):
+        if self.redis.sismember('indexed_identifiers', crawled_tree.uuid):
             # Do not reindex
             return
-        self.redis.sadd('indexed_identifiers', capture_uuid)
+        self.logger.debug(f'Indexing identifiers for {crawled_tree.uuid} ... ')
+        self.redis.sadd('indexed_identifiers', crawled_tree.uuid)
         if (not hasattr(crawled_tree.root_hartree.rendered_node, 'identifiers')
                 or not crawled_tree.root_hartree.rendered_node.identifiers):
             return
+
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+
         pipeline = self.redis.pipeline()
+        already_indexed_global: set[str] = set()
         # We have multiple identifiers types, this is the difference with the other indexes
         for identifier_type, id_values in crawled_tree.root_hartree.rendered_node.identifiers.items():
-            pipeline.sadd('identifiers_types', identifier_type)  # no-op if already there
-            if self.redis.sismember(f'indexed_identifiers|{identifier_type}|captures', capture_uuid):
-                # Do not reindex the same identifier type for the same capture
+            if not id_values:
+                # Got a type, but no values, skip.
                 continue
-            pipeline.sadd(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
-            self.logger.debug(f'Indexing identifiers {identifier_type} for {capture_uuid} ... ')
+            self.logger.debug(f'Indexing identifiers {identifier_type} for {crawled_tree.uuid} ... ')
+            if not already_indexed_global:
+                # First identifier with an entry
+                pipeline.sadd(internal_index, 'identifiers')
+            already_indexed_global.add(identifier_type)
+            pipeline.sadd(f'{internal_index}|identifiers', identifier_type)
+            pipeline.sadd('identifiers_types', identifier_type)  # no-op if already there
+            pipeline.zadd(f'identifiers|{identifier_type}|captures',
+                          mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
             for identifier in id_values:
-                if self.redis.sismember(f'identifiers|{identifier_type}|{identifier}|captures', capture_uuid):
-                    # Already counted this specific identifier for this capture
-                    continue
-                pipeline.sadd(f'identifiers|{capture_uuid}', identifier_type)
-                pipeline.sadd(f'identifiers|{capture_uuid}|{identifier_type}', identifier)
-                pipeline.sadd(f'identifiers|{identifier_type}|{identifier}|captures', capture_uuid)
-                pipeline.zincrby(f'identifiers|{identifier_type}', 1, identifier)
+                self._reindex_identifiers(identifier_type, identifier)
+                pipeline.sadd(f'{internal_index}|identifiers|{identifier_type}', identifier)
+                pipeline.sadd(f'identifiers|{identifier_type}', identifier)
+                pipeline.zadd(f'identifiers|{identifier_type}|{identifier}|captures',
+                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
         pipeline.execute()
 
     def get_identifiers_capture(self, capture_uuid: str) -> dict[str, set[str]]:
         to_return = {}
-        for identifier_type in self.redis.smembers(f'identifiers|{capture_uuid}'):
-            to_return[identifier_type] = self.redis.smembers(f'identifiers|{capture_uuid}|{identifier_type}')
+        internal_index = f'capture_indexes|{capture_uuid}'
+        for identifier_type in self.redis.smembers(f'{internal_index}|identifiers'):
+            to_return[identifier_type] = self.redis.smembers(f'{internal_index}|identifiers|{identifier_type}')
         return to_return
 
-    def get_captures_identifier(self, identifier_type: str, identifier: str) -> set[str]:
-        return self.redis.smembers(f'identifiers|{identifier_type}|{identifier}|captures')
+    def get_captures_identifier(self, identifier_type: str, identifier: str,
+                                most_recent_capture: datetime | None=None,
+                                oldest_capture: datetime | None=None) -> list[tuple[str, float]]:
+        """Get all the captures for a specific identifier of a specific type,
+        on a time interval starting from the most recent one.
+
+        :param identifier_type: The type of identifier
+        :param identifier: The identifier
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 5 days ago.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=5)).timestamp()
+        if self.redis.type(f'identifiers|{identifier_type}|{identifier}|captures') == 'set':  # type: ignore[no-untyped-call]
+            # triggers the re-index soon.
+            self.redis.srem('indexed_identifiers', *self.redis.smembers(f'identifiers|{identifier_type}|{identifier}|captures'))
+            self.redis.delete(f'identifiers|{identifier_type}|{identifier}|captures')
+            return []
+        return self.redis.zrevrangebyscore(f'identifiers|{identifier_type}|{identifier}|captures', max_score, min_score, withscores=True)
+
+    def get_captures_identifier_count(self, identifier_type: str, identifier: str) -> int:
+        return self.redis.zcard(f'identifiers|{identifier_type}|{identifier}|captures')
 
     # ###### favicons probabilistic hashes ######
 

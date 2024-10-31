@@ -431,7 +431,7 @@ def get_cookie_name_investigator(cookie_name: str, /) -> list[tuple[str, str, da
 
 
 def get_identifier_investigator(identifier_type: str, identifier: str) -> list[tuple[str, str, str, datetime]]:
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid in get_indexing(flask_login.current_user).get_captures_identifier(identifier_type=identifier_type, identifier=identifier)])
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_identifier(identifier_type=identifier_type, identifier=identifier)])
     return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
@@ -1292,7 +1292,7 @@ def tree_identifiers(tree_uuid: str) -> str:
 
     for id_type, identifiers in get_indexing(flask_login.current_user).get_identifiers_capture(tree_uuid).items():
         for identifier in identifiers:
-            nb_captures = get_indexing(flask_login.current_user).identifier_number_captures(id_type, identifier)
+            nb_captures = get_indexing(flask_login.current_user).get_captures_identifier_count(id_type, identifier)
             to_return.append((nb_captures, id_type, identifier))
     return render_template('tree_identifiers.html', tree_uuid=tree_uuid, identifiers=to_return)
 
