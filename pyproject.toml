@@ -76,7 +76,7 @@ har2tree = "^1.26.3"
 passivetotal = "^2.5.9"
 werkzeug = [
     { version = "<3.1", python = "<3.9"},
-    { version = "^3.0.4", python = ">=3.9"}
+    { version = "^3.1", python = ">=3.9"}
 ]
 filetype = "^1.2.0"
 pypandora = "^1.9.1"
