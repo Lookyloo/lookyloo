@@ -227,10 +227,10 @@ class Indexing():
 
         :param cookie_name: The cookie name
         :param most_recent_capture: The capture time of the most recent capture to consider
-        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 15 days ago.
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 20 days ago.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=20)).timestamp()
         if self.redis.type(f'cookies_names|{cookie_name}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_cookies', *[entry.split('|')[0] for entry in self.redis.smembers(f'cn|{cookie_name}|captures')])
@@ -663,10 +663,10 @@ class Indexing():
 
         :param favicon_sha512: The favicon hash
         :param most_recent_capture: The capture time of the most recent capture to consider
-        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 15 days ago.
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 30 days ago.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=30)).timestamp()
         return self.redis.zrevrangebyscore(f'favicons|{favicon_sha512}|captures', max_score, min_score, withscores=True)
 
     def get_captures_favicon_count(self, favicon_sha512: str) -> int:
@@ -769,10 +769,10 @@ class Indexing():
         :param hash_type: The type of hash
         :param h: The hash
         :param most_recent_capture: The capture time of the most recent capture to consider
-        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 5 days ago.
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 20 days ago.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=5)).timestamp()
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=20)).timestamp()
         return self.redis.zrevrangebyscore(f'capture_hash_types|{hash_type}|{h}|captures', max_score, min_score, withscores=True)
 
     def get_captures_hash_type_count(self, hash_type: str, h: str) -> int:
@@ -850,10 +850,10 @@ class Indexing():
         :param identifier_type: The type of identifier
         :param identifier: The identifier
         :param most_recent_capture: The capture time of the most recent capture to consider
-        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 5 days ago.
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 30 days ago.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=5)).timestamp()
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=30)).timestamp()
         if self.redis.type(f'identifiers|{identifier_type}|{identifier}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_identifiers', *self.redis.smembers(f'identifiers|{identifier_type}|{identifier}|captures'))
