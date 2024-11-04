@@ -65,7 +65,7 @@ Pillow = [
     {version = "^11", python = ">=3.9"}
 ]
 flask-restx = "^1.3.0"
-rich = "^13.9.3"
+rich = "^13.9.4"
 pyphishtanklookup = "^1.4.0"
 Flask-Cors = "^5.0.0"
 pyhashlookup = "^1.2.5"
@@ -83,7 +83,7 @@ pypandora = "^1.9.1"
 lacuscore = "^1.11.3"
 pylacus = "^1.11.1"
 pyipasnhistory = "^2.1.2"
-publicsuffixlist = "^1.0.2.20241029"
+publicsuffixlist = "^1.0.2.20241102"
 pyfaup = "^1.2"
 chardet = "^5.2.0"
 pysecuritytxt = "^1.3.2"
@@ -122,7 +122,7 @@ types-python-dateutil = "^2.9.0.20241003"
 types-beautifulsoup4 = "^4.12.0.20241020"
 types-Pillow = "^10.2.0.20240822"
 types-pytz = "^2024.2.0.20241003"
-types-psutil = "^6.1.0.20241022"
+types-psutil = "^6.1.0.20241102"
 
 [build-system]
 requires = ["poetry_core"]
