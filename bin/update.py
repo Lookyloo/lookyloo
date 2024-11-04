@@ -10,7 +10,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-from lookyloo.default import get_homedir, get_config
+try:
+    from lookyloo.default import get_homedir, get_config
+except ImportError as e:
+    print(f'Unable to run the update script, it is probably due to a missing dependency: {e}')
+    print('Please run "poetry install" and try again.')
+    sys.exit()
+
 
 logging.config.dictConfig(get_config('logging'))
 
