@@ -707,7 +707,7 @@ def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | R
         entries = t.search(query)
         if entries:
             matching_categories = {e: t.revert_machinetag(e) for e in entries}
-    current_categories = lookyloo.categories_capture(tree_uuid)
+    current_categories = get_indexing(flask_login.current_user).get_capture_categories(tree_uuid)
     return render_template('categories_capture.html', tree_uuid=tree_uuid,
                            current_categories=current_categories,
                            matching_categories=matching_categories)

@@ -831,14 +831,11 @@ class RecentCaptures(Resource):  # type: ignore[misc]
          params={'category': 'The category according to which the uuids are to be returned.'},
          required=False)
 class CategoriesCaptures(Resource):  # type: ignore[misc]
-    def get(self, category: str | None=None) -> list[str] | dict[str, list[str]] | tuple[dict[str, str], int]:
-        existing_categories = get_indexing(flask_login.current_user).categories
+    def get(self, category: str | None=None) -> list[str] | dict[str, list[str]]:
         if category:
-            if category not in existing_categories:
-                return {'error': f'Invalid category: {category}, must be in {", ".join(existing_categories)}.'}, 400
-            return list(get_indexing(flask_login.current_user).get_captures_category(category))
-        return {c: list(get_indexing(flask_login.current_user).get_captures_category(c))
-                for c in existing_categories}
+            return [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_category(category)]
+        return {c: [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_category(c)]
+                for c in get_indexing(flask_login.current_user).categories}
 
 
 # NOTE: there are a few extra paramaters we may want to add in the future: most recent/oldest capture

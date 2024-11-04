@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 
 from datetime import datetime, timedelta
 
@@ -153,7 +154,7 @@ class Indexing():
                 self.index_identifiers_capture(ct)
             if not indexed[6]:
                 self.logger.info(f'Indexing categories for {uuid_to_index}')
-                self.index_categories_capture(uuid_to_index, directory)
+                self.index_categories_capture(ct, directory)
             if not indexed[7]:
                 self.logger.info(f'Indexing TLDs for {uuid_to_index}')
                 self.index_tld_capture(ct)
@@ -866,44 +867,85 @@ class Indexing():
 
     # ###### Categories ######
 
+    def _reindex_categories(self, category: str) -> None:
+        # the old format was adding the capture without a prefix, so we can use that to remove the old indexes
+        # the hardcoded categories only contained lowercase ascii and "-", ignore any other key
+        if not re.match(r'^[a-z-]+$', category):
+            return
+        if not self.redis.exists(category):
+            return
+        if self.redis.type(category) != 'set':  # type: ignore[no-untyped-call]
+            return
+        captures_to_reindex = self.redis.smembers(category)
+        pipeline = self.redis.pipeline()
+        pipeline.srem('indexed_categories', *captures_to_reindex)
+        pipeline.delete(category)
+        pipeline.execute()
+
     @property
     def categories(self) -> set[str]:
         return self.redis.smembers('categories')
 
-    def index_categories_capture(self, capture_uuid: str, capture_dir: Path) -> None:
-        if self.redis.sismember('indexed_categories', capture_uuid):
+    def index_categories_capture(self, crawled_tree: CrawledTree, capture_dir: Path) -> None:
+        if self.redis.sismember('indexed_categories', crawled_tree.uuid):
             # do not reindex
             return
-        # Make sure we don't reindex
-        self.redis.sadd('indexed_categories', capture_uuid)
+        self.redis.sadd('indexed_categories', crawled_tree.uuid)
+        self.logger.debug(f'Indexing captures for {crawled_tree.uuid} ... ')
+
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        check_if_exists = set()
+        # Remove all the old categories if any
+        pipeline = self.redis.pipeline()
+        for old_category in self.redis.smembers(f'{internal_index}|categories'):
+            self._reindex_categories(old_category)
+            pipeline.zrem(f'categories|{old_category}|captures', crawled_tree.uuid)
+            # after we run the pipeline, we can check if f'categories|{old_category}|captures' exists
+            # and remove old_category from the existing categories
+            check_if_exists.add(old_category)
+        pipeline.delete(f'{internal_index}|categories')
 
         categ_file = capture_dir / 'categories'
-        if categ_file.exists():
-            with categ_file.open('r') as f:
-                capture_categories = [c.strip() for c in f.readlines()]
-        else:
+        if not categ_file.exists():
+            pipeline.execute()
             return
 
-        added_in_existing_categories = set()
+        with categ_file.open('r') as f:
+            capture_categories = [c.strip() for c in f.readlines()]
+
+        for c in capture_categories:
+            pipeline.sadd('categories', c)
+            pipeline.sadd(f'{internal_index}|categories', c)
+            pipeline.zadd(f'categories|{c}|captures',
+                          mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+        pipeline.execute()
         pipeline = self.redis.pipeline()
-        for c in self.categories:
-            if c in capture_categories:
-                pipeline.sadd(c, capture_uuid)
-                added_in_existing_categories.add(c)
-            else:
-                # the capture is not in that category, srem is as cheap as exists if not in the set
-                pipeline.srem(c, capture_uuid)
-        # Handle the new categories
-        for new_c in set(capture_categories) - added_in_existing_categories:
-            pipeline.sadd(new_c, capture_uuid)
-            pipeline.sadd('categories', new_c)
+        for c in check_if_exists:
+            if not self.redis.exists(f'categories|{c}|captures'):
+                pipeline.srem('categories', c)
         pipeline.execute()
 
-    def get_captures_category(self, category: str) -> set[str]:
-        return self.redis.smembers(category)
+    def get_captures_category(self, category: str, most_recent_capture: datetime | None=None,
+                              oldest_capture: datetime | None = None) -> list[tuple[str, float]]:
+        """Get all the captures for a specific category, on a time interval starting from the most recent one.
+
+        :param category: The category
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 30 days ago.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=30)).timestamp()
+        return self.redis.zrevrangebyscore(f'categories|{category}|captures', max_score, min_score, withscores=True)
+
+    def get_capture_categories(self, capture_uuid: str) -> set[str]:
+        return self.redis.smembers(f'capture_indexes|{capture_uuid}|categories')
+
+    def get_captures_category_count(self, category: str) -> int:
+        return self.redis.zcard(f'categories|{category}|captures')
 
     def capture_in_category(self, capture_uuid: str, category: str) -> bool:
-        return self.redis.sismember(category, capture_uuid)
+        return self.redis.zscore(f'categories|{category}|captures', capture_uuid) is not None
 
     def reindex_categories_capture(self, capture_uuid: str) -> None:
         self.redis.srem('indexed_categories', capture_uuid)
