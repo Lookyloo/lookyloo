@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 import time
 from pathlib import Path
 from subprocess import Popen
@@ -29,7 +30,15 @@ def launch_cache(storage_directory: Path | None=None) -> None:
     if not storage_directory:
         storage_directory = get_homedir()
     if not check_running('cache'):
-        Popen(["./run_redis.sh"], cwd=(storage_directory / 'cache'))
+        process = Popen(["./run_redis.sh"], cwd=(storage_directory / 'cache'))
+        try:
+            # Give time for the process to start (and potentailly fail)
+            process.wait(timeout=5)
+        except TimeoutError:
+            pass
+        process.poll()
+        if process.returncode == 1:
+            raise Exception('Failed to start Redis cache database.')
 
 
 def shutdown_cache(storage_directory: Path | None=None) -> None:
@@ -44,7 +53,15 @@ def launch_indexing(storage_directory: Path | None=None) -> None:
     if not storage_directory:
         storage_directory = get_homedir()
     if not check_running('indexing'):
-        Popen(["./run_redis.sh"], cwd=(storage_directory / 'indexing'))
+        process = Popen(["./run_redis.sh"], cwd=(storage_directory / 'indexing'))
+        try:
+            # Give time for the process to start (and potentailly fail)
+            process.wait(timeout=5)
+        except TimeoutError:
+            pass
+        process.poll()
+        if process.returncode == 1:
+            raise Exception('Failed to start Redis indexing database.')
 
 
 def shutdown_indexing(storage_directory: Path | None=None) -> None:
@@ -59,7 +76,15 @@ def launch_full_index(storage_directory: Path | None=None) -> None:
     if not storage_directory:
         storage_directory = get_homedir()
     if not check_running('full_index'):
-        Popen(["./run_kvrocks.sh"], cwd=(storage_directory / 'full_index'))
+        process = Popen(["./run_kvrocks.sh"], cwd=(storage_directory / 'full_index'))
+        try:
+            # Give time for the process to start (and potentailly fail)
+            process.wait(timeout=5)
+        except TimeoutError:
+            pass
+        process.poll()
+        if process.returncode == 1:
+            raise Exception('Failed to start Kvrocks full indexing database.')
 
 
 def shutdown_full_index(storage_directory: Path | None=None) -> None:
@@ -116,7 +141,11 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.start:
-        launch_all()
+        try:
+            launch_all()
+        except Exception as e:
+            print(f"Failed to start some DBs: {e}")
+            sys.exit(1)
     if args.stop:
         stop_all()
     if not args.stop and args.status:

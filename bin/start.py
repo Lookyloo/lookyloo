@@ -10,7 +10,11 @@ def main() -> None:
     get_homedir()
     print('Start backend (redis)...')
     p = run(['run_backend', '--start'])
-    p.check_returncode()
+    try:
+        p.check_returncode()
+    except Exception:
+        print('Failed to start the backend, exiting.')
+        return
     print('done.')
     print('Start archiving process...')
     Popen(['archiver'])
