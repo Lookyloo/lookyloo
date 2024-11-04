@@ -65,7 +65,7 @@ Pillow = [
     {version = "^11", python = ">=3.9"}
 ]
 flask-restx = "^1.3.0"
-rich = "^13.9.3"
+rich = "^13.9.4"
 pyphishtanklookup = "^1.4.0"
 Flask-Cors = "^5.0.0"
 pyhashlookup = "^1.2.5"
