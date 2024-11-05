@@ -257,10 +257,11 @@ class MISP(AbstractModule):
             tld = self.psl.publicsuffix(hostnode.name)
             domain = re.sub(f'.{tld}$', '', hostnode.name).split('.')[-1]
             to_lookup = [node.name, hostnode.name, f'{domain}.{tld}']
-            if 'v4' in hostnode.resolved_ips:
-                to_lookup += hostnode.resolved_ips['v4']
-            if 'v6' in hostnode.resolved_ips:
-                to_lookup += hostnode.resolved_ips['v6']
+            if hasattr(hostnode, 'resolved_ips'):
+                if 'v4' in hostnode.resolved_ips:
+                    to_lookup += hostnode.resolved_ips['v4']
+                if 'v6' in hostnode.resolved_ips:
+                    to_lookup += hostnode.resolved_ips['v6']
             if hasattr(hostnode, 'cnames'):
                 to_lookup += hostnode.cnames
             if not node.empty_response:
