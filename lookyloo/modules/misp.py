@@ -8,7 +8,8 @@ import re
 from io import BytesIO
 from collections import defaultdict
 from collections.abc import Mapping
-from typing import Any, TYPE_CHECKING, Iterator
+from typing import Any, TYPE_CHECKING
+from collections.abc import Iterator
 
 import requests
 from har2tree import HostNode, URLNode, Har2TreeError
@@ -93,11 +94,13 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
 
             initial_file = FileObject(pseudofile=pseudofile, filename=filename)
             initial_file.comment = 'This is a capture of a file, rendered in the browser'
+            initial_file.first_seen = cache.timestamp
             initial_obj = event.add_object(initial_file)
         else:
             event.info = f'Lookyloo Capture ({cache.url})'
             initial_url = URLObject(cache.url)
             initial_url.comment = 'Submitted URL'
+            initial_url.first_seen = cache.timestamp
             self.__misp_add_ips_to_URLObject(initial_url, cache.tree.root_hartree.hostname_tree)
             initial_obj = event.add_object(initial_url)
 
@@ -132,6 +135,7 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
             fo = FileObject(pseudofile=cache.tree.root_hartree.rendered_node.body, filename=cache.tree.root_hartree.rendered_node.filename)
             fo.comment = 'Content received for the final redirect (before rendering)'
             fo.add_reference(final_redirect, 'loaded-by', 'URL loading that content')
+            fo.first_seen = cache.tree.root_hartree.rendered_node.start_time
             event.add_object(fo)
         except Har2TreeError:
             pass
@@ -143,9 +147,14 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
     def __misp_add_ips_to_URLObject(self, obj: URLObject, hostname_tree: HostNode) -> None:
         hosts = obj.get_attributes_by_relation('host')
         if hosts:
-            hostnodes = hostname_tree.search_nodes(name=hosts[0].value)
-            if hostnodes and hasattr(hostnodes[0], 'resolved_ips'):
-                obj.add_attributes('ip', *hostnodes[0].resolved_ips)
+            if hostnodes := hostname_tree.search_nodes(name=hosts[0].value):
+                first_host = hostnodes[0]
+                obj.first_seen = first_host.urls[0].start_time
+                if hasattr(first_host, 'resolved_ips'):
+                    if 'v4' in hostnodes[0].resolved_ips:
+                        obj.add_attributes('ip', *first_host.resolved_ips['v4'])
+                    if 'v6' in hostnodes[0].resolved_ips:
+                        obj.add_attributes('ip', *first_host.resolved_ips['v6'])
 
 
 class MISP(AbstractModule):
