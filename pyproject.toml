@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lookyloo"
-version = "1.26.1"
+version = "1.27.0"
 description = "Web interface to track the trackers."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
@@ -38,32 +38,23 @@ scripts_controller = "bin.scripts_controller:main"
 
 
 [tool.poetry.dependencies]
-python = ">=3.8.1,<3.13"
+python = ">=3.9,<3.14"
 requests = "^2.32.3"
 flask = "^3.0.3"
 gunicorn = {version = "^23.0.0", extras = ["setproctitle"]}
 charset-normalizer = "^3.4.0"
 redis = {version = "^5.2.0", extras = ["hiredis"]}
 beautifulsoup4 = {version = "^4.12.3", extras = ["lxml", "charset_normalizer"]}
-bootstrap-flask = [
-    {version = "<2.5", python = "<3.9"},
-    {version = "^2.4.1", python = ">=3.9"}
-]
+bootstrap-flask = "^2.4.1"
 defang = "^0.5.3"
 vt-py = "^0.18.0"
 pyeupi = "^1.3.0"
 pysanejs = "^2.0.2"
 pylookyloo = "^1.26.1"
-dnspython = [
-    {version = "<2.7",  python = "<3.9"},
-    {version = "^2.7.0", python = ">=3.9"}
-]
+dnspython = "^2.7.0"
 pytaxonomies = "^1.5.0"
 pymisp = {version = "^2.5.1", extras = ["url", "fileobjects"]}
-Pillow = [
-    {version = "<11",  python = "<3.9"},
-    {version = "^11", python = ">=3.9"}
-]
+Pillow = "^11.0.0"
 flask-restx = "^1.3.0"
 rich = "^13.9.4"
 pyphishtanklookup = "^1.4.0"
@@ -72,27 +63,23 @@ pyhashlookup = "^1.2.5"
 lief = "^0.15"
 ua-parser = "^0.18.0"
 Flask-Login = "^0.6.3"
-har2tree = "^1.26.3"
+har2tree = "^1.27.0"
 passivetotal = "^2.5.9"
-werkzeug = [
-    { version = "<3.1", python = "<3.9"},
-    { version = "^3.1", python = ">=3.9"}
-]
+werkzeug = "^3.1.2"
 filetype = "^1.2.0"
 pypandora = "^1.9.1"
-lacuscore = "^1.11.3"
-pylacus = "^1.11.1"
+lacuscore = "^1.12.0"
+pylacus = "^1.12.0"
 pyipasnhistory = "^2.1.2"
 publicsuffixlist = "^1.0.2.20241102"
 pyfaup = "^1.2"
 chardet = "^5.2.0"
 pysecuritytxt = "^1.3.2"
 pylookyloomonitoring = "^1.1.4"
-pytz = {"version" = "^2024.2", python = "<3.9"}
 s3fs = "^2024.10.0"
 urllib3 = [
     {version = "<2", python = "<3.10"},
-    {version = "^2.0.7", python = ">=3.10"}
+    {version = "^2.2.3", python = ">=3.10"}
 ]
 pypdns = "^2.2.7"
 mmh3 = "^5.0.1"
@@ -100,21 +87,17 @@ puremagic = "^1.28"
 psutil = "^6.1.0"
 flask-talisman = "^1.1.0"
 
-aiohttp = [
-    {extras = ["speedups"], version = "<3.11", python = "<3.9"},
-    {extras = ["speedups"], version = "^3.10.10", python = ">=3.9"}
-]
+aiohttp = {extras = ["speedups"], version = "^3.10.10"}
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.13.0"
 ipython = [
-    {version = "<8.13.0", python = "<3.9"},
-    {version = "^8.18.0", python = ">=3.9"},
+    {version = "<8.19.0", python = "<3.10"},
     {version = "^8.19.0", python = ">=3.10"}
 ]
 types-requests = [
-    {version = "<2.31", python = "<3.10"},
-    {version = "^2.31.0.10", python = ">=3.10"}
+    {version = "<2.32", python = "<3.10"},
+    {version = "^2.32", python = ">=3.10"}
 ]
 types-redis = {version = "^4.6.0.20241004"}
 types-Deprecated = "^1.2.9.20240311"

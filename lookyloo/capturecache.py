@@ -20,7 +20,8 @@ from datetime import datetime
 from functools import _CacheInfo as CacheInfo
 from logging import LoggerAdapter
 from pathlib import Path
-from typing import Any, MutableMapping, Iterator
+from typing import Any
+from collections.abc import MutableMapping, Iterator
 
 import dns.rdatatype
 from dns.resolver import Cache

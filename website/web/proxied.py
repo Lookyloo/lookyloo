@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-from typing import Any, MutableMapping
+from typing import Any
+from collections.abc import MutableMapping
 
 
 class ReverseProxied():

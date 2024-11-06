@@ -20,7 +20,8 @@ from email.message import EmailMessage
 from functools import cached_property
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Iterable, TYPE_CHECKING, overload, Literal
+from typing import Any, TYPE_CHECKING, overload, Literal
+from collections.abc import Iterable
 from urllib.parse import urlparse
 from uuid import uuid4
 from zipfile import ZipFile

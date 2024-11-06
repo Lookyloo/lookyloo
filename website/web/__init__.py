@@ -20,7 +20,8 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from importlib.metadata import version
 from io import BytesIO, StringIO
-from typing import Any, TypedDict, Iterable
+from typing import Any, TypedDict
+from collections.abc import Iterable
 from urllib.parse import quote_plus, unquote_plus, urlparse
 from uuid import uuid4
 from zipfile import ZipFile
@@ -47,11 +48,8 @@ from lookyloo.helpers import (UserAgents, load_cookies,
                               get_taxonomies
                               )
 
-if sys.version_info < (3, 9):
-    from pytz import all_timezones_set
-else:
-    from zoneinfo import available_timezones
-    all_timezones_set = available_timezones()
+from zoneinfo import available_timezones
+all_timezones_set = available_timezones()
 
 from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
