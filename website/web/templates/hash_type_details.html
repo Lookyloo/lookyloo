@@ -1,21 +1,4 @@
 {% from "macros.html" import shorten_string %}
-
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-  new DataTable('#hashTypeDetailsTable', {
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '30%',
-                   targets: 0,
-                   render: (data) => {
-                    const date = new Date(data);
-                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                   }
-                 },
-                 { width: '30%', targets: 1 },
-                 { width: '50%', targets: 2 }],
-
-  });
-</script>
-
 <center>
   <h5>{{hash_type}}: {{h}}</h5>
   <h6>Only the most recent captures are listed below, this will change soon.</h6>

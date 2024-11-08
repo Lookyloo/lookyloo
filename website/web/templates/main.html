@@ -47,6 +47,11 @@
             {{get_sri('static', 'generic.js')}}
             nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
+    <script src='{{ url_for('static', filename='render_tables.js') }}'
+            {{get_sri('static', 'render_tables.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+
     {% endblock %}
   </body>
 </html>

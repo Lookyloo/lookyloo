@@ -1,26 +1,27 @@
 {% from "macros.html" import shorten_string %}
 
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-  new DataTable('#faviconDetailsTable_{{favicon_sha512}}', {
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '30%',
-                   targets: 0,
-                   render: (data) => {
-                    const date = new Date(data);
-                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                   }
-                 },
-                 { width: '30%', targets: 1 },
-                 { width: '50%', targets: 2 }],
+{% if from_popup %}
+{% extends "main.html" %}
 
-  });
-</script>
+{% from 'bootstrap5/utils.html' import render_messages %}
+
+{% block title %}Favicon{% endblock %}
+
+{%endif%}
+
+
+{% block content %}
+
+{% if from_popup %}
+<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
+{%endif%}
+
 
 <center>
   <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
   <h5>Shodan MMH3 Hash: <a href="https://www.shodan.io/search?query=http.favicon.hash%3A{{ mmh3_shodan }}" target="_blank">{{ mmh3_shodan }}</a></h5>
 </center>
-<table id="faviconDetailsTable_{{favicon_sha512}}" class="table table-striped" style="width:100%">
+<table id="faviconDetailsTable" class="table table-striped" style="width:100%">
   <thead>
     <tr>
       <th>Capture Time</th>
@@ -48,3 +49,5 @@
     {% endfor %}
   </tbody>
 </table>
+
+{% endblock %}

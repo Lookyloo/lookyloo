@@ -1,28 +1,4 @@
 {% from "macros.html" import popup_icons_response %}
-
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-  var table = new DataTable('#bodyHashesTable', {
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '10%', targets: 0 },
-                 { width: '10%', targets: 1 },
-                 { width: '60%', targets: 2 },
-                 { width: '20%', targets: 3 }],
-    initComplete: function (settings, json) {
-      $('[data-bs-toggle="tooltip"]').tooltip({html: true});
-    }
-  }).on('draw', function() {
-    $('[data-bs-toggle="tooltip"]').tooltip({html: true});
-  });
-</script>
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-  let openNewTabButtons = document.querySelectorAll('.openNewTab');
-  if (openNewTabButtons) {
-      openNewTabButtons.forEach(el => el.addEventListener('click', event => {
-          openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
-      }));
-  }
-</script>
-
 <table id="bodyHashesTable" class="table table-striped" style="width:100%">
 <thead>
  <tr>

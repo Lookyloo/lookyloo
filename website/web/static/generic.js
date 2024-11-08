@@ -25,9 +25,35 @@ function checkAllBoxes(name) {
   }
 }
 
+function openURLInNewTab(url) {
+    let win = window.open(url, '_blank');
+    if (win == null) {
+        return false;
+    }
+    win.focus();
+    return true;
+}
+
+function openTreeInNewTab(capture_uuid, hostnode_uuid=null) {
+    let url = `/tree/${capture_uuid}`;
+    if (hostnode_uuid != null) {
+        url += `/${hostnode_uuid}`;
+    }
+    return openURLInNewTab(url);
+}
+
 const goBackButtons = document.querySelectorAll('.goBack');
 goBackButtons.forEach(el => el.addEventListener('click', event => {
   window.history.back();
+}));
+
+const openNewTabButtons = document.querySelectorAll('.openNewTab');
+openNewTabButtons.forEach(el => el.addEventListener('click', event => {
+    if (window.opener === null) {
+        return openTreeInNewTab(el.dataset.capture, el.dataset.hostnode)
+    } else {
+        return window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
+    }
 }));
 
 // Parameters:

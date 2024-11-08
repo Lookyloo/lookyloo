@@ -7,50 +7,6 @@
 
 {% block title %}{{ body_hash }}{% endblock %}
 
-{% block scripts %}
-{{ super() }}
-
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-    const openNewTabButtons = document.querySelectorAll('.openNewTab');
-    if (openNewTabButtons) {
-        openNewTabButtons.forEach(el => el.addEventListener('click', event => {
-            window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
-        }));
-    }
-</script>
-
-<script type="text/javascript"  nonce="{{ csp_nonce() }}">
-  new DataTable('#bodyHashDetailsTable', {
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '20%', targets: 0,
-                   render: (data) => {
-                    const date = new Date(data);
-                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                   }
-                 },
-                 { width: '40%', targets: 1 },
-                 { width: '40%', targets: 2 }],
-  });
-</script>
-
-{% endblock %}
-
-{%else%}
-
-<script type="text/javascript"  nonce="{{ csp_nonce() }}">
-  new DataTable('#bodyHashDetailsTable', {
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '20%', targets: 0,
-                   render: (data) => {
-                    const date = new Date(data);
-                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                   }
-                 },
-                 { width: '40%', targets: 1 },
-                 { width: '40%', targets: 2 }],
-  });
-</script>
-
 {%endif%}
 
 

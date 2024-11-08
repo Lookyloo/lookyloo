@@ -1,18 +1,5 @@
 {% from "macros.html" import popup_icons_response %}
 
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-  var table = new DataTable('#urlsTable', {
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '10%', targets: 0 },
-                 { width: '90%', targets: 1 }],
-    initComplete: function (settings, json) {
-      $('[data-bs-toggle="tooltip"]').tooltip({html: true});
-    }
-  }).on('draw', function() {
-    $('[data-bs-toggle="tooltip"]').tooltip({html: true});
-  });
-</script>
-
 <table id="urlsTable" class="table table-striped" style="width:100%">
 <thead>
  <tr>

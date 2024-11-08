@@ -1,5 +1,5 @@
 {% extends "main.html" %}
-{% block title %}Capture{% endblock %}
+{% block title %}Search{% endblock %}
 
 {% block card %}
 <meta property="og:title" content="Lookyloo" />
@@ -52,6 +52,18 @@
       <div class="col-sm-10">
         <label for="cookie" class="col-sm-2 col-form-label">Cookie name:</label>
         <input type="text" class="form-control" name="cookie" id=cookie placeholder="Cookie name to search">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-sm-10">
+        <label for="favicon_sha512" class="col-sm-2 col-form-label">Favicon SHA512:</label>
+        <input type="text" class="form-control" name="favicon_sha512" id=favicon_sha512 placeholder="SHA512 of a favicon">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-sm-10">
+        <label for="favicon_file" class="col-sm-2 col-form-label">Favicon:</label>
+        <input class="form-control" type="file" id="favicon_file" name="favicon_file">
       </div>
     </div>
     <button type="submit" class="btn btn-primary" id="btn-looking">Start looking!</button>

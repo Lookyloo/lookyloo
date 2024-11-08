@@ -11,7 +11,6 @@ import json
 import logging
 import logging.config
 import os
-import sys
 import time
 
 import filetype  # type: ignore[import-untyped]
@@ -49,7 +48,6 @@ from lookyloo.helpers import (UserAgents, load_cookies,
                               )
 
 from zoneinfo import available_timezones
-all_timezones_set = available_timezones()
 
 from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
@@ -58,6 +56,7 @@ from .helpers import (User, build_users_table, get_secret_key,
 from .proxied import ReverseProxied
 
 logging.config.dictConfig(get_config('logging'))
+all_timezones_set = available_timezones()
 
 app: Flask = Flask(__name__)
 app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore[method-assign]
@@ -1478,13 +1477,19 @@ def rebuild_cache() -> WerkzeugResponse:
 def search() -> str | Response | WerkzeugResponse:
     if request.form.get('url'):
         quoted_url: str = quote_plus(request.form['url'])
-        return redirect(url_for('url_details', url=quoted_url))
+        return redirect(url_for('url_details', from_popup=True, url=quoted_url))
     if request.form.get('hostname'):
-        return redirect(url_for('hostname_details', hostname=request.form.get('hostname')))
+        return redirect(url_for('hostname_details', from_popup=True, hostname=request.form.get('hostname')))
     if request.form.get('ressource'):
-        return redirect(url_for('body_hash_details', body_hash=request.form.get('ressource')))
+        return redirect(url_for('body_hash_details', from_popup=True, body_hash=request.form.get('ressource')))
     if request.form.get('cookie'):
-        return redirect(url_for('cookies_name_detail', cookie_name=request.form.get('cookie')))
+        return redirect(url_for('cookies_name_detail', from_popup=True, cookie_name=request.form.get('cookie')))
+    if request.form.get('favicon_sha512'):
+        return redirect(url_for('favicon_detail', from_popup=True, favicon_sha512=request.form.get('favicon_sha512')))
+    if 'favicon_file' in request.files:
+        favicon = request.files['favicon_file'].stream.read()
+        favicon_sha512 = hashlib.sha512(favicon).hexdigest()
+        return redirect(url_for('favicon_detail', from_popup=True, favicon_sha512=favicon_sha512))
     return render_template('search.html')
 
 
@@ -1731,8 +1736,9 @@ def simple_capture() -> str | Response | WerkzeugResponse:
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
 def cookies_name_detail(cookie_name: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     captures = get_cookie_name_investigator(cookie_name.strip())
-    return render_template('cookie_name.html', cookie_name=cookie_name, captures=captures)
+    return render_template('cookie_name.html', cookie_name=cookie_name, captures=captures, from_popup=from_popup)
 
 
 @app.route('/hhhdetails/<string:hhh>', methods=['GET'])
@@ -1760,11 +1766,13 @@ def capture_hash_details(hash_type: str, h: str) -> str:
 
 @app.route('/favicon_details/<string:favicon_sha512>', methods=['GET'])
 def favicon_detail(favicon_sha512: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     captures, favicon = get_favicon_investigator(favicon_sha512.strip())
     mimetype, b64_favicon, mmh3_shodan = favicon
-    return render_template('favicon_details.html', favicon_sha512=favicon_sha512,
+    return render_template('favicon_details.html',
                            captures=captures, mimetype=mimetype, b64_favicon=b64_favicon,
-                           mmh3_shodan=mmh3_shodan)
+                           mmh3_shodan=mmh3_shodan,
+                           from_popup=from_popup)
 
 
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])
@@ -1776,15 +1784,17 @@ def body_hash_details(body_hash: str) -> str:
 
 @app.route('/urls/<string:url>', methods=['GET'])
 def url_details(url: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     url = unquote_plus(url).strip()
     captures = get_url_investigator(url)
-    return render_template('url.html', url=url, captures=captures)
+    return render_template('url.html', url=url, captures=captures, from_popup=from_popup)
 
 
 @app.route('/hostnames/<string:hostname>', methods=['GET'])
 def hostname_details(hostname: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     captures = get_hostname_investigator(hostname.strip())
-    return render_template('hostname.html', hostname=hostname, captures=captures)
+    return render_template('hostname.html', hostname=hostname, captures=captures, from_popup=from_popup)
 
 
 @app.route('/stats', methods=['GET'])

@@ -1,28 +1,5 @@
 {% from "macros.html" import popup_icons_response %}
 
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-  var table = new DataTable('#hostnamesTable', {
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '10%', targets: 0 },
-                 { width: '40%', targets: 1 },
-                 { width: '50%', targets: 2 }],
-    initComplete: function (settings, json) {
-      $('[data-bs-toggle="tooltip"]').tooltip({html: true});
-    }
-  }).on('draw', function() {
-    $('[data-bs-toggle="tooltip"]').tooltip({html: true});
-  });
-</script>
-
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-  let openNewTabButtons = document.querySelectorAll('.openNewTab');
-  if (openNewTabButtons) {
-      openNewTabButtons.forEach(el => el.addEventListener('click', event => {
-          openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
-      }));
-  }
-</script>
-
 <table id="hostnamesTable" class="table table-striped" style="width:100%">
 <thead>
  <tr>

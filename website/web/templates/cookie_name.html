@@ -1,32 +1,22 @@
-{% extends "main.html" %}
-
 {% from "macros.html" import shorten_string %}
 
-{% block scripts %}
-{{ super() }}
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-  new DataTable('#cookieNameTable', {
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '30%', targets: 0,
-                   render: (data) => {
-                    const date = new Date(data);
-                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                   }
-                 },
-                 { width: '70%', targets: 1 }]
-  });
-</script>
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-    const openNewTabButtons = document.querySelectorAll('.openNewTab');
-    if (openNewTabButtons) {
-        openNewTabButtons.forEach(el => el.addEventListener('click', event => {
-            window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
-        }));
-    }
-</script>
-{% endblock %}
+{% if from_popup %}
+{% extends "main.html" %}
+
+{% from 'bootstrap5/utils.html' import render_messages %}
+
+{% block title %}{{ cookie_name }}{% endblock %}
+
+{%endif%}
+
 
 {% block content %}
+
+
+{% if from_popup %}
+<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
+{%endif%}
+
 <center>
   <h4>{{ cookie_name }}</h4>
   <h6>Only the most recent captures are listed below, this will change soon.</h6>

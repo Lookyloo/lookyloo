@@ -1,25 +1,24 @@
 {% from "macros.html" import shorten_string %}
 
+{% if from_popup %}
+{% extends "main.html" %}
+
+{% from 'bootstrap5/utils.html' import render_messages %}
+
+{% block title %}{{ hostname }}{% endblock %}
+
+{%endif%}
+
 {% block content %}
+
+{% if from_popup %}
+<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
+{%endif%}
 
 <center>
     <h4>{{ hostname }}</h4>
     <h6>Only the most recent captures are listed below, this will change soon.</h6>
 </center>
-
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-  new DataTable('#hostnameTable', {
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '20%', targets: 0,
-                   render: (data) => {
-                    const date = new Date(data);
-                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                   }
-                 },
-                 { width: '40%', targets: 1 },
-                 { width: '40%', targets: 2 }],
-  });
-</script>
 
 <table id="hostnameTable" class="table table-striped" style="width:100%">
   <thead>
