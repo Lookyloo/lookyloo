@@ -47,7 +47,7 @@
 
       });
   }
-  if (document.getElementById('#bodyHashesTable')) {
+  if (document.getElementById('bodyHashesTable')) {
       var table = new DataTable('#bodyHashesTable', {
         retrieve: true,
         order: [[ 0, "desc" ]],
