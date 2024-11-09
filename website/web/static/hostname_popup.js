@@ -1,24 +1,3 @@
-const locateInTree = document.querySelectorAll(".locateInTree")
-if (locateInTree) {
-    locateInTree.forEach(el => el.addEventListener('click', event => {
-        window.opener.LocateNode(el.dataset.hostnode);
-    }));
-}
-
-let openTreeInNewTab = (capture_uuid, hostnode_uuid=Null) => {
-  let success = window.opener.openTreeInNewTab(capture_uuid, hostnode_uuid);
-  if (! success) {
-      alert("Your browser doesn't allow Lookyloo to open a new tab. There should be an icon on the right side of your URL bar *in the main window* to allow it.");
-  }
-}
-
-var openNewTabButtons = document.querySelectorAll('.openNewTab');
-if (openNewTabButtons) {
-    openNewTabButtons.forEach(el => el.addEventListener('click', event => {
-      openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
-  }));
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   // Grab any text in the attribute 'data-copy' and pass it to the copy function
   $('.js-copy').tooltip();
@@ -59,16 +38,9 @@ function submit_pandora(node_uuid, ressource_hash){
     });
 };
 
-var submitPandoraButtons = document.querySelectorAll('.submitPandoraButton');
-if (submitPandoraButtons) {
-    submitPandoraButtons.forEach(el => el.addEventListener('click', event => {
-      submit_pandora(el.dataset.hostnode, el.dataset.hash);
-  }));
-}
-
-let openURLInNewTab = (url) => {
-  let success = window.opener.openURLInNewTab(url);
-  if (! success) {
-      alert("Your browser doesn't allow Lookyloo to open a new tab. There should be an icon on the right side of your URL bar *in the main window* to allow it.");
-  }
-}
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.submitPandoraButton').forEach(
+        el => el.addEventListener('click', event => {
+          submit_pandora(el.dataset.hostnode, el.dataset.hash);
+    }));
+});

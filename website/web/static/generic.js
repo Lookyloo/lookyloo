@@ -52,9 +52,19 @@ openNewTabButtons.forEach(el => el.addEventListener('click', event => {
     if (window.opener === null) {
         return openTreeInNewTab(el.dataset.capture, el.dataset.hostnode)
     } else {
-        return window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
+        let success = window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
+        if (! success) {
+            alert("Your browser doesn't allow Lookyloo to open a new tab. There should be an icon on the right side of your URL bar *in the main window* to allow it.");
+        }
     }
 }));
+
+const locateInTree = document.querySelectorAll(".locateInTree")
+if (locateInTree) {
+    locateInTree.forEach(el => el.addEventListener('click', event => {
+        window.opener.LocateNode(el.dataset.hostnode);
+    }));
+}
 
 // Parameters:
 // contentType: The content type of your file.
