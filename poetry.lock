@@ -1662,13 +1662,13 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.12.1"
+version = "1.12.2"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "lacuscore-1.12.1-py3-none-any.whl", hash = "sha256:52d12867968751ca000cec875a85a037fe714a02c1108f3b7737e4b618ba4653"},
-    {file = "lacuscore-1.12.1.tar.gz", hash = "sha256:3197b121528a5db8f824cd9c4e22b82e8d9475c80e4151640aa396de002b9740"},
+    {file = "lacuscore-1.12.2-py3-none-any.whl", hash = "sha256:1164afefcab039a12f49ce4b148c73dca42d457b75cd40b6b32fdf998dcf9839"},
+    {file = "lacuscore-1.12.2.tar.gz", hash = "sha256:005807d880c44ce5de41c8a4acfd7351421847538e28a6dc340ffb27d4aca467"},
 ]
 
 [package.dependencies]
@@ -1676,7 +1676,7 @@ async-timeout = {version = ">=4.0.3,<5.0.0", markers = "python_version < \"3.11\
 defang = ">=0.5.3,<0.6.0"
 dnspython = {version = ">=2.7.0,<3.0.0", markers = "python_version >= \"3.9\""}
 eval-type-backport = {version = ">=0.2.0,<0.3.0", markers = "python_version < \"3.10\""}
-playwrightcapture = {version = ">=1.27.0,<2.0.0", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.27.1,<2.0.0", extras = ["recaptcha"]}
 pydantic = ">=2.9.2,<3.0.0"
 redis = {version = ">=5.2.0,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.32.3,<3.0.0"
@@ -2613,13 +2613,12 @@ test = ["pytest"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.27.0"
+version = "1.27.1"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "playwrightcapture-1.27.0-py3-none-any.whl", hash = "sha256:2fee5fa4251cf3eb0e5d790ae5b35fde5949bbc4f61de9175ccfc539d6dc7a03"},
-    {file = "playwrightcapture-1.27.0.tar.gz", hash = "sha256:266f0ec227d3a70e074d4125853ee1685a40605cb3f15217c4cf4d2713583d56"},
+    {file = "playwrightcapture-1.27.1-py3-none-any.whl", hash = "sha256:f892b3032bec8d5dafead2fc53b595e5bf04bd4a2afc2f8c35e9ec0243b9fc8e"},
 ]
 
 [package.dependencies]
@@ -4495,13 +4494,13 @@ propcache = ">=0.2.0"
 
 [[package]]
 name = "zipp"
-version = "3.20.2"
+version = "3.21.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "zipp-3.20.2-py3-none-any.whl", hash = "sha256:a817ac80d6cf4b23bf7f2828b7cabf326f15a001bea8b1f9b49631780ba28350"},
-    {file = "zipp-3.20.2.tar.gz", hash = "sha256:bc9eb26f4506fda01b81bcde0ca78103b6e62f991b381fec825435c836edbc29"},
+    {file = "zipp-3.21.0-py3-none-any.whl", hash = "sha256:ac1bbe05fd2991f160ebce24ffbac5f6d11d83dc90891255885223d42b3cd931"},
+    {file = "zipp-3.21.0.tar.gz", hash = "sha256:2c9958f6430a2040341a52eb608ed6dd93ef4392e02ffe219417c1b28b5dd1f4"},
 ]
 
 [package.extras]
@@ -4515,4 +4514,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.14"
-content-hash = "9280bdc68a9bfae6ceb034016d2c0f2f1ed76514184c71724e7418ffa4424b0c"
+content-hash = "62f1e6d68158cf5ae79afe1ff10a50fa217c285a6079b5323cfcc17f8be8f046"
