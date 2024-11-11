@@ -1,4 +1,4 @@
-["load", "shown.bs.modal"].forEach(e => window.addEventListener(e, function() {
+["DOMContentLoaded", "shown.bs.modal", "jquery.modal.rendered"].forEach(e => window.addEventListener(e, function() {
 
   if (document.getElementById('bodyHashDetailsTable')) {
     new DataTable('#bodyHashDetailsTable', {

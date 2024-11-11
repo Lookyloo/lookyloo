@@ -1,19 +1,3 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Grab any text in the attribute 'data-copy' and pass it to the copy function
-  $('.js-copy').tooltip();
-  $('.js-copy').click(function() {
-    const text = $(this).attr('data-copy');
-    const el = $(this);
-    copyToClipboard(text, el);
-  });
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  $(function () {
-    $('[data-bs-toggle="tooltip"]').tooltip()
-  })
-});
-
 function submit_pandora(node_uuid, ressource_hash){
   let data = {};
   if (node_uuid) {
@@ -39,8 +23,20 @@ function submit_pandora(node_uuid, ressource_hash){
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll('.submitPandoraButton').forEach(
-        el => el.addEventListener('click', event => {
-          submit_pandora(el.dataset.hostnode, el.dataset.hash);
-    }));
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
+  document.querySelectorAll('.submitPandoraButton').forEach(
+      el => el.addEventListener('click', event => {
+        submit_pandora(el.dataset.hostnode, el.dataset.hash);
+  }));
+  document.querySelectorAll('.js-copy').forEach(
+      el => el.addEventListener('click', event => {
+        navigator.clipboard.writeText(el.dataset.copy).then(function() {
+            el.setAttribute('data-bs-original-title', 'Copying to clipboard was successful!');
+        }, function(err) {
+            el.setAttribute('data-bs-original-title', 'Could not copy text: ' + err);
+        });
+      })
+  );
 });

@@ -3,108 +3,108 @@
 $('#hashlookupModal').on('show.bs.modal', function(e) {
   var button = $(e.relatedTarget);
   var modal = $(this);
-  modal.find('.modal-body').load(button.data("remote"));
+  modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#modulesModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 $('#historyModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#categoriesModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#statsModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#identifiersModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#identifierDetailsModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#faviconsModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#faviconDetailsModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#captureHashesTypesModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#captureHashesTypesDetailsModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#faviconDetailsProbabilisticHashModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#bodyHashesModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#bodyHashDetailsModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#hostnamesModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#hostnameDetailsModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#urlsModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#urlDetailsModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 $('#mispPushModal').on('show.bs.modal', function(e) {
@@ -134,7 +134,7 @@ $('#mispLookupModal').on('show.bs.modal', function(e) {
 $('#urlsInPageModal').on('show.bs.modal', function(e) {
     var button = $(e.relatedTarget);
     var modal = $(this);
-    modal.find('.modal-body').load(button.data("remote"));
+    modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
 // Categories
