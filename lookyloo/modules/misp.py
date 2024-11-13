@@ -137,6 +137,9 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
             fo.comment = 'Content received for the final redirect (before rendering)'
             fo.add_reference(final_redirect, 'loaded-by', 'URL loading that content')
             fo.first_seen = cache.tree.root_hartree.rendered_node.start_time
+            if hasattr(cache.tree.root_hartree.rendered_node, 'domhash'):
+                fo.add_attribute('dom-hash', cache.tree.root_hartree.rendered_node.domhash)
+                final_redirect.add_attribute('dom-hash', cache.tree.root_hartree.rendered_node.domhash)
             event.add_object(fo)
         except Har2TreeError:
             pass
