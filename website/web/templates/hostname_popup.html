@@ -303,7 +303,7 @@
               {{ ressource_legitimacy_details(details['legitimacy'], details['body_size']) }}
               </div>
               {% if has_pandora %}
-              {{ pandora_submit(tree_uuid, url['url_object'].uuid), hash) }}
+              {{ pandora_submit(tree_uuid, url['url_object'].uuid, hash) }}
               {% endif %}
               <div>
                 This file {% if details['type'] %}(<b>{{ details['type'] }}</b>){% endif %} can be found <b>{{ details['hash_freq'] }}</b> times
