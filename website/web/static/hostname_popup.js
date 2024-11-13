@@ -1,4 +1,4 @@
-function submit_pandora(node_uuid, ressource_hash){
+function submit_pandora(node_uuid, ressource_hash, pandora_submit_url){
   let data = {};
   if (node_uuid) {
       data.node_uuid = node_uuid;
@@ -6,7 +6,7 @@ function submit_pandora(node_uuid, ressource_hash){
   if (ressource_hash) {
       data.ressource_hash = ressource_hash;
   };
-  fetch("{{ url_for('pandora_submit', tree_uuid=tree_uuid)}}", {
+  fetch(pandora_submit_url, {
       method: "POST",
       body: JSON.stringify(data),
     })
@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll('.submitPandoraButton').forEach(
       el => el.addEventListener('click', event => {
-        submit_pandora(el.dataset.hostnode, el.dataset.hash);
+        submit_pandora(el.dataset.hostnode, el.dataset.hash, el.dataset.pandorasubmit);
   }));
   document.querySelectorAll('.js-copy').forEach(
       el => el.addEventListener('click', event => {

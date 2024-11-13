@@ -320,7 +320,8 @@
   <button type="button" class="btn btn-primary btn-sm submitPandoraButton"
                         title="open a new tab with the pandora report"
                         data-hostnode="{{ node_uuid }}"
-                        data-hash="{{ ressource_hash }}">
+                        data-hash="{{ ressource_hash }}"
+                        data-pandorasubmit="{{ url_for('pandora_submit', tree_uuid=tree_uuid)}}">
     Submit to Pandora
   </button>
 </div>
