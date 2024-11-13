@@ -21,7 +21,7 @@
     "font.png": "RwoQkj9dT9SLUL2F7cAA16Nat9t2hDb58eQlHF9ThUar829p0INUXG+5XuDaFOC8SsmCZK5vw2f+YAQ6mLC1Qw==",
     "generic.css": "Sh/BcxFMLYYaLdCluVt9efGvJ9CF5d+YJ7lkL2M24PRGu8VZHI9lJiUlFObIocjQgwss3Ve2U5cUAE5WiAdpQQ==",
     "generic.js": "B1Kd8EpQRDDLAxh7eD2QZNyDBwY8zyC8NBoGhml8zpF9TRsEtiH7XcXus+NMNvRtqKoo93Xhc+JTAW9Fn0lMdw==",
-    "hostname_popup.js": "kYsVppmphN/tsdLnWVHD8GAVp4CvViRWquL5xVowLsALai/Oeb2RXVYn7SsVoMOuvWaGVmzsY4ZkxetgNJhGdA==",
+    "hostname_popup.js": "froqRK2HEphJSU++PkPfEvaztrzH05QwZ4q2wEBAL6JDinpOCZqW9GMMV6oBhpTmyu5zfsz6ZpqrfaB0C0iIwg==",
     "html.png": "T7pZrb8MMDsA/JV/51hu+TOglTqlxySuEVY0rpDjTuAEyhzk2v+W4kYrj7vX+Tp3n2d2lvVD08PwhCG62Yfbzg==",
     "ifr.png": "rI5YJypmz1QcULRf9UaOYSqV4tPUSxUdLAycoYzCwywt4Pw4eWzBg9SUr769VyIimoiIyJR+aNuoIA4p5WO2fQ==",
     "img.png": "bknBlmIfSb9qv9/lSaJ2idn2a8bDyvJ2pATj4oOpehRlCdXlWYOyb2jN3wV1QGHFoqyxNqOv5MfCpI0tbqkicg==",
