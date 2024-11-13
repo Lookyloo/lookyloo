@@ -107,6 +107,7 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
         lookyloo_link: MISPAttribute = event.add_attribute('link', f'https://{public_domain}/tree/{cache.uuid}')  # type: ignore[assignment]
         if not is_public_instance:
             lookyloo_link.distribution = 0
+        lookyloo_link.first_seen = cache.timestamp
         initial_obj.add_reference(lookyloo_link, 'captured-by', 'Capture on lookyloo')
 
         redirects: list[URLObject] = []
