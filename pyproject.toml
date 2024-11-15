@@ -87,7 +87,7 @@ puremagic = "^1.28"
 psutil = "^6.1.0"
 flask-talisman = "^1.1.0"
 
-aiohttp = {extras = ["speedups"], version = "^3.11.0"}
+aiohttp = {extras = ["speedups"], version = "^3.11.2"}
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.13.0"
@@ -108,5 +108,5 @@ types-pytz = "^2024.2.0.20241003"
 types-psutil = "^6.1.0.20241102"
 
 [build-system]
-requires = ["poetry_core"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
