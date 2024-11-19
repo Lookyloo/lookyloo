@@ -462,7 +462,9 @@ class CaptureInfo(Resource):  # type: ignore[misc]
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureCookies(Resource):  # type: ignore[misc]
     def get(self, capture_uuid: str) -> dict[str, Any]:
-        return json.loads(lookyloo.get_cookies(capture_uuid).read())
+        if cookies := lookyloo.get_cookies(capture_uuid).read():
+            return json.loads(cookies)
+        return {}
 
 
 @api.route('/json/<string:capture_uuid>/report')
