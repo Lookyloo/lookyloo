@@ -94,15 +94,16 @@ class UniversalWhois(AbstractModule):
         if abuse_c and abuse_c.lastindex:  # make sure we have a match and avoid exception on None or missing group 1
             # The whois entry has an abuse-c object
             _obj_name: str = abuse_c.group(1).decode()
-            abuse_c_query = self.whois(_obj_name, contact_email_only)
-            # The object exists
-            if abuse_c_query and contact_email_only:
-                # The object exists and we only want the email(s), the response is a list of emails
-                return abuse_c_query
-            elif abuse_c_query:
-                # The object exists and we want the full whois entry, contatenate with a new line.
-                # contact_email_only is False, so the response is a string, ignore the typing warning accordingy
-                return '\n'.join([bytes_whois.decode(), abuse_c_query])  # type: ignore[list-item]
+            if _obj_name != query:
+                abuse_c_query = self.whois(_obj_name, contact_email_only)
+                # The object exists
+                if abuse_c_query and contact_email_only:
+                    # The object exists and we only want the email(s), the response is a list of emails
+                    return abuse_c_query
+                elif abuse_c_query:
+                    # The object exists and we want the full whois entry, contatenate with a new line.
+                    # contact_email_only is False, so the response is a string, ignore the typing warning accordingy
+                    return '\n'.join([bytes_whois.decode(), abuse_c_query])  # type: ignore[list-item]
         # We either dont have an abuse-c object or it does not exist
         if not contact_email_only:
             return bytes_whois.decode()
