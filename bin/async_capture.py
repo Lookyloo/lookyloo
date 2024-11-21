@@ -98,19 +98,9 @@ class AsyncCapture(AbstractManager):
                 last_redirected_url=entries.get('last_redirected_url'),
                 cookies=entries.get('cookies'),
                 capture_settings=to_capture,
-                potential_favicons=entries.get('potential_favicons')
+                potential_favicons=entries.get('potential_favicons'),
+                auto_report=to_capture.auto_report,
             )
-
-            if to_capture.auto_report:
-                send_report = True
-                settings = {}
-                if isinstance(to_capture.auto_report, dict):
-                    settings = to_capture.auto_report
-
-                if send_report:
-                    self.lookyloo.send_mail(uuid, email=settings.get('email', ''),
-                                            comment=settings.get('comment'),
-                                            recipient_mail=settings.get("recipient_mail"))
 
             lazy_cleanup = self.lookyloo.redis.pipeline()
             if queue and self.lookyloo.redis.zscore('queues', queue):

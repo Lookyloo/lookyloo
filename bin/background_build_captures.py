@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import logging.config
 import shutil
@@ -34,6 +35,24 @@ class BackgroundBuildCaptures(AbstractManager):
         # Redis connector so we don't use the one from Lookyloo
         self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
 
+    def __auto_report(self, path: Path) -> None:
+        with (path / 'uuid').open() as f:
+            capture_uuid = f.read()
+        self.logger.info(f'Triggering autoreport for {capture_uuid}...')
+        settings = {}
+        with (path / 'auto_report').open() as f:
+            if ar := f.read():
+                # could be an empty file.
+                settings = json.loads(ar)
+        try:
+            self.lookyloo.send_mail(capture_uuid, email=settings.get('email', ''),
+                                    comment=settings.get('comment'))
+            (path / 'auto_report').unlink()
+        except Exception as e:
+            self.logger.warning(f'Unable to send auto report for {capture_uuid}: {e}')
+        else:
+            self.logger.info(f'Auto report for {capture_uuid} sent.')
+
     def _to_run_forever(self) -> None:
         self._build_missing_pickles()
         # Don't need the cache in this class.
@@ -59,6 +78,9 @@ class BackgroundBuildCaptures(AbstractManager):
                 if ((path / 'tree.pickle.gz').exists() or (path / 'tree.pickle').exists()):
                     # We already have a pickle file
                     self.logger.debug(f'{path} has a pickle.')
+                    if (path / 'auto_report').exists():
+                        # the pickle was built somewhere else, trigger report.
+                        self.__auto_report(path)
                     continue
                 if not list(path.rglob('*.har.gz')) and not list(path.rglob('*.har')):
                     # No HAR file
@@ -102,6 +124,8 @@ class BackgroundBuildCaptures(AbstractManager):
                     self.logger.info(f'Pickle for {uuid} built.')
                     got_new_captures = True
                     max_captures -= 1
+                    if (path / 'auto_report').exists():
+                        self.__auto_report(path)
                 except MissingUUID:
                     self.logger.warning(f'Unable to find {uuid}. That should not happen.')
                 except NoValidHarFile as e:

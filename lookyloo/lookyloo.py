@@ -884,12 +884,11 @@ class Lookyloo():
                     # unable to run the query, probably an invalid key
                     pass
         if len(modules) == 0:
-            return "Capture does not seem to be malicious"
+            return "URL captured doesn't appear in malicious databases."
 
         return f"Malicious capture according to {len(modules)} module(s): {', '.join(modules)}"
 
-    def send_mail(self, capture_uuid: str, /, email: str='', comment: str | None=None,
-                  recipient_mail: str | None = None) -> bool | dict[str, Any]:
+    def send_mail(self, capture_uuid: str, /, email: str | None=None, comment: str | None=None) -> bool | dict[str, Any]:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
             return {"error": "Unable to send mail: mail notification disabled"}
@@ -938,7 +937,7 @@ class Lookyloo():
         msg['From'] = email_config['from']
         if email:
             msg['Reply-To'] = email
-        msg['To'] = email_config['to'] if not recipient_mail else recipient_mail
+        msg['To'] = email_config['to']
         msg['Subject'] = email_config['subject']
         body = get_email_template()
         body = body.format(
@@ -1519,7 +1518,8 @@ class Lookyloo():
                       last_redirected_url: str | None=None,
                       cookies: list[Cookie] | list[dict[str, str]] | None=None,
                       capture_settings: CaptureSettings | None=None,
-                      potential_favicons: set[bytes] | None=None
+                      potential_favicons: set[bytes] | None=None,
+                      auto_report: bool | dict[str, str] | None = None
                       ) -> None:
 
         now = datetime.now()
@@ -1594,6 +1594,14 @@ class Lookyloo():
             for f_id, favicon in enumerate(potential_favicons):
                 with (dirpath / f'{f_id}.potential_favicons.ico').open('wb') as _fw:
                     _fw.write(favicon)
+
+        if auto_report:
+            # autoreport needs to be triggered once the tree is build
+            if isinstance(auto_report, bool):
+                (dirpath / 'auto_report').touch()
+            else:
+                with (dirpath / 'auto_report').open('w') as _ar:
+                    json.dump(auto_report, _ar)
 
         self.redis.hset('lookup_dirs', uuid, str(dirpath))
         self.redis.zadd('recent_captures', {uuid: now.timestamp()})

@@ -1659,7 +1659,6 @@ def capture_web() -> str | Response | WerkzeugResponse:
                 capture_query['auto_report'] = {
                     'email': request.form.get('email', ""),
                     'comment': request.form.get('comment', ""),
-                    'recipient_mail': request.form.get('recipient-mail', "")
                 }
 
         if request.form.get('url'):

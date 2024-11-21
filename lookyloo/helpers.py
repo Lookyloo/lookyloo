@@ -408,7 +408,7 @@ class CaptureSettings(LacuscoreCaptureSettings):
     '''The capture settings that can be passed to Lookyloo'''
     listing: bool = get_config('generic', 'default_public')
     not_queued: bool = False
-    auto_report: bool | dict[str, str] | None = None  # {'email': , 'comment': , 'recipient_mail':}
+    auto_report: bool | dict[str, str] | None = None  # {'email': , 'comment':}
     dnt: str | None = None
     browser_name: str | None = None
     os: str | None = None
