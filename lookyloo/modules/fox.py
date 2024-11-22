@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 import requests
 
@@ -10,6 +10,9 @@ from ..default import ConfigError
 from ..helpers import get_useragent_for_requests
 
 from .abstractmodule import AbstractModule
+
+if TYPE_CHECKING:
+    from ..capturecache import CaptureCache
 
 
 class FOX(AbstractModule):
@@ -19,33 +22,24 @@ class FOX(AbstractModule):
             self.logger.info('No API key.')
             return False
 
-        self.autosubmit = False
-        self.allow_auto_trigger = False
         self.client = requests.session()
         self.client.headers['User-Agent'] = get_useragent_for_requests()
         self.client.headers['X-API-KEY'] = self.config['apikey']
         self.client.headers['Content-Type'] = 'application/json'
 
-        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
-        self.autosubmit = bool(self.config.get('autosubmit', False))
-
         return True
 
-    def capture_default_trigger(self, url: str, /, auto_trigger: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
+                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
         '''Run the module on the initial URL'''
-        if not self.available:
-            return {'error': 'Module not available'}
-        if auto_trigger and not self.allow_auto_trigger:
-            # NOTE: if auto_trigger is true, it means the request comes from the
-            # auto trigger feature (disabled by default)
-            # Each module can disable auto-trigger to avoid depleating the
-            # API limits.
-            return {'error': 'Auto trigger not allowed on module'}
 
-        self.url_submit(url)
+        if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
+            return error
+
+        self.__url_submit(cache.url)
         return {'success': 'Module triggered'}
 
-    def __submit_url(self, url: str, ) -> bool:
+    def __submit_url(self, url: str) -> bool:
         if not url.startswith('http'):
             url = f'http://{url}'
         data = {'url': url}
@@ -54,7 +48,7 @@ class FOX(AbstractModule):
         response.raise_for_status()
         return True
 
-    def url_submit(self, url: str) -> dict[str, Any]:
+    def __url_submit(self, url: str) -> dict[str, Any]:
         '''Submit a URL to FOX
         '''
         if not self.available:

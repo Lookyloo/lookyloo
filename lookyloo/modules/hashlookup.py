@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import json
 
-from har2tree import CrawledTree
+from typing import TYPE_CHECKING
+
 from pyhashlookup import Hashlookup
 
 from ..default import ConfigError
 from ..helpers import get_useragent_for_requests
 
 from .abstractmodule import AbstractModule
+
+if TYPE_CHECKING:
+    from ..capturecache import CaptureCache
 
 
 class HashlookupModule(AbstractModule):
@@ -28,22 +32,19 @@ class HashlookupModule(AbstractModule):
             self.client = Hashlookup(useragent=get_useragent_for_requests())
         # Makes sure the webservice is reachable, raises an exception otherwise.
         self.client.info()
-
-        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
         return True
 
-    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, auto_trigger: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
+                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
-        if not self.available:
-            return {'error': 'Module not available'}
-        if auto_trigger and not self.allow_auto_trigger:
-            return {'error': 'Auto trigger not allowed on module'}
+        if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
+            return error
 
-        store_file = crawled_tree.root_hartree.har.path.parent / 'hashlookup.json'
+        store_file = cache.tree.root_hartree.har.path.parent / 'hashlookup.json'
         if store_file.exists():
             return {'success': 'Module triggered'}
 
-        hashes = crawled_tree.root_hartree.build_all_hashes('sha1')
+        hashes = cache.tree.root_hartree.build_all_hashes('sha1')
 
         hits_hashlookup = self.hashes_lookup(list(hashes.keys()))
         if hits_hashlookup:

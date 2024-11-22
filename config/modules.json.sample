@@ -3,26 +3,31 @@
     "apikey": null,
     "trustenv": false,
     "autosubmit": false,
-    "allow_auto_trigger": false
+    "allow_auto_trigger": false,
+    "admin_only": true
   },
   "PhishingInitiative": {
     "apikey": null,
     "autosubmit": false,
-    "allow_auto_trigger": false
+    "allow_auto_trigger": false,
+    "admin_only": true
   },
   "FOX": {
     "apikey": null,
     "autosubmit": false,
-    "allow_auto_trigger": false
+    "allow_auto_trigger": false,
+    "admin_only": true
   },
   "Pandora": {
     "url": "http://127.0.0.1:6100",
     "autosubmit": false,
-    "allow_auto_trigger": false
+    "allow_auto_trigger": false,
+    "admin_only": false
   },
   "SaneJS": {
     "enabled": true,
-    "allow_auto_trigger": true
+    "allow_auto_trigger": true,
+    "admin_only": false
   },
   "MultipleMISPs": {
     "default": "MISP",
@@ -38,7 +43,8 @@
           "source:lookyloo"
         ],
         "auto_publish": false,
-        "allow_auto_trigger": false
+        "allow_auto_trigger": false,
+        "admin_only": true
       }
     }
   },
@@ -46,43 +52,51 @@
     "enabled": false,
     "ipaddress": "127.0.0.1",
     "port": 4243,
-    "allow_auto_trigger": true
+    "allow_auto_trigger": true,
+    "admin_only": false
   },
   "UrlScan": {
     "apikey": null,
     "autosubmit": false,
     "allow_auto_trigger": false,
-    "force_visibility": false
+    "force_visibility": false,
+    "admin_only": true
   },
   "Phishtank": {
     "enabled": false,
     "url": "https://phishtankapi.circl.lu/",
-    "allow_auto_trigger": true
+    "allow_auto_trigger": true,
+    "admin_only": false
   },
   "URLhaus": {
     "enabled": false,
     "url": "https://urlhaus-api.abuse.ch/v1/",
-    "allow_auto_trigger": true
+    "allow_auto_trigger": true,
+    "admin_only": false
   },
   "Hashlookup": {
     "enabled": false,
     "url": "https://hashlookup.circl.lu/",
-    "allow_auto_trigger": true
+    "allow_auto_trigger": true,
+    "admin_only": false
   },
   "RiskIQ": {
     "user": null,
     "apikey": null,
     "allow_auto_trigger": false,
-    "default_first_seen_in_days": 5
+    "default_first_seen_in_days": 5,
+    "admin_only": true
   },
   "CIRCLPDNS": {
     "user": null,
     "password": null,
-    "allow_auto_trigger": false
+    "allow_auto_trigger": true,
+    "admin_only": false
   },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
     "autosubmit": "Automatically submits the URL to the 3rd party service.",
+    "admin_only": "Querying that module is only allowed to logged-in users (generally because the API keys have limits).",
     "allow_auto_trigger": "Allow auto trigger per module: some (i.e. VT) can be very expensive",
     "VirusTotal": "Module to query Virustotal: https://www.virustotal.com/",
     "PhishingInitiative": "Module to query phishing initiative: https://phishing-initiative.fr/contrib/",

@@ -132,7 +132,7 @@ class Lookyloo():
         self.phishtank = Phishtank(config_name='Phishtank')
         self.hashlookup = Hashlookup(config_name='Hashlookup')
         self.riskiq = RiskIQ(config_name='RiskIQ')
-        self.pandora = Pandora(config_name='Pandora')
+        self.pandora = Pandora()
         self.urlhaus = URLhaus(config_name='URLhaus')
         self.circl_pdns = CIRCLPDNS(config_name='CIRCLPDNS')
 
@@ -365,30 +365,24 @@ class Lookyloo():
         if get_config('generic', 'index_everything'):
             get_indexing(full=True).reindex_categories_capture(capture_uuid)
 
-    def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False) -> dict[str, Any]:
+    def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False, *, as_admin: bool=False) -> dict[str, Any]:
         '''Launch the 3rd party modules on a capture.
         It uses the cached result *if* the module was triggered the same day.
         The `force` flag re-triggers the module regardless of the cache.'''
-        try:
-            ct = self.get_crawled_tree(capture_uuid)
-        except LookylooException:
-            self.logger.warning(f'Unable to trigger the modules unless the tree ({capture_uuid}) is cached.')
+        cache = self.capture_cache(capture_uuid)
+        if not cache:
             return {'error': f'UUID {capture_uuid} is either unknown or the tree is not ready yet.'}
 
-        self.uwhois.capture_default_trigger(ct, force=force, auto_trigger=auto_trigger)
-        self.hashlookup.capture_default_trigger(ct, auto_trigger=auto_trigger)
+        self.uwhois.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
+        self.hashlookup.capture_default_trigger(cache, auto_trigger=auto_trigger)
 
         to_return: dict[str, dict[str, Any]] = {'PhishingInitiative': {}, 'VirusTotal': {}, 'UrlScan': {},
                                                 'URLhaus': {}}
-        if cache := self.capture_cache(capture_uuid):
-            to_return['PhishingInitiative'] = self.pi.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
-            to_return['VirusTotal'] = self.vt.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
-            to_return['UrlScan'] = self.urlscan.capture_default_trigger(
-                cache,
-                visibility='unlisted' if (cache and cache.no_index) else 'public',
-                force=force, auto_trigger=auto_trigger)
-            to_return['Phishtank'] = self.phishtank.capture_default_trigger(cache, auto_trigger=auto_trigger)
-            to_return['URLhaus'] = self.urlhaus.capture_default_trigger(cache, auto_trigger=auto_trigger)
+        to_return['PhishingInitiative'] = self.pi.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
+        to_return['VirusTotal'] = self.vt.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
+        to_return['UrlScan'] = self.urlscan.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
+        to_return['Phishtank'] = self.phishtank.capture_default_trigger(cache, auto_trigger=auto_trigger)
+        to_return['URLhaus'] = self.urlhaus.capture_default_trigger(cache, auto_trigger=auto_trigger)
         return to_return
 
     def get_modules_responses(self, capture_uuid: str, /) -> dict[str, Any]:
@@ -1138,7 +1132,6 @@ class Lookyloo():
         if not urls:
             return None
         url = urls[0]
-        self.vt.url_lookup(url.value)
         report = self.vt.get_url_lookup(url.value)
         if not report:
             return None
@@ -1149,9 +1142,9 @@ class Lookyloo():
         obj.add_reference(vt_obj, 'analysed-with')
         return vt_obj
 
-    def __misp_add_urlscan_to_event(self, capture_uuid: str, visibility: str) -> MISPAttribute | None:
+    def __misp_add_urlscan_to_event(self, capture_uuid: str) -> MISPAttribute | None:
         if cache := self.capture_cache(capture_uuid):
-            response = self.urlscan.url_submit(cache, visibility)
+            response = self.urlscan.url_result(cache)
             if 'result' in response:
                 attribute = MISPAttribute()
                 attribute.value = response['result']
@@ -1159,7 +1152,7 @@ class Lookyloo():
                 return attribute
         return None
 
-    def misp_export(self, capture_uuid: str, /, with_parent: bool=False) -> list[MISPEvent] | dict[str, str]:
+    def misp_export(self, capture_uuid: str, /, with_parent: bool=False, *, as_admin: bool=False) -> list[MISPEvent] | dict[str, str]:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''
         cache = self.capture_cache(capture_uuid)
@@ -1187,12 +1180,16 @@ class Lookyloo():
             event.objects[-1].add_reference(screenshot, 'rendered-as', 'Screenshot of the page')
 
         if self.vt.available:
-            for e_obj in event.objects:
-                if e_obj.name != 'url':
-                    continue
-                vt_obj = self.__misp_add_vt_to_URLObject(e_obj)
-                if vt_obj:
-                    event.add_object(vt_obj)
+            response = self.vt.capture_default_trigger(cache, auto_trigger=False, as_admin=as_admin)
+            if 'error' in response:
+                self.logger.warning(f'Unable to trigger VT: {response["error"]}')
+            else:
+                for e_obj in event.objects:
+                    if e_obj.name != 'url':
+                        continue
+                    vt_obj = self.__misp_add_vt_to_URLObject(e_obj)
+                    if vt_obj:
+                        event.add_object(vt_obj)
 
         if self.phishtank.available:
             for e_obj in event.objects:
@@ -1208,11 +1205,13 @@ class Lookyloo():
                 e_obj.add_reference(pt_attribute, 'known-as', 'Permalink on Phishtank')
 
         if self.urlscan.available:
-            urlscan_attribute = self.__misp_add_urlscan_to_event(
-                capture_uuid,
-                visibility='unlisted' if (cache and cache.no_index) else 'public')
-            if urlscan_attribute:
-                event.add_attribute(**urlscan_attribute)
+            response = self.urlscan.capture_default_trigger(cache, auto_trigger=False, as_admin=as_admin)
+            if 'error' in response:
+                self.logger.warning(f'Unable to trigger URLScan: {response["error"]}')
+            else:
+                urlscan_attribute = self.__misp_add_urlscan_to_event(capture_uuid)
+                if urlscan_attribute:
+                    event.add_attribute(**urlscan_attribute)
 
         if with_parent and cache.parent:
             parent = self.misp_export(cache.parent, with_parent)
@@ -1262,15 +1261,17 @@ class Lookyloo():
             return {h: {node.name for node in nodes} for h, nodes in hashes.items()}
         return hashes
 
-    def merge_hashlookup_tree(self, tree_uuid: str, /) -> tuple[dict[str, dict[str, Any]], int]:
+    def merge_hashlookup_tree(self, tree_uuid: str, /, as_admin: bool=False) -> tuple[dict[str, dict[str, Any]], int]:
         if not self.hashlookup.available:
             raise LookylooException('Hashlookup module not enabled.')
+        cache = self.capture_cache(tree_uuid)
+        if not cache:
+            raise LookylooException(f'Capture {tree_uuid} not ready.')
         hashes_tree = self.get_hashes_with_context(tree_uuid, algorithm='sha1')
 
-        hashlookup_file = self._captures_index[tree_uuid].capture_dir / 'hashlookup.json'
+        hashlookup_file = cache.capture_dir / 'hashlookup.json'
         if not hashlookup_file.exists():
-            ct = self.get_crawled_tree(tree_uuid)
-            self.hashlookup.capture_default_trigger(ct, auto_trigger=False)
+            self.hashlookup.capture_default_trigger(cache, auto_trigger=False, as_admin=as_admin)
 
         if not hashlookup_file.exists():
             # no hits on hashlookup

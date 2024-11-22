@@ -5,11 +5,14 @@ from __future__ import annotations
 import re
 import socket
 
-from typing import overload, Literal
+from typing import overload, Literal, TYPE_CHECKING
 
-from har2tree import CrawledTree, Har2TreeError, HostNode
+from har2tree import Har2TreeError, HostNode
 
 from .abstractmodule import AbstractModule
+
+if TYPE_CHECKING:
+    from ..capturecache import CaptureCache
 
 
 class UniversalWhois(AbstractModule):
@@ -21,7 +24,6 @@ class UniversalWhois(AbstractModule):
 
         self.server = self.config.get('ipaddress')
         self.port = self.config.get('port')
-        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
 
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -47,21 +49,22 @@ class UniversalWhois(AbstractModule):
                 self.whois(cname, contact_email_only=False)
         self.whois(hostnode.name, contact_email_only=False)
 
-    def capture_default_trigger(self, crawled_tree: CrawledTree, /, *, force: bool=False, auto_trigger: bool=False) -> None:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
+                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
-        if not self.available:
-            return None
-        if auto_trigger and not self.allow_auto_trigger:
-            return None
+        if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
+            return error
 
         try:
-            hostnode = crawled_tree.root_hartree.get_host_node_by_uuid(crawled_tree.root_hartree.rendered_node.hostnode_uuid)
+            hostnode = cache.tree.root_hartree.get_host_node_by_uuid(cache.tree.root_hartree.rendered_node.hostnode_uuid)
         except Har2TreeError as e:
             self.logger.warning(e)
         else:
             self.query_whois_hostnode(hostnode)
             for n in hostnode.get_ancestors():
                 self.query_whois_hostnode(n)
+
+        return {'success': 'Module triggered'}
 
     @overload
     def whois(self, query: str, contact_email_only: Literal[True]) -> list[str]:

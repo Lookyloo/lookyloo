@@ -28,8 +28,6 @@ class CIRCLPDNS(AbstractModule):
 
         self.pypdns = PyPDNS(basic_auth=(self.config['user'], self.config['password']))
 
-        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
-
         self.storage_dir_pypdns = get_homedir() / 'circl_pypdns'
         self.storage_dir_pypdns.mkdir(parents=True, exist_ok=True)
         return True
@@ -46,12 +44,12 @@ class CIRCLPDNS(AbstractModule):
         with cached_entries[0].open() as f:
             return [PDNSRecord(record) for record in json.load(f)]
 
-    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False, auto_trigger: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
+                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
-        if not self.available:
-            return {'error': 'Module not available'}
-        if auto_trigger and not self.allow_auto_trigger:
-            return {'error': 'Auto trigger not allowed on module'}
+        if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
+            return error
+
         if cache.url.startswith('file'):
             return {'error': 'CIRCL Passive DNS does not support files.'}
 
@@ -63,10 +61,10 @@ class CIRCLPDNS(AbstractModule):
         if not hostname:
             return {'error': 'No hostname found.'}
 
-        self.pdns_lookup(hostname, force)
+        self.__pdns_lookup(hostname, force)
         return {'success': 'Module triggered'}
 
-    def pdns_lookup(self, hostname: str, force: bool=False) -> None:
+    def __pdns_lookup(self, hostname: str, force: bool=False) -> None:
         '''Lookup an hostname on CIRCL Passive DNS
         Note: force means re-fetch the entry even if we already did it today
         '''

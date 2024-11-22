@@ -29,9 +29,6 @@ class UrlScan(AbstractModule):
         self.client.headers['API-Key'] = self.config['apikey']
         self.client.headers['Content-Type'] = 'application/json'
 
-        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
-        self.autosubmit = bool(self.config.get('autosubmit', False))
-
         if self.config.get('force_visibility'):
             # Cases:
             # 1. False: unlisted for hidden captures / public for others
@@ -63,18 +60,13 @@ class UrlScan(AbstractModule):
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, capture_info: CaptureCache, /, visibility: str, *, force: bool=False, auto_trigger: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False, auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
         '''Run the module on the initial URL'''
-        if not self.available:
-            return {'error': 'Module not available'}
-        if auto_trigger and not self.allow_auto_trigger:
-            # NOTE: if auto_trigger is true, it means the request comes from the
-            # auto trigger feature (disabled by default)
-            # Each module can disable auto-trigger to avoid depleating the
-            # API limits.
-            return {'error': 'Auto trigger not allowed on module'}
+        if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
+            return error
 
-        self.url_submit(capture_info, visibility, force)
+        visibility = 'unlisted' if cache.no_index else 'public'
+        self.__url_submit(cache, visibility, force)
         return {'success': 'Module triggered'}
 
     def __submit_url(self, url: str, useragent: str | None, referer: str | None, visibility: str) -> dict[str, Any]:
@@ -103,7 +95,7 @@ class UrlScan(AbstractModule):
         response.raise_for_status()
         return response.json()
 
-    def url_submit(self, capture_info: CaptureCache, visibility: str, force: bool=False) -> dict[str, Any]:
+    def __url_submit(self, capture_info: CaptureCache, visibility: str, force: bool=False) -> dict[str, Any]:
         '''Lookup an URL on urlscan.io
         Note: force means 2 things:
             * (re)scan of the URL

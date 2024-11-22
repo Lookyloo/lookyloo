@@ -177,7 +177,6 @@ class MISP(AbstractModule):
 
         self.enable_lookup = bool(self.config.get('enable_lookup', False))
         self.enable_push = bool(self.config.get('enable_push', False))
-        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
 
         self.default_tags: list[str] = self.config.get('default_tags')  # type: ignore[assignment]
         self.auto_publish = bool(self.config.get('auto_publish', False))

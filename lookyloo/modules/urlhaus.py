@@ -25,8 +25,6 @@ class URLhaus(AbstractModule):
             return False
 
         self.url = self.config.get('url')
-        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
-
         self.storage_dir_uh = get_homedir() / 'urlhaus'
         self.storage_dir_uh.mkdir(parents=True, exist_ok=True)
         return True
@@ -48,23 +46,23 @@ class URLhaus(AbstractModule):
         response.raise_for_status()
         return response.json()
 
-    def capture_default_trigger(self, cache: CaptureCache, /, *, auto_trigger: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
+                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
-        if not self.available:
-            return {'error': 'Module not available'}
-        if auto_trigger and not self.allow_auto_trigger:
-            return {'error': 'Auto trigger not allowed on module'}
+
+        if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
+            return error
 
         # Check URLs up to the redirect
         if cache.redirects:
             for redirect in cache.redirects:
-                self.url_lookup(redirect)
+                self.__url_lookup(redirect)
         else:
-            self.url_lookup(cache.url)
+            self.__url_lookup(cache.url)
 
         return {'success': 'Module triggered'}
 
-    def url_lookup(self, url: str) -> None:
+    def __url_lookup(self, url: str) -> None:
         '''Lookup an URL on URL haus
         Note: It will trigger a request to URL haus every time *until* there is a hit (it's cheap), then once a day.
         '''

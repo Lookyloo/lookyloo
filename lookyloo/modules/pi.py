@@ -26,11 +26,7 @@ class PhishingInitiative(AbstractModule):
             self.logger.info('No API key')
             return False
 
-        self.allow_auto_trigger = False
         self.client = PyEUPI(self.config['apikey'])
-
-        self.autosubmit = self.config.get('autosubmit', False)
-        self.allow_auto_trigger = self.config.get('allow_auto_trigger', False)
 
         self.storage_dir_eupi = get_homedir() / 'eupi'
         self.storage_dir_eupi.mkdir(parents=True, exist_ok=True)
@@ -47,21 +43,21 @@ class PhishingInitiative(AbstractModule):
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False, auto_trigger: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
+                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
-        if not self.available:
-            return {'error': 'Module not available'}
-        if auto_trigger and not self.allow_auto_trigger:
-            return {'error': 'Auto trigger not allowed on module'}
+
+        if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
+            return error
 
         if cache.redirects:
             for redirect in cache.redirects:
-                self.url_lookup(redirect, force)
+                self.__url_lookup(redirect, force)
         else:
-            self.url_lookup(cache.url, force)
+            self.__url_lookup(cache.url, force)
         return {'success': 'Module triggered'}
 
-    def url_lookup(self, url: str, force: bool=False) -> None:
+    def __url_lookup(self, url: str, force: bool=False) -> None:
         '''Lookup an URL on Phishing Initiative
         Note: force means 2 things:
             * (re)scan of the URL

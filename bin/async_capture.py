@@ -38,10 +38,6 @@ class AsyncCapture(AbstractManager):
         if not self.fox.available:
             self.logger.warning('Unable to setup the FOX module')
 
-    def thirdparty_submit(self, url: str) -> None:
-        if self.fox.available:
-            self.fox.capture_default_trigger(url, auto_trigger=True)
-
     async def _trigger_captures(self) -> None:
         # Only called if LacusCore is used
         def clear_list_callback(task: Task) -> None:  # type: ignore[type-arg]

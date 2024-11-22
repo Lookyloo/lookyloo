@@ -37,9 +37,6 @@ class VirusTotal(AbstractModule):
 
         self.client = vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False))
 
-        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
-        self.autosubmit = bool(self.config.get('autosubmit', False))
-
         self.storage_dir_vt = get_homedir() / 'vt_url'
         self.storage_dir_vt.mkdir(parents=True, exist_ok=True)
         return True
@@ -59,30 +56,30 @@ class VirusTotal(AbstractModule):
             cached_entries[0].unlink(missing_ok=True)
             return None
 
-    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False, auto_trigger: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
+                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
-        if not self.available:
-            return {'error': 'Module not available'}
-        if auto_trigger and not self.allow_auto_trigger:
-            return {'error': 'Auto trigger not allowed on module'}
+        if error := super().capture_default_trigger(cache, force=force,
+                                                    auto_trigger=auto_trigger, as_admin=as_admin):
+            return error
 
         if cache.redirects:
             for redirect in cache.redirects:
-                self.url_lookup(redirect, force)
+                self.__url_lookup(redirect, force)
         else:
-            self.url_lookup(cache.url, force)
+            self.__url_lookup(cache.url, force)
         return {'success': 'Module triggered'}
 
-    async def get_object_vt(self, url: str) -> ClientResponse:
+    async def __get_object_vt(self, url: str) -> ClientResponse:
         url_id = vt.url_id(url)
         async with vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False)) as client:
             return await client.get_object_async(f"/urls/{url_id}")
 
-    async def scan_url(self, url: str) -> None:
+    async def __scan_url(self, url: str) -> None:
         async with vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False)) as client:
             await client.scan_url_async(url)
 
-    def url_lookup(self, url: str, force: bool=False) -> None:
+    def __url_lookup(self, url: str, force: bool=False) -> None:
         '''Lookup an URL on VT
         Note: force means 2 things:
             * (re)scan of the URL
@@ -100,7 +97,7 @@ class VirusTotal(AbstractModule):
         scan_requested = False
         if self.autosubmit and force:
             try:
-                asyncio.run(self.scan_url(url))
+                asyncio.run(self.__scan_url(url))
             except APIError as e:
                 if e.code == 'QuotaExceededError':
                     self.logger.warning('VirusTotal quota exceeded, sry.')
@@ -113,7 +110,7 @@ class VirusTotal(AbstractModule):
 
         for _ in range(3):
             try:
-                url_information = asyncio.run(self.get_object_vt(url))
+                url_information = asyncio.run(self.__get_object_vt(url))
                 with vt_file.open('w') as _f:
                     json.dump(url_information.to_dict(), _f, default=jsonify_vt)
                 break
@@ -122,7 +119,7 @@ class VirusTotal(AbstractModule):
                     break
                 if not scan_requested and e.code == 'NotFoundError':
                     try:
-                        asyncio.run(self.scan_url(url))
+                        asyncio.run(self.__scan_url(url))
                         scan_requested = True
                     except APIError as e:
                         self.logger.warning(f'Unable to trigger VirusTotal on {url}: {e}')

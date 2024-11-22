@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from typing import Iterable
+from collections.abc import Iterable
 
 from pysanejs import SaneJS  # type: ignore[attr-defined]
 
@@ -26,7 +26,6 @@ class SaneJavaScript(AbstractModule):
             self.logger.warning('Not up.')
             return False
 
-        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
         self.storage_dir = get_homedir() / 'sanejs'
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         return True

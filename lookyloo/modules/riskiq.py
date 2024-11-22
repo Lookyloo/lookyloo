@@ -51,7 +51,6 @@ class RiskIQ(AbstractModule):
                 self.logger.warning(f'RiskIQ not available: {details}')
             return False
 
-        self.allow_auto_trigger = bool(self.config.get('allow_auto_trigger', False))
         self.default_first_seen = self.config.get('default_first_seen_in_days', 5)
 
         self.storage_dir_riskiq = get_homedir() / 'riskiq'
@@ -70,12 +69,13 @@ class RiskIQ(AbstractModule):
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False, auto_trigger: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
+                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
-        if not self.available:
-            return {'error': 'Module not available'}
-        if auto_trigger and not self.allow_auto_trigger:
-            return {'error': 'Auto trigger not allowed on module'}
+
+        if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
+            return error
+
         if cache.url.startswith('file'):
             return {'error': 'RiskIQ does not support files.'}
 
@@ -87,10 +87,10 @@ class RiskIQ(AbstractModule):
         if not hostname:
             return {'error': 'No hostname found.'}
 
-        self.pdns_lookup(hostname, force)
+        self.__pdns_lookup(hostname, force)
         return {'success': 'Module triggered'}
 
-    def pdns_lookup(self, hostname: str, force: bool=False, first_seen: date | datetime | None=None) -> None:
+    def __pdns_lookup(self, hostname: str, force: bool=False, first_seen: date | datetime | None=None) -> None:
         '''Lookup an hostname on RiskIQ Passive DNS
         Note: force means re-fetch the entry RiskIQ even if we already did it today
         '''

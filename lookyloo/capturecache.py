@@ -146,14 +146,11 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             # Unable to setup IPASN History
             self.logger.warning(f'Unable to setup IPASN History: {e}')
             self.ipasnhistory = None
-        try:
-            self.cloudflare: Cloudflare | None = Cloudflare()
-            if not self.cloudflare.available:
-                self.cloudflare = None
+        self.cloudflare: Cloudflare = Cloudflare()
+        if not self.cloudflare.available:
+            self.logger.warning('Unable to setup Cloudflare.')
+        else:
             self.logger.info('Cloudflare ready')
-        except Exception as e:
-            self.logger.warning(f'Unable to setup Cloudflare: {e}')
-            self.cloudflare = None
 
     @property
     def cached_captures(self) -> set[str]:
@@ -722,8 +719,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 continue
 
             # check if the resolved IPs are cloudflare IPs
-            if self.cloudflare:
-                # we just want the cloudflare IPs
+            if self.cloudflare.available:
                 if hits := {ip: hit for ip, hit in self.cloudflare.ips_lookup(_all_nodes_ips).items() if hit}:
                     node.add_feature('cloudflare', hits)
 

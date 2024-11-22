@@ -1014,7 +1014,8 @@ def urls_rendered_page(tree_uuid: str) -> WerkzeugResponse | str | Response:
 @app.route('/tree/<string:tree_uuid>/hashlookup', methods=['GET'])
 def hashlookup(tree_uuid: str) -> str | WerkzeugResponse | Response:
     try:
-        merged, total_ressources = lookyloo.merge_hashlookup_tree(tree_uuid)
+        merged, total_ressources = lookyloo.merge_hashlookup_tree(tree_uuid,
+                                                                  as_admin=flask_login.current_user.is_authenticated)
         # We only want unique URLs for the template
         for sha1, entries in merged.items():
             entries['nodes'] = {node.name for node in entries['nodes']}
@@ -1319,6 +1320,8 @@ def tree_urls(tree_uuid: str) -> str:
 
 @app.route('/tree/<string:tree_uuid>/pandora', methods=['GET', 'POST'])
 def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
+    if not lookyloo.pandora.available:
+        return {'error': 'Pandora not available.'}
     node_uuid = None
     if request.method == 'POST':
         input_json = request.get_json(force=True)
