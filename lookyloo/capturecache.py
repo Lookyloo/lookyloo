@@ -740,14 +740,17 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         # and re-traverse the tree.
         if self.ipasnhistory:
             if query_ips := [{'ip': ip} for ip in _all_ips]:
-                ipasn_responses = self.ipasnhistory.mass_query(query_ips)
-                if 'responses' in ipasn_responses:
-                    for response in ipasn_responses['responses']:
-                        ip = response['meta']['ip']
-                        if responses := list(response['response'].values()):
-                            if ip not in ipasn and responses[0]:
-                                ipasn[ip] = responses[0]
+                try:
+                    ipasn_responses = self.ipasnhistory.mass_query(query_ips)
+                    if 'responses' in ipasn_responses:
+                        for response in ipasn_responses['responses']:
+                            ip = response['meta']['ip']
+                            if responses := list(response['response'].values()):
+                                if ip not in ipasn and responses[0]:
+                                    ipasn[ip] = responses[0]
 
+                except Exception as e:
+                    logger.warning(f'Unable to query IPASNHistory: {e}')
         if ipasn:
             # retraverse tree to populate it with the features
             for node in ct.root_hartree.hostname_tree.traverse():
