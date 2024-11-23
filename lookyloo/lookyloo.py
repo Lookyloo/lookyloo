@@ -365,7 +365,7 @@ class Lookyloo():
         if get_config('generic', 'index_everything'):
             get_indexing(full=True).reindex_categories_capture(capture_uuid)
 
-    def trigger_modules(self, capture_uuid: str, /, force: bool=False, auto_trigger: bool=False, *, as_admin: bool=False) -> dict[str, Any]:
+    def trigger_modules(self, capture_uuid: str, /, force: bool, auto_trigger: bool, *, as_admin: bool) -> dict[str, Any]:
         '''Launch the 3rd party modules on a capture.
         It uses the cached result *if* the module was triggered the same day.
         The `force` flag re-triggers the module regardless of the cache.'''
@@ -373,16 +373,16 @@ class Lookyloo():
         if not cache:
             return {'error': f'UUID {capture_uuid} is either unknown or the tree is not ready yet.'}
 
-        self.uwhois.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
-        self.hashlookup.capture_default_trigger(cache, auto_trigger=auto_trigger)
+        self.uwhois.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        self.hashlookup.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
 
         to_return: dict[str, dict[str, Any]] = {'PhishingInitiative': {}, 'VirusTotal': {}, 'UrlScan': {},
                                                 'URLhaus': {}}
-        to_return['PhishingInitiative'] = self.pi.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
-        to_return['VirusTotal'] = self.vt.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
-        to_return['UrlScan'] = self.urlscan.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger)
-        to_return['Phishtank'] = self.phishtank.capture_default_trigger(cache, auto_trigger=auto_trigger)
-        to_return['URLhaus'] = self.urlhaus.capture_default_trigger(cache, auto_trigger=auto_trigger)
+        to_return['PhishingInitiative'] = self.pi.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        to_return['VirusTotal'] = self.vt.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        to_return['UrlScan'] = self.urlscan.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        to_return['Phishtank'] = self.phishtank.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        to_return['URLhaus'] = self.urlhaus.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
         return to_return
 
     def get_modules_responses(self, capture_uuid: str, /) -> dict[str, Any]:
@@ -439,7 +439,7 @@ class Lookyloo():
                     to_return['urlscan']['result'] = result
         return to_return
 
-    def get_historical_lookups(self, capture_uuid: str, /, force: bool=False) -> dict[str, Any]:
+    def get_historical_lookups(self, capture_uuid: str, /, force: bool, auto_trigger: bool, as_admin: bool) -> dict[str, Any]:
         # this method is only trigered when the user wants to get more details about the capture
         # by looking at Passive DNS systems, check if there are hits in the current capture
         # in another one and things like that. The trigger_modules method is for getting
@@ -451,7 +451,7 @@ class Lookyloo():
         to_return: dict[str, Any] = defaultdict(dict)
         if self.riskiq.available:
             try:
-                self.riskiq.capture_default_trigger(cache)
+                self.riskiq.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
                 if hasattr(cache, 'redirects') and cache.redirects:
                     hostname = urlparse(cache.redirects[-1]).hostname
                 else:
@@ -462,7 +462,7 @@ class Lookyloo():
             except RiskIQError as e:
                 self.logger.warning(e.response.content)
         if self.circl_pdns.available:
-            self.circl_pdns.capture_default_trigger(cache)
+            self.circl_pdns.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
             if hasattr(cache, 'redirects') and cache.redirects:
                 hostname = urlparse(cache.redirects[-1]).hostname
             else:
@@ -1180,7 +1180,7 @@ class Lookyloo():
             event.objects[-1].add_reference(screenshot, 'rendered-as', 'Screenshot of the page')
 
         if self.vt.available:
-            response = self.vt.capture_default_trigger(cache, auto_trigger=False, as_admin=as_admin)
+            response = self.vt.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
             if 'error' in response:
                 self.logger.warning(f'Unable to trigger VT: {response["error"]}')
             else:
@@ -1205,7 +1205,7 @@ class Lookyloo():
                 e_obj.add_reference(pt_attribute, 'known-as', 'Permalink on Phishtank')
 
         if self.urlscan.available:
-            response = self.urlscan.capture_default_trigger(cache, auto_trigger=False, as_admin=as_admin)
+            response = self.urlscan.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
             if 'error' in response:
                 self.logger.warning(f'Unable to trigger URLScan: {response["error"]}')
             else:
@@ -1271,7 +1271,7 @@ class Lookyloo():
 
         hashlookup_file = cache.capture_dir / 'hashlookup.json'
         if not hashlookup_file.exists():
-            self.hashlookup.capture_default_trigger(cache, auto_trigger=False, as_admin=as_admin)
+            self.hashlookup.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
 
         if not hashlookup_file.exists():
             # no hits on hashlookup

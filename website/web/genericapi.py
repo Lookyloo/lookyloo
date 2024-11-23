@@ -308,7 +308,8 @@ class TriggerModules(Resource):  # type: ignore[misc]
     def post(self, capture_uuid: str) -> dict[str, Any]:
         parameters: dict[str, Any] = request.get_json(force=True)
         force = True if parameters.get('force') else False
-        return lookyloo.trigger_modules(capture_uuid, force=force)
+        return lookyloo.trigger_modules(capture_uuid, force=force, auto_trigger=False,
+                                        as_admin=flask_login.current_user.is_authenticated)
 
 
 @api.route('/json/<string:capture_uuid>/modules')

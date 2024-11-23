@@ -29,8 +29,8 @@ class FOX(AbstractModule):
 
         return True
 
-    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
-                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool,
+                                auto_trigger: bool, as_admin: bool) -> dict[str, str]:
         '''Run the module on the initial URL'''
 
         if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):

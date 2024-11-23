@@ -5,10 +5,11 @@ from __future__ import annotations
 import logging
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from ..default import get_config
-from ..capturecache import CaptureCache
+if TYPE_CHECKING:
+    from ..capturecache import CaptureCache
 
 logging.config.dictConfig(get_config('logging'))
 
@@ -61,8 +62,8 @@ class AbstractModule(ABC):
     def module_init(self) -> bool:
         ...
 
-    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
-                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool,
+                                auto_trigger: bool, as_admin: bool) -> dict[str, str]:
         if not self.available:
             return {'error': 'Module not available'}
         if auto_trigger and not self.allow_auto_trigger:

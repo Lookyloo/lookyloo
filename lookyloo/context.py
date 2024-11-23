@@ -23,7 +23,7 @@ class Context():
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.redis: Redis = Redis(unix_socket_path=get_socket_path('indexing'), db=1, decode_responses=True)  # type: ignore[type-arg]
         self._cache_known_content()
-        self.sanejs = SaneJavaScript(config_name='SaneJS')
+        self.sanejs = SaneJavaScript()
 
     def clear_context(self) -> None:
         self.redis.flushdb()

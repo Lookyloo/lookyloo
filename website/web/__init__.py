@@ -662,14 +662,15 @@ def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | R
 def trigger_modules(tree_uuid: str) -> WerkzeugResponse | str | Response:
     force = True if (request.args.get('force') and request.args.get('force') == 'True') else False
     auto_trigger = True if (request.args.get('auto_trigger') and request.args.get('auto_trigger') == 'True') else False
-    lookyloo.trigger_modules(tree_uuid, force=force, auto_trigger=auto_trigger)
+    lookyloo.trigger_modules(tree_uuid, force=force, auto_trigger=auto_trigger, as_admin=flask_login.current_user.is_authenticated)
     return redirect(url_for('modules', tree_uuid=tree_uuid))
 
 
 @app.route('/tree/<string:tree_uuid>/historical_lookups', methods=['GET'])
 def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
     force = True if (request.args.get('force') and request.args.get('force') == 'True') else False
-    data = lookyloo.get_historical_lookups(tree_uuid, force)
+    auto_trigger = True if (request.args.get('auto_trigger') and request.args.get('auto_trigger') == 'True') else False
+    data = lookyloo.get_historical_lookups(tree_uuid, force=force, auto_trigger=auto_trigger, as_admin=flask_login.current_user.is_authenticated)
     return render_template('historical_lookups.html', tree_uuid=tree_uuid,
                            riskiq=data.get('riskiq'),
                            circl_pdns=data.get('circl_pdns'))

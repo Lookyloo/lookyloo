@@ -43,8 +43,8 @@ class PhishingInitiative(AbstractModule):
         with cached_entries[0].open() as f:
             return json.load(f)
 
-    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool=False,
-                                auto_trigger: bool=False, as_admin: bool=False) -> dict[str, str]:
+    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool,
+                                auto_trigger: bool, as_admin: bool) -> dict[str, str]:
         '''Run the module on all the nodes up to the final redirect'''
 
         if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):

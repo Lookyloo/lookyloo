@@ -118,7 +118,7 @@ class BackgroundBuildCaptures(AbstractManager):
                     self.logger.info(f'Build pickle for {uuid}: {path.name}')
                     self.lookyloo.get_crawled_tree(uuid)
                     try:
-                        self.lookyloo.trigger_modules(uuid, auto_trigger=True)
+                        self.lookyloo.trigger_modules(uuid, auto_trigger=True, force=False, as_admin=False)
                     except Exception as e:
                         self.logger.exception(f'Unable to trigger modules for {uuid}: {e}')
                     self.logger.info(f'Pickle for {uuid} built.')

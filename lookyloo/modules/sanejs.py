@@ -3,34 +3,39 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import date
 from collections.abc import Iterable
 
 from pysanejs import SaneJS  # type: ignore[attr-defined]
 
-from ..default import get_homedir
-
-from .abstractmodule import AbstractModule
+from ..default import get_homedir, get_config, LookylooException
 
 
-class SaneJavaScript(AbstractModule):
+class SaneJavaScript():
 
-    def module_init(self) -> bool:
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.logger.setLevel(get_config('generic', 'loglevel'))
+        self.config = get_config('modules', 'SaneJS')
         if not self.config.get('enabled'):
             self.logger.info('Not enabled.')
-            return False
+            self.available = False
 
         self.client = SaneJS()
 
         if not self.client.is_up:
             self.logger.warning('Not up.')
-            return False
+            self.available = False
 
         self.storage_dir = get_homedir() / 'sanejs'
         self.storage_dir.mkdir(parents=True, exist_ok=True)
-        return True
+        self.available = True
 
     def hashes_lookup(self, sha512: Iterable[str] | str, force: bool=False) -> dict[str, list[str]]:
+        if not self.available:
+            raise LookylooException('SaneJS is not available.')
+
         if isinstance(sha512, str):
             hashes: Iterable[str] = [sha512]
         else:
