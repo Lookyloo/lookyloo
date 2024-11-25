@@ -1291,13 +1291,13 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.27.2"
+version = "1.27.3"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<3.14,>=3.9"
 files = [
-    {file = "har2tree-1.27.2-py3-none-any.whl", hash = "sha256:3489aaa31dea1c8181078ddec6349e61ab44056b049af54884059f23cff820b7"},
-    {file = "har2tree-1.27.2.tar.gz", hash = "sha256:fc2b6ab907eea0dcf27b0bee5dd9563bb06a5f68b7545bb81d428a1ab4a495cb"},
+    {file = "har2tree-1.27.3-py3-none-any.whl", hash = "sha256:85474ede9467f316ceabd35b5561ec6d3d42e9f1da98397ff9dd1b70172d0dad"},
+    {file = "har2tree-1.27.3.tar.gz", hash = "sha256:6639b7eb4ab368174e2cf7cb5b36c0376e146aae2859ccaf2352975142d30624"},
 ]
 
 [package.dependencies]
@@ -1310,7 +1310,7 @@ numpy = [
     {version = "<2.1", markers = "python_version < \"3.10\""},
     {version = ">=2.1,<3.0", markers = "python_version >= \"3.10\""},
 ]
-publicsuffixlist = ">=1.0.2.20241121,<2.0.0.0"
+publicsuffixlist = ">=1.0.2.20241124,<2.0.0.0"
 w3lib = ">=2.2.1,<3.0.0"
 
 [package.extras]
@@ -2790,13 +2790,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20241123"
+version = "1.0.2.20241124"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "publicsuffixlist-1.0.2.20241123-py2.py3-none-any.whl", hash = "sha256:16b6a101c78908a3b44d82f3d23b40200e84c7ab92d533db2d60e636c705e5b8"},
-    {file = "publicsuffixlist-1.0.2.20241123.tar.gz", hash = "sha256:6feef67048dac5981559ba4bbf81196342accefe78e7f9e25e91af5a91091a01"},
+    {file = "publicsuffixlist-1.0.2.20241124-py2.py3-none-any.whl", hash = "sha256:0cd9c04d517ed4d09d1cb12aca54344847b4173c17ba2a8341a3a029e7e8ca0c"},
+    {file = "publicsuffixlist-1.0.2.20241124.tar.gz", hash = "sha256:7e02704c4540e78f77d88f867e74ee7a30291a3caea5b391277c683e6ee7c0e6"},
 ]
 
 [package.extras]
@@ -3286,35 +3286,35 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)", "Sphinx (>=8,<9)"]
 
 [[package]]
 name = "pyphishtanklookup"
-version = "1.4.0"
+version = "1.4.1"
 description = "Python CLI and module for PhishtankLookup"
 optional = false
-python-versions = "<4.0,>=3.8"
+python-versions = "<4.0,>=3.9"
 files = [
-    {file = "pyphishtanklookup-1.4.0-py3-none-any.whl", hash = "sha256:59e5c9b2dfcdface937015f1f68da6fdf53a49f17d416afd93306683bde60721"},
-    {file = "pyphishtanklookup-1.4.0.tar.gz", hash = "sha256:4b311cea6c71483604bf17c216e6e0d545629296a27b17172895695af7fcbf5c"},
+    {file = "pyphishtanklookup-1.4.1-py3-none-any.whl", hash = "sha256:a5d177e24bc5009b82feaa3fd871ca81a0ecc6a1eb63a3d7b34e51ba726bd25e"},
+    {file = "pyphishtanklookup-1.4.1.tar.gz", hash = "sha256:2dc77f0202ee8f4925b2e2bdee9fd7048f4ecf41f5b7672eeacb060719cb8940"},
 ]
 
 [package.dependencies]
 requests = ">=2.32.3,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)"]
-lookyloo-example = ["pylookyloo (>=1.25.0,<2.0.0)"]
+docs = ["Sphinx (>=7.2,<8.0)", "Sphinx (>=8,<9)"]
+lookyloo-example = ["pylookyloo (>=1.26.1,<2.0.0)"]
 
 [[package]]
 name = "pysanejs"
-version = "2.0.2"
+version = "2.0.3"
 description = "Python client for SaneJS"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.9"
 files = [
-    {file = "pysanejs-2.0.2-py3-none-any.whl", hash = "sha256:6cdf462633823979486e721c9cf5c60a814ea949ff7392ae7aed823b35fc2166"},
-    {file = "pysanejs-2.0.2.tar.gz", hash = "sha256:7100009f059dce496cb1945dc31587e3bdf617b4ce68ebaccf9c59e16fe47b52"},
+    {file = "pysanejs-2.0.3-py3-none-any.whl", hash = "sha256:7a3ea0ad7b85cd956632b6d08ff6737d257ae8cfff6fd474716a6c77be418dfd"},
+    {file = "pysanejs-2.0.3.tar.gz", hash = "sha256:c4a03ddd0a2a2a2eae16d26a2977049871c47b175394d678cba7c27e163d660c"},
 ]
 
 [package.dependencies]
-requests = ">=2.31.0,<3.0.0"
+requests = ">=2.32.3,<3.0.0"
 
 [[package]]
 name = "pysecuritytxt"
@@ -4501,4 +4501,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.14"
-content-hash = "40b668da5b396e3bd041db39e3ac00b78dac08e457b7b855bc1ee743358adb4a"
+content-hash = "dcb6530da63fc4b98f84257734d8fea2ff56a45bf83ddac8d72e7b86639202c6"
