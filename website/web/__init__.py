@@ -1503,6 +1503,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            default=user_agents.default,
                            personal_ua=user_ua,
                            default_public=get_config('generic', 'default_public'),
+                           public_domain=lookyloo.public_domain,
                            devices=lookyloo.get_playwright_devices(),
                            predefined_settings=predefined_settings if predefined_settings else {},
                            user_config=user_config,
