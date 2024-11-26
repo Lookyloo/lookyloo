@@ -20,7 +20,7 @@
     <h6>Only the most recent captures are listed below, this will change soon.</h6>
 </center>
 
-<table id="hostnameTable" class="table table-striped" style="width:100%">
+<table id="hostnameTable" class="table table-striped" style="width:100%" data-hostname="{{hostname}}">
   <thead>
    <tr>
      <th>Capture Time</th>
@@ -28,35 +28,5 @@
      <th>Landing page</th>
    </tr>
   </thead>
-  <tbody>
-    {% for capture_uuid, title, landing_page, capture_time, nodes in captures %}
-    <tr>
-      <td>
-        {{capture_time}}
-      </td>
-      <td>
-        <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">
-          {{ title }}
-        </a>
-        <br>
-        The capture contains this hostname in {{ nodes|length }} nodes, click below to see them on the tree:
-        <ul>
-            {% for node in nodes %}
-            <li>
-                <a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=node) }}">
-                {{ shorten_string(node, 50) }}
-                </a>
-            </li>
-            {% endfor %}
-        </ul>
-      </td>
-      <td>
-        <span class="d-inline-block text-break" style="max-width: 400px;">
-          {{ landing_page }}
-        </span>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
 </table>
 {% endblock %}

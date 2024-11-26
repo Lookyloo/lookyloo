@@ -512,21 +512,23 @@ class Indexing():
         return self.redis.zcard(f'urls|{md5}|captures')
 
     def get_captures_hostname(self, hostname: str, most_recent_capture: datetime | None = None,
-                              oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+                              oldest_capture: datetime | None= None,
+                              offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
         """Get all the captures for a specific hostname, on a time interval starting from the most recent one.
 
         :param url: The URL
         :param most_recent_capture: The capture time of the most recent capture to consider
-        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 15 days ago.
+        :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
         if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'hostnames|{hostname}|captures'))
             self.redis.delete(f'hostnames|{hostname}|captures')
-            return []
-        return self.redis.zrevrangebyscore(f'hostnames|{hostname}|captures', max_score, min_score, withscores=True)
+            return 0, []
+        total = self.redis.zcard(f'hostnames|{hostname}|captures')
+        return total, self.redis.zrevrangebyscore(f'hostnames|{hostname}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
     def get_captures_hostname_count(self, hostname: str) -> int:
         if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]

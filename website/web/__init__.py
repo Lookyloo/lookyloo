@@ -398,14 +398,15 @@ def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode
     return to_return
 
 
-def get_hostname_investigator(hostname: str) -> list[tuple[str, str, str, datetime, set[str]]]:
+def get_hostname_investigator(hostname: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime, set[str]]]]:
     '''Returns all the captures loading content from that hostname, used in the web interface.'''
+    total, entries = get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname, offset=offset, limit=limit)
     cached_captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname)],
+        [uuid for uuid, _ in entries],
         cached_captures_only=True)
-    return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp,
-            get_indexing(flask_login.current_user).get_capture_hostname_nodes(cache.uuid, hostname)
-             ) for cache in cached_captures]
+    return total, [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp,
+                   get_indexing(flask_login.current_user).get_capture_hostname_nodes(cache.uuid, hostname)
+                    ) for cache in cached_captures]
 
 
 def get_url_investigator(url: str) -> list[tuple[str, str, str, datetime, set[str]]]:
@@ -1797,8 +1798,8 @@ def url_details(url: str) -> str:
 @app.route('/hostnames/<string:hostname>', methods=['GET'])
 def hostname_details(hostname: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    captures = get_hostname_investigator(hostname.strip())
-    return render_template('hostname.html', hostname=hostname, captures=captures, from_popup=from_popup)
+    # captures = get_hostname_investigator(hostname.strip())
+    return render_template('hostname.html', hostname=hostname, from_popup=from_popup)
 
 
 @app.route('/stats', methods=['GET'])
@@ -1975,6 +1976,35 @@ def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
     elif callback_str == 'ressources':
         return redirect(url_for('ressources'))
     return None
+
+
+def __prepare_node_view(capture_uuid: str, nodes: set[str]) -> str:
+    to_return = f'The capture contains this hostname in {len(nodes)} nodes, click below to see them on the tree:'
+    to_return += '<ul>'
+    for node in nodes:
+        to_return += f'<li><a href="{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}">{node}</a></li>'
+    to_return += '</ul>'
+    return to_return
+
+
+@app.route('/tables/<string:table_name>/<string:value>', methods=['POST'])
+def post_table(table_name: str, value: str) -> Response:
+    draw = request.form.get('draw', type=int)
+    start = request.form.get('start', type=int)
+    length = request.form.get('length', type=int)
+    if table_name == 'hostnameTable':
+        total, captures = get_hostname_investigator(value.strip(), offset=start, limit=length)
+        prepared_captures = []
+        for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            _nodes = __prepare_node_view(capture_uuid, nodes)
+            to_append = {
+                'capture_time': capture_time.isoformat(),
+                'capture_title': f"""<a href="{url_for('tree', tree_uuid=capture_uuid)}">{title}</a></br>{_nodes}""",
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+            }
+            prepared_captures.append(to_append)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
+    return jsonify({})
 
 
 # Query API

@@ -129,8 +129,19 @@
   }
 
   if (document.getElementById('hostnameTable')) {
+    hostname = document.getElementById('hostnameTable').dataset.hostname;
     new DataTable('#hostnameTable', {
-    retrieve: true,
+    processing: true,
+    serverSide: true,
+    ajax: {
+        url: `/tables/hostnameTable/${hostname}`,
+        type: 'POST'
+    },
+    columns : [
+        { data: 'capture_time' },
+        { data: 'capture_title' },
+        { data: 'landing_page' }
+    ],
     order: [[ 0, "desc" ]],
     columnDefs: [{ width: '20%', targets: 0,
                    render: (data) => {
