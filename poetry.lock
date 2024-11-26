@@ -3151,20 +3151,20 @@ docs = ["Sphinx (<7.2)", "Sphinx (<8)", "Sphinx (>=8,<9)"]
 
 [[package]]
 name = "pyipasnhistory"
-version = "2.1.2"
+version = "2.1.3"
 description = "Python client for IP ASN History"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.9"
 files = [
-    {file = "pyipasnhistory-2.1.2-py3-none-any.whl", hash = "sha256:7743de1bb7e735f9b907a3cff8ab189a1d8b5517b56b64f151fc4793b2863e35"},
-    {file = "pyipasnhistory-2.1.2.tar.gz", hash = "sha256:10aed86bfbaedc8a119cdd5f59eca646938eb266c717f10394ba9fc2199f0281"},
+    {file = "pyipasnhistory-2.1.3-py3-none-any.whl", hash = "sha256:36a227a92958122d26e5795ad07758fce7c935f8c2211ac29dd7d83c32ff6859"},
+    {file = "pyipasnhistory-2.1.3.tar.gz", hash = "sha256:a02f218374959df61db45ba5eec6c0b54dca1440bc14d06facf645e21d13f49c"},
 ]
 
 [package.dependencies]
-requests = ">=2.28.1,<3.0.0"
+requests = ">=2.32.3,<3.0.0"
 
 [package.extras]
-docs = ["Sphinx (>=5.3.0,<6.0.0)"]
+docs = ["Sphinx (>=8.1.3,<9.0.0)"]
 
 [[package]]
 name = "pylacus"
@@ -4501,4 +4501,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.14"
-content-hash = "dcb6530da63fc4b98f84257734d8fea2ff56a45bf83ddac8d72e7b86639202c6"
+content-hash = "fd64f6ae5154f4d137efa28eed37e550526681e53a96ee50870bfc68eb197f64"
