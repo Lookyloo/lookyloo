@@ -485,22 +485,24 @@ class Indexing():
         self.logger.debug(f'done with URLs for {crawled_tree.uuid}.')
 
     def get_captures_url(self, url: str, most_recent_capture: datetime | None = None,
-                         oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+                         oldest_capture: datetime | None= None,
+                         offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
         """Get all the captures for a specific URL, on a time interval starting from the most recent one.
 
         :param url: The URL
         :param most_recent_capture: The capture time of the most recent capture to consider
-        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 15 days ago.
+        :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
         md5 = hashlib.md5(url.encode()).hexdigest()
         if self.redis.type(f'urls|{md5}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'urls|{md5}|captures'))
             self.redis.delete(f'urls|{md5}|captures')
-            return []
-        return self.redis.zrevrangebyscore(f'urls|{md5}|captures', max_score, min_score, withscores=True)
+            return 0, []
+        total = self.redis.zcard(f'urls|{md5}|captures')
+        return total, self.redis.zrevrangebyscore(f'urls|{md5}|captures', max_score, min_score, withscores=True)
 
     def get_captures_url_count(self, url: str) -> int:
         md5 = hashlib.md5(url.encode()).hexdigest()

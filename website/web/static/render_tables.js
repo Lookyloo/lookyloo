@@ -156,8 +156,20 @@
   }
 
   if (document.getElementById('urlTable')) {
+      url = document.getElementById('urlTable').dataset.url;
       new DataTable('#urlTable', {
+        processing: true,
+        serverSide: true,
         retrieve: true,
+        ajax: {
+            url: `/tables/urlTable/${url}`,
+            type: 'POST'
+        },
+        columns : [
+            { data: 'capture_time' },
+            { data: 'capture_title' },
+            { data: 'landing_page' }
+        ],
         order: [[ 0, "desc" ]],
         columnDefs: [{ width: '20%', targets: 0,
                        render: (data) => {
