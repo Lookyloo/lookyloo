@@ -183,8 +183,20 @@
   }
 
   if (document.getElementById('faviconDetailsTable')) {
+    favicon = document.getElementById('faviconDetailsTable').dataset.favicon;
     new DataTable('#faviconDetailsTable', {
+      processing: true,
+      serverSide: true,
       retrieve: true,
+      ajax: {
+          url: `/tables/faviconDetailsTable/${favicon}`,
+          type: 'POST'
+      },
+      columns : [
+          { data: 'capture_time' },
+          { data: 'capture_title' },
+          { data: 'landing_page' }
+      ],
       order: [[ 0, "desc" ]],
       columnDefs: [{ width: '30%',
                      targets: 0,

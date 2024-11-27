@@ -441,23 +441,12 @@ def get_capture_hash_investigator(hash_type: str, h: str) -> list[tuple[str, str
     return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
-def get_favicon_investigator(favicon_sha512: str,
-                             /) -> tuple[list[tuple[str, str, str, datetime]],
-                                         tuple[str, str, str]]:
+def get_favicon_investigator(favicon_sha512: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime]]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_favicon(favicon_sha512)])
+    total, entries = get_indexing(flask_login.current_user).get_captures_favicon(favicon_sha512=favicon_sha512, offset=offset, limit=limit)
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
     captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
-    favicon = get_indexing(flask_login.current_user).get_favicon(favicon_sha512)
-    if favicon:
-        mimetype = from_string(favicon, mime=True)
-        b64_favicon = base64.b64encode(favicon).decode()
-        mmh3_shodan = lookyloo.compute_mmh3_shodan(favicon)
-    else:
-        mimetype = ''
-        b64_favicon = ''
-        mmh3_shodan = ''
-
-    return captures, (mimetype, b64_favicon, mmh3_shodan)
+    return total, captures
 
 
 def get_hhh_investigator(hhh: str, /) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str]]]:
@@ -1773,11 +1762,19 @@ def capture_hash_details(hash_type: str, h: str) -> str:
 @app.route('/favicon_details/<string:favicon_sha512>', methods=['GET'])
 def favicon_detail(favicon_sha512: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    captures, favicon = get_favicon_investigator(favicon_sha512.strip())
-    mimetype, b64_favicon, mmh3_shodan = favicon
+    favicon = get_indexing(flask_login.current_user).get_favicon(favicon_sha512)
+    if favicon:
+        mimetype = from_string(favicon, mime=True)
+        b64_favicon = base64.b64encode(favicon).decode()
+        mmh3_shodan = lookyloo.compute_mmh3_shodan(favicon)
+    else:
+        mimetype = ''
+        b64_favicon = ''
+        mmh3_shodan = ''
     return render_template('favicon_details.html',
-                           captures=captures, mimetype=mimetype, b64_favicon=b64_favicon,
+                           mimetype=mimetype, b64_favicon=b64_favicon,
                            mmh3_shodan=mmh3_shodan,
+                           favicon_sha512=favicon_sha512,
                            from_popup=from_popup)
 
 
@@ -1993,6 +1990,19 @@ def post_table(table_name: str, value: str) -> Response:
     draw = request.form.get('draw', type=int)
     start = request.form.get('start', type=int)
     length = request.form.get('length', type=int)
+    captures: list[tuple[str, str, str, datetime, set[str]]] | list[tuple[str, str, str, datetime]]
+    if table_name == 'faviconDetailsTable':
+        total, captures = get_favicon_investigator(value.strip(), offset=start, limit=length)
+        prepared_captures = []
+        for capture_uuid, title, landing_page, capture_time in captures:
+            to_append = {
+                'capture_time': capture_time.isoformat(),
+                'capture_title': f"""<a href="{url_for('tree', tree_uuid=capture_uuid)}">{title}</a>""",
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+            }
+            prepared_captures.append(to_append)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
+
     if table_name == 'hostnameTable':
         total, captures = get_hostname_investigator(value.strip(), offset=start, limit=length)
         prepared_captures = []
@@ -2005,6 +2015,7 @@ def post_table(table_name: str, value: str) -> Response:
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
+
     if table_name == 'urlTable':
         url = base64.b64decode(value.strip()).decode()
         total, captures = get_url_investigator(url, offset=start, limit=length)
