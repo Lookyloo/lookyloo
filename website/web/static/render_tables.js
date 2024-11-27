@@ -133,6 +133,7 @@
     new DataTable('#hostnameTable', {
     processing: true,
     serverSide: true,
+    retrieve: true,
     ajax: {
         url: `/tables/hostnameTable/${hostname}`,
         type: 'POST'
