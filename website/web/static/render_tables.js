@@ -44,7 +44,20 @@
   }
 
   if (document.getElementById('identifierDetailsTable')) {
+      identifier_value = document.getElementById('identifierDetailsTable').dataset.identifier;
       new DataTable('#identifierDetailsTable', {
+        processing: true,
+        serverSide: true,
+        retrieve: true,
+        ajax: {
+            url: `/tables/identifierDetailsTable/${identifier_value}`,
+            type: 'POST'
+        },
+        columns : [
+            { data: 'capture_time' },
+            { data: 'capture_title' },
+            { data: 'landing_page' }
+        ],
         retrieve: true,
         order: [[ 0, "desc" ]],
         columnDefs: [{ width: '30%',
