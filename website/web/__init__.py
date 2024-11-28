@@ -434,11 +434,11 @@ def get_identifier_investigator(identifier_type: str, identifier: str) -> list[t
     return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
-def get_capture_hash_investigator(hash_type: str, h: str) -> list[tuple[str, str, str, datetime]]:
-    cached_captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_hash_type(hash_type=hash_type, h=h)],
-        cached_captures_only=True)
-    return [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
+def get_capture_hash_investigator(hash_type: str, h: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime]]]:
+    total, entries = get_indexing(flask_login.current_user).get_captures_hash_type(hash_type=hash_type, h=h, offset=offset, limit=limit)
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+    captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
+    return total, captures
 
 
 def get_favicon_investigator(favicon_sha512: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime]]]:
@@ -1991,6 +1991,19 @@ def post_table(table_name: str, value: str) -> Response:
     start = request.form.get('start', type=int)
     length = request.form.get('length', type=int)
     captures: list[tuple[str, str, str, datetime, set[str]]] | list[tuple[str, str, str, datetime]]
+    if table_name == 'hashTypeDetailsTable':
+        hash_type, h = value.strip().split('|')
+        total, captures = get_capture_hash_investigator(hash_type, h, offset=start, limit=length)
+        prepared_captures = []
+        for capture_uuid, title, landing_page, capture_time in captures:
+            to_append = {
+                'capture_time': capture_time.isoformat(),
+                'capture_title': f"""<a href="{url_for('tree', tree_uuid=capture_uuid)}">{title}</a>""",
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+            }
+            prepared_captures.append(to_append)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
+
     if table_name == 'faviconDetailsTable':
         total, captures = get_favicon_investigator(value.strip(), offset=start, limit=length)
         prepared_captures = []

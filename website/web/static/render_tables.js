@@ -15,8 +15,20 @@
     });
   }
   if (document.getElementById('hashTypeDetailsTable')) {
+      hash_value = document.getElementById('hashTypeDetailsTable').dataset.hashvalue;
       new DataTable('#hashTypeDetailsTable', {
+        processing: true,
+        serverSide: true,
         retrieve: true,
+        ajax: {
+            url: `/tables/hashTypeDetailsTable/${hash_value}`,
+            type: 'POST'
+        },
+        columns : [
+            { data: 'capture_time' },
+            { data: 'capture_title' },
+            { data: 'landing_page' }
+        ],
         order: [[ 0, "desc" ]],
         columnDefs: [{ width: '30%',
                        targets: 0,

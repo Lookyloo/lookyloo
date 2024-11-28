@@ -770,17 +770,19 @@ class Indexing():
         return to_return
 
     def get_captures_hash_type(self, hash_type: str, h: str, most_recent_capture: datetime | None = None,
-                               oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+                               oldest_capture: datetime | None= None,
+                               offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
         """Get all the captures for a hash of a specific type, on a time interval starting from the most recent one.
 
         :param hash_type: The type of hash
         :param h: The hash
         :param most_recent_capture: The capture time of the most recent capture to consider
-        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 20 days ago.
+        :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=20)).timestamp()
-        return self.redis.zrevrangebyscore(f'capture_hash_types|{hash_type}|{h}|captures', max_score, min_score, withscores=True)
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
+        total = self.redis.zcard(f'capture_hash_types|{hash_type}|{h}|captures')
+        return total, self.redis.zrevrangebyscore(f'capture_hash_types|{hash_type}|{h}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
     def get_captures_hash_type_count(self, hash_type: str, h: str) -> int:
         if hash_type == 'certpl_html_structure_hash':

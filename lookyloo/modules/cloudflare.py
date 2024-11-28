@@ -17,6 +17,7 @@ class Cloudflare():
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         session = requests.Session()
+        self.available = True
         # Get IPv4
         try:
             r = session.get('https://www.cloudflare.com/ips-v4', timeout=2)
@@ -34,9 +35,9 @@ class Cloudflare():
             self.logger.warning(f'Unable to get Cloudflare IPv6 list: {e}')
             self.available = False
 
-        self.v4_list = [ipaddress.ip_network(net) for net in ipv4_list.split('\n')]
-        self.v6_list = [ipaddress.ip_network(net) for net in ipv6_list.split('\n')]
-        self.available = True
+        if self.available:
+            self.v4_list = [ipaddress.ip_network(net) for net in ipv4_list.split('\n')]
+            self.v6_list = [ipaddress.ip_network(net) for net in ipv6_list.split('\n')]
 
     def ips_lookup(self, ips: set[str]) -> dict[str, bool]:
         '''Lookup a list of IPs. True means it is a known Cloudflare IP'''
