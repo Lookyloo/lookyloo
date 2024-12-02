@@ -39,22 +39,27 @@ function downloadBase64File(contentType, base64Data, fileName) {
      downloadLink.click();
 }
 
+
+function newTabClickListener() {
+    document.querySelectorAll('.openNewTab').forEach(el => el.addEventListener('click', event => {
+        if (window.opener === null) {
+            return openTreeInNewTab(el.dataset.capture, el.dataset.hostnode)
+        } else {
+            let success = window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
+            if (! success) {
+                alert("Your browser doesn't allow Lookyloo to open a new tab. There should be an icon on the right side of your URL bar *in the main window* to allow it.");
+            }
+        }
+    }));
+};
+
 document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll('.goBack').forEach(el => el.addEventListener('click', event => {
     window.history.back();
   }));
 
-  document.querySelectorAll('.openNewTab').forEach(el => el.addEventListener('click', event => {
-      if (window.opener === null) {
-          return openTreeInNewTab(el.dataset.capture, el.dataset.hostnode)
-      } else {
-          let success = window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
-          if (! success) {
-              alert("Your browser doesn't allow Lookyloo to open a new tab. There should be an icon on the right side of your URL bar *in the main window* to allow it.");
-          }
-      }
-  }));
+  newTabClickListener();
 
   document.querySelectorAll(".locateInTree").forEach(el => el.addEventListener('click', event => {
     window.opener.LocateNode(el.dataset.hostnode);

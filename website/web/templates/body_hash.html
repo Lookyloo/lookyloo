@@ -18,12 +18,10 @@
 
 <center>
   <h6>{{ body_hash }}</h6>
-  <h6>Only the most recent captures are listed below, this will change soon.</h6>
   <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">Download</a>
 </center>
 
-<p>The same file was seen in these captures recently:</p>
-<table id="bodyHashDetailsTable" class="table table-striped" style="width:100%">
+<table id="bodyHashDetailsTable" class="table table-striped" style="width:100%" data-bodyhash="{{body_hash}}">
   <thead>
    <tr>
      <th>Capture Time</th>
@@ -31,20 +29,5 @@
      <th>URL</th>
    </tr>
   </thead>
-  <tbody>
-    {% for capture_uuid, title, timestamp, hostnode_uuid, url in captures %}
-    <tr>
-      <td>{{ timestamp }}</td>
-      <td>
-        {% if from_popup %}
-        <button type="button" class="btn btn-link openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{hostnode_uuid}}">{{ title }}</button>
-        {% else %}
-        <a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid) }}">{{ title }}</a>
-        {% endif %}
-      </td>
-      <td>{{ url }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
 </table>
 {% endblock %}

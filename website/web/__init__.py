@@ -339,11 +339,10 @@ def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Respons
 
 # ##### Methods querying the indexes #####
 
-def _get_body_hash_investigator(body_hash: str, /) -> list[tuple[str, str, datetime, str, str]]:
+def _get_body_hash_investigator(body_hash: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, datetime, str, str]]]:
     '''Returns all the captures related to a hash (sha512), used in the web interface.'''
-    cached_captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_body_hash(body_hash)],
-        cached_captures_only=True)
+    total, entries = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash=body_hash, offset=offset, limit=limit)
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
     captures = []
     for cache in cached_captures:
         if not cache:
@@ -354,7 +353,7 @@ def _get_body_hash_investigator(body_hash: str, /) -> list[tuple[str, str, datet
             except IndexError:
                 continue
             captures.append((cache.uuid, cache.title, cache.timestamp, urlnode.hostnode_uuid, urlnode.name))
-    return captures
+    return total, captures
 
 
 def get_all_body_hashes(capture_uuid: str, /) -> dict[str, dict[str, URLNode | int]]:
@@ -401,9 +400,7 @@ def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode
 def get_hostname_investigator(hostname: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime, set[str]]]]:
     '''Returns all the captures loading content from that hostname, used in the web interface.'''
     total, entries = get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname, offset=offset, limit=limit)
-    cached_captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in entries],
-        cached_captures_only=True)
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
     return total, [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp,
                    get_indexing(flask_login.current_user).get_capture_hostname_nodes(cache.uuid, hostname)
                     ) for cache in cached_captures]
@@ -412,9 +409,7 @@ def get_hostname_investigator(hostname: str, offset: int | None=None, limit: int
 def get_url_investigator(url: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime, set[str]]]]:
     '''Returns all the captures loading content from that url, used in the web interface.'''
     total, entries = get_indexing(flask_login.current_user).get_captures_url(url=url, offset=offset, limit=limit)
-    cached_captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in entries],
-        cached_captures_only=True)
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
     return total, [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp,
                    get_indexing(flask_login.current_user).get_capture_url_nodes(cache.uuid, url)
                     ) for cache in cached_captures]
@@ -478,9 +473,9 @@ def hash_lookup(blob_hash: str, url: str, current_capture_uuid: str) -> tuple[in
     If a URL is given, it splits the results if the hash is seen on the same URL or an other one.
     Capture UUID avoids duplicates on the same capture'''
     captures_list: dict[str, list[tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
+    _, entries = get_indexing(flask_login.current_user).get_captures_body_hash(blob_hash, oldest_capture=datetime.now() - timedelta(**time_delta_on_index))
     cached_captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_body_hash(blob_hash,
-                                                                                           oldest_capture=datetime.now() - timedelta(**time_delta_on_index))],
+        [uuid for uuid, _ in entries],
         cached_captures_only=True)
     for cache in cached_captures:
         if cache.uuid == current_capture_uuid:
@@ -1441,7 +1436,8 @@ def ressources() -> str:
         freq = get_indexing(flask_login.current_user).get_captures_body_hash_count(h)
         context = lookyloo.context.find_known_content(h)
         # Only get the recent captures
-        for capture_uuid, capture_ts in get_indexing(flask_login.current_user).get_captures_body_hash(h):
+        _, entries = get_indexing(flask_login.current_user).get_captures_body_hash(h, oldest_capture=datetime.now() - timedelta(**time_delta_on_index))
+        for capture_uuid, capture_ts in entries:
             url_nodes = get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, h)
             url_node = url_nodes.pop()
             ressource = lookyloo.get_ressource(capture_uuid, url_node, h)
@@ -1778,8 +1774,7 @@ def favicon_detail(favicon_sha512: str) -> str:
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])
 def body_hash_details(body_hash: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    captures = _get_body_hash_investigator(body_hash.strip())
-    return render_template('body_hash.html', body_hash=body_hash, captures=captures, from_popup=from_popup)
+    return render_template('body_hash.html', body_hash=body_hash, from_popup=from_popup)
 
 
 @app.route('/urls/<string:url>', methods=['GET'])
@@ -1793,7 +1788,6 @@ def url_details(url: str) -> str:
 @app.route('/hostnames/<string:hostname>', methods=['GET'])
 def hostname_details(hostname: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    # captures = get_hostname_investigator(hostname.strip())
     return render_template('hostname.html', hostname=hostname, from_popup=from_popup)
 
 
@@ -1984,10 +1978,27 @@ def __prepare_node_view(capture_uuid: str, nodes: set[str]) -> str:
 
 @app.route('/tables/<string:table_name>/<string:value>', methods=['POST'])
 def post_table(table_name: str, value: str) -> Response:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     draw = request.form.get('draw', type=int)
     start = request.form.get('start', type=int)
     length = request.form.get('length', type=int)
-    captures: list[tuple[str, str, str, datetime, set[str]]] | list[tuple[str, str, str, datetime]]
+    captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, set[str]]] | list[tuple[str, str, str, datetime]]
+    if table_name == 'bodyHashDetailsTable':
+        body_hash = value.strip()
+        total, captures = _get_body_hash_investigator(body_hash, offset=start, limit=length)
+        prepared_captures = []
+        for capture_uuid, title, capture_time, hostnode_uuid, url in captures:
+            to_append = {
+                'capture_time': capture_time.isoformat(),
+                'url': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{url}</span>"""
+            }
+            if from_popup:
+                to_append['capture_title'] = f"""<button type="button" class="btn btn-link openNewTab" data-capture="{capture_uuid}" data-hostnode="{hostnode_uuid}">{title}</button>"""
+            else:
+                to_append['capture_title'] = f"""<a href="{url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid)}">{title}</a>"""
+            prepared_captures.append(to_append)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
+
     if table_name == 'identifierDetailsTable':
         identifier_type, identifier = value.strip().split('|')
         total, captures = get_identifier_investigator(identifier_type, identifier, offset=start, limit=length)

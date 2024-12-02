@@ -1,18 +1,30 @@
 ["DOMContentLoaded", "shown.bs.modal", "jquery.modal.rendered"].forEach(e => window.addEventListener(e, function() {
-
   if (document.getElementById('bodyHashDetailsTable')) {
+    bodyhash = document.getElementById('bodyHashDetailsTable').dataset.bodyhash;
     new DataTable('#bodyHashDetailsTable', {
-                  retrieve: true,
-                  order: [[ 0, "desc" ]],
-                  columnDefs: [{ width: '20%', targets: 0,
-                    render: (data) => {
-                       const date = new Date(data);
-                       return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                    }
-                  },
-                  { width: '40%', targets: 1 },
-                  { width: '40%', targets: 2 }],
-    });
+      processing: true,
+      serverSide: true,
+      retrieve: true,
+	  drawCallback: newTabClickListener(),
+      ajax: {
+          url: `/tables/bodyHashDetailsTable/${bodyhash}${window.location.search}`,
+          type: 'POST'
+      },
+      columns : [
+          { data: 'capture_time' },
+          { data: 'capture_title' },
+          { data: 'url' }
+      ],
+      order: [[ 0, "desc" ]],
+      columnDefs: [{ width: '20%', targets: 0,
+        render: (data) => {
+           const date = new Date(data);
+           return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
+        }
+      },
+      { width: '40%', targets: 1 },
+      { width: '40%', targets: 2 }],
+    })
   }
   if (document.getElementById('hashTypeDetailsTable')) {
       hash_value = document.getElementById('hashTypeDetailsTable').dataset.hashvalue;
@@ -20,6 +32,7 @@
         processing: true,
         serverSide: true,
         retrieve: true,
+		drawCallback: newTabClickListener(),
         ajax: {
             url: `/tables/hashTypeDetailsTable/${hash_value}`,
             type: 'POST'
@@ -49,6 +62,7 @@
         processing: true,
         serverSide: true,
         retrieve: true,
+		drawCallback: newTabClickListener(),
         ajax: {
             url: `/tables/identifierDetailsTable/${identifier_value}`,
             type: 'POST'
@@ -75,6 +89,7 @@
   if (document.getElementById('bodyHashesTable')) {
       new DataTable('#bodyHashesTable', {
         retrieve: true,
+		drawCallback: newTabClickListener(),
         order: [[ 0, "desc" ]],
         columnDefs: [{ width: '10%', targets: 0 },
                      { width: '10%', targets: 1 },
@@ -90,6 +105,7 @@
   if (document.getElementById('faviconsTable')) {
       new DataTable('#faviconsTable', {
         retrieve: true,
+		drawCallback: newTabClickListener(),
         columnDefs: [{ width: '10%', targets: 0 },
                      { width: '40%', targets: 1 },
                      { width: '40%', targets: 2 },
@@ -99,6 +115,7 @@
   if (document.getElementById('treeHashesTable')) {
     new DataTable('#treeHashesTable', {
     retrieve: true,
+	drawCallback: newTabClickListener(),
     columnDefs: [{ width: '20%', targets: 0 },
                  { width: '40%', targets: 1 },
                  { width: '40%', targets: 2 }],
@@ -107,6 +124,7 @@
   if (document.getElementById('hostnamesTable')) {
       new DataTable('#hostnamesTable', {
       retrieve: true,
+	  drawCallback: newTabClickListener(),
       order: [[ 0, "desc" ]],
       columnDefs: [{ width: '10%', targets: 0 },
                    { width: '40%', targets: 1 },
@@ -121,6 +139,7 @@
   if (document.getElementById('identifiersTable')) {
       new DataTable('#identifiersTable', {
         retrieve: true,
+		drawCallback: newTabClickListener(),
         columnDefs: [{ width: '20%', targets: 0 },
                      { width: '40%', targets: 1 },
                      { width: '40%', targets: 2 }],
@@ -129,6 +148,7 @@
   if (document.getElementById('urlsTable')) {
       new DataTable('#urlsTable', {
         retrieve: true,
+		drawCallback: newTabClickListener(),
         order: [[ 0, "desc" ]],
         columnDefs: [{ width: '10%', targets: 0 },
                      { width: '90%', targets: 1 }],
@@ -142,6 +162,7 @@
   if (document.getElementById('cookieNameTable')) {
       new DataTable('#cookieNameTable', {
         retrieve: true,
+		drawCallback: newTabClickListener(),
         order: [[ 0, "desc" ]],
         columnDefs: [{ width: '30%', targets: 0,
                        render: (data) => {
@@ -159,6 +180,7 @@
     processing: true,
     serverSide: true,
     retrieve: true,
+	drawCallback: newTabClickListener(),
     ajax: {
         url: `/tables/hostnameTable/${hostname}`,
         type: 'POST'
@@ -186,6 +208,7 @@
         processing: true,
         serverSide: true,
         retrieve: true,
+		drawCallback: newTabClickListener(),
         ajax: {
             url: `/tables/urlTable/${url}`,
             type: 'POST'
@@ -213,6 +236,7 @@
       processing: true,
       serverSide: true,
       retrieve: true,
+	  drawCallback: newTabClickListener(),
       ajax: {
           url: `/tables/faviconDetailsTable/${favicon}`,
           type: 'POST'
@@ -240,5 +264,4 @@
   document.querySelectorAll(".downloadFaviconButton").forEach(el => el.addEventListener('click', event => {
       downloadBase64File(el.dataset.mimetype, el.dataset.b64favicon, el.dataset.filename);
   }))
-
 }));

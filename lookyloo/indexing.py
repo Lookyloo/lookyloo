@@ -321,21 +321,23 @@ class Indexing():
         return None
 
     def get_captures_body_hash(self, body_hash: str, most_recent_capture: datetime | None = None,
-                               oldest_capture: datetime | None = None) -> list[tuple[str, float]]:
+                               oldest_capture: datetime | None = None,
+                               offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
         '''Get the captures matching the hash.
 
         :param body_hash: The hash to search for
         :param filter_capture_uuid: UUID of the capture the hash was found in
         '''
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
 
         if self.redis.type(f'bh|{body_hash}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_body_hashes', *self.redis.smembers(f'bh|{body_hash}|captures'))
             self.redis.delete(f'bh|{body_hash}|captures')
-            return []
-        return self.redis.zrevrangebyscore(f'body_hashes|{body_hash}|captures', max_score, min_score, withscores=True)
+            return 0, []
+        total = self.redis.zcard(f'body_hashes|{body_hash}|captures')
+        return total, self.redis.zrevrangebyscore(f'body_hashes|{body_hash}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
     def get_capture_body_hash_nodes(self, capture_uuid: str, body_hash: str) -> set[str]:
         if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|body_hashes|{body_hash}'):
@@ -343,8 +345,10 @@ class Indexing():
         return set()
 
     def get_body_hash_urlnodes(self, body_hash: str) -> dict[str, set[str]]:
+        # FIXME: figure out a reasonable limit for that
+        _, entries = self.get_captures_body_hash(body_hash, limit=100)
         return {capture_uuid: self.redis.smembers(f'capture_indexes|{capture_uuid}|body_hashes|{body_hash}')
-                for capture_uuid, capture_ts in self.get_captures_body_hash(body_hash)}
+                for capture_uuid, capture_ts in entries}
 
     # ###### HTTP Headers Hashes ######
 
