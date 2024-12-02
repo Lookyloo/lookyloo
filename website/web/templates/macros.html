@@ -283,12 +283,12 @@
   {% for detail in details %}
     {% if detail|length == 1 %}
     <li>
-        {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
+        {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0], from_popup=True) }}">
             {{ cookie_name_value[0] }}</a>={{ shorten_string(cookie_name_value[1], 200) }}
     </li>
     {% else %}
     <li>
-        {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0]) }}">
+        {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0], from_popup=True) }}">
           {{ cookie_name_value[0] }}</a>={{ shorten_string(cookie_name_value[1], 200) }} -
         </br>
         {{ button_text }}

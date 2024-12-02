@@ -415,13 +415,12 @@ def get_url_investigator(url: str, offset: int | None=None, limit: int | None=No
                     ) for cache in cached_captures]
 
 
-def get_cookie_name_investigator(cookie_name: str, /) -> list[tuple[str, str, datetime, set[str]]]:
+def get_cookie_name_investigator(cookie_name: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime, set[str]]]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
-    cached_captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_cookies_name(cookie_name=cookie_name)],
-        cached_captures_only=True)
-    captures = [(cache.uuid, cache.title, cache.timestamp, get_indexing(flask_login.current_user).get_capture_cookie_name_nodes(cache.uuid, cookie_name)) for cache in cached_captures]
-    return captures
+    total, entries = get_indexing(flask_login.current_user).get_captures_cookies_name(cookie_name=cookie_name)
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+    captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_cookie_name_nodes(cache.uuid, cookie_name)) for cache in cached_captures]
+    return total, captures
 
 
 def get_identifier_investigator(identifier_type: str, identifier: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime]]]:
@@ -446,13 +445,11 @@ def get_favicon_investigator(favicon_sha512: str, offset: int | None=None, limit
     return total, captures
 
 
-def get_hhh_investigator(hhh: str, /) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str]]]:
+def get_hhh_investigator(hhh: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, datetime, str, str]]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
-    cached_captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_hhhash(hhh)],
-        cached_captures_only=True)
+    total, entries = get_indexing(flask_login.current_user).get_captures_hhhash(hhh, offset=offset, limit=limit)
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
     captures = []
-    headers: list[tuple[str, str]] = []
     for cache in cached_captures:
         if not cache:
             continue
@@ -461,11 +458,8 @@ def get_hhh_investigator(hhh: str, /) -> tuple[list[tuple[str, str, str, str]], 
                 urlnode = lookyloo.get_urlnode_from_tree(cache.uuid, urlnode_uuid)
             except IndexError:
                 continue
-            captures.append((cache.uuid, urlnode.hostnode_uuid, urlnode.name, cache.title))
-            if not headers:
-                # Just do that once.
-                headers = [(header["name"], header["value"]) for header in urlnode.response['headers']]
-    return captures, headers
+            captures.append((cache.uuid, cache.title, cache.timestamp, urlnode.hostnode_uuid, urlnode.name))
+    return total, captures
 
 
 def hash_lookup(blob_hash: str, url: str, current_capture_uuid: str) -> tuple[int, dict[str, list[tuple[str, str, str, str, str]]]]:
@@ -1730,15 +1724,18 @@ def simple_capture() -> str | Response | WerkzeugResponse:
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
 def cookies_name_detail(cookie_name: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    captures = get_cookie_name_investigator(cookie_name.strip())
-    return render_template('cookie_name.html', cookie_name=cookie_name, captures=captures, from_popup=from_popup)
+    return render_template('cookie_name.html', cookie_name=cookie_name, from_popup=from_popup)
 
 
 @app.route('/hhhdetails/<string:hhh>', methods=['GET'])
 def hhh_detail(hhh: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    captures, headers = get_hhh_investigator(hhh.strip())
-    return render_template('hhh_details.html', hhh=hhh, captures=captures, headers=headers, from_popup=from_popup)
+    headers: list[tuple[str, str]] = []
+    if capture_node := get_indexing(flask_login.current_user).get_node_for_headers(hhh):
+        capture_uuid, node_uuid = capture_node
+        if urlnode := lookyloo.get_urlnode_from_tree(capture_uuid, node_uuid):
+            headers = [(header["name"], header["value"]) for header in urlnode.response['headers']]
+    return render_template('hhh_details.html', hhh=hhh, headers=headers, from_popup=from_popup)
 
 
 @app.route('/identifier_details/<string:identifier_type>/<string:identifier>', methods=['GET'])
@@ -1967,11 +1964,16 @@ def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
     return None
 
 
-def __prepare_node_view(capture_uuid: str, nodes: set[str]) -> str:
+def __prepare_node_view(capture_uuid: str, nodes: set[str], from_popup: bool=False) -> str:
     to_return = f'The capture contains this value in {len(nodes)} nodes, click below to see them on the tree:'
     to_return += '<ul>'
     for node in nodes:
-        to_return += f'<li><a href="{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}">{node}</a></li>'
+        to_return += '<li>'
+        if from_popup:
+            to_return += f"""<a href="#" class="stretched-link openNewTab" data-capture="{capture_uuid}" data-hostnode="{node}">{node}</a>"""
+        else:
+            to_return += f'<a href="{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}">{node}</a>'
+        to_return += '</li>'
     to_return += '</ul>'
     return to_return
 
@@ -1983,6 +1985,40 @@ def post_table(table_name: str, value: str) -> Response:
     start = request.form.get('start', type=int)
     length = request.form.get('length', type=int)
     captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, set[str]]] | list[tuple[str, str, str, datetime]]
+    if table_name == 'HHHDetailsTable':
+        hhh = value.strip()
+        total, captures = get_hhh_investigator(hhh, offset=start, limit=length)
+        prepared_captures = []
+        for capture_uuid, title, capture_time, hostnode_uuid, url in captures:
+            to_append = {
+                'capture_time': capture_time.isoformat(),
+                'url': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{url}</span>"""
+            }
+            if from_popup:
+                to_append['capture_title'] = f""" <a href="#" class="stretched-link openNewTab" data-capture="{capture_uuid}" data-hostnode="{hostnode_uuid}">{title}</a>"""
+            else:
+                to_append['capture_title'] = f"""<a href="{url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid)}">{title}</a>"""
+            prepared_captures.append(to_append)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
+
+    if table_name == 'cookieNameTable':
+        cookie_name = value.strip()
+        total, captures = get_cookie_name_investigator(cookie_name, offset=start, limit=length)
+        prepared_captures = []
+        for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            _nodes = __prepare_node_view(capture_uuid, nodes, from_popup)
+            to_append = {
+                'capture_time': capture_time.isoformat(),
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+            }
+            if from_popup:
+                to_append['capture_title'] = f"""<a href="#" class="stretched-link openNewTab" data-capture="{capture_uuid}">{title}</a>"""
+            else:
+                to_append['capture_title'] = f"""<a href="{url_for('tree', tree_uuid=capture_uuid)}">{title}</a>"""
+            to_append['capture_title'] += f'</br>{_nodes}'
+            prepared_captures.append(to_append)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
+
     if table_name == 'bodyHashDetailsTable':
         body_hash = value.strip()
         total, captures = _get_body_hash_investigator(body_hash, offset=start, limit=length)
@@ -1993,7 +2029,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'url': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{url}</span>"""
             }
             if from_popup:
-                to_append['capture_title'] = f"""<button type="button" class="btn btn-link openNewTab" data-capture="{capture_uuid}" data-hostnode="{hostnode_uuid}">{title}</button>"""
+                to_append['capture_title'] = f""" <a href="#" class="stretched-link openNewTab" data-capture="{capture_uuid}" data-hostnode="{hostnode_uuid}">{title}</a>"""
             else:
                 to_append['capture_title'] = f"""<a href="{url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid)}">{title}</a>"""
             prepared_captures.append(to_append)

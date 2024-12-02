@@ -32,27 +32,14 @@
   <p>The same HTTP Headers Hash was seen in these captures:</p>
   <ul>
   <div class="table-responsive">
-      <table id="table" class="table">
+      <table id="HHHDetailsTable" class="table" data-hhh="{{hhh}}">
           <thead>
               <tr>
+                  <th>Capture Time</th>
                   <th>Capture Title</th>
-                  <th>URL matching the HHH</th>
+                  <th>URL</th>
               </tr>
           </thead>
-          <tbody>
-            {% for capture_uuid, hostnode_uuid, url, title in captures %}
-            <tr>
-                <td>
-                    {% if from_popup %}
-                    <button type="button" class="btn btn-link openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{hostnode_uuid}}">{{ title }}</button>
-                    {% else %}
-                    <a href="{{ url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid) }}">{{ title }}</a>
-                    {% endif %}
-                </td>
-                <td>{{url}}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
       </table>
   </div>
   </ul>

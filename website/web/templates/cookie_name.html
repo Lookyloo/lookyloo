@@ -19,38 +19,15 @@
 
 <center>
   <h4>{{ cookie_name }}</h4>
-  <h6>Only the most recent captures are listed below, this will change soon.</h6>
 </center>
 
-<table id="cookieNameTable" class="table table-striped" style="width:100%">
+<table id="cookieNameTable" class="table table-striped" style="width:100%" data-cookiename="{{cookie_name}}">
   <thead>
    <tr>
      <th>Capture Time</th>
      <th>Capture Title</th>
+     <th>Landing Page</th>
    </tr>
   </thead>
-  <tbody>
-    {% for capture_uuid, title, capture_time, nodes in captures %}
-    <tr>
-      <td>
-        {{capture_time}}
-      </td>
-      <td>
-        <a href="{{ url_for('tree', tree_uuid=capture_uuid) }}">
-          {{ title }}
-        </a>
-        <br>
-        The capture contains this URL in {{ nodes|length }} nodes, click below to see them on the tree:
-        <ul>
-            {% for node in nodes %}
-            <li>
-                <button type="button" class="btn btn-link openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{node}}">{{ node }}</button>
-            </li>
-            {% endfor %}
-        </ul>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
 </table>
 {% endblock %}

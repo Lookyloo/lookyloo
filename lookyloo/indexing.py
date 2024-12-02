@@ -223,21 +223,23 @@ class Indexing():
         self.logger.debug(f'done with cookies for {crawled_tree.uuid}.')
 
     def get_captures_cookies_name(self, cookie_name: str, most_recent_capture: datetime | None = None,
-                                  oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+                                  oldest_capture: datetime | None= None,
+                                  offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
         """Get all the captures for a specific cookie name, on a time interval starting from the most recent one.
 
         :param cookie_name: The cookie name
         :param most_recent_capture: The capture time of the most recent capture to consider
-        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 20 days ago.
+        :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=20)).timestamp()
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
         if self.redis.type(f'cookies_names|{cookie_name}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_cookies', *[entry.split('|')[0] for entry in self.redis.smembers(f'cn|{cookie_name}|captures')])
             self.redis.delete(f'cookies_names|{cookie_name}|captures')
-            return []
-        return self.redis.zrevrangebyscore(f'cookies_names|{cookie_name}|captures', max_score, min_score, withscores=True)
+            return 0, []
+        total = self.redis.zcard(f'cookies_names|{cookie_name}|captures')
+        return total, self.redis.zrevrangebyscore(f'cookies_names|{cookie_name}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
     def get_captures_cookie_name_count(self, cookie_name: str) -> int:
         return self.redis.zcard(f'cookies_names|{cookie_name}|captures')
@@ -398,21 +400,23 @@ class Indexing():
         self.logger.debug(f'done with HHHashes for {crawled_tree.uuid}.')
 
     def get_captures_hhhash(self, hhh: str, most_recent_capture: datetime | None = None,
-                            oldest_capture: datetime | None= None) -> list[tuple[str, float]]:
+                            oldest_capture: datetime | None=None,
+                            offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
         """Get all the captures for a specific HTTP Header Hash, on a time interval starting from the most recent one.
 
         :param hhh: The HTTP Header Hash
         :param most_recent_capture: The capture time of the most recent capture to consider
-        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 15 days ago.
+        :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=15)).timestamp()
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
         if self.redis.type(f'hhhashes|{hhh}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_hhhashes', *self.redis.smembers(f'hhhashes|{hhh}|captures'))
             self.redis.delete(f'hhhashes|{hhh}|captures')
-            return []
-        return self.redis.zrevrangebyscore(f'hhhashes|{hhh}|captures', max_score, min_score, withscores=True)
+            return 0, []
+        total = self.redis.zcard(f'hhhashes|{hhh}|captures')
+        return total, self.redis.zrevrangebyscore(f'hhhashes|{hhh}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
     def get_captures_hhhash_count(self, hhh: str) -> int:
         return self.redis.zcard(f'hhhashes|{hhh}|captures')
@@ -421,6 +425,17 @@ class Indexing():
         if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|hhhashes|{hhh}'):
             return set(url_nodes)
         return set()
+
+    def get_node_for_headers(self, hhh: str) -> tuple[str, str] | None:
+        _, latest_entry = self.get_captures_hhhash(hhh, offset=0, limit=1)
+        if not latest_entry:
+            # That shouldn't happen if the hash is indexed
+            return None
+        capture_uuid, _ = latest_entry[0]
+        nodes = self.get_capture_hhhash_nodes(capture_uuid, hhh)
+        if not nodes:
+            return None
+        return capture_uuid, nodes.pop()
 
     # ###### URLs and Domains ######
 

@@ -1,11 +1,38 @@
 ["DOMContentLoaded", "shown.bs.modal", "jquery.modal.rendered"].forEach(e => window.addEventListener(e, function() {
+  if (document.getElementById('HHHDetailsTable')) {
+    hhh = document.getElementById('HHHDetailsTable').dataset.hhh;
+    new DataTable('#HHHDetailsTable', {
+      processing: true,
+      serverSide: true,
+      retrieve: true,
+      drawCallback: function (settings) { newTabClickListener() },
+      ajax: {
+          url: `/tables/HHHDetailsTable/${hhh}${window.location.search}`,
+          type: 'POST'
+      },
+      columns : [
+          { data: 'capture_time' },
+          { data: 'capture_title' },
+          { data: 'url' }
+      ],
+      order: [[ 0, "desc" ]],
+      columnDefs: [{ width: '20%', targets: 0,
+        render: (data) => {
+           const date = new Date(data);
+           return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
+        }
+      },
+      { width: '40%', targets: 1 },
+      { width: '40%', targets: 2 }],
+    })
+  }
   if (document.getElementById('bodyHashDetailsTable')) {
     bodyhash = document.getElementById('bodyHashDetailsTable').dataset.bodyhash;
     new DataTable('#bodyHashDetailsTable', {
       processing: true,
       serverSide: true,
       retrieve: true,
-	  drawCallback: newTabClickListener(),
+	  drawCallback: function (settings) { newTabClickListener() },
       ajax: {
           url: `/tables/bodyHashDetailsTable/${bodyhash}${window.location.search}`,
           type: 'POST'
@@ -32,7 +59,7 @@
         processing: true,
         serverSide: true,
         retrieve: true,
-		drawCallback: newTabClickListener(),
+		drawCallback: function (settings) { newTabClickListener() },
         ajax: {
             url: `/tables/hashTypeDetailsTable/${hash_value}`,
             type: 'POST'
@@ -62,7 +89,7 @@
         processing: true,
         serverSide: true,
         retrieve: true,
-		drawCallback: newTabClickListener(),
+		drawCallback: function (settings) { newTabClickListener() },
         ajax: {
             url: `/tables/identifierDetailsTable/${identifier_value}`,
             type: 'POST'
@@ -89,7 +116,7 @@
   if (document.getElementById('bodyHashesTable')) {
       new DataTable('#bodyHashesTable', {
         retrieve: true,
-		drawCallback: newTabClickListener(),
+		drawCallback: function (settings) { newTabClickListener() },
         order: [[ 0, "desc" ]],
         columnDefs: [{ width: '10%', targets: 0 },
                      { width: '10%', targets: 1 },
@@ -105,7 +132,7 @@
   if (document.getElementById('faviconsTable')) {
       new DataTable('#faviconsTable', {
         retrieve: true,
-		drawCallback: newTabClickListener(),
+		drawCallback: function (settings) { newTabClickListener() },
         columnDefs: [{ width: '10%', targets: 0 },
                      { width: '40%', targets: 1 },
                      { width: '40%', targets: 2 },
@@ -115,7 +142,7 @@
   if (document.getElementById('treeHashesTable')) {
     new DataTable('#treeHashesTable', {
     retrieve: true,
-	drawCallback: newTabClickListener(),
+	drawCallback: function (settings) { newTabClickListener() },
     columnDefs: [{ width: '20%', targets: 0 },
                  { width: '40%', targets: 1 },
                  { width: '40%', targets: 2 }],
@@ -124,7 +151,7 @@
   if (document.getElementById('hostnamesTable')) {
       new DataTable('#hostnamesTable', {
       retrieve: true,
-	  drawCallback: newTabClickListener(),
+	  drawCallback: function (settings) { newTabClickListener() },
       order: [[ 0, "desc" ]],
       columnDefs: [{ width: '10%', targets: 0 },
                    { width: '40%', targets: 1 },
@@ -139,7 +166,7 @@
   if (document.getElementById('identifiersTable')) {
       new DataTable('#identifiersTable', {
         retrieve: true,
-		drawCallback: newTabClickListener(),
+		drawCallback: function (settings) { newTabClickListener() },
         columnDefs: [{ width: '20%', targets: 0 },
                      { width: '40%', targets: 1 },
                      { width: '40%', targets: 2 }],
@@ -148,7 +175,7 @@
   if (document.getElementById('urlsTable')) {
       new DataTable('#urlsTable', {
         retrieve: true,
-		drawCallback: newTabClickListener(),
+		drawCallback: function (settings) { newTabClickListener() },
         order: [[ 0, "desc" ]],
         columnDefs: [{ width: '10%', targets: 0 },
                      { width: '90%', targets: 1 }],
@@ -160,17 +187,30 @@
       });
   }
   if (document.getElementById('cookieNameTable')) {
+      cookieName = document.getElementById('cookieNameTable').dataset.cookiename;
       new DataTable('#cookieNameTable', {
+        processing: true,
+        serverSide: true,
         retrieve: true,
-		drawCallback: newTabClickListener(),
+		drawCallback: function (settings) { newTabClickListener() },
+        ajax: {
+            url: `/tables/cookieNameTable/${cookieName}${window.location.search}`,
+            type: 'POST'
+        },
+        columns : [
+            { data: 'capture_time' },
+            { data: 'capture_title' },
+            { data: 'landing_page' }
+        ],
         order: [[ 0, "desc" ]],
-        columnDefs: [{ width: '30%', targets: 0,
+        columnDefs: [{ width: '20%', targets: 0,
                        render: (data) => {
                         const date = new Date(data);
                         return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
                        }
                      },
-                     { width: '70%', targets: 1 }]
+                     { width: '40%', targets: 1 },
+                     { width: '40%', targets: 2 }]
       });
   }
 
@@ -180,7 +220,7 @@
     processing: true,
     serverSide: true,
     retrieve: true,
-	drawCallback: newTabClickListener(),
+	drawCallback: function (settings) { newTabClickListener() },
     ajax: {
         url: `/tables/hostnameTable/${hostname}`,
         type: 'POST'
@@ -208,7 +248,7 @@
         processing: true,
         serverSide: true,
         retrieve: true,
-		drawCallback: newTabClickListener(),
+		drawCallback: function (settings) { newTabClickListener() },
         ajax: {
             url: `/tables/urlTable/${url}`,
             type: 'POST'
@@ -236,7 +276,7 @@
       processing: true,
       serverSide: true,
       retrieve: true,
-	  drawCallback: newTabClickListener(),
+	  drawCallback: function (settings) { newTabClickListener() },
       ajax: {
           url: `/tables/faviconDetailsTable/${favicon}`,
           type: 'POST'
