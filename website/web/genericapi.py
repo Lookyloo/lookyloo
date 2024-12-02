@@ -838,9 +838,13 @@ class RecentCaptures(Resource):  # type: ignore[misc]
 class CategoriesCaptures(Resource):  # type: ignore[misc]
     def get(self, category: str | None=None) -> list[str] | dict[str, list[str]]:
         if category:
-            return [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_category(category)]
-        return {c: [uuid for uuid, _ in get_indexing(flask_login.current_user).get_captures_category(c)]
-                for c in get_indexing(flask_login.current_user).categories}
+            _, entries = get_indexing(flask_login.current_user).get_captures_category(category)
+            return [uuid for uuid, _ in entries]
+        to_return: dict[str, list[str]] = {}
+        for c in get_indexing(flask_login.current_user).categories:
+            _, entries = get_indexing(flask_login.current_user).get_captures_category(c)
+            to_return[c] = [uuid for uuid, _ in entries]
+        return to_return
 
 
 # NOTE: there are a few extra paramaters we may want to add in the future: most recent/oldest capture

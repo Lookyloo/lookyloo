@@ -6,7 +6,7 @@ import hashlib
 import logging
 import re
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from pathlib import Path
 
@@ -958,16 +958,18 @@ class Indexing():
         pipeline.execute()
 
     def get_captures_category(self, category: str, most_recent_capture: datetime | None=None,
-                              oldest_capture: datetime | None = None) -> list[tuple[str, float]]:
+                              oldest_capture: datetime | None = None,
+                              offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
         """Get all the captures for a specific category, on a time interval starting from the most recent one.
 
         :param category: The category
         :param most_recent_capture: The capture time of the most recent capture to consider
-        :param oldest_capture: The capture time of the oldest capture to consider, defaults to 30 days ago.
+        :param oldest_capture: The capture time of the oldest capture to consider
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else (datetime.now() - timedelta(days=30)).timestamp()
-        return self.redis.zrevrangebyscore(f'categories|{category}|captures', max_score, min_score, withscores=True)
+        min_score: str | float = oldest_capture.timestamp() if oldest_capture else "-Inf"
+        total = self.redis.zcard(f'categories|{category}|captures')
+        return total, self.redis.zrevrangebyscore(f'categories|{category}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
     def get_capture_categories(self, capture_uuid: str) -> set[str]:
         return self.redis.smembers(f'capture_indexes|{capture_uuid}|categories')
