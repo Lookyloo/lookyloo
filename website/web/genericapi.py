@@ -873,7 +873,7 @@ class TLDCaptures(Resource):  # type: ignore[misc]
             except Exception:
                 oldest_capture = None
 
-        recent_captures_with_tld = get_indexing(flask_login.current_user).get_captures_tld(tld, most_recent_capture, oldest_capture)
+        _, recent_captures_with_tld = get_indexing(flask_login.current_user).get_captures_tld(tld, most_recent_capture, oldest_capture)
         if not recent_captures_with_tld:
             return []
         if not urls_only:
