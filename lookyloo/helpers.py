@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import configparser
+import dataclasses
 import gzip
 import hashlib
 import json
@@ -30,7 +31,7 @@ from lacuscore import CaptureSettings as LacuscoreCaptureSettings
 from playwrightcapture import get_devices
 from publicsuffixlist import PublicSuffixList  # type: ignore[import-untyped]
 from pytaxonomies import Taxonomies  # type: ignore[attr-defined]
-from ua_parser import user_agent_parser  # type: ignore[import-untyped]
+import ua_parser
 from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
@@ -374,30 +375,30 @@ class ParsedUserAgent(UserAgent):
     # from https://python.tutorialink.com/how-do-i-get-the-user-agent-with-flask/
 
     @cached_property
-    def _details(self) -> dict[str, Any]:
-        return user_agent_parser.Parse(self.string)
+    def _details(self) -> ua_parser.DefaultedResult:
+        return ua_parser.parse(self.string).with_defaults()
 
     @property
     def platform(self) -> str | None:  # type: ignore[override]
-        return self._details['os'].get('family')
+        return self._details.os.family
 
     @property
     def platform_version(self) -> str | None:
-        return self._aggregate_version(self._details['os'])
+        return self._aggregate_version(self._details.os)
 
     @property
     def browser(self) -> str | None:  # type: ignore[override]
-        return self._details['user_agent'].get('family')
+        return self._details.user_agent.family
 
     @property
     def version(self) -> str | None:  # type: ignore[override]
-        return self._aggregate_version(self._details['user_agent'])
+        return self._aggregate_version(self._details.user_agent)
 
-    def _aggregate_version(self, details: dict[str, str]) -> str | None:
+    def _aggregate_version(self, details: ua_parser.OS | ua_parser.UserAgent) -> str | None:
         return '.'.join(
             part
             for key in ('major', 'minor', 'patch', 'patch_minor')
-            if (part := details.get(key)) is not None
+            if (part := dataclasses.asdict(details).get(key)) is not None
         )
 
     def __str__(self) -> str:
