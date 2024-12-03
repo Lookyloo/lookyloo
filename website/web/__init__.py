@@ -1970,7 +1970,7 @@ def __prepare_node_view(capture_uuid: str, nodes: set[str], from_popup: bool=Fal
     for node in nodes:
         to_return += '<li>'
         if from_popup:
-            to_return += f"""<a href="#" class="stretched-link openNewTab" data-capture="{capture_uuid}" data-hostnode="{node}">{node}</a>"""
+            to_return += f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}" data-hostnode="{node}">{node}</a>"""
         else:
             to_return += f'<a href="{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}">{node}</a>'
         to_return += '</li>'
@@ -1995,7 +1995,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'url': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{url}</span>"""
             }
             if from_popup:
-                to_append['capture_title'] = f""" <a href="#" class="stretched-link openNewTab" data-capture="{capture_uuid}" data-hostnode="{hostnode_uuid}">{title}</a>"""
+                to_append['capture_title'] = f""" <a href="#" class="openNewTab" data-capture="{capture_uuid}" data-hostnode="{hostnode_uuid}">{title}</a>"""
             else:
                 to_append['capture_title'] = f"""<a href="{url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid)}">{title}</a>"""
             prepared_captures.append(to_append)
@@ -2012,7 +2012,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
             }
             if from_popup:
-                to_append['capture_title'] = f"""<a href="#" class="stretched-link openNewTab" data-capture="{capture_uuid}">{title}</a>"""
+                to_append['capture_title'] = f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}">{title}</a>"""
             else:
                 to_append['capture_title'] = f"""<a href="{url_for('tree', tree_uuid=capture_uuid)}">{title}</a>"""
             to_append['capture_title'] += f'</br>{_nodes}'
@@ -2029,7 +2029,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'url': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{url}</span>"""
             }
             if from_popup:
-                to_append['capture_title'] = f""" <a href="#" class="stretched-link openNewTab" data-capture="{capture_uuid}" data-hostnode="{hostnode_uuid}">{title}</a>"""
+                to_append['capture_title'] = f""" <a href="#" class="openNewTab" data-capture="{capture_uuid}" data-hostnode="{hostnode_uuid}">{title}</a>"""
             else:
                 to_append['capture_title'] = f"""<a href="{url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid)}">{title}</a>"""
             prepared_captures.append(to_append)
