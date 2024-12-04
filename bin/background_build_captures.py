@@ -116,11 +116,14 @@ class BackgroundBuildCaptures(AbstractManager):
 
                 try:
                     self.logger.info(f'Build pickle for {uuid}: {path.name}')
-                    self.lookyloo.get_crawled_tree(uuid)
+                    ct = self.lookyloo.get_crawled_tree(uuid)
                     try:
                         self.lookyloo.trigger_modules(uuid, auto_trigger=True, force=False, as_admin=False)
                     except Exception as e:
                         self.logger.exception(f'Unable to trigger modules for {uuid}: {e}')
+                    # Trigger whois request on all nodes
+                    for node in ct.root_hartree.hostname_tree.traverse():
+                        self.lookyloo.uwhois.query_whois_hostnode(node)
                     self.logger.info(f'Pickle for {uuid} built.')
                     got_new_captures = True
                     max_captures -= 1

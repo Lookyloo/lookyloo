@@ -518,7 +518,6 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
     hostnode = ct.root_hartree.get_host_node_by_uuid(node_uuid)
 
     known_content = lookyloo.context.find_known_content(hostnode)
-    lookyloo.uwhois.query_whois_hostnode(hostnode)
 
     urls: list[dict[str, Any]] = []
     for url in hostnode.urls:
