@@ -462,35 +462,6 @@ def get_hhh_investigator(hhh: str, offset: int | None=None, limit: int | None=No
     return total, captures
 
 
-def hash_lookup(blob_hash: str, url: str, current_capture_uuid: str) -> tuple[int, dict[str, list[tuple[str, str, str, str, str]]]]:
-    '''Search all the captures a specific hash was seen.
-    If a URL is given, it splits the results if the hash is seen on the same URL or an other one.
-    Capture UUID avoids duplicates on the same capture'''
-    captures_list: dict[str, list[tuple[str, str, str, str, str]]] = {'same_url': [], 'different_url': []}
-    _, entries = get_indexing(flask_login.current_user).get_captures_body_hash(blob_hash, oldest_capture=datetime.now() - timedelta(**time_delta_on_index))
-    cached_captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in entries],
-        cached_captures_only=True)
-    for cache in cached_captures:
-        if cache.uuid == current_capture_uuid:
-            continue
-        urlnodes = get_indexing(flask_login.current_user).get_capture_body_hash_nodes(cache.uuid, blob_hash)
-        for urlnode_uuid in urlnodes:
-            try:
-                urlnode = cache.tree.root_hartree.get_url_node_by_uuid(urlnode_uuid)
-            except IndexError:
-                continue
-            if url == urlnode.name:
-                captures_list['same_url'].append((cache.uuid, urlnode_uuid, cache.title, cache.timestamp.isoformat(), urlnode.hostname))
-            else:
-                captures_list['different_url'].append((cache.uuid, urlnode_uuid, cache.title, cache.timestamp.isoformat(), urlnode.hostname))
-    # Sort by timestamp by default
-    captures_list['same_url'].sort(key=lambda y: y[3])
-    captures_list['different_url'].sort(key=lambda y: y[3])
-    total_captures = get_indexing(flask_login.current_user).get_captures_body_hash_count(blob_hash)
-    return total_captures, captures_list
-
-
 def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[HostNode, list[dict[str, Any]]]:
     '''Gather all the informations needed to display the Hostnode investigator popup.'''
 
@@ -535,9 +506,7 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
             # Index lookup
             # %%% Full body %%%
             if freq := get_indexing(flask_login.current_user).get_captures_body_hash_count(url.body_hash):
-                to_append['body_hash_details'] = {'hash_freq': freq, 'other_captures': (freq, {'same_url': [], 'different_url': []})}
-                if freq > 1:
-                    to_append['body_hash_details']['other_captures'] = hash_lookup(url.body_hash, url.name, capture_uuid)
+                to_append['body_hash_details'] = {'hash_freq': freq}
 
             # %%% Embedded ressources %%%
             if hasattr(url, 'embedded_ressources') and url.embedded_ressources:
@@ -551,9 +520,6 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
                                                                'type': mimetype}
                         if freq := get_indexing(flask_login.current_user).get_captures_body_hash_count(h):
                             to_append['embedded_ressources'][h]['hash_freq'] = freq
-                            to_append['embedded_ressources'][h]['other_captures'] = (freq, {'same_url': [], 'different_url': []})
-                            if freq > 1:
-                                to_append['embedded_ressources'][h]['other_captures'] = hash_lookup(h, url.name, capture_uuid)
                 for h in to_append['embedded_ressources'].keys():
                     known, legitimate = normalize_known_content(h, known_content, url)
                     if known:

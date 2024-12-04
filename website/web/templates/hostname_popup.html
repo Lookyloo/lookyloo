@@ -1,7 +1,6 @@
 {% extends "main.html" %}
 {% from "macros.html" import known_content_details %}
 {% from "macros.html" import ressource_legitimacy_details %}
-{% from "macros.html" import indexed_hash %}
 {% from "macros.html" import indexed_cookies %}
 {% from "macros.html" import popup_icons_request %}
 {% from "macros.html" import popup_icons_response %}
@@ -258,12 +257,6 @@
             This file can be found <b>{{ url['body_hash_details']['hash_freq'] }}</b> times
             across all the captures on this lookyloo instance.
 
-            {# other captures related with the same content #}
-            {% if 'other_captures' in url['body_hash_details'] %}
-              </br>
-              {{ indexed_hash(url['body_hash_details']['other_captures'], url['url_object'].uuid) }}
-            {% endif %}
-            {# Link to list of captures with the same hash #}
             <p>
               <a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash, from_popup=True) }}">
               Show more information about this response body.
@@ -316,9 +309,6 @@
                   {{ context_form(tree_uuid, url['url_object'].uuid, hash, 'hostnode_popup') }}
                 {% endif %}
 
-                {% if 'other_captures' in details %}
-                  {{ indexed_hash(details['other_captures'], url['url_object'].uuid + '_' + loop.index|string) }}
-                {% endif %}
                 <p><a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash, from_popup=True) }}">
                   Show more information about this embedded content.
                 </a></p>
