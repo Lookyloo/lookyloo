@@ -5,6 +5,7 @@
       processing: true,
       serverSide: true,
       retrieve: true,
+      ordering: false,
       drawCallback: function (settings) { newTabClickListener() },
       ajax: {
           url: `/tables/HHHDetailsTable/${hhh}${window.location.search}`,
@@ -13,7 +14,7 @@
       columns : [
           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
           { data: 'capture_title', width: '40%' },
-          { data: 'url', width: '40%' }
+          { data: 'landing_page', width: '40%' }
       ],
     })
   }
@@ -23,6 +24,7 @@
       processing: true,
       serverSide: true,
       retrieve: true,
+      ordering: false,
 	  drawCallback: function (settings) { newTabClickListener() },
       ajax: {
           url: `/tables/bodyHashDetailsTable/${bodyhash}${window.location.search}`,
@@ -31,7 +33,7 @@
       columns : [
           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
           { data: 'capture_title', width: '40%' },
-          { data: 'url', width: '40%' }
+          { data: 'landing_page', width: '40%' }
       ],
     })
   }
@@ -41,9 +43,10 @@
         processing: true,
         serverSide: true,
         retrieve: true,
+        ordering: false,
 		drawCallback: function (settings) { newTabClickListener() },
         ajax: {
-            url: `/tables/hashTypeDetailsTable/${hash_value}`,
+            url: `/tables/hashTypeDetailsTable/${hash_value}${window.location.search}`,
             type: 'POST'
         },
         columns : [
@@ -60,9 +63,10 @@
         processing: true,
         serverSide: true,
         retrieve: true,
+        ordering: false,
 		drawCallback: function (settings) { newTabClickListener() },
         ajax: {
-            url: `/tables/identifierDetailsTable/${identifier_value}`,
+            url: `/tables/identifierDetailsTable/${identifier_value}${window.location.search}`,
             type: 'POST'
         },
         columns : [
@@ -77,10 +81,10 @@
         retrieve: true,
 		drawCallback: function (settings) { newTabClickListener() },
         order: [[ 0, "desc" ]],
-        columnDefs: [{ width: '10%', targets: 0 },
-                     { width: '10%', targets: 1 },
-                     { width: '60%', targets: 2 },
-                     { width: '20%', targets: 3 }],
+        columns: [{ width: '10%' },
+                  { width: '10%' },
+                  { width: '60%' },
+                  { width: '20%' }],
         initComplete: function (settings, json) {
           $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         }
@@ -91,20 +95,20 @@
   if (document.getElementById('faviconsTable')) {
       new DataTable('#faviconsTable', {
         retrieve: true,
-		drawCallback: function (settings) { newTabClickListener() },
-        columnDefs: [{ width: '10%', targets: 0 },
-                     { width: '40%', targets: 1 },
-                     { width: '40%', targets: 2 },
-                     { width: '10%', targets: 3 }],
+		drawCallback: function (settings) { newTabClickListener(); downloadFaviconListener(); },
+        columns: [{ width: '10%' },
+                  { width: '40%' },
+                  { width: '40%' },
+                  { width: '10%' }],
       });
   }
   if (document.getElementById('treeHashesTable')) {
     new DataTable('#treeHashesTable', {
     retrieve: true,
 	drawCallback: function (settings) { newTabClickListener() },
-    columnDefs: [{ width: '20%', targets: 0 },
-                 { width: '40%', targets: 1 },
-                 { width: '40%', targets: 2 }],
+    column: [{ width: '20%' },
+             { width: '40%' },
+             { width: '40%' }],
     });
   }
   if (document.getElementById('hostnamesTable')) {
@@ -112,9 +116,9 @@
       retrieve: true,
 	  drawCallback: function (settings) { newTabClickListener() },
       order: [[ 0, "desc" ]],
-      columnDefs: [{ width: '10%', targets: 0 },
-                   { width: '40%', targets: 1 },
-                   { width: '50%', targets: 2 }],
+      columns: [{ width: '10%' },
+                { width: '40%' },
+                { width: '50%' }],
       initComplete: function (settings, json) {
         $('[data-bs-toggle="tooltip"]').tooltip({html: true});
       }
@@ -126,9 +130,9 @@
       new DataTable('#identifiersTable', {
         retrieve: true,
 		drawCallback: function (settings) { newTabClickListener() },
-        columnDefs: [{ width: '20%', targets: 0 },
-                     { width: '40%', targets: 1 },
-                     { width: '40%', targets: 2 }],
+        columns: [{ width: '20%' },
+                  { width: '40%' },
+                  { width: '40%' }],
       });
   }
   if (document.getElementById('urlsTable')) {
@@ -136,8 +140,8 @@
         retrieve: true,
 		drawCallback: function (settings) { newTabClickListener() },
         order: [[ 0, "desc" ]],
-        columnDefs: [{ width: '10%', targets: 0 },
-                     { width: '90%', targets: 1 }],
+        columns: [{ width: '10%' },
+                  { width: '90%' }],
         initComplete: function (settings, json) {
           $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         }
@@ -151,6 +155,7 @@
         processing: true,
         serverSide: true,
         retrieve: true,
+        ordering: false,
 		drawCallback: function (settings) { newTabClickListener() },
         ajax: {
             url: `/tables/cookieNameTable/${cookieName}${window.location.search}`,
@@ -170,9 +175,10 @@
       processing: true,
       serverSide: true,
       retrieve: true,
+      ordering: false,
       drawCallback: function (settings) { newTabClickListener() },
       ajax: {
-          url: `/tables/hostnameTable/${hostname}`,
+          url: `/tables/hostnameTable/${hostname}${window.location.search}`,
           type: 'POST'
       },
       columns : [
@@ -189,9 +195,10 @@
         processing: true,
         serverSide: true,
         retrieve: true,
+        ordering: false,
 		drawCallback: function (settings) { newTabClickListener() },
         ajax: {
-            url: `/tables/urlTable/${url}`,
+            url: `/tables/urlTable/${url}${window.location.search}`,
             type: 'POST'
         },
         columns : [
@@ -208,9 +215,10 @@
       processing: true,
       serverSide: true,
       retrieve: true,
+      ordering: false,
 	  drawCallback: function (settings) { newTabClickListener() },
       ajax: {
-          url: `/tables/faviconDetailsTable/${favicon}`,
+          url: `/tables/faviconDetailsTable/${favicon}${window.location.search}`,
           type: 'POST'
       },
       columns : [
@@ -220,9 +228,4 @@
       ],
     });
   }
-
-  // Other things to trigger in modals
-  document.querySelectorAll(".downloadFaviconButton").forEach(el => el.addEventListener('click', event => {
-      downloadBase64File(el.dataset.mimetype, el.dataset.b64favicon, el.dataset.filename);
-  }))
 }));

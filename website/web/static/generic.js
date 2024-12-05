@@ -66,6 +66,12 @@ function newTabClickListener() {
     }));
 };
 
+function downloadFaviconListener() {
+  document.querySelectorAll(".downloadFaviconButton").forEach(el => el.addEventListener('click', event => {
+    downloadBase64File(el.dataset.mimetype, el.dataset.b64favicon, el.dataset.filename);
+  }))
+};
+
 document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll('.goBack').forEach(el => el.addEventListener('click', event => {

@@ -30,10 +30,11 @@ $(document).ready(function () {
   $('#table').DataTable( {
     "order": [[ 1, "desc" ]],
     "pageLength": 50,
+    "orderable": false,
     "columns": [
-        { "orderable": false, "width": 400 },
-        { "orderable": false, "width": 150, "render": DataTable.render.datetime_with_tz()},
-        { "orderable": false, "width": 400 }
+        { "width": 40% },
+        { "width": 20%, "render": DataTable.render.datetime_with_tz()},
+        { "width": 40% }
     ],
   } );
 });
@@ -97,7 +98,7 @@ $(document).ready(function () {
   </center>
 
   <div class="table-responsive">
-  <table id="table" class="table" style="width:96%">
+  <table id="table" class="table" style="width:100%">
     <thead>
      <tr>
        <th>Page</th>
