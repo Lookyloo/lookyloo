@@ -120,10 +120,13 @@ class BackgroundBuildCaptures(AbstractManager):
                     try:
                         self.lookyloo.trigger_modules(uuid, auto_trigger=True, force=False, as_admin=False)
                     except Exception as e:
-                        self.logger.exception(f'Unable to trigger modules for {uuid}: {e}')
+                        self.logger.warning(f'Unable to trigger modules for {uuid}: {e}')
                     # Trigger whois request on all nodes
                     for node in ct.root_hartree.hostname_tree.traverse():
-                        self.lookyloo.uwhois.query_whois_hostnode(node)
+                        try:
+                            self.lookyloo.uwhois.query_whois_hostnode(node)
+                        except Exception as e:
+                            self.logger.info(f'Unable to query whois for {node.name}: {e}')
                     self.logger.info(f'Pickle for {uuid} built.')
                     got_new_captures = True
                     max_captures -= 1

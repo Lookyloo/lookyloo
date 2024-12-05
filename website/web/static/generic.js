@@ -39,6 +39,19 @@ function downloadBase64File(contentType, base64Data, fileName) {
      downloadLink.click();
 }
 
+function render_datetime_with_tz(data) {
+    const date = new Date(data);
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")} ${date.toTimeString()}`;
+};
+
+DataTable.render.datetime_with_tz = function () {
+    return function ( data, type, row ) {
+        if ( type === 'display' ) {
+            return render_datetime_with_tz(data);
+        }
+        return data;
+    };
+}
 
 function newTabClickListener() {
     document.querySelectorAll('.openNewTab').forEach(el => el.addEventListener('click', event => {

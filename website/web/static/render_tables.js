@@ -11,19 +11,10 @@
           type: 'POST'
       },
       columns : [
-          { data: 'capture_time' },
-          { data: 'capture_title' },
-          { data: 'url' }
+          { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+          { data: 'capture_title', width: '40%' },
+          { data: 'url', width: '40%' }
       ],
-      order: [[ 0, "desc" ]],
-      columnDefs: [{ width: '20%', targets: 0,
-        render: (data) => {
-           const date = new Date(data);
-           return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-        }
-      },
-      { width: '40%', targets: 1 },
-      { width: '40%', targets: 2 }],
     })
   }
   if (document.getElementById('bodyHashDetailsTable')) {
@@ -38,19 +29,10 @@
           type: 'POST'
       },
       columns : [
-          { data: 'capture_time' },
-          { data: 'capture_title' },
-          { data: 'url' }
+          { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+          { data: 'capture_title', width: '40%' },
+          { data: 'url', width: '40%' }
       ],
-      order: [[ 0, "desc" ]],
-      columnDefs: [{ width: '20%', targets: 0,
-        render: (data) => {
-           const date = new Date(data);
-           return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-        }
-      },
-      { width: '40%', targets: 1 },
-      { width: '40%', targets: 2 }],
     })
   }
   if (document.getElementById('hashTypeDetailsTable')) {
@@ -65,21 +47,10 @@
             type: 'POST'
         },
         columns : [
-            { data: 'capture_time' },
-            { data: 'capture_title' },
-            { data: 'landing_page' }
+            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+            { data: 'capture_title', width: '40%' },
+            { data: 'landing_page', width: '40%' }
         ],
-        order: [[ 0, "desc" ]],
-        columnDefs: [{ width: '30%',
-                       targets: 0,
-                       render: (data) => {
-                        const date = new Date(data);
-                        return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                       }
-                     },
-                     { width: '30%', targets: 1 },
-                     { width: '50%', targets: 2 }],
-
       });
   }
 
@@ -95,22 +66,10 @@
             type: 'POST'
         },
         columns : [
-            { data: 'capture_time' },
-            { data: 'capture_title' },
-            { data: 'landing_page' }
+            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+            { data: 'capture_title', width: '40%' },
+            { data: 'landing_page', width: '40%' }
         ],
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        columnDefs: [{ width: '30%',
-                       targets: 0,
-                       render: (data) => {
-                        const date = new Date(data);
-                        return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                       }
-                     },
-                     { width: '30%', targets: 1 },
-                     { width: '50%', targets: 2 }],
-
       });
   }
   if (document.getElementById('bodyHashesTable')) {
@@ -198,47 +157,29 @@
             type: 'POST'
         },
         columns : [
-            { data: 'capture_time' },
-            { data: 'capture_title' },
-            { data: 'landing_page' }
+            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+            { data: 'capture_title', width: '40%' },
+            { data: 'landing_page', width: '40%' }
         ],
-        order: [[ 0, "desc" ]],
-        columnDefs: [{ width: '20%', targets: 0,
-                       render: (data) => {
-                        const date = new Date(data);
-                        return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                       }
-                     },
-                     { width: '40%', targets: 1 },
-                     { width: '40%', targets: 2 }]
       });
   }
 
   if (document.getElementById('hostnameTable')) {
     hostname = document.getElementById('hostnameTable').dataset.hostname;
     new DataTable('#hostnameTable', {
-    processing: true,
-    serverSide: true,
-    retrieve: true,
-	drawCallback: function (settings) { newTabClickListener() },
-    ajax: {
-        url: `/tables/hostnameTable/${hostname}`,
-        type: 'POST'
-    },
-    columns : [
-        { data: 'capture_time' },
-        { data: 'capture_title' },
-        { data: 'landing_page' }
-    ],
-    order: [[ 0, "desc" ]],
-    columnDefs: [{ width: '20%', targets: 0,
-                   render: (data) => {
-                    const date = new Date(data);
-                    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                   }
-                 },
-                 { width: '40%', targets: 1 },
-                 { width: '40%', targets: 2 }],
+      processing: true,
+      serverSide: true,
+      retrieve: true,
+      drawCallback: function (settings) { newTabClickListener() },
+      ajax: {
+          url: `/tables/hostnameTable/${hostname}`,
+          type: 'POST'
+      },
+      columns : [
+          { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+          { data: 'capture_title', width: '40%' },
+          { data: 'landing_page', width: '40%' }
+      ],
     });
   }
 
@@ -254,19 +195,10 @@
             type: 'POST'
         },
         columns : [
-            { data: 'capture_time' },
-            { data: 'capture_title' },
-            { data: 'landing_page' }
+            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+            { data: 'capture_title', width: '40%' },
+            { data: 'landing_page', width: '40%' }
         ],
-        order: [[ 0, "desc" ]],
-        columnDefs: [{ width: '20%', targets: 0,
-                       render: (data) => {
-                        const date = new Date(data);
-                        return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                       }
-                     },
-                     { width: '40%', targets: 1 },
-                     { width: '40%', targets: 2 }],
       });
   }
 
@@ -282,21 +214,10 @@
           type: 'POST'
       },
       columns : [
-          { data: 'capture_time' },
-          { data: 'capture_title' },
-          { data: 'landing_page' }
+          { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+          { data: 'capture_title', width: '40%' },
+          { data: 'landing_page', width: '40%' }
       ],
-      order: [[ 0, "desc" ]],
-      columnDefs: [{ width: '30%',
-                     targets: 0,
-                     render: (data) => {
-                      const date = new Date(data);
-                      return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-                     }
-                   },
-                   { width: '30%', targets: 1 },
-                   { width: '50%', targets: 2 }],
-
     });
   }
 

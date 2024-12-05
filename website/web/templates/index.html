@@ -32,16 +32,9 @@ $(document).ready(function () {
     "pageLength": 50,
     "columns": [
         { "orderable": false, "width": 400 },
-        { "orderable": false, "width": 150 },
+        { "orderable": false, "width": 150, "render": DataTable.render.datetime_with_tz()},
         { "orderable": false, "width": 400 }
     ],
-    "columnDefs": [{
-        "targets": 1,
-        "render": function ( data, type, row, meta ) {
-            let date = new Date(data);
-            return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, "0") + '-' + date.getDate().toString().padStart(2, "0") + ' ' + date.toTimeString();
-        }
-    }]
   } );
 });
 </script>
