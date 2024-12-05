@@ -28,13 +28,13 @@
 <script type="text/javascript" nonce="{{ csp_nonce() }}">
 $(document).ready(function () {
   $('#table').DataTable( {
-    "order": [[ 1, "desc" ]],
-    "pageLength": 50,
-    "orderable": false,
-    "columns": [
-        { "width": 40% },
-        { "width": 20%, "render": DataTable.render.datetime_with_tz()},
-        { "width": 40% }
+    order: [[ 1, "desc" ]],
+    pageLength: 50,
+    orderable: false,
+    columns: [
+        { width: '40%' },
+        { width: '20%', render: DataTable.render.datetime_with_tz()},
+        { width: '40%' }
     ],
   } );
 });
@@ -55,7 +55,7 @@ $(document).ready(function () {
     <a href="https://www.lookyloo.eu/docs/main/index.html">Documentation</a>
   </div>
   <div class="corner-ribbon bottom-left sticky white shadow">
-      <a href="https://github.com/Lookyloo/lookyloo/releases/tag/v{{version}}">Changelog</br>(v{{version}})</a>
+      <a href="https://github.com/Lookyloo/lookyloo/releases/tag/v{{version}}">Changelog<br>(v{{version}})</a>
   </div>
   {% if show_project_page %}
   <div class="corner-ribbon top-right sticky white shadow">

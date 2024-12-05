@@ -241,7 +241,7 @@ def get_sri(directory: str, filename: str) -> str:
     if ignore_sri:
         return ""
     sha512 = sri_load()[directory][filename]
-    return f'integrity=sha512-{sha512}'
+    return f'integrity="sha512-{sha512}"'
 
 
 app.jinja_env.globals.update(get_sri=get_sri)
