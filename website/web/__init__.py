@@ -1962,11 +1962,12 @@ def __prepare_node_view(capture_uuid: str, nodes: list[tuple[str, str]], from_po
     to_return = f'The capture contains this value in {len(nodes)} nodes, click below to see them on the tree:'
     to_return += '<ul>'
     for url, node in nodes:
+        url_span = f'<span class="d-inline-block text-break" style="max-width: 400px;">{url}</span>'
         to_return += '<li>'
         if from_popup:
-            to_return += f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}" data-hostnode="{node}">{url}</a>"""
+            to_return += f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}" data-hostnode="{node}">{url_span}</a>"""
         else:
-            to_return += f'<a href="{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}">{url}</a>'
+            to_return += f'<a href="{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}">{url_span}</a>'
         to_return += '</li>'
     to_return += '</ul>'
     return to_return
