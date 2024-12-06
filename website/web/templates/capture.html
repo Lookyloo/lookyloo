@@ -32,7 +32,7 @@
   <a href="https://www.lookyloo.eu/docs/main/index.html">Documentation</a>
 </div>
 <div class="corner-ribbon bottom-left sticky white shadow">
-    <a href="https://github.com/Lookyloo/lookyloo/releases/tag/v{{version}}">Changelog</br>(v{{version}})</a>
+    <a href="https://github.com/Lookyloo/lookyloo/releases/tag/v{{version}}">Changelog<br>(v{{version}})</a>
 </div>
 {% if show_project_page %}
 <div class="corner-ribbon top-right sticky white shadow">
@@ -49,7 +49,7 @@
   {{ render_messages(container=True, dismissible=True) }}
   {% if current_user.is_authenticated %}
   <p class="lead">You are logged-in as <strong>{{ current_user.id }}</strong>
-  </br>
+  <br>
   {% if user_config %}
     {% if user_config['overwrite'] == true %}
       The settings in your users configuration file will overwrite the settings you configure in the form below.

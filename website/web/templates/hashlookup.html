@@ -3,14 +3,14 @@
   No result data available or hashlookup module not enabled.
 {%else%}
 
-  <b>Total Hits</b>: {{ merged|length }}</br>
-  <b>Total ressources</b>: {{total_ressources}}</br></br>
+  <b>Total Hits</b>: {{ merged|length }}<br>
+  <b>Total ressources</b>: {{total_ressources}}<br><br>
   {% for sha1, entries in merged.items() %}
     <dl class="row">
       <dt class="col-sm-2">URLs in tree</dt>
       <dd class="col-sm-10">
       {% for node in entries['nodes'] %}
-      {{ node }} </br>
+      {{ node }} <br>
       {% endfor %}
       </dd>
     </dl>
@@ -24,7 +24,7 @@
         {% else %}
         {{ v }}
         {% endif %}
-        </br>
+        <br>
       {% endfor %}
       </dd>
     </dl>

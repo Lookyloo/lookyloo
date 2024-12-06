@@ -164,7 +164,7 @@
           {% endif %}
           {% if enable_mail_notification %}
           <li class="list-group-item">
-            <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious</br>capture</a>
+            <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious<br>capture</a>
           </li>
           {% endif %}
         </ul>
@@ -767,16 +767,16 @@
       {% set screenshot_too_big = screenshot_size > 10 * 1024 * 1024 %}
       {% if screenshot_too_big %}
         Image too big ({{ sizeof_fmt(screenshot_size) }}) to display in the browser, the screenshot below is cropped.
-        </br>
+        <br>
       {% endif %}
       {% if blur_screenshot %}
       <button type="button" class="btn btn-primary" id="blurScreenshot">Unblur</button>
       {% endif %}
       <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button" class="btn btn-primary">Download</a>
-      </br>
-      </br>
+      <br>
+      <br>
       <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '') }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
-      </br>
+      <br>
     </center>
     </div>
     <div class="modal-footer">
@@ -793,10 +793,10 @@
               <h4 class="modal-title" id="modulesModalLabel">
                   Reports from 3rd party services
               </h4>
-              </br>
+              <br>
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          </br>
+          <br>
           <center><h5>Note that if you get an error when you click on a
                   link below, it probably means the capture is still ongoing.
                   Try reloading the page after a few seconds.</h5></center>
@@ -818,10 +818,10 @@
               <h4 class="modal-title" id="historyModalLabel">
                   Historical data and context about this capture
               </h4>
-              </br>
+              <br>
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          </br>
+          <br>
           <div class="modal-body">
               ... loading results historical context ...
           </div>
@@ -839,10 +839,10 @@
               <h4 class="modal-title" id="downloadModalLabel">
                   Download specific elements of the capture.
               </h4>
-              </br>
+              <br>
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          </br>
+          <br>
           <div class="modal-body">
           <ul>
             <li>
@@ -887,10 +887,10 @@
               <h4 class="modal-title" id="hashlookupModalLabel">
                   Hits in Hashlookup
               </h4>
-              </br>
+              <br>
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          </br>
+          <br>
           <div class="modal-body">
               ... loading results from hashlookup ...
           </div>
@@ -1006,7 +1006,7 @@
             <div class="alert alert-warning" role="alert">
               The monitoring instance is configured to automatically expire what you want to
               monitor after <b>{{monitoring_settings["max_captures"]}} captures</b>.
-              </br>
+              <br>
               Keep that in mind when you select the frequency.
             </div>
             {% endif %}

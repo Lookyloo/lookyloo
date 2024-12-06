@@ -170,7 +170,7 @@
   {% if details[0] %}
   - This file is known <b>legitimate</b> on the following domains: {{ ', '.join(details[1]) }}.
   {% elif details[0] == False %}
-    </br>
+    <br>
     <p>
     The response sould be considered as
     {% if details[1] is mapping and details[1].get('tag') %}
@@ -204,7 +204,7 @@
     <li>
         {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0], from_popup=True) }}">
           {{ cookie_name_value[0] }}</a>={{ shorten_string(cookie_name_value[1], 200) }} -
-        </br>
+        <br>
         {{ button_text }}
         <button type="button" class="btn btn-primary locateInTree" data-hostnode="{{ detail[1] }}">Locate</button>
     </li>
@@ -262,7 +262,7 @@
            width="21" height="21"
       {% if urlnode.generic_type == "image" %}
            data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-           title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> </br>Click to download.'
+           title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> <br>Click to download.'
       {% else %}
            data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
            title="{{icon_info['tooltip']}} <br/>Click to download."
@@ -293,7 +293,7 @@
 
 {% macro shorten_string(string, cut_length, with_title=False) %}
 {% if with_title %}
-<div title={{string}}>
+<div title="{{string}}">
 {%endif%}
 
 {% if string|length > cut_length %}

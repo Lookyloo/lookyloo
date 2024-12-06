@@ -25,12 +25,12 @@
   <center>
     {% if hostnode.idna %}
       <h3>{{hostnode.idna}}
-          </br><small class="text-body-secondary">{{hostnode.name}}</small>
+          <br><small class="text-body-secondary">{{hostnode.name}}</small>
       </h3>
     {% else %}
       <h3>{{hostnode.name}}</h3>
     {% endif %}
-    </br>
+    <br>
     <button type="button" class="btn btn-primary locateInTree" data-hostnode="{{ hostnode_uuid }}">Locate in tree</button>
     {% if uwhois_available %}
     <a href="{{ url_for('whois', query=hostnode.name) }}" class="btn btn-primary" role="button">
@@ -44,7 +44,7 @@
         Download all Hashes as text
     </a>
   </center>
-  </br>
+  <br>
   <div class="accordion" id="accordionDNS">
   <div class="accordion-item">
     <h2 class="accordion-header">
@@ -174,7 +174,7 @@
           {% if url['url_object'].posted_data %}
               <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
                   Download posted data
-              </a></br>
+              </a><br>
               {% if url['url_object'].posted_data is string %}
               Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
               {% endif %}
@@ -228,7 +228,7 @@
             <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
                 Download rendered HTML page
             </a>({{ sizeof_fmt(url['url_object'].rendered_html.getbuffer().nbytes)}})
-            </br>
+            <br>
             <a href="{{ url_for('urlnode_urls_in_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
                 Download URLs in rendered HTML page
             </a>
@@ -273,7 +273,7 @@
 
           {% endif %}
           {% if enable_context_by_users %}
-            </br>
+            <br>
             {{ context_form(tree_uuid, url['url_object'].uuid,
                             url['url_object'].body_hash, 'hostnode_popup') }}
           {% endif %}
@@ -304,7 +304,7 @@
                 {{ get_ressource_button(tree_uuid, url['url_object'].uuid, hash,
                                         'Download the embedded ressource',
                                         details['type'] and details['type'].startswith('image')) }}
-                </br>
+                <br>
                 {% if enable_context_by_users %}
                   {{ context_form(tree_uuid, url['url_object'].uuid, hash, 'hostnode_popup') }}
                 {% endif %}

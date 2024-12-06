@@ -1,7 +1,7 @@
 {% if misp_instances_settings|length > 1 %}
 <center>
 <label for="mispSelector">Select the MISP instance to push to</label>
-</br>
+<br>
 <div class="btn-group" role="group" aria-label="MISP Selector" id="mispSelector">
   {%for name in misp_instances_settings %}
   <button type="button" value="push_{{name.replace(' ', '_')}}"

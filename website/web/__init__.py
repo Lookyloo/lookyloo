@@ -34,6 +34,7 @@ from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus, CaptureSettingsError
+from markupsafe import Markup
 from puremagic import from_string
 from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
 from werkzeug.security import check_password_hash
@@ -224,7 +225,7 @@ app.jinja_env.globals.update(sizeof_fmt=sizeof_fmt)
 def http_status_description(code: int) -> str:
     if code in http.client.responses:
         return http.client.responses[code]
-    return f'Invalid code: {code}'
+    return Markup(f'Invalid code: "{code}"')
 
 
 app.jinja_env.globals.update(http_status_description=http_status_description)
@@ -241,7 +242,7 @@ def get_sri(directory: str, filename: str) -> str:
     if ignore_sri:
         return ""
     sha512 = sri_load()[directory][filename]
-    return f'integrity="sha512-{sha512}"'
+    return Markup(f'integrity="sha512-{sha512}"')
 
 
 app.jinja_env.globals.update(get_sri=get_sri)

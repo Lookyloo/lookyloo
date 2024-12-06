@@ -3,10 +3,10 @@
   <h6>Searching on URL, domain, IPs, and CNAMEs for all the nodes up to the rendered page.</h6>
   <h6>Skips the entries in warnings lists enabled on your MISP instance.</h6>
 {% if misps_occurrences|length > 1 %}
-</br>
+<br>
 <hr/>
 <label for="mispSelector">Select the MISP instance to search in</label>
-</br>
+<br>
 <div class="btn-group" role="group" aria-label="MISP Selector" id="mispSelector">
   {%for name in misps_occurrences %}
   <button type="button" value="lookup_{{name.replace(' ', '_')}}" class="btn btn-outline-primary {%if name == current_misp%}active{%endif%}" href="#">{{name}}</a></li>
