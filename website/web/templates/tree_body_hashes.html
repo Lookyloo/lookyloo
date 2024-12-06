@@ -11,7 +11,6 @@
 </thead>
 <tbody>
   {% for body_hash, info in body_hashes.items() %}
-  {% set icon_info = get_icon(info['node'].generic_type) %}
   <tr>
     <td>{{ info['total_captures'] }}</td>
     <td>

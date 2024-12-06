@@ -244,15 +244,6 @@
 
 {% macro popup_icons_response(urlnode, tree_uuid) %}
 <div>
-  {% if urlnode.response_cookie %}
-    {% set icon_info = get_icon("response_cookie") %}
-    <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"
-       title="Download all the cookies in the response from the server">
-      <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
-           width="21" height="21"/>
-    </a>
-  {% endif %}
-
   {% if urlnode.generic_type in ["js", "exe", "css", "font", "html", "json", "image", "video",
                                  "unknown_mimetype", "text", "unset_mimetype", "octet-stream",
                                  "livestream"] %}
@@ -270,6 +261,15 @@
       />
     </a>
   {%endif%}
+  {% if urlnode.response_cookie %}
+    {% set icon_info = get_icon("response_cookie") %}
+    <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"
+       title="Download all the cookies in the response from the server">
+      <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
+           width="21" height="21"/>
+    </a>
+  {% endif %}
+
 </div>
 
 <div>
