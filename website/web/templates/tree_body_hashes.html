@@ -1,4 +1,4 @@
-{% from "macros.html" import popup_icons_response %}
+{% from "macros.html" import hash_icon %}
 
 <table id="bodyHashesTable" class="table table-striped" style="width:100%">
 <thead>
@@ -13,12 +13,18 @@
   {% for body_hash, info in body_hashes.items() %}
   <tr>
     <td>{{ info['total_captures'] }}</td>
-    <td data-order="{{info['node'].generic_type}}">
-        {{popup_icons_response(info['node'], tree_uuid)}}
+    <td data-order="{{info['generic_type']}}">
+        {{hash_icon(tree_uuid, info['nodes'][0][0].uuid, info['generic_type'], body_hash)}}
     </td>
     <td>
-      <p class="text-break">{{ info['node'].name }}</p>
-      <button type="button" class="btn btn-link openNewTab" data-capture="{{tree_uuid}}" data-hostnode="{{info['node'].uuid}}">Show on tree</button>
+      <ul>
+      {% for node, embedded in info['nodes'] %}
+      <li>
+        <span class="text-break">{{ node.name }} {% if embedded %}<b>(embedded)</b>{%endif%}</span>
+        <a href="#" role="button" class="btn btn-link openNewTab"
+          data-capture="{{tree_uuid}}" data-hostnode="{{node.uuid}}">Show on tree</a>
+      </li>
+      {% endfor %}
     </td>
     <td>
       <span class="d-inline-block text-truncate" style="max-width: 200px;">

@@ -241,6 +241,27 @@
 </div>
 {% endmacro %}
 
+{% macro hash_icon(tree_uuid, urlnode_uuid, generic_type, hash) %}
+{% if generic_type in ["js", "exe", "css", "font", "html", "json", "image", "video",
+                       "unknown_mimetype", "text", "unset_mimetype", "octet-stream",
+                       "livestream"] %}
+  {% set icon_info = get_icon(generic_type) %}
+  <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid) }}">
+    <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
+         width="21" height="21"
+    {% if generic_type == "image" %}
+         data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+         title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, h_ressource=hash) }}"/> <br>Click to download.'
+    {% else %}
+         data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+         title="{{icon_info['tooltip']}} <br/>Click to download."
+    {% endif %}
+    />
+  </a>
+{%endif%}
+
+{% endmacro %}
+
 
 {% macro popup_icons_response(urlnode, tree_uuid) %}
 <div>

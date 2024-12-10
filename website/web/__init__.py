@@ -53,7 +53,8 @@ from zoneinfo import available_timezones
 from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load,
-                      get_lookyloo_instance, get_indexing, build_keys_table)
+                      get_lookyloo_instance, get_indexing, build_keys_table,
+                      mimetype_to_generic)
 from .proxied import ReverseProxied
 
 logging.config.dictConfig(get_config('logging'))
@@ -357,15 +358,26 @@ def _get_body_hash_investigator(body_hash: str, offset: int | None=None, limit: 
     return total, captures
 
 
-def get_all_body_hashes(capture_uuid: str, /) -> dict[str, dict[str, URLNode | int]]:
+def get_all_body_hashes(capture_uuid: str, /) -> dict[str, dict[str, int | str | list[tuple[URLNode, bool]]]]:
     ct = lookyloo.get_crawled_tree(capture_uuid)
-    to_return: dict[str, dict[str, URLNode | int]] = defaultdict()
+    to_return: dict[str, dict[str, int | str | list[tuple[URLNode, bool]]]] = defaultdict()
     for node in ct.root_hartree.url_tree.traverse():
-        if node.empty_response or node.body_hash in to_return:
-            # If we have the same hash more than once, skip
+        if node.empty_response:
             continue
-        total_captures = get_indexing(flask_login.current_user).get_captures_body_hash_count(node.body_hash)
-        to_return[node.body_hash] = {'node': node, 'total_captures': total_captures}
+        if node.body_hash not in to_return:
+            total_captures = get_indexing(flask_login.current_user).get_captures_body_hash_count(node.body_hash)
+            generic_type = mimetype_to_generic(node.mimetype)
+            to_return[node.body_hash] = {'total_captures': total_captures, 'generic_type': generic_type, 'nodes': []}
+        to_return[node.body_hash]['nodes'].append((node, False))  # type: ignore[union-attr]
+        # get embedded retources (if any) - need their type too
+        if 'embedded_ressources' in node.features:
+            for mimetype, blobs in node.embedded_ressources.items():
+                for h, blob in blobs:
+                    if h not in to_return:
+                        total_captures = get_indexing(flask_login.current_user).get_captures_body_hash_count(h)
+                        generic_type = mimetype_to_generic(mimetype)
+                        to_return[h] = {'total_captures': total_captures, 'generic_type': generic_type, 'nodes': []}
+                    to_return[h]['nodes'].append((node, True))  # type: ignore[union-attr]
     return to_return
 
 
