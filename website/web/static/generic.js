@@ -46,7 +46,7 @@ function render_datetime_with_tz(data) {
 
 DataTable.render.datetime_with_tz = function () {
     return function ( data, type, row ) {
-        if ( type === 'display' ) {
+        if ( type === 'display' || type === 'filter') {
             return render_datetime_with_tz(data);
         }
         return data;

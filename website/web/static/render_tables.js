@@ -83,61 +83,59 @@
   if (document.getElementById('bodyHashesTable')) {
       new DataTable('#bodyHashesTable', {
         retrieve: true,
-        ordering: false,
         drawCallback: function (settings) {
             newTabClickListener();
             $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         },
         order: [[ 0, "desc" ]],
         columns: [{ width: '10%' },
-                  { width: '10%' }, // Would make sense to order on the file type
-                  { width: '60%' },
-                  { width: '20%' }],
+                  { width: '10%' },
+                  { width: '60%', orderable: false },
+                  { width: '20%', orderable: false }],
       });
   }
   if (document.getElementById('faviconsTable')) {
       new DataTable('#faviconsTable', {
         retrieve: true,
-        ordering: false,
         drawCallback: function (settings) {
             newTabClickListener();
             downloadFaviconListener();
         },
+        order: [[ 0, "desc" ]],
         columns: [{ width: '10%' },
-                  { width: '40%' },
-                  { width: '40%' },
-                  { width: '10%' }],
+                  { width: '40%', orderable: false },
+                  { width: '40%', orderable: false },
+                  { width: '10%', orderable: false }],
       });
   }
   if (document.getElementById('treeHashesTable')) {
       new DataTable('#treeHashesTable', {
         retrieve: true,
-        ordering: false,
+        order: [[ 0, "desc" ]],
         drawCallback: function (settings) { newTabClickListener() },
         column: [{ width: '20%' },
-                 { width: '40%' },
+                 { width: '40%', orderable: false},
                  { width: '40%' }],
       });
   }
   if (document.getElementById('hostnamesTable')) {
       new DataTable('#hostnamesTable', {
         retrieve: true,
-        ordering: false,
         drawCallback: function (settings) {
             newTabClickListener();
             $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         },
         order: [[ 0, "desc" ]],
         columns: [{ width: '10%' },
-                  { width: '40%' },
-                  { width: '50%' }],
+                  { width: '40%', orderable: false },
+                  { width: '50%', orderable: false }],
       });
   }
   if (document.getElementById('identifiersTable')) {
       new DataTable('#identifiersTable', {
         retrieve: true,
-        ordering: false,
         drawCallback: function (settings) { newTabClickListener() },
+        order: [[ 0, "desc" ]],
         columns: [{ width: '20%' },
                   { width: '40%' },
                   { width: '40%' }],
@@ -146,11 +144,10 @@
   if (document.getElementById('urlsTable')) {
       new DataTable('#urlsTable', {
         retrieve: true,
-        ordering: false,
         drawCallback: function (settings) { newTabClickListener() },
         order: [[ 0, "desc" ]],
         columns: [{ width: '10%' },
-                  { width: '90%' }],
+                  { width: '90%', orderable: false }],
         initComplete: function (settings, json) {
           $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         }

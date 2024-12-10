@@ -13,7 +13,7 @@
   {% for body_hash, info in body_hashes.items() %}
   <tr>
     <td>{{ info['total_captures'] }}</td>
-    <td>
+    <td data-order="{{info['node'].generic_type}}">
         {{popup_icons_response(info['node'], tree_uuid)}}
     </td>
     <td>
