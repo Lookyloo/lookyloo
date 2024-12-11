@@ -244,9 +244,9 @@
           {% else %}
           {{ hash_info(tree_uuid, url['url_object'].uuid, url['url_object'].mimetype,
                        url['url_object'].body_hash, url['url_object'].body.getbuffer().nbytes,
-                       url.get('body_hash_freq', 0), has_pandora) }}
-          {{ ressource_legitimacy_details(url.get('legitimacy')) }}
-          {{ known_content_details(url.get('known_content')) }}
+                       url.get('body_hash_freq', 0), has_pandora,
+                       url.get('legitimacy'),
+                       url.get('known_content')) }}
 
            {% if enable_context_by_users %}
             {{ context_form(tree_uuid, url['url_object'].uuid,
@@ -288,9 +288,11 @@
             <div class="card card-body">
               {% for hash, details in url['embedded_ressources'].items() %}
               <div>
-                {{hash_info(tree_uuid, url['url_object'].uuid, details['type'], hash, details['body_size'], details['hash_freq'] ) }}<br>
-                {{ ressource_legitimacy_details(details.get('legitimacy')) }}
-                {{ known_content_details(details.get('known_content')) }}
+                {{hash_info(tree_uuid, url['url_object'].uuid, details['type'], hash,
+                            details['body_size'], details['hash_freq'],
+                            has_pandora,
+                            details.get('legitimacy'),
+                            details.get('known_content')) }}<br>
                 {% if enable_context_by_users %}
                   {{ context_form(tree_uuid, url['url_object'].uuid, hash, 'hostnode_popup') }}
                 {% endif %}

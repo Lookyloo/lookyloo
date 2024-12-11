@@ -84,7 +84,7 @@
 {% if details %}
   <div>
   {% if details is string %}
-    <b>{{ details }} </b>
+    This ressource is known as a generic file: <b>{{ details }}</b>
   {% else %}
     This file is known as part of <b>{{ details[0] }}</b>
     version <b>{{ details[1] }}</b>: <b>{{ details[2] }}</b>.
@@ -230,11 +230,14 @@
 {% endmacro %}
 
 {% macro hash_info(tree_uuid, urlnode_uuid, mimetype, hash, ressource_size,
-                   nb_occurrences, has_pandora)%}
+                   nb_occurrences, has_pandora, legitimacy, known_content)%}
 
 {{ hash_icon(tree_uuid, urlnode_uuid, mimetype, hash) }}
 
 <b>Body size</b> (in the HTTP response): {{ sizeof_fmt(ressource_size) }}
+
+{{ ressource_legitimacy_details(legitimacy) }}
+{{ known_content_details(known_content) }}
 
 {% if nb_occurrences > 0 %}
 <div>
@@ -249,6 +252,7 @@
 
 {% if has_pandora %}
   {{ pandora_submit(tree_uuid, urlnode_uuid, hash) }}
+  <br>
 {% endif %}
 
 {% endmacro %}

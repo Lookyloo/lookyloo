@@ -633,7 +633,6 @@ def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | R
         hostnode, urls = get_hostnode_investigator(tree_uuid, node_uuid)
     except IndexError:
         return render_template('error.html', error_message='Sorry, this one is on us. The tree was rebuild, please reload the tree and try again.')
-
     return render_template('hostname_popup.html',
                            tree_uuid=tree_uuid,
                            hostnode_uuid=node_uuid,
