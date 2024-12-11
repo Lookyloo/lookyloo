@@ -279,6 +279,7 @@ def get_icon(icon_id: str) -> Icon | None:
 
 
 app.jinja_env.globals.update(get_icon=get_icon)
+app.jinja_env.globals.update(generic_type=mimetype_to_generic)
 
 
 def get_tz_info() -> tuple[str | None, str, set[str]]:
@@ -366,8 +367,7 @@ def get_all_body_hashes(capture_uuid: str, /) -> dict[str, dict[str, int | str |
             continue
         if node.body_hash not in to_return:
             total_captures = get_indexing(flask_login.current_user).get_captures_body_hash_count(node.body_hash)
-            generic_type = mimetype_to_generic(node.mimetype)
-            to_return[node.body_hash] = {'total_captures': total_captures, 'generic_type': generic_type, 'nodes': []}
+            to_return[node.body_hash] = {'total_captures': total_captures, 'mimetype': node.mimetype, 'nodes': []}
         to_return[node.body_hash]['nodes'].append((node, False))  # type: ignore[union-attr]
         # get embedded retources (if any) - need their type too
         if 'embedded_ressources' in node.features:
@@ -375,8 +375,7 @@ def get_all_body_hashes(capture_uuid: str, /) -> dict[str, dict[str, int | str |
                 for h, blob in blobs:
                     if h not in to_return:
                         total_captures = get_indexing(flask_login.current_user).get_captures_body_hash_count(h)
-                        generic_type = mimetype_to_generic(mimetype)
-                        to_return[h] = {'total_captures': total_captures, 'generic_type': generic_type, 'nodes': []}
+                        to_return[h] = {'total_captures': total_captures, 'mimetype': mimetype, 'nodes': []}
                     to_return[h]['nodes'].append((node, True))  # type: ignore[union-attr]
     return to_return
 
@@ -548,7 +547,7 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
             # Index lookup
             # %%% Full body %%%
             if freq := get_indexing(flask_login.current_user).get_captures_body_hash_count(url.body_hash):
-                to_append['body_hash_details'] = {'hash_freq': freq}
+                to_append['body_hash_freq'] = freq
 
             # %%% Embedded ressources %%%
             if hasattr(url, 'embedded_ressources') and url.embedded_ressources:
@@ -1778,7 +1777,18 @@ def favicon_detail(favicon_sha512: str) -> str:
 @app.route('/body_hashes/<string:body_hash>', methods=['GET'])
 def body_hash_details(body_hash: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('body_hash.html', body_hash=body_hash, from_popup=from_popup)
+    filename = ''
+    mimetype = ''
+    b64 = ''
+    if uuids := get_indexing(flask_login.current_user).get_hash_uuids(body_hash):
+        # got UUIDs for this hash
+        capture_uuid, urlnode_uuid = uuids
+        if ressource := lookyloo.get_ressource(capture_uuid, urlnode_uuid, body_hash):
+            filename, body, mimetype = ressource
+            if mimetype_to_generic(mimetype) == 'image':
+                b64 = base64.b64encode(body.read()).decode()
+    return render_template('body_hash.html', body_hash=body_hash, from_popup=from_popup,
+                           filename=filename, mimetype=mimetype, b64=b64)
 
 
 @app.route('/urls/<string:url>', methods=['GET'])

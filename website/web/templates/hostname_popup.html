@@ -2,11 +2,12 @@
 {% from "macros.html" import known_content_details %}
 {% from "macros.html" import ressource_legitimacy_details %}
 {% from "macros.html" import indexed_cookies %}
-{% from "macros.html" import popup_icons_request %}
-{% from "macros.html" import popup_icons_response %}
+{% from "macros.html" import request_cookies_icon %}
+{% from "macros.html" import response_cookies_icon %}
+{% from "macros.html" import hash_info%}
+{% from "macros.html" import redirect_response %}
 {% from "macros.html" import shorten_string %}
 {% from "macros.html" import other_captures_table %}
-{% from "macros.html" import get_ressource_button %}
 {% from "macros.html" import context_form %}
 {% from "macros.html" import pandora_submit %}
 
@@ -127,7 +128,7 @@
   </div>
   <br>
   {# Start list of URLs #}
-  <ul class="list-group-flush">
+  <ul class="list-group list-group-flush">
     {% for url in urls %}
     {# URL Display #}
     <li class="list-group-item">
@@ -156,34 +157,47 @@
       </div>
       {% endif %}
       {% if url['url_object'].security_details %}
-      <div>TLS certificate details:
-        <ul>
-        {% for k, v in url['url_object'].security_details.items() %}
-          <li><b>{{k}}</b>: {{v}}</li>
-        {% endfor%}
-        </ul>
+      <div class="accordion accordion-flush" id="accordionTLS_{{url['url_object'].uuid}}">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTLS_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseTLS">
+            Show certificate details
+          </button>
+        </h2>
+        <div id="collapseTLS_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionTLS_{{url['url_object'].uuid}}">
+          <div class="accordion-body">
+            <ul>
+            {% for k, v in url['url_object'].security_details.items() %}
+              <li><b>{{k}}</b>: {{v}}</li>
+            {% endfor%}
+            </ul>
+          </div>
+        </div>
+      </div>
       </div>
       {% endif %}
-      <div></div>
       <ul class="list-group">
-
+        {% if url['url_object'].posted_data or url['cookies_sent'] %}
         <li class="list-group-item">
-          <p class="h4">Request</p>
-          {{ popup_icons_request(url['url_object'], tree_uuid) }}
+          <p class="h4">Request {{ request_cookies_icon(url['url_object'], tree_uuid) }}</p>
+          <hr>
 
+          <div class="d-grid gap-2">
           {% if url['url_object'].posted_data %}
+           <div>
               <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
                   Download posted data
               </a><br>
               {% if url['url_object'].posted_data is string %}
               Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
               {% endif %}
+           </div>
           {% endif %}
 
           {% if url['cookies_sent'] %}
           <div>
-            <p class="h5">This request contains cookies.
-              <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#request_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+              <p>
+              <button class="btn btn-primary btn-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#request_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
                 <span class="if-collapsed">Show cookies sent.</span>
                 <span class="if-not-collapsed">Hide cookies sent.</span>
               </button>
@@ -195,7 +209,9 @@
             </div>
           </div>
           {% endif %}
+          </div>
         </li>
+        {% endif %}
 
         <li class="list-group-item">
           {# Details of the response #}
@@ -206,9 +222,37 @@
                 </span>
                 -
                 <span>Load time: {{ url['url_object'].time.total_seconds() }}s</span>
+                <span>{{response_cookies_icon(url['url_object'], tree_uuid)}}</span>
             </small>
           </p>
-          {{ popup_icons_response(url['url_object'], tree_uuid) }}
+          <hr>
+          {% if url['url_object'].rendered_html %}
+          <div>
+            <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
+                Download rendered HTML page
+            </a>({{ sizeof_fmt(url['url_object'].rendered_html.getbuffer().nbytes)}})
+            <br>
+            <a href="{{ url_for('urlnode_urls_in_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
+                Download URLs in rendered HTML page
+            </a>
+          </div>
+          {% endif %}
+
+          {{ redirect_response(url['url_object'], tree_uuid) }}
+          {% if url['url_object'].empty_response %}
+            Empty HTML body.
+          {% else %}
+          {{ hash_info(tree_uuid, url['url_object'].uuid, url['url_object'].mimetype,
+                       url['url_object'].body_hash, url['url_object'].body.getbuffer().nbytes,
+                       url.get('body_hash_freq', 0), has_pandora) }}
+          {{ ressource_legitimacy_details(url.get('legitimacy')) }}
+          {{ known_content_details(url.get('known_content')) }}
+
+           {% if enable_context_by_users %}
+            {{ context_form(tree_uuid, url['url_object'].uuid,
+                            url['url_object'].body_hash, 'hostnode_popup') }}
+           {% endif %}
+          {% endif %}
 
           {% if url['url_object'].downloaded_filename %}
           <div>
@@ -223,65 +267,19 @@
           </div>
           {% endif%}
 
-          {% if url['url_object'].rendered_html %}
-          <div>
-            <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-                Download rendered HTML page
-            </a>({{ sizeof_fmt(url['url_object'].rendered_html.getbuffer().nbytes)}})
-            <br>
-            <a href="{{ url_for('urlnode_urls_in_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-                Download URLs in rendered HTML page
-            </a>
-          </div>
-          {% endif %}
-
-          <div>
-            {% if url['url_object'].empty_response %}
-            Empty HTML body.
-            {% else %}
-              {{ ressource_legitimacy_details(url['legitimacy'], url['url_object'].body.getbuffer().nbytes) }}
-              {% if has_pandora %}
-                {{ pandora_submit(tree_uuid, url['url_object'].uuid) }}
-              {% endif %}
-            {% endif %}
-          </div>
-
-
-          {% if url['known_content'] %}
-            {{ known_content_details(url['known_content']) }}
-          {% endif %}
-
-          {# Everything we know about the response content #}
-          {% if url['body_hash_details'] and url['body_hash_details']['hash_freq'] %}
-          <div>
-            This file can be found <b>{{ url['body_hash_details']['hash_freq'] }}</b> times
-            across all the captures on this lookyloo instance.
-
-            <p>
-              <a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash, from_popup=True) }}">
-              Show more information about this response body.
-              </a>
-            </p>
-          </div>
           {% if url['url_object'].hhhash %}
               <p>
                 <a href="{{ url_for('hhh_detail', hhh=url['url_object'].hhhash, from_popup=True) }}">
-                See other captures with the same HTTP Headers Hash
+                Show other captures with the same HTTP Headers Hash
                 </a>
               </p>
           {% endif %}
 
-          {% endif %}
-          {% if enable_context_by_users %}
-            <br>
-            {{ context_form(tree_uuid, url['url_object'].uuid,
-                            url['url_object'].body_hash, 'hostnode_popup') }}
-          {% endif %}
-
+          <div class="d-grid gap-2">
           {% if url['embedded_ressources'] %}
           {# Details on embedded resources #}
-          <div><b>This response contains embedded ressources</b>
-          <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#embedded_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+          <div>
+          <button class="btn btn-primary btn-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#embedded_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
             <span class="if-collapsed">Show embedded resources.</span>
             <span class="if-not-collapsed">Hide embedded resources.</span>
           </button>
@@ -290,28 +288,12 @@
             <div class="card card-body">
               {% for hash, details in url['embedded_ressources'].items() %}
               <div>
-              {% if details['known_content'] %}
-                {{ known_content_details(details['known_content']) }}
-              {% endif %}
-              {{ ressource_legitimacy_details(details['legitimacy'], details['body_size']) }}
-              </div>
-              {% if has_pandora %}
-              {{ pandora_submit(tree_uuid, url['url_object'].uuid, hash) }}
-              {% endif %}
-              <div>
-                This file {% if details['type'] %}(<b>{{ details['type'] }}</b>){% endif %} can be found <b>{{ details['hash_freq'] }}</b> times
-                across all the captures on this lookyloo instance.
-                {{ get_ressource_button(tree_uuid, url['url_object'].uuid, hash,
-                                        'Download the embedded ressource',
-                                        details['type'] and details['type'].startswith('image')) }}
-                <br>
+                {{hash_info(tree_uuid, url['url_object'].uuid, details['type'], hash, details['body_size'], details['hash_freq'] ) }}<br>
+                {{ ressource_legitimacy_details(details.get('legitimacy')) }}
+                {{ known_content_details(details.get('known_content')) }}
                 {% if enable_context_by_users %}
                   {{ context_form(tree_uuid, url['url_object'].uuid, hash, 'hostnode_popup') }}
                 {% endif %}
-
-                <p><a href="{{ url_for('body_hash_details', body_hash=url['url_object'].body_hash, from_popup=True) }}">
-                  Show more information about this embedded content.
-                </a></p>
               </div>
               {% endfor %}
             </div>
@@ -320,8 +302,8 @@
 
           {% if url['cookies_received'] %}
           <div>
-            <p class="h5">This response contains cookies.
-              <button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#response_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
+              <p>
+              <button class="btn btn-primary btn-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#response_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
                   <span class="if-collapsed">Show cookies received.</span>
                   <span class="if-not-collapsed">Hide cookies received.</span>
               </button>
@@ -335,6 +317,7 @@
             </div>
           </div>
           {% endif %}
+          <div>
         </li>
       </ul>
     </li>

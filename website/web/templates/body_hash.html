@@ -17,8 +17,24 @@
 {%endif%}
 
 <center>
-  <h6>{{ body_hash }}</h6>
-  <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">Download</a>
+  <p class="lead">
+  {% if filename %}
+  Filename: <b title="The file may have different names across the captures, this is one of them.">{{ filename }}</b><br>
+  {% endif %}
+  {% if mimetype %}
+  Mimetype: <b>{{ mimetype }}</b><br>
+  {% endif %}
+  Hash:<br> <span style="font-size: 70%;">{{ body_hash }}</span><br>
+  {% if b64 %}
+  Preview:<br>
+    <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">
+    <img class="border rounded border-3" src="data:{{mimetype}};base64,{{ b64 }}" style="max-width: 256px;max-height: 256px;"
+         title="Click to download"/>
+    </a>
+  {% else %}
+    <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">Download</a>
+  {% endif %}
+  </p>
 </center>
 
 <table id="bodyHashDetailsTable" class="table table-striped" style="width:100%" data-bodyhash="{{body_hash}}">

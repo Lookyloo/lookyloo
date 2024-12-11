@@ -128,8 +128,10 @@ def get_indexing(user: User | None) -> Indexing:
     return get_indexing_cache(full=bool(user and user.is_authenticated))
 
 
-def mimetype_to_generic(mimetype: str) -> str:
-    if 'javascript' in mimetype or 'ecmascript' in mimetype or mimetype.startswith('js'):
+def mimetype_to_generic(mimetype: str | None) -> str:
+    if not mimetype or mimetype == 'none':
+        return 'unset_mimetype'
+    elif 'javascript' in mimetype or 'ecmascript' in mimetype or mimetype.startswith('js'):
         return 'js'
     elif (mimetype.startswith('image')
             or mimetype.startswith('img')
@@ -180,7 +182,5 @@ def mimetype_to_generic(mimetype: str) -> str:
     elif ('application/gzip' in mimetype
           or 'application/zip' in mimetype):
         return 'archive'
-    elif not mimetype or mimetype == 'none':
-        return 'unset_mimetype'
     else:
         return 'unknown_mimetype'

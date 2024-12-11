@@ -2,7 +2,7 @@
 
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% from 'macros.html' import shorten_string %}
-{% from 'macros.html' import get_ressource_button %}
+{% from 'macros.html' import hash_icon %}
 {% from 'macros.html' import context_form %}
 
 {% block title %}Ressources{% endblock %}
@@ -42,7 +42,7 @@
       <tr>
         <td>
           <a href="{{ url_for('body_hash_details', body_hash=h) }}">{{ shorten_string(h, 10) }}</a><br>
-          {{ get_ressource_button(capture_uuid, urlnode_uuid, h, 'Download sample', mimetype and mimetype.startswith('image')) }}
+          {{ hash_icon(capture_uuid, urlnode_uuid, mimetype, h) }}
         </td>
         <td>{{ freq }}</td>
         <td> {{ context['type'] }} - {{ context['details'] }}<br>

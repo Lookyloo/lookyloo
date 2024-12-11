@@ -81,21 +81,23 @@
 
 
 {% macro known_content_details(details) %}
-<div>
-{% if details is string %}
-  <b>{{ details }} </b>
-{% else %}
-  This file is known as part of <b>{{ details[0] }}</b>
-  version <b>{{ details[1] }}</b>: <b>{{ details[2] }}</b>.
-  {% if details[3] > 1%}
-    It is also present in <b>{{ details[3] -1 }}</b> other libraries.
+{% if details %}
+  <div>
+  {% if details is string %}
+    <b>{{ details }} </b>
+  {% else %}
+    This file is known as part of <b>{{ details[0] }}</b>
+    version <b>{{ details[1] }}</b>: <b>{{ details[2] }}</b>.
+    {% if details[3] > 1%}
+      It is also present in <b>{{ details[3] -1 }}</b> other libraries.
+    {%endif%}
   {%endif%}
+  </div>
 {%endif%}
-</div>
 {% endmacro %}
 
 {% macro context_form(tree_uuid, urlnode_uuid, hash, callback_str) %}
-<button class="btn btn-primary collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#context_response_{{ urlnode_uuid }}" aria-expanded="false" aria-controls="collapseContextForm">
+<button class="btn btn-primary btn-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#context_response_{{ urlnode_uuid }}" aria-expanded="false" aria-controls="collapseContextForm">
   <span class="if-collapsed">Add context</span>
   <span class="if-not-collapsed">Hide context form</span>
 </button>
@@ -150,22 +152,10 @@
 </div>
 {% endmacro %}
 
-{% macro get_ressource_button(capture_uuid, urlnode_uuid, hash, text, can_preview=False) %}
-<form method="post" action="{{ url_for('get_ressource', tree_uuid=capture_uuid, node_uuid=urlnode_uuid) }}">
-  <button class="btn btn-primary" name="ressource_hash" value="{{ hash }}"
-    {% if can_preview %}
-    data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-    title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=capture_uuid, node_uuid=urlnode_uuid, h_ressource=hash) }}"/>'
-    {% endif %}
-  >{{ text }}</button>
-</form>
-{% endmacro %}
-
-{% macro ressource_legitimacy_details(details, ressource_size) %}
+{% macro ressource_legitimacy_details(details) %}
 {% if details and details[0] == False %}
   <img src="/static/bomb.svg" title="Known malicious content in the response." width="21" height="21"/>
 {%endif%}
-<b>Body size</b> (in the HTTP response): {{ sizeof_fmt(ressource_size) }}
 {% if details %}
   {% if details[0] %}
   - This file is known <b>legitimate</b> on the following domains: {{ ', '.join(details[1]) }}.
@@ -215,17 +205,15 @@
 {% endif %}
 {% endmacro %}
 
-{% macro popup_icons_request(urlnode, tree_uuid) %}
-<div>
+{% macro request_cookies_icon(urlnode, tree_uuid) %}
   {% if urlnode.request_cookie %}
     {% set icon_info = get_icon("request_cookie") %}
-    <a href="{{ url_for('urlnode_request_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"
-       title="Download all the cookies in the request to the server">
+    <a href="{{ url_for('urlnode_request_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}">
        <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
-         width="21" height="21"/>
+         width="21" height="21"/
+         title="Download all the cookies in the request to the server">
     </a>
   {% endif %}
-</div>
 {% endmacro %}
 
 
@@ -241,47 +229,57 @@
 </div>
 {% endmacro %}
 
-{% macro hash_icon(tree_uuid, urlnode_uuid, generic_type, hash) %}
-{% if generic_type in ["js", "exe", "css", "font", "html", "json", "image", "video",
-                       "unknown_mimetype", "text", "unset_mimetype", "octet-stream",
-                       "livestream"] %}
-  {% set icon_info = get_icon(generic_type) %}
-  <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid) }}">
-    <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
-         width="21" height="21"
-    {% if generic_type == "image" %}
-         data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-         title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, h_ressource=hash) }}"/> <br>Click to download.'
-    {% else %}
-         data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-         title="{{icon_info['tooltip']}} <br/>Click to download."
-    {% endif %}
-    />
-  </a>
-{%endif%}
+{% macro hash_info(tree_uuid, urlnode_uuid, mimetype, hash, ressource_size,
+                   nb_occurrences, has_pandora)%}
+
+{{ hash_icon(tree_uuid, urlnode_uuid, mimetype, hash) }}
+
+<b>Body size</b> (in the HTTP response): {{ sizeof_fmt(ressource_size) }}
+
+{% if nb_occurrences > 0 %}
+<div>
+  This file can be found <b>{{ nb_occurrences }}</b> times across all the captures on this lookyloo instance.
+  <p>
+    <a href="{{ url_for('body_hash_details', body_hash=hash, from_popup=True) }}">
+    Show more information about this ressource.
+    </a>
+  </p>
+</div>
+{% endif %}
+
+{% if has_pandora %}
+  {{ pandora_submit(tree_uuid, urlnode_uuid, hash) }}
+{% endif %}
 
 {% endmacro %}
 
-
-{% macro popup_icons_response(urlnode, tree_uuid) %}
-<div>
-  {% if urlnode.generic_type in ["js", "exe", "css", "font", "html", "json", "image", "video",
-                                 "unknown_mimetype", "text", "unset_mimetype", "octet-stream",
-                                 "livestream"] %}
-    {% set icon_info = get_icon(urlnode.generic_type) %}
-    <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}">
+{% macro hash_icon(tree_uuid, urlnode_uuid, mimetype, hash) %}
+{% if mimetype %}
+  {% set gt = generic_type(mimetype) %}
+  {% if gt in ["js", "exe", "css", "font", "html", "json", "image", "video",
+               "unknown_mimetype", "text", "unset_mimetype", "octet-stream",
+               "livestream"] %}
+    {% set icon_info = get_icon(gt) %}
+    <a href="{{ url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid) }}">
       <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
            width="21" height="21"
-      {% if urlnode.generic_type == "image" %}
+      {% if gt == "image" %}
            data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-           title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"/> <br>Click to download.'
+           title='<img class="ressource_preview" src="{{ url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, h_ressource=hash) }}"/> <br>Click to download.'
       {% else %}
            data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
            title="{{icon_info['tooltip']}} <br/>Click to download."
       {% endif %}
       />
     </a>
+    <small>Mimetype: <b>{{mimetype}}</b></small>
+    <br>
   {%endif%}
+{%endif%}
+{% endmacro %}
+
+
+{% macro response_cookies_icon(urlnode, tree_uuid) %}
   {% if urlnode.response_cookie %}
     {% set icon_info = get_icon("response_cookie") %}
     <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"
@@ -290,10 +288,9 @@
            width="21" height="21"/>
     </a>
   {% endif %}
+{% endmacro %}
 
-</div>
-
-<div>
+{% macro redirect_response(urlnode, tree_uuid) %}
 {% if urlnode["redirect"] %}
   {% set icon_info = get_icon('redirect') %}
   {% for child in urlnode.children if child.name == urlnode.redirect_url %}
@@ -309,7 +306,6 @@
        width="21" height="21"/>
   {% endfor %}
 {%endif%}
-</div>
 {% endmacro %}
 
 {% macro shorten_string(string, cut_length, with_title=False) %}
