@@ -6,7 +6,7 @@ import hashlib
 import logging
 import re
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pathlib import Path
 
@@ -169,6 +169,16 @@ class Indexing():
         finally:
             self.indexing_done(uuid_to_index)
 
+    def __limit_failsafe(self, oldest_capture: datetime | None=None, limit: int | None=None) -> float | str:
+        if limit:
+            if not oldest_capture:
+                return '-Inf'
+            return oldest_capture.timestamp()
+        # We have no limit set, we *must* set an oldest capture
+        if not oldest_capture:
+            return (datetime.now() - timedelta(days=2)).timestamp()
+        return oldest_capture.timestamp()
+
     # ###### Cookies ######
 
     def _reindex_cookies(self, cookie_name: str) -> None:
@@ -232,7 +242,7 @@ class Indexing():
         :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
         if self.redis.type(f'cookies_names|{cookie_name}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_cookies', *[entry.split('|')[0] for entry in self.redis.smembers(f'cn|{cookie_name}|captures')])
@@ -331,7 +341,7 @@ class Indexing():
         :param filter_capture_uuid: UUID of the capture the hash was found in
         '''
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
 
         if self.redis.type(f'bh|{body_hash}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
@@ -409,7 +419,7 @@ class Indexing():
         :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
         if self.redis.type(f'hhhashes|{hhh}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_hhhashes', *self.redis.smembers(f'hhhashes|{hhh}|captures'))
@@ -513,7 +523,7 @@ class Indexing():
         :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
         md5 = hashlib.md5(url.encode()).hexdigest()
         if self.redis.type(f'urls|{md5}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
@@ -542,7 +552,7 @@ class Indexing():
         :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
         if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'hostnames|{hostname}|captures'))
@@ -628,7 +638,7 @@ class Indexing():
         :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
         total = self.redis.zcard(f'tlds|{tld}|captures')
         return total, self.redis.zrevrangebyscore(f'tlds|{tld}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
@@ -693,7 +703,7 @@ class Indexing():
         :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
         total = self.redis.zcard(f'favicons|{favicon_sha512}|captures')
         return total, self.redis.zrevrangebyscore(f'favicons|{favicon_sha512}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
@@ -801,7 +811,7 @@ class Indexing():
         :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
         total = self.redis.zcard(f'capture_hash_types|{hash_type}|{h}|captures')
         return total, self.redis.zrevrangebyscore(f'capture_hash_types|{hash_type}|{h}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
@@ -884,7 +894,7 @@ class Indexing():
         :param oldest_capture: The capture time of the oldest capture to consider.
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else '-Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
         if self.redis.type(f'identifiers|{identifier_type}|{identifier}|captures') == 'set':  # type: ignore[no-untyped-call]
             # triggers the re-index soon.
             self.redis.srem('indexed_identifiers', *self.redis.smembers(f'identifiers|{identifier_type}|{identifier}|captures'))
