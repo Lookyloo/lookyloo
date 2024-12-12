@@ -176,7 +176,7 @@ class Indexing():
             return oldest_capture.timestamp()
         # We have no limit set, we *must* set an oldest capture
         if not oldest_capture:
-            return (datetime.now() - timedelta(days=2)).timestamp()
+            return (datetime.now() - timedelta(days=1)).timestamp()
         return oldest_capture.timestamp()
 
     # ###### Cookies ######
@@ -977,7 +977,7 @@ class Indexing():
         :param oldest_capture: The capture time of the oldest capture to consider
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
-        min_score: str | float = oldest_capture.timestamp() if oldest_capture else "-Inf"
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
         total = self.redis.zcard(f'categories|{category}|captures')
         return total, self.redis.zrevrangebyscore(f'categories|{category}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
