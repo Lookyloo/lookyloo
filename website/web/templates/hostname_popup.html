@@ -289,7 +289,7 @@
               {% for hash, details in url['embedded_ressources'].items() %}
               <div>
                 {{hash_info(tree_uuid, url['url_object'].uuid, details['type'], hash,
-                            details['body_size'], details['hash_freq'],
+                            details['body_size'], details.get('hash_freq', 0),
                             has_pandora,
                             details.get('legitimacy'),
                             details.get('known_content')) }}<br>

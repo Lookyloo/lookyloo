@@ -511,3 +511,61 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> C
         raise TreeNeedsRebuild('We have HAR files and need to rebuild the tree.')
     # The tree doesn't need to be rebuilt if there are no HAR files.
     raise NoValidHarFile("Couldn't find HAR files")
+
+
+def mimetype_to_generic(mimetype: str | None) -> str:
+    if not mimetype or mimetype == 'none':
+        return 'unset_mimetype'
+    elif 'javascript' in mimetype or 'ecmascript' in mimetype or mimetype.startswith('js'):
+        return 'js'
+    elif (mimetype.startswith('image')
+            or mimetype.startswith('img')
+            or 'webp' in mimetype):
+        return 'image'
+    elif mimetype.startswith('text/css'):
+        return 'css'
+    elif 'json' in mimetype:
+        return 'json'
+    elif 'html' in mimetype:
+        return 'html'
+    elif ('font' in mimetype
+            or 'woff' in mimetype
+            or 'opentype' in mimetype):
+        return 'font'
+    elif ('octet-stream' in mimetype
+            or 'application/x-protobuf' in mimetype
+            or 'application/pkix-cert' in mimetype
+            or 'application/x-123' in mimetype
+            or 'application/x-binary' in mimetype
+            or 'application/x-msdownload' in mimetype
+            or 'application/x-thrift' in mimetype
+            or 'application/x-troff-man' in mimetype
+            or 'application/x-typekit-augmentation' in mimetype
+            or 'application/grpc-web' in mimetype
+            or 'model/gltf-binary' in mimetype
+            or 'model/obj' in mimetype
+            or 'application/wasm' in mimetype):
+        return 'octet-stream'
+    elif ('text' in mimetype or 'xml' in mimetype
+            or mimetype.startswith('multipart')
+            or mimetype.startswith('message')
+            or 'application/x-www-form-urlencoded' in mimetype
+            or 'application/vnd.oasis.opendocument.formula-template' in mimetype):
+        return 'text'
+    elif 'video' in mimetype:
+        return 'video'
+    elif ('audio' in mimetype or 'ogg' in mimetype):
+        return 'audio'
+    elif ('mpegurl' in mimetype
+            or 'application/vnd.yt-ump' in mimetype):
+        return 'livestream'
+    elif ('application/x-shockwave-flash' in mimetype
+            or 'application/x-shockware-flash' in mimetype):  # Yes, shockwaRe
+        return 'flash'
+    elif 'application/pdf' in mimetype:
+        return 'pdf'
+    elif ('application/gzip' in mimetype
+          or 'application/zip' in mimetype):
+        return 'archive'
+    else:
+        return 'unknown_mimetype'

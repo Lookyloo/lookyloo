@@ -45,7 +45,8 @@ from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable
 from lookyloo.helpers import (UserAgents, load_cookies,
                               load_user_config,
-                              get_taxonomies
+                              get_taxonomies,
+                              mimetype_to_generic
                               )
 
 from zoneinfo import available_timezones
@@ -53,8 +54,7 @@ from zoneinfo import available_timezones
 from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load,
-                      get_lookyloo_instance, get_indexing, build_keys_table,
-                      mimetype_to_generic)
+                      get_lookyloo_instance, get_indexing, build_keys_table)
 from .proxied import ReverseProxied
 
 logging.config.dictConfig(get_config('logging'))

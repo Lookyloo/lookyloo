@@ -32,7 +32,7 @@ from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
 from .context import Context
-from .helpers import get_captures_dir, is_locked, load_pickle_tree, get_pickle_path, remove_pickle_tree, get_indexing
+from .helpers import get_captures_dir, is_locked, load_pickle_tree, get_pickle_path, remove_pickle_tree, get_indexing, mimetype_to_generic
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
 from .modules import Cloudflare
@@ -291,6 +291,14 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             default_recursion_limit = sys.getrecursionlimit()
             with self._timeout_context():
                 tree = CrawledTree(har_files, uuid)
+                for node in tree.root_hartree.hostname_tree.traverse():
+                    for url in node.urls:
+                        if 'mimetype' in url.features:
+                            generic_type = mimetype_to_generic(url.mimetype)
+                            if generic_type not in node.features:
+                                node.add_feature(generic_type, 1)
+                            else:
+                                node.add_feature(generic_type, getattr(node, generic_type) + 1)
             await self.__resolve_dns(tree, logger)
             if self.contextualizer:
                 self.contextualizer.contextualize_tree(tree)

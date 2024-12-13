@@ -855,7 +855,7 @@ class TLDCaptures(Resource):  # type: ignore[misc]
     @api.param('tld', 'Get captures with a specific TLD and their capture timestamp.')  # type: ignore[misc]
     @api.param('urls_only', 'Returns recent URLs with that TLD, regardless the capture.')  # type: ignore[misc]
     @api.param('most_recent_capture', 'Timestamp of the most recent capture to check for a TLD (fallback to now)')  # type: ignore[misc]
-    @api.param('oldest_capture', 'Timestamp of the oldest capture to check for a TLD (fallback to 5 days ago)')  # type: ignore[misc]
+    @api.param('oldest_capture', 'Timestamp of the oldest capture to check for a TLD (fallback to 1 day ago)')  # type: ignore[misc]
     def get(self) -> list[tuple[str, float]] | list[str]:
         tld: str | None = request.args['tld'] if request.args.get('tld') else None
         if not tld:
