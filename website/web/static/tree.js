@@ -399,6 +399,28 @@ function text_entry(relative_x_pos, relative_y_pos, d) {
             return to_print;
           });
 
+    if (d.data.idna) {
+    nodeContent.append("text")
+          .attr('dy', '2.6em')
+          .attr('dx', '2em')
+          .attr("stroke", "white")
+          .style("font-size", "10px")
+          .attr("stroke-width", ".2px")
+          .style("opacity", .9)
+          .attr('cursor', 'pointer')
+          .on('click', (event, d) => open_hostnode_popup(d.data.uuid))
+          .on('mouseover', (event, d) => {
+              d3.select('#tooltip')
+                  .style('opacity', 1)
+                  .style('left', `${event.pageX + 10}px`)
+                  .style('top', `${event.pageY + 10}px`)
+                  .text('Open investigation pop-up.');
+          })
+          .on('mouseout', (event, d) => d3.select('#tooltip').style('opacity', 0))
+          .text(d => { return d.data.name }
+      );
+    }
+
     return nodeContent.node();
 }
 
