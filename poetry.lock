@@ -547,13 +547,13 @@ ujson = ["ujson (>=5.7.0)"]
 
 [[package]]
 name = "certifi"
-version = "2024.8.30"
+version = "2024.12.14"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.8.30-py3-none-any.whl", hash = "sha256:922820b53db7a7257ffbda3f597266d435245903d80737e34f8a45ff3e3230d8"},
-    {file = "certifi-2024.8.30.tar.gz", hash = "sha256:bec941d2aa8195e248a60b31ff9f0558284cf01a52591ceda73ea9afffd69fd9"},
+    {file = "certifi-2024.12.14-py3-none-any.whl", hash = "sha256:1275f7a45be9464efc1173084eaa30f866fe2e47d389406136d332ed4967ec56"},
+    {file = "certifi-2024.12.14.tar.gz", hash = "sha256:b650d30f370c2b724812bee08008be0c4163b163ddaec3f2546c1caf65f191db"},
 ]
 
 [[package]]
@@ -1341,13 +1341,13 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.27.5"
+version = "1.27.6"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<3.14,>=3.9"
 files = [
-    {file = "har2tree-1.27.5-py3-none-any.whl", hash = "sha256:01c0d72845538cebf43f32e998e41a66c388946d8f46af8b2719eae08a8e645f"},
-    {file = "har2tree-1.27.5.tar.gz", hash = "sha256:6b2780fe0af55401ba8fc57d53613eb55bb46c9d2d4f238a44ef799ecb4856fd"},
+    {file = "har2tree-1.27.6-py3-none-any.whl", hash = "sha256:361f93f098cdae1531c0f2b70bbb71c80405ed1df62239fd38a591c3c2c3d0c3"},
+    {file = "har2tree-1.27.6.tar.gz", hash = "sha256:af2ad9a90038cebabb8e3729cac694146191fa5b0b6300785fb4360acf864341"},
 ]
 
 [package.dependencies]
@@ -4724,4 +4724,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.14"
-content-hash = "0389dd50ce9a7ab9544880aeabc0612bf10fd6fc3601a441c67fd75d565a379b"
+content-hash = "ef9315ba06c221c038352f4958298ecad044d8d9f1c4d8662525834f6efe22d9"
