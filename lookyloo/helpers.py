@@ -567,5 +567,7 @@ def mimetype_to_generic(mimetype: str | None) -> str:
     elif ('application/gzip' in mimetype
           or 'application/zip' in mimetype):
         return 'archive'
+    elif ('inode/x-empty' in mimetype):
+        return 'empty'
     else:
         return 'unknown_mimetype'

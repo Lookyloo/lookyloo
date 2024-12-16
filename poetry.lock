@@ -258,19 +258,19 @@ files = [
 
 [[package]]
 name = "attrs"
-version = "24.2.0"
+version = "24.3.0"
 description = "Classes Without Boilerplate"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
-    {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
+    {file = "attrs-24.3.0-py3-none-any.whl", hash = "sha256:ac96cd038792094f438ad1f6ff80837353805ac950cd2aa0e0625ef19850c308"},
+    {file = "attrs-24.3.0.tar.gz", hash = "sha256:8f5c07333d543103541ba7be0e2ce16eeee8130cb0b3f9238ab904ce1e85baff"},
 ]
 
 [package.extras]
 benchmark = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-codspeed", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 cov = ["cloudpickle", "coverage[toml] (>=5.3)", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-dev = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
+dev = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pre-commit-uv", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 docs = ["cogapp", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
 tests = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
@@ -2840,13 +2840,13 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20241213"
+version = "1.0.2.20241216"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "publicsuffixlist-1.0.2.20241213-py2.py3-none-any.whl", hash = "sha256:7185d5682c202f3ded04e12e74adb7ed5f70affb203ba7fc2553d9b16ff435d6"},
-    {file = "publicsuffixlist-1.0.2.20241213.tar.gz", hash = "sha256:0cbf95e15056b0464edfd2cb3f111b9b02fcd8809393c6eb363791766015d7aa"},
+    {file = "publicsuffixlist-1.0.2.20241216-py2.py3-none-any.whl", hash = "sha256:8756ea50aab9c568221db353587545700336f251dfd049031aa8dcd65bed0e27"},
+    {file = "publicsuffixlist-1.0.2.20241216.tar.gz", hash = "sha256:b74e2c9e381e6c438700c8a9c31b5336ce7c0584e5162790b104b5fd27c0a262"},
 ]
 
 [package.extras]
@@ -3290,19 +3290,19 @@ docs = ["Sphinx (<7.2)", "Sphinx (>=7.2,<8.0)", "Sphinx (>=8,<9)"]
 
 [[package]]
 name = "pymisp"
-version = "2.5.2"
+version = "2.5.3"
 description = "Python API for MISP."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "pymisp-2.5.2-py3-none-any.whl", hash = "sha256:bcce077f8ccbe73958d47c778b30d7a9b2fb4b249cba2e3188a06df5be6cd2e1"},
-    {file = "pymisp-2.5.2.tar.gz", hash = "sha256:ca512c9754ad962be30dcef265da9f194835d70414935440abe5b0485a2b0109"},
+    {file = "pymisp-2.5.3-py3-none-any.whl", hash = "sha256:d6847ab17ef178bb59631a210861d2979607130a34c17d786fc708297e53a7d9"},
+    {file = "pymisp-2.5.3.tar.gz", hash = "sha256:9c38970d49214455fa40f8eff64360f8a921651ed0047efa2403d0abc7a616e0"},
 ]
 
 [package.dependencies]
 deprecated = ">=1.2.15,<2.0.0"
 lief = {version = ">=0.15.0,<0.16.0", optional = true, markers = "extra == \"fileobjects\""}
-publicsuffixlist = ">=1.0.2.20241113,<2.0.0.0"
+publicsuffixlist = ">=1.0.2.20241216,<2.0.0.0"
 pydeep2 = {version = ">=0.5.1,<0.6.0", optional = true, markers = "extra == \"fileobjects\""}
 pyfaup = {version = ">=1.2,<2.0", optional = true, markers = "extra == \"url\""}
 python-dateutil = ">=2.9.0.post0,<3.0.0"
@@ -4724,4 +4724,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.14"
-content-hash = "ef9315ba06c221c038352f4958298ecad044d8d9f1c4d8662525834f6efe22d9"
+content-hash = "0f9f26ff183f527194a6301a38a9eb8e58e57a12e2a344daf9d9fd5ba662547a"
