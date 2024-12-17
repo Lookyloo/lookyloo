@@ -266,6 +266,26 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             raise MissingCaptureDirectory(f'UUID ({uuid}) linked to a missing directory ({capture_dir}).')
         raise MissingUUID(f'Unable to find UUID {uuid}.')
 
+    def _prepare_hostnode_tree_for_icons(self, tree: CrawledTree) -> None:
+        for node in tree.root_hartree.hostname_tree.traverse():
+            for url in node.urls:
+                if 'mimetype' in url.features:
+                    generic_type = mimetype_to_generic(url.mimetype)
+                    if generic_type not in node.features:
+                        node.add_feature(generic_type, 1)
+                    else:
+                        node.add_feature(generic_type, getattr(node, generic_type) + 1)
+                if 'redirect' in url.features:
+                    if 'redirect' not in node.features:
+                        node.add_feature('redirect', 1)
+                    else:
+                        node.redirect += 1
+                if 'redirect_to_nothing' in url.features:
+                    if 'redirect_to_nothing' not in node.features:
+                        node.add_feature('redirect_to_nothing', 1)
+                    else:
+                        node.redirect_to_nothing += 1
+
     async def _create_pickle(self, capture_dir: Path, logger: LookylooCacheLogAdapter) -> CrawledTree:
         with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
@@ -291,14 +311,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             default_recursion_limit = sys.getrecursionlimit()
             with self._timeout_context():
                 tree = CrawledTree(har_files, uuid)
-                for node in tree.root_hartree.hostname_tree.traverse():
-                    for url in node.urls:
-                        if 'mimetype' in url.features:
-                            generic_type = mimetype_to_generic(url.mimetype)
-                            if generic_type not in node.features:
-                                node.add_feature(generic_type, 1)
-                            else:
-                                node.add_feature(generic_type, getattr(node, generic_type) + 1)
+                self._prepare_hostnode_tree_for_icons(tree)
             await self.__resolve_dns(tree, logger)
             if self.contextualizer:
                 self.contextualizer.contextualize_tree(tree)
