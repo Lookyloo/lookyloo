@@ -50,7 +50,7 @@
   <div class="accordion-item">
     <h2 class="accordion-header">
       <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDNS" aria-expanded="false" aria-controls="collapseDNS">
-        Show DNS details from standalone queries
+        DNS details from standalone queries
       </button>
     </h2>
     <div id="collapseDNS" class="accordion-collapse collapse" data-bs-parent="#accordionDNS">
@@ -157,11 +157,11 @@
       </div>
       {% endif %}
       {% if url['url_object'].security_details %}
-      <div class="accordion accordion-flush" id="accordionTLS_{{url['url_object'].uuid}}">
+      <div class="accordion accordion" id="accordionTLS_{{url['url_object'].uuid}}">
       <div class="accordion-item">
         <h2 class="accordion-header">
           <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTLS_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseTLS">
-            Show certificate details
+            TLS certificate
           </button>
         </h2>
         <div id="collapseTLS_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionTLS_{{url['url_object'].uuid}}">
@@ -177,41 +177,53 @@
       </div>
       {% endif %}
       <ul class="list-group">
-        {% if url['url_object'].posted_data or url['cookies_sent'] %}
         <li class="list-group-item">
-          <p class="h4">Request {{ request_cookies_icon(url['url_object'], tree_uuid) }}</p>
+          <p class="h4">Request ({{url['url_object'].request.get('method')}}) {{ request_cookies_icon(url['url_object'], tree_uuid) }}</p>
           <hr>
+          <div class="accordion accordion" id="accordionRequest_{{url['url_object'].uuid}}">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseRequestHeaders_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseRequestHeaders">
+                  HTTP Headers
+                </button>
+              </h2>
+              <div id="collapseRequestHeaders_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionRequest_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                  <ul>
+                  {% for h in url['url_object'].request['headers'] %}
+                    <li><b>{{h['name']}}</b>: {{h['value']}}</li>
+                  {% endfor%}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            {% if url['cookies_sent'] %}
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionRequestCookies_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseRequestCookies">
+                  Cookies sent
+                </button>
+              </h2>
+              <div id="accordionRequestCookies_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionRequest_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                  {{ indexed_cookies("List of cookies sent in the request", "Node setting this cookie", url['cookies_sent']) }}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
 
-          <div class="d-grid gap-2">
           {% if url['url_object'].posted_data %}
-           <div>
+           <div>This is a POST request,
               <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-                  Download posted data
+                  download content
               </a><br>
               {% if url['url_object'].posted_data is string %}
               Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
               {% endif %}
            </div>
           {% endif %}
-
-          {% if url['cookies_sent'] %}
-          <div>
-              <p>
-              <button class="btn btn-primary btn-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#request_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
-                <span class="if-collapsed">Show cookies sent.</span>
-                <span class="if-not-collapsed">Hide cookies sent.</span>
-              </button>
-            </p>
-            <div class="collapse" id="request_cookies_full_list_{{ url['url_object'].uuid }}">
-              <div class="card card-body">
-              {{ indexed_cookies("List of cookies sent in the request", "Node setting this cookie", url['cookies_sent']) }}
-              </div>
-            </div>
-          </div>
-          {% endif %}
-          </div>
         </li>
-        {% endif %}
 
         <li class="list-group-item">
           {# Details of the response #}
@@ -267,59 +279,73 @@
           </div>
           {% endif%}
 
-          {% if url['url_object'].hhhash %}
-              <p>
-                <a href="{{ url_for('hhh_detail', hhh=url['url_object'].hhhash, from_popup=True) }}">
-                Show other captures with the same HTTP Headers Hash
-                </a>
-              </p>
-          {% endif %}
-
-          <div class="d-grid gap-2">
-          {% if url['embedded_ressources'] %}
-          {# Details on embedded resources #}
-          <div>
-          <button class="btn btn-primary btn-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#embedded_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
-            <span class="if-collapsed">Show embedded resources.</span>
-            <span class="if-not-collapsed">Hide embedded resources.</span>
-          </button>
-          </div>
-          <div class="collapse" id="embedded_full_list_{{ url['url_object'].uuid }}">
-            <div class="card card-body">
-              {% for hash, details in url['embedded_ressources'].items() %}
-              <div>
-                {{hash_info(tree_uuid, url['url_object'].uuid, details['type'], hash,
-                            details['body_size'], details.get('hash_freq', 0),
-                            has_pandora,
-                            details.get('legitimacy'),
-                            details.get('known_content')) }}<br>
-                {% if enable_context_by_users %}
-                  {{ context_form(tree_uuid, url['url_object'].uuid, hash, 'hostnode_popup') }}
-                {% endif %}
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-          {% endif %}
-
-          {% if url['cookies_received'] %}
-          <div>
-              <p>
-              <button class="btn btn-primary btn-sm collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#response_cookies_full_list_{{ url['url_object'].uuid }}" aria-expanded="false" aria-controls="collapseExample">
-                  <span class="if-collapsed">Show cookies received.</span>
-                  <span class="if-not-collapsed">Hide cookies received.</span>
-              </button>
-            </p>
-            <div class="collapse" id="response_cookies_full_list_{{ url['url_object'].uuid }}">
-              <div class="card card-body">
-              {{ indexed_cookies("This response contains 3rd party cookies:", "Node sending this cookie", url['cookies_received']['3rd_party']) }}
-              {{ indexed_cookies("Cookies, sent somewhere in the capture", "Node sending this cookie", url['cookies_received']['sent']) }}
-              {{ indexed_cookies("Cookies, never sent", "", url['cookies_received']['not_sent']) }}
+          <div class="accordion accordion" id="accordionResponse_{{url['url_object'].uuid}}">
+            {% if url['embedded_ressources'] %}
+            {# Details on embedded resources #}
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionEmbedded_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseEmbedded">
+                  Embedded resources
+                </button>
+              </h2>
+              <div id="accordionEmbedded_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionResponse_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                  {% for hash, details in url['embedded_ressources'].items() %}
+                  <div>
+                    {{hash_info(tree_uuid, url['url_object'].uuid, details['type'], hash,
+                                details['body_size'], details.get('hash_freq', 0),
+                                has_pandora,
+                                details.get('legitimacy'),
+                                details.get('known_content')) }}<br>
+                    {% if enable_context_by_users %}
+                      {{ context_form(tree_uuid, url['url_object'].uuid, hash, 'hostnode_popup') }}
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                </div>
               </div>
             </div>
+            {% endif %}
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseResponseHeaders_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseResponseHeaders">
+                  HTTP Headers
+                </button>
+              </h2>
+              <div id="collapseResponseHeaders_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionResponse_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                  {% if url['url_object'].hhhash %}
+                      <p>
+                        <a href="{{ url_for('hhh_detail', hhh=url['url_object'].hhhash, from_popup=True) }}">
+                        Show other captures with the same HTTP Headers Hash
+                        </a>
+                      </p>
+                  {% endif %}
+                  <ul>
+                  {% for h in url['url_object'].response['headers'] %}
+                    <li><b>{{h['name']}}</b>: {{h['value']}}</li>
+                  {% endfor%}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            {% if url['cookies_received'] %}
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionResponseCookies_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseResponseCookies">
+                  Cookies received
+                </button>
+              </h2>
+              <div id="accordionResponseCookies_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionResponse_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                  {{ indexed_cookies("This response contains 3rd party cookies:", "Node sending this cookie", url['cookies_received']['3rd_party']) }}
+                  {{ indexed_cookies("Cookies, sent somewhere in the capture", "Node sending this cookie", url['cookies_received']['sent']) }}
+                  {{ indexed_cookies("Cookies, never sent", "", url['cookies_received']['not_sent']) }}
+                </div>
+              </div>
+            </div>
+            {% endif %}
           </div>
-          {% endif %}
-          <div>
         </li>
       </ul>
     </li>
