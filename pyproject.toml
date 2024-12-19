@@ -87,7 +87,7 @@ puremagic = "^1.28"
 psutil = "^6.1.0"
 flask-talisman = "^1.1.0"
 
-aiohttp = {extras = ["speedups"], version = "^3.11.10"}
+aiohttp = {extras = ["speedups"], version = "^3.11.11"}
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.13.0"
