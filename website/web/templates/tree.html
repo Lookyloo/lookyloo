@@ -211,6 +211,10 @@
                 <a href="{{ url_for('trigger_indexing', tree_uuid=tree_uuid) }}" role="button" class="btn btn-warning"
                    title="The capture isn't (fully) indexed, index now.">Index capture</a>
               {% endif %}
+              {% if misp_lookup%}
+                <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
+                  data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
+              {% endif %}
               <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
                   data-bs-toggle="modal" data-bs-target="#modulesModal" role="button"
                   title="Lookups from supported 3rd party services">Third Party Reports</a>
@@ -261,6 +265,10 @@
 
               <a href="#downloadModal" data-bs-toggle="modal" data-bs-target="#downloadModal" role="button"
                   title="Download specific elements of the capture">Download elements</a>
+              {% if misp_push%}
+                <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
+                  data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
+              {% endif %}
             </div>
           </div>
 
@@ -271,14 +279,6 @@
                 <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
                 <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
                 <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button" id="removeCapture">Remove capture</a>
-                {% if misp_push%}
-                  <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
-                    data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
-                {% endif %}
-                {% if misp_lookup%}
-                  <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
-                    data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
-                {% endif %}
                 <a href="{{ url_for('logout') }}" role="button" style="color: red">Logout</a>
               </div>
             </div>

@@ -45,7 +45,7 @@ class BackgroundBuildCaptures(AbstractManager):
                 # could be an empty file.
                 settings = json.loads(ar)
         try:
-            self.lookyloo.send_mail(capture_uuid, email=settings.get('email', ''),
+            self.lookyloo.send_mail(capture_uuid, as_admin=True, email=settings.get('email', ''),
                                     comment=settings.get('comment'))
             (path / 'auto_report').unlink()
         except Exception as e:

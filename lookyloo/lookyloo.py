@@ -882,7 +882,7 @@ class Lookyloo():
 
         return f"Malicious capture according to {len(modules)} module(s): {', '.join(modules)}"
 
-    def send_mail(self, capture_uuid: str, /, email: str | None=None, comment: str | None=None) -> bool | dict[str, Any]:
+    def send_mail(self, capture_uuid: str, /, as_admin: bool, email: str | None=None, comment: str | None=None) -> bool | dict[str, Any]:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
             return {"error": "Unable to send mail: mail notification disabled"}
@@ -916,7 +916,9 @@ class Lookyloo():
                 self.logger.info('There are no MISP instances available for a lookup.')
             else:
                 for instance_name in self.misps.keys():
-                    if occurrences := self.get_misp_occurrences(capture_uuid, instance_name=instance_name):
+                    if occurrences := self.get_misp_occurrences(capture_uuid,
+                                                                as_admin=as_admin,
+                                                                instance_name=instance_name):
                         elements, misp_url = occurrences
                         for event_id, attributes in elements.items():
                             for value, ts in attributes:
@@ -1225,7 +1227,8 @@ class Lookyloo():
 
         return [event]
 
-    def get_misp_occurrences(self, capture_uuid: str, /, *, instance_name: str | None=None) -> tuple[dict[int, set[tuple[str, datetime]]], str] | None:
+    def get_misp_occurrences(self, capture_uuid: str, /, as_admin: bool,
+                             *, instance_name: str | None=None) -> tuple[dict[int, set[tuple[str, datetime]]], str] | None:
         if instance_name is None:
             misp = self.misps.default_misp
         elif self.misps.get(instance_name) is not None:
@@ -1244,7 +1247,7 @@ class Lookyloo():
         nodes_to_lookup = ct.root_hartree.rendered_node.get_ancestors() + [ct.root_hartree.rendered_node]
         to_return: dict[int, set[tuple[str, datetime]]] = defaultdict(set)
         for node in nodes_to_lookup:
-            hits = misp.lookup(node, ct.root_hartree.get_host_node_by_uuid(node.hostnode_uuid))
+            hits = misp.lookup(node, ct.root_hartree.get_host_node_by_uuid(node.hostnode_uuid), as_admin=as_admin)
             for event_id, values in hits.items():
                 if not isinstance(event_id, int) or not isinstance(values, set):
                     continue

@@ -725,25 +725,45 @@ def stats(tree_uuid: str) -> str:
 
 
 @app.route('/tree/<string:tree_uuid>/misp_lookup', methods=['GET'])
-@flask_login.login_required  # type: ignore[misc]
 def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not lookyloo.misps.available:
         flash('There are no MISP instances available.', 'error')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
+    as_admin = flask_login.current_user.is_authenticated
+    if not as_admin and not lookyloo.misps.has_public_misp:
+        flash('You need to be authenticated to search on MISP.', 'error')
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+    if not as_admin and lookyloo.misps.default_misp.admin_only:
+        current_misp = None
+    else:
+        current_misp = lookyloo.misps.default_instance
+
     misps_occurrences = {}
-    for instance_name in lookyloo.misps.keys():
-        if occurrences := lookyloo.get_misp_occurrences(tree_uuid, instance_name=instance_name):
+    for instance_name, instance in lookyloo.misps.items():
+        if instance.admin_only and not as_admin:
+            continue
+        if not current_misp:
+            # Pick the first one we can
+            current_misp = instance_name
+        if occurrences := lookyloo.get_misp_occurrences(tree_uuid,
+                                                        as_admin=as_admin,
+                                                        instance_name=instance_name):
             misps_occurrences[instance_name] = occurrences
     return render_template('misp_lookup.html', uuid=tree_uuid,
-                           current_misp=lookyloo.misps.default_instance,
+                           current_misp=current_misp,
                            misps_occurrences=misps_occurrences)
 
 
 @app.route('/tree/<string:tree_uuid>/misp_push', methods=['GET', 'POST'])
-@flask_login.login_required  # type: ignore[misc]
-def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response | None:
+def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not lookyloo.misps.available:
         flash('There are no MISP instances available.', 'error')
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+    as_admin = flask_login.current_user.is_authenticated
+    if not as_admin and not lookyloo.misps.has_public_misp:
+        flash('You need to be authenticated to push to MISP.', 'error')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
 
     event = lookyloo.misp_export(tree_uuid)
@@ -754,7 +774,18 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response | No
     if request.method == 'GET':
         # Initialize settings that will be displayed on the template
         misp_instances_settings = {}
+        if not as_admin and lookyloo.misps.default_misp.admin_only:
+            current_misp = None
+        else:
+            current_misp = lookyloo.misps.default_instance
         for name, instance in lookyloo.misps.items():
+            if instance.admin_only and not as_admin:
+                continue
+
+            if not current_misp:
+                # Pick the first one we can
+                current_misp = name
+
             # the 1st attribute in the event is the link to lookyloo
             misp_instances_settings[name] = {
                 'default_tags': instance.default_tags,
@@ -766,13 +797,13 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response | No
 
         cache = lookyloo.capture_cache(tree_uuid)
         return render_template('misp_push_view.html',
-                               current_misp=lookyloo.misps.default_instance,
+                               current_misp=current_misp,
                                tree_uuid=tree_uuid,
                                event=event[0],
                                misp_instances_settings=misp_instances_settings,
                                has_parent=True if cache and cache.parent else False)
 
-    elif request.method == 'POST':
+    else:
         # event is a MISPEvent at this point
         misp_instance_name = request.form.get('misp_instance_name')
         if not misp_instance_name or misp_instance_name not in lookyloo.misps:
@@ -808,8 +839,10 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response | No
         events[-1].info = request.form.get('event_info')
 
         try:
-            new_events = misp.push(events, True if request.form.get('force_push') else False,
-                                   True if request.form.get('auto_publish') else False)
+            new_events = misp.push(events, as_admin=as_admin,
+                                   allow_duplicates=True if request.form.get('force_push') else False,
+                                   auto_publish=True if request.form.get('auto_publish') else False,
+                                   )
         except MISPServerError:
             flash(f'MISP returned an error, the event(s) might still have been created on {misp.client.root_url}', 'error')
         else:
@@ -819,7 +852,6 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response | No
                 for e in new_events:
                     flash(f'MISP event {e.id} created on {misp.client.root_url}', 'success')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    return None
 
 
 @app.route('/tree/<string:tree_uuid>/modules', methods=['GET'])
@@ -1130,7 +1162,7 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
         # skip clearly incorrect emails
         email = ''
     comment: str = request.form['comment'] if request.form.get('comment') else ''
-    lookyloo.send_mail(tree_uuid, email, comment)
+    lookyloo.send_mail(tree_uuid, as_admin=flask_login.current_user.is_authenticated, email=email, comment=comment)
     flash("Email notification sent", 'success')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
@@ -1219,8 +1251,8 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,
-                               misp_push=lookyloo.misps.available and lookyloo.misps.default_misp.enable_push,
-                               misp_lookup=lookyloo.misps.available and lookyloo.misps.default_misp.enable_lookup,
+                               misp_push=lookyloo.misps.available and lookyloo.misps.has_push(flask_login.current_user.is_authenticated),
+                               misp_lookup=lookyloo.misps.available and lookyloo.misps.has_lookup(flask_login.current_user.is_authenticated),
                                blur_screenshot=blur_screenshot, urlnode_uuid=hostnode_to_highlight,
                                auto_trigger_modules=auto_trigger_modules,
                                confirm_message=confirm_message if confirm_message else 'Tick to confirm.',

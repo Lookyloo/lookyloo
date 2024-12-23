@@ -12,6 +12,7 @@
 {%endif%}
 
 <div id="allInstances">
+{%if misp_instances_settings %}
 {%for name, misp_settings in misp_instances_settings.items() %}
 <div id="push_{{name.replace(' ', '_')}}" {%if name != current_misp%}style="display:none"{%endif%}>
   <form role="form" action="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
@@ -60,4 +61,7 @@
   </form>
 </div>
 {%endfor%}
+{%else%}
+None of the instances are available, please login.
+{%endif%}
 </div>

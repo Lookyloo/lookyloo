@@ -16,6 +16,7 @@
 </center>
 
 <div id="allInstances">
+{% if misps_occurrences %}
 {% for name, occurrences in misps_occurrences.items() %}
 <div id="lookup_{{name.replace(' ', '_')}}" {%if name != current_misp%}style="display:none"{%endif%}>
 {% set hits, root_url = occurrences %}
@@ -36,4 +37,7 @@
 {% endif %}
 </div>
 {% endfor %}
+{%else%}
+No hits in any of the instances available.
+{%endif%}
 </div>
