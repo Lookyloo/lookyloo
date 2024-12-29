@@ -93,6 +93,10 @@ def main() -> None:
     print('* Install or make sure the playwright browsers are installed.')
     keep_going(args.yes)
     run_command('poetry run playwright install')
+    
+    print('* Install the necessary system dependendencies for playwright')
+    keep_going(args.yes)
+    run_command('poetry run playwright install-deps') 
 
     print('* Validate configuration files.')
     keep_going(args.yes)
