@@ -90,7 +90,7 @@ flask-talisman = "^1.1.0"
 aiohttp = {extras = ["speedups"], version = "^3.11.11"}
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.14.0"
+mypy = "^1.14.1"
 ipython = [
     {version = "<8.19.0", python = "<3.10"},
     {version = "^8.19.0", python = ">=3.10"}
