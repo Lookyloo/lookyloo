@@ -1161,8 +1161,13 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
         # skip clearly incorrect emails
         email = ''
     comment: str = request.form['comment'] if request.form.get('comment') else ''
-    lookyloo.send_mail(tree_uuid, as_admin=flask_login.current_user.is_authenticated, email=email, comment=comment)
-    flash("Email notification sent", 'success')
+    send_status = lookyloo.send_mail(tree_uuid, as_admin=flask_login.current_user.is_authenticated, email=email, comment=comment)
+    if not send_status:
+        flash("Unable to send email notification.", 'error')
+    elif isinstance(send_status, dict) and 'error' in send_status:
+        flash(f"Unable to send email: {send_status['error']}", 'error')
+    else:
+        flash("Email notification sent", 'success')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 

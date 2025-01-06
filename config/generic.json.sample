@@ -49,7 +49,12 @@
     "smtp_host": "localhost",
     "smtp_port": "25",
     "confirm_message": "Message the users need to confirm before they submit a notification.",
-    "defang_urls": true
+    "defang_urls": true,
+    "deduplicate": {
+        "uuid": true,
+        "hostnames": false,
+        "interval_in_sec": 86400
+    }
   },
   "email_smtp_auth": {
       "auth": false,
