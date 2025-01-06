@@ -52,7 +52,7 @@
     "enabled": false,
     "ipaddress": "127.0.0.1",
     "port": 4243,
-    "allow_auto_trigger": true,
+    "allow_auto_trigger": false,
     "admin_only": false
   },
   "UrlScan": {
