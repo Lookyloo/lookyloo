@@ -65,7 +65,7 @@ from .helpers import (get_captures_dir, get_email_template,
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
-                      RiskIQ, RiskIQError, Pandora, URLhaus, CIRCLPDNS)
+                      Pandora, URLhaus, CIRCLPDNS)
 
 if TYPE_CHECKING:
     from playwright.async_api import Cookie
@@ -131,7 +131,6 @@ class Lookyloo():
         self.urlscan = UrlScan(config_name='UrlScan')
         self.phishtank = Phishtank(config_name='Phishtank')
         self.hashlookup = Hashlookup(config_name='Hashlookup')
-        self.riskiq = RiskIQ(config_name='RiskIQ')
         self.pandora = Pandora()
         self.urlhaus = URLhaus(config_name='URLhaus')
         self.circl_pdns = CIRCLPDNS(config_name='CIRCLPDNS')
@@ -449,18 +448,6 @@ class Lookyloo():
             self.logger.warning(f'Unable to get the modules responses unless the capture {capture_uuid} is cached')
             return {}
         to_return: dict[str, Any] = defaultdict(dict)
-        if self.riskiq.available:
-            try:
-                self.riskiq.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
-                if hasattr(cache, 'redirects') and cache.redirects:
-                    hostname = urlparse(cache.redirects[-1]).hostname
-                else:
-                    hostname = urlparse(cache.url).hostname
-                if hostname:
-                    if _riskiq_entries := self.riskiq.get_passivedns(hostname):
-                        to_return['riskiq'] = _riskiq_entries
-            except RiskIQError as e:
-                self.logger.warning(e.response.content)
         if self.circl_pdns.available:
             self.circl_pdns.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
             if hasattr(cache, 'redirects') and cache.redirects:

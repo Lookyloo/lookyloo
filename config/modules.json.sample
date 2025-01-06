@@ -80,13 +80,6 @@
     "allow_auto_trigger": true,
     "admin_only": false
   },
-  "RiskIQ": {
-    "user": null,
-    "apikey": null,
-    "allow_auto_trigger": false,
-    "default_first_seen_in_days": 5,
-    "admin_only": true
-  },
   "CIRCLPDNS": {
     "user": null,
     "password": null,
@@ -109,7 +102,6 @@
     "Hashlookup": "Module to query Hashlookup (https://github.com/adulau/hashlookup-server). URL set to none means querying the public instance.",
     "FOX": "Submission only interface by and for CCCS",
     "Pandora": "Submission only interface for https://github.com/pandora-analysis/",
-    "RiskIQ": "Module to query RiskIQ (https://community.riskiq.com/)",
     "CIRCLPDNS": "Module to query CIRCL Passive DNS (https://www.circl.lu/services/passive-dns/)"
   }
 }

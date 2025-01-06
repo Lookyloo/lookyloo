@@ -10,7 +10,6 @@ from .vt import VirusTotal  # noqa
 from .pandora import Pandora  # noqa
 from .phishtank import Phishtank  # noqa
 from .hashlookup import HashlookupModule as Hashlookup  # noqa
-from .riskiq import RiskIQ, RiskIQError  # noqa
 from .urlhaus import URLhaus  # noqa
 from .cloudflare import Cloudflare  # noqa
 from .circlpdns import CIRCLPDNS  # noqa
@@ -27,8 +26,6 @@ __all__ = [
     'Pandora',
     'Phishtank',
     'Hashlookup',
-    'RiskIQ',
-    'RiskIQError',
     'URLhaus',
     'Cloudflare',
     'CIRCLPDNS'

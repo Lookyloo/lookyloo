@@ -659,7 +659,6 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
     auto_trigger = True if (request.args.get('auto_trigger') and request.args.get('auto_trigger') == 'True') else False
     data = lookyloo.get_historical_lookups(tree_uuid, force=force, auto_trigger=auto_trigger, as_admin=flask_login.current_user.is_authenticated)
     return render_template('historical_lookups.html', tree_uuid=tree_uuid,
-                           riskiq=data.get('riskiq'),
                            circl_pdns=data.get('circl_pdns'))
 
 
