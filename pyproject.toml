@@ -1,27 +1,29 @@
-[tool.poetry]
+[project]
 name = "lookyloo"
 version = "1.27.0"
 description = "Web interface to track the trackers."
-authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
+authors = [{name="Raphaël Vinot", email="raphael.vinot@circl.lu"}]
 license = "BSD-3-Clause"
 repository = "https://github.com/Lookyloo/lookyloo"
 homepage = "https://www.lookyloo.eu"
 documentation = "https://www.lookyloo.eu/docs/main/"
+requires-python = ">=3.9,<3.14"
 
 readme = "README.md"
 
+dynamic = [ "dependencies", "classifiers" ]
+
+[tool.poetry]
 classifiers = [
-    'License :: OSI Approved :: BSD License',
-    'Operating System :: POSIX :: Linux',
     'Intended Audience :: Science/Research',
     'Intended Audience :: Telecommunications Industry',
     'Intended Audience :: Information Technology',
-    'Programming Language :: Python :: 3',
     'Topic :: Security',
-    'Topic :: Internet',
+    'Topic :: Internet'
 ]
 
-[tool.poetry.scripts]
+
+[project.scripts]
 start = "bin.start:main"
 stop = "bin.stop:main"
 update = "bin.update:main"
@@ -38,7 +40,6 @@ scripts_controller = "bin.scripts_controller:main"
 
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.14"
 requests = "^2.32.3"
 flask = "^3.1.0"
 gunicorn = {version = "^23.0.0", extras = ["setproctitle"]}
@@ -52,9 +53,9 @@ pyeupi = "^1.3.0"
 pysanejs = "^2.0.3"
 pylookyloo = "^1.26.1"
 dnspython = "^2.7.0"
-pytaxonomies = "^1.5.0"
+pytaxonomies = "^2.0"
 pymisp = {version = "^2.5.4", extras = ["url", "fileobjects"]}
-Pillow = "^11.0.0"
+Pillow = "^11.1.0"
 flask-restx = "^1.3.0"
 rich = "^13.9.4"
 pyphishtanklookup = "^1.4.1"
@@ -64,14 +65,13 @@ lief = "^0.16"
 ua-parser = {extras = ["regex"], version = "^1.0.0"}
 Flask-Login = "^0.6.3"
 har2tree = "^1.27.6"
-passivetotal = "^2.5.9"
 werkzeug = "^3.1.3"
 filetype = "^1.2.0"
 pypandora = "^1.9.1"
 lacuscore = "^1.12.7"
 pylacus = "^1.12.0"
 pyipasnhistory = "^2.1.3"
-publicsuffixlist = "^1.0.2.20241225"
+publicsuffixlist = "^1.0.2.20250111"
 pyfaup = "^1.2"
 chardet = "^5.2.0"
 pysecuritytxt = "^1.3.2"
