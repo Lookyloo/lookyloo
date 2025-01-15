@@ -91,6 +91,12 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
         directly to a MISP instance and it will create an event.'''
         public_domain = get_config('generic', 'public_domain')
         event = MISPEvent()
+
+        # Add the catrgories as tags
+        if cache.categories:
+            for category in cache.categories:
+                event.add_tag(category)
+
         if cache.url.startswith('file://'):
             filename = cache.url.rsplit('/', 1)[-1]
             event.info = f'Lookyloo Capture ({filename})'

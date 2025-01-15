@@ -13,7 +13,7 @@
   <div class="card-body">The following <b>{{current_categories|length}}</b> categories are already attached to the capture:
     <ul>
       {% for c in current_categories %}
-      <li>{{ c }}</li>
+      <li>{{ c }} (<a href="{{ url_for('index', category=c) }}">See more</a>)</li>
       {% endfor %}
     </ul>
   </div>

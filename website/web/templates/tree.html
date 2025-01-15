@@ -454,6 +454,18 @@
             <dd class="col-sm-10">{{ v }}</dd>
           {% endfor %}
         {%endif%}
+        {% if info.categories %}
+          <dt class="col-sm-2">Categories</dt>
+          <dd class="col-sm-10">
+            <ul>
+              {%for c in info.categories %}
+              <li>
+                {{ c }} (<a href="{{ url_for('index', category=c) }}">See more</a>)
+              </li>
+              {%endfor%}
+            </ul>
+          </dd>
+        {%endif%}
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
