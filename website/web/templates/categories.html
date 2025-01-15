@@ -28,7 +28,7 @@
       {% for category, freq in categories %}
       <tr>
         <td>
-          <a href="{{ url_for('index_category', category=category) }}">{{ category }}</a>
+          <a href="{{ url_for('index', category=category) }}">{{ category }}</a>
         </td>
         <td>{{ freq }}</td>
       </tr>

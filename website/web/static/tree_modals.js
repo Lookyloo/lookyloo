@@ -137,52 +137,6 @@ $('#urlsInPageModal').on('show.bs.modal', function(e) {
     modal.find('.modal-body').load(button.data("remote")).trigger('jquery.modal.rendered');
 });
 
-// Categories
-
-document.getElementById("legitimate").addEventListener('change', function(){
-  if (this.checked){
-    disableInput(document.getElementById('malicious-categories'));
-    enableInput(document.getElementById('legitimate-categories'));
-  }
-});
-document.getElementById("malicious").addEventListener('change', function(){
-  if (this.checked){
-    enableInput(document.getElementById('malicious-categories'));
-    disableInput(document.getElementById('legitimate-categories'));
-  }
-});
-document.getElementById("unclear").addEventListener('change', function(){
-  if (this.checked){
-    disableInput(document.getElementById('malicious-categories'));
-    disableInput(document.getElementById('legitimate-categories'));
-  }
-});
-document.getElementById("legitimate-categories").addEventListener('click', function(){
-   if (this.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
-     document.getElementById("legitimate").checked = true;
-   }
-});
-document.getElementById("malicious-categories").addEventListener('click', function(){
-   if (this.querySelectorAll('input[type="checkbox"]:checked').length > 0) {
-     document.getElementById("malicious").checked = true;
-   }
-});
-
-function disableInput(container) {
-    const Input = container.querySelectorAll('input');
-    Input.forEach(function(checkbox){
-      checkbox.disabled = true;
-      checkbox.checked = false;
-    });
-    container.hidden = true;
-}
-
-function enableInput(container) {
-    const Input = container.querySelectorAll('input');
-    Input.forEach(checkbox => checkbox.disabled = false);
-    container.hidden = false;
-}
-
 // OnClicks
 
 const removeCapture = document.getElementById("removeCapture")

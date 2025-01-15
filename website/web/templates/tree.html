@@ -288,7 +288,7 @@
             <div id="extra-menu" class="dropdown">
               <button class="dropbtn">Extras</button>
               <div id="extra-menu-content" class="dropdown-content">
-                {% if enable_categorization and current_user.is_authenticated %}
+                {% if enable_categorization %}
                     <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
                     data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
                 {% endif %}
@@ -912,78 +912,6 @@
           <div class="modal-body">
               ... loading the categorization options ...
           </div>
-          <p>
-          <form role="form" id="fast-categories" class="fast-categories">
-            <fieldset id="verification-status">
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" id="legitimate" name="verification-status" value="legitimate">
-                <label class="form-check-label" for="legitimate">legitimate</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" id="malicious" name="verification-status" value="malicious">
-                <label class="form-check-label" for="malicious">malicious</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" id="unclear" name="verification-status" value="unclear" checked>
-                <label class="form-check-label" for="unclear">unclear</label>
-              </div>
-            </fieldset>
-
-            <div id="content-categoies">
-              <p>Content Categories (Multiple Choices possible)</p>
-              <fieldset id="legitimate-categories" hidden>
-                <p>Only if legitimate:</p>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="parking-page" name="parking-page" value="parking-page">
-                  <label class="form-check-label" for="parking-page">parking-page</label><br>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="default-page" name="default-page" value="default-page">
-                  <label class="form-check-label" for="default-page">default-page</label><br>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="institution" name="institution" value="institution">
-                  <label class="form-check-label" for="institution">institution / company</label><br>
-                </div>
-                <!-- the name of the institution/company could be added here in the future, maybe with propositions
-                 <label for="institution-name">Enter the name of the institution/company:</label><br>
-                 <input type="text" id="institution-name" name="institution-name">
-                -->
-              </fieldset>
-              <fieldset id="malicious-categories" hidden>
-                <p>Only if malicious:</p>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="clone" name="clone" value="clone">
-                  <label class="form-check-label" for="clone">clone</label><br>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="phishing" name="phishing" value="phishing">
-                  <label class="form-check-label" for="phishing">phishing</label><br>
-                </div>
-              </fieldset>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="captcha" name="captcha" value="captcha">
-                <label class="form-check-label" for="captcha">captcha</label><br>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="authentication-form" name="authentication-form" value="authentication-form">
-                <label class="form-check-label" for="authentication-form">authentication-form</label><br>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="adult-content" name="adult-content" value="adult-content">
-                <label class="form-check-label" for="adult-content">adult-content</label><br>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="shop" name="shop" value="shop">
-                <label class="form-check-label" for="shop">shop</label><br>
-              </div>
-            </div>
-
-            <label for="query" class="form-label">Category to search</label>
-            <input type="text" class="form-control" name="query" id="query" placeholder="Query">
-            <button type="submit" class="btn btn-success" name="submit">Submit</button>
-          </form>
-          </p>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>

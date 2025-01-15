@@ -82,23 +82,27 @@ $(document).ready(function () {
       <button class="new-capture-button btn btn-primary">Takedown process</button>
     </a>
     {% endif %}
-    {% if current_user.is_authenticated %}
     <br>
+    {% if current_user.is_authenticated %}
     <p class="lead">
     You are logged-in as <strong>{{ current_user.id }}</strong>,
       {% if show_hidden == false %}
-      and you can check the <a href="{{ url_for('index_hidden') }}">hidden</a> captures.
+      and you can check the <a href="{{ url_for('index_hidden', category=category) }}">hidden</a> captures.
       {% else %}
-      and you're looking at the hidden captures. Go back to the <a href="{{ url_for('index') }}">public</a> captures.
+      and you're looking at the hidden captures. Go back to the <a href="{{ url_for('index', category=category) }}">public</a> captures.
       {% endif %}
-    <p>
+    </p>
     {% endif %}
-    <br>
+    {% if category %}
+    <p class="lead">
+    Only showing the captures for the category <strong>{{ category }}</strong>.
+    </p>
+    {% endif %}
     {{ render_messages(container=True, dismissible=True) }}
   </center>
 
   <div class="table-responsive">
-  <table id="table" class="table" style="width:100%">
+  <table id="table" class="table table-striped" style="width:100%">
     <thead>
      <tr>
        <th>Page</th>

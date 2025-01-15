@@ -238,4 +238,57 @@
         ],
       });
   }
+  if (document.getElementById('category_table')) {
+      let cat_table = new DataTable('#category_table', {
+        retrieve: true,
+        drawCallback: function (settings) { newTabClickListener() },
+        order: [[ 0, "desc" ]],
+        pageLength: 25,
+        lengthMenu: [25, 50, {label: 'All', value:-1} ],
+
+        rowGroup: {
+            dataSrc: [0],
+        },
+        columns: [{visible: false },
+                  { width: '60%', orderable: false },
+                  { width: '35%', orderable: false },
+                  { width: '5%', orderable: false, render: DataTable.render.select()}],
+        select: {
+          style: 'multi',
+          headerCheckbox: false,
+        },
+        layout: {
+            topStart: {
+                buttons: [
+                  {
+                    extend: 'selected',
+                    text: 'Review categories',
+                    action: function (e, dt, button, config) {
+                        let counter = dt.rows( { selected: true } ).count()
+                        let tags = dt.cells( dt.rows( { selected: true } ).nodes(), 2).data().toArray();
+                        document.getElementById('categories_counter').innerText = counter;
+                        let list = document.getElementById("categories_selected");
+                        list.innerHTML = '';
+                        tags.forEach((item) => {
+                            let elt = document.createElement("div");
+                            elt.className = "form-check";
+                            elt.innerHTML = `<input class="form-check-input" type="checkbox" name="categories" value='${item}' checked hidden> <label class="form-check-label">${item}</label>`;
+                            list.appendChild(elt);
+                        });
+                        document.getElementById('new_categories').style.display = 'block';
+                    }
+                  }
+                ],
+            }
+        }
+      });
+
+      cat_table.rows('.selected').select();
+      cat_table.on('user-select', function (e, dt, type, cell, originalEvent) {
+          if (originalEvent.target.parentNode.classList.contains("unselectable") ||
+              originalEvent.target.parentNode.parentNode.classList.contains("unselectable")) {
+              e.preventDefault();
+          }
+      });
+  }
 }));

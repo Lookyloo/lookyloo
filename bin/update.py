@@ -56,10 +56,11 @@ def check_poetry_version() -> None:
     version = poetry_version_str.split()[2]
     version = version.strip(')')
     version_details = tuple(int(i) for i in version.split('.'))
-    if version_details < (1, 3, 0):
-        print('Lookyloo requires poetry >= 1.3.0, please update.')
+    if version_details < (2, 0, 0):
+        print('Lookyloo requires poetry >= 2.0.0, please update.')
         print('If you installed with "pip install --user poetry", run "pip install --user -U poetry"')
         print('If you installed via the recommended method, use "poetry self update"')
+        print('If you installed via pipx, use "pipx autoupdate"')
         print('More details: https://github.com/python-poetry/poetry#updating-poetry')
         sys.exit()
 

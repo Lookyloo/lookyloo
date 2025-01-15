@@ -107,5 +107,5 @@ types-pytz = "^2024.2.0.20241221"
 types-psutil = "^6.1.0.20241221"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"

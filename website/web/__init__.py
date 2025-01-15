@@ -662,59 +662,39 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
                            circl_pdns=data.get('circl_pdns'))
 
 
-@app.route('/tree/<string:tree_uuid>/categories_capture/', defaults={'query': ''}, methods=['GET', 'POST'])
-@app.route('/tree/<string:tree_uuid>/categories_capture/<string:query>', methods=['GET'])
-@flask_login.login_required  # type: ignore[misc]
-def categories_capture(tree_uuid: str, query: str) -> str | WerkzeugResponse | Response:
+@app.route('/tree/<string:tree_uuid>/categories_capture', methods=['GET', 'POST'])
+def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
-    matching_categories: dict[str, Any] = {}
-    if 'verification-status' in request.form:
-        status = request.form.get('verification-status')
-        # fast categories
-        categories = []
-        possible_ctgs = {
-            'legitimate': ["parking-page", "default-page", 'institution', 'captcha', 'authentication-form', 'adult-content', 'shop'],
-            'malicious': ['clone', 'phishing', 'captcha', 'authentication-form', 'adult-content', 'shop'],
-            'unclear': ['captcha', 'authentication-form', 'adult-content', 'shop']
-        }
-        if status in possible_ctgs.keys():
-            lookyloo.categorize_capture(tree_uuid, status)
-            for category in possible_ctgs[status]:
-                if category in request.form:
-                    categories.append(category)
-        for category in categories:
-            lookyloo.categorize_capture(tree_uuid, category)
-    if 'query' in request.form and request.form.get('query', '').strip():
-        matching_categories = {}
-        t = get_taxonomies()
-        entries = t.search(query)
-        if entries:
-            matching_categories = {e: t.revert_machinetag(e) for e in entries}
-    current_categories = get_indexing(flask_login.current_user).get_capture_categories(tree_uuid)
-    return render_template('categories_capture.html', tree_uuid=tree_uuid,
-                           current_categories=current_categories,
-                           matching_categories=matching_categories)
+    taxonomies = get_taxonomies()
+    as_admin = flask_login.current_user.is_authenticated
 
+    if request.method == 'GET':
+        if as_admin:
+            can_categorize = True
+        else:
+            can_categorize = False
+        if cache := lookyloo.capture_cache(tree_uuid):
+            current_categories = cache.categories
+            # only allow categorizing as user if the capture is less than 24h old
+            if not as_admin and cache.timestamp >= datetime.now().astimezone() - timedelta(days=1):
+                can_categorize = True
+        else:
+            current_categories = set()
+        return render_template('categories_view.html', tree_uuid=tree_uuid,
+                               current_categories=current_categories,
+                               can_categorize=can_categorize,
+                               taxonomy=taxonomies.get('dark-web'))
 
-@app.route('/tree/<string:tree_uuid>/uncategorize/', defaults={'category': ''})
-@app.route('/tree/<string:tree_uuid>/uncategorize/<string:category>', methods=['GET'])
-@flask_login.login_required  # type: ignore[misc]
-def uncategorize_capture(tree_uuid: str, category: str) -> str | WerkzeugResponse | Response:
-    if not enable_categorization:
-        return jsonify({'response': 'Categorization not enabled.'})
-    lookyloo.uncategorize_capture(tree_uuid, category)
-    return jsonify({'response': f'{category} successfully removed from {tree_uuid}'})
-
-
-@app.route('/tree/<string:tree_uuid>/categorize/', defaults={'category': ''})
-@app.route('/tree/<string:tree_uuid>/categorize/<string:category>', methods=['GET'])
-@flask_login.login_required  # type: ignore[misc]
-def categorize_capture(tree_uuid: str, category: str) -> str | WerkzeugResponse | Response:
-    if not enable_categorization:
-        return jsonify({'response': 'Categorization not enabled.'})
-    lookyloo.categorize_capture(tree_uuid, category)
-    return jsonify({'response': f'{category} successfully added to {tree_uuid}'})
+    # Got a POST
+    # If admin, we can remove categories, otherwise, we only add new ones.
+    categories = request.form.getlist('categories')
+    current, error = lookyloo.categorize_capture(tree_uuid, categories, as_admin=as_admin)
+    if current:
+        flash(f"Current categories {', '.join(current)}", 'success')
+    if error:
+        flash(f"Unable to add categories {', '.join(error)}", 'error')
+    return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
 @app.route('/tree/<string:tree_uuid>/stats', methods=['GET'])
@@ -1404,6 +1384,7 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: str 
     titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
     return render_template('index.html', titles=titles, public_domain=lookyloo.public_domain,
                            show_hidden=show_hidden,
+                           category=category,
                            show_project_page=get_config('generic', 'show_project_page'),
                            enable_takedown_form=get_config('generic', 'enable_takedown_form'),
                            version=pkg_version)
@@ -1416,7 +1397,7 @@ def get_index_params(request: Request) -> tuple[bool, str]:
         show_error = True if (request.args.get('show_error') and request.args.get('show_error') == 'True') else False
 
     if enable_categorization:
-        category = request.args['category'] if request.args.get('category') else ''
+        category = unquote_plus(request.args['category']) if request.args.get('category') else ''
     return show_error, category
 
 
@@ -1484,7 +1465,10 @@ def ressources() -> str:
 
 @app.route('/categories', methods=['GET'])
 def categories() -> str:
-    return render_template('categories.html', categories=get_indexing(flask_login.current_user).categories)
+    categories: list[tuple[str, int]] = []
+    for c in get_indexing(flask_login.current_user).categories:
+        categories.append((c, get_indexing(flask_login.current_user).get_captures_category_count(c)))
+    return render_template('categories.html', categories=categories)
 
 
 @app.route('/rebuild_all')

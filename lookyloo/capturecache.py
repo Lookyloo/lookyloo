@@ -32,9 +32,10 @@ from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
 from .context import Context
-from .helpers import get_captures_dir, is_locked, load_pickle_tree, get_pickle_path, remove_pickle_tree, get_indexing, mimetype_to_generic
+from .helpers import (get_captures_dir, is_locked, load_pickle_tree, get_pickle_path,
+                      remove_pickle_tree, get_indexing, mimetype_to_generic, CaptureSettings)
 from .default import LookylooException, try_make_file, get_config
-from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
+from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild, InvalidCaptureSetting
 from .modules import Cloudflare
 
 
@@ -107,6 +108,31 @@ class CaptureCache():
         while is_locked(self.capture_dir):
             time.sleep(5)
         return load_pickle_tree(self.capture_dir, self.capture_dir.stat().st_mtime, self.logger)
+
+    @property
+    def categories(self) -> set[str]:
+        categ_file = self.capture_dir / 'categories'
+        if categ_file.exists():
+            with categ_file.open() as f:
+                return {line.strip() for line in f.readlines()}
+        return set()
+
+    @categories.setter
+    def categories(self, categories: set[str]) -> None:
+        categ_file = self.capture_dir / 'categories'
+        with categ_file.open('w') as f:
+            f.write('\n'.join(categories))
+
+    @property
+    def capture_settings(self) -> CaptureSettings | None:
+        capture_settings_file = self.capture_dir / 'capture_settings.json'
+        if capture_settings_file.exists():
+            try:
+                with capture_settings_file.open() as f:
+                    return CaptureSettings(**json.load(f))
+            except InvalidCaptureSetting as e:
+                self.logger.warning(f'[In file!] Invalid capture settings for {self.uuid}: {e}')
+        return None
 
 
 def serialize_sets(obj: Any) -> Any:

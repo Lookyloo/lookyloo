@@ -314,37 +314,38 @@ class Lookyloo():
         cache = self.capture_cache(capture_uuid)
         if not cache:
             return None
-        cs_file = cache.capture_dir / 'capture_settings.json'
-        if cs_file.exists():
-            try:
-                with cs_file.open('r') as f:
-                    return CaptureSettings(**json.load(f))
-            except CaptureSettingsError as e:
-                self.logger.warning(f'[In file!] Invalid capture settings for {capture_uuid}: {e}')
-                return None
+        return cache.capture_settings
 
-        return None
-
-    def categorize_capture(self, capture_uuid: str, /, category: str) -> None:
+    def categorize_capture(self, capture_uuid: str, /, categories: list[str], *, as_admin: bool=False) -> tuple[set[str], set[str]]:
         '''Add a category (MISP Taxonomy tag) to a capture.'''
         if not get_config('generic', 'enable_categorization'):
-            return
-        # Make sure the category is mappable to a taxonomy.
-        # self.taxonomies.revert_machinetag(category)
+            return set(), set()
 
-        categ_file = self._captures_index[capture_uuid].capture_dir / 'categories'
-        # get existing categories if possible
-        if categ_file.exists():
-            with categ_file.open() as f:
-                current_categories = {line.strip() for line in f.readlines()}
+        # Make sure the category is mappable to the dark-web taxonomy
+        valid_categories = set()
+        invalid_categories = set()
+        for category in categories:
+            taxonomy, predicate, name = self.taxonomies.revert_machinetag(category)  # type: ignore[misc]
+            if not taxonomy or not predicate or not name and taxonomy.name != 'dark-web':
+                self.logger.warning(f'Invalid category: {category}')
+                invalid_categories.add(category)
+            else:
+                valid_categories.add(category)
+
+        if as_admin:
+            # Keep categories that aren't a part of the dark-web taxonomy, force the rest
+            current_categories = {c for c in self._captures_index[capture_uuid].categories if not c.startswith('dark-web')}
+            current_categories |= valid_categories
         else:
-            current_categories = set()
-        current_categories.add(category)
-        with categ_file.open('w') as f:
-            f.writelines(f'{t}\n' for t in current_categories)
+            # Only add categories.
+            current_categories = self._captures_index[capture_uuid].categories
+            current_categories |= valid_categories
+        self._captures_index[capture_uuid].categories = current_categories
+
         get_indexing().reindex_categories_capture(capture_uuid)
         if get_config('generic', 'index_everything'):
             get_indexing(full=True).reindex_categories_capture(capture_uuid)
+        return valid_categories, invalid_categories
 
     def uncategorize_capture(self, capture_uuid: str, /, category: str) -> None:
         '''Remove a category (MISP Taxonomy tag) from a capture.'''
