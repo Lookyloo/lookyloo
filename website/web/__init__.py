@@ -41,6 +41,7 @@ from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from lookyloo import Lookyloo, CaptureSettings
+from lookyloo.capturecache import CaptureCache
 from lookyloo.default import get_config
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable
 from lookyloo.helpers import (UserAgents, load_cookies,
@@ -342,10 +343,24 @@ def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Respons
 
 # ##### Methods querying the indexes #####
 
-def _get_body_hash_investigator(body_hash: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, datetime, str, str]]]:
+def get_body_hash_investigator_search(body_hash: str, offset: int, limit: int, search: str) -> tuple[int, list[CaptureCache]]:
+    cached_captures: list[CaptureCache] = []
+    while len(cached_captures) < limit:
+        total, entries = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash, offset=offset, limit=limit)
+        cached_captures += [capture for capture in lookyloo.sorted_capture_cache([uuid for uuid, _ in entries]) if capture.search(search)]
+        offset += limit
+        if total <= offset:
+            break
+    return total, cached_captures
+
+
+def _get_body_hash_investigator(body_hash: str, offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, datetime, str, str]]]:
     '''Returns all the captures related to a hash (sha512), used in the web interface.'''
-    total, entries = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash=body_hash, offset=offset, limit=limit)
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+    if offset and limit and search:
+        total, cached_captures = get_body_hash_investigator_search(body_hash=body_hash, offset=offset, limit=limit, search=search)
+    else:
+        total, entries = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash=body_hash, offset=offset, limit=limit)
+        cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
     captures = []
     for cache in cached_captures:
         if not cache:
@@ -485,10 +500,25 @@ def get_favicon_investigator(favicon_sha512: str, offset: int | None=None, limit
     return total, captures
 
 
-def get_hhh_investigator(hhh: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime, list[tuple[str, str]]]]]:
+def get_hhh_investigator_search(hhh: str, offset: int, limit: int, search: str) -> tuple[int, list[CaptureCache]]:
+    cached_captures: list[CaptureCache] = []
+    while len(cached_captures) < limit:
+        total, entries = get_indexing(flask_login.current_user).get_captures_hhhash(hhh, offset=offset, limit=limit)
+        cached_captures += [capture for capture in lookyloo.sorted_capture_cache([uuid for uuid, _ in entries]) if capture.search(search)]
+        offset += limit
+        if total <= offset:
+            break
+    return total, cached_captures
+
+
+def get_hhh_investigator(hhh: str, offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, str, datetime, list[tuple[str, str]]]]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
-    total, entries = get_indexing(flask_login.current_user).get_captures_hhhash(hhh, offset=offset, limit=limit)
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+    if offset and limit and search:
+        total, cached_captures = get_hhh_investigator_search(hhh, offset=offset, limit=limit, search=search)
+    else:
+        total, entries = get_indexing(flask_login.current_user).get_captures_hhhash(hhh, offset=offset, limit=limit)
+        cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+
     _captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_hhhash_nodes(cache.uuid, hhh)) for cache in cached_captures]
     captures = []
     for capture_uuid, capture_title, landing_page, capture_ts, nodes in _captures:
@@ -2021,10 +2051,11 @@ def post_table(table_name: str, value: str) -> Response:
     draw = request.form.get('draw', type=int)
     start = request.form.get('start', type=int)
     length = request.form.get('length', type=int)
+    search = request.form.get('search[value]', type=str)
     captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, list[tuple[str, str]]]] | list[tuple[str, str, str, datetime]]
     if table_name == 'HHHDetailsTable':
         hhh = value.strip()
-        total, captures = get_hhh_investigator(hhh, offset=start, limit=length)
+        total, captures = get_hhh_investigator(hhh, offset=start, limit=length, search=search)
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             _nodes = __prepare_node_view(capture_uuid, nodes, from_popup)
@@ -2038,7 +2069,8 @@ def post_table(table_name: str, value: str) -> Response:
                 to_append['capture_title'] = f"""<a href="{url_for('tree', tree_uuid=capture_uuid)}">{title}</a>"""
             to_append['capture_title'] += f'</br>{_nodes}'
             prepared_captures.append(to_append)
-        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else len(prepared_captures),
+                        'data': prepared_captures})
 
     if table_name == 'cookieNameTable':
         cookie_name = value.strip()
@@ -2060,7 +2092,7 @@ def post_table(table_name: str, value: str) -> Response:
 
     if table_name == 'bodyHashDetailsTable':
         body_hash = value.strip()
-        total, captures = _get_body_hash_investigator(body_hash, offset=start, limit=length)
+        total, captures = _get_body_hash_investigator(body_hash, offset=start, limit=length, search=search)
         prepared_captures = []
         for capture_uuid, title, capture_time, hostnode_uuid, url in captures:
             to_append = {
@@ -2072,7 +2104,7 @@ def post_table(table_name: str, value: str) -> Response:
             else:
                 to_append['capture_title'] = f"""<a href="{url_for('tree', tree_uuid=capture_uuid, node_uuid=hostnode_uuid)}">{title}</a>"""
             prepared_captures.append(to_append)
-        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else len(prepared_captures), 'data': prepared_captures})
 
     if table_name == 'identifierDetailsTable':
         identifier_type, identifier = value.strip().split('|')

@@ -97,6 +97,17 @@ class CaptureCache():
         self.user_agent: str | None = cache_entry.get('user_agent')
         self.referer: str | None = cache_entry.get('referer')
 
+    def search(self, query: str) -> bool:
+        if self.title and query in self.title:
+            return True
+        if self.url and query in self.url:
+            return True
+        if self.referer and query in self.referer:
+            return True
+        if self.redirects and any(query in redirect for redirect in self.redirects):
+            return True
+        return False
+
     @property
     def tree_ready(self) -> bool:
         return bool(get_pickle_path(self.capture_dir))

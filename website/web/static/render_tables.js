@@ -6,7 +6,7 @@
       serverSide: true,
       retrieve: true,
       ordering: false,
-      searching: false,  // Needs to implement that serverside
+      searching: true,
       drawCallback: function (settings) { newTabClickListener() },
       ajax: {
           url: `/tables/HHHDetailsTable/${hhh}${window.location.search}`,
@@ -26,7 +26,7 @@
       serverSide: true,
       retrieve: true,
       ordering: false,
-      searching: false,  // Needs to implement that serverside
+      searching: true,
       drawCallback: function (settings) { newTabClickListener() },
       ajax: {
           url: `/tables/bodyHashDetailsTable/${bodyhash}${window.location.search}`,
