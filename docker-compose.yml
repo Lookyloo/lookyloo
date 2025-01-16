@@ -2,14 +2,14 @@ version: '3'
 services:
 
   redis-cache:
-    image: redis
+    image: valkey/valkey:latest
     working_dir: /cache
     command: ./cache.conf --daemonize no
     volumes:
         - ./cache:/cache
 
   redis-indexing:
-    image: redis
+    image: valkey/valkey:latest
     working_dir: /indexing
     command: ./indexing.conf --daemonize no
     volumes:
