@@ -309,20 +309,3 @@
   {% endfor %}
 {%endif%}
 {% endmacro %}
-
-{% macro shorten_string(string, cut_length, with_title=False) %}
-{% if with_title %}
-<div title="{{string}}">
-{%endif%}
-
-{% if string|length > cut_length %}
-  {{ string[:cut_length] }} [...]
-{% else %}
-  {{ string }}
-{%endif%}
-
-{% if with_title %}
-</div>
-{%endif%}
-
-{% endmacro %}

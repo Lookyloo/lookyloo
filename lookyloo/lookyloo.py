@@ -502,7 +502,9 @@ class Lookyloo():
             before = before.timestamp()
         return self.redis.zrevrangebyscore('recent_captures', before, since)
 
-    def sorted_capture_cache(self, capture_uuids: Iterable[str] | None=None, cached_captures_only: bool=True, index_cut_time: datetime | None=None) -> list[CaptureCache]:
+    def sorted_capture_cache(self, capture_uuids: Iterable[str] | None=None,
+                             cached_captures_only: bool=True,
+                             index_cut_time: datetime | None=None) -> list[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''
         # Make sure we do not try to load archived captures that would still be in 'lookup_dirs'

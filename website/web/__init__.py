@@ -16,7 +16,7 @@ import time
 import filetype  # type: ignore[import-untyped]
 
 from collections import defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 from importlib.metadata import version
 from io import BytesIO, StringIO
 from typing import Any, TypedDict
@@ -248,6 +248,22 @@ def get_sri(directory: str, filename: str) -> str:
 
 
 app.jinja_env.globals.update(get_sri=get_sri)
+
+
+def shorten_string(s: str, length: int, with_title: bool=False) -> str:
+    to_return = ''
+    if with_title:
+        to_return += f'<span title="{s}">'
+    if len(s) > length:
+        to_return += f'{s[:length]} [...]'
+    else:
+        to_return += s
+    if with_title:
+        to_return += '</span>'
+    return Markup(to_return)
+
+
+app.jinja_env.globals.update(shorten_string=shorten_string)
 
 
 class Icon(TypedDict):
@@ -1384,35 +1400,7 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: str 
 
     We must assume that calling cached.tree will fail, and handle it gracefully.
     """
-    titles = []
-    cut_time: datetime | None = None
-    if time_delta_on_index:
-        # We want to filter the captures on the index
-        cut_time = (datetime.now() - timedelta(**time_delta_on_index))
-        cut_time_with_tz = cut_time.replace(tzinfo=timezone.utc)
-
-    lookyloo.update_cache_index()
-    for cached in lookyloo.sorted_capture_cache(index_cut_time=cut_time):
-        if cut_time and cached.timestamp < cut_time_with_tz:
-            continue
-
-        if category and not get_indexing(flask_login.current_user).capture_in_category(cached.uuid, category):
-            continue
-
-        if show_hidden:
-            # Only display the hidden ones
-            if not cached.no_index:
-                continue
-        elif cached.no_index:
-            continue
-
-        if not show_error and cached.error:
-            continue
-
-        titles.append((cached.uuid, cached.title, cached.timestamp.isoformat(), cached.url,
-                       cached.redirects))
-    titles = sorted(titles, key=lambda x: (x[2], x[3]), reverse=True)
-    return render_template('index.html', titles=titles, public_domain=lookyloo.public_domain,
+    return render_template('index.html', public_domain=lookyloo.public_domain,
                            show_hidden=show_hidden,
                            category=category,
                            show_project_page=get_config('generic', 'show_project_page'),
@@ -2034,7 +2022,7 @@ def __prepare_node_view(capture_uuid: str, nodes: list[tuple[str, str]], from_po
     to_return = f'The capture contains this value in {len(nodes)} nodes, click below to see them on the tree:'
     to_return += '<ul>'
     for url, node in nodes:
-        url_span = f'<span class="d-inline-block text-break" style="max-width: 400px;">{url}</span>'
+        url_span = f'<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(url, 100, with_title=True)}</span>'
         to_return += '<li>'
         if from_popup:
             to_return += f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}" data-hostnode="{node}">{url_span}</a>"""
@@ -2053,6 +2041,46 @@ def post_table(table_name: str, value: str) -> Response:
     length = request.form.get('length', type=int)
     search = request.form.get('search[value]', type=str)
     captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, list[tuple[str, str]]]] | list[tuple[str, str, str, datetime]]
+    if table_name == 'indexTable':
+        show_error, category = get_index_params(request)
+        show_hidden = (value == "hidden")
+        if show_hidden and not flask_login.current_user.is_authenticated:
+            # NOTE: hidden captures are only available to authenticated users.
+            return jsonify({'error': 'Not allowed.'})
+        cut_time: datetime | None = None
+        if time_delta_on_index:
+            # We want to filter the captures on the index
+            cut_time = (datetime.now() - timedelta(**time_delta_on_index))
+
+        lookyloo.update_cache_index()
+        prepared_captures = []
+        for cached in lookyloo.sorted_capture_cache(index_cut_time=cut_time):
+            if category and not get_indexing(flask_login.current_user).capture_in_category(cached.uuid, category):
+                continue
+            if show_hidden:
+                # Only display the hidden ones
+                if not cached.no_index:
+                    continue
+            elif cached.no_index:
+                continue
+            if not show_error and cached.error:
+                continue
+            to_append = {
+                'page': f"""<p title="{cached.title}"><a href="{url_for('tree', tree_uuid=cached.uuid)}">{cached.title}</a><p>{shorten_string(cached.url, 100, with_title=True)}""",
+                'capture_time': cached.timestamp.isoformat(),
+            }
+            if not cached.redirects:
+                to_append['redirects'] = 'No redirect'
+            else:
+                to_append['redirects'] = f"""<p title="{cached.redirects[0]}">{shorten_string(cached.redirects[0], 50, with_title=True)}"""
+                if len(cached.redirects) > 1:
+                    for counter, r in enumerate(cached.redirects[1:]):
+                        to_append['redirects'] += f"""<br>{"&nbsp;" * (counter + 1) * 2}↪{shorten_string(r, 50, with_title=True)}"""
+                to_append['redirects'] += '</p>'
+                to_append['redirects'] += f"""<a style="float: right;" href="{url_for('redirects', tree_uuid=cached.uuid)}">Download redirects</a>"""
+            prepared_captures.append(to_append)
+        return jsonify(prepared_captures)
+
     if table_name == 'HHHDetailsTable':
         hhh = value.strip()
         total, captures = get_hhh_investigator(hhh, offset=start, limit=length, search=search)
@@ -2061,7 +2089,7 @@ def post_table(table_name: str, value: str) -> Response:
             _nodes = __prepare_node_view(capture_uuid, nodes, from_popup)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(landing_page, 100, with_title=True)}</span>"""
             }
             if from_popup:
                 to_append['capture_title'] = f""" <a href="#" class="openNewTab" data-capture="{capture_uuid}"">{title}</a>"""
@@ -2080,7 +2108,7 @@ def post_table(table_name: str, value: str) -> Response:
             _nodes = __prepare_node_view(capture_uuid, nodes, from_popup)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(landing_page, 100, with_title=True)}</span>"""
             }
             if from_popup:
                 to_append['capture_title'] = f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}">{title}</a>"""
@@ -2097,7 +2125,7 @@ def post_table(table_name: str, value: str) -> Response:
         for capture_uuid, title, capture_time, hostnode_uuid, url in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{url}</span>"""
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(url, 100, with_title=True)}</span>"""
             }
             if from_popup:
                 to_append['capture_title'] = f""" <a href="#" class="openNewTab" data-capture="{capture_uuid}" data-hostnode="{hostnode_uuid}">{title}</a>"""
@@ -2114,7 +2142,7 @@ def post_table(table_name: str, value: str) -> Response:
             to_append = {
                 'capture_time': capture_time.isoformat(),
                 'capture_title': f"""<a href="{url_for('tree', tree_uuid=capture_uuid)}">{title}</a>""",
-                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(landing_page, 100, with_title=True)}</span>"""
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
@@ -2127,7 +2155,7 @@ def post_table(table_name: str, value: str) -> Response:
             to_append = {
                 'capture_time': capture_time.isoformat(),
                 'capture_title': f"""<a href="{url_for('tree', tree_uuid=capture_uuid)}">{title}</a>""",
-                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(landing_page, 100, with_title=True)}</span>"""
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
@@ -2139,7 +2167,7 @@ def post_table(table_name: str, value: str) -> Response:
             to_append = {
                 'capture_time': capture_time.isoformat(),
                 'capture_title': f"""<a href="{url_for('tree', tree_uuid=capture_uuid)}">{title}</a>""",
-                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(landing_page, 100, with_title=True)}</span>"""
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total, 'data': prepared_captures})
@@ -2151,7 +2179,7 @@ def post_table(table_name: str, value: str) -> Response:
             _nodes = __prepare_node_view(capture_uuid, nodes, from_popup)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(landing_page, 100, with_title=True)}</span>"""
             }
             if from_popup:
                 to_append['capture_title'] = f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}">{title}</a>"""
@@ -2169,7 +2197,7 @@ def post_table(table_name: str, value: str) -> Response:
             _nodes = __prepare_node_view(capture_uuid, nodes, from_popup)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{landing_page}</span>"""
+                'landing_page': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(landing_page, 100, with_title=True)}</span>"""
             }
             if from_popup:
                 to_append['capture_title'] = f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}">{title}</a>"""

@@ -1,7 +1,6 @@
 {% extends "main.html" %}
 
 {% from 'bootstrap5/utils.html' import render_messages %}
-{% from "macros.html" import shorten_string %}
 
 {% block title %}Lookyloo{% endblock %}
 
@@ -21,25 +20,6 @@
   content="https://{{public_domain}}"
 />
 <meta name="twitter:card" content="summary_large_image">
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-$(document).ready(function () {
-  $('#table').DataTable( {
-    order: [[ 1, "desc" ]],
-    pageLength: 50,
-    orderable: false,
-    columns: [
-        { width: '40%' },
-        { width: '20%', render: DataTable.render.datetime_with_tz()},
-        { width: '40%' }
-    ],
-  } );
-});
-</script>
-
 {% endblock %}
 
 {% block styles %}
@@ -87,9 +67,9 @@ $(document).ready(function () {
     <p class="lead">
     You are logged-in as <strong>{{ current_user.id }}</strong>,
       {% if show_hidden == false %}
-      and you can check the <a href="{{ url_for('index_hidden', category=category) }}">hidden</a> captures.
+      and you can check the <a href="{{ url_for('index_hidden', category=category if category else None) }}">hidden</a> captures.
       {% else %}
-      and you're looking at the hidden captures. Go back to the <a href="{{ url_for('index', category=category) }}">public</a> captures.
+      and you're looking at the hidden captures. Go back to the <a href="{{ url_for('index', category=category if category else None) }}">public</a> captures.
       {% endif %}
     </p>
     {% endif %}
@@ -102,7 +82,8 @@ $(document).ready(function () {
   </center>
 
   <div class="table-responsive">
-  <table id="table" class="table table-striped" style="width:100%">
+    <table id="IndexTable" class="table table-striped" style="width:100%"
+        data-indextype="{%if show_hidden%}hidden{%else%}index{%endif%}">
     <thead>
      <tr>
        <th>Page</th>
@@ -110,33 +91,6 @@ $(document).ready(function () {
        <th>Redirects</th>
      </tr>
     </thead>
-    <tbody>
-      {% for uuid, page_title, datetime, url, redirects in titles %}
-      <tr>
-        <td data-search="{{ page_title }} {{ url }}">
-          <p title="{{ page_title }}"><a href="{{ url_for('tree', tree_uuid=uuid) }}">{{ page_title }}</a></p>
-          {{ shorten_string(url, 50, with_title=True) }}
-        </td>
-        <td>{{ datetime }}</td>
-        <td>
-          {% if redirects %}
-            {% for r in redirects %}
-            <p title="{{ r }}">
-            {% if loop.previtem %}
-              {{ ("&nbsp;" * (loop.index *2) )|safe }}↪ {{ shorten_string(r, 50) }}
-            {%else%}
-              {{ shorten_string(r, 50) }}
-            {%endif%}
-            </p>
-            {% endfor %}
-            <a style="float: right;" href="{{ url_for('redirects', tree_uuid=uuid) }}">Download redirects</a>
-          {% else%}
-            No redirect
-          {%endif%}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
   </table>
   </div>
 {% endblock %}

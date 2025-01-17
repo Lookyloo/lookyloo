@@ -1,4 +1,25 @@
 ["DOMContentLoaded", "shown.bs.modal", "jquery.modal.rendered"].forEach(e => window.addEventListener(e, function() {
+  if (document.getElementById('IndexTable')) {
+    indexType = document.getElementById('IndexTable').dataset.indextype;
+    new DataTable('#IndexTable', {
+      processing: true,
+      retrieve: true,
+      ordering: false,
+      searching: true,
+      pageLength: 50,
+      order: [[ 1, "desc" ]],
+      ajax: {
+        url: `/tables/indexTable/${indexType}${window.location.search}`,
+        type: 'POST',
+        dataSrc:""
+      },
+      columns : [
+          { data: 'page', width: '40%' },
+          { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+          { data: 'redirects', width: '40%' }
+      ],
+    })
+  }
   if (document.getElementById('HHHDetailsTable')) {
     hhh = document.getElementById('HHHDetailsTable').dataset.hhh;
     new DataTable('#HHHDetailsTable', {
