@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import re
+from collections.abc import Iterator
 
 from datetime import datetime, timedelta
 
@@ -351,6 +352,9 @@ class Indexing():
         total = self.redis.zcard(f'body_hashes|{body_hash}|captures')
         return total, self.redis.zrevrangebyscore(f'body_hashes|{body_hash}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
 
+    def scan_captures_body_hash(self, body_hash: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'body_hashes|{body_hash}|captures')
+
     def get_capture_body_hash_nodes(self, capture_uuid: str, body_hash: str) -> set[str]:
         if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|body_hashes|{body_hash}'):
             return set(url_nodes)
@@ -427,6 +431,9 @@ class Indexing():
             return 0, []
         total = self.redis.zcard(f'hhhashes|{hhh}|captures')
         return total, self.redis.zrevrangebyscore(f'hhhashes|{hhh}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+
+    def scan_captures_hhhash(self, hhh: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'hhhashes|{hhh}|captures')
 
     def get_captures_hhhash_count(self, hhh: str) -> int:
         return self.redis.zcard(f'hhhashes|{hhh}|captures')

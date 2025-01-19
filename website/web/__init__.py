@@ -359,21 +359,18 @@ def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Respons
 
 # ##### Methods querying the indexes #####
 
-def get_body_hash_investigator_search(body_hash: str, offset: int, limit: int, search: str) -> tuple[int, list[CaptureCache]]:
+def get_body_hash_investigator_search(body_hash: str, search: str) -> tuple[int, list[CaptureCache]]:
     cached_captures: list[CaptureCache] = []
-    while True:
-        total, entries = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash, offset=offset, limit=limit)
-        cached_captures += [capture for capture in lookyloo.sorted_capture_cache([uuid for uuid, _ in entries], cached_captures_only=False) if capture.search(search)]
-        offset += limit
-        if total < offset:
-            break
+    total = get_indexing(flask_login.current_user).get_captures_body_hash_count(body_hash)
+    entries = [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_body_hash(body_hash)]
+    cached_captures += [capture for capture in lookyloo.sorted_capture_cache(entries, cached_captures_only=False) if capture.search(search)]
     return total, cached_captures
 
 
-def _get_body_hash_investigator(body_hash: str, offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, datetime, str, str]]]:
+def _get_body_hash_investigator(body_hash: str, offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, str, datetime, list[tuple[str, str]]]]]:
     '''Returns all the captures related to a hash (sha512), used in the web interface.'''
-    if offset is not None and limit and search:
-        total, cached_captures = get_body_hash_investigator_search(body_hash=body_hash, offset=offset, limit=limit, search=search)
+    if search:
+        total, cached_captures = get_body_hash_investigator_search(body_hash=body_hash, search=search)
     else:
         total, entries = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash=body_hash, offset=offset, limit=limit)
         cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries], cached_captures_only=False)
@@ -386,7 +383,7 @@ def _get_body_hash_investigator(body_hash: str, offset: int | None=None, limit: 
                 nodes_info.append((urlnode.name, urlnode_uuid))
             except IndexError:
                 continue
-        captures.append((cache.uuid, cache.title, cache.timestamp, cache.redirects[-1], nodes_info))
+        captures.append((cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, nodes_info))
     return total, captures
 
 
@@ -443,7 +440,7 @@ def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode
 def get_hostname_investigator(hostname: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime, list[tuple[str, str]]]]]:
     '''Returns all the captures loading content from that hostname, used in the web interface.'''
     total, entries = get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname, offset=offset, limit=limit)
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries], cached_captures_only=False)
     _captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_hostname_nodes(cache.uuid, hostname)) for cache in cached_captures]
     captures = []
     for capture_uuid, capture_title, landing_page, capture_ts, nodes in _captures:
@@ -479,7 +476,7 @@ def get_url_investigator(url: str, offset: int | None=None, limit: int | None=No
 def get_cookie_name_investigator(cookie_name: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime, list[tuple[str, str]]]]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
     total, entries = get_indexing(flask_login.current_user).get_captures_cookies_name(cookie_name=cookie_name)
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries], cached_captures_only=False)
     _captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_cookie_name_nodes(cache.uuid, cookie_name)) for cache in cached_captures]
     captures = []
     for capture_uuid, capture_title, landing_page, capture_ts, nodes in _captures:
@@ -496,14 +493,14 @@ def get_cookie_name_investigator(cookie_name: str, offset: int | None=None, limi
 
 def get_identifier_investigator(identifier_type: str, identifier: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime]]]:
     total, entries = get_indexing(flask_login.current_user).get_captures_identifier(identifier_type=identifier_type, identifier=identifier, offset=offset, limit=limit)
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries], cached_captures_only=False)
     captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
     return total, captures
 
 
 def get_capture_hash_investigator(hash_type: str, h: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime]]]:
     total, entries = get_indexing(flask_login.current_user).get_captures_hash_type(hash_type=hash_type, h=h, offset=offset, limit=limit)
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries], cached_captures_only=False)
     captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
     return total, captures
 
@@ -511,29 +508,26 @@ def get_capture_hash_investigator(hash_type: str, h: str, offset: int | None=Non
 def get_favicon_investigator(favicon_sha512: str, offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, str, str, datetime]]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
     total, entries = get_indexing(flask_login.current_user).get_captures_favicon(favicon_sha512=favicon_sha512, offset=offset, limit=limit)
-    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+    cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries], cached_captures_only=False)
     captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
     return total, captures
 
 
-def get_hhh_investigator_search(hhh: str, offset: int, limit: int, search: str) -> tuple[int, list[CaptureCache]]:
+def get_hhh_investigator_search(hhh: str, search: str) -> tuple[int, list[CaptureCache]]:
     cached_captures: list[CaptureCache] = []
-    while True:
-        total, entries = get_indexing(flask_login.current_user).get_captures_hhhash(hhh, offset=offset, limit=limit)
-        cached_captures += [capture for capture in lookyloo.sorted_capture_cache([uuid for uuid, _ in entries], cached_captures_only=False) if capture.search(search)]
-        offset += limit
-        if total < offset:
-            break
+    total = get_indexing(flask_login.current_user).get_captures_hhhash_count(hhh)
+    entries = [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_hhhash(hhh)]
+    cached_captures += [capture for capture in lookyloo.sorted_capture_cache(entries, cached_captures_only=False) if capture.search(search)]
     return total, cached_captures
 
 
 def get_hhh_investigator(hhh: str, offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, str, datetime, list[tuple[str, str]]]]]:
     '''Returns all the captures related to a cookie name entry, used in the web interface.'''
-    if offset is not None and limit and search:
-        total, cached_captures = get_hhh_investigator_search(hhh, offset=offset, limit=limit, search=search)
+    if search:
+        total, cached_captures = get_hhh_investigator_search(hhh, search=search)
     else:
         total, entries = get_indexing(flask_login.current_user).get_captures_hhhash(hhh, offset=offset, limit=limit)
-        cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries])
+        cached_captures = lookyloo.sorted_capture_cache([uuid for uuid, _ in entries], cached_captures_only=False)
 
     _captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_hhhash_nodes(cache.uuid, hhh)) for cache in cached_captures]
     captures = []
@@ -2084,7 +2078,7 @@ def post_table(table_name: str, value: str) -> Response:
     if table_name == 'HHHDetailsTable':
         hhh = value.strip()
         total, captures = get_hhh_investigator(hhh, offset=start, limit=length, search=search)
-        if search:
+        if search and start is not None and length is not None:
             total_filtered = len(captures)
             captures = captures[start:start + length]
         prepared_captures = []
@@ -2124,11 +2118,11 @@ def post_table(table_name: str, value: str) -> Response:
     if table_name == 'bodyHashDetailsTable':
         body_hash = value.strip()
         total, captures = _get_body_hash_investigator(body_hash, offset=start, limit=length, search=search)
-        if search:
+        if search and start is not None and length is not None:
             total_filtered = len(captures)
             captures = captures[start:start + length]
         prepared_captures = []
-        for capture_uuid, title, capture_time, landing_page, nodes in captures:
+        for capture_uuid, title, landing_page, capture_time, nodes in captures:
             _nodes = __prepare_node_view(capture_uuid, nodes, from_popup)
             to_append = {
                 'capture_time': capture_time.isoformat(),
