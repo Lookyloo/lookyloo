@@ -235,7 +235,7 @@ class Indexing():
 
     def get_captures_cookies_name(self, cookie_name: str, most_recent_capture: datetime | None = None,
                                   oldest_capture: datetime | None= None,
-                                  offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
+                                  offset: int | None=None, limit: int | None=None) -> list[str]:
         """Get all the captures for a specific cookie name, on a time interval starting from the most recent one.
 
         :param cookie_name: The cookie name
@@ -248,9 +248,11 @@ class Indexing():
             # triggers the re-index soon.
             self.redis.srem('indexed_cookies', *[entry.split('|')[0] for entry in self.redis.smembers(f'cn|{cookie_name}|captures')])
             self.redis.delete(f'cookies_names|{cookie_name}|captures')
-            return 0, []
-        total = self.redis.zcard(f'cookies_names|{cookie_name}|captures')
-        return total, self.redis.zrevrangebyscore(f'cookies_names|{cookie_name}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+            return []
+        return self.redis.zrevrangebyscore(f'cookies_names|{cookie_name}|captures', max_score, min_score, start=offset, num=limit)
+
+    def scan_captures_cookies_name(self, cookie_name: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'cookies_names|{cookie_name}|captures')
 
     def get_captures_cookie_name_count(self, cookie_name: str) -> int:
         return self.redis.zcard(f'cookies_names|{cookie_name}|captures')
@@ -335,7 +337,7 @@ class Indexing():
 
     def get_captures_body_hash(self, body_hash: str, most_recent_capture: datetime | None = None,
                                oldest_capture: datetime | None = None,
-                               offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
+                               offset: int | None=None, limit: int | None=None) -> list[str]:
         '''Get the captures matching the hash.
 
         :param body_hash: The hash to search for
@@ -348,9 +350,8 @@ class Indexing():
             # triggers the re-index soon.
             self.redis.srem('indexed_body_hashes', *self.redis.smembers(f'bh|{body_hash}|captures'))
             self.redis.delete(f'bh|{body_hash}|captures')
-            return 0, []
-        total = self.redis.zcard(f'body_hashes|{body_hash}|captures')
-        return total, self.redis.zrevrangebyscore(f'body_hashes|{body_hash}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+            return []
+        return self.redis.zrevrangebyscore(f'body_hashes|{body_hash}|captures', max_score, min_score, start=offset, num=limit)
 
     def scan_captures_body_hash(self, body_hash: str) -> Iterator[tuple[str, float]]:
         yield from self.redis.zscan_iter(f'body_hashes|{body_hash}|captures')
@@ -362,9 +363,8 @@ class Indexing():
 
     def get_body_hash_urlnodes(self, body_hash: str) -> dict[str, set[str]]:
         # FIXME: figure out a reasonable limit for that
-        _, entries = self.get_captures_body_hash(body_hash, limit=100)
         return {capture_uuid: self.redis.smembers(f'capture_indexes|{capture_uuid}|body_hashes|{body_hash}')
-                for capture_uuid, capture_ts in entries}
+                for capture_uuid in self.get_captures_body_hash(body_hash, limit=100)}
 
     # ###### HTTP Headers Hashes ######
 
@@ -415,7 +415,7 @@ class Indexing():
 
     def get_captures_hhhash(self, hhh: str, most_recent_capture: datetime | None = None,
                             oldest_capture: datetime | None=None,
-                            offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
+                            offset: int | None=None, limit: int | None=None) -> list[str]:
         """Get all the captures for a specific HTTP Header Hash, on a time interval starting from the most recent one.
 
         :param hhh: The HTTP Header Hash
@@ -428,9 +428,8 @@ class Indexing():
             # triggers the re-index soon.
             self.redis.srem('indexed_hhhashes', *self.redis.smembers(f'hhhashes|{hhh}|captures'))
             self.redis.delete(f'hhhashes|{hhh}|captures')
-            return 0, []
-        total = self.redis.zcard(f'hhhashes|{hhh}|captures')
-        return total, self.redis.zrevrangebyscore(f'hhhashes|{hhh}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+            return []
+        return self.redis.zrevrangebyscore(f'hhhashes|{hhh}|captures', max_score, min_score, start=offset, num=limit)
 
     def scan_captures_hhhash(self, hhh: str) -> Iterator[tuple[str, float]]:
         yield from self.redis.zscan_iter(f'hhhashes|{hhh}|captures')
@@ -444,11 +443,11 @@ class Indexing():
         return set()
 
     def get_node_for_headers(self, hhh: str) -> tuple[str, str] | None:
-        _, latest_entry = self.get_captures_hhhash(hhh, offset=0, limit=1)
+        latest_entry = self.get_captures_hhhash(hhh, offset=0, limit=1)
         if not latest_entry:
             # That shouldn't happen if the hash is indexed
             return None
-        capture_uuid, _ = latest_entry[0]
+        capture_uuid = latest_entry[0]
         nodes = self.get_capture_hhhash_nodes(capture_uuid, hhh)
         if not nodes:
             return None
@@ -522,7 +521,7 @@ class Indexing():
 
     def get_captures_url(self, url: str, most_recent_capture: datetime | None = None,
                          oldest_capture: datetime | None= None,
-                         offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
+                         offset: int | None=None, limit: int | None=None) -> list[str]:
         """Get all the captures for a specific URL, on a time interval starting from the most recent one.
 
         :param url: The URL
@@ -536,9 +535,12 @@ class Indexing():
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'urls|{md5}|captures'))
             self.redis.delete(f'urls|{md5}|captures')
-            return 0, []
-        total = self.redis.zcard(f'urls|{md5}|captures')
-        return total, self.redis.zrevrangebyscore(f'urls|{md5}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+            return []
+        return self.redis.zrevrangebyscore(f'urls|{md5}|captures', max_score, min_score, start=offset, num=limit)
+
+    def scan_captures_url(self, url: str) -> Iterator[tuple[str, float]]:
+        md5 = hashlib.md5(url.encode()).hexdigest()
+        yield from self.redis.zscan_iter(f'urls|{md5}|captures')
 
     def get_captures_url_count(self, url: str) -> int:
         md5 = hashlib.md5(url.encode()).hexdigest()
@@ -551,7 +553,7 @@ class Indexing():
 
     def get_captures_hostname(self, hostname: str, most_recent_capture: datetime | None = None,
                               oldest_capture: datetime | None= None,
-                              offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
+                              offset: int | None=None, limit: int | None=None) -> list[str]:
         """Get all the captures for a specific hostname, on a time interval starting from the most recent one.
 
         :param url: The URL
@@ -564,9 +566,11 @@ class Indexing():
             # triggers the re-index soon.
             self.redis.srem('indexed_urls', *self.redis.smembers(f'hostnames|{hostname}|captures'))
             self.redis.delete(f'hostnames|{hostname}|captures')
-            return 0, []
-        total = self.redis.zcard(f'hostnames|{hostname}|captures')
-        return total, self.redis.zrevrangebyscore(f'hostnames|{hostname}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+            return []
+        return self.redis.zrevrangebyscore(f'hostnames|{hostname}|captures', max_score, min_score, start=offset, num=limit)
+
+    def scan_captures_hostname(self, hostname: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'hostnames|{hostname}|captures')
 
     def get_captures_hostname_count(self, hostname: str) -> int:
         if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]
@@ -702,7 +706,7 @@ class Indexing():
 
     def get_captures_favicon(self, favicon_sha512: str, most_recent_capture: datetime | None=None,
                              oldest_capture: datetime | None = None,
-                             offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
+                             offset: int | None=None, limit: int | None=None) -> list[str]:
         """Get all the captures for a specific favicon, on a time interval starting from the most recent one.
 
         :param favicon_sha512: The favicon hash
@@ -711,8 +715,10 @@ class Indexing():
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
         min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
-        total = self.redis.zcard(f'favicons|{favicon_sha512}|captures')
-        return total, self.redis.zrevrangebyscore(f'favicons|{favicon_sha512}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+        return self.redis.zrevrangebyscore(f'favicons|{favicon_sha512}|captures', max_score, min_score, start=offset, num=limit)
+
+    def scan_captures_favicon(self, favicon_sha512: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'favicons|{favicon_sha512}|captures')
 
     def get_captures_favicon_count(self, favicon_sha512: str) -> int:
         if self.redis.type(f'favicons|{favicon_sha512}|captures') == 'set':  # type: ignore[no-untyped-call]
@@ -809,7 +815,7 @@ class Indexing():
 
     def get_captures_hash_type(self, hash_type: str, h: str, most_recent_capture: datetime | None = None,
                                oldest_capture: datetime | None= None,
-                               offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
+                               offset: int | None=None, limit: int | None=None) -> list[str]:
         """Get all the captures for a hash of a specific type, on a time interval starting from the most recent one.
 
         :param hash_type: The type of hash
@@ -819,8 +825,10 @@ class Indexing():
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
         min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
-        total = self.redis.zcard(f'capture_hash_types|{hash_type}|{h}|captures')
-        return total, self.redis.zrevrangebyscore(f'capture_hash_types|{hash_type}|{h}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+        return self.redis.zrevrangebyscore(f'capture_hash_types|{hash_type}|{h}|captures', max_score, min_score, start=offset, num=limit)
+
+    def scan_captures_hash_type(self, hash_type: str, h: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'capture_hash_types|{hash_type}|{h}|captures')
 
     def get_captures_hash_type_count(self, hash_type: str, h: str) -> int:
         if hash_type == 'certpl_html_structure_hash':
@@ -891,7 +899,7 @@ class Indexing():
     def get_captures_identifier(self, identifier_type: str, identifier: str,
                                 most_recent_capture: datetime | None=None,
                                 oldest_capture: datetime | None=None,
-                                offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
+                                offset: int | None=None, limit: int | None=None) -> list[str]:
         """Get all the captures for a specific identifier of a specific type,
         on a time interval starting from the most recent one.
 
@@ -906,9 +914,11 @@ class Indexing():
             # triggers the re-index soon.
             self.redis.srem('indexed_identifiers', *self.redis.smembers(f'identifiers|{identifier_type}|{identifier}|captures'))
             self.redis.delete(f'identifiers|{identifier_type}|{identifier}|captures')
-            return 0, []
-        total = self.redis.zcard(f'identifiers|{identifier_type}|{identifier}|captures')
-        return total, self.redis.zrevrangebyscore(f'identifiers|{identifier_type}|{identifier}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+            return []
+        return self.redis.zrevrangebyscore(f'identifiers|{identifier_type}|{identifier}|captures', max_score, min_score, start=offset, num=limit)
+
+    def scan_captures_identifier(self, identifier_type: str, identifier: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'identifiers|{identifier_type}|{identifier}|captures')
 
     def get_captures_identifier_count(self, identifier_type: str, identifier: str) -> int:
         return self.redis.zcard(f'identifiers|{identifier_type}|{identifier}|captures')

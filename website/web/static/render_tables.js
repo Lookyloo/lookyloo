@@ -67,7 +67,7 @@
         serverSide: true,
         retrieve: true,
         ordering: false,
-        searching: false,  // Needs to implement that serverside
+        searching: true,
         drawCallback: function (settings) { newTabClickListener() },
         ajax: {
             url: `/tables/hashTypeDetailsTable/${hash_value}${window.location.search}`,
@@ -88,7 +88,7 @@
         serverSide: true,
         retrieve: true,
         ordering: false,
-        searching: false,  // Needs to implement that serverside
+        searching: true,
         drawCallback: function (settings) { newTabClickListener() },
         ajax: {
             url: `/tables/identifierDetailsTable/${identifier_value}${window.location.search}`,
@@ -183,7 +183,7 @@
         serverSide: true,
         retrieve: true,
         ordering: false,
-        searching: false,  // Needs to implement that serverside
+        searching: true,
         drawCallback: function (settings) { newTabClickListener() },
         ajax: {
             url: `/tables/cookieNameTable/${cookieName}${window.location.search}`,
@@ -204,7 +204,7 @@
         serverSide: true,
         retrieve: true,
         ordering: false,
-        searching: false,  // Needs to implement that serverside
+        searching: true,
         drawCallback: function (settings) { newTabClickListener() },
         ajax: {
            url: `/tables/hostnameTable/${hostname}${window.location.search}`,
@@ -225,7 +225,7 @@
         serverSide: true,
         retrieve: true,
         ordering: false,
-        searching: false,  // Needs to implement that serverside
+        searching: true,
         drawCallback: function (settings) { newTabClickListener() },
         ajax: {
             url: `/tables/urlTable/${url}${window.location.search}`,
@@ -246,7 +246,7 @@
         serverSide: true,
         retrieve: true,
         ordering: false,
-        searching: false,  // Needs to implement that serverside
+        searching: true,
         drawCallback: function (settings) { newTabClickListener() },
         ajax: {
            url: `/tables/faviconDetailsTable/${favicon}${window.location.search}`,

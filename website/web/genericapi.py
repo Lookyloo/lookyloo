@@ -339,9 +339,8 @@ class HashInfo(Resource):  # type: ignore[misc]
 
 def get_url_occurrences(url: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
     '''Get the most recent captures and URL nodes where the URL has been seen.'''
-    _, entries = get_indexing(flask_login.current_user).get_captures_url(url, offset=0, limit=limit)
     captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in entries],
+        get_indexing(flask_login.current_user).get_captures_url(url, offset=0, limit=limit),
         cached_captures_only=cached_captures_only)
 
     to_return: list[dict[str, Any]] = []
@@ -382,9 +381,7 @@ class URLInfo(Resource):  # type: ignore[misc]
 def get_hostname_occurrences(hostname: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
     '''Get the most recent captures and URL nodes where the hostname has been seen.'''
     _, entries = get_indexing(flask_login.current_user).get_captures_hostname(hostname, offset=0, limit=limit)
-    captures = lookyloo.sorted_capture_cache(
-        [uuid for uuid, _ in entries],
-        cached_captures_only=cached_captures_only)
+    captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only)
 
     to_return: list[dict[str, Any]] = []
     for capture in captures:
