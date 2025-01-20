@@ -103,7 +103,7 @@
   }
   if (document.getElementById('bodyHashesTable')) {
       new DataTable('#bodyHashesTable', {
-        retrieve: true,
+        destroy: true,
         drawCallback: function (settings) {
             newTabClickListener();
             $('[data-bs-toggle="tooltip"]').tooltip({html: true});
