@@ -17,14 +17,24 @@
         {{hash_icon(tree_uuid, info['nodes'][0][0].uuid, info['mimetype'], body_hash)}}
     </td>
     <td>
-      <ul>
-      {% for node, embedded in info['nodes'] %}
-      <li>
-        <span class="text-break">{{ node.name }} {% if embedded %}<b>(embedded)</b>{%endif%}</span>
-        <a href="#" role="button" class="btn btn-link openNewTab"
-          data-capture="{{tree_uuid}}" data-hostnode="{{node.uuid}}">Show on tree</a>
-      </li>
-      {% endfor %}
+      There are <b>{{ info['nodes'] | length }}</b> URLs loading this ressource in the current tree.
+      <br>
+      <p class="d-inline-flex gap-1">
+        <button class="btn btn-link" type="button"
+                data-bs-toggle="collapse" data-bs-target="#collapseAllNodes_{{loop.index}}"
+                aria-expanded="false" aria-controls="collapseAllNodes_{{loop.index}}">
+          Show
+        </button>
+      </p>
+      <div class="collapse" id="collapseAllNodes_{{loop.index}}">
+        <ul class="list-group list-group-flush">
+          {% for node, embedded in info['nodes'] %}
+          <li class="list-group-item">
+            <p class="text-break">{{ node.name }} {% if embedded %}<b>(embedded)</b>{%endif%}</p>
+            <button type="button" class="btn btn-link openNewTab" data-capture="{{tree_uuid}}" data-hostnode="{{node.uuid}}">Show on tree</button>
+          </li>
+          {% endfor %}
+        </ul>
     </td>
     <td>
       <span class="d-inline-block text-truncate" style="max-width: 200px;">
