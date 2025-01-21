@@ -1,5 +1,5 @@
 <h5 class="text-center">Click on the hash to see the other captures it's been found in</h5>
-<table id="treeHashesTable" class="table table-striped" style="width:100%">
+<table id="treeHashesTable" class="table table-striped" style="width:100%" data-treeuuid="{{tree_uuid}}">
 <thead>
  <tr>
    <th>Number of captures</th>
@@ -7,18 +7,4 @@
    <th>Hash type</th>
  </tr>
 </thead>
-<tbody>
-  {% for number_captures, hash_type, hash in hashes %}
-  <tr>
-    <td>{{ number_captures }}</td>
-    <td>
-      <a href="#captureHashesTypesDetailsModal" data-remote="{{ url_for('capture_hash_details', hash_type=hash_type, h=hash) }}"
-         data-bs-toggle="modal" data-bs-target="#captureHashesTypesDetailsModal" role="button">
-        {{ hash }}
-      </a>
-    </td>
-    <td>{{hash_type}}</td>
-  </tr>
-  {% endfor %}
-</tbody>
 </table>

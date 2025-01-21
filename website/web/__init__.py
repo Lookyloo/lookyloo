@@ -242,7 +242,7 @@ def shorten_string(s: str, length: int, with_title: bool=False) -> str:
     if with_title:
         to_return += f'<span title="{s}">'
     if len(s) > length:
-        to_return += f'{s[:length]} [...]'
+        to_return += f'{s[:int(length / 2)]} [...] {s[-int(length / 2):]}'
     else:
         to_return += s
     if with_title:
@@ -284,6 +284,16 @@ def get_tz_info() -> tuple[str | None, str, set[str]]:
     local_TZ = now.tzname()
     local_UTC_offset = f'UTC{now.strftime("%z")}'
     return local_TZ, local_UTC_offset, all_timezones_set
+
+
+# NOTE: Add in the globals?
+def details_modal_button(target_modal_id: str, data_remote: str, button_string: str) -> str:
+    return f'''
+<span class="d-inline-block text-break">
+  <a href="{target_modal_id}" data-remote="{data_remote}" data-bs-toggle="modal" data-bs-target="{target_modal_id}" role="button">
+    {button_string}
+  </a>
+</span>'''
 
 
 app.jinja_env.globals.update(
@@ -1312,58 +1322,32 @@ def mark_as_legitimate(tree_uuid: str) -> Response:
 
 @app.route('/tree/<string:tree_uuid>/identifiers', methods=['GET'])
 def tree_identifiers(tree_uuid: str) -> str:
-    to_return: list[tuple[int, str, str]] = []
-
-    for id_type, identifiers in get_indexing(flask_login.current_user).get_identifiers_capture(tree_uuid).items():
-        for identifier in identifiers:
-            nb_captures = get_indexing(flask_login.current_user).get_captures_identifier_count(id_type, identifier)
-            to_return.append((nb_captures, id_type, identifier))
-    return render_template('tree_identifiers.html', tree_uuid=tree_uuid, identifiers=to_return)
+    return render_template('tree_identifiers.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<string:tree_uuid>/favicons', methods=['GET'])
 def tree_favicons(tree_uuid: str) -> str:
-    favicons = []
-    favicons_zip = lookyloo.get_potential_favicons(tree_uuid, all_favicons=True, for_datauri=False)
-    with ZipFile(favicons_zip, 'r') as myzip:
-        for name in myzip.namelist():
-            if not name.endswith('.ico'):
-                continue
-            favicon = myzip.read(name)
-            if not favicon:
-                continue
-            mimetype = from_string(favicon, mime=True)
-            favicon_sha512 = hashlib.sha512(favicon).hexdigest()
-            number_captures = get_indexing(flask_login.current_user).get_captures_favicon_count(favicon_sha512)
-            b64_favicon = base64.b64encode(favicon).decode()
-            mmh3_shodan = lookyloo.compute_mmh3_shodan(favicon)
-            favicons.append((favicon_sha512, number_captures, mimetype, b64_favicon, mmh3_shodan))
-    return render_template('tree_favicons.html', tree_uuid=tree_uuid, favicons=favicons)
+    return render_template('tree_favicons.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<string:tree_uuid>/hashes_types', methods=['GET'])
 def tree_capture_hashes_types(tree_uuid: str) -> str:
-    to_return: list[tuple[int, str, str]] = []
-
-    for hash_type, h in get_indexing(flask_login.current_user).get_hashes_types_capture(tree_uuid).items():
-        nb_captures = get_indexing(flask_login.current_user).get_captures_hash_type_count(hash_type, h)
-        to_return.append((nb_captures, hash_type, h))
-    return render_template('tree_hashes_types.html', tree_uuid=tree_uuid, hashes=to_return)
+    return render_template('tree_hashes_types.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<string:tree_uuid>/body_hashes', methods=['GET'])
 def tree_body_hashes(tree_uuid: str) -> str:
-    return render_template('tree_body_hashes.html', tree_uuid=tree_uuid, body_hashes=get_all_body_hashes(tree_uuid))
+    return render_template('tree_body_hashes.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<string:tree_uuid>/hostnames', methods=['GET'])
 def tree_hostnames(tree_uuid: str) -> str:
-    return render_template('tree_hostnames.html', tree_uuid=tree_uuid, hostnames=get_all_hostnames(tree_uuid))
+    return render_template('tree_hostnames.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<string:tree_uuid>/urls', methods=['GET'])
 def tree_urls(tree_uuid: str) -> str:
-    return render_template('tree_urls.html', tree_uuid=tree_uuid, urls=get_all_urls(tree_uuid))
+    return render_template('tree_urls.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<string:tree_uuid>/pandora', methods=['GET', 'POST'])
@@ -2017,16 +2001,17 @@ def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
 
 
 def __prepare_node_view(capture_uuid: str, nodes: list[tuple[str, str]], from_popup: bool=False) -> str:
+    collapse_id = str(uuid4())
     to_return = f'The capture contains this value in <b>{len(nodes)}</b> nodes.'
     to_return += f"""<br>
     <p class="d-inline-flex gap-1">
       <button class="btn btn-link" type="button"
-          data-bs-toggle="collapse" data-bs-target="#collapseAllNodes_{capture_uuid}"
-          aria-expanded="false" aria-controls="collapseAllNodes_{capture_uuid}">
+          data-bs-toggle="collapse" data-bs-target="#collapseAllNodes_{collapse_id}"
+          aria-expanded="false" aria-controls="collapseAllNodes_{collapse_id}">
       Show
       </button>
     </p>
-    <div class="collapse" id="collapseAllNodes_{capture_uuid}">
+    <div class="collapse" id="collapseAllNodes_{collapse_id}">
       <div class="card card-body">
         Click on the link to go directly on the node in the tree.
         <span class="d-inline-block text-break">
@@ -2228,6 +2213,118 @@ def post_table(table_name: str, value: str) -> Response:
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
+
+    if table_name == 'urlsTable':
+        tree_uuid = value.strip()
+        prepared_captures = []
+        for url, _info in get_all_urls(tree_uuid).items():
+            to_append = {
+                'total_captures': _info['total_captures'],  # type: ignore[dict-item]
+                'url': details_modal_button(target_modal_id='#urlDetailsModal',
+                                            data_remote=url_for('url_details', url=_info['quoted_url']),
+                                            button_string=shorten_string(url, 100, with_title=True))
+            }
+            prepared_captures.append(to_append)
+        return jsonify(prepared_captures)
+
+    if table_name == 'identifiersTable':
+        tree_uuid = value.strip()
+        prepared_captures = []
+        for id_type, identifiers in get_indexing(flask_login.current_user).get_identifiers_capture(tree_uuid).items():
+            for identifier in identifiers:
+                nb_captures = get_indexing(flask_login.current_user).get_captures_identifier_count(id_type, identifier)
+                to_append = {
+                    'total_captures': nb_captures,  # type: ignore[dict-item]
+                    'identifier': details_modal_button(target_modal_id='#identifierDetailsModal',
+                                                       data_remote=url_for('identifier_details', identifier_type=id_type, identifier=identifier),
+                                                       button_string=shorten_string(identifier, 100, with_title=True)),
+                    'identifier_type': id_type
+                }
+                prepared_captures.append(to_append)
+        return jsonify(prepared_captures)
+
+    if table_name == 'hostnamesTable':
+        tree_uuid = value.strip()
+        prepared_captures = []
+        for _hostname, _info in get_all_hostnames(tree_uuid).items():  # type: ignore[assignment]
+            nodes = [(node.name, node.uuid) for node in _info['nodes']]  # type: ignore[union-attr]
+            to_append = {
+                'total_captures': _info['total_captures'],  # type: ignore[dict-item]
+                'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
+                                                 data_remote=url_for('hostname_details', hostname=_hostname),
+                                                 button_string=shorten_string(_hostname, 100, with_title=True)),
+                'urls': __prepare_node_view(tree_uuid, nodes, from_popup)
+            }
+            prepared_captures.append(to_append)
+        return jsonify(prepared_captures)
+
+    if table_name == 'treeHashesTable':
+        tree_uuid = value.strip()
+        prepared_captures = []
+        for hash_type, h in get_indexing(flask_login.current_user).get_hashes_types_capture(tree_uuid).items():
+            to_append = {
+                'total_captures': get_indexing(flask_login.current_user).get_captures_hash_type_count(hash_type, h),  # type: ignore[dict-item]
+                'capture_hash': details_modal_button(target_modal_id='#captureHashesTypesDetailsModal',
+                                                     data_remote=url_for('capture_hash_details', hash_type=hash_type, h=h),
+                                                     button_string=shorten_string(h, 100, with_title=True)),
+                'hash_type': hash_type
+            }
+            prepared_captures.append(to_append)
+        return jsonify(prepared_captures)
+
+    if table_name == 'faviconsTable':
+        tree_uuid = value.strip()
+        prepared_captures = []
+        favicons_zip = lookyloo.get_potential_favicons(tree_uuid, all_favicons=True, for_datauri=False)
+        with ZipFile(favicons_zip, 'r') as myzip:
+            for name in myzip.namelist():
+                if not name.endswith('.ico'):
+                    continue
+                favicon = myzip.read(name)
+                if not favicon:
+                    continue
+                mimetype = from_string(favicon, mime=True)
+                favicon_sha512 = hashlib.sha512(favicon).hexdigest()
+                b64_favicon = base64.b64encode(favicon).decode()
+                to_append = {
+                    'total_captures': get_indexing(flask_login.current_user).get_captures_favicon_count(favicon_sha512),  # type: ignore[dict-item]
+                    'favicon': details_modal_button(target_modal_id='#faviconDetailsModal', data_remote=url_for('favicon_detail', favicon_sha512=favicon_sha512),
+                                                    button_string=f'''<img src="data:{mimetype};base64,{b64_favicon}" style="width:32px;height:32px;"
+                                                                           title="Click to see other captures with the same favicon"/>'''),
+                    'shodan_mmh3': lookyloo.compute_mmh3_shodan(favicon),
+                    'download': f'''<button type="button" class="btn btn-light downloadFaviconButton" data-mimetype="{mimetype}" data-b64favicon="{b64_favicon}" data-filename="favicon.ico">
+                                     <img src="{url_for('static', filename='download.svg')}" style="width:16px;height:16px;" title="Download the favicon"/>
+                                     </button>'''
+                }
+
+                prepared_captures.append(to_append)
+        return jsonify(prepared_captures)
+
+    if table_name == 'bodyHashesTable':
+        tree_uuid = value.strip()
+        prepared_captures = []
+        for body_hash, info in get_all_body_hashes(tree_uuid).items():
+            nodes = [(node[0].name, node[0].uuid) for node in info['nodes']]  # type: ignore[union-attr]
+            generic = mimetype_to_generic(info['mimetype'])  # type: ignore[arg-type]
+            icon_info = get_icon(generic)
+            hash_icon = f'''<a href="{url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=info['nodes'][0][0].uuid)}"><img src="{url_for('static', filename=icon_info['icon'])}" alt="{icon_info['tooltip']}" width="21" height="21"'''  # type: ignore[index,union-attr]
+            if generic == 'image':
+                hash_icon += f'''data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                                 title='<img class="ressource_preview" src="{url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=info['nodes'][0][0].uuid, h_ressource=body_hash)}"/> <br>Click to download.' '''  # type: ignore[index,union-attr]
+            else:
+                hash_icon += f'''data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="{icon_info['tooltip']} <br/>Click to download."'''  # type: ignore[index]
+            hash_icon += f'''/></a><br><small>Mimetype: <b>{info['mimetype']}</b></small>'''
+            to_append = {
+                'total_captures': info['total_captures'],  # type: ignore[dict-item]
+                'file_type': hash_icon,
+                'urls': __prepare_node_view(tree_uuid, nodes, from_popup),
+                'sha512': details_modal_button(target_modal_id='#bodyHashDetailsModal',
+                                               data_remote=url_for('body_hash_details', body_hash=body_hash),
+                                               button_string=shorten_string(body_hash, 40, with_title=True))
+            }
+            prepared_captures.append(to_append)
+        return jsonify(prepared_captures)
+
     return jsonify({})
 
 

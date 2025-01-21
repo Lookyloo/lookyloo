@@ -1,6 +1,6 @@
 {% from "macros.html" import hash_icon %}
 
-<table id="bodyHashesTable" class="table table-striped" style="width:100%">
+<table id="bodyHashesTable" class="table table-striped" style="width:100%" data-treeuuid="{{tree_uuid}}">
 <thead>
  <tr>
    <th>Number of captures</th>
@@ -9,42 +9,4 @@
    <th>Hash (sha512)</th>
  </tr>
 </thead>
-<tbody>
-  {% for body_hash, info in body_hashes.items() %}
-  <tr>
-    <td>{{ info['total_captures'] }}</td>
-    <td data-order="{{info['generic_type']}}">
-        {{hash_icon(tree_uuid, info['nodes'][0][0].uuid, info['mimetype'], body_hash)}}
-    </td>
-    <td>
-      There are <b>{{ info['nodes'] | length }}</b> URLs loading this ressource in the current tree.
-      <br>
-      <p class="d-inline-flex gap-1">
-        <button class="btn btn-link" type="button"
-                data-bs-toggle="collapse" data-bs-target="#collapseAllNodes_{{loop.index}}"
-                aria-expanded="false" aria-controls="collapseAllNodes_{{loop.index}}">
-          Show
-        </button>
-      </p>
-      <div class="collapse" id="collapseAllNodes_{{loop.index}}">
-        <ul class="list-group list-group-flush">
-          {% for node, embedded in info['nodes'] %}
-          <li class="list-group-item">
-            <p class="text-break">{{ node.name }} {% if embedded %}<b>(embedded)</b>{%endif%}</p>
-            <button type="button" class="btn btn-link openNewTab" data-capture="{{tree_uuid}}" data-hostnode="{{node.uuid}}">Show on tree</button>
-          </li>
-          {% endfor %}
-        </ul>
-    </td>
-    <td>
-      <span class="d-inline-block text-truncate" style="max-width: 200px;">
-         <a href="#bodyHashDetailsModal" data-remote="{{ url_for('body_hash_details', body_hash=body_hash) }}"
-            data-bs-toggle="modal" data-bs-target="#bodyHashDetailsModal" role="button">
-            {{body_hash}}
-         </a>
-      </span>
-    </td>
-  </tr>
-  {% endfor %}
-</tbody>
 </table>

@@ -1,4 +1,4 @@
-<table id="hostnamesTable" class="table table-striped" style="width:100%">
+<table id="hostnamesTable" class="table table-striped" style="width:100%" data-treeuuid="{{tree_uuid}}">
 <thead>
  <tr>
    <th>Number of captures</th>
@@ -6,45 +6,4 @@
    <th>URLs</th>
  </tr>
 </thead>
-<tbody>
-  {% for hostname, info in hostnames.items() %}
-  <tr>
-    <td>{{ info['total_captures'] }}</td>
-    <td>
-      <span class="d-inline-block text-break">
-         <a href="#hostnameDetailsModal" data-remote="{{ url_for('hostname_details', hostname=hostname) }}"
-            data-bs-toggle="modal" data-bs-target="#hostnameDetailsModal" role="button">
-            {{hostname}}
-         </a>
-      </span>
-    </td>
-    <td>
-      There are <b>{{ info['nodes'] | length }}</b> URLs with this hostname in the current tree.
-      <br>
-      <p class="d-inline-flex gap-1">
-        <button class="btn btn-link" type="button"
-                data-bs-toggle="collapse" data-bs-target="#collapseAllNodes_{{loop.index}}"
-                aria-expanded="false" aria-controls="collapseAllNodes_{{loop.index}}">
-          Show
-        </button>
-      </p>
-      <div class="collapse" id="collapseAllNodes_{{loop.index}}">
-          <div class="card card-body">
-            <span class="d-inline-block text-break">
-              <ul class="list-group list-group-flush">
-              {% for node in info['nodes'] %}
-                <li class="list-group-item">
-                  <p class="text-break">{{ node.name }}</p>
-                  <button type="button" class="btn btn-link openNewTab" data-capture="{{tree_uuid}}" data-hostnode="{{node.uuid}}">Show on tree</button>
-                </li>
-              {% endfor %}
-              <ul>
-            </span>
-          </div>
-        </div>
-      </div>
-    </td>
-  </tr>
-  {% endfor %}
-</tbody>
 </table>

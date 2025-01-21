@@ -1,23 +1,8 @@
-<table id="urlsTable" class="table table-striped" style="width:100%">
+<table id="urlsTable" class="table table-striped" style="width:100%" data-treeuuid="{{tree_uuid}}">
 <thead>
  <tr>
    <th>Number of captures</th>
    <th>URL</th>
  </tr>
 </thead>
-<tbody>
-  {% for url, info in urls.items() %}
-  <tr>
-    <td>{{ info['total_captures'] }}</td>
-    <td>
-      <span class="d-inline-block text-break">
-         <a href="#urlDetailsModal" data-remote="{{ url_for('url_details', url=info['quoted_url']) }}"
-            data-bs-toggle="modal" data-bs-target="#urlDetailsModal" role="button">
-            {{url}}
-         </a>
-      </span>
-    </td>
-  </tr>
-  {% endfor %}
-</tbody>
 </table>

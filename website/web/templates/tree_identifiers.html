@@ -1,6 +1,5 @@
-
 <h5 class="text-center">Click on the identifier to see the other captures it's been found in</h5>
-<table id="identifiersTable" class="table table-striped" style="width:100%">
+<table id="identifiersTable" class="table table-striped" style="width:100%" data-treeuuid="{{tree_uuid}}">
 <thead>
  <tr>
    <th>Number of captures</th>
@@ -8,18 +7,4 @@
    <th>Identifier type</th>
  </tr>
 </thead>
-<tbody>
-  {% for number_captures, identifier_type, identifier in identifiers %}
-  <tr>
-    <td>{{ number_captures }}</td>
-    <td>
-      <a href="#identifierDetailsModal" data-remote="{{ url_for('identifier_details', identifier_type=identifier_type, identifier=identifier) }}"
-         data-bs-toggle="modal" data-bs-target="#identifierDetailsModal" role="button">
-        {{ identifier }}
-      </a>
-    </td>
-    <td>{{identifier_type}}</td>
-  </tr>
-  {% endfor %}
-</tbody>
 </table>

@@ -102,73 +102,121 @@
       });
   }
   if (document.getElementById('bodyHashesTable')) {
+      treeUUID = document.getElementById('bodyHashesTable').dataset.treeuuid;
       new DataTable('#bodyHashesTable', {
+        processing: true,
         retrieve: true,
+        searching: true,
         drawCallback: function (settings) {
             newTabClickListener();
             $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         },
         order: [[ 0, "desc" ]],
-        columns: [{ width: '10%' },
-                  { width: '10%' },
-                  { width: '60%', orderable: false },
-                  { width: '20%', orderable: false }],
+        ajax: {
+            url: `/tables/bodyHashesTable/${treeUUID}${window.location.search}`,
+            type: 'POST',
+            dataSrc: ""
+        },
+        columns: [{ data: 'total_captures', width: '10%', orderable: false},
+                  { data: 'file_type', width: '10%' },
+                  { data: 'urls', width: '60%', orderable: false },
+                  { data: 'sha512', width: '20%', orderable: false }],
       });
   }
   if (document.getElementById('faviconsTable')) {
+      treeUUID = document.getElementById('faviconsTable').dataset.treeuuid;
       new DataTable('#faviconsTable', {
+        processing: true,
         retrieve: true,
+        searching: true,
         drawCallback: function (settings) {
             newTabClickListener();
             downloadFaviconListener();
         },
         order: [[ 0, "desc" ]],
-        columns: [{ width: '10%' },
-                  { width: '40%', orderable: false },
-                  { width: '40%', orderable: false },
-                  { width: '10%', orderable: false }],
+        ajax: {
+            url: `/tables/faviconsTable/${treeUUID}${window.location.search}`,
+            type: 'POST',
+            dataSrc: ""
+        },
+        columns: [{ data: 'total_captures', width: '10%' },
+                  { data: 'favicon', width: '40%', orderable: false },
+                  { data: 'shodan_mmh3', width: '40%', orderable: false },
+                  { data:  'download', width: '10%', orderable: false }],
       });
   }
   if (document.getElementById('treeHashesTable')) {
+      treeUUID = document.getElementById('treeHashesTable').dataset.treeuuid;
       new DataTable('#treeHashesTable', {
+        processing: true,
         retrieve: true,
-        order: [[ 0, "desc" ]],
+        searching: true,
         drawCallback: function (settings) { newTabClickListener() },
-        column: [{ width: '20%' },
-                 { width: '40%', orderable: false},
-                 { width: '40%' }],
+        order: [[ 0, "desc" ]],
+        ajax: {
+            url: `/tables/treeHashesTable/${treeUUID}${window.location.search}`,
+            type: 'POST',
+            dataSrc: ""
+        },
+        columns: [{ data: 'total_captures', width: '20%' },
+                 { data: 'capture_hash', width: '40%', orderable: false },
+                 { data: 'hash_type', width: '40%', orderable: false }],
       });
   }
   if (document.getElementById('hostnamesTable')) {
+      treeUUID = document.getElementById('hostnamesTable').dataset.treeuuid;
       new DataTable('#hostnamesTable', {
+        processing: true,
         retrieve: true,
+        searching: true,
         drawCallback: function (settings) {
             newTabClickListener();
             $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         },
         order: [[ 0, "desc" ]],
-        columns: [{ width: '10%' },
-                  { width: '40%', orderable: false },
-                  { width: '50%', orderable: false }],
+        ajax: {
+            url: `/tables/hostnamesTable/${treeUUID}${window.location.search}`,
+            type: 'POST',
+            dataSrc: ""
+        },
+        columns: [{ data: 'total_captures', width: '10%' },
+                  { data: 'hostname', width: '40%', orderable: false },
+                  { data: 'urls', width: '50%', orderable: false }],
       });
   }
   if (document.getElementById('identifiersTable')) {
+      treeUUID = document.getElementById('identifiersTable').dataset.treeuuid;
       new DataTable('#identifiersTable', {
+        processing: true,
         retrieve: true,
+        searching: true,
         drawCallback: function (settings) { newTabClickListener() },
         order: [[ 0, "desc" ]],
-        columns: [{ width: '20%' },
-                  { width: '40%' },
-                  { width: '40%' }],
+        ajax: {
+            url: `/tables/identifiersTable/${treeUUID}${window.location.search}`,
+            type: 'POST',
+            dataSrc: ""
+        },
+        columns: [{ data: 'total_captures', width: '20%', orderable: false },
+                  { data: 'identifier', width: '40%', orderable: false },
+                  { data: 'identifier_type', width: '40%', orderable: false }],
       });
   }
   if (document.getElementById('urlsTable')) {
+      treeUUID = document.getElementById('urlsTable').dataset.treeuuid;
       new DataTable('#urlsTable', {
+        processing: true,
         retrieve: true,
+        searching: true,
         drawCallback: function (settings) { newTabClickListener() },
         order: [[ 0, "desc" ]],
-        columns: [{ width: '10%', orderable: false },
-                  { width: '90%', orderable: false }]
+        ajax: {
+            url: `/tables/urlsTable/${treeUUID}${window.location.search}`,
+            type: 'POST',
+            dataSrc:""
+        },
+        columns: [{ data: 'total_captures', width: '10%', orderable: false },
+                  { data: 'url', width: '90%', orderable: false }]
       })
   }
   if (document.getElementById('cookieNameTable')) {
