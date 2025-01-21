@@ -167,14 +167,9 @@
         retrieve: true,
         drawCallback: function (settings) { newTabClickListener() },
         order: [[ 0, "desc" ]],
-        columns: [{ width: '10%' },
-                  { width: '90%', orderable: false }],
-        initComplete: function (settings, json) {
-          $('[data-bs-toggle="tooltip"]').tooltip({html: true});
-        }
-      }).on('draw', function() {
-        $('[data-bs-toggle="tooltip"]').tooltip({html: true});
-      });
+        columns: [{ width: '10%', orderable: false },
+                  { width: '90%', orderable: false }]
+      })
   }
   if (document.getElementById('cookieNameTable')) {
       cookieName = document.getElementById('cookieNameTable').dataset.cookiename;
