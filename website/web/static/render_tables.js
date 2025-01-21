@@ -1,4 +1,4 @@
-["DOMContentLoaded", "shown.bs.modal", "jquery.modal.rendered"].forEach(e => window.addEventListener(e, function() {
+["DOMContentLoaded", "shown.bs.modal"].forEach(e => window.addEventListener(e, function() {
   if (document.getElementById('IndexTable')) {
     indexType = document.getElementById('IndexTable').dataset.indextype;
     new DataTable('#IndexTable', {
@@ -103,7 +103,7 @@
   }
   if (document.getElementById('bodyHashesTable')) {
       new DataTable('#bodyHashesTable', {
-        destroy: true,
+        retrieve: true,
         drawCallback: function (settings) {
             newTabClickListener();
             $('[data-bs-toggle="tooltip"]').tooltip({html: true});
