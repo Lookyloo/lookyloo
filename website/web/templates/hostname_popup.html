@@ -12,14 +12,6 @@
 
 {% block title %}Details for {% if hostnode.idna %}{{hostnode.idna}} {%else%} {{ hostnode.name }} {%endif%}{% endblock %}
 
-{% block scripts %}
-  {{ super() }}
-  <script src='{{ url_for('static', filename='hostname_popup.js') }}'
-        {{get_sri('static', 'hostname_popup.js')}}
-        nonce="{{ csp_nonce() }}"
-        crossorigin="anonymous"></script>
-{% endblock %}
-
 {% block content %}
   {# Headers #}
   <center>

@@ -1,3 +1,5 @@
+{% from "macros.html" import pandora_submit %}
+
 {% if from_popup %}
 {% extends "main.html" %}
 
@@ -15,24 +17,43 @@
 {%endif%}
 
 <center>
-  <p class="lead">
-  {% if filename %}
-  Filename: <b title="The file may have different names across the captures, this is one of them.">{{ filename }}</b><br>
-  {% endif %}
-  {% if mimetype %}
-  Mimetype: <b>{{ mimetype }}</b><br>
-  {% endif %}
-  Hash:<br> <span style="font-size: 70%;">{{ body_hash }}</span><br>
-  {% if b64 %}
-  Preview:<br>
-    <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">
-    <img class="border rounded border-3" src="data:{{mimetype}};base64,{{ b64 }}" style="max-width: 256px;max-height: 256px;"
-         title="Click to download"/>
-    </a>
-  {% else %}
-    <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">Download</a>
-  {% endif %}
-  </p>
+<p class="lead">
+File Information
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Filename</th>
+      <th scope="col">Size</th>
+      <th scope="col">Mimetype</th>
+      <th scope="col">Hash</th>
+      <th scope="col">Download</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <td><span title="The file may have different names across the captures, this is one of them.">{{ filename }}</span></td>
+        <td>{{ sizeof_fmt(ressource_size) }}</td>
+        <td>{{ mimetype }}</td>
+        <td ><span style="font-size: 70%;" class="d-inline-block text-break">{{ body_hash }}</span></td>
+        <td>
+          {% if b64 %}
+          <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">
+            <img class="border rounded border-3" src="data:{{mimetype}};base64,{{ b64 }}" style="max-width: 256px;max-height: 256px;"
+                 title="Click to download"/>
+          </a>
+          {% else %}
+          <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}" type="button" class="btn btn-light">
+              <img src="{{url_for('static', filename='download.svg')}}" style="width:32px;height:32px;" title="Download the file"/>
+          </a>
+          {% endif %}
+        </td>
+    </tr>
+  </tbody>
+</table>
+{% if has_pandora and sample_tree_uuid and sample_node_uuid%}
+{{ pandora_submit(sample_tree_uuid, sample_node_uuid) }}
+{% endif %}
+</p>
 </center>
 
 <table id="bodyHashDetailsTable" class="table table-striped" style="width:100%" data-bodyhash="{{body_hash}}">

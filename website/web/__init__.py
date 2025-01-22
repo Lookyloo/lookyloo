@@ -286,6 +286,28 @@ def get_tz_info() -> tuple[str | None, str, set[str]]:
     return local_TZ, local_UTC_offset, all_timezones_set
 
 
+def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressource: str) -> str:
+    gt = mimetype_to_generic(mimetype)
+    if icon_info := get_icon(gt):
+        if gt == 'image':
+            title = f'''<img class="ressource_preview" src="{url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, h_ressource=h_ressource)}"/>'''
+        else:
+            title = icon_info['tooltip']
+        title += '<br>Click to download.'
+
+        return Markup(f'''
+<a href="{url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid)}">
+  <img src="{url_for('static', filename=icon_info['icon'])}" alt="{icon_info['tooltip']}" width="21" height="21"
+       data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title='{title}'/>
+</a>
+<br>
+<small>Mimetype: <b>{mimetype}</b></small>
+<br>
+''')
+    else:
+        return 'Unable to render icon'
+
+
 # NOTE: Add in the globals?
 def details_modal_button(target_modal_id: str, data_remote: str, button_string: str) -> str:
     return f'''
@@ -296,6 +318,14 @@ def details_modal_button(target_modal_id: str, data_remote: str, button_string: 
 </span>'''
 
 
+# NOTE: Add in the globals?
+def favicon_download_button(mimetype: str, b64_favicon: str) -> str:
+    return f'''
+<button type="button" class="btn btn-light downloadFaviconButton" data-mimetype="{mimetype}" data-b64favicon="{b64_favicon}" data-filename="favicon.ico">
+  <img src="{url_for('static', filename='download.svg')}" style="width:16px;height:16px;" title="Download the favicon"/>
+</button>'''
+
+
 app.jinja_env.globals.update(
     {'sizeof_fmt': sizeof_fmt,
      'http_status_description': http_status_description,
@@ -304,6 +334,7 @@ app.jinja_env.globals.update(
      'shorten_string': shorten_string,
      'get_icon': get_icon,
      'generic_type': mimetype_to_generic,
+     'hash_icon': hash_icon_render,
      'tz_info': get_tz_info}
 )
 
@@ -1799,15 +1830,21 @@ def body_hash_details(body_hash: str) -> str:
     filename = ''
     mimetype = ''
     b64 = ''
+    capture_uuid = ''
+    urlnode_uuid = ''
+    ressource_size = 0
     if uuids := get_indexing(flask_login.current_user).get_hash_uuids(body_hash):
         # got UUIDs for this hash
         capture_uuid, urlnode_uuid = uuids
         if ressource := lookyloo.get_ressource(capture_uuid, urlnode_uuid, body_hash):
             filename, body, mimetype = ressource
+            ressource_size = body.getbuffer().nbytes
             if mimetype_to_generic(mimetype) == 'image':
                 b64 = base64.b64encode(body.read()).decode()
     return render_template('body_hash.html', body_hash=body_hash, from_popup=from_popup,
-                           filename=filename, mimetype=mimetype, b64=b64)
+                           filename=filename, ressource_size=ressource_size, mimetype=mimetype, b64=b64,
+                           has_pandora=lookyloo.pandora.available,
+                           sample_tree_uuid=capture_uuid, sample_node_uuid=urlnode_uuid)
 
 
 @app.route('/urls/<string:url>', methods=['GET'])
@@ -2292,9 +2329,7 @@ def post_table(table_name: str, value: str) -> Response:
                                                     button_string=f'''<img src="data:{mimetype};base64,{b64_favicon}" style="width:32px;height:32px;"
                                                                            title="Click to see other captures with the same favicon"/>'''),
                     'shodan_mmh3': lookyloo.compute_mmh3_shodan(favicon),
-                    'download': f'''<button type="button" class="btn btn-light downloadFaviconButton" data-mimetype="{mimetype}" data-b64favicon="{b64_favicon}" data-filename="favicon.ico">
-                                     <img src="{url_for('static', filename='download.svg')}" style="width:16px;height:16px;" title="Download the favicon"/>
-                                     </button>'''
+                    'download': favicon_download_button(mimetype, b64_favicon)
                 }
 
                 prepared_captures.append(to_append)
@@ -2305,18 +2340,9 @@ def post_table(table_name: str, value: str) -> Response:
         prepared_captures = []
         for body_hash, info in get_all_body_hashes(tree_uuid).items():
             nodes = [(node[0].name, node[0].uuid) for node in info['nodes']]  # type: ignore[union-attr]
-            generic = mimetype_to_generic(info['mimetype'])  # type: ignore[arg-type]
-            icon_info = get_icon(generic)
-            hash_icon = f'''<a href="{url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=info['nodes'][0][0].uuid)}"><img src="{url_for('static', filename=icon_info['icon'])}" alt="{icon_info['tooltip']}" width="21" height="21"'''  # type: ignore[index,union-attr]
-            if generic == 'image':
-                hash_icon += f'''data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                                 title='<img class="ressource_preview" src="{url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=info['nodes'][0][0].uuid, h_ressource=body_hash)}"/> <br>Click to download.' '''  # type: ignore[index,union-attr]
-            else:
-                hash_icon += f'''data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="{icon_info['tooltip']} <br/>Click to download."'''  # type: ignore[index]
-            hash_icon += f'''/></a><br><small>Mimetype: <b>{info['mimetype']}</b></small>'''
             to_append = {
                 'total_captures': info['total_captures'],  # type: ignore[dict-item]
-                'file_type': hash_icon,
+                'file_type': hash_icon_render(tree_uuid, info['nodes'][0][0].uuid, info['mimetype'], body_hash),  # type: ignore[index,union-attr,arg-type]
                 'urls': __prepare_node_view(tree_uuid, nodes, from_popup),
                 'sha512': details_modal_button(target_modal_id='#bodyHashDetailsModal',
                                                data_remote=url_for('body_hash_details', body_hash=body_hash),
