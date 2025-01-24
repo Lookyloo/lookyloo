@@ -24,6 +24,15 @@
     "allow_auto_trigger": false,
     "admin_only": false
   },
+  "AIL": {
+    "enabled": false,
+    "url": "http://MyAIL:7000",
+    "apikey": null,
+    "timeout": 10,
+    "autosubmit": false,
+    "allow_auto_trigger": false,
+    "admin_only": true
+  },
   "SaneJS": {
     "enabled": true,
     "allow_auto_trigger": true,

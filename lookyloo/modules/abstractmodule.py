@@ -32,6 +32,11 @@ class AbstractModule(ABC):
         elif config:
             self.config = config
 
+        if 'enabled' in self.config and not self.config['enabled']:
+            self._available = False
+            self.logger.info('Not enabled.')
+            return
+
         # Make all module admin only by default. It can be changed in the config file for each module.
         self._admin_only = bool(self.config.pop('admin_only', True))
         # Default keys in all the modules (if relevant)

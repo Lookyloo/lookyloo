@@ -7,7 +7,7 @@ import time
 import logging
 import logging.config
 from collections import Counter
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from typing import Any
 
 from lacuscore import CaptureStatus as CaptureStatusCore, CaptureSettingsError
@@ -15,6 +15,7 @@ from lookyloo import Lookyloo
 from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings
+from lookyloo.modules import AIL
 from pylacus import CaptureStatus as CaptureStatusPy
 
 logging.config.dictConfig(get_config('logging'))
@@ -29,10 +30,15 @@ class Processing(AbstractManager):
 
         self.use_own_ua = get_config('generic', 'use_user_agents_users')
 
+        self.ail = AIL(config_name='AIL')
+
     def _to_run_forever(self) -> None:
         if self.use_own_ua:
             self._build_ua_file()
         self._retry_failed_enqueue()
+        # NOTE: make it more generic once we have more post processing tasks on build captures.
+        if self.ail.available:
+            self._process_built_captures()
 
     def _build_ua_file(self) -> None:
         '''Build a file in a format compatible with the capture page'''
@@ -153,6 +159,43 @@ class Processing(AbstractManager):
 
             except Exception as e:
                 self.logger.error(f'Unable to requeue {uuid}: {e}')
+
+    def _process_built_captures(self) -> None:
+        """This method triggers some post processing on recent built captures.
+        We do not want to duplicate the background build script here.
+        """
+
+        # Just check the captures of the last day
+        delta_to_process = timedelta(days=1)
+        cut_time = datetime.now() - delta_to_process
+        redis_expire = int(delta_to_process.total_seconds()) - 300
+        self.lookyloo.update_cache_index()
+        for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time):
+            if self.ail.available:
+                if self.lookyloo.redis.exists(f'bg_processed_ail|{cached.uuid}'):
+                    continue
+                self.lookyloo.redis.setex(f'bg_processed_ail|{cached.uuid}', redis_expire, 1)
+                # Submit onions captures to AIL
+                response = self.ail.capture_default_trigger(cached, force=False,
+                                                            auto_trigger=True, as_admin=True)
+                if not response.get('error') and not response.get('success'):
+                    self.logger.debug(f'[{cached.uuid}] Nothing to submit, skip')
+                    continue
+                if response.get('error'):
+                    if isinstance(response['error'], str):
+                        # general error, the module isn't available
+                        self.logger.error(f'Unable to submit capture to AIL: {response["error"]}')
+                        break
+                    if isinstance(response['error'], list):
+                        # Errors when submitting individual URLs
+                        for error in response['error']:
+                            self.logger.warning(error)
+                if response.get('success'):
+                    # if we have successful submissions, we may want to get the references later.
+                    # Store in redis for now.
+                    self.logger.info(f'[{cached.uuid}] {len(response["success"])} URLs submitted to AIL.')
+                    self.lookyloo.redis.hset(f'bg_processed_ail|{cached.uuid}|refs', mapping=response['success'])
+                    self.lookyloo.redis.expire(f'bg_processed_ail|{cached.uuid}|refs', redis_expire)
 
 
 def main() -> None:

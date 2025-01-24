@@ -13,6 +13,7 @@ from .hashlookup import HashlookupModule as Hashlookup  # noqa
 from .urlhaus import URLhaus  # noqa
 from .cloudflare import Cloudflare  # noqa
 from .circlpdns import CIRCLPDNS  # noqa
+from .ail import AIL  # noqa
 
 __all__ = [
     'FOX',
@@ -28,5 +29,6 @@ __all__ = [
     'Hashlookup',
     'URLhaus',
     'Cloudflare',
-    'CIRCLPDNS'
+    'CIRCLPDNS',
+    'AIL'
 ]

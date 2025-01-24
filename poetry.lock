@@ -2945,6 +2945,21 @@ files = [
 ]
 
 [[package]]
+name = "pyail"
+version = "0.0.8"
+description = ""
+optional = false
+python-versions = "<4.0,>=3.6"
+groups = ["main"]
+files = [
+    {file = "pyail-0.0.8-py3-none-any.whl", hash = "sha256:d8b9ba64e05983f6d01658557ff5ef8162723b552d2b80d66380d8eb71e1344f"},
+    {file = "pyail-0.0.8.tar.gz", hash = "sha256:23eaac7e4c45846e56bb46f32f4f267956b15ccaf80330e815e6e570cfb51c11"},
+]
+
+[package.dependencies]
+requests = ">=2.23.0,<3.0.0"
+
+[[package]]
 name = "pycares"
 version = "4.5.0"
 description = "Python interface for c-ares"
@@ -4864,4 +4879,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.14"
-content-hash = "548fb1e92cbd60f92769a63cf74da808da84ceeddfde95399dfdfb2ee98bad17"
+content-hash = "b90f74d2e0bba7a5719844d760c54a67222fe044ed5a50bd7134afedc0ca573a"
