@@ -172,6 +172,8 @@ class Processing(AbstractManager):
         self.lookyloo.update_cache_index()
         for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time):
             if self.ail.available:
+                if cached.error:
+                    continue
                 if self.lookyloo.redis.exists(f'bg_processed_ail|{cached.uuid}'):
                     continue
                 self.lookyloo.redis.setex(f'bg_processed_ail|{cached.uuid}', redis_expire, 1)
