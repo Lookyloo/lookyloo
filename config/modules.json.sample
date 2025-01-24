@@ -31,7 +31,8 @@
     "timeout": 10,
     "autosubmit": false,
     "allow_auto_trigger": false,
-    "admin_only": true
+    "admin_only": true,
+    "verify_tls_cert": true
   },
   "SaneJS": {
     "enabled": true,

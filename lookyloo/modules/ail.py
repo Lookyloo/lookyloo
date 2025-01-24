@@ -26,7 +26,9 @@ class AIL(AbstractModule):
             return False
 
         try:
-            self.client = PyAIL(self.config['url'], self.config['apikey'], timeout=self.config.get('timeout', 10))
+            self.client = PyAIL(self.config['url'], self.config['apikey'],
+                                ssl=self.config.get('verify_tls_cert'),
+                                timeout=self.config.get('timeout', 10))
         except Exception as e:
             self.logger.error(f'Could not connect to AIL: {e}')
             return False
