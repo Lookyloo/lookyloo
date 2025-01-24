@@ -111,6 +111,7 @@
     "Hashlookup": "Module to query Hashlookup (https://github.com/adulau/hashlookup-server). URL set to none means querying the public instance.",
     "FOX": "Submission only interface by and for CCCS",
     "Pandora": "Submission only interface for https://github.com/pandora-analysis/",
-    "CIRCLPDNS": "Module to query CIRCL Passive DNS (https://www.circl.lu/services/passive-dns/)"
+    "CIRCLPDNS": "Module to query CIRCL Passive DNS (https://www.circl.lu/services/passive-dns/)",
+    "AIL": "Module to submit URLs to AIL Framework (https://github.com/CIRCL/AIL-framework)"
   }
 }
