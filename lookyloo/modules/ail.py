@@ -57,6 +57,11 @@ class AIL(AbstractModule):
             parsed = urlparse(redirect)
             if parsed.hostname and parsed.hostname.endswith('.onion'):
                 try:
+                    response = self.client.onion_lookup(parsed.hostname)
+                    if 'error' in response:
+                        self.logger.info(f'[{parsed.hostname}]: {response.get("error")}')
+                    else:
+                        self.logger.info(f'[{parsed.hostname}]: Is already known.')
                     if r := self.client.crawl_url(redirect):
                         if 'error' in r:
                             self.logger.error(f'Error submitting {redirect} to AIL: {r.get("error")}')
