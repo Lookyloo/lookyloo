@@ -8,7 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
      "#bodyHashesModal", "#bodyHashDetailsModal",
      "#hostnamesModal", "#hostnameDetailsModal",
      "#urlsModal", "#urlDetailsModal",
-     "#urlsInPageModal"].forEach(modal => {
+     "#urlsInPageModal",
+     "#ipsModal", "#ipDetailsModal"].forEach(modal => {
         $(modal).on('show.bs.modal', function(e) {
           var button = $(e.relatedTarget);
           var modal = $(this);

@@ -230,6 +230,10 @@
                   data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button"
                   title="All resources contained in the tree">Resources</a>
 
+              <a href="#ipsModal" data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#ipsModal" role="button"
+                 title="All IPs contained in the tree">IP Addesses</a>
+
               <a href="#hostnamesModal" data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
                   data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button"
                   title="All hostnames contained in the tree">Hostnames</a>
@@ -657,6 +661,44 @@
       </div>
   </div>
 </div>
+
+<div class="modal fade" id="ipsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="ipsModalLabel">IPs in tree</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading IPs ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ipDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="ipDetailsModalLabel">Other occurrences of the resource</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading resource details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#ipsModal"
+                 data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#ipsModal" role="button">Back to capture's IPs</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
 
 <div class="modal fade" id="hostnamesModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">

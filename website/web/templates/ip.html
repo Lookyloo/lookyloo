@@ -1,0 +1,29 @@
+{% if from_popup %}
+{% extends "main.html" %}
+
+{% from 'bootstrap5/utils.html' import render_messages %}
+
+{% block title %}{{ ip }}{% endblock %}
+
+{%endif%}
+
+{% block content %}
+
+{% if from_popup %}
+<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
+{%endif%}
+
+<center>
+    <h4>{{ ip }}</h4>
+</center>
+
+<table id="ipTable" class="table table-striped" style="width:100%" data-ip="{{ip}}">
+  <thead>
+   <tr>
+     <th>Capture Time</th>
+     <th>Capture Title</th>
+     <th>Landing page</th>
+   </tr>
+  </thead>
+</table>
+{% endblock %}

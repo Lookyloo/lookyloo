@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import logging
 import re
 from collections.abc import Iterator
 
 from datetime import datetime, timedelta
+from ipaddress import IPv4Address, IPv6Address
 
 from pathlib import Path
 
@@ -71,6 +73,7 @@ class Indexing():
         p.srem('indexed_identifiers', capture_uuid)
         p.srem('indexed_categories', capture_uuid)
         p.srem('indexed_tlds', capture_uuid)
+        p.srem('indexed_ips', capture_uuid)
         for identifier_type in self.identifiers_types():
             p.srem(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
         for hash_type in self.captures_hashes_types():
@@ -93,7 +96,7 @@ class Indexing():
         p.delete(f'capture_indexes|{capture_uuid}')
         p.execute()
 
-    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool, bool, bool]:
+    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool, bool, bool, bool]:
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
@@ -103,11 +106,12 @@ class Indexing():
         p.sismember('indexed_identifiers', capture_uuid)
         p.sismember('indexed_categories', capture_uuid)
         p.sismember('indexed_tlds', capture_uuid)
+        p.sismember('indexed_ips', capture_uuid)
         # We also need to check if the hash_type are all indexed for this capture
         hash_types_indexed = all(self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid) for hash_type in self.captures_hashes_types())
         to_return: list[bool] = p.execute()
         to_return.append(hash_types_indexed)
-        # This call for sure returns a tuple of 8 booleans
+        # This call for sure returns a tuple of 9 booleans
         return tuple(to_return)  # type: ignore[return-value]
 
     def index_capture(self, uuid_to_index: str, directory: Path) -> None:
@@ -160,6 +164,9 @@ class Indexing():
                 self.logger.info(f'Indexing TLDs for {uuid_to_index}')
                 self.index_tld_capture(ct)
             if not indexed[8]:
+                self.logger.info(f'Indexing IPs for {uuid_to_index}')
+                self.index_ips_capture(ct)
+            if not indexed[9]:
                 self.logger.info(f'Indexing hash types for {uuid_to_index}')
                 self.index_capture_hashes_types(ct)
 
@@ -452,6 +459,101 @@ class Indexing():
         if not nodes:
             return None
         return capture_uuid, nodes.pop()
+
+    # ###### IPv4 & IPv6 ######
+
+    @property
+    def ipv4(self) -> set[str]:
+        return self.redis.smembers('ipv4')
+
+    @property
+    def ipv6(self) -> set[str]:
+        return self.redis.smembers('ipv6')
+
+    def index_ips_capture(self, crawled_tree: CrawledTree) -> None:
+        if self.redis.sismember('indexed_ips', crawled_tree.uuid):
+            # Do not reindex
+            return
+        self.redis.sadd('indexed_ips', crawled_tree.uuid)
+        self.logger.debug(f'Indexing IPs for {crawled_tree.uuid} ... ')
+        pipeline = self.redis.pipeline()
+
+        # Add the ips key in internal indexes set
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'ipv4')
+        pipeline.sadd(internal_index, 'ipv6')
+
+        already_indexed_global: set[IPv4Address | IPv6Address] = set()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            ip_to_index: IPv4Address | IPv6Address | None = None
+            if 'hostname_is_ip' in urlnode.features and urlnode.hostname_is_ip:
+                ip_to_index = ipaddress.ip_address(urlnode.hostname)
+            elif 'ip_address' in urlnode.features:
+                # The IP address from the HAR file, this is the one used for the connection
+                ip_to_index = urlnode.ip_address
+
+            if not ip_to_index:
+                # No IP available, skip
+                continue
+            ip_version_key = f'ipv{ip_to_index.version}'
+
+            # The IP address from the HAR file, this is the one used for the connection
+            if ip_to_index not in already_indexed_global:
+                # The IP hasn't been indexed in that run yet
+                already_indexed_global.add(ip_to_index)
+                pipeline.sadd(f'{internal_index}|{ip_version_key}', ip_to_index.compressed)
+                pipeline.sadd(ip_version_key, ip_to_index.compressed)
+                pipeline.zadd(f'{ip_version_key}|{ip_to_index.compressed}|captures',
+                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+            # Add urlnode UUID in internal index
+            pipeline.sadd(f'{internal_index}|{ip_version_key}|{ip_to_index.compressed}', urlnode.uuid)
+
+        for hostnode in crawled_tree.root_hartree.hostname_tree.traverse():
+            if 'resolved_ips' in hostnode.features:
+                for ip_version, ips in hostnode.resolved_ips.items():
+                    for ip in ips:
+                        ip_version_key = f'ip{ip_version}'
+                        if ip not in already_indexed_global:
+                            # The IP hasn't been indexed in that run yet
+                            already_indexed_global.add(ip)
+                            pipeline.sadd(f'{internal_index}|{ip_version_key}', ip)
+                            pipeline.sadd(ip_version_key, ip)
+                            pipeline.zadd(f'{ip_version_key}|{ip}|captures',
+                                          mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+                        # Add urlnodes UUIDs in internal index
+                        pipeline.sadd(f'{internal_index}|{ip_version_key}|{ip}', *[urlnode.uuid for urlnode in hostnode.urls])
+
+        pipeline.execute()
+        self.logger.debug(f'done with IPs for {crawled_tree.uuid}.')
+
+    def get_captures_ip(self, ip: str, most_recent_capture: datetime | None = None,
+                        oldest_capture: datetime | None = None,
+                        offset: int | None=None, limit: int | None=None) -> list[str]:
+        """Get all the captures for a specific IP, on a time interval starting from the most recent one.
+
+        :param ip: The IP address
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
+        return self.redis.zrevrangebyscore(f'ipv{ipaddress.ip_address(ip).version}|{ip}|captures', max_score, min_score, start=offset, num=limit)
+
+    def scan_captures_ip(self, ip: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'ipv{ipaddress.ip_address(ip).version}|{ip}|captures')
+
+    def get_captures_ip_count(self, ip: str) -> int:
+        return self.redis.zcard(f'ipv{ipaddress.ip_address(ip).version}|{ip}|captures')
+
+    def get_capture_ip_counter(self, capture_uuid: str, ip: str) -> int:
+        return self.redis.scard(f'capture_indexes|{capture_uuid}|ipv{ipaddress.ip_address(ip).version}|{ip}')
+
+    def get_capture_ip_nodes(self, capture_uuid: str, ip: str) -> set[str]:
+        if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|ipv{ipaddress.ip_address(ip).version}|{ip}'):
+            return set(url_nodes)
+        return set()
 
     # ###### URLs and Domains ######
 

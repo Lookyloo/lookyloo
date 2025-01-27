@@ -184,6 +184,27 @@
                   { data: 'urls', width: '50%', orderable: false }],
       });
   }
+  if (document.getElementById('ipsTable')) {
+      treeUUID = document.getElementById('ipsTable').dataset.treeuuid;
+      new DataTable('#ipsTable', {
+        processing: true,
+        retrieve: true,
+        searching: true,
+        drawCallback: function (settings) {
+            newTabClickListener();
+            $('[data-bs-toggle="tooltip"]').tooltip({html: true});
+        },
+        order: [[ 0, "desc" ]],
+        ajax: {
+            url: `/tables/ipsTable/${treeUUID}${window.location.search}`,
+            type: 'POST',
+            dataSrc: ""
+        },
+        columns: [{ data: 'total_captures', width: '10%' },
+                  { data: 'ip', width: '40%', orderable: false },
+                  { data: 'urls', width: '50%', orderable: false }],
+      });
+  }
   if (document.getElementById('identifiersTable')) {
       treeUUID = document.getElementById('identifiersTable').dataset.treeuuid;
       new DataTable('#identifiersTable', {
@@ -238,6 +259,27 @@
             { data: 'landing_page', width: '40%' }
         ],
       });
+  }
+
+  if (document.getElementById('ipTable')) {
+      hostname = document.getElementById('ipTable').dataset.ip;
+      new DataTable('#ipTable', {
+        processing: true,
+        serverSide: true,
+        retrieve: true,
+        ordering: false,
+        searching: true,
+        drawCallback: function (settings) { newTabClickListener() },
+        ajax: {
+           url: `/tables/ipTable/${hostname}${window.location.search}`,
+           type: 'POST'
+        },
+        columns : [
+           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+           { data: 'capture_title', width: '40%' },
+           { data: 'landing_page', width: '40%' }
+        ],
+    });
   }
 
   if (document.getElementById('hostnameTable')) {

@@ -7,6 +7,7 @@ import calendar
 import functools
 import hashlib
 import http
+import ipaddress
 import json
 import logging
 import logging.config
@@ -454,6 +455,50 @@ def get_hostname_investigator(hostname: str, offset: int | None=None, limit: int
                 continue
         captures.append((capture_uuid, capture_title, landing_page, capture_ts, nodes_info))
     return total, captures
+
+
+def get_ip_investigator(ip: str, offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, str, datetime, list[tuple[str, str]]]]]:
+    '''Returns all the captures loading content from that ip, used in the web interface.'''
+    total = get_indexing(flask_login.current_user).get_captures_ip_count(ip)
+    if search:
+        cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
+            [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_ip(ip)], cached_captures_only=False) if capture.search(search)]
+    else:
+        cached_captures = lookyloo.sorted_capture_cache(
+            get_indexing(flask_login.current_user).get_captures_ip(ip=ip, offset=offset, limit=limit), cached_captures_only=False)
+    _captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_ip_nodes(cache.uuid, ip)) for cache in cached_captures]
+    captures = []
+    for capture_uuid, capture_title, landing_page, capture_ts, nodes in _captures:
+        nodes_info: list[tuple[str, str]] = []
+        for urlnode_uuid in nodes:
+            try:
+                urlnode = lookyloo.get_urlnode_from_tree(capture_uuid, urlnode_uuid)
+                nodes_info.append((urlnode.name, urlnode_uuid))
+            except IndexError:
+                continue
+        captures.append((capture_uuid, capture_title, landing_page, capture_ts, nodes_info))
+    return total, captures
+
+
+def get_all_ips(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode]]]:
+    ct = lookyloo.get_crawled_tree(capture_uuid)
+    to_return: dict[str, dict[str, list[URLNode] | int]] = defaultdict()
+    for urlnode in ct.root_hartree.url_tree.traverse():
+        ip: ipaddress.IPv4Address | ipaddress.IPv6Address | None = None
+        if 'hostname_is_ip' in urlnode.features and urlnode.hostname_is_ip:
+            ip = ipaddress.ip_address(urlnode.hostname)
+        elif 'ip_address' in urlnode.features:
+            ip = urlnode.ip_address
+
+        if not ip:
+            continue
+
+        captures_count = get_indexing(flask_login.current_user).get_captures_ip_count(ip.compressed)
+        # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
+        if ip.compressed not in to_return:
+            to_return[ip.compressed] = {'total_captures': captures_count, 'nodes': []}
+        to_return[ip.compressed]['nodes'].append(urlnode)  # type: ignore[union-attr]
+    return to_return
 
 
 def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode]]]:
@@ -1371,6 +1416,11 @@ def tree_body_hashes(tree_uuid: str) -> str:
     return render_template('tree_body_hashes.html', tree_uuid=tree_uuid)
 
 
+@app.route('/tree/<string:tree_uuid>/ips', methods=['GET'])
+def tree_ips(tree_uuid: str) -> str:
+    return render_template('tree_ips.html', tree_uuid=tree_uuid)
+
+
 @app.route('/tree/<string:tree_uuid>/hostnames', methods=['GET'])
 def tree_hostnames(tree_uuid: str) -> str:
     return render_template('tree_hostnames.html', tree_uuid=tree_uuid)
@@ -1861,6 +1911,12 @@ def hostname_details(hostname: str) -> str:
     return render_template('hostname.html', hostname=hostname, from_popup=from_popup)
 
 
+@app.route('/ips/<string:ip>', methods=['GET'])
+def ip_details(ip: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
+    return render_template('ip.html', ip=ip, from_popup=from_popup)
+
+
 @app.route('/stats', methods=['GET'])
 def statsfull() -> str:
     stats = lookyloo.get_stats()
@@ -2220,6 +2276,21 @@ def post_table(table_name: str, value: str) -> Response:
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
+    if table_name == 'ipTable':
+        total, captures = get_ip_investigator(value.strip(), offset=start, limit=length, search=search)
+        if search and start is not None and length is not None:
+            total_filtered = len(captures)
+            captures = captures[start:start + length]
+        prepared_captures = []
+        for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            to_append = {
+                'capture_time': capture_time.isoformat(),
+                'capture_title': f'{__prepare_title_in_modal(capture_uuid, title, from_popup)}</br>{__prepare_node_view(capture_uuid, nodes, from_popup)}',
+                'landing_page': __prepare_landings_in_modal(landing_page)
+            }
+            prepared_captures.append(to_append)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
+
     if table_name == 'hostnameTable':
         total, captures = get_hostname_investigator(value.strip(), offset=start, limit=length, search=search)
         if search and start is not None and length is not None:
@@ -2335,14 +2406,29 @@ def post_table(table_name: str, value: str) -> Response:
                 prepared_captures.append(to_append)
         return jsonify(prepared_captures)
 
+    if table_name == 'ipsTable':
+        tree_uuid = value.strip()
+        prepared_captures = []
+        for _ip, _info in get_all_ips(tree_uuid).items():  # type: ignore[assignment]
+            nodes = [(node.name, node.uuid) for node in _info['nodes']]  # type: ignore[union-attr]
+            to_append = {
+                'total_captures': _info['total_captures'],  # type: ignore[dict-item]
+                'ip': details_modal_button(target_modal_id='#ipDetailsModal',
+                                           data_remote=url_for('ip_details', ip=_ip),
+                                           button_string=shorten_string(_ip, 100, with_title=True)),
+                'urls': __prepare_node_view(tree_uuid, nodes, from_popup)
+            }
+            prepared_captures.append(to_append)
+        return jsonify(prepared_captures)
+
     if table_name == 'bodyHashesTable':
         tree_uuid = value.strip()
         prepared_captures = []
-        for body_hash, info in get_all_body_hashes(tree_uuid).items():
-            nodes = [(node[0].name, node[0].uuid) for node in info['nodes']]  # type: ignore[union-attr]
+        for body_hash, _bh_info in get_all_body_hashes(tree_uuid).items():
+            nodes = [(node[0].name, node[0].uuid) for node in _bh_info['nodes']]  # type: ignore[union-attr]
             to_append = {
-                'total_captures': info['total_captures'],  # type: ignore[dict-item]
-                'file_type': hash_icon_render(tree_uuid, info['nodes'][0][0].uuid, info['mimetype'], body_hash),  # type: ignore[index,union-attr,arg-type]
+                'total_captures': _bh_info['total_captures'],  # type: ignore[dict-item]
+                'file_type': hash_icon_render(tree_uuid, _bh_info['nodes'][0][0].uuid, _bh_info['mimetype'], body_hash),  # type: ignore[index,union-attr,arg-type]
                 'urls': __prepare_node_view(tree_uuid, nodes, from_popup),
                 'sha512': details_modal_button(target_modal_id='#bodyHashDetailsModal',
                                                data_remote=url_for('body_hash_details', body_hash=body_hash),
