@@ -48,7 +48,13 @@ class BackgroundIndexer(AbstractManager):
                     # Capture unindexed
                     continue
             __counter_shutdown += 1
-            self.indexing.index_capture(uuid, Path(d))
+            path = Path(d)
+            try:
+                self.indexing.index_capture(uuid, path)
+            except Exception as e:
+                self.logger.error(f'Error while indexing {uuid}: {e}')
+                if (path / 'tree.pickle.gz').exists():
+                    (path / 'tree.pickle.gz').unlink()
             if __counter_shutdown % 10 and self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 break
