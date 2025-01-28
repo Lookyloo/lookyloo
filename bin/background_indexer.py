@@ -10,6 +10,7 @@ from redis import Redis
 
 from lookyloo import Indexing
 from lookyloo.default import AbstractManager, get_config, get_socket_path
+from lookyloo.helpers import remove_pickle_tree
 
 
 logging.config.dictConfig(get_config('logging'))
@@ -53,8 +54,7 @@ class BackgroundIndexer(AbstractManager):
                 self.indexing.index_capture(uuid, path)
             except Exception as e:
                 self.logger.error(f'Error while indexing {uuid}: {e}')
-                if (path / 'tree.pickle.gz').exists():
-                    (path / 'tree.pickle.gz').unlink()
+                remove_pickle_tree(path)
             if __counter_shutdown % 10 and self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 break

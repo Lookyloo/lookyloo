@@ -47,7 +47,8 @@ from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable
 from lookyloo.helpers import (UserAgents, load_cookies,
                               load_user_config,
                               get_taxonomies,
-                              mimetype_to_generic
+                              mimetype_to_generic,
+                              remove_pickle_tree
                               )
 
 from zoneinfo import available_timezones
@@ -1288,7 +1289,11 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
 def trigger_indexing(tree_uuid: str) -> WerkzeugResponse:
     cache = lookyloo.capture_cache(tree_uuid)
     if cache and hasattr(cache, 'capture_dir'):
-        get_indexing(flask_login.current_user).index_capture(tree_uuid, cache.capture_dir)
+        try:
+            get_indexing(flask_login.current_user).index_capture(tree_uuid, cache.capture_dir)
+        except Exception as e:
+            flash(f"Unable to index {tree_uuid}: {e}", 'error')
+            remove_pickle_tree(cache.capture_dir)
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
