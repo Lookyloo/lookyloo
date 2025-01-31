@@ -49,19 +49,16 @@ class CIRCLPDNS(AbstractModule):
         '''Run the module on all the nodes up to the final redirect'''
         if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
             return error
-
-        if cache.url.startswith('file'):
-            return {'error': 'CIRCL Passive DNS does not support files.'}
-
-        if cache.redirects:
-            hostname = urlparse(cache.redirects[-1]).hostname
-        else:
-            hostname = urlparse(cache.url).hostname
-
-        if not hostname:
-            return {'error': 'No hostname found.'}
-
-        self.__pdns_lookup(hostname, force)
+        alreay_done = set()
+        for redirect in cache.redirects:
+            parsed = urlparse(redirect)
+            if parsed.scheme not in ['http', 'https']:
+                continue
+            if hostname := urlparse(redirect).hostname:
+                if hostname in alreay_done:
+                    continue
+                self.__pdns_lookup(hostname, force)
+                alreay_done.add(hostname)
         return {'success': 'Module triggered'}
 
     def __pdns_lookup(self, hostname: str, force: bool=False) -> None:

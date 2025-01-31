@@ -1,48 +1,27 @@
 <div>
-{% if not circl_pdns %}
+{% if not circl_pdns_queries %}
   No historical data available
 {%else%}
-  {% if circl_pdns %}
-    <script type="text/javascript" nonce="{{ csp_nonce() }}">
-      new DataTable('#CIRCL_pdns_table', {
-        order: [[ 1, "desc" ]],
-        autoWidth: false,
-        columnDefs: [{ width: '15%', targets: 0 },
-                     { width: '15%', targets: 1 },
-                     { width: '10%', targets: 2 },
-                     { width: '20%', targets: 3 },
-                     { width: '40%', targets: 4 }]
-        });
-    </script>
-
+  {% if circl_pdns_queries %}
     <center>
       <h1 class="display-4">CIRCL Passive DNS
         <a href='https://www.circl.lu/services/passive-dns/' target="_blank">
           <div class="help-tip" title="Click for more details" style="cursor: pointer;"></div>
         </a>
       </h1>
-    {% for query, responses in circl_pdns.items() if responses %}
+    {% for query in circl_pdns_queries %}
     <div>
       <h3>{{query}}</h3>
-      <table id= "CIRCL_pdns_table" class="table table-striped" style="width:100%">
+      <table id="CIRCL_pdns_table_{{query | replace('.', '_')}}" name="CIRCL_pdns_table" class="table table-striped" style="width:100%" data-query="{{query}}">
         <thead>
           <tr>
-            <th class="col-sm-2" scope="col">First seen</th>
-            <th class="col-sm-2" scope="col">Last seen</th>
-            <th class="col-sm-1" scope="col">RR Type</th>
-            <th class="col-sm-2" scope="col">R Data</th>
-            <th class="col-sm-2" scope="col">RR Name</th>
-        </thead>
-        <tbody>
-          {%for response in responses %}
-          <tr>
-            <td>{{response.time_first_datetime}}</td>
-            <td>{{response.time_last_datetime}}</td>
-            <td>{{response.rrtype}}</td>
-            <td class="text-break">{{response.rdata}}</td>
-            <td class="text-break">{{response.rrname}}</td>
+            <th>First seen</th>
+            <th>Last seen</th>
+            <th>RR Type</th>
+            <th class="text-break">R Data</th>
+            <th class="text-break">RR Name</th>
           </tr>
-          {% endfor %}
+        </thead>
       </table>
     </div>
     {%endfor%}

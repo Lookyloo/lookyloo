@@ -440,27 +440,6 @@ class Lookyloo():
                     to_return['urlscan']['result'] = result
         return to_return
 
-    def get_historical_lookups(self, capture_uuid: str, /, force: bool, auto_trigger: bool, as_admin: bool) -> dict[str, Any]:
-        # this method is only trigered when the user wants to get more details about the capture
-        # by looking at Passive DNS systems, check if there are hits in the current capture
-        # in another one and things like that. The trigger_modules method is for getting
-        # information about the current status of the capture in other systems.
-        cache = self.capture_cache(capture_uuid)
-        if not cache:
-            self.logger.warning(f'Unable to get the modules responses unless the capture {capture_uuid} is cached')
-            return {}
-        to_return: dict[str, Any] = defaultdict(dict)
-        if self.circl_pdns.available:
-            self.circl_pdns.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
-            if hasattr(cache, 'redirects') and cache.redirects:
-                hostname = urlparse(cache.redirects[-1]).hostname
-            else:
-                hostname = urlparse(cache.url).hostname
-            if hostname:
-                if _circl_entries := self.circl_pdns.get_passivedns(hostname):
-                    to_return['circl_pdns'][hostname] = _circl_entries
-        return to_return
-
     def hide_capture(self, capture_uuid: str, /) -> None:
         """Add the capture in the hidden pool (not shown on the front page)
         NOTE: it won't remove the correlations until they are rebuilt.

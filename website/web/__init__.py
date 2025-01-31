@@ -791,9 +791,15 @@ def trigger_modules(tree_uuid: str) -> WerkzeugResponse | str | Response:
 def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
     force = True if (request.args.get('force') and request.args.get('force') == 'True') else False
     auto_trigger = True if (request.args.get('auto_trigger') and request.args.get('auto_trigger') == 'True') else False
-    data = lookyloo.get_historical_lookups(tree_uuid, force=force, auto_trigger=auto_trigger, as_admin=flask_login.current_user.is_authenticated)
-    return render_template('historical_lookups.html', tree_uuid=tree_uuid,
-                           circl_pdns=data.get('circl_pdns'))
+    circl_pdns_queries: set[str | None] = set()
+    if cache := lookyloo.capture_cache(tree_uuid):
+        triggered = lookyloo.circl_pdns.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger,
+                                                                as_admin=flask_login.current_user.is_authenticated)
+        if 'error' in triggered:
+            flash(f'Unable to trigger the historical lookup: {triggered["error"]}', 'error')
+        else:
+            circl_pdns_queries = {urlparse(url).hostname for url in cache.redirects if urlparse(url).scheme in ['http', 'https'] and urlparse(url).hostname is not None}
+    return render_template('historical_lookups.html', tree_uuid=tree_uuid, circl_pdns_queries=circl_pdns_queries)
 
 
 @app.route('/tree/<string:tree_uuid>/categories_capture', methods=['GET', 'POST'])
@@ -2441,6 +2447,27 @@ def post_table(table_name: str, value: str) -> Response:
             }
             prepared_captures.append(to_append)
         return jsonify(prepared_captures)
+
+    if table_name == "CIRCL_pdns_table":
+        if not lookyloo.circl_pdns.available:
+            return jsonify({'error': 'CIRCL PDNS is not available.'})
+        query = value.strip()
+        prepared_records = []
+        if records := lookyloo.circl_pdns.get_passivedns(query):
+            for record in records:
+                if isinstance(record.rdata, list):
+                    data = ', '.join(record.rdata)
+                else:
+                    data = record.rdata
+                to_append = {
+                    'time_first': record.time_first_datetime.isoformat(),
+                    'time_last': record.time_last_datetime.isoformat(),
+                    'rrtype': record.rrtype,
+                    'rdata': data,
+                    'rrname': record.rrname
+                }
+                prepared_records.append(to_append)
+        return jsonify(prepared_records)
 
     return jsonify({})
 

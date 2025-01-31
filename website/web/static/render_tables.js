@@ -344,6 +344,32 @@
         ],
       });
   }
+ //It is allowed to have more than one table on the same page
+  if (document.getElementsByName('CIRCL_pdns_table')) {
+      document.getElementsByName('CIRCL_pdns_table').forEach(function(table) {
+        query = table.dataset.query;
+        new DataTable(`#${table.id}`, {
+          processing: true,
+          retrieve: true,
+          ordering: true,
+          searching: true,
+          drawCallback: function (settings) { newTabClickListener() },
+          order: [[ 1, "desc" ]],
+          ajax: {
+             url: `/tables/CIRCL_pdns_table/${query}${window.location.search}`,
+             type: 'POST',
+             dataSrc: ""
+          },
+          columns : [
+             { data: 'time_first', width: '15%', render: DataTable.render.datetime_with_tz() },
+             { data: 'time_last', width: '15%', render: DataTable.render.datetime_with_tz() },
+             { data: 'rrtype', width: '10%' },
+             { data: 'rdata', width: '20%' },
+             { data: 'rrname', width: '40%' }
+          ],
+        });
+      })
+  }
   if (document.getElementById('category_table')) {
       let cat_table = new DataTable('#category_table', {
         retrieve: true,
