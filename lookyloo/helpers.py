@@ -215,9 +215,19 @@ class UserAgents:
 
     @property
     def user_agents(self) -> dict[str, dict[str, list[str]]]:
-        ua_files_path = sorted(self.path.glob('**/*.json'), reverse=True)
-        if ua_files_path[0] != self.most_recent_ua_path:
-            self._load_newest_ua_file(ua_files_path[0])
+        # Try to get todays file. only use glob if it doesn't exist.
+        today = date.today()
+        today_file = self.path / str(today.year) / f"{today.month:02}" / f'{today.year}-{today.month:02}-{today.day}.json'
+        yesterday_file = self.path / str(today.year) / f"{today.month:02}" / f'{today.year}-{today.month:02}-{today.day - 1}.json'
+        if today_file.exists():
+            to_check = today_file
+        elif yesterday_file.exists():
+            to_check = yesterday_file
+        else:
+            to_check = sorted(self.path.glob('**/*.json'), reverse=True)[0]
+
+        if to_check != self.most_recent_ua_path:
+            self._load_newest_ua_file(to_check)
         return self.most_recent_uas
 
     @property
