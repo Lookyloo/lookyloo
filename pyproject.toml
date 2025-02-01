@@ -62,7 +62,7 @@ pyphishtanklookup = "^1.4.1"
 Flask-Cors = "^5.0.0"
 pyhashlookup = "^1.2.5"
 lief = "^0.16.2"
-ua-parser = "^1.0.0"
+ua-parser = {extras = ["regex"], version = "^1.0.1"}
 Flask-Login = "^0.6.3"
 har2tree = "^1.27.7"
 werkzeug = "^3.1.3"
