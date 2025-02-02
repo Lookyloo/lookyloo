@@ -497,7 +497,7 @@ def get_all_ips(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode]
         captures_count = get_indexing(flask_login.current_user).get_captures_ip_count(ip.compressed)
         # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
         if ip.compressed not in to_return:
-            to_return[ip.compressed] = {'total_captures': captures_count, 'nodes': []}
+            to_return[ip.compressed] = {'total_captures': captures_count, 'hostname': urlnode.hostname, 'nodes': []}
         to_return[ip.compressed]['nodes'].append(urlnode)  # type: ignore[union-attr]
     return to_return
 
@@ -1585,6 +1585,8 @@ def search() -> str | Response | WerkzeugResponse:
         return redirect(url_for('url_details', from_popup=True, url=quoted_url))
     if request.form.get('hostname'):
         return redirect(url_for('hostname_details', from_popup=True, hostname=request.form.get('hostname')))
+    if request.form.get('ip'):
+        return redirect(url_for('ip_details', from_popup=True, ip=request.form.get('ip')))
     if request.form.get('ressource'):
         return redirect(url_for('body_hash_details', from_popup=True, body_hash=request.form.get('ressource')))
     if request.form.get('cookie'):
@@ -2153,6 +2155,7 @@ def post_table(table_name: str, value: str) -> Response:
     length = request.form.get('length', type=int)
     search = request.form.get('search[value]', type=str)
     captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, list[tuple[str, str]]]] | list[tuple[str, str, str, datetime]]
+    to_append: dict[str, int | list[URLNode] | str | list[tuple[URLNode, bool]]]
     if table_name == 'indexTable':
         show_error, category = get_index_params(request)
         show_hidden = (value == "hidden")
@@ -2187,9 +2190,9 @@ def post_table(table_name: str, value: str) -> Response:
                 to_append['redirects'] = f"""<p title="{cached.redirects[0]}">{shorten_string(cached.redirects[0], 50, with_title=True)}"""
                 if len(cached.redirects) > 1:
                     for counter, r in enumerate(cached.redirects[1:]):
-                        to_append['redirects'] += f"""<br>{"&nbsp;" * (counter + 1) * 2}↪{shorten_string(r, 50, with_title=True)}"""
-                to_append['redirects'] += '</p>'
-                to_append['redirects'] += f"""<a style="float: right;" href="{url_for('redirects', tree_uuid=cached.uuid)}">Download redirects</a>"""
+                        to_append['redirects'] += f"""<br>{"&nbsp;" * (counter + 1) * 2}↪{shorten_string(r, 50, with_title=True)}"""  # type: ignore[operator]
+                to_append['redirects'] += '</p>'  # type: ignore[operator]
+                to_append['redirects'] += f"""<a style="float: right;" href="{url_for('redirects', tree_uuid=cached.uuid)}">Download redirects</a>"""  # type: ignore[operator]
             prepared_captures.append(to_append)
         return jsonify(prepared_captures)
 
@@ -2339,7 +2342,7 @@ def post_table(table_name: str, value: str) -> Response:
         prepared_captures = []
         for url, _info in get_all_urls(tree_uuid).items():
             to_append = {
-                'total_captures': _info['total_captures'],  # type: ignore[dict-item]
+                'total_captures': _info['total_captures'],
                 'url': details_modal_button(target_modal_id='#urlDetailsModal',
                                             data_remote=url_for('url_details', url=_info['quoted_url']),
                                             button_string=shorten_string(url, 100, with_title=True))
@@ -2354,7 +2357,7 @@ def post_table(table_name: str, value: str) -> Response:
             for identifier in identifiers:
                 nb_captures = get_indexing(flask_login.current_user).get_captures_identifier_count(id_type, identifier)
                 to_append = {
-                    'total_captures': nb_captures,  # type: ignore[dict-item]
+                    'total_captures': nb_captures,
                     'identifier': details_modal_button(target_modal_id='#identifierDetailsModal',
                                                        data_remote=url_for('identifier_details', identifier_type=id_type, identifier=identifier),
                                                        button_string=shorten_string(identifier, 100, with_title=True)),
@@ -2369,7 +2372,7 @@ def post_table(table_name: str, value: str) -> Response:
         for _hostname, _info in get_all_hostnames(tree_uuid).items():  # type: ignore[assignment]
             nodes = [(node.name, node.uuid) for node in _info['nodes']]  # type: ignore[union-attr]
             to_append = {
-                'total_captures': _info['total_captures'],  # type: ignore[dict-item]
+                'total_captures': _info['total_captures'],
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_hostname),
                                                  button_string=shorten_string(_hostname, 100, with_title=True)),
@@ -2383,7 +2386,7 @@ def post_table(table_name: str, value: str) -> Response:
         prepared_captures = []
         for hash_type, h in get_indexing(flask_login.current_user).get_hashes_types_capture(tree_uuid).items():
             to_append = {
-                'total_captures': get_indexing(flask_login.current_user).get_captures_hash_type_count(hash_type, h),  # type: ignore[dict-item]
+                'total_captures': get_indexing(flask_login.current_user).get_captures_hash_type_count(hash_type, h),
                 'capture_hash': details_modal_button(target_modal_id='#captureHashesTypesDetailsModal',
                                                      data_remote=url_for('capture_hash_details', hash_type=hash_type, h=h),
                                                      button_string=shorten_string(h, 100, with_title=True)),
@@ -2407,7 +2410,7 @@ def post_table(table_name: str, value: str) -> Response:
                 favicon_sha512 = hashlib.sha512(favicon).hexdigest()
                 b64_favicon = base64.b64encode(favicon).decode()
                 to_append = {
-                    'total_captures': get_indexing(flask_login.current_user).get_captures_favicon_count(favicon_sha512),  # type: ignore[dict-item]
+                    'total_captures': get_indexing(flask_login.current_user).get_captures_favicon_count(favicon_sha512),
                     'favicon': details_modal_button(target_modal_id='#faviconDetailsModal', data_remote=url_for('favicon_detail', favicon_sha512=favicon_sha512),
                                                     button_string=f'''<img src="data:{mimetype};base64,{b64_favicon}" style="width:32px;height:32px;"
                                                                            title="Click to see other captures with the same favicon"/>'''),
@@ -2424,10 +2427,11 @@ def post_table(table_name: str, value: str) -> Response:
         for _ip, _info in get_all_ips(tree_uuid).items():  # type: ignore[assignment]
             nodes = [(node.name, node.uuid) for node in _info['nodes']]  # type: ignore[union-attr]
             to_append = {
-                'total_captures': _info['total_captures'],  # type: ignore[dict-item]
+                'total_captures': _info['total_captures'],
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
                                            data_remote=url_for('ip_details', ip=_ip),
                                            button_string=shorten_string(_ip, 100, with_title=True)),
+                'hostname': _info['hostname'],
                 'urls': __prepare_node_view(tree_uuid, nodes, from_popup)
             }
             prepared_captures.append(to_append)
@@ -2439,7 +2443,7 @@ def post_table(table_name: str, value: str) -> Response:
         for body_hash, _bh_info in get_all_body_hashes(tree_uuid).items():
             nodes = [(node[0].name, node[0].uuid) for node in _bh_info['nodes']]  # type: ignore[union-attr]
             to_append = {
-                'total_captures': _bh_info['total_captures'],  # type: ignore[dict-item]
+                'total_captures': _bh_info['total_captures'],
                 'file_type': hash_icon_render(tree_uuid, _bh_info['nodes'][0][0].uuid, _bh_info['mimetype'], body_hash),  # type: ignore[index,union-attr,arg-type]
                 'urls': __prepare_node_view(tree_uuid, nodes, from_popup),
                 'sha512': details_modal_button(target_modal_id='#bodyHashDetailsModal',
