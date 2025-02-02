@@ -53,7 +53,7 @@ class BackgroundIndexer(AbstractManager):
             try:
                 self.indexing.index_capture(uuid, path)
             except Exception as e:
-                self.logger.error(f'Error while indexing {uuid}: {e}')
+                self.logger.warning(f'Error while indexing {uuid}: {e}')
                 remove_pickle_tree(path)
             if __counter_shutdown % 10 and self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
