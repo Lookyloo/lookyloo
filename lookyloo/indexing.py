@@ -18,7 +18,7 @@ from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
 from .exceptions import NoValidHarFile, TreeNeedsRebuild
-from .helpers import load_pickle_tree
+from .helpers import load_pickle_tree, remove_pickle_tree
 from .default import get_socket_path, get_config
 
 
@@ -173,7 +173,8 @@ class Indexing():
         except (TreeNeedsRebuild, NoValidHarFile) as e:
             self.logger.warning(f'Error loading the pickle for {uuid_to_index}: {e}')
         except Exception as e:
-            self.logger.exception(f'Error during indexing for {uuid_to_index}: {e}')
+            self.logger.error(f'Error during indexing for {uuid_to_index}, recreate pickle: {e}')
+            remove_pickle_tree(directory)
         finally:
             self.indexing_done(uuid_to_index)
 
