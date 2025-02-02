@@ -37,14 +37,38 @@
     </a>
   </center>
   <br>
-  <div class="accordion" id="accordionDNS">
-  <div class="accordion-item">
+  <div class="accordion" id="accordionHostnode">
+   <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePDNS" aria-expanded="false" aria-controls="collapsepDNS">
+        CIRCL Passive DNS details for this hostname
+      </button>
+    </h2>
+    <div id="collapsePDNS" class="accordion-collapse collapse" data-bs-parent="#accordionHostnode">
+      <div class="accordion-body">
+          <table id="CIRCL_pdns_table" name="CIRCL_pdns_table"
+               class="table table-striped"
+               style="width:100%" data-query="{{hostnode.name}}">
+           <thead>
+            <tr>
+              <th>First seen</th>
+              <th>Last seen</th>
+              <th>RR Type</th>
+              <th class="text-break">R Data</th>
+              <th class="text-break">RR Name</th>
+            </tr>
+           </thead>
+          </table>
+      </div>
+    </div>
+   </div>
+   <div class="accordion-item">
     <h2 class="accordion-header">
       <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDNS" aria-expanded="false" aria-controls="collapseDNS">
         DNS details from standalone queries
       </button>
     </h2>
-    <div id="collapseDNS" class="accordion-collapse collapse" data-bs-parent="#accordionDNS">
+    <div id="collapseDNS" class="accordion-collapse collapse" data-bs-parent="#accordionHostnode">
       <div class="accordion-body">
       {% if hostnode.cname %}
         <h5>Chain of CNAME(s) for this domain:</h5>
@@ -116,6 +140,7 @@
       {% endif %}
       </div>
     </div>
+   </div>
   </div>
   <br>
   {# Start list of URLs #}

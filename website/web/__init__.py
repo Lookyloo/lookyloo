@@ -789,6 +789,7 @@ def trigger_modules(tree_uuid: str) -> WerkzeugResponse | str | Response:
 
 @app.route('/tree/<string:tree_uuid>/historical_lookups', methods=['GET'])
 def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     force = True if (request.args.get('force') and request.args.get('force') == 'True') else False
     auto_trigger = True if (request.args.get('auto_trigger') and request.args.get('auto_trigger') == 'True') else False
     circl_pdns_queries: set[str | None] = set()
@@ -799,7 +800,7 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
             flash(f'Unable to trigger the historical lookup: {triggered["error"]}', 'error')
         else:
             circl_pdns_queries = {urlparse(url).hostname for url in cache.redirects if urlparse(url).scheme in ['http', 'https'] and urlparse(url).hostname is not None}
-    return render_template('historical_lookups.html', tree_uuid=tree_uuid, circl_pdns_queries=circl_pdns_queries)
+    return render_template('historical_lookups.html', tree_uuid=tree_uuid, circl_pdns_queries=circl_pdns_queries, from_popup=from_popup)
 
 
 @app.route('/tree/<string:tree_uuid>/categories_capture', methods=['GET', 'POST'])

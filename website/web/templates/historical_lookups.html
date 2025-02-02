@@ -12,7 +12,9 @@
     {% for query in circl_pdns_queries %}
     <div>
       <h3>{{query}}</h3>
-      <table id="CIRCL_pdns_table_{{query | replace('.', '_')}}" name="CIRCL_pdns_table" class="table table-striped" style="width:100%" data-query="{{query}}">
+      <table id="CIRCL_pdns_table_{{query | replace('.', '_')}}" name="CIRCL_pdns_table"
+             class="table table-striped"
+             style="width:100%" data-query="{{query}}">
         <thead>
           <tr>
             <th>First seen</th>
