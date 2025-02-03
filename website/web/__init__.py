@@ -2457,8 +2457,9 @@ def post_table(table_name: str, value: str) -> Response:
         if not lookyloo.circl_pdns.available:
             return jsonify({'error': 'CIRCL PDNS is not available.'})
         query = value.strip()
+        live = request.form.get('live', type=bool)
         prepared_records = []
-        if records := lookyloo.circl_pdns.get_passivedns(query):
+        if records := lookyloo.circl_pdns.get_passivedns(query, live=live):
             for record in records:
                 if isinstance(record.rdata, list):
                     data = ', '.join(record.rdata)

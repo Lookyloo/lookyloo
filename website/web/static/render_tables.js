@@ -359,7 +359,8 @@
           ajax: {
              url: `/tables/CIRCL_pdns_table/${query}${window.location.search}`,
              type: 'POST',
-             dataSrc: ""
+             dataSrc: "",
+             data: {live: Boolean(table.dataset.live)}
           },
           columns : [
              { data: 'time_first', width: '15%', render: DataTable.render.datetime_with_tz() },
