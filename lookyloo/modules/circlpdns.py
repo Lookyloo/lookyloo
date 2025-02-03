@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 from pypdns import PyPDNS, PDNSRecord
 
 from ..default import ConfigError, get_homedir
-from ..helpers import get_cache_directory
+from ..helpers import get_cache_directory, get_useragent_for_requests
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
@@ -26,13 +26,23 @@ class CIRCLPDNS(AbstractModule):
             self.logger.info('Missing credentials.')
             return False
 
-        self.pypdns = PyPDNS(basic_auth=(self.config['user'], self.config['password']))
+        self.pypdns = PyPDNS(basic_auth=(self.config['user'],
+                                         self.config['password']),
+                             useragent=get_useragent_for_requests(),
+                             # Disable active query because it should already have been done.
+                             disable_active_query=True)
 
         self.storage_dir_pypdns = get_homedir() / 'circl_pypdns'
         self.storage_dir_pypdns.mkdir(parents=True, exist_ok=True)
         return True
 
-    def get_passivedns(self, query: str) -> list[PDNSRecord] | None:
+    def _get_live_passivedns(self, query: str) -> list[PDNSRecord]:
+        # No cache, just get the records.
+        return [entry for entry in self.pypdns.iter_query(query) if isinstance(entry, PDNSRecord)]
+
+    def get_passivedns(self, query: str, live: bool=False) -> list[PDNSRecord] | None:
+        if live:
+            return self._get_live_passivedns(query)
         # The query can be IP or Hostname. For now, we only do it on domains.
         url_storage_dir = get_cache_directory(self.storage_dir_pypdns, query, 'pdns')
         if not url_storage_dir.exists():
