@@ -17,6 +17,32 @@
     <h4>{{ hostname }}</h4>
 </center>
 
+<div class="accordion" id="accordionDetails">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePDNS" aria-expanded="false" aria-controls="collapsePDNS">
+                 CIRCL Passive DNS details for this Hostname
+            </button>
+        </h2>
+        <div id="collapsePDNS" class="accordion-collapse collapse" aria-labelledby="headingPDNS" data-bs-parent="#accordionDetails">
+            <div class="accordion-body">
+                <table id="CIRCL_pdns_table" name="CIRCL_pdns_table" class="table table-striped"
+                       data-query="{{hostname}}" data-live=true>
+                    <thead>
+                        <tr>
+                            <th>First Seen</th>
+                            <th>Last Seen</th>
+                            <th>RR Type</th>
+                            <th class="text-break">R Data</th>
+                            <th class="text-break">RR Name</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 <table id="hostnameTable" class="table table-striped" style="width:100%" data-hostname="{{hostname}}">
   <thead>
    <tr>

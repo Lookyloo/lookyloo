@@ -508,10 +508,17 @@ def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, int | list[UR
     for node in ct.root_hartree.url_tree.traverse():
         if not node.hostname:
             continue
+
+        ip: ipaddress.IPv4Address | ipaddress.IPv6Address | None = None
+        if 'hostname_is_ip' in node.features and node.hostname_is_ip:
+            ip = ipaddress.ip_address(node.hostname)
+        elif 'ip_address' in node.features:
+            ip = node.ip_address
+
         captures_count = get_indexing(flask_login.current_user).get_captures_hostname_count(node.hostname)
         # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
         if node.hostname not in to_return:
-            to_return[node.hostname] = {'total_captures': captures_count, 'nodes': []}
+            to_return[node.hostname] = {'total_captures': captures_count, 'nodes': [], 'ip': ip.compressed if ip else "N/A"}
         to_return[node.hostname]['nodes'].append(node)  # type: ignore[union-attr]
     return to_return
 
@@ -2376,6 +2383,9 @@ def post_table(table_name: str, value: str) -> Response:
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_hostname),
                                                  button_string=shorten_string(_hostname, 100, with_title=True)),
+                'ip': details_modal_button(target_modal_id='#ipDetailsModal',
+                                           data_remote=url_for('ip_details', ip=_info['ip']),
+                                           button_string=shorten_string(_info['ip'], 100, with_title=True)),
                 'urls': __prepare_node_view(tree_uuid, nodes, from_popup)
             }
             prepared_captures.append(to_append)
@@ -2431,7 +2441,9 @@ def post_table(table_name: str, value: str) -> Response:
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
                                            data_remote=url_for('ip_details', ip=_ip),
                                            button_string=shorten_string(_ip, 100, with_title=True)),
-                'hostname': _info['hostname'],
+                'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
+                                                 data_remote=url_for('hostname_details', hostname=_info['hostname']),
+                                                 button_string=shorten_string(_info['hostname'], 100, with_title=True)),
                 'urls': __prepare_node_view(tree_uuid, nodes, from_popup)
             }
             prepared_captures.append(to_append)

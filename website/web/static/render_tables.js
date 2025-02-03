@@ -180,8 +180,9 @@
             dataSrc: ""
         },
         columns: [{ data: 'total_captures', width: '10%' },
-                  { data: 'hostname', width: '40%', orderable: false },
-                  { data: 'urls', width: '50%', orderable: false }],
+                  { data: 'hostname', width: '30%', orderable: false },
+                  { data: 'ip', width: '20%', orderable: false },
+                  { data: 'urls', width: '40%', orderable: false }],
       });
   }
   if (document.getElementById('ipsTable')) {
