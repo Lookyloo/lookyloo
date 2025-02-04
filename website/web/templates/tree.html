@@ -690,6 +690,9 @@
               ... loading resource details ...
           </div>
           <div class="modal-footer">
+              <a class="btn btn-primary" href="#HostnamesModal"
+                 data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button">Back to capture's hostnames</a>
               <a class="btn btn-primary" href="#ipsModal"
                  data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#ipsModal" role="button">Back to capture's IPs</a>
@@ -728,6 +731,9 @@
               ... loading hostname details ...
           </div>
           <div class="modal-footer">
+              <a class="btn btn-primary" href="#ipsModal"
+                 data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#ipsModal" role="button">Back to capture's IPs</a>
               <a class="btn btn-primary" href="#HostnamesModal"
                  data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
                  data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button">Back to capture's hostnames</a>

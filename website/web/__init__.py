@@ -502,9 +502,9 @@ def get_all_ips(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode]
     return to_return
 
 
-def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode]]]:
+def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode] | str]]:
     ct = lookyloo.get_crawled_tree(capture_uuid)
-    to_return: dict[str, dict[str, list[URLNode] | int]] = defaultdict()
+    to_return: dict[str, dict[str, list[URLNode] | int | str]] = defaultdict()
     for node in ct.root_hartree.url_tree.traverse():
         if not node.hostname:
             continue
@@ -2376,7 +2376,7 @@ def post_table(table_name: str, value: str) -> Response:
     if table_name == 'hostnamesTable':
         tree_uuid = value.strip()
         prepared_captures = []
-        for _hostname, _info in get_all_hostnames(tree_uuid).items():  # type: ignore[assignment]
+        for _hostname, _info in get_all_hostnames(tree_uuid).items():
             nodes = [(node.name, node.uuid) for node in _info['nodes']]  # type: ignore[union-attr]
             to_append = {
                 'total_captures': _info['total_captures'],
@@ -2385,7 +2385,7 @@ def post_table(table_name: str, value: str) -> Response:
                                                  button_string=shorten_string(_hostname, 100, with_title=True)),
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
                                            data_remote=url_for('ip_details', ip=_info['ip']),
-                                           button_string=shorten_string(_info['ip'], 100, with_title=True)),
+                                           button_string=shorten_string(_info['ip'], 100, with_title=True)),  # type: ignore[arg-type]
                 'urls': __prepare_node_view(tree_uuid, nodes, from_popup)
             }
             prepared_captures.append(to_append)
@@ -2443,7 +2443,7 @@ def post_table(table_name: str, value: str) -> Response:
                                            button_string=shorten_string(_ip, 100, with_title=True)),
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_info['hostname']),
-                                                 button_string=shorten_string(_info['hostname'], 100, with_title=True)),
+                                                 button_string=shorten_string(_info['hostname'], 100, with_title=True)),  # type: ignore[arg-type]
                 'urls': __prepare_node_view(tree_uuid, nodes, from_popup)
             }
             prepared_captures.append(to_append)
@@ -2469,9 +2469,8 @@ def post_table(table_name: str, value: str) -> Response:
         if not lookyloo.circl_pdns.available:
             return jsonify({'error': 'CIRCL PDNS is not available.'})
         query = value.strip()
-        live = request.form.get('live', type=bool)
         prepared_records = []
-        if records := lookyloo.circl_pdns.get_passivedns(query, live=live):
+        if records := lookyloo.circl_pdns.get_passivedns(query, live=True if request.form.get('live') == 'true' else False):
             for record in records:
                 if isinstance(record.rdata, list):
                     data = ', '.join(record.rdata)

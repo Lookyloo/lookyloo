@@ -361,7 +361,7 @@
              url: `/tables/CIRCL_pdns_table/${query}${window.location.search}`,
              type: 'POST',
              dataSrc: "",
-             data: {live: Boolean(table.dataset.live)}
+             data: {live: 'live' in table.dataset}
           },
           columns : [
              { data: 'time_first', width: '15%', render: DataTable.render.datetime_with_tz() },
