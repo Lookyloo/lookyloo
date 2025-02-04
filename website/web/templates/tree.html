@@ -77,8 +77,10 @@
   });
   {% else %}
   window.addEventListener('DOMContentLoaded', (event) => {
+    if (document.getElementById('screenshot_thumbnail')) {
       let thumbnail = document.getElementById('screenshot_thumbnail');
       thumbnail.scrollIntoView({behavior: "smooth", block: "end", inline: "center"});
+    }
   });
   {% endif%}
   </script>

@@ -129,9 +129,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   submitPandoraListener();
   newTabClickListener();
-});
-
-
-document.addEventListener("shown.bs.modal", () => {
-  submitPandoraListener();
+  renderTables();
 });

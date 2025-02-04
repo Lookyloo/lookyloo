@@ -1,4 +1,4 @@
-["DOMContentLoaded", "shown.bs.modal"].forEach(e => window.addEventListener(e, function() {
+function renderTables() {
   if (document.getElementById('IndexTable')) {
     indexType = document.getElementById('IndexTable').dataset.indextype;
     new DataTable('#IndexTable', {
@@ -426,4 +426,4 @@
           }
       });
   }
-}));
+};
