@@ -483,7 +483,7 @@ class CaptureReport(Resource):  # type: ignore[misc]
 class UploadCapture(Resource):  # type: ignore[misc]
     def post(self) -> dict[str, str | dict[str, list[str]]] | tuple[dict[str, str], int]:
         parameters: dict[str, Any] = request.get_json(force=True)
-        listing = True if parameters['listing'] else False
+        listing = True if parameters.get('listing') else False
         har: dict[str, Any] | None = None
         html: str | None = None
         last_redirected_url: str | None = None
@@ -524,7 +524,30 @@ class UploadCapture(Resource):  # type: ignore[misc]
                 return {'error': ', '.join(messages['errors'])}, 400
             return {'uuid': uuid, 'messages': messages}
         else:
-            return {'error': 'Full capture or at least har-file is required'}, 400
+            # Treat it as a direct export from Lacus
+            try:
+                uuid = str(uuid4())
+                # The following parameters are base64 encoded and need to be decoded first
+                if 'png' in parameters and parameters['png']:
+                    parameters['png'] = base64.b64decode(parameters['png'])
+                if 'downloaded_file' in parameters and parameters['downloaded_file']:
+                    parameters['downloaded_file'] = base64.b64decode(parameters['downloaded_file'])
+                if 'potential_favicons' in parameters and parameters['potential_favicons']:
+                    parameters['potential_favicons'] = {base64.b64decode(f) for f in parameters['potential_favicons']}
+
+                lookyloo.store_capture(
+                    uuid, is_public=listing,
+                    downloaded_filename=parameters.get('downloaded_filename'),
+                    downloaded_file=parameters.get('downloaded_file'),
+                    error=parameters.get('error'), har=parameters.get('har'),
+                    png=parameters.get('png'), html=parameters.get('html'),
+                    last_redirected_url=parameters.get('last_redirected_url'),
+                    cookies=parameters.get('cookies'),
+                    potential_favicons=parameters.get('potential_favicons'),
+                )
+                return {'uuid': uuid}
+            except Exception as e:
+                return {'error': f'Unable to load capture results in lacus format: {e}'}, 400
 
 
 auto_report_model = api.model('AutoReportModel', {

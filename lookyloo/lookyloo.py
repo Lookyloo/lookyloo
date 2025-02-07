@@ -100,6 +100,7 @@ class Lookyloo():
         self.capture_dir: Path = get_captures_dir()
 
         self._priority = get_config('generic', 'priority')
+        self.headed_allowed = get_config('generic', 'allow_headed')
 
         # Initialize 3rd party components
         # ## Initialize MISP(s)
@@ -188,6 +189,7 @@ class Lookyloo():
             self._lacus = LacusCore(redis, tor_proxy=get_config('generic', 'tor_proxy'),
                                     max_capture_time=get_config('generic', 'max_capture_time'),
                                     only_global_lookups=get_config('generic', 'only_global_lookups'),
+                                    headed_allowed=self.headed_allowed,
                                     loglevel=get_config('generic', 'loglevel'))
         return self._lacus
 
@@ -647,6 +649,10 @@ class Lookyloo():
         if priority < -100:
             # Someone is probably abusing the system with useless URLs, remove them from the index
             query.listing = False
+
+        if not self.headed_allowed or query.headless is None:
+            # Shouldn't be needed, but just in case, force headless
+            query.headless = True
         try:
             perma_uuid = self.lacus.enqueue(
                 url=query.url,
@@ -671,6 +677,7 @@ class Lookyloo():
                 with_favicon=query.with_favicon,
                 allow_tracking=query.allow_tracking,
                 java_script_enabled=query.java_script_enabled,
+                headless=query.headless,
                 # force=query.force,
                 # recapture_interval=query.recapture_interval,
                 priority=priority

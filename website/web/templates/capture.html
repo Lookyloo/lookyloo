@@ -299,6 +299,29 @@
           </div>
         </div>
 
+        {% if headed_allowed %}
+        <div class="row mb-3">
+          <label for="headless" class="col-sm-2 col-form-check-label">Use headless browser:</label>
+          <div class="col-sm-10">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="headless" name="headless" aria-describedby="headless_help"
+                {% if predefined_settings.get('headless', true) is true %}checked="checked"{% endif %}>
+              <div id="headless_help" class="form-text">If disabled, the browser will be launched headed and you can interact with the page for some time.</div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="row mb-3">
+          <label for="capture_timeout" class="col-sm-2 col-form-label">Max capture time:</label>
+          <div class="col-sm-10">
+            <input class="form-control" type="number" id="general_timeout_in_sec" name="general_timeout_in_sec" aria-describedby="general_timeout_in_sec_help" placeholder="90">
+            <div class="alert alert-info" role="alert">
+                The capture will stop regardless the state of the page after this time.
+            </div>
+          </div>
+        </div>
+
         <!-- Referer -->
         <div class="row mb-3">
           <label for="referer" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer">Referer</a>:</label>

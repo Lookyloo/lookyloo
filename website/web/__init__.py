@@ -1619,6 +1619,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            user_config=user_config,
                            show_project_page=get_config('generic', 'show_project_page'),
                            version=pkg_version,
+                           headed_allowed=lookyloo.headed_allowed,
                            has_global_proxy=True if lookyloo.global_proxy else False)
 
 
@@ -1729,6 +1730,13 @@ def capture_web() -> str | Response | WerkzeugResponse:
         capture_query['listing'] = True if request.form.get('listing') else False
         capture_query['allow_tracking'] = True if request.form.get('allow_tracking') else False
         capture_query['java_script_enabled'] = True if request.form.get('java_script_enabled') else False
+
+        if lookyloo.headed_allowed:
+            capture_query['headless'] = True if request.form.get('headless') else False
+
+        if request.form.get('general_timeout_in_sec'):
+            capture_query['general_timeout_in_sec'] = request.form['general_timeout_in_sec']
+
         if request.form.get('referer'):
             capture_query['referer'] = request.form['referer']
 
