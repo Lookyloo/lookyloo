@@ -71,7 +71,7 @@ For more details on `pylookyloo`, read the overview [docs](https://www.lookyloo.
 
 TL;DR: it is slow.
 
-If you have namy captures (say more than 1000/day), and store captures in a s3fs bucket mounted with s3fs-fuse,
+If you have many captures (say more than 1000/day), and store captures in a s3fs bucket mounted with s3fs-fuse,
 doing a directory listing in bash (`ls`) will most probably lock the I/O for every process
 trying to access any file in the whole bucket. The same will be true if you access the
 filesystem using python methods (`iterdir`, `scandir`...))
