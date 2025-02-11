@@ -1,6 +1,8 @@
+"use strict";
+
 function renderTables() {
   if (document.getElementById('IndexTable')) {
-    indexType = document.getElementById('IndexTable').dataset.indextype;
+    let indexType = document.getElementById('IndexTable').dataset.indextype;
     new DataTable('#IndexTable', {
       processing: true,
       retrieve: true,
@@ -21,7 +23,7 @@ function renderTables() {
     })
   }
   if (document.getElementById('HHHDetailsTable')) {
-    hhh = document.getElementById('HHHDetailsTable').dataset.hhh;
+    let hhh = document.getElementById('HHHDetailsTable').dataset.hhh;
     new DataTable('#HHHDetailsTable', {
       processing: true,
       serverSide: true,
@@ -41,7 +43,7 @@ function renderTables() {
     })
   }
   if (document.getElementById('bodyHashDetailsTable')) {
-    bodyhash = document.getElementById('bodyHashDetailsTable').dataset.bodyhash;
+    let bodyhash = document.getElementById('bodyHashDetailsTable').dataset.bodyhash;
     new DataTable('#bodyHashDetailsTable', {
       processing: true,
       serverSide: true,
@@ -61,7 +63,7 @@ function renderTables() {
     })
   }
   if (document.getElementById('hashTypeDetailsTable')) {
-      hash_value = document.getElementById('hashTypeDetailsTable').dataset.hashvalue;
+      let hash_value = document.getElementById('hashTypeDetailsTable').dataset.hashvalue;
       new DataTable('#hashTypeDetailsTable', {
         processing: true,
         serverSide: true,
@@ -82,7 +84,7 @@ function renderTables() {
   }
 
   if (document.getElementById('identifierDetailsTable')) {
-      identifier_value = document.getElementById('identifierDetailsTable').dataset.identifier;
+      let identifier_value = document.getElementById('identifierDetailsTable').dataset.identifier;
       new DataTable('#identifierDetailsTable', {
         processing: true,
         serverSide: true,
@@ -102,7 +104,7 @@ function renderTables() {
       });
   }
   if (document.getElementById('bodyHashesTable')) {
-      treeUUID = document.getElementById('bodyHashesTable').dataset.treeuuid;
+      let treeUUID = document.getElementById('bodyHashesTable').dataset.treeuuid;
       new DataTable('#bodyHashesTable', {
         processing: true,
         retrieve: true,
@@ -124,7 +126,7 @@ function renderTables() {
       });
   }
   if (document.getElementById('faviconsTable')) {
-      treeUUID = document.getElementById('faviconsTable').dataset.treeuuid;
+      let treeUUID = document.getElementById('faviconsTable').dataset.treeuuid;
       new DataTable('#faviconsTable', {
         processing: true,
         retrieve: true,
@@ -146,7 +148,7 @@ function renderTables() {
       });
   }
   if (document.getElementById('treeHashesTable')) {
-      treeUUID = document.getElementById('treeHashesTable').dataset.treeuuid;
+      let treeUUID = document.getElementById('treeHashesTable').dataset.treeuuid;
       new DataTable('#treeHashesTable', {
         processing: true,
         retrieve: true,
@@ -164,7 +166,7 @@ function renderTables() {
       });
   }
   if (document.getElementById('hostnamesTable')) {
-      treeUUID = document.getElementById('hostnamesTable').dataset.treeuuid;
+      let treeUUID = document.getElementById('hostnamesTable').dataset.treeuuid;
       new DataTable('#hostnamesTable', {
         processing: true,
         retrieve: true,
@@ -186,7 +188,7 @@ function renderTables() {
       });
   }
   if (document.getElementById('ipsTable')) {
-      treeUUID = document.getElementById('ipsTable').dataset.treeuuid;
+      let treeUUID = document.getElementById('ipsTable').dataset.treeuuid;
       new DataTable('#ipsTable', {
         processing: true,
         retrieve: true,
@@ -208,7 +210,7 @@ function renderTables() {
       });
   }
   if (document.getElementById('identifiersTable')) {
-      treeUUID = document.getElementById('identifiersTable').dataset.treeuuid;
+      let treeUUID = document.getElementById('identifiersTable').dataset.treeuuid;
       new DataTable('#identifiersTable', {
         processing: true,
         retrieve: true,
@@ -226,7 +228,7 @@ function renderTables() {
       });
   }
   if (document.getElementById('urlsTable')) {
-      treeUUID = document.getElementById('urlsTable').dataset.treeuuid;
+      let treeUUID = document.getElementById('urlsTable').dataset.treeuuid;
       new DataTable('#urlsTable', {
         processing: true,
         retrieve: true,
@@ -243,7 +245,7 @@ function renderTables() {
       })
   }
   if (document.getElementById('cookieNameTable')) {
-      cookieName = document.getElementById('cookieNameTable').dataset.cookiename;
+      let cookieName = document.getElementById('cookieNameTable').dataset.cookiename;
       new DataTable('#cookieNameTable', {
         processing: true,
         serverSide: true,
@@ -264,7 +266,7 @@ function renderTables() {
   }
 
   if (document.getElementById('ipTable')) {
-      hostname = document.getElementById('ipTable').dataset.ip;
+      let hostname = document.getElementById('ipTable').dataset.ip;
       new DataTable('#ipTable', {
         processing: true,
         serverSide: true,
@@ -285,7 +287,7 @@ function renderTables() {
   }
 
   if (document.getElementById('hostnameTable')) {
-      hostname = document.getElementById('hostnameTable').dataset.hostname;
+      let hostname = document.getElementById('hostnameTable').dataset.hostname;
       new DataTable('#hostnameTable', {
         processing: true,
         serverSide: true,
@@ -306,7 +308,7 @@ function renderTables() {
   }
 
   if (document.getElementById('urlTable')) {
-      url = document.getElementById('urlTable').dataset.url;
+      let url = document.getElementById('urlTable').dataset.url;
       new DataTable('#urlTable', {
         processing: true,
         serverSide: true,
@@ -327,7 +329,7 @@ function renderTables() {
   }
 
   if (document.getElementById('faviconDetailsTable')) {
-      favicon = document.getElementById('faviconDetailsTable').dataset.favicon;
+      let favicon = document.getElementById('faviconDetailsTable').dataset.favicon;
       new DataTable('#faviconDetailsTable', {
         processing: true,
         serverSide: true,
@@ -349,7 +351,7 @@ function renderTables() {
  //It is allowed to have more than one table on the same page
   if (document.getElementsByName('CIRCL_pdns_table')) {
       document.getElementsByName('CIRCL_pdns_table').forEach(function(table) {
-        query = table.dataset.query;
+        let query = table.dataset.query;
         new DataTable(`#${table.id}`, {
           processing: true,
           retrieve: true,

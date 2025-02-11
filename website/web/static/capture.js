@@ -1,3 +1,5 @@
+"use strict";
+
 // scripts for the submission type
 
 document.getElementById('nav-url-tab').addEventListener('click', function (e) {
@@ -184,11 +186,9 @@ if (report_form) { // admin is logged in
     report_form.addEventListener('change', function() {
         let show_form = document.getElementById("auto-report").checked;
         if(show_form) {
-        document.getElementById("collapseMailConfiguration").style.display = "block";
+          document.getElementById("collapseMailConfiguration").style.display = "block";
         } else {
-            document.getElementById("collapseMailConfiguration").style.display = "none";
+          document.getElementById("collapseMailConfiguration").style.display = "none";
         }
     });
 }
-
-
