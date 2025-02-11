@@ -1,8 +1,9 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
 {% if from_popup %}
+
 {% extends "main.html" %}
-
 {% from 'bootstrap5/utils.html' import render_messages %}
-
 {% block title %}Favicon{% endblock %}
 
 {%endif%}
@@ -14,11 +15,18 @@
 <center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
 {%endif%}
 
-
 <center>
-  <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
-  <h5>Shodan MMH3 Hash: <a href="https://www.shodan.io/search?query=http.favicon.hash%3A{{ mmh3_shodan }}" target="_blank">{{ mmh3_shodan }}</a></h5>
+  <p class="lead">
+    <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
+    {% if not from_popup %}
+      <a href="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512, from_popup=True) }}" class="btn btn-light">
+        {{ render_icon('share') }}
+      </a>
+    {%endif%}
+    <h5>Shodan MMH3 Hash: <a href="https://www.shodan.io/search?query=http.favicon.hash%3A{{ mmh3_shodan }}" target="_blank">{{ mmh3_shodan }}</a></h5>
+  </p>
 </center>
+
 <table id="faviconDetailsTable" class="table table-striped" style="width:100%" data-favicon="{{favicon_sha512}}">
   <thead>
     <tr>

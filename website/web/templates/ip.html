@@ -1,11 +1,13 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
 {% if from_popup %}
+
 {% extends "main.html" %}
-
 {% from 'bootstrap5/utils.html' import render_messages %}
-
 {% block title %}{{ ip }}{% endblock %}
 
 {%endif%}
+
 
 {% block content %}
 
@@ -14,7 +16,13 @@
 {%endif%}
 
 <center>
-    <h4>{{ ip }}</h4>
+  <p class="lead"><b>{{ ip }}</b>
+   {% if not from_popup %}
+   <a href="{{ url_for('ip_details', ip=ip, from_popup=True) }}" class="btn btn-light">
+       {{ render_icon('share') }}
+   </a>
+   {%endif%}
+  </p>
 </center>
 
 <div class="accordion" id="accordionDetails">

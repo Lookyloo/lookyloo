@@ -1,17 +1,30 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
 {% if from_popup %}
+
 {% extends "main.html" %}
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% block title %}{{ hhh }}{% endblock %}
+
 {%endif%}
 
+
 {% block content %}
+
 {% if from_popup %}
 <center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
 {%endif%}
 
 <center>
-    <h2>{{ hhh }}</h2>
+  <p class="lead"><b>{{ hhh }}</b>
+   {% if not from_popup %}
+   <a href="{{ url_for('hhh_details', hhh=hhh, from_popup=True) }}" class="btn btn-light">
+       {{ render_icon('share') }}
+   </a>
+   {%endif%}
+  </p>
 </center>
+
 <div class="table-responsive">
     <table id="table" class="table">
         <thead>

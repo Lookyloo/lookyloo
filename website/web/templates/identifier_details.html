@@ -1,6 +1,30 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% if from_popup %}
+
+{% extends "main.html" %}
+{% from 'bootstrap5/utils.html' import render_messages %}
+{% block title %}{{ ip }}{% endblock %}
+
+{%endif%}
+
+
+{% block content %}
+
+{% if from_popup %}
+<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
+{%endif%}
+
 <center>
-  <h5>{{identifier_type}}: {{identifier}}</h5>
+  <p class="lead"><b>{{identifier_type}}: {{identifier}}</b>
+   {% if not from_popup %}
+   <a href="{{ url_for('identifier_details', identifier_type=identifier_type, identifier=identifier, from_popup=True) }}" class="btn btn-light">
+       {{ render_icon('share') }}
+   </a>
+   {%endif%}
+  </p>
 </center>
+
 <table id="identifierDetailsTable" class="table table-striped" style="width:100%" data-identifier="{{identifier_type}}|{{identifier}}">
   <thead>
     <tr>
@@ -10,3 +34,4 @@
     </tr>
   </thead>
 </table>
+{% endblock %}

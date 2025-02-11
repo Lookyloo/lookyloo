@@ -1,11 +1,13 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
 {% if from_popup %}
+
 {% extends "main.html" %}
-
 {% from 'bootstrap5/utils.html' import render_messages %}
-
 {% block title %}{{ url }}{% endblock %}
 
 {%endif%}
+
 
 {% block content %}
 
@@ -14,7 +16,13 @@
 {%endif%}
 
 <center>
-    <h4>{{ url }}</h4>
+  <p class="lead"><b>{{ url }}</b>
+   {% if not from_popup %}
+   <a href="{{ url_for('url_details', url=url_quoted, from_popup=True) }}" class="btn btn-light">
+       {{ render_icon('share') }}
+   </a>
+   {%endif%}
+  </p>
 </center>
 
 <table id="urlTable" class="table table-striped" style="width:100%" data-url="{{url_quoted}}">

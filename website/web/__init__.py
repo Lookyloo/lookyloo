@@ -22,7 +22,7 @@ from importlib.metadata import version
 from io import BytesIO, StringIO
 from typing import Any, TypedDict
 from collections.abc import Iterable
-from urllib.parse import quote_plus, unquote_plus, urlparse
+from urllib.parse import unquote_plus, urlparse
 from uuid import uuid4
 from zipfile import ZipFile
 
@@ -533,7 +533,7 @@ def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode
         # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
         if node.hostname not in to_return:
             to_return[node.name] = {'total_captures': captures_count, 'nodes': [],
-                                    'quoted_url': quote_plus(node.name)}
+                                    'quoted_url': base64.urlsafe_b64encode(node.name.encode()).decode()}
         to_return[node.name]['nodes'].append(node)  # type: ignore[union-attr]
     return to_return
 
@@ -1588,7 +1588,7 @@ def rebuild_cache() -> WerkzeugResponse:
 @app.route('/search', methods=['GET', 'POST'])
 def search() -> str | Response | WerkzeugResponse:
     if request.form.get('url'):
-        quoted_url: str = quote_plus(request.form['url'])
+        quoted_url: str = base64.urlsafe_b64encode(request.form.get('url', '').strip().encode()).decode()
         return redirect(url_for('url_details', from_popup=True, url=quoted_url))
     if request.form.get('hostname'):
         return redirect(url_for('hostname_details', from_popup=True, hostname=request.form.get('hostname')))
@@ -1875,13 +1875,15 @@ def hhh_detail(hhh: str) -> str:
 
 @app.route('/identifier_details/<string:identifier_type>/<string:identifier>', methods=['GET'])
 def identifier_details(identifier_type: str, identifier: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     return render_template('identifier_details.html', identifier_type=identifier_type,
-                           identifier=identifier)
+                           identifier=identifier, from_popup=from_popup)
 
 
 @app.route('/capture_hash_details/<string:hash_type>/<string:h>', methods=['GET'])
 def capture_hash_details(hash_type: str, h: str) -> str:
-    return render_template('hash_type_details.html', hash_type=hash_type, h=h)
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
+    return render_template('hash_type_details.html', hash_type=hash_type, h=h, from_popup=from_popup)
 
 
 @app.route('/favicon_details/<string:favicon_sha512>', methods=['GET'])
@@ -1929,9 +1931,8 @@ def body_hash_details(body_hash: str) -> str:
 @app.route('/urls/<string:url>', methods=['GET'])
 def url_details(url: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    url_unquoted = unquote_plus(url).strip()
-    url_b64 = base64.urlsafe_b64encode(url_unquoted.encode()).decode()
-    return render_template('url.html', url=url_unquoted, url_quoted=url_b64, from_popup=from_popup)
+    url_unquoted = base64.urlsafe_b64decode(url.strip()).decode()
+    return render_template('url.html', url=url_unquoted, url_quoted=url, from_popup=from_popup)
 
 
 @app.route('/hostnames/<string:hostname>', methods=['GET'])

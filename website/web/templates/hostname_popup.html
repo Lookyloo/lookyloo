@@ -15,13 +15,18 @@
 {% block content %}
   {# Headers #}
   <center>
+    <p class="lead">
     {% if hostnode.idna %}
-      <h3>{{hostnode.idna}}
-          <br><small class="text-body-secondary">{{hostnode.name}}</small>
-      </h3>
+      <b>{{hostnode.idna}}</b>
+      <br><small class="text-body-secondary">{{hostnode.name}}</small>
     {% else %}
-      <h3>{{hostnode.name}}</h3>
+     <b>{{hostnode.name}}</b>
     {% endif %}
+     <br>
+     <a href="{{ url_for('hostname_details', hostname=hostnode.name, from_popup=True) }}" class="btn btn-light">
+      See captures with this hostname
+     </a>
+    </p>
     <br>
     <button type="button" class="btn btn-primary locateInTree" data-hostnode="{{ hostnode_uuid }}">Locate in tree</button>
     {% if uwhois_available %}

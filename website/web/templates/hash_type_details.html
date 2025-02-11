@@ -1,6 +1,29 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% if from_popup %}
+
+{% extends "main.html" %}
+{% from 'bootstrap5/utils.html' import render_messages %}
+{% block title %}{{ ip }}{% endblock %}
+
+{%endif%}
+
+
+{% block content %}
+
+{% if from_popup %}
+<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
+{%endif%}
+
 <center>
-  <h5>{{hash_type}}: {{h}}</h5>
+  <p class="lead"><b>{{hash_type}}: {{h}}</b>
+  {% if not from_popup %}
+  <a href="{{url_for('capture_hash_details', hash_type=hash_type, h=h, from_popup=True)}}" class="btn btn-light">
+    {{ render_icon('share') }}
+  </a>
+  {%endif%}
 </center>
+
 <table id="hashTypeDetailsTable" class="table table-striped" style="width:100%" data-hashvalue="{{hash_type}}|{{h}}">
   <thead>
     <tr>
@@ -10,3 +33,4 @@
     </tr>
   </thead>
 </table>
+{% endblock %}
