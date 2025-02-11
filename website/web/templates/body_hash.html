@@ -41,12 +41,12 @@
           <td>
             {% if b64 %}
             <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">
-              <img class="border rounded border-3" src="data:{{mimetype}};base64,{{ b64 }}" style="max-width: 256px;max-height: 256px;"
+              <img class="border rounded border-3" src="data:{{mimetype}};base64,{{ b64 }}" style="min-width: 25px; max-width: 256px;max-height: 256px;"
                    title="Click to download"/>
             </a>
             {% else %}
             <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}" type="button" class="btn btn-light">
-                <img src="{{url_for('static', filename='download.svg')}}" style="width:32px;height:32px;" title="Download the file"/>
+                {{ render_icon('cloud-download', title="Download the file") }}
             </a>
             {% endif %}
           </td>

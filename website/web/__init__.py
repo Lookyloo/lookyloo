@@ -29,7 +29,7 @@ from zipfile import ZipFile
 from har2tree import HostNode, URLNode
 import flask_login  # type: ignore[import-untyped]
 from flask import (Flask, Response, Request, flash, jsonify, redirect, render_template,
-                   request, send_file, url_for)
+                   request, send_file, url_for, render_template_string)
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
@@ -322,10 +322,13 @@ def details_modal_button(target_modal_id: str, data_remote: str, button_string: 
 
 # NOTE: Add in the globals?
 def favicon_download_button(mimetype: str, b64_favicon: str) -> str:
-    return f'''
-<button type="button" class="btn btn-light downloadFaviconButton" data-mimetype="{mimetype}" data-b64favicon="{b64_favicon}" data-filename="favicon.ico">
-  <img src="{url_for('static', filename='download.svg')}" style="width:16px;height:16px;" title="Download the favicon"/>
+    to_render = '''
+{% from 'bootstrap5/utils.html' import render_icon %}
+<button type="button" class="btn btn-light downloadFaviconButton" data-mimetype="{{mimetype}}" data-b64favicon="{{b64_favicon}}" data-filename="favicon.ico">
+  {{render_icon("cloud-download", title="Download the favicon")}}
 </button>'''
+    rendered = render_template_string(to_render, mimetype=mimetype, b64_favicon=b64_favicon)
+    return Markup(rendered)
 
 
 app.jinja_env.globals.update(
