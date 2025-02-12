@@ -7,7 +7,7 @@ license = "BSD-3-Clause"
 repository = "https://github.com/Lookyloo/lookyloo"
 homepage = "https://www.lookyloo.eu"
 documentation = "https://www.lookyloo.eu/docs/main/"
-requires-python = ">=3.9,<3.14"
+requires-python = ">=3.9.2,<3.14"
 
 readme = "README.md"
 
@@ -76,7 +76,7 @@ pyfaup = "^1.2"
 chardet = "^5.2.0"
 pysecuritytxt = "^1.3.3"
 pylookyloomonitoring = "^1.1.4"
-s3fs = "^2024.12.0"
+s3fs = "^2025.2.0"
 urllib3 = [
     {version = "<2", python = "<3.10"},
     {version = "^2.3", python = ">=3.10"}
@@ -104,7 +104,7 @@ types-Deprecated = "^1.2.15.20241117"
 types-python-dateutil = "^2.9.0.20241206"
 types-beautifulsoup4 = "^4.12.0.20250204"
 types-Pillow = "^10.2.0.20240822"
-types-pytz = "^2024.2.0.20241221"
+types-pytz = "^2025.1.0.20250204"
 types-psutil = "^6.1.0.20241221"
 
 [build-system]
