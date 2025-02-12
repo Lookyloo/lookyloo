@@ -1,7 +1,7 @@
 {
   "static": {
     "bomb.svg": "Tro3+kCLzfBNBve2gPnsmXsl+tHUQVrFz77zfrWwnAuTraehZaoAfVJgGOYdG8zceXdGLEKzXVi3GdtEXw0sYQ==",
-    "capture.js": "0m+yL/hSwVoerMfaCuws7FHv6ax7rLKxMHsF6FsZvP8gPg1zdQfeEUczGuP/f+sy6yohPPy14hC5KJWUULrZWQ==",
+    "capture.js": "J8pSPoR0DhG17wXUA+yEMmbCHdviVsnY+cUpP2ZRSUGvoJ0690to1P97SsVaqSp1YK3h+o8vf/UjI2F4Gd+Q4g==",
     "check.svg": "CRqUAM/yXxgJwpfg3TeoKD+CIqQj62lxqS3zeCmdPaV3dKftk4jk5Mqc1TGxL7i61X1sgV0/f+KJLEOKTw01ww==",
     "cookie_in_url.png": "hs/oNPnrR2DkDX9Yp6Daug/QqpWJHemJE6lXpxNafjgOYooezp3DpbqKqADT7QcfcTxxUfe1iPDZJlHOrNMAcw==",
     "cookie_read.png": "mdXCeuNFPvshSwIXAJLoR1xFjXb+K2Mgu47Q1fnUAO8j1N2c/uJuE8sGuBHHbS8HOyr/CbOC6Uf3zsm9KvAs8Q==",
