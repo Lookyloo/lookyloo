@@ -1454,15 +1454,15 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.27.10"
+version = "1.27.11"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "python_version >= \"3.10\""
 files = [
-    {file = "har2tree-1.27.10-py3-none-any.whl", hash = "sha256:03e0810103f4db7a394d049d374380fc3f081304d99ef650b18d92d4a7e07b43"},
-    {file = "har2tree-1.27.10.tar.gz", hash = "sha256:babf80a0a2a80f7378b8a98a1b7a37266517efdf75a082a2272b2d90614c9245"},
+    {file = "har2tree-1.27.11-py3-none-any.whl", hash = "sha256:9fafb31c4a760d8a4d025356592042731f34bc6386e3c19358e90ea748d36f42"},
+    {file = "har2tree-1.27.11.tar.gz", hash = "sha256:39020f36be77222adbed55488ab9dfd086fdeb46f40338de640478c035f4893d"},
 ]
 
 [package.dependencies]
@@ -1474,7 +1474,7 @@ numpy = [
     {version = "<=2.1", markers = "python_version == \"3.9\""},
     {version = ">=2.2.2", markers = "python_version >= \"3.10\""},
 ]
-publicsuffixlist = ">=1.0.2.20250202"
+publicsuffixlist = ">=1.0.2.20250212"
 tinycss2 = ">=1.4.0"
 w3lib = ">=2.3.1"
 
@@ -2965,15 +2965,15 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250211"
+version = "1.0.2.20250212"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 markers = "python_version >= \"3.10\""
 files = [
-    {file = "publicsuffixlist-1.0.2.20250211-py2.py3-none-any.whl", hash = "sha256:14d3a5824a14aeb85dab998a7bbb8de8a7aa9a35ba29ffc49aaed0fbe3b7c54f"},
-    {file = "publicsuffixlist-1.0.2.20250211.tar.gz", hash = "sha256:ba36e2743c6529cb61bc1f743b65892cb051b664faf7eae0ce16b8c00189b9ef"},
+    {file = "publicsuffixlist-1.0.2.20250212-py2.py3-none-any.whl", hash = "sha256:7473201f1e74f2241378d8f50275978de2bf7363d305509ba9c4e0afed723c38"},
+    {file = "publicsuffixlist-1.0.2.20250212.tar.gz", hash = "sha256:ac546cba26dff0e5a881ba906cc56dc1847dd22b52aee5af4cd6208c1dc3b0e4"},
 ]
 
 [package.extras]
@@ -5008,4 +5008,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "4385609fc106087bd66095aeb3f7179f990531b040ee8798d8326e9e5623e97b"
+content-hash = "d11289c0e67af48d82c67820851409e15e7a4104c29a5f081e389858f52270db"
