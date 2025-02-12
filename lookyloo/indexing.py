@@ -134,7 +134,7 @@ class Indexing():
 
             if not any((directory / pickle_name).exists()
                        for pickle_name in ['tree.pickle.gz', 'tree.pickle']):
-                self.logger.warning(f'No pickle for {uuid_to_index} - {directory}, skipping. ')
+                self.logger.info(f'No pickle for {uuid_to_index} - {directory}, skipping. ')
                 return
 
             # do the indexing
