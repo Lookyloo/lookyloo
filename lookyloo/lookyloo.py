@@ -1198,7 +1198,7 @@ class Lookyloo():
         if self.vt.available:
             response = self.vt.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
             if 'error' in response:
-                self.logger.warning(f'Unable to trigger VT: {response["error"]}')
+                self.logger.info(f'Unable to trigger VT: {response["error"]}')
             else:
                 for e_obj in event.objects:
                     if e_obj.name != 'url':
@@ -1223,7 +1223,7 @@ class Lookyloo():
         if self.urlscan.available:
             response = self.urlscan.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
             if 'error' in response:
-                self.logger.warning(f'Unable to trigger URLScan: {response["error"]}')
+                self.logger.info(f'Unable to trigger URLScan: {response["error"]}')
             else:
                 urlscan_attribute = self.__misp_add_urlscan_to_event(capture_uuid)
                 if urlscan_attribute:

@@ -555,7 +555,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                         await self.dnsresolver.resolve(hostname, qt, search=True, raise_on_no_answer=False)
                         await self.dnsresolver.resolve(domain, qt, search=True, raise_on_no_answer=False)
                     except Exception as e:
-                        logger.warning(f'Unable to resolve DNS {hostname} - {qt}: {e}')
+                        logger.info(f'Unable to resolve DNS {hostname} - {qt}: {e}')
 
         cnames_path = ct.root_hartree.har.path.parent / 'cnames.json'
         ips_path = ct.root_hartree.har.path.parent / 'ips.json'
