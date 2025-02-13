@@ -36,7 +36,7 @@ from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus, CaptureSettingsError
 from markupsafe import Markup
-from puremagic import from_string
+from puremagic import from_string, PureError
 from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
@@ -2429,7 +2429,11 @@ def post_table(table_name: str, value: str) -> Response:
                 favicon = myzip.read(name)
                 if not favicon:
                     continue
-                mimetype = from_string(favicon, mime=True)
+                try:
+                    mimetype = from_string(favicon, mime=True)
+                except PureError:
+                    # Not a valid image
+                    continue
                 favicon_sha512 = hashlib.sha512(favicon).hexdigest()
                 b64_favicon = base64.b64encode(favicon).decode()
                 to_append = {
