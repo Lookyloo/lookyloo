@@ -14,7 +14,7 @@ from redis import Redis
 
 from lookyloo import Lookyloo
 from lookyloo.default import AbstractManager, get_config, get_socket_path
-from lookyloo.exceptions import MissingUUID, NoValidHarFile
+from lookyloo.exceptions import MissingUUID, NoValidHarFile, TreeNeedsRebuild
 from lookyloo.helpers import is_locked, get_sorted_captures_from_disk, make_dirs_list, get_captures_dir
 
 
@@ -136,6 +136,8 @@ class BackgroundBuildCaptures(AbstractManager):
                     self.logger.warning(f'Unable to find {uuid}. That should not happen.')
                 except NoValidHarFile as e:
                     self.logger.critical(f'There are no HAR files in the capture {uuid}: {path.name} - {e}')
+                except TreeNeedsRebuild as e:
+                    self.logger.critical(f'There are unusable HAR files in the capture {uuid}: {path.name} - {e}')
                 except FileNotFoundError:
                     self.logger.warning(f'Capture {uuid} disappeared during processing, probably archived.')
                 except Exception:

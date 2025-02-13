@@ -43,7 +43,7 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import get_config
-from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable
+from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild
 from lookyloo.helpers import (UserAgents, load_cookies,
                               load_user_config,
                               get_taxonomies,
@@ -1400,7 +1400,8 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                capture_indexed=capture_indexed,
                                capture_settings=capture_settings.model_dump(exclude_none=True) if capture_settings else {})
 
-    except NoValidHarFile:
+    except (NoValidHarFile, TreeNeedsRebuild) as e:
+        logging.info(f'[{tree_uuid}] The capture exists, but we cannot use the HAR files: {e}')
         flash(f'Unable to build a tree for {tree_uuid}: {cache.error}.', 'warning')
         return index_generic()
     finally:

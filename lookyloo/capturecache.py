@@ -324,6 +324,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                         node.redirect_to_nothing += 1
 
     async def _create_pickle(self, capture_dir: Path, logger: LookylooCacheLogAdapter) -> CrawledTree:
+        logger.debug(f'Creating pickle for {capture_dir}')
         with (capture_dir / 'uuid').open() as f:
             uuid = f.read().strip()
 
@@ -356,14 +357,18 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             # unable to use the HAR files, get them out of the way
             for har_file in har_files:
                 har_file.rename(har_file.with_suffix('.broken'))
+            logger.debug(f'We got HAR files, but they are broken: {e}')
             raise NoValidHarFile(f'We got har files, but they are broken: {e}')
         except TimeoutError:
-            logger.warning(f'Unable to rebuild the tree for {capture_dir}, the tree took too long.')
             for har_file in har_files:
                 har_file.rename(har_file.with_suffix('.broken'))
+            logger.warning(f'Unable to rebuild the tree for {capture_dir}, the tree took more than {self.timeout}s.')
             raise NoValidHarFile(f'We got har files, but creating a tree took more than {self.timeout}s.')
         except RecursionError as e:
-            raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
+            for har_file in har_files:
+                har_file.rename(har_file.with_suffix('.broken'))
+            logger.debug(f'Tree too deep, probably a recursive refresh: {e}.')
+            raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.')
         else:
             # Some pickles require a pretty high recursion limit, this kindof fixes it.
             # If the capture is really broken (generally a refresh to self), the capture
@@ -378,6 +383,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 for har_file in har_files:
                     har_file.rename(har_file.with_suffix('.broken'))
                 (capture_dir / 'tree.pickle.gz').unlink(missing_ok=True)
+                logger.debug(f'Tree too deep, probably a recursive refresh: {e}.')
                 raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
             except Exception:
                 (capture_dir / 'tree.pickle.gz').unlink(missing_ok=True)
@@ -385,6 +391,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         finally:
             sys.setrecursionlimit(default_recursion_limit)
             lock_file.unlink(missing_ok=True)
+        logger.debug(f'Pickle for {capture_dir} created.')
         return tree
 
     @staticmethod
@@ -417,12 +424,17 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             if not os.listdir(capture_dir_str):
                 # The directory is empty, removing it
                 os.rmdir(capture_dir_str)
+                self.logger.warning(f'Empty directory: {capture_dir_str}')
                 raise MissingCaptureDirectory(f'Empty directory: {capture_dir_str}')
+            self.logger.warning(f'Unable to find the UUID file in {capture_dir}.')
             raise MissingCaptureDirectory(f'Unable to find the UUID file in {capture_dir}.')
 
+        cache: dict[str, str | int] = {'uuid': uuid, 'capture_dir': capture_dir_str}
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
         try:
+            logger.debug('Trying to load the tree.')
             tree = load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, logger)
+            logger.debug('Successfully loaded the tree.')
         except NoValidHarFile:
             logger.debug('Unable to rebuild the tree, the HAR files are broken.')
         except TreeNeedsRebuild:
@@ -433,11 +445,10 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 get_indexing().force_reindex(uuid)
                 if get_config('generic', 'index_everything'):
                     get_indexing(full=True).force_reindex(uuid)
-            except NoValidHarFile:
-                logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are broken.')
+            except NoValidHarFile as e:
+                logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are not usable: {e}.')
                 tree = None
-
-        cache: dict[str, str | int] = {'uuid': uuid, 'capture_dir': capture_dir_str}
+                cache['error'] = f'Unable to rebuild the tree for {uuid}, the HAR files are not usable: {e}'
 
         capture_settings_file = capture_dir / 'capture_settings.json'
         if capture_settings_file.exists():

@@ -499,11 +499,13 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> C
                 with pickle_path.open('rb') as _p:
                     tree = pickle.load(_p)
     except pickle.UnpicklingError:
+        logger.warning(f'Unpickling error, removing the pickle in {capture_dir}.')
         remove_pickle_tree(capture_dir)
     except EOFError:
+        logger.warning(f'EOFError, removing the pickle in {capture_dir}.')
         remove_pickle_tree(capture_dir)
-    except Exception:
-        logger.exception('Unexpected exception when unpickling.')
+    except Exception as e:
+        logger.exception(f'Unexpected exception when unpickling: {e}')
         remove_pickle_tree(capture_dir)
 
     if tree:
