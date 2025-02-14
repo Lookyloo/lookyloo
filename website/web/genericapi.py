@@ -25,7 +25,7 @@ from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo import CaptureSettings, Lookyloo
 from lookyloo.default import get_config
 from lookyloo.comparator import Comparator
-from lookyloo.exceptions import MissingUUID, NoValidHarFile
+from lookyloo.exceptions import MissingUUID, NoValidHarFile, ModuleError
 from lookyloo.helpers import load_user_config
 
 from .helpers import (build_users_table, load_user_from_request, src_request_ip,
@@ -200,13 +200,16 @@ class CaptureRedirects(Resource):  # type: ignore[misc]
 class MISPExport(Resource):  # type: ignore[misc]
     def get(self, capture_uuid: str) -> dict[str, Any] | list[dict[str, Any]]:
         with_parents = request.args.get('with_parents')
-        event = lookyloo.misp_export(capture_uuid, True if with_parents else False)
+        try:
+            event = lookyloo.misp_export(capture_uuid, True if with_parents else False)
+        except ModuleError as e:
+            return {'error': str(e)}
         if isinstance(event, dict):
             return event
 
         to_return = []
-        for e in event:
-            to_return.append(json.loads(e.to_json()))
+        for ev in event:
+            to_return.append(json.loads(ev.to_json()))
         return to_return
 
 

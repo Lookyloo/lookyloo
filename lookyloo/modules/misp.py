@@ -17,6 +17,7 @@ from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag
 from pymisp.tools import FileObject, URLObject
 
 from ..default import get_config, get_homedir
+from ..exceptions import ModuleError
 from ..helpers import get_public_suffix_list
 
 from .abstractmodule import AbstractModule
@@ -110,7 +111,7 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
                 filename = submitted_filename
                 pseudofile = submitted_file
             else:
-                raise Exception('We must have a file here.')
+                raise ModuleError('We must have a file here.')
 
             initial_file = FileObject(pseudofile=pseudofile, filename=filename)
             initial_file.comment = 'This is a capture of a file, rendered in the browser'

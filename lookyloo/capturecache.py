@@ -696,7 +696,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                     # Should only have one
                     break
             except Exception as e:
-                logger.warning(f'[SOA record] Unable to resolve: {e}')
+                logger.info(f'[SOA record] Unable to resolve: {e}')
 
             # NS, and MX records that may not be in the response for the hostname
             # trigger the request on domains if needed.
@@ -711,10 +711,10 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                     logger.debug(f'No MX record for {domain}.')
                     mx_response = None
                 except Exception as e:
-                    logger.warning(f'[MX record] Unable to resolve: {e}')
+                    logger.info(f'[MX record] Unable to resolve: {e}')
                     mx_response = None
             except Exception as e:
-                logger.warning(f'[MX record] Unable to resolve: {e}')
+                logger.info(f'[MX record] Unable to resolve: {e}')
                 mx_response = None
 
             if mx_response:
@@ -729,7 +729,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                         node.add_feature('mx', (name_to_cache, host_mx[name_to_cache]))
                         break
                     except Exception as e:
-                        logger.warning(f'[MX record] broken: {e}')
+                        logger.info(f'[MX record] broken: {e}')
 
             # We must always have a NS record, otherwise, we couldn't resolve.
             # Let's keep trying removing the first part of the hostname until we get an answer.
@@ -750,11 +750,11 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                         to_query = to_query[to_query.index('.') + 1:]
                         continue
                     except Exception as e:
-                        logger.warning(f'[NS record] Unable to resolve: {e}')
+                        logger.info(f'[NS record] Unable to resolve: {e}')
                         ns_response = None
                         break
             except Exception as e:
-                logger.warning(f'[NS record] Unable to resolve: {e}')
+                logger.info(f'[NS record] Unable to resolve: {e}')
                 ns_response = None
 
             if ns_response:
