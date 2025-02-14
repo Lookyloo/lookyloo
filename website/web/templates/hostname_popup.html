@@ -292,7 +292,7 @@
           <div>
             {% if has_pandora %}
               <div> Downloaded file: <b>{{url['url_object'].downloaded_filename}}</b> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})</div>
-              {{ pandora_submit(tree_uuid, url['url_object'].uuid, url['url_object'].downloaded_file_hash) }}
+              {{ pandora_submit(tree_uuid) }}
             {% else %}
               <a href="{{ url_for('data', tree_uuid=tree_uuid)}}">
                 Download {{url['url_object'].downloaded_filename}}

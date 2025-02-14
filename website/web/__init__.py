@@ -687,9 +687,6 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
             'url_object': url,
         }
 
-        if hasattr(url, 'downloaded_file') and url.downloaded_file:
-            url.add_feature('downloaded_file_hash', hashlib.sha512(url.downloaded_file.getvalue()).hexdigest())
-
         if not url.empty_response:
             # Index lookup
             # %%% Full body %%%
