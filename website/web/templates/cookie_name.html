@@ -18,7 +18,7 @@
 <center>
   <p class="lead">Cookie name: <b>{{ cookie_name }}</b>
     {% if not from_popup %}
-    <a href="{{ url_for('cookie_name_details', cookie_name=cookie_name, from_popup=True) }}" class="btn btn-light">
+    <a href="{{ url_for('cookies_name_details', cookie_name=cookie_name, from_popup=True) }}" class="btn btn-light">
       {{ render_icon('share') }}
     </a>
     {%endif%}
