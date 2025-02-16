@@ -1027,18 +1027,26 @@ class Lookyloo():
 
     def get_potential_favicons(self, capture_uuid: str, /, all_favicons: bool=False, for_datauri: bool=False) -> BytesIO | tuple[str, str]:
         '''Get rendered HTML'''
-        fav = self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
+        # NOTE: we sometimes have multiple favicons, and sometimes,
+        #       the first entry in the list is not actually a favicon. So we
+        #       iterate until we find one (or fail to, but at least we tried)
         if not all_favicons and for_datauri:
-            favicon = fav.getvalue()
-            if not favicon:
+            capture_dir = self._captures_index[capture_uuid].capture_dir
+            for favicon_path in sorted(list(capture_dir.glob('*.potential_favicons.ico'))):
+                with favicon_path.open('rb') as f:
+                    favicon = f.read()
+                if not favicon:
+                    continue
+                try:
+                    mimetype = from_string(favicon, mime=True)
+                    return mimetype, base64.b64encode(favicon).decode()
+                except PureError:
+                    self.logger.info(f'Unable to get the mimetype of the favicon for {capture_uuid}.')
+                    continue
+            else:
+                self.logger.warning(f'No valid favicon found for {capture_uuid}.')
                 return '', ''
-            try:
-                mimetype = from_string(favicon, mime=True)
-                return mimetype, base64.b64encode(favicon).decode()
-            except PureError:
-                self.logger.warning(f'Unable to get the mimetype of the favicon for {capture_uuid}.')
-                return '', ''
-        return fav
+        return self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
 
     def get_html(self, capture_uuid: str, /, all_html: bool=False) -> BytesIO:
         '''Get rendered HTML'''
