@@ -2013,7 +2013,13 @@ def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str) -> Response
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/rendered_content', methods=['GET'])
 @file_response  # type: ignore[misc]
 def urlnode_rendered_content(tree_uuid: str, node_uuid: str) -> Response | None:
-    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
+    try:
+        urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
+    except IndexError:
+        to_send = b"Unable to find rendered content, the tree seem to be broken. Please reload the page and try again."
+        lookyloo.remove_pickle(tree_uuid)
+        return send_file(BytesIO(to_send), mimetype='text/plain',
+                         as_attachment=True, download_name='rendered_content.txt')
     if not urlnode.rendered_html:
         return None
     return send_file(BytesIO(urlnode.rendered_html.getvalue()), mimetype='text/plain',

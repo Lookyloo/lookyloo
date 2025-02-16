@@ -172,6 +172,11 @@ class Indexing():
 
         except (TreeNeedsRebuild, NoValidHarFile) as e:
             self.logger.warning(f'Error loading the pickle for {uuid_to_index}: {e}')
+        except AttributeError as e:
+            # Happens when indexing the IPs, they were a list, and are now dict.
+            # Skip from the the warning logs.
+            self.logger.info(f'Error during indexing for {uuid_to_index}, recreate pickle: {e}')
+            remove_pickle_tree(directory)
         except Exception as e:
             self.logger.error(f'Error during indexing for {uuid_to_index}, recreate pickle: {e}')
             remove_pickle_tree(directory)
