@@ -1031,8 +1031,11 @@ class Lookyloo():
         #       the first entry in the list is not actually a favicon. So we
         #       iterate until we find one (or fail to, but at least we tried)
         if not all_favicons and for_datauri:
-            capture_dir = self._captures_index[capture_uuid].capture_dir
-            for favicon_path in sorted(list(capture_dir.glob('*.potential_favicons.ico'))):
+            favicons_paths = sorted(list(self._captures_index[capture_uuid].capture_dir.glob('*.potential_favicons.ico')))
+            if not favicons_paths:
+                self.logger.debug(f'No potential favicon found for {capture_uuid}.')
+                return '', ''
+            for favicon_path in favicons_paths:
                 with favicon_path.open('rb') as f:
                     favicon = f.read()
                 if not favicon:
@@ -1044,7 +1047,7 @@ class Lookyloo():
                     self.logger.info(f'Unable to get the mimetype of the favicon for {capture_uuid}.')
                     continue
             else:
-                self.logger.warning(f'No valid favicon found for {capture_uuid}.')
+                self.logger.info(f'No valid favicon found for {capture_uuid}.')
                 return '', ''
         return self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
 
