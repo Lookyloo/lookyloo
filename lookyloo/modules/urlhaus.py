@@ -9,7 +9,7 @@ from typing import Any, TYPE_CHECKING
 import requests
 
 from ..default import ConfigError, get_homedir
-from ..helpers import get_cache_directory
+from ..helpers import get_cache_directory, get_useragent_for_requests
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
@@ -24,7 +24,15 @@ class URLhaus(AbstractModule):
             self.logger.info('Not enabled')
             return False
 
+        if not self.config.get('apikey'):
+            self.logger.error('No API key provided')
+            return False
+
         self.url = self.config.get('url')
+
+        self.session = requests.Session()
+        self.session.headers.update({'User-Agent': get_useragent_for_requests()})
+        self.session.params.update({'Auth-Key': self.config.get('apikey')})
         self.storage_dir_uh = get_homedir() / 'urlhaus'
         self.storage_dir_uh.mkdir(parents=True, exist_ok=True)
         return True
@@ -42,7 +50,7 @@ class URLhaus(AbstractModule):
 
     def __url_result(self, url: str) -> dict[str, Any]:
         data = {'url': url}
-        response = requests.post(f'{self.url}/url/', data)
+        response = self.session.post(f'{self.url}/url/', data)
         response.raise_for_status()
         return response.json()
 

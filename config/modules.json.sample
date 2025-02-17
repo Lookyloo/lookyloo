@@ -82,7 +82,8 @@
     "enabled": false,
     "url": "https://urlhaus-api.abuse.ch/v1/",
     "allow_auto_trigger": true,
-    "admin_only": false
+    "admin_only": false,
+    "apikey": null
   },
   "Hashlookup": {
     "enabled": false,
