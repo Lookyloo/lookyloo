@@ -389,11 +389,11 @@
             <input class="form-control" list="tzOptions" name="timezone_id" id="timezone_id" aria-label="Pick the timezone for the capture" placeholder="Europe/Vatican">
             <datalist id="tzOptions">
               {% for tz, offset in all_timezones.items() %}
-              <option value="{{tz}}">{{tz}} (UTC{{offset}})</option>
+              <option value="{{tz}}">{{tz}} ({{offset}})</option>
               {%endfor%}
             </datalist>
             <div class="alert alert-info" role="alert">
-              Defaults to localtime: {{local_TZ}} - {{local_UTC_offset}}.
+              Defaults to localtime: {{local_TZ}} ({{local_UTC_offset}}).
             </div>
           </div>
         </div>
@@ -459,7 +459,7 @@
                <label class="visually-hidden" for="http_auth_password">Password</label>
                 <div class="input-group">
                   <div class="input-group-text">Password</div>
-                  <input class="form-control" type="password" id="http_auth_password" name="http_auth_password" aria-describedby="http_auth_password" placeholder="Yackety Yak">
+                  <input class="form-control" autocomplete="new-password" type="password" id="http_auth_password" name="http_auth_password" aria-describedby="http_auth_password" placeholder="Yackety Yak">
                 </div>
               </div>
             </div>

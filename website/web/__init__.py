@@ -284,7 +284,7 @@ def get_icon(icon_id: str) -> Icon | None:
 all_timezones_set: dict[str, str] = {}
 for tzname in sorted(available_timezones()):
     if offset := ZoneInfo(tzname).utcoffset(datetime.now(timezone.utc)):
-        all_timezones_set[tzname] = f"{offset.total_seconds() / (60 * 60):+06.2f}"
+        all_timezones_set[tzname] = f"UTC{offset.total_seconds() / (60 * 60):+06.2f}"
 
 
 def get_tz_info() -> tuple[str | None, str, dict[str, str]]:
