@@ -17,7 +17,7 @@ import time
 import filetype  # type: ignore[import-untyped]
 
 from collections import defaultdict
-from datetime import date, datetime, timedelta, UTC
+from datetime import date, datetime, timedelta, timezone
 from importlib.metadata import version
 from io import BytesIO, StringIO
 from typing import Any, TypedDict
@@ -283,7 +283,7 @@ def get_icon(icon_id: str) -> Icon | None:
 
 all_timezones_set: dict[str, str] = {}
 for tzname in sorted(available_timezones()):
-    if offset := ZoneInfo(tzname).utcoffset(datetime.now(UTC)):
+    if offset := ZoneInfo(tzname).utcoffset(datetime.now(timezone.utc)):
         all_timezones_set[tzname] = f"{offset.total_seconds() / (60 * 60):+06.2f}"
 
 
