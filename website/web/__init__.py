@@ -17,7 +17,7 @@ import time
 import filetype  # type: ignore[import-untyped]
 
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, UTC
 from importlib.metadata import version
 from io import BytesIO, StringIO
 from typing import Any, TypedDict
@@ -25,6 +25,7 @@ from collections.abc import Iterable
 from urllib.parse import unquote_plus, urlparse
 from uuid import uuid4
 from zipfile import ZipFile
+from zoneinfo import ZoneInfo
 
 from har2tree import HostNode, URLNode
 import flask_login  # type: ignore[import-untyped]
@@ -60,7 +61,6 @@ from .helpers import (User, build_users_table, get_secret_key,
 from .proxied import ReverseProxied
 
 logging.config.dictConfig(get_config('logging'))
-all_timezones_set = available_timezones()
 
 app: Flask = Flask(__name__)
 app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore[method-assign]
@@ -281,7 +281,13 @@ def get_icon(icon_id: str) -> Icon | None:
     return available_icons.get(icon_id)
 
 
-def get_tz_info() -> tuple[str | None, str, set[str]]:
+all_timezones_set: dict[str, str] = {}
+for tzname in sorted(available_timezones()):
+    if offset := ZoneInfo(tzname).utcoffset(datetime.now(UTC)):
+        all_timezones_set[tzname] = f"{offset.total_seconds() / (60 * 60):+06.2f}"
+
+
+def get_tz_info() -> tuple[str | None, str, dict[str, str]]:
     now = datetime.now().astimezone()
     local_TZ = now.tzname()
     local_UTC_offset = f'UTC{now.strftime("%z")}'
@@ -1734,6 +1740,10 @@ def capture_web() -> str | Response | WerkzeugResponse:
         capture_query['listing'] = True if request.form.get('listing') else False
         capture_query['allow_tracking'] = True if request.form.get('allow_tracking') else False
         capture_query['java_script_enabled'] = True if request.form.get('java_script_enabled') else False
+
+        if request.form.get('width') or request.form.get('height'):
+            capture_query['viewport'] = {'width': int(request.form.get('width', 1280)),
+                                         'height': int(request.form.get('height', 720))}
 
         if lookyloo.headed_allowed:
             capture_query['headless'] = True if request.form.get('headless') else False

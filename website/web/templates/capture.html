@@ -322,6 +322,31 @@
           </div>
         </div>
 
+        <div class="row mb-3">
+          <label class="col-sm-2 col-form-label">Viewport:</label>
+          <div class="col-sm-10">
+           <div class="row align-items-center">
+            <div class="col">
+             <label class="visually-hidden" for="width">Width</label>
+              <div class="input-group">
+                <div class="input-group-text">Width</div>
+                <input class="form-control" type="number" id="width" name="width" aria-describedby="width" placeholder="1280">
+              </div>
+            </div>
+            <div class="col">
+             <label class="visually-hidden" for="height">Height</label>
+              <div class="input-group">
+                <div class="input-group-text">Height</div>
+                <input class="form-control" type="number" id="height" name="height" aria-describedby="height" placeholder="720">
+              </div>
+            </div>
+           </div>
+           <div class="alert alert-info" role="alert">
+                The size of the browser window (default is 1280x720), if possible, the screenshot will take the full page and not just the viewport.
+           </div>
+          </div>
+        </div>
+
         <!-- Referer -->
         <div class="row mb-3">
           <label for="referer" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer">Referer</a>:</label>
@@ -359,14 +384,17 @@
 
         <div class="row mb-3">
           {% set local_TZ, local_UTC_offset, all_timezones = tz_info() %}
-          <label for="timezone_id" class="col-sm-2 col-form-label"><a href="https://playwright.dev/python/docs/emulation#locale--timezone">Timezone</a> (defaults to {{local_TZ}} - {{local_UTC_offset}}):</label>
+          <label for="timezone_id" class="col-sm-2 col-form-label"><a href="https://playwright.dev/python/docs/emulation#locale--timezone">Timezone</a>:</label>
           <div class="col-sm-10">
             <input class="form-control" list="tzOptions" name="timezone_id" id="timezone_id" aria-label="Pick the timezone for the capture" placeholder="Europe/Vatican">
             <datalist id="tzOptions">
-              {% for tz in all_timezones %}
-              <option value="{{tz}}">{{tz}}</option>
+              {% for tz, offset in all_timezones.items() %}
+              <option value="{{tz}}">{{tz}} (UTC{{offset}})</option>
               {%endfor%}
             </datalist>
+            <div class="alert alert-info" role="alert">
+              Defaults to localtime: {{local_TZ}} - {{local_UTC_offset}}.
+            </div>
           </div>
         </div>
 
@@ -385,13 +413,24 @@
         <div class="row mb-3">
           <label for="geoloc" class="col-sm-2 col-form-label"><a href="https://playwright.dev/python/docs/emulation#geolocation">Geolocation</a>:</label>
           <div class="col-sm-10" id="geoloc">
-            <div class="row g-3">
+            <div class="row align-items-center">
               <div class="col">
-                <input type="number" step="any" class="form-control" name="geo_latitude" id="geo_latitude" placeholder="Latitude">
+               <label class="visually-hidden" for="geo_latitude">Latitude</label>
+                <div class="input-group">
+                  <div class="input-group-text">Latitude</div>
+                  <input class="form-control" step="any" type="number" id="geo_latitude" name="geo_latitude" aria-describedby="geo_latitude" placeholder="55.750996996">
+                </div>
               </div>
               <div class="col">
-                <input type="number" step="any" class="form-control" name="geo_longitude" id="geo_longitude" placeholder="Longitude">
+               <label class="visually-hidden" for="geo_longitude">Longitude</label>
+                <div class="input-group">
+                  <div class="input-group-text">Longitude</div>
+                  <input class="form-control" step="any" type="number" id="geo_longitude" name="geo_longitude" aria-describedby="geo_longitude" placeholder="37.617330864">
+                </div>
               </div>
+            </div>
+            <div class="alert alert-info" role="alert">
+              The values are passed to captured website if it requests them via the Geolocation API.
             </div>
           </div>
         </div>
@@ -408,12 +447,20 @@
         <div class="row mb-3">
           <label for="httpauth" class="col-sm-2 col-form-label">HTTP Basic Authentication</label>
           <div class="col-sm-10" id="httpauth">
-            <div class="row g-3">
+            <div class="row align-items-center">
               <div class="col">
-                <input type="text" class="form-control" name="http_auth_username" id="http_auth_username" placeholder="Username">
+               <label class="visually-hidden" for="http_auth_username">Username</label>
+                <div class="input-group">
+                  <div class="input-group-text">Username</div>
+                  <input class="form-control" type="text" id="http_auth_username" name="http_auth_username" aria-describedby="http_auth_username" placeholder="Jacques Chirac">
+                </div>
               </div>
               <div class="col">
-                  <input type="text" class="form-control" name="http_auth_password" id="http_auth_password" placeholder="Password">
+               <label class="visually-hidden" for="http_auth_password">Password</label>
+                <div class="input-group">
+                  <div class="input-group-text">Password</div>
+                  <input class="form-control" type="password" id="http_auth_password" name="http_auth_password" aria-describedby="http_auth_password" placeholder="Yackety Yak">
+                </div>
               </div>
             </div>
             <div class="alert alert-danger" role="alert">
