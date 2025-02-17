@@ -32,7 +32,7 @@ class URLhaus(AbstractModule):
 
         self.session = requests.Session()
         self.session.headers.update({'User-Agent': get_useragent_for_requests()})
-        self.session.params.update({'Auth-Key': self.config.get('apikey')})
+        self.session.headers.update({'Auth-Key': self.config['apikey']})
         self.storage_dir_uh = get_homedir() / 'urlhaus'
         self.storage_dir_uh.mkdir(parents=True, exist_ok=True)
         return True
