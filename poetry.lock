@@ -1419,14 +1419,14 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "har2tree"
-version = "1.27.11"
+version = "1.28.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.27.11-py3-none-any.whl", hash = "sha256:9fafb31c4a760d8a4d025356592042731f34bc6386e3c19358e90ea748d36f42"},
-    {file = "har2tree-1.27.11.tar.gz", hash = "sha256:39020f36be77222adbed55488ab9dfd086fdeb46f40338de640478c035f4893d"},
+    {file = "har2tree-1.28.0-py3-none-any.whl", hash = "sha256:e7b5eb64fa11bc53c1f1434bdd42c010d27fc9755afa28c35550dd82d786bfd1"},
+    {file = "har2tree-1.28.0.tar.gz", hash = "sha256:969c02066a30a684a48893880f6fae892f547f657a522193c8d387ea6f10da36"},
 ]
 
 [package.dependencies]
@@ -1435,10 +1435,10 @@ ete3 = ">=3.1.3"
 filetype = ">=1.2.0"
 legacy-cgi = {version = ">=2.6.2", markers = "python_version >= \"3.13,<4.0\""}
 numpy = [
-    {version = "<=2.1", markers = "python_version == \"3.9\""},
-    {version = ">=2.2.2", markers = "python_version >= \"3.10\""},
+    {version = "<2.1", markers = "python_version == \"3.9\""},
+    {version = ">=2.2.3", markers = "python_version >= \"3.10\""},
 ]
-publicsuffixlist = ">=1.0.2.20250212"
+publicsuffixlist = ">=1.0.2.20250213"
 tinycss2 = ">=1.4.0"
 w3lib = ">=2.3.1"
 
@@ -1769,14 +1769,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.12.10"
+version = "1.13.0"
 description = "Core of Lacus, usable as a module"
 optional = false
-python-versions = "<4.0,>=3.9"
+python-versions = "<4.0,>=3.9.2"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.12.10-py3-none-any.whl", hash = "sha256:b9c7e9396d98a3acf8628b759051796f58d71a7ece61f95a17e55337950ea5df"},
-    {file = "lacuscore-1.12.10.tar.gz", hash = "sha256:b7199f6f84401c2b4b248ef53198692ed9d0aafc766f3fa232d4c2ccebba6031"},
+    {file = "lacuscore-1.13.0-py3-none-any.whl", hash = "sha256:a5ff792a25e797dab8a8d2f21e1aac3473afcf5814350632d81f1426dfeb7015"},
+    {file = "lacuscore-1.13.0.tar.gz", hash = "sha256:e6d31e16259aa59fb4f28c73ba08c19c23d78b979b34ca9ef31a69c6ac60427f"},
 ]
 
 [package.dependencies]
@@ -1784,7 +1784,7 @@ async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 defang = ">=0.5.3"
 dnspython = ">=2.7.0"
 eval-type-backport = {version = ">=0.2.2", markers = "python_version < \"3.10\""}
-playwrightcapture = {version = ">=1.27.8", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.28.0", extras = ["recaptcha"]}
 pydantic = ">=2.10.6"
 redis = {version = ">=5.2.1", extras = ["hiredis"]}
 requests = ">=2.32.3"
@@ -2721,14 +2721,14 @@ test = ["pytest"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.27.9"
+version = "1.28.0"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "playwrightcapture-1.27.9-py3-none-any.whl", hash = "sha256:3f4d74075556100d8616df6946137ec38201dcf2e4f20eee039b8b0a583e01d5"},
-    {file = "playwrightcapture-1.27.9.tar.gz", hash = "sha256:e345ec950ebbd08ff31002d3fee5256760499a9352cd08452b8fafa6899ffb82"},
+    {file = "playwrightcapture-1.28.0-py3-none-any.whl", hash = "sha256:7124e316ca732630005e375678b29c3e87ad1ce3d177f8c8a68c522545150c07"},
+    {file = "playwrightcapture-1.28.0.tar.gz", hash = "sha256:f118108c8f071f73c2e835b0a0271c105721245424bb122cbdc5fd8ab24ad5da"},
 ]
 
 [package.dependencies]
@@ -3328,14 +3328,14 @@ docs = ["Sphinx (>=8.1.3) ; python_version >= \"3.10\""]
 
 [[package]]
 name = "pylacus"
-version = "1.12.1"
+version = "1.13.0"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pylacus-1.12.1-py3-none-any.whl", hash = "sha256:1118ffe9874267693946757184512ede70ecbb644a65fef31241131f3f26306d"},
-    {file = "pylacus-1.12.1.tar.gz", hash = "sha256:0b45a269442aedf252a5d48ad0a13a73e69d5f15588c69d36e431b5eca0d5be5"},
+    {file = "pylacus-1.13.0-py3-none-any.whl", hash = "sha256:f4346bcc30904406b4208a502dce56928ecf1c50c11f24c0f8d654998551a262"},
+    {file = "pylacus-1.13.0.tar.gz", hash = "sha256:e765c5e08b684478ff4bb8d6be2d007297b616ec9fb8a1fe9fdd37ed4e105926"},
 ]
 
 [package.dependencies]
@@ -4874,4 +4874,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "1eedde488cb9fd0794f98ccda3a80d5a9e337bc2a7096906636798759844c0e4"
+content-hash = "781cf323f5edde0ede5d1c6c743458c67afd2dbf094118587afd397bbadb997e"
