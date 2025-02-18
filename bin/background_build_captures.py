@@ -77,7 +77,7 @@ class BackgroundBuildCaptures(AbstractManager):
                     return False
                 if ((path / 'tree.pickle.gz').exists() or (path / 'tree.pickle').exists()):
                     # We already have a pickle file
-                    self.logger.debug(f'{path} has a pickle.')
+                    # self.logger.debug(f'{path} has a pickle.')
                     if (path / 'auto_report').exists():
                         # the pickle was built somewhere else, trigger report.
                         self.__auto_report(path)

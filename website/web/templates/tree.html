@@ -274,6 +274,8 @@
                 <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
                   data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
               {% endif %}
+              <a href="#lookylooPushModal" data-bs-toggle="modal" data-bs-target="#lookylooPushModal" role="button"
+                  title="Push the capture to another Lookyloo Instance">Push to another Lookyloo</a>
             </div>
           </div>
 
@@ -940,6 +942,30 @@
       </div>
   </div>
 </div>
+
+<div class="modal fade" id="lookylooPushModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="lookylooPushModalLabel">
+                  Push the current capture to another Lookyloo instance
+              </h4>
+              <br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <br>
+          <div class="modal-body">
+              <form role="form" action="{{ url_for('web_lookyloo_push_view', tree_uuid=tree_uuid) }}"
+                    method=post enctype=multipart/form-data>
+                  <label for="remote_lookyloo_url" class="col-sm-2 col-form-label">Submit capture to:</label>
+                  <input type="text" class="form-control" name="remote_lookyloo_url" required>
+                  <button type="submit" class="btn btn-primary">Submit</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
 
 <div class="modal fade" id="hashlookupModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">

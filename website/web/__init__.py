@@ -37,6 +37,7 @@ from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus, CaptureSettingsError
 from markupsafe import Markup
+from pylookyloo import PyLookylooError, Lookyloo as PyLookyloo
 from puremagic import from_string, PureError
 from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
 from werkzeug.security import check_password_hash
@@ -891,6 +892,24 @@ def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
                            misps_occurrences=misps_occurrences)
 
 
+@app.route('/tree/<string:tree_uuid>/lookyloo_push', methods=['POST'])
+def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
+    if remote_lookyloo_url := request.form.get('remote_lookyloo_url'):
+        to_push = lookyloo.get_capture(tree_uuid)
+        pylookyloo = PyLookyloo(remote_lookyloo_url)
+        try:
+            uuid = pylookyloo.upload_capture(full_capture=to_push, quiet=True)
+            remote_lookyloo_url = f'<a href="{pylookyloo.root_url}/tree/{uuid}" target="_blank">{uuid}</a>'
+            flash(Markup(f'Successfully pushed the capture: {remote_lookyloo_url}.'), 'success')
+        except PyLookylooError as e:
+            flash(f'Error while pushing capture: {e}', 'error')
+        except Exception as e:
+            flash(f'Unable to push capture: {e}', 'error')
+    else:
+        flash('Remote Lookyloo URL missing.', 'error')
+    return redirect(url_for('tree', tree_uuid=tree_uuid))
+
+
 @app.route('/tree/<string:tree_uuid>/misp_push', methods=['GET', 'POST'])
 def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not lookyloo.misps.available:
@@ -986,7 +1005,8 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
                 flash(f'Unable to create event(s): {new_events}', 'error')
             else:
                 for e in new_events:
-                    flash(f'MISP event {e.id} created on {misp.client.root_url}', 'success')
+                    remote_misp_url = f'<a href="{misp.client.root_url}/events/view/{e.id}" target="_blank">{e.id}</a>'
+                    flash(Markup(f'MISP event {remote_misp_url} created on {misp.client.root_url}'), 'success')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 

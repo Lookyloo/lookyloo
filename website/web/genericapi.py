@@ -527,7 +527,9 @@ class UploadCapture(Resource):  # type: ignore[misc]
                 return {'error': ', '.join(messages['errors'])}, 400
             return {'uuid': uuid, 'messages': messages}
         else:
-            # Treat it as a direct export from Lacus
+            # Treat it as a direct export from Lacus, requires at a bare minimum a HAR
+            if 'har' not in parameters or not parameters.get('har'):
+                return {'error': 'Missing HAR file'}, 400
             try:
                 uuid = str(uuid4())
                 # The following parameters are base64 encoded and need to be decoded first
