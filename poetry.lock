@@ -2,20 +2,20 @@
 
 [[package]]
 name = "aiobotocore"
-version = "2.19.0"
+version = "2.20.0"
 description = "Async client for aws services using botocore and aiohttp"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "aiobotocore-2.19.0-py3-none-any.whl", hash = "sha256:12c2960a21472b8eb3452cde5eb31d541ca1464d236f4221556320fa8aed2ee8"},
-    {file = "aiobotocore-2.19.0.tar.gz", hash = "sha256:552d5756989621b5274f1b4a4840cd76ae83dd930d0b1839af6443743a893faf"},
+    {file = "aiobotocore-2.20.0-py3-none-any.whl", hash = "sha256:02d9d727355a03f83ee1a4fc91f2fd14966862144b4d2cc3434181e82dfafd83"},
+    {file = "aiobotocore-2.20.0.tar.gz", hash = "sha256:8902d8a96e3a389c99a68d23e2ca07c8d5059439c2a55acf28a8af19e65fe293"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.9.2,<4.0.0"
 aioitertools = ">=0.5.1,<1.0.0"
-botocore = ">=1.36.0,<1.36.4"
+botocore = ">=1.36.20,<1.36.24"
 jmespath = ">=0.7.1,<2.0.0"
 multidict = ">=6.0.0,<7.0.0"
 python-dateutil = ">=2.1,<3.0.0"
@@ -26,8 +26,8 @@ urllib3 = [
 wrapt = ">=1.10.10,<2.0.0"
 
 [package.extras]
-awscli = ["awscli (>=1.37.0,<1.37.4)"]
-boto3 = ["boto3 (>=1.36.0,<1.36.4)"]
+awscli = ["awscli (>=1.37.20,<1.37.24)"]
+boto3 = ["boto3 (>=1.36.20,<1.36.24)"]
 
 [[package]]
 name = "aiodns"
@@ -402,14 +402,14 @@ WTForms = "*"
 
 [[package]]
 name = "botocore"
-version = "1.36.3"
+version = "1.36.23"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "botocore-1.36.3-py3-none-any.whl", hash = "sha256:536ab828e6f90dbb000e3702ac45fd76642113ae2db1b7b1373ad24104e89255"},
-    {file = "botocore-1.36.3.tar.gz", hash = "sha256:775b835e979da5c96548ed1a0b798101a145aec3cd46541d62e27dda5a94d7f8"},
+    {file = "botocore-1.36.23-py3-none-any.whl", hash = "sha256:886730e79495a2e153842725ebdf85185c8277cdf255b3b5879cd097ddc7fcc3"},
+    {file = "botocore-1.36.23.tar.gz", hash = "sha256:9feaa2d876f487e718a5fd80a35fa401042b518c0c75117d3e1ea39a567439e7"},
 ]
 
 [package.dependencies]
@@ -421,7 +421,7 @@ urllib3 = [
 ]
 
 [package.extras]
-crt = ["awscrt (==0.23.4)"]
+crt = ["awscrt (==0.23.8)"]
 
 [[package]]
 name = "brotli"
@@ -2896,14 +2896,14 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250213"
+version = "1.0.2.20250219"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20250213-py2.py3-none-any.whl", hash = "sha256:5167acef9d4c99ac9b83e14bb062b529fb428f97f907f602d4d2feb177c01ac4"},
-    {file = "publicsuffixlist-1.0.2.20250213.tar.gz", hash = "sha256:81b4fa9ff8ebf868180e1d34e3a0ec4e241eb09ea3a7b5904bfc2fc1eff4342c"},
+    {file = "publicsuffixlist-1.0.2.20250219-py2.py3-none-any.whl", hash = "sha256:0b55cc55bbb5b1a658678a16a2ae9bcda1ec8a3f0975729e830356bc0da8c736"},
+    {file = "publicsuffixlist-1.0.2.20250219.tar.gz", hash = "sha256:b05842d7d9ca0e96418f95bf46058f0bd5ddc251e8240b98d6d04480efabe76a"},
 ]
 
 [package.extras]
@@ -3384,35 +3384,34 @@ docs = ["Sphinx (<7.2) ; python_version < \"3.9\"", "Sphinx (>=7.2,<8.0) ; pytho
 
 [[package]]
 name = "pymisp"
-version = "2.5.4"
+version = "2.5.7"
 description = "Python API for MISP."
 optional = false
-python-versions = "<4.0,>=3.9"
+python-versions = "<4.0,>=3.9.2"
 groups = ["main"]
 files = [
-    {file = "pymisp-2.5.4-py3-none-any.whl", hash = "sha256:e1a9e8a691430c8e4ac115ddceb4ffc0cdfff7124104cb6a50ca6262597c06cb"},
-    {file = "pymisp-2.5.4.tar.gz", hash = "sha256:368fef2152d9d276d8b476b0f1c72376e9ead49bf58631e31bdb5d7ed86d603f"},
+    {file = "pymisp-2.5.7-py3-none-any.whl", hash = "sha256:4c6e2079cfc37ea0fb3e8c56f551dae033f2ac5d9d34fcfb1f9834d28841f689"},
+    {file = "pymisp-2.5.7.tar.gz", hash = "sha256:7b0043c143618a64d4c0972cdfca035bfec03b8cfd5767523f0c6f531ad767f6"},
 ]
 
 [package.dependencies]
-deprecated = ">=1.2.15,<2.0.0"
-lief = {version = ">=0.16.0,<0.17.0", optional = true, markers = "extra == \"fileobjects\""}
-publicsuffixlist = ">=1.0.2.20241218,<2.0.0.0"
-pydeep2 = {version = ">=0.5.1,<0.6.0", optional = true, markers = "extra == \"fileobjects\""}
-pyfaup = {version = ">=1.2,<2.0", optional = true, markers = "extra == \"url\""}
-python-dateutil = ">=2.9.0.post0,<3.0.0"
-python-magic = {version = ">=0.4.27,<0.5.0", optional = true, markers = "extra == \"fileobjects\""}
-requests = ">=2.32.3,<3.0.0"
+deprecated = ">=1.2.18"
+lief = {version = ">=0.16.3", optional = true, markers = "extra == \"fileobjects\""}
+pydeep2 = {version = ">=0.5.1", optional = true, markers = "extra == \"fileobjects\""}
+pyfaup = {version = ">=1.2", optional = true, markers = "extra == \"url\""}
+python-dateutil = ">=2.9.0.post0"
+python-magic = {version = ">=0.4.27", optional = true, markers = "extra == \"fileobjects\""}
+requests = ">=2.32.3"
 
 [package.extras]
-brotli = ["urllib3[brotli]"]
-docs = ["Sphinx (>=8,<9) ; python_version >= \"3.10\"", "docutils (>=0.21.1,<0.22.0) ; python_version >= \"3.10\"", "recommonmark (>=0.7.1,<0.8.0) ; python_version >= \"3.10\"", "sphinx-autodoc-typehints (>=2.5.0,<3.0.0) ; python_version >= \"3.10\""]
-email = ["RTFDE (>=0.1.1,<0.2.0)", "extract_msg (>=0.52,<0.53)", "oletools (>=0.60.1,<0.61.0)"]
-fileobjects = ["lief (>=0.16.0,<0.17.0)", "pydeep2 (>=0.5.1,<0.6.0)", "python-magic (>=0.4.27,<0.5.0)"]
-openioc = ["beautifulsoup4 (>=4.12.3,<5.0.0)"]
-pdfexport = ["reportlab (>=4.2.5,<5.0.0)"]
-url = ["pyfaup (>=1.2,<2.0)"]
-virustotal = ["validators (>=0.34.0,<0.35.0)"]
+brotli = ["urllib3 (>=2.3.0)"]
+docs = ["docutils (>=0.21.2) ; python_version >= \"3.11\"", "myst-parser (>=4.0.1) ; python_version >= \"3.11\"", "sphinx (>=8.2.0) ; python_version >= \"3.11\"", "sphinx-autodoc-typehints (>=3.1.0) ; python_version >= \"3.11\""]
+email = ["RTFDE (>=0.1.2) ; python_version <= \"3.9\"", "extract_msg (>=0.53.1)", "oletools (>=0.60.2)"]
+fileobjects = ["lief (>=0.16.3)", "pydeep2 (>=0.5.1)", "python-magic (>=0.4.27)"]
+openioc = ["beautifulsoup4 (>=4.13.3)"]
+pdfexport = ["reportlab (>=4.3.1)"]
+url = ["pyfaup (>=1.2)"]
+virustotal = ["validators (>=0.34.0)"]
 
 [[package]]
 name = "pypandora"
@@ -4874,4 +4873,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "781cf323f5edde0ede5d1c6c743458c67afd2dbf094118587afd397bbadb997e"
+content-hash = "e1c4320b995cc3da01ff3779f84dcf03170b59bf6520eefc73dad9b407da5938"
