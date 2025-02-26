@@ -54,14 +54,14 @@ pysanejs = "^2.0.4"
 pylookyloo = "^1.28.0"
 dnspython = "^2.7.0"
 pytaxonomies = "^2.0"
-pymisp = {version = "^2.5.7", extras = ["url", "fileobjects"]}
+pymisp = {version = "^2.5.7.1", extras = ["fileobjects"]}
 Pillow = "^11.1.0"
 flask-restx = "^1.3.0"
 rich = "^13.9.4"
 pyphishtanklookup = "^1.4.1"
-Flask-Cors = "^5.0.0"
+Flask-Cors = "^5.0.1"
 pyhashlookup = "^1.2.6"
-lief = "^0.16.3"
+lief = "^0.16.4"
 ua-parser = {extras = ["regex"], version = "^1.0.1"}
 Flask-Login = "^0.6.3"
 har2tree = "^1.28.0"
@@ -71,7 +71,7 @@ pypandora = "^1.9.2"
 lacuscore = "^1.13.0"
 pylacus = "^1.13.0"
 pyipasnhistory = "^2.1.4"
-publicsuffixlist = "^1.0.2.20250219"
+publicsuffixlist = "^1.0.2.20250225"
 pyfaup = "^1.2"
 chardet = "^5.2.0"
 pysecuritytxt = "^1.3.3"
@@ -87,7 +87,7 @@ puremagic = "^1.28"
 psutil = "^7.0.0"
 flask-talisman = "^1.1.0"
 
-aiohttp = {extras = ["speedups"], version = "^3.11.12"}
+aiohttp = {extras = ["speedups"], version = "^3.11.13"}
 pyail = "^0.0.8"
 
 [tool.poetry.group.dev.dependencies]
