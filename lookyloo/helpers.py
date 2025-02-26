@@ -504,6 +504,8 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> C
     except EOFError:
         logger.warning(f'EOFError, removing the pickle in {capture_dir}.')
         remove_pickle_tree(capture_dir)
+    except FileNotFoundError as e:
+        logger.info(f'File not found: {e}')
     except Exception as e:
         logger.exception(f'Unexpected exception when unpickling: {e}')
         remove_pickle_tree(capture_dir)
