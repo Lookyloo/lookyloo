@@ -1062,7 +1062,7 @@ def modules(tree_uuid: str) -> str | WerkzeugResponse | Response:
         # TODO: make a short result
         uh = modules_responses.pop('urlhaus')
         for url, results in uh['urls'].items():
-            if results:
+            if results and 'url' in results:
                 urlhaus_short_result['urls'].append(results)
 
     urlscan_to_display: dict[str, Any] = {}
