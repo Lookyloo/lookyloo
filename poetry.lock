@@ -2913,14 +2913,14 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250225"
+version = "1.0.2.20250227"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20250225-py2.py3-none-any.whl", hash = "sha256:33b3a9e8ac4c125bcffbde42c65375cb72c7ff7352466395328146bf53ef1e55"},
-    {file = "publicsuffixlist-1.0.2.20250225.tar.gz", hash = "sha256:fb78dab1e437a84aacaed63c40fd18a0d34e0bf280d6d8acab890b472fdfd764"},
+    {file = "publicsuffixlist-1.0.2.20250227-py2.py3-none-any.whl", hash = "sha256:8dcd5c2d3a77ae168e5c16f8e07e9becb3cc380b035226772ad562361f48ab46"},
+    {file = "publicsuffixlist-1.0.2.20250227.tar.gz", hash = "sha256:def14d99c46237144d7e51b9db793e52455df46ffe889413cbf1792e46354de4"},
 ]
 
 [package.extras]
@@ -4042,14 +4042,14 @@ test = ["pytest"]
 
 [[package]]
 name = "setuptools"
-version = "75.8.1"
+version = "75.8.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "setuptools-75.8.1-py3-none-any.whl", hash = "sha256:3bc32c0b84c643299ca94e77f834730f126efd621de0cc1de64119e0e17dab1f"},
-    {file = "setuptools-75.8.1.tar.gz", hash = "sha256:65fb779a8f28895242923582eadca2337285f0891c2c9e160754df917c3d2530"},
+    {file = "setuptools-75.8.2-py3-none-any.whl", hash = "sha256:558e47c15f1811c1fa7adbd0096669bf76c1d3f433f58324df69f3f5ecac4e8f"},
+    {file = "setuptools-75.8.2.tar.gz", hash = "sha256:4880473a969e5f23f2a2be3646b2dfd84af9028716d398e46192f84bc36900d2"},
 ]
 
 [package.extras]
@@ -4889,4 +4889,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "67650b65def547076cff1ee320c512948ba66e5b5f5566b78d5c960135d73628"
+content-hash = "c5f2391734e142d090fbe961d7ce55648779324e6ec33d0bbece6c46c37e92e1"
