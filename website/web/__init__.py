@@ -2240,15 +2240,17 @@ def post_table(table_name: str, value: str) -> Response:
                 'page': f"""<p title="{cached.title}"><a href="{url_for('tree', tree_uuid=cached.uuid)}">{cached.title}</a><p>{shorten_string(cached.url, 100, with_title=True)}""",
                 'capture_time': cached.timestamp.isoformat(),
             }
-            if not cached.redirects:
-                to_append['redirects'] = 'No redirect'
-            else:
+            to_append['redirects'] = {'display': 'No redirect', 'filter': ''}
+            if cached.redirects:
+                display = f"""<p title="{cached.redirects[0]}">{shorten_string(cached.redirects[0], 50, with_title=True)}"""
+                filter_redirects = ' '.join(cached.redirects)
                 to_append['redirects'] = f"""<p title="{cached.redirects[0]}">{shorten_string(cached.redirects[0], 50, with_title=True)}"""
                 if len(cached.redirects) > 1:
                     for counter, r in enumerate(cached.redirects[1:]):
-                        to_append['redirects'] += f"""<br>{"&nbsp;" * (counter + 1) * 2}↪{shorten_string(r, 50, with_title=True)}"""  # type: ignore[operator]
-                to_append['redirects'] += '</p>'  # type: ignore[operator]
-                to_append['redirects'] += f"""<a style="float: right;" href="{url_for('redirects', tree_uuid=cached.uuid)}">Download redirects</a>"""  # type: ignore[operator]
+                        display += f"""<br>{"&nbsp;" * (counter + 1) * 2}↪{shorten_string(r, 50, with_title=True)}"""  # type: ignore[operator]
+                display += '</p>'  # type: ignore[operator]
+                display += f"""<a style="float: right;" href="{url_for('redirects', tree_uuid=cached.uuid)}">Download redirects</a>"""  # type: ignore[operator]
+                to_append['redirects'] = {'display': display, 'filter': filter_redirects}
             prepared_captures.append(to_append)
         return jsonify(prepared_captures)
 
@@ -2533,8 +2535,8 @@ def post_table(table_name: str, value: str) -> Response:
                     'time_first': record.time_first_datetime.isoformat(),
                     'time_last': record.time_last_datetime.isoformat(),
                     'rrtype': record.rrtype,
-                    'rdata': data,
-                    'rrname': record.rrname
+                    'rdata': f'<span class="d-inline-block text-break">{data}</span>',
+                    'rrname': f'<span class="d-inline-block text-break">{record.rrname}</span>'
                 }
                 prepared_records.append(to_append)
         return jsonify(prepared_records)

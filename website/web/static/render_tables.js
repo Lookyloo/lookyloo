@@ -18,7 +18,7 @@ function renderTables() {
       columns : [
           { data: 'page', width: '40%' },
           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-          { data: 'redirects', width: '40%' }
+          { data: {_: 'redirects.display', filter: 'redirects.filter'}, width: '40%' }
       ],
     })
   }
