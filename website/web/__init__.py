@@ -318,13 +318,14 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
 
 
 # NOTE: Add in the globals?
-def details_modal_button(target_modal_id: str, data_remote: str, button_string: str) -> str:
-    return f'''
+def details_modal_button(target_modal_id: str, data_remote: str, button_string: str) -> dict[str, str]:
+    return {'display': f'''
 <span class="d-inline-block text-break">
   <a href="{target_modal_id}" data-remote="{data_remote}" data-bs-toggle="modal" data-bs-target="{target_modal_id}" role="button">
     {button_string}
   </a>
-</span>'''
+</span>''',
+        'filter': button_string}
 
 
 # NOTE: Add in the globals?
@@ -424,7 +425,7 @@ def _get_body_hash_investigator(body_hash: str, offset: int | None=None, limit: 
     return total, captures
 
 
-def get_all_body_hashes(capture_uuid: str, /) -> dict[str, dict[str, int | str | list[tuple[URLNode, bool]]]]:
+def get_all_body_hashes(capture_uuid: str, /) -> dict[str, Any]:
     ct = lookyloo.get_crawled_tree(capture_uuid)
     to_return: dict[str, dict[str, int | str | list[tuple[URLNode, bool]]]] = defaultdict()
     for node in ct.root_hartree.url_tree.traverse():
@@ -491,7 +492,7 @@ def get_ip_investigator(ip: str, offset: int | None=None, limit: int | None=None
     return total, captures
 
 
-def get_all_ips(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode]]]:
+def get_all_ips(capture_uuid: str, /) -> dict[str, Any]:
     ct = lookyloo.get_crawled_tree(capture_uuid)
     to_return: dict[str, dict[str, list[URLNode] | int]] = defaultdict()
     for urlnode in ct.root_hartree.url_tree.traverse():
@@ -512,7 +513,7 @@ def get_all_ips(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode]
     return to_return
 
 
-def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode] | str]]:
+def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, Any]]:
     ct = lookyloo.get_crawled_tree(capture_uuid)
     to_return: dict[str, dict[str, list[URLNode] | int | str]] = defaultdict()
     for node in ct.root_hartree.url_tree.traverse():
@@ -533,18 +534,18 @@ def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, int | list[UR
     return to_return
 
 
-def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | list[URLNode] | str]]:
+def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | str]]:
     ct = lookyloo.get_crawled_tree(capture_uuid)
-    to_return: dict[str, dict[str, list[URLNode] | int | str]] = defaultdict()
+    to_return: dict[str, dict[str, int | str]] = defaultdict()
     for node in ct.root_hartree.url_tree.traverse():
         if not node.name:
             continue
         captures_count = get_indexing(flask_login.current_user).get_captures_url_count(node.name)
         # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
         if node.hostname not in to_return:
-            to_return[node.name] = {'total_captures': captures_count, 'nodes': [],
+            to_return[node.name] = {'total_captures': captures_count,  # 'nodes': [],
                                     'quoted_url': base64.urlsafe_b64encode(node.name.encode()).decode()}
-        to_return[node.name]['nodes'].append(node)  # type: ignore[union-attr]
+        # to_return[node.name]['nodes'].append(node)  # type: ignore[union-attr]
     return to_return
 
 
@@ -2163,10 +2164,10 @@ def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
     return None
 
 
-def __prepare_node_view(capture_uuid: str, nodes: list[tuple[str, str]], from_popup: bool=False) -> str:
+def __prepare_node_view(capture_uuid: str, nodes: list[tuple[str, str]], from_popup: bool=False) -> dict[str, str]:
     collapse_id = str(uuid4())
-    to_return = f'The capture contains this value in <b>{len(nodes)}</b> nodes.'
-    to_return += f"""<br>
+    display = f'The capture contains this value in <b>{len(nodes)}</b> nodes.'
+    display += f"""<br>
     <p class="d-inline-flex gap-1">
       <button class="btn btn-link" type="button"
           data-bs-toggle="collapse" data-bs-target="#collapseAllNodes_{collapse_id}"
@@ -2179,28 +2180,33 @@ def __prepare_node_view(capture_uuid: str, nodes: list[tuple[str, str]], from_po
         Click on the link to go directly on the node in the tree.
         <span class="d-inline-block text-break">
     """
-    to_return += '<ul class="list-group list-group-flush">'
+    display += '<ul class="list-group list-group-flush">'
+    url_nodes = []
     for url, node in nodes:
+        url_nodes.append(url)
         url_span = f'<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(url, 50, with_title=True)}</span>'
-        to_return += '<li class="list-group-item">'
+        display += '<li class="list-group-item">'
         if from_popup:
-            to_return += f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}" data-hostnode="{node}">{url_span}</a>"""
+            display += f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}" data-hostnode="{node}">{url_span}</a>"""
         else:
-            to_return += f'<a href="{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}">{url_span}</a>'
-        to_return += '</li>'
-    to_return += '</ul></span></div></div>'
-    return to_return
+            display += f'<a href="{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}">{url_span}</a>'
+    display += '</li>'
+    display += '</ul></span></div></div>'
+    return {'display': display, 'filter': ' '.join(url_nodes)}
 
 
-def __prepare_title_in_modal(capture_uuid: str, title: str, from_popup: bool=False) -> str:
+def __prepare_title_in_modal(capture_uuid: str, title: str, from_popup: bool=False) -> dict[str, str]:
     span_title = f'<span class="d-inline-block text-break">{title}</span>'
     if from_popup:
-        return f'<a href="#" class="openNewTab" data-capture="{capture_uuid}">{span_title}</a>'
-    return f'<a href="{url_for("tree", tree_uuid=capture_uuid)}">{span_title}</a>'
+        return {'display': f'<a href="#" class="openNewTab" data-capture="{capture_uuid}">{span_title}</a>',
+                'filter': title}
+    return {'display': f'<a href="{url_for("tree", tree_uuid=capture_uuid)}">{span_title}</a>',
+            'filter': title}
 
 
-def __prepare_landings_in_modal(landing_page: str) -> str:
-    return f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(landing_page, 100, with_title=True)}</span>"""
+def __prepare_landings_in_modal(landing_page: str) -> dict[str, str]:
+    return {'display': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(landing_page, 100, with_title=True)}</span>""",
+            'filter': landing_page}
 
 
 @app.route('/tables/<string:table_name>/<string:value>', methods=['POST'])
@@ -2211,7 +2217,7 @@ def post_table(table_name: str, value: str) -> Response:
     length = request.form.get('length', type=int)
     search = request.form.get('search[value]', type=str)
     captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, list[tuple[str, str]]]] | list[tuple[str, str, str, datetime]]
-    to_append: dict[str, int | list[URLNode] | str | list[tuple[URLNode, bool]]]
+    to_append: dict[str, int | str | dict[str, str]]
     if table_name == 'indexTable':
         show_error, category = get_index_params(request)
         show_hidden = (value == "hidden")
@@ -2237,7 +2243,8 @@ def post_table(table_name: str, value: str) -> Response:
             if not show_error and cached.error:
                 continue
             to_append = {
-                'page': f"""<p title="{cached.title}"><a href="{url_for('tree', tree_uuid=cached.uuid)}">{cached.title}</a><p>{shorten_string(cached.url, 100, with_title=True)}""",
+                'page': {'display': f"""<p title="{cached.title}"><a href="{url_for('tree', tree_uuid=cached.uuid)}">{cached.title}</a><p>{shorten_string(cached.url, 100, with_title=True)}""",
+                         'filter': cached.title},
                 'capture_time': cached.timestamp.isoformat(),
             }
             to_append['redirects'] = {'display': 'No redirect', 'filter': ''}
@@ -2247,9 +2254,9 @@ def post_table(table_name: str, value: str) -> Response:
                 to_append['redirects'] = f"""<p title="{cached.redirects[0]}">{shorten_string(cached.redirects[0], 50, with_title=True)}"""
                 if len(cached.redirects) > 1:
                     for counter, r in enumerate(cached.redirects[1:]):
-                        display += f"""<br>{"&nbsp;" * (counter + 1) * 2}↪{shorten_string(r, 50, with_title=True)}"""  # type: ignore[operator]
-                display += '</p>'  # type: ignore[operator]
-                display += f"""<a style="float: right;" href="{url_for('redirects', tree_uuid=cached.uuid)}">Download redirects</a>"""  # type: ignore[operator]
+                        display += f"""<br>{"&nbsp;" * (counter + 1) * 2}↪{shorten_string(r, 50, with_title=True)}"""
+                display += '</p>'
+                display += f"""<a style="float: right;" href="{url_for('redirects', tree_uuid=cached.uuid)}">Download redirects</a>"""
                 to_append['redirects'] = {'display': display, 'filter': filter_redirects}
             prepared_captures.append(to_append)
         return jsonify(prepared_captures)
@@ -2264,9 +2271,14 @@ def post_table(table_name: str, value: str) -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'capture_title': f'{__prepare_title_in_modal(capture_uuid, title, from_popup)}</br>{__prepare_node_view(capture_uuid, nodes, from_popup)}',
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
+
+            title_modal = __prepare_title_in_modal(capture_uuid, title, from_popup)
+            node_view = __prepare_node_view(capture_uuid, nodes, from_popup)
+            to_append['capture_title'] = {'display': f'{title_modal["display"]}</br>{node_view["display"]}',
+                                          'filter': f'{title_modal["filter"]} {node_view["filter"]}'}
+
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
@@ -2280,9 +2292,12 @@ def post_table(table_name: str, value: str) -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'capture_title': f'{__prepare_title_in_modal(capture_uuid, title, from_popup)}</br>{__prepare_node_view(capture_uuid, nodes, from_popup)}',
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
+            title_modal = __prepare_title_in_modal(capture_uuid, title, from_popup)
+            node_view = __prepare_node_view(capture_uuid, nodes, from_popup)
+            to_append['capture_title'] = {'display': f'{title_modal["display"]}</br>{node_view["display"]}',
+                                          'filter': f'{title_modal["filter"]} {node_view["filter"]}'}
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
@@ -2296,9 +2311,12 @@ def post_table(table_name: str, value: str) -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'capture_title': f'{__prepare_title_in_modal(capture_uuid, title, from_popup)}</br>{__prepare_node_view(capture_uuid, nodes, from_popup)}',
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
+            title_modal = __prepare_title_in_modal(capture_uuid, title, from_popup)
+            node_view = __prepare_node_view(capture_uuid, nodes, from_popup)
+            to_append['capture_title'] = {'display': f'{title_modal["display"]}</br>{node_view["display"]}',
+                                          'filter': f'{title_modal["filter"]} {node_view["filter"]}'}
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
@@ -2358,9 +2376,12 @@ def post_table(table_name: str, value: str) -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'capture_title': f'{__prepare_title_in_modal(capture_uuid, title, from_popup)}</br>{__prepare_node_view(capture_uuid, nodes, from_popup)}',
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
+            title_modal = __prepare_title_in_modal(capture_uuid, title, from_popup)
+            node_view = __prepare_node_view(capture_uuid, nodes, from_popup)
+            to_append['capture_title'] = {'display': f'{title_modal["display"]}</br>{node_view["display"]}',
+                                          'filter': f'{title_modal["filter"]} {node_view["filter"]}'}
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
@@ -2373,9 +2394,12 @@ def post_table(table_name: str, value: str) -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'capture_title': f'{__prepare_title_in_modal(capture_uuid, title, from_popup)}</br>{__prepare_node_view(capture_uuid, nodes, from_popup)}',
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
+            title_modal = __prepare_title_in_modal(capture_uuid, title, from_popup)
+            node_view = __prepare_node_view(capture_uuid, nodes, from_popup)
+            to_append['capture_title'] = {'display': f'{title_modal["display"]}</br>{node_view["display"]}',
+                                          'filter': f'{title_modal["filter"]} {node_view["filter"]}'}
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
@@ -2389,9 +2413,12 @@ def post_table(table_name: str, value: str) -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'capture_title': f'{__prepare_title_in_modal(capture_uuid, title, from_popup)}</br>{__prepare_node_view(capture_uuid, nodes, from_popup)}',
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
+            title_modal = __prepare_title_in_modal(capture_uuid, title, from_popup)
+            node_view = __prepare_node_view(capture_uuid, nodes, from_popup)
+            to_append['capture_title'] = {'display': f'{title_modal["display"]}</br>{node_view["display"]}',
+                                          'filter': f'{title_modal["filter"]} {node_view["filter"]}'}
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
@@ -2428,7 +2455,7 @@ def post_table(table_name: str, value: str) -> Response:
         tree_uuid = value.strip()
         prepared_captures = []
         for _hostname, _info in get_all_hostnames(tree_uuid).items():
-            nodes = [(node.name, node.uuid) for node in _info['nodes']]  # type: ignore[union-attr]
+            h_nodes: list[tuple[str, str]] = [(node.name, node.uuid) for node in _info['nodes']]  # type: ignore[union-attr]
             to_append = {
                 'total_captures': _info['total_captures'],
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
@@ -2437,7 +2464,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
                                            data_remote=url_for('ip_details', ip=_info['ip']),
                                            button_string=shorten_string(_info['ip'], 100, with_title=True)),  # type: ignore[arg-type]
-                'urls': __prepare_node_view(tree_uuid, nodes, from_popup)
+                'urls': __prepare_node_view(tree_uuid, h_nodes, from_popup)
             }
             prepared_captures.append(to_append)
         return jsonify(prepared_captures)
@@ -2489,8 +2516,8 @@ def post_table(table_name: str, value: str) -> Response:
     if table_name == 'ipsTable':
         tree_uuid = value.strip()
         prepared_captures = []
-        for _ip, _info in get_all_ips(tree_uuid).items():  # type: ignore[assignment]
-            nodes = [(node.name, node.uuid) for node in _info['nodes']]  # type: ignore[union-attr]
+        for _ip, _info in get_all_ips(tree_uuid).items():
+            ip_nodes: list[tuple[str, str]] = [(node.name, node.uuid) for node in _info['nodes']]  # type: ignore[union-attr]
             to_append = {
                 'total_captures': _info['total_captures'],
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
@@ -2499,7 +2526,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_info['hostname']),
                                                  button_string=shorten_string(_info['hostname'], 100, with_title=True)),  # type: ignore[arg-type]
-                'urls': __prepare_node_view(tree_uuid, nodes, from_popup)
+                'urls': __prepare_node_view(tree_uuid, ip_nodes, from_popup)
             }
             prepared_captures.append(to_append)
         return jsonify(prepared_captures)
@@ -2508,11 +2535,11 @@ def post_table(table_name: str, value: str) -> Response:
         tree_uuid = value.strip()
         prepared_captures = []
         for body_hash, _bh_info in get_all_body_hashes(tree_uuid).items():
-            nodes = [(node[0].name, node[0].uuid) for node in _bh_info['nodes']]  # type: ignore[union-attr]
+            bh_nodes: list[tuple[str, str]] = [(node[0].name, node[0].uuid) for node in _bh_info['nodes']]
             to_append = {
                 'total_captures': _bh_info['total_captures'],
-                'file_type': hash_icon_render(tree_uuid, _bh_info['nodes'][0][0].uuid, _bh_info['mimetype'], body_hash),  # type: ignore[index,union-attr,arg-type]
-                'urls': __prepare_node_view(tree_uuid, nodes, from_popup),
+                'file_type': hash_icon_render(tree_uuid, _bh_info['nodes'][0][0].uuid, _bh_info['mimetype'], body_hash),
+                'urls': __prepare_node_view(tree_uuid, bh_nodes, from_popup),
                 'sha512': details_modal_button(target_modal_id='#bodyHashDetailsModal',
                                                data_remote=url_for('body_hash_details', body_hash=body_hash),
                                                button_string=shorten_string(body_hash, 40, with_title=True))

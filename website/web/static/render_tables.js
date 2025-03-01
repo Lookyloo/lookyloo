@@ -16,7 +16,7 @@ function renderTables() {
         dataSrc:""
       },
       columns : [
-          { data: 'page', width: '40%' },
+          { data: {_: 'page.display', filter: 'page.filter'}, width: '40%' },
           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
           { data: {_: 'redirects.display', filter: 'redirects.filter'}, width: '40%' }
       ],
@@ -37,8 +37,8 @@ function renderTables() {
       },
       columns : [
           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-          { data: 'capture_title', width: '40%' },
-          { data: 'landing_page', width: '40%' }
+          { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
+          { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
       ],
     })
   }
@@ -57,8 +57,8 @@ function renderTables() {
       },
       columns : [
           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-          { data: 'capture_title', width: '40%' },
-          { data: 'landing_page', width: '40%' }
+          { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
+          { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
       ],
     })
   }
@@ -77,8 +77,8 @@ function renderTables() {
         },
         columns : [
             { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: 'capture_title', width: '40%' },
-            { data: 'landing_page', width: '40%' }
+            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
+            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
         ],
       });
   }
@@ -98,8 +98,8 @@ function renderTables() {
         },
         columns : [
             { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: 'capture_title', width: '40%' },
-            { data: 'landing_page', width: '40%' }
+            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
+            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
         ],
       });
   }
@@ -121,8 +121,8 @@ function renderTables() {
         },
         columns: [{ data: 'total_captures', width: '10%', orderable: false},
                   { data: 'file_type', width: '10%' },
-                  { data: 'urls', width: '60%', orderable: false },
-                  { data: 'sha512', width: '20%', orderable: false }],
+                  { data: {_: 'urls.display', filter: 'urls.filter'}, width: '60%', orderable: false },
+                  { data: {_: 'sha512.display', filter: 'sha512.filter'}, width: '20%', orderable: false }],
       });
   }
   if (document.getElementById('faviconsTable')) {
@@ -142,7 +142,7 @@ function renderTables() {
             dataSrc: ""
         },
         columns: [{ data: 'total_captures', width: '10%' },
-                  { data: 'favicon', width: '40%', orderable: false },
+                  { data: {_: 'favicon.display', filter: 'favicon.filter'}, width: '40%', orderable: false },
                   { data: 'shodan_mmh3', width: '40%', orderable: false },
                   { data:  'download', width: '10%', orderable: false }],
       });
@@ -161,7 +161,7 @@ function renderTables() {
             dataSrc: ""
         },
         columns: [{ data: 'total_captures', width: '20%' },
-                 { data: 'capture_hash', width: '40%', orderable: false },
+                 { data: {_: 'capture_hash.display', 'filter': 'capture_hash.filter'}, width: '40%', orderable: false },
                  { data: 'hash_type', width: '40%', orderable: false }],
       });
   }
@@ -182,9 +182,9 @@ function renderTables() {
             dataSrc: ""
         },
         columns: [{ data: 'total_captures', width: '10%' },
-                  { data: 'hostname', width: '30%', orderable: false },
-                  { data: 'ip', width: '20%', orderable: false },
-                  { data: 'urls', width: '40%', orderable: false }],
+                  { data: {_: 'hostname.display', filter: 'hostname.filter'}, width: '30%', orderable: false },
+                  { data: {_: 'ip.display', filter: 'ip.filter'}, width: '20%', orderable: false },
+                  { data: {_: 'urls.display', filter: 'urls.filter'}, width: '40%', orderable: false }],
       });
   }
   if (document.getElementById('ipsTable')) {
@@ -204,9 +204,9 @@ function renderTables() {
             dataSrc: ""
         },
         columns: [{ data: 'total_captures', width: '10%' },
-                  { data: 'ip', width: '20%', orderable: false },
-                  { data: 'hostname', width: '30%', orderable: false },
-                  { data: 'urls', width: '40%', orderable: false }],
+                  { data: {_: 'ip.display', filter: 'ip.filter'}, width: '20%', orderable: false },
+                  { data: {_: 'hostname.display', filter: 'hostname.filter'}, width: '30%', orderable: false },
+                  { data: {_: 'urls.display', filter: 'urls.filter'}, width: '40%', orderable: false }],
       });
   }
   if (document.getElementById('identifiersTable')) {
@@ -223,7 +223,7 @@ function renderTables() {
             dataSrc: ""
         },
         columns: [{ data: 'total_captures', width: '20%', orderable: false },
-                  { data: 'identifier', width: '40%', orderable: false },
+                  { data: {_: 'identifier.display', filter: 'identifier.filter'}, width: '40%', orderable: false },
                   { data: 'identifier_type', width: '40%', orderable: false }],
       });
   }
@@ -241,7 +241,7 @@ function renderTables() {
             dataSrc:""
         },
         columns: [{ data: 'total_captures', width: '10%', orderable: false },
-                  { data: 'url', width: '90%', orderable: false }]
+                  { data: {_: 'url.display', filter: 'url.filter'}, width: '90%', orderable: false }]
       })
   }
   if (document.getElementById('cookieNameTable')) {
@@ -259,8 +259,8 @@ function renderTables() {
         },
         columns : [
             { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: 'capture_title', width: '40%' },
-            { data: 'landing_page', width: '40%' }
+            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
+            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
         ],
       });
   }
@@ -280,8 +280,8 @@ function renderTables() {
         },
         columns : [
            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: 'capture_title', width: '40%' },
-           { data: 'landing_page', width: '40%' }
+           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
+           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
         ],
     });
   }
@@ -301,8 +301,8 @@ function renderTables() {
         },
         columns : [
            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: 'capture_title', width: '40%' },
-           { data: 'landing_page', width: '40%' }
+           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
+           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
         ],
     });
   }
@@ -322,8 +322,8 @@ function renderTables() {
         },
         columns : [
             { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: 'capture_title', width: '40%' },
-            { data: 'landing_page', width: '40%' }
+            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
+            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
         ],
       });
   }
@@ -343,8 +343,8 @@ function renderTables() {
         },
         columns : [
            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: 'capture_title', width: '40%' },
-           { data: 'landing_page', width: '40%' }
+           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
+           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
         ],
       });
   }
