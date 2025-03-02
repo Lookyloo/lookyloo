@@ -2209,6 +2209,22 @@ def __prepare_landings_in_modal(landing_page: str) -> dict[str, str]:
             'filter': landing_page}
 
 
+def __make_redirect_chain(redirects: list[str], uuid: str) -> str:
+    to_render = '''
+{% from 'bootstrap5/utils.html' import render_icon %}
+<p>
+  {{shorten_string(redirects[0], 50, with_title=True)}}
+  {% for r in redirects[1:] %}
+    <br>
+    {{ "&nbsp;"|safe * loop.index }} {{ render_icon("arrow-return-right") }} {{ shorten_string(r, 50, with_title=True) }}
+  {% endfor %}
+</p>
+<a style="float: right;" href="{{url_for('redirects', tree_uuid=uuid)}}">Download redirects</a>
+'''
+    rendered = render_template_string(to_render, redirects=redirects)
+    return Markup(rendered)
+
+
 @app.route('/tables/<string:table_name>/<string:value>', methods=['POST'])
 def post_table(table_name: str, value: str) -> Response:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
@@ -2249,15 +2265,7 @@ def post_table(table_name: str, value: str) -> Response:
             }
             to_append['redirects'] = {'display': 'No redirect', 'filter': ''}
             if cached.redirects:
-                display = f"""<p title="{cached.redirects[0]}">{shorten_string(cached.redirects[0], 50, with_title=True)}"""
-                filter_redirects = ' '.join(cached.redirects)
-                to_append['redirects'] = f"""<p title="{cached.redirects[0]}">{shorten_string(cached.redirects[0], 50, with_title=True)}"""
-                if len(cached.redirects) > 1:
-                    for counter, r in enumerate(cached.redirects[1:]):
-                        display += f"""<br>{"&nbsp;" * (counter + 1) * 2}↪{shorten_string(r, 50, with_title=True)}"""
-                display += '</p>'
-                display += f"""<a style="float: right;" href="{url_for('redirects', tree_uuid=cached.uuid)}">Download redirects</a>"""
-                to_append['redirects'] = {'display': display, 'filter': filter_redirects}
+                to_append['redirects'] = {'display': __make_redirect_chain(cached.redirects, cached.uuid), 'filter': ' '.join(cached.redirects)}
             prepared_captures.append(to_append)
         return jsonify(prepared_captures)
 
