@@ -34,7 +34,9 @@
     </thead>
     <tbody>
       <tr>
-          <td><span title="The file may have different names across the captures, this is one of them.">{{ filename }}</span></td>
+          <td>
+              <span class="d-inline-block text-break" title="The file may have different names across the captures, this is one of them.">{{ filename }}</span>
+          </td>
           <td>{{ sizeof_fmt(ressource_size) }}</td>
           <td>{{ mimetype }}</td>
           <td ><span style="font-size: 70%;" class="d-inline-block text-break">{{ body_hash }}</span></td>
