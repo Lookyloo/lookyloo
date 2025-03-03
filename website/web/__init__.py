@@ -30,7 +30,7 @@ from zoneinfo import ZoneInfo
 from har2tree import HostNode, URLNode
 import flask_login  # type: ignore[import-untyped]
 from flask import (Flask, Response, Request, flash, jsonify, redirect, render_template,
-                   request, send_file, url_for, render_template_string)
+                   request, send_file, url_for)
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
@@ -326,17 +326,6 @@ def details_modal_button(target_modal_id: str, data_remote: str, button_string: 
   </a>
 </span>''',
         'filter': button_string}
-
-
-# NOTE: Add in the globals?
-def favicon_download_button(mimetype: str, b64_favicon: str) -> str:
-    to_render = '''
-{% from 'bootstrap5/utils.html' import render_icon %}
-<button type="button" class="btn btn-light downloadFaviconButton" data-mimetype="{{mimetype}}" data-b64favicon="{{b64_favicon}}" data-filename="favicon.ico">
-  {{render_icon("cloud-download", title="Download the favicon")}}
-</button>'''
-    rendered = render_template_string(to_render, mimetype=mimetype, b64_favicon=b64_favicon)
-    return Markup(rendered)
 
 
 app.jinja_env.globals.update(
@@ -2209,8 +2198,7 @@ def __prepare_landings_in_modal(landing_page: str) -> dict[str, str]:
             'filter': landing_page}
 
 
-def __make_redirect_chain(redirects: list[str], uuid: str) -> str:
-    to_render = '''
+redir_chain_template = app.jinja_env.from_string(source='''
 {% from 'bootstrap5/utils.html' import render_icon %}
 <p>
   {{shorten_string(redirects[0], 50, with_title=True)}}
@@ -2220,9 +2208,14 @@ def __make_redirect_chain(redirects: list[str], uuid: str) -> str:
   {% endfor %}
 </p>
 <a style="float: right;" href="{{url_for('redirects', tree_uuid=uuid)}}">Download redirects</a>
-'''
-    rendered = render_template_string(to_render, redirects=redirects)
-    return Markup(rendered)
+''')
+
+
+favicon_download_button_template = app.jinja_env.from_string(source='''
+{% from 'bootstrap5/utils.html' import render_icon %}
+<button type="button" class="btn btn-light downloadFaviconButton" data-mimetype="{{mimetype}}" data-b64favicon="{{b64_favicon}}" data-filename="favicon.ico">
+  {{render_icon("cloud-download", title="Download the favicon")}}
+</button>''')
 
 
 @app.route('/tables/<string:table_name>/<string:value>', methods=['POST'])
@@ -2265,7 +2258,10 @@ def post_table(table_name: str, value: str) -> Response:
             }
             to_append['redirects'] = {'display': 'No redirect', 'filter': ''}
             if cached.redirects:
-                to_append['redirects'] = {'display': __make_redirect_chain(cached.redirects, cached.uuid), 'filter': ' '.join(cached.redirects)}
+                to_append['redirects'] = {'display': render_template(redir_chain_template,
+                                                                     redirects=cached.redirects,
+                                                                     uuid=cached.uuid),
+                                          'filter': ' '.join(cached.redirects)}
             prepared_captures.append(to_append)
         return jsonify(prepared_captures)
 
@@ -2515,7 +2511,7 @@ def post_table(table_name: str, value: str) -> Response:
                                                     button_string=f'''<img src="data:{mimetype};base64,{b64_favicon}" style="width:32px;height:32px;"
                                                                            title="Click to see other captures with the same favicon"/>'''),
                     'shodan_mmh3': lookyloo.compute_mmh3_shodan(favicon),
-                    'download': favicon_download_button(mimetype, b64_favicon)
+                    'download': render_template(favicon_download_button_template, mimetype=mimetype, b64_favicon=b64_favicon)
                 }
 
                 prepared_captures.append(to_append)
