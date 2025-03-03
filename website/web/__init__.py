@@ -2153,35 +2153,44 @@ def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
     return None
 
 
+node_view_template = app.jinja_env.from_string(source='''
+The capture contains this value in <b>{{nodes | length}}</b> nodes.
+<br>
+<p class="d-inline-flex gap-1">
+  <button class="btn btn-link" type="button"
+      data-bs-toggle="collapse" data-bs-target="#collapseAllNodes_{{collapse_id}}"
+      aria-expanded="false" aria-controls="collapseAllNodes_{{collapse_id}}">
+  Show
+  </button>
+</p>
+<div class="collapse" id="collapseAllNodes_{{collapse_id}}">
+  <div class="card card-body">
+    Click on the link to go directly on the node in the tree.
+    <span class="d-inline-block text-break">
+      <ul class="list-group list-group-flush">
+        {%for url, node in nodes %}
+        <li class="list-group-item">
+          {% if from_popup %}
+          <a href="#" class="openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{node}}">
+            <span class="d-inline-block text-break" style="max-width: 400px;">{{shorten_string(url, 50, with_title=True)}}</span>
+          </a>
+          {% else %}
+          <a href="{{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}}">
+            <span class="d-inline-block text-break" style="max-width: 400px;">{{shorten_string(url, 50, with_title=True)}}</span>
+          </a>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </span>
+  </div>
+</div>
+''')
+
+
 def __prepare_node_view(capture_uuid: str, nodes: list[tuple[str, str]], from_popup: bool=False) -> dict[str, str]:
-    collapse_id = str(uuid4())
-    display = f'The capture contains this value in <b>{len(nodes)}</b> nodes.'
-    display += f"""<br>
-    <p class="d-inline-flex gap-1">
-      <button class="btn btn-link" type="button"
-          data-bs-toggle="collapse" data-bs-target="#collapseAllNodes_{collapse_id}"
-          aria-expanded="false" aria-controls="collapseAllNodes_{collapse_id}">
-      Show
-      </button>
-    </p>
-    <div class="collapse" id="collapseAllNodes_{collapse_id}">
-      <div class="card card-body">
-        Click on the link to go directly on the node in the tree.
-        <span class="d-inline-block text-break">
-    """
-    display += '<ul class="list-group list-group-flush">'
-    url_nodes = []
-    for url, node in nodes:
-        url_nodes.append(url)
-        url_span = f'<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(url, 50, with_title=True)}</span>'
-        display += '<li class="list-group-item">'
-        if from_popup:
-            display += f"""<a href="#" class="openNewTab" data-capture="{capture_uuid}" data-hostnode="{node}">{url_span}</a>"""
-        else:
-            display += f'<a href="{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}">{url_span}</a>'
-    display += '</li>'
-    display += '</ul></span></div></div>'
-    return {'display': display, 'filter': ' '.join(url_nodes)}
+    return {'display': render_template(node_view_template, collapse_id=str(uuid4()), nodes=nodes, capture_uuid=capture_uuid),
+            'filter': ' '.join(url for url, _ in nodes)}
 
 
 def __prepare_title_in_modal(capture_uuid: str, title: str, from_popup: bool=False) -> dict[str, str]:
