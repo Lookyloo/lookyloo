@@ -2214,7 +2214,7 @@ The capture contains this value in <b>{{nodes | length}}</b> nodes.
           </a>
           {% else %}
           <a href="{{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}}">
-            <span class="d-inline-block text-break" style="max-width: 400px;">{{shorten_string(url, 50, with_title=True)}}</span>
+            <span class="d-inline-block text-break">{{shorten_string(url, 100, with_title=True)}}</span>
           </a>
           {% endif %}
         </li>
@@ -2589,7 +2589,9 @@ def post_table(table_name: str, value: str) -> Response:
             bh_nodes: list[tuple[str, str]] = [(node[0].name, node[0].uuid) for node in _bh_info['nodes']]
             to_append = {
                 'total_captures': _bh_info['total_captures'],
-                'file_type': hash_icon_render(tree_uuid, _bh_info['nodes'][0][0].uuid, _bh_info['mimetype'], body_hash),
+                'file_type': {'display': hash_icon_render(tree_uuid, _bh_info['nodes'][0][0].uuid,
+                                                          _bh_info['mimetype'], body_hash),
+                              'filter': _bh_info['mimetype']},
                 'urls': __prepare_node_view(tree_uuid, bh_nodes, from_popup),
                 'sha512': details_modal_button(target_modal_id='#bodyHashDetailsModal',
                                                data_remote=url_for('body_hash_details', body_hash=body_hash),

@@ -120,7 +120,7 @@ function renderTables() {
             dataSrc: ""
         },
         columns: [{ data: 'total_captures', width: '10%', orderable: false},
-                  { data: 'file_type', width: '10%' },
+                  { data: {_: 'file_type.display', filter: 'file_type.filter'}, width: '10%' },
                   { data: {_: 'urls.display', filter: 'urls.filter'}, width: '60%', orderable: false },
                   { data: {_: 'sha512.display', filter: 'sha512.filter'}, width: '20%', orderable: false }],
       });
