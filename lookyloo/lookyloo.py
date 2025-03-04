@@ -1458,7 +1458,7 @@ class Lookyloo():
         potential_favicons: set[bytes] | None = None
 
         files_to_skip = ['cnames.json', 'ipasn.json', 'ips.json', 'mx.json',
-                         'nameservers.json', 'soa.json']
+                         'nameservers.json', 'soa.json', 'hashlookup.json']
 
         with ZipFile(archive, 'r') as lookyloo_capture:
             potential_favicons = set()
@@ -1527,15 +1527,18 @@ class Lookyloo():
                     messages['errors'].append('Invalid submission: missing landing page')
                 if not screenshot:
                     messages['errors'].append('Invalid submission: missing screenshot')
-            if not unrecoverable_error:
-                self.store_capture(uuid, is_public=listing,
-                                   os=os, browser=browser, parent=parent,
-                                   downloaded_filename=downloaded_filename, downloaded_file=downloaded_file,
-                                   error=error, har=har, png=screenshot, html=html,
-                                   last_redirected_url=last_redirected_url,
-                                   cookies=cookies,
-                                   capture_settings=capture_settings if capture_settings else None,
-                                   potential_favicons=potential_favicons)
+
+            if unrecoverable_error:
+                return '', messages
+
+            self.store_capture(uuid, is_public=listing,
+                               os=os, browser=browser, parent=parent,
+                               downloaded_filename=downloaded_filename, downloaded_file=downloaded_file,
+                               error=error, har=har, png=screenshot, html=html,
+                               last_redirected_url=last_redirected_url,
+                               cookies=cookies,
+                               capture_settings=capture_settings if capture_settings else None,
+                               potential_favicons=potential_favicons)
             return uuid, messages
 
     def store_capture(self, uuid: str, is_public: bool,

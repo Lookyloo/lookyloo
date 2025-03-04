@@ -39,10 +39,39 @@
       </div>
     </div>
     <div class="row mb-3">
-      <label for="full_capture" class="col-sm-2 col-form-label">Full capture from another Lookyloo instance:</label>
+      <label for="full_capture" class="col-sm-2 col-form-label">Import full capture:</label>
       <div class="col-sm-10">
-        <input type="file" class="form-control-file" id="full_capture" name="full_capture">
-        <div>The capture must be a zipfile as you can get when calling /export on an existing capture.</div>
+        <input type="file" class="form-control" id="full_capture" name="full_capture">
+        <div class="alert alert-info" role="alert">
+            The file must be the export of an existing capture made on another Lookyloo instance.
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="row mb-3">
+      <label for="pull_capture" class="col-sm-2 col-form-label">Pull Capture:</label>
+      <div class="col-sm-10" id="pull_capture">
+        <div class="row align-items-center">
+          <div class="col">
+           <label class="visually-hidden" for="pull_capture_domain">Domain</label>
+            <div class="input-group">
+              <div class="input-group-text">Domain</div>
+              <input class="form-control" step="any" type="text" id="pull_capture_domain" name="pull_capture_domain" aria-describedby="pull_capture_domain" placeholder="https://lookyloo.circl.lu">
+            </div>
+          </div>
+          <div class="col">
+           <label class="visually-hidden" for="pull_capture_uuid">Capture UUID</label>
+            <div class="input-group">
+              <div class="input-group-text">Capture UUID</div>
+              <input class="form-control" step="any" type="text" id="pull_capture_uuid" name="pull_capture_uuid" aria-describedby="pull_capture_uuid" placeholder="bcca3b16-115b-4964-839e-1e7885bbb4b7">
+            </div>
+          </div>
+        </div>
+        <div class="alert alert-info" role="alert">
+          The Lookyloo instance you're pulling from must be reachable from this one.
+        </div>
       </div>
     </div>
 
@@ -51,9 +80,11 @@
     <div class="row mb-3">
       <label for="har_file" class="col-sm-2 col-form-label">HTTP Archive (HAR) file:</label>
       <div class="col-sm-10">
-        <input type="file" class="form-control-file" id="har_file" name="har_file">
-        <div><b>[Experimental]</b> It can be any file in <a href="https://en.wikipedia.org/wiki/HAR_(file_format)">HTTP Archive format</a>, from any source (browser or any other tool)</div>
+        <input type="file" class="form-control" id="har_file" name="har_file">
         <div class="alert alert-info" role="alert">
+            <b>[Experimental]</b> It can be any file in <a href="https://en.wikipedia.org/wiki/HAR_(file_format)">HTTP Archive format</a>, from any source (browser or any other tool)
+        </div>
+        <div class="alert alert-warning" role="alert">
             This feature is experimantal and it may not work for some reason. If it is the case, please
             <a href="https://github.com/Lookyloo/lookyloo/issues">open an issue on github</a> and attach the HAR file so we can investigate.
         </div>
@@ -63,21 +94,27 @@
       <label for="landing_page" class="col-sm-2 col-form-label">Landing page:</label>
       <div class="col-sm-10">
         <input type="text" class="form-control" id="landing_page" name="landing_page">
-        <div>The URL in the bowser at the end of the capture, it cannot always be guessed from the HAR file.</div>
+        <div class="alert alert-info" role="alert">
+            The URL in the bowser at the end of the capture, it cannot always be guessed from the HAR file.
+        </div>
       </div>
     </div>
     <div class="row mb-3">
       <label for="screenshot_file" class="col-sm-2 col-form-label">Screenshot file:</label>
       <div class="col-sm-10">
-        <input type="file" class="form-control-file" id="screenshot_file" name="screenshot_file">
-        <div>A screenshot of the rendered page.</div>
+        <input type="file" class="form-control" id="screenshot_file" name="screenshot_file">
+        <div class="alert alert-info" role="alert">
+            A screenshot of the rendered page.
+        </div>
       </div>
     </div>
     <div class="row mb-3">
       <label for="html_file" class="col-sm-2 col-form-label">Rendered HTML file:</label>
       <div class="col-sm-10">
-        <input type="file" class="form-control-file" id="html_file" name="html_file">
-        <div>The page rendered by the browser at the end of the capture, it is not in the HAR file.</div>
+        <input type="file" class="form-control" id="html_file" name="html_file">
+        <div class="alert alert-info" role="alert">
+            The page rendered by the browser at the end of the capture, it is not in the HAR file.
+        </div>
       </div>
     </div>
 

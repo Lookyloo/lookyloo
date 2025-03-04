@@ -122,8 +122,10 @@
         <div class="row mb-3">
           <label for="document" class="col-sm-1 col-form-label">Document:</label>
           <div class="col-sm-10">
-            <input type="file" class="form-control-file" id="document" name="document">
-            <div>Instead of a URL, you can upload a file. Preferably an HTML document, but it can be anything supported by a browser.</div>
+            <input type="file" class="form-control" id="document" name="document">
+            <div class="alert alert-info" role="alert">
+                Instead of a URL, you can upload a file. Preferably an HTML document, but it can be anything supported by a browser.
+            </div>
           </div>
         </div>
       </div>
@@ -150,10 +152,12 @@
               <input class="form-check-input" type="radio" id="personal_ua_select" name="user_agent_select">
               <label for="personal_ua_select" class="form-check-label">
                   Use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser:<br>
-                  {{ personal_ua }}
               </label>
               <input class="visually-hidden" type="text" id="personal_ua" name="personal_ua" value="{{ personal_ua }}" disabled>
             </div>
+          </div>
+          <div class="alert alert-light" role="alert">
+            <b>{{ personal_ua }}</b>
           </div>
         </div>
         <hr>
@@ -476,8 +480,10 @@
         <div class="row mb-3">
           <label for="cookies" class="col-sm-2 col-form-label">Cookies:</label>
           <div class="col-sm-10">
-            <input type="file" class="form-control-file" id="cookies" name="cookies">
-            <div>The file can either be the JSON export from the Firefox plugin <a href="https://addons.mozilla.org/en-US/firefox/addon/cookie-quick-manager/">Cookie Quick Manager</a> <b>or</b> from an other Lookyloo capture.</div>
+            <input type="file" class="form-control" id="cookies" name="cookies">
+            <div class="alert alert-info" role="alert">
+                The file can either be the JSON export from the Firefox plugin <a href="https://addons.mozilla.org/en-US/firefox/addon/cookie-quick-manager/">Cookie Quick Manager</a> <b>or</b> from an other Lookyloo capture.
+            </div>
             <div class="alert alert-danger" role="alert">
               The cookies will be stored on the lookyloo instance and potentially
               accessed by third parties (either because the Lookyloo instance is public,
