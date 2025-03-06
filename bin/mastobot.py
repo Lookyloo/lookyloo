@@ -9,6 +9,8 @@ import logging
 import re
 import time
 
+from bs4 import BeautifulSoup
+from defang import defang  # type: ignore[import-untyped]
 from lxml import html
 from mastodon import Mastodon, MastodonError, StreamListener
 from mastodon.return_types import Notification, Status
@@ -31,11 +33,30 @@ class LookylooMastobotListener(StreamListener):
     def on_update(self, status: Status) -> None:
         self.mastobot.logger.debug(f"Update: {status}")
 
+    def _find_url(self, content: str) -> list[str]:
+        # Case 1, the toot has 2 words, the first is the username, the second is the URL
+        doc = html.document_fromstring(content)
+        body = doc.text_content().strip()
+        splitted = body.split(' ')
+        if len(splitted) == 2:
+            # The first word is the username, the rest is the URL
+            return [splitted[1]]
+
+        # Case 2: we get all the hyperlinks in the toot (except the ones pointing to users)
+        to_return = []
+        soup = BeautifulSoup(content, 'lxml')
+        for link in soup.find_all('a', href=True):
+            if 'mention' in link.get('class', []):
+                # usernames
+                continue
+            if link.get('href'):
+                to_return.append(link['href'])
+        return to_return
+
     def on_notification(self, notification: Notification) -> None:
         self.mastobot.logger.debug(f"notification: {notification}")
         try:
             sender = None
-            url_to_capture = None
             visibility = None
             spoiler_text = None
             if notification['type'] == 'mention':
@@ -57,20 +78,17 @@ class LookylooMastobotListener(StreamListener):
                         return
                 visibility = notification['status']['visibility']
                 spoiler_text = notification['status']['spoiler_text']
-                # Mastodon API returns the content of the toot in
-                # HTML, just to make our lifes miserable
-                doc = html.document_fromstring(notification['status']['content'])
-                body = doc.text_content().strip()
-                # The first word is the username, the rest is the URL
-                _, url_to_capture = body.split(' ', 1)
-                # TODO: do minimal validation to check if the URL is vaguely valid
-                try:
-                    permaurl = self.mastobot.lookyloo.submit(url=url_to_capture)
-                except Exception as error:
-                    self.mastobot.logger.error(f"Error while submitting {url_to_capture}: {error}")
-                    return
-                text = f'@{sender} Here is your capture: {permaurl}\n It may take a minute to complete, please be patient. #bot'
-                self.mastobot.mastodon.status_post(text, in_reply_to_id=status_id, visibility=visibility, spoiler_text=spoiler_text)
+                for url in self._find_url(notification['status']['content']):
+                    self.mastobot.logger.info(f"URL: {url}")
+                    if not url:
+                        continue
+                    try:
+                        permaurl = self.mastobot.lookyloo.submit(url=url)
+                    except Exception as error:
+                        self.mastobot.logger.error(f"Error while submitting {url}: {error}")
+                        return
+                    text = f'@{sender} Here is your capture of {defang(url)}: {permaurl}\n It may take a minute to complete, please be patient. #bot'
+                    self.mastobot.mastodon.status_post(text, in_reply_to_id=status_id, visibility=visibility, spoiler_text=spoiler_text)
             else:
                 self.mastobot.logger.debug(f"Unhandled notification type: {notification['type']}")
             time.sleep(15)
@@ -78,7 +96,7 @@ class LookylooMastobotListener(StreamListener):
         except KeyError as error:
             self.mastobot.logger.error(f"Malformed notification, missing {error}")
         except Exception as error:
-            self.mastobot.logger.error(f"{sender} {url_to_capture} -> {error}")
+            self.mastobot.logger.error(f"{sender} -> {error}")
 
 
 class Mastobot(AbstractManager):
@@ -133,9 +151,9 @@ class Mastobot(AbstractManager):
                 self.handler = None
             else:
                 if self.handler.is_alive():
-                    self.logger.info("Stream is alive")
+                    self.logger.debug("Stream is alive")
                 if self.handler.is_receiving():
-                    self.logger.info("Stream is receiving")
+                    self.logger.debug("Stream is receiving")
 
     def _wait_to_finish(self) -> None:
         if self.handler:
