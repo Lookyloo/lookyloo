@@ -2,14 +2,14 @@
 
 [[package]]
 name = "aiobotocore"
-version = "2.21.0"
+version = "2.21.1"
 description = "Async client for aws services using botocore and aiohttp"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "aiobotocore-2.21.0-py3-none-any.whl", hash = "sha256:05b4e29690a07913297686d819dc8dac341a5361f14fedf444bdd77ae1e36554"},
-    {file = "aiobotocore-2.21.0.tar.gz", hash = "sha256:03d64a41e313ebce76fd7c3e4c854e560032ac5cf71f4d5072616ca6fb9701b5"},
+    {file = "aiobotocore-2.21.1-py3-none-any.whl", hash = "sha256:bd7c49a6d6f8a3d9444b0a94417c8da13813b5c7eec1c4f0ec2db7e8ce8f23e7"},
+    {file = "aiobotocore-2.21.1.tar.gz", hash = "sha256:010357f43004413e92a9d066bb0db1f241aeb29ffed306e9197061ffc94e6577"},
 ]
 
 [package.dependencies]
@@ -55,14 +55,14 @@ files = [
 
 [[package]]
 name = "aiohappyeyeballs"
-version = "2.4.6"
+version = "2.5.0"
 description = "Happy Eyeballs for asyncio"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "aiohappyeyeballs-2.4.6-py3-none-any.whl", hash = "sha256:147ec992cf873d74f5062644332c539fcd42956dc69453fe5204195e560517e1"},
-    {file = "aiohappyeyeballs-2.4.6.tar.gz", hash = "sha256:9b05052f9042985d32ecbe4b59a77ae19c006a78f1344d7fdad69d28ded3d0b0"},
+    {file = "aiohappyeyeballs-2.5.0-py3-none-any.whl", hash = "sha256:0850b580748c7071db98bffff6d4c94028d0d3035acc20fd721a0ce7e8cac35d"},
+    {file = "aiohappyeyeballs-2.5.0.tar.gz", hash = "sha256:18fde6204a76deeabc97c48bdd01d5801cfda5d6b9c8bbeb1aaaee9d648ca191"},
 ]
 
 [[package]]
@@ -349,7 +349,7 @@ version = "4.13.3"
 description = "Screen-scraping library"
 optional = false
 python-versions = ">=3.7.0"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "beautifulsoup4-4.13.3-py3-none-any.whl", hash = "sha256:99045d7d3f08f91f0d656bc9b7efbae189426cd913d830294a15eefa0ea4df16"},
     {file = "beautifulsoup4-4.13.3.tar.gz", hash = "sha256:1bd32405dacc920b42b83ba01644747ed77456a65760e285fbc47633ceddaf8b"},
@@ -379,6 +379,21 @@ files = [
     {file = "blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc"},
     {file = "blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf"},
 ]
+
+[[package]]
+name = "blurhash"
+version = "1.1.4"
+description = "Pure-Python implementation of the blurhash algorithm."
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "blurhash-1.1.4-py2.py3-none-any.whl", hash = "sha256:7611c1bc41383d2349b6129208587b5d61e8792ce953893cb49c38beeb400d1d"},
+    {file = "blurhash-1.1.4.tar.gz", hash = "sha256:da56b163e5a816e4ad07172f5639287698e09d7f3dc38d18d9726d9c1dbc4cee"},
+]
+
+[package.extras]
+test = ["Pillow", "numpy", "pytest"]
 
 [[package]]
 name = "bootstrap-flask"
@@ -917,6 +932,18 @@ test = ["certifi (>=2024)", "cryptography-vectors (==44.0.2)", "pretend (>=0.7)"
 test-randomorder = ["pytest-randomly"]
 
 [[package]]
+name = "cssselect"
+version = "1.2.0"
+description = "cssselect parses CSS3 Selectors and translates them to XPath 1.0"
+optional = false
+python-versions = ">=3.7"
+groups = ["dev"]
+files = [
+    {file = "cssselect-1.2.0-py2.py3-none-any.whl", hash = "sha256:da1885f0c10b60c03ed5eccbb6b68d6eff248d91976fcde348f395d54c9fd35e"},
+    {file = "cssselect-1.2.0.tar.gz", hash = "sha256:666b19839cfaddb9ce9d36bfe4c969132c647b92fc9088c4e23f786b30f1b3dc"},
+]
+
+[[package]]
 name = "dateparser"
 version = "1.2.1"
 description = "Date parsing library designed to parse dates from HTML pages"
@@ -945,12 +972,12 @@ version = "5.2.1"
 description = "Decorators for Humans"
 optional = false
 python-versions = ">=3.8"
-groups = ["dev"]
-markers = "python_version >= \"3.11\""
+groups = ["main", "dev"]
 files = [
     {file = "decorator-5.2.1-py3-none-any.whl", hash = "sha256:d316bb415a2d9e2d2b3abcc4084c6502fc09240e292cd76a76afc106a1c8e04a"},
     {file = "decorator-5.2.1.tar.gz", hash = "sha256:65f266143752f734b0a7cc83c46f4618af75b8c5911b00ccb61d0ac9b6da0360"},
 ]
+markers = {dev = "python_version >= \"3.11\""}
 
 [[package]]
 name = "defang"
@@ -1713,14 +1740,14 @@ testing = ["Django", "attrs", "colorama", "docopt", "pytest (<9.0.0)"]
 
 [[package]]
 name = "jinja2"
-version = "3.1.5"
+version = "3.1.6"
 description = "A very fast and expressive template engine."
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "jinja2-3.1.5-py3-none-any.whl", hash = "sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb"},
-    {file = "jinja2-3.1.5.tar.gz", hash = "sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb"},
+    {file = "jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"},
+    {file = "jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d"},
 ]
 
 [package.dependencies]
@@ -2119,6 +2146,33 @@ files = [
     {file = "MarkupSafe-3.0.2-cp39-cp39-win_amd64.whl", hash = "sha256:6e296a513ca3d94054c2c881cc913116e90fd030ad1c656b3869762b754f5f8a"},
     {file = "markupsafe-3.0.2.tar.gz", hash = "sha256:ee55d3edf80167e48ea11a923c7386f4669df67d7994554387f84e7d8b0a2bf0"},
 ]
+
+[[package]]
+name = "mastodon-py"
+version = "2.0.1"
+description = "Python wrapper for the Mastodon API"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "mastodon_py-2.0.1-py3-none-any.whl", hash = "sha256:5bb543ecbd7526bd50675d5d617ec04caa6b10d4002454cbf5641ad612723455"},
+    {file = "mastodon_py-2.0.1.tar.gz", hash = "sha256:f0a9cf59071347c7ff2ee49487d2520ca661f349f369b68845bdf3e43db1fff3"},
+]
+
+[package.dependencies]
+blurhash = ">=1.1.4"
+decorator = ">=4.0.0"
+python-dateutil = "*"
+python-magic = {version = "*", markers = "platform_system != \"Windows\""}
+python-magic-bin = {version = "*", markers = "platform_system == \"Windows\""}
+requests = ">=2.4.2"
+
+[package.extras]
+blurhash = ["blurhash (>=1.1.4)"]
+docs = ["sphinx-rtd-theme"]
+test = ["pytest", "pytest-cov", "pytest-mock", "pytest-retry", "pytest-vcr", "pytz", "requests-mock", "vcrpy"]
+test-old = ["pytest", "pytest-cov", "pytest-mock", "pytest-vcr", "pytz", "requests-mock", "vcrpy"]
+webpush = ["cryptography (>=1.6.0)", "http_ece (>=1.0.5)"]
 
 [[package]]
 name = "matplotlib-inline"
@@ -2923,14 +2977,14 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250302"
+version = "1.0.2.20250306"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20250302-py2.py3-none-any.whl", hash = "sha256:92fa2e194d6eb08a64a3d980b4ed75bf1c4ab112e08053fe142c6c1d202b8cec"},
-    {file = "publicsuffixlist-1.0.2.20250302.tar.gz", hash = "sha256:d8dba9f597ddba22bbbce4c6a4c1978890ee16cc80d6de5370beeaa42bf35dca"},
+    {file = "publicsuffixlist-1.0.2.20250306-py2.py3-none-any.whl", hash = "sha256:460d67a40ed497addfea7227fa7c5d3e9669b467296b5ed3253ea3cb6b4791e0"},
+    {file = "publicsuffixlist-1.0.2.20250306.tar.gz", hash = "sha256:45fc8921dcd8842dc03a8dc87c2131efd0af2c9e76e0275fae7755aacf91f937"},
 ]
 
 [package.extras]
@@ -3530,19 +3584,19 @@ docs = ["Sphinx (>=8.1.3) ; python_version >= \"3.10\""]
 
 [[package]]
 name = "pytaxonomies"
-version = "2.0"
+version = "2.1.0"
 description = "Python API for the taxonomies."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pytaxonomies-2.0-py3-none-any.whl", hash = "sha256:8d3e30d318cbde2e235a95553a334e15c86fe9766179a821fca66d335f69b55c"},
-    {file = "pytaxonomies-2.0.tar.gz", hash = "sha256:9c50985c2fdf2719a8db298a35826903849bf8903cc4f34cff3f24cede4d1074"},
+    {file = "pytaxonomies-2.1.0-py3-none-any.whl", hash = "sha256:682a7ef953f7ba7db1cf13f414cfc156f54ec36f272cbfb11e795a1a5c411533"},
+    {file = "pytaxonomies-2.1.0.tar.gz", hash = "sha256:ad4bf5a9ad94fa23c663240358587fa46e55559db5cfc2e24b74d892c926a4d7"},
 ]
 
 [package.extras]
 remote = ["requests (>=2.32.3)"]
-webui = ["Flask (>=3.0.3)", "Flask-Bootstrap (>=3.3.7.1)", "Flask-WTF (>=1.2.1)", "flask-nav (>=0.6)"]
+webui = ["Flask (>=3.1.0)", "Flask-Bootstrap (>=3.3.7.1)", "Flask-WTF (>=1.2.2)", "flask-nav (>=0.6)"]
 
 [[package]]
 name = "python-dateutil"
@@ -3569,6 +3623,20 @@ groups = ["main"]
 files = [
     {file = "python-magic-0.4.27.tar.gz", hash = "sha256:c1ba14b08e4a5f5c31a302b7721239695b2f0f058d125bd5ce1ee36b9d9d3c3b"},
     {file = "python_magic-0.4.27-py2.py3-none-any.whl", hash = "sha256:c212960ad306f700aa0d01e5d7a325d20548ff97eb9920dcd29513174f0294d3"},
+]
+
+[[package]]
+name = "python-magic-bin"
+version = "0.4.14"
+description = "File type identification using libmagic binary package"
+optional = false
+python-versions = "*"
+groups = ["main"]
+markers = "platform_system == \"Windows\""
+files = [
+    {file = "python_magic_bin-0.4.14-py2.py3-none-macosx_10_6_intel.whl", hash = "sha256:7b1743b3dbf16601d6eedf4e7c2c9a637901b0faaf24ad4df4d4527e7d8f66a4"},
+    {file = "python_magic_bin-0.4.14-py2.py3-none-win32.whl", hash = "sha256:34a788c03adde7608028203e2dbb208f1f62225ad91518787ae26d603ae68892"},
+    {file = "python_magic_bin-0.4.14-py2.py3-none-win_amd64.whl", hash = "sha256:90be6206ad31071a36065a2fc169c5afb5e0355cbe6030e87641c6c62edc2b69"},
 ]
 
 [[package]]
@@ -4056,7 +4124,7 @@ version = "75.8.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "setuptools-75.8.2-py3-none-any.whl", hash = "sha256:558e47c15f1811c1fa7adbd0096669bf76c1d3f433f58324df69f3f5ecac4e8f"},
     {file = "setuptools-75.8.2.tar.gz", hash = "sha256:4880473a969e5f23f2a2be3646b2dfd84af9028716d398e46192f84bc36900d2"},
@@ -4089,7 +4157,7 @@ version = "2.6"
 description = "A modern CSS selector implementation for Beautiful Soup."
 optional = false
 python-versions = ">=3.8"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "soupsieve-2.6-py3-none-any.whl", hash = "sha256:e72c4ff06e4fb6e4b5a9f0f55fe6e81514581fca1515028625d0f299c602ccc9"},
     {file = "soupsieve-2.6.tar.gz", hash = "sha256:e2e68417777af359ec65daac1057404a3c8a5455bb8abc36f1a9866ab1a51abb"},
@@ -4285,14 +4353,14 @@ types-setuptools = "*"
 
 [[package]]
 name = "types-deprecated"
-version = "1.2.15.20241117"
+version = "1.2.15.20250304"
 description = "Typing stubs for Deprecated"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types-Deprecated-1.2.15.20241117.tar.gz", hash = "sha256:924002c8b7fddec51ba4949788a702411a2e3636cd9b2a33abd8ee119701d77e"},
-    {file = "types_Deprecated-1.2.15.20241117-py3-none-any.whl", hash = "sha256:a0cc5e39f769fc54089fd8e005416b55d74aa03f6964d2ed1a0b0b2e28751884"},
+    {file = "types_deprecated-1.2.15.20250304-py3-none-any.whl", hash = "sha256:86a65aa550ea8acf49f27e226b8953288cd851de887970fbbdf2239c116c3107"},
+    {file = "types_deprecated-1.2.15.20250304.tar.gz", hash = "sha256:c329030553029de5cc6cb30f269c11f4e00e598c4241290179f63cda7d33f719"},
 ]
 
 [[package]]
@@ -4306,6 +4374,28 @@ files = [
     {file = "types-html5lib-1.1.11.20241018.tar.gz", hash = "sha256:98042555ff78d9e3a51c77c918b1041acbb7eb6c405408d8a9e150ff5beccafa"},
     {file = "types_html5lib-1.1.11.20241018-py3-none-any.whl", hash = "sha256:3f1e064d9ed2c289001ae6392c84c93833abb0816165c6ff0abfc304a779f403"},
 ]
+
+[[package]]
+name = "types-lxml"
+version = "2025.3.4"
+description = "Complete lxml external type annotation"
+optional = false
+python-versions = ">=3.8"
+groups = ["dev"]
+files = [
+    {file = "types_lxml-2025.3.4-py3-none-any.whl", hash = "sha256:ef94bd705ca0f4b613ea4c72d614c3d456d833df4034e9b488f9f8ae000bed0e"},
+    {file = "types_lxml-2025.3.4.tar.gz", hash = "sha256:aee7e89b33d9fd3656aa4ef3ea4073fcef82f430e2c02ab7b803abce78fb2f94"},
+]
+
+[package.dependencies]
+beautifulsoup4 = ">=4.13,<5.0"
+cssselect = ">=1.2,<2.0"
+types-html5lib = ">=1.1.11.20241018,<1.2.0.0"
+typing_extensions = {version = ">=4.10,<5.0", markers = "python_version < \"3.13\""}
+
+[package.extras]
+mypy = ["mypy (>=1.11,<2.0)"]
+pyright = ["pyright (>=1.1.351)"]
 
 [[package]]
 name = "types-pillow"
@@ -4405,15 +4495,15 @@ types-urllib3 = "*"
 
 [[package]]
 name = "types-requests"
-version = "2.32.0.20250301"
+version = "2.32.0.20250306"
 description = "Typing stubs for requests"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 markers = "python_version >= \"3.10\""
 files = [
-    {file = "types_requests-2.32.0.20250301-py3-none-any.whl", hash = "sha256:0003e0124e2cbefefb88222ff822b48616af40c74df83350f599a650c8de483b"},
-    {file = "types_requests-2.32.0.20250301.tar.gz", hash = "sha256:3d909dc4eaab159c0d964ebe8bfa326a7afb4578d8706408d417e17d61b0c500"},
+    {file = "types_requests-2.32.0.20250306-py3-none-any.whl", hash = "sha256:25f2cbb5c8710b2022f8bbee7b2b66f319ef14aeea2f35d80f18c9dbf3b60a0b"},
+    {file = "types_requests-2.32.0.20250306.tar.gz", hash = "sha256:0962352694ec5b2f95fda877ee60a159abdf84a0fc6fdace599f20acb41a03d1"},
 ]
 
 [package.dependencies]
@@ -4421,15 +4511,18 @@ urllib3 = ">=2"
 
 [[package]]
 name = "types-setuptools"
-version = "75.8.2.20250301"
+version = "75.8.2.20250305"
 description = "Typing stubs for setuptools"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_setuptools-75.8.2.20250301-py3-none-any.whl", hash = "sha256:3cc3e751db9e84eddf1e6d4f8c46bef2c77e6c25b0cd096f729ffa57d3d6a83a"},
-    {file = "types_setuptools-75.8.2.20250301.tar.gz", hash = "sha256:c900bceebfffc92a4abc3cfd4b3c39ead1a2298a73dae37e6bc09da7baf797a0"},
+    {file = "types_setuptools-75.8.2.20250305-py3-none-any.whl", hash = "sha256:ba80953fd1f5f49e552285c024f75b5223096a38a5138a54d18ddd3fa8f6a2d4"},
+    {file = "types_setuptools-75.8.2.20250305.tar.gz", hash = "sha256:a987269b49488f21961a1d99aa8d281b611625883def6392a93855b31544e405"},
 ]
+
+[package.dependencies]
+setuptools = "*"
 
 [[package]]
 name = "types-urllib3"
@@ -4470,14 +4563,14 @@ files = [
 
 [[package]]
 name = "tzlocal"
-version = "5.3"
+version = "5.3.1"
 description = "tzinfo object for the local timezone"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "tzlocal-5.3-py3-none-any.whl", hash = "sha256:3814135a1bb29763c6e4f08fd6e41dbb435c7a60bfbb03270211bcc537187d8c"},
-    {file = "tzlocal-5.3.tar.gz", hash = "sha256:2fafbfc07e9d8b49ade18f898d6bcd37ae88ce3ad6486842a2e4f03af68323d2"},
+    {file = "tzlocal-5.3.1-py3-none-any.whl", hash = "sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d"},
+    {file = "tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd"},
 ]
 
 [package.dependencies]
@@ -4899,4 +4992,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "612e38a3ae1738ba4bcbb3d061eb2516e693a611a835e04884f5d5e64e596704"
+content-hash = "a1066f62cff093836ecd9624c2f0c8532b1b0ca69ca90c3569552522d9deeb57"

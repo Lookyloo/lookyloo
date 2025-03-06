@@ -1,0 +1,9 @@
+{
+    "loglevel": "info",
+    "enable": false,
+    "botname": "lookyloo",
+    "domain": "social.masto.local",
+    "access_token": "",
+    "remote_lookyloo": null,
+    "blocklist": ["badguy@mastodon.example", "evilinstance.example"]
+}

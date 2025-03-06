@@ -37,6 +37,7 @@ archiver = "bin.archiver:main"
 processing = "bin.background_processing:main"
 start_website = "bin.start_website:main"
 scripts_controller = "bin.scripts_controller:main"
+mastobot = "bin.mastobot:main"
 
 
 [tool.poetry.dependencies]
@@ -53,7 +54,7 @@ pyeupi = "^1.3.0"
 pysanejs = "^2.0.4"
 pylookyloo = "^1.28.0"
 dnspython = "^2.7.0"
-pytaxonomies = "^2.0"
+pytaxonomies = "^2.1.0"
 pymisp = {version = "^2.5.7.1", extras = ["fileobjects"]}
 Pillow = "^11.1.0"
 flask-restx = "^1.3.0"
@@ -71,7 +72,7 @@ pypandora = "^1.9.2"
 lacuscore = "^1.13.0"
 pylacus = "^1.13.0"
 pyipasnhistory = "^2.1.4"
-publicsuffixlist = "^1.0.2.20250302"
+publicsuffixlist = "^1.0.2.20250306"
 pyfaup = "^1.2"
 chardet = "^5.2.0"
 pysecuritytxt = "^1.3.3"
@@ -89,6 +90,7 @@ flask-talisman = "^1.1.0"
 
 aiohttp = {extras = ["speedups"], version = "^3.11.13"}
 pyail = "^0.0.8"
+mastodon-py = "^2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.15.0"
@@ -100,12 +102,13 @@ types-requests = [
     {version = "^2.32", python = ">=3.10"}
 ]
 types-redis = {version = "^4.6.0.20241004"}
-types-Deprecated = "^1.2.15.20241117"
+types-Deprecated = "^1.2.15.20250304"
 types-python-dateutil = "^2.9.0.20241206"
 types-beautifulsoup4 = "^4.12.0.20250204"
 types-Pillow = "^10.2.0.20240822"
 types-pytz = "^2025.1.0.20250204"
 types-psutil = "^7.0.0.20250218"
+types-lxml = "^2025.3.4"
 
 [build-system]
 requires = ["poetry-core>=2.0"]
