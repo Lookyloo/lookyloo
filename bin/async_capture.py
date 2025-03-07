@@ -10,7 +10,7 @@ import signal
 from asyncio import Task
 from pathlib import Path
 
-from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
+from lacuscore import CaptureSettingsError, LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
 from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 
 from lookyloo import Lookyloo, CaptureSettings
@@ -79,24 +79,30 @@ class AsyncCapture(AbstractManager):
             self.lookyloo.redis.sadd('ongoing', uuid)
             queue: str | None = self.lookyloo.redis.getdel(f'{uuid}_mgmt')
 
-            to_capture: CaptureSettings | None = self.lookyloo.get_capture_settings(uuid)
-            if not to_capture:
-                continue
+            try:
+                to_capture: CaptureSettings | None = self.lookyloo.get_capture_settings(uuid)
+                if to_capture:
+                    self.lookyloo.store_capture(
+                        uuid, to_capture.listing,
+                        os=to_capture.os, browser=to_capture.browser,
+                        parent=to_capture.parent,
+                        downloaded_filename=entries.get('downloaded_filename'),
+                        downloaded_file=entries.get('downloaded_file'),
+                        error=entries.get('error'), har=entries.get('har'),
+                        png=entries.get('png'), html=entries.get('html'),
+                        last_redirected_url=entries.get('last_redirected_url'),
+                        cookies=entries.get('cookies'),
+                        capture_settings=to_capture,
+                        potential_favicons=entries.get('potential_favicons'),
+                        auto_report=to_capture.auto_report,
+                    )
+                else:
+                    self.logger.warning(f'Unable to get capture settings for {uuid}, try again later (?).')
+                    continue
 
-            self.lookyloo.store_capture(
-                uuid, to_capture.listing,
-                os=to_capture.os, browser=to_capture.browser,
-                parent=to_capture.parent,
-                downloaded_filename=entries.get('downloaded_filename'),
-                downloaded_file=entries.get('downloaded_file'),
-                error=entries.get('error'), har=entries.get('har'),
-                png=entries.get('png'), html=entries.get('html'),
-                last_redirected_url=entries.get('last_redirected_url'),
-                cookies=entries.get('cookies'),
-                capture_settings=to_capture,
-                potential_favicons=entries.get('potential_favicons'),
-                auto_report=to_capture.auto_report,
-            )
+            except CaptureSettingsError as e:
+                # We shouldn't have a broken capture at this stage, but here we are.
+                self.logger.error(f'Got a capture ({uuid}) with invalid settings: {e}.')
 
             lazy_cleanup = self.lookyloo.redis.pipeline()
             if queue and self.lookyloo.redis.zscore('queues', queue):

@@ -312,7 +312,7 @@ class Lookyloo():
                 return CaptureSettings(**capture_settings)
         except CaptureSettingsError as e:
             self.logger.warning(f'Invalid capture settings for {capture_uuid}: {e}')
-            return None
+            raise e
         cache = self.capture_cache(capture_uuid)
         if not cache:
             return None
