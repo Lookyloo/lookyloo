@@ -397,14 +397,14 @@ test = ["Pillow", "numpy", "pytest"]
 
 [[package]]
 name = "bootstrap-flask"
-version = "2.4.1"
+version = "2.4.2"
 description = "Bootstrap 4 & 5 helper for your Flask projects."
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "Bootstrap_Flask-2.4.1-py3-none-any.whl", hash = "sha256:222df5b42c7795b121ed4709c534466c892e04ee31bfac7234de3ea64c106c27"},
-    {file = "bootstrap_flask-2.4.1.tar.gz", hash = "sha256:cc25c59495f150550ea41d0e8079689de4250fe45445e158abdc111f8fe883e2"},
+    {file = "bootstrap_flask-2.4.2-py3-none-any.whl", hash = "sha256:44b72e57e62a532b2578f6327fd584e75326b734e4141404b04003ab0b071f5c"},
+    {file = "bootstrap_flask-2.4.2.tar.gz", hash = "sha256:8dcd6d6ed5458cfb76da4d57d2277f447da08d7977d551c82f51919f62c9586c"},
 ]
 
 [package.dependencies]
@@ -933,14 +933,14 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "cssselect"
-version = "1.2.0"
+version = "1.3.0"
 description = "cssselect parses CSS3 Selectors and translates them to XPath 1.0"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "cssselect-1.2.0-py2.py3-none-any.whl", hash = "sha256:da1885f0c10b60c03ed5eccbb6b68d6eff248d91976fcde348f395d54c9fd35e"},
-    {file = "cssselect-1.2.0.tar.gz", hash = "sha256:666b19839cfaddb9ce9d36bfe4c969132c647b92fc9088c4e23f786b30f1b3dc"},
+    {file = "cssselect-1.3.0-py3-none-any.whl", hash = "sha256:56d1bf3e198080cc1667e137bc51de9cadfca259f03c2d4e09037b3e01e30f0d"},
+    {file = "cssselect-1.3.0.tar.gz", hash = "sha256:57f8a99424cfab289a1b6a816a43075a4b00948c86b4dcf3ef4ee7e15f7ab0c7"},
 ]
 
 [[package]]
@@ -1297,14 +1297,14 @@ files = [
 
 [[package]]
 name = "fsspec"
-version = "2025.2.0"
+version = "2025.3.0"
 description = "File-system specification"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "fsspec-2025.2.0-py3-none-any.whl", hash = "sha256:9de2ad9ce1f85e1931858535bc882543171d197001a0a5eb2ddc04f1781ab95b"},
-    {file = "fsspec-2025.2.0.tar.gz", hash = "sha256:1c24b16eaa0a1798afa0337aa0db9b256718ab2a89c425371f5628d22c3b6afd"},
+    {file = "fsspec-2025.3.0-py3-none-any.whl", hash = "sha256:efb87af3efa9103f94ca91a7f8cb7a4df91af9f74fc106c9c7ea0efd7277c1b3"},
+    {file = "fsspec-2025.3.0.tar.gz", hash = "sha256:a935fd1ea872591f2b5148907d103488fc523295e6c64b835cfad8c3eca44972"},
 ]
 
 [package.extras]
@@ -1657,15 +1657,15 @@ type = ["pytest-mypy"]
 
 [[package]]
 name = "ipython"
-version = "9.0.1"
+version = "9.0.2"
 description = "IPython: Productive Interactive Computing"
 optional = false
 python-versions = ">=3.11"
 groups = ["dev"]
 markers = "python_version >= \"3.11\""
 files = [
-    {file = "ipython-9.0.1-py3-none-any.whl", hash = "sha256:3e878273824b52e0a2280ed84f8193aba8c4ba9a6f45a438348a3d5ef1a34bd0"},
-    {file = "ipython-9.0.1.tar.gz", hash = "sha256:377ea91c8226b48dc9021ac9846a64761abc7ddf74c5efe38e6eb06f6e052f3a"},
+    {file = "ipython-9.0.2-py3-none-any.whl", hash = "sha256:143ef3ea6fb1e1bffb4c74b114051de653ffb7737a3f7ab1670e657ca6ae8c44"},
+    {file = "ipython-9.0.2.tar.gz", hash = "sha256:ec7b479e3e5656bf4f58c652c120494df1820f4f28f522fb7ca09e213c2aab52"},
 ]
 
 [package.dependencies]
@@ -2977,14 +2977,14 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250306"
+version = "1.0.2.20250307"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20250306-py2.py3-none-any.whl", hash = "sha256:460d67a40ed497addfea7227fa7c5d3e9669b467296b5ed3253ea3cb6b4791e0"},
-    {file = "publicsuffixlist-1.0.2.20250306.tar.gz", hash = "sha256:45fc8921dcd8842dc03a8dc87c2131efd0af2c9e76e0275fae7755aacf91f937"},
+    {file = "publicsuffixlist-1.0.2.20250307-py2.py3-none-any.whl", hash = "sha256:15d6dda9e2cb573cd6367a55532c483831349dde46eae687d89e8ba466da78b0"},
+    {file = "publicsuffixlist-1.0.2.20250307.tar.gz", hash = "sha256:2e00bc29b04279a842237583a3b0e47832d59f5ff9ddbcbf1052cd9c8e0162c4"},
 ]
 
 [package.extras]
@@ -4001,20 +4001,20 @@ files = [
 
 [[package]]
 name = "s3fs"
-version = "2025.2.0"
+version = "2025.3.0"
 description = "Convenient Filesystem interface over S3"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "s3fs-2025.2.0-py3-none-any.whl", hash = "sha256:4b66b773519c1983e3071e13a42a2f2498d87da13dee40fda0622f4ed1b55664"},
-    {file = "s3fs-2025.2.0.tar.gz", hash = "sha256:d94b985f55add51c655e9ca9b4ceecb5c4b6389aecde162bdebc89f489a4e9f2"},
+    {file = "s3fs-2025.3.0-py3-none-any.whl", hash = "sha256:88d803615baa04945156ca0e1498009b7acd3132c07198bd81b3e874846e0aa2"},
+    {file = "s3fs-2025.3.0.tar.gz", hash = "sha256:446dd539eb0d0678209723cb7ad1bedbb172185b0d34675b09be1ad81843a644"},
 ]
 
 [package.dependencies]
 aiobotocore = ">=2.5.4,<3.0.0"
 aiohttp = "<4.0.0a0 || >4.0.0a0,<4.0.0a1 || >4.0.0a1"
-fsspec = "==2025.2.0.*"
+fsspec = "==2025.3.0.*"
 
 [package.extras]
 awscli = ["aiobotocore[awscli] (>=2.5.4,<3.0.0)"]
@@ -4120,14 +4120,14 @@ test = ["pytest"]
 
 [[package]]
 name = "setuptools"
-version = "75.8.2"
+version = "76.0.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "setuptools-75.8.2-py3-none-any.whl", hash = "sha256:558e47c15f1811c1fa7adbd0096669bf76c1d3f433f58324df69f3f5ecac4e8f"},
-    {file = "setuptools-75.8.2.tar.gz", hash = "sha256:4880473a969e5f23f2a2be3646b2dfd84af9028716d398e46192f84bc36900d2"},
+    {file = "setuptools-76.0.0-py3-none-any.whl", hash = "sha256:199466a166ff664970d0ee145839f5582cb9bca7a0a3a2e795b6a9cb2308e9c6"},
+    {file = "setuptools-76.0.0.tar.gz", hash = "sha256:43b4ee60e10b0d0ee98ad11918e114c70701bc6051662a9a675a0496c1a158f4"},
 ]
 
 [package.extras]
@@ -4338,14 +4338,14 @@ types-html5lib = "*"
 
 [[package]]
 name = "types-cffi"
-version = "1.16.0.20241221"
+version = "1.16.0.20250307"
 description = "Typing stubs for cffi"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_cffi-1.16.0.20241221-py3-none-any.whl", hash = "sha256:e5b76b4211d7a9185f6ab8d06a106d56c7eb80af7cdb8bfcb4186ade10fb112f"},
-    {file = "types_cffi-1.16.0.20241221.tar.gz", hash = "sha256:1c96649618f4b6145f58231acb976e0b448be6b847f7ab733dabe62dfbff6591"},
+    {file = "types_cffi-1.16.0.20250307-py3-none-any.whl", hash = "sha256:9d20eef09ec09fb2622d3ebe527ea0d214af2687bd192cfbe6047a7418450f94"},
+    {file = "types_cffi-1.16.0.20250307.tar.gz", hash = "sha256:847fa420d654eb403b5eca7893e19857feac3ba95b3bcbecd6b291c008de1c75"},
 ]
 
 [package.dependencies]
@@ -4992,4 +4992,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "a1066f62cff093836ecd9624c2f0c8532b1b0ca69ca90c3569552522d9deeb57"
+content-hash = "9d7cb161f731aec3df3c73e46fb6d453f0e99a67d88ba42f44f9fd77db5d3816"
