@@ -45,8 +45,11 @@ jobs:
       - name: Install system deps
         run: |
           sudo apt install libfuzzy-dev libmagic1
-          # playwright required deps.
-          # sudo apt install libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libxkbcommon0 libxdamage1 libgbm1 libpango-1.0-0 libcairo2 libatspi2.0-0
+
+      - name: Install kvrocks from deb
+        run: |
+          wget https://github.com/RocksLabs/kvrocks-fpm/releases/download/202502091/kvrocks_2.11.1-1_amd64.deb -O kvrocks.deb
+          sudo dpkg -i kvrocks.deb
 
       - name: Clone uwhoisd
         uses: actions/checkout@v4
@@ -66,7 +69,6 @@ jobs:
           popd
           popd
 
-
       - name: Install & run lookyloo
         run: |
           echo LOOKYLOO_HOME="'`pwd`'" > .env
@@ -76,10 +78,9 @@ jobs:
           poetry install -vvv
           poetry run playwright install-deps
           poetry run playwright install
-          poetry run tools/validate_config_files.py --check
-          poetry run tools/validate_config_files.py --update
-          poetry run tools/3rdparty.py
+          poetry run update --init
           jq '.UniversalWhois.enabled = true' config/modules.json > temp.json && mv temp.json config/modules.json
+          jq '.index_everything = true' config/generic.json > temp.json && mv temp.json config/generic.json
           poetry run start
 
       - name: Clone PyLookyloo

@@ -68,6 +68,7 @@ def check_poetry_version() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description='Pull latest release, update dependencies, update and validate the config files, update 3rd deps for the website.')
     parser.add_argument('--yes', default=False, action='store_true', help='Run all commands without asking.')
+    parser.add_argument('--init', default=False, action='store_true', help='Run all commands without starting the service.')
     args = parser.parse_args()
 
     old_hash = compute_hash_self()
@@ -78,7 +79,7 @@ def main() -> None:
     keep_going(args.yes)
 
     print('* Update repository.')
-    keep_going(args.yes)
+    keep_going(args.yes or args.init)
     run_command('git pull')
     new_hash = compute_hash_self()
     if old_hash != new_hash:
@@ -88,45 +89,46 @@ def main() -> None:
     check_poetry_version()
 
     print('* Install/update dependencies.')
-    keep_going(args.yes)
+    keep_going(args.yes or args.init)
     run_command('poetry install')
 
     print('* Install or make sure the playwright browsers are installed.')
-    keep_going(args.yes)
+    keep_going(args.yes or args.init)
     run_command('poetry run playwright install')
 
     print('* Validate configuration files.')
-    keep_going(args.yes)
+    keep_going(args.yes or args.init)
     run_command(f'poetry run {(Path("tools") / "validate_config_files.py").as_posix()} --check')
 
     print('* Update configuration files.')
-    keep_going(args.yes)
+    keep_going(args.yes or args.init)
     run_command(f'poetry run {(Path("tools") / "validate_config_files.py").as_posix()} --update')
 
     print('* Update third party dependencies for the website.')
-    keep_going(args.yes)
+    keep_going(args.yes or args.init)
     run_command(f'poetry run {(Path("tools") / "3rdparty.py").as_posix()}')
 
-    print('* Restarting Lookyloo.')
-    keep_going(args.yes)
-    if platform.system() == 'Windows':
-        print('Restarting Lookyloo with poetry...')
-        run_command('poetry run stop', expect_fail=True)
-        run_command('poetry run start', capture_output=False)
-        print('Lookyloo started.')
-    else:
-        service = "lookyloo"
-        p = subprocess.run(["systemctl", "is-active", "--quiet", service])
-        try:
-            p.check_returncode()
-            print('Restarting Lookyloo with systemd...')
-            run_command('sudo service lookyloo restart')
-            print('done.')
-        except subprocess.CalledProcessError:
+    if not args.init:
+        print('* Restarting Lookyloo.')
+        keep_going(args.yes)
+        if platform.system() == 'Windows':
             print('Restarting Lookyloo with poetry...')
             run_command('poetry run stop', expect_fail=True)
             run_command('poetry run start', capture_output=False)
             print('Lookyloo started.')
+        else:
+            service = "lookyloo"
+            p = subprocess.run(["systemctl", "is-active", "--quiet", service])
+            try:
+                p.check_returncode()
+                print('Restarting Lookyloo with systemd...')
+                run_command('sudo service lookyloo restart')
+                print('done.')
+            except subprocess.CalledProcessError:
+                print('Restarting Lookyloo with poetry...')
+                run_command('poetry run stop', expect_fail=True)
+                run_command('poetry run start', capture_output=False)
+                print('Lookyloo started.')
 
 
 if __name__ == '__main__':
