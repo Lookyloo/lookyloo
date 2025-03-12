@@ -3,7 +3,7 @@
 set -e
 set -x
 
-if [ -f ../../kvrocks/build/kvrockss ]; then
+if [ -f ../../kvrocks/build/kvrocks ]; then
     ../../kvrocks/build/kvrocks -c kvrocks.conf
 elif [ -x "$(command -v kvrocks)" ]; then
     echo 'kvrocks does not seem to be built locally, using the system-wide install instead.'
