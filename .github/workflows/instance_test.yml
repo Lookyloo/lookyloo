@@ -72,10 +72,8 @@ jobs:
       - name: Install & run lookyloo
         run: |
           echo LOOKYLOO_HOME="'`pwd`'" > .env
-          cp config/generic.json.sample config/generic.json
-          cp config/modules.json.sample config/modules.json
           cp config/takedown_filters.ini.sample config/takedown_filters.ini
-          poetry install -vvv
+          poetry install
           poetry run playwright install-deps
           poetry run playwright install
           poetry run update --init
