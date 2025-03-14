@@ -1379,13 +1379,13 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
         if cache.error:
             flash(cache.error, 'warning')
 
+        monitoring_collections: list[str] = []
+        monitoring_settings: dict[str, int | bool] = {}
         if lookyloo.monitoring_enabled and lookyloo.monitoring:
-            monitoring_collections: list[str] = []
             try:
                 monitoring_collections = lookyloo.monitoring.collections()
             except Exception as e:
                 flash(f'Unable to get existing connections from the monitoring : {e}', 'warning')
-            monitoring_settings: dict[str, int | bool] = {}
             try:
                 monitoring_settings = lookyloo.monitoring.instance_settings()  # type: ignore[assignment]
             except Exception as e:
@@ -1406,8 +1406,8 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_monitoring=lookyloo.monitoring_enabled,
                                ignore_sri=ignore_sri,
-                               monitoring_settings=monitoring_settings if lookyloo.monitoring_enabled else {},
-                               monitoring_collections=monitoring_collections if lookyloo.monitoring_enabled else [],
+                               monitoring_settings=monitoring_settings,
+                               monitoring_collections=monitoring_collections,
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,
