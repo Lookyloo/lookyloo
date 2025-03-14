@@ -1404,7 +1404,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                mime_favicon=mime_favicon,
                                screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
-                               enable_monitoring=lookyloo.monitoring_enabled,
+                               enable_monitoring=lookyloo.monitoring_enabled and lookyloo.monitoring,
                                ignore_sri=ignore_sri,
                                monitoring_settings=monitoring_settings,
                                monitoring_collections=monitoring_collections,
