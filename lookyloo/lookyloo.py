@@ -140,7 +140,7 @@ class Lookyloo():
         self.monitoring_enabled = False
         self._monitoring: PyLookylooMonitoring | None = None
         if monitoring_config := get_config('generic', 'monitoring'):
-            self.monitoring_enabled = monitoring_config.get('enabled', False)
+            self.monitoring_enabled = monitoring_config.get('enable', False)
 
         self.logger.info('Initializing context...')
         self.context = Context()
