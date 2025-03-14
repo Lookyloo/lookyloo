@@ -137,11 +137,6 @@ class Lookyloo():
         self.urlhaus = URLhaus(config_name='URLhaus')
         self.circl_pdns = CIRCLPDNS(config_name='CIRCLPDNS')
 
-        self.monitoring_enabled = False
-        self._monitoring: PyLookylooMonitoring | None = None
-        if monitoring_config := get_config('generic', 'monitoring'):
-            self.monitoring_enabled = monitoring_config.get('enable', False)
-
         self.logger.info('Initializing context...')
         self.context = Context()
         self.logger.info('Context initialized.')
@@ -151,10 +146,12 @@ class Lookyloo():
 
     @property
     def monitoring(self) -> PyLookylooMonitoring | None:
-        if not self.monitoring_enabled:
-            # Nt enabled, break immediately
+        self._monitoring: PyLookylooMonitoring | None
+        if (not get_config('generic', 'monitoring')
+                or not get_config('generic', 'monitoring').get('enable')):
+            # Not enabled, break immediately
             return None
-        if hasattr(self, '_monitoring') and self._monitoring:
+        if hasattr(self, '_monitoring') and self._monitoring and self._monitoring.is_up:
             return self._monitoring
         monitoring_config = get_config('generic', 'monitoring')
         monitoring = PyLookylooMonitoring(monitoring_config['url'], get_useragent_for_requests())

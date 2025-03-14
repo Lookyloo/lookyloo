@@ -1268,7 +1268,7 @@ def cache_tree(tree_uuid: str) -> WerkzeugResponse:
 
 @app.route('/tree/<string:tree_uuid>/monitor', methods=['POST', 'GET'])
 def monitor(tree_uuid: str) -> WerkzeugResponse:
-    if not lookyloo.monitoring_enabled or not lookyloo.monitoring:
+    if not lookyloo.monitoring:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
@@ -1381,7 +1381,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
 
         monitoring_collections: list[str] = []
         monitoring_settings: dict[str, int | bool] = {}
-        if lookyloo.monitoring_enabled and lookyloo.monitoring:
+        if lookyloo.monitoring:
             try:
                 monitoring_collections = lookyloo.monitoring.collections()
             except Exception as e:
@@ -1404,7 +1404,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                mime_favicon=mime_favicon,
                                screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
-                               enable_monitoring=lookyloo.monitoring_enabled and lookyloo.monitoring,
+                               enable_monitoring=bool(lookyloo.monitoring),
                                ignore_sri=ignore_sri,
                                monitoring_settings=monitoring_settings,
                                monitoring_collections=monitoring_collections,
