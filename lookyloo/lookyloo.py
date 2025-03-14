@@ -138,17 +138,9 @@ class Lookyloo():
         self.circl_pdns = CIRCLPDNS(config_name='CIRCLPDNS')
 
         self.monitoring_enabled = False
+        self._monitoring: PyLookylooMonitoring | None = None
         if monitoring_config := get_config('generic', 'monitoring'):
-            if monitoring_config['enable']:
-                self.monitoring = PyLookylooMonitoring(monitoring_config['url'], get_useragent_for_requests())
-                if self.monitoring.is_up:
-                    try:
-                        # NOTE: maybe move that somewhere else: we'll need to restart the webserver
-                        # if we change the settings in the monitoring instance
-                        self.monitoring_settings = self.monitoring.instance_settings()
-                        self.monitoring_enabled = True
-                    except Exception as e:
-                        self.logger.critical(f'Unable to initialize the monitoring instance: {e}')
+            self.monitoring_enabled = monitoring_config.get('enabled', False)
 
         self.logger.info('Initializing context...')
         self.context = Context()
@@ -156,6 +148,20 @@ class Lookyloo():
         self.logger.info('Initializing index...')
         self._captures_index = CapturesIndex(self.redis, self.context, maxsize=cache_max_size)
         self.logger.info('Index initialized.')
+
+    @property
+    def monitoring(self) -> PyLookylooMonitoring | None:
+        if not self.monitoring_enabled:
+            # Nt enabled, break immediately
+            return None
+        if hasattr(self, '_monitoring') and self._monitoring:
+            return self._monitoring
+        monitoring_config = get_config('generic', 'monitoring')
+        monitoring = PyLookylooMonitoring(monitoring_config['url'], get_useragent_for_requests())
+        if monitoring.is_up:
+            self._monitoring = monitoring
+            return self._monitoring
+        return None
 
     @property
     def redis(self) -> Redis:  # type: ignore[type-arg]

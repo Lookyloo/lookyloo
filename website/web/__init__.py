@@ -1268,7 +1268,7 @@ def cache_tree(tree_uuid: str) -> WerkzeugResponse:
 
 @app.route('/tree/<string:tree_uuid>/monitor', methods=['POST', 'GET'])
 def monitor(tree_uuid: str) -> WerkzeugResponse:
-    if not lookyloo.monitoring_enabled:
+    if not lookyloo.monitoring_enabled or not lookyloo.monitoring:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
@@ -1379,12 +1379,17 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
         if cache.error:
             flash(cache.error, 'warning')
 
-        if lookyloo.monitoring_enabled:
+        if lookyloo.monitoring_enabled and lookyloo.monitoring:
+            monitoring_collections: list[str] = []
             try:
                 monitoring_collections = lookyloo.monitoring.collections()
             except Exception as e:
-                monitoring_collections = []
                 flash(f'Unable to get existing connections from the monitoring : {e}', 'warning')
+            monitoring_settings: dict[str, int | bool] = {}
+            try:
+                monitoring_settings = lookyloo.monitoring.instance_settings()  # type: ignore[assignment]
+            except Exception as e:
+                flash(f'Unable to initialize the monitoring instance: {e}', 'warning')
 
         # Check if the capture has been indexed yet. Print a warning if not.
         capture_indexed = all(get_indexing(flask_login.current_user).capture_indexed(tree_uuid))
@@ -1401,7 +1406,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                meta=meta, enable_mail_notification=enable_mail_notification,
                                enable_monitoring=lookyloo.monitoring_enabled,
                                ignore_sri=ignore_sri,
-                               monitoring_settings=lookyloo.monitoring_settings if lookyloo.monitoring_enabled else None,
+                               monitoring_settings=monitoring_settings if lookyloo.monitoring_enabled else {},
                                monitoring_collections=monitoring_collections if lookyloo.monitoring_enabled else [],
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
