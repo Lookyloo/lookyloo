@@ -19,15 +19,17 @@ class Pandora():
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.config = get_config('modules', 'Pandora')
-        self.available = True
+        self._enabled = True
         if not self.config.get('url'):
             self.logger.info('No URL in config.')
-            self.available = False
-
+            self._enabled = False
         self.client = PyPandora(root_url=self.config['url'], useragent=get_useragent_for_requests())
-        if not self.client.is_up:
-            self.logger.warning('Not up.')
-            self.available = False
+
+    @property
+    def available(self) -> bool:
+        if not self._enabled:
+            return False
+        return self.client.is_up
 
     def submit_file(self, file_in_memory: BytesIO, filename: str) -> dict[str, Any]:
         '''Submit a file to Pandora'''
