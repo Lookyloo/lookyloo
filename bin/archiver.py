@@ -119,6 +119,10 @@ class Archiver(AbstractManager):
                 if not self.s3fs_client.isdir(entry):
                     # index
                     continue
+                if self.shutdown_requested():
+                    # agressive shutdown.
+                    self.logger.warning('Shutdown requested during S3 directory listing, breaking.')
+                    return None
                 dir_on_disk = root_dir / entry.rsplit('/', 1)[-1]
                 if dir_on_disk.name.isdigit():
                     if self._update_index(dir_on_disk, s3fs_parent_dir=s3fs_dir):
@@ -128,9 +132,6 @@ class Archiver(AbstractManager):
                             rewrite_index = True
                             current_sub_index.add(dir_on_disk.name)
                             self.logger.info(f'Adding sub index {dir_on_disk.name} to {index_file}')
-                            if self.shutdown_requested():
-                                self.logger.warning('Shutdown requested, breaking.')
-                                break
                 else:
                     # got a capture
                     if len(self.s3fs_client.ls(entry, detail=False)) == 1:
@@ -167,6 +168,11 @@ class Archiver(AbstractManager):
                             new_captures.add(dir_on_disk)
                     current_dirs.add(dir_on_disk.name)
                     current_dirs.add(str(dir_on_disk))
+
+        if self.shutdown_requested():
+            # Do not try to write the index if a shutdown was requested: the lists may be incomplete.
+            self.logger.warning('Shutdown requested, breaking.')
+            return None
 
         # Check if all the directories in current_dirs (that we got by listing the directory)
         # are the same as the one in the index. If they're not, we pop the UUID before writing the index
