@@ -1807,14 +1807,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.13.4"
+version = "1.13.5"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.9.2"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.13.4-py3-none-any.whl", hash = "sha256:617bd672d5c5a7dcd1de9ab5c937eaa609879a35cf1e670a47ef53e71e46ce15"},
-    {file = "lacuscore-1.13.4.tar.gz", hash = "sha256:e5355e341b6bf877373201e058d79c598e027b200fd994cfc32b2bd454990785"},
+    {file = "lacuscore-1.13.5-py3-none-any.whl", hash = "sha256:7b9255dfb779db22fad471338e3643141df780fd35d9caa720c44556640263b6"},
+    {file = "lacuscore-1.13.5.tar.gz", hash = "sha256:4b328bd2dbf4245a9a9d6331bfb439c4873a24a26c94a81442cf71435357afd3"},
 ]
 
 [package.dependencies]
@@ -3411,21 +3411,21 @@ docs = ["Sphinx (>=8.1.3) ; python_version >= \"3.10\""]
 
 [[package]]
 name = "pylacus"
-version = "1.13.0"
+version = "1.13.1"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pylacus-1.13.0-py3-none-any.whl", hash = "sha256:f4346bcc30904406b4208a502dce56928ecf1c50c11f24c0f8d654998551a262"},
-    {file = "pylacus-1.13.0.tar.gz", hash = "sha256:e765c5e08b684478ff4bb8d6be2d007297b616ec9fb8a1fe9fdd37ed4e105926"},
+    {file = "pylacus-1.13.1-py3-none-any.whl", hash = "sha256:276e5ade880ac4ccdc974868cdf3e398c67ac154acf9ecb0d719dc27dbc54d12"},
+    {file = "pylacus-1.13.1.tar.gz", hash = "sha256:e83f4e50cb15d3416a08d31818d05df359f5d92981755d2ee7475af4b335c532"},
 ]
 
 [package.dependencies]
 requests = ">=2.32.3"
 
 [package.extras]
-docs = ["Sphinx (>=8.1.3) ; python_version >= \"3.10\""]
+docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
 
 [[package]]
 name = "pylookyloo"
@@ -4122,19 +4122,19 @@ test = ["pytest"]
 
 [[package]]
 name = "setuptools"
-version = "77.0.1"
+version = "77.0.3"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "setuptools-77.0.1-py3-none-any.whl", hash = "sha256:81a234dff81a82bb52e522c8aef145d0dd4de1fd6de4d3b196d0f77dc2fded26"},
-    {file = "setuptools-77.0.1.tar.gz", hash = "sha256:a1246a1b4178c66d7cf50c9fc6d530fac3f89bc284cf803c7fa878c41b1a03b2"},
+    {file = "setuptools-77.0.3-py3-none-any.whl", hash = "sha256:67122e78221da5cf550ddd04cf8742c8fe12094483749a792d56cd669d6cf58c"},
+    {file = "setuptools-77.0.3.tar.gz", hash = "sha256:583b361c8da8de57403743e756609670de6fb2345920e36dc5c2d914c319c945"},
 ]
 
 [package.extras]
 check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\"", "ruff (>=0.8.0) ; sys_platform != \"cygwin\""]
-core = ["importlib_metadata (>=6) ; python_version < \"3.10\"", "jaraco.collections", "jaraco.functools (>=4)", "jaraco.text (>=3.7)", "more_itertools", "more_itertools (>=8.8)", "packaging", "packaging (>=24.2)", "platformdirs (>=4.2.2)", "tomli (>=2.0.1) ; python_version < \"3.11\"", "wheel (>=0.43.0)"]
+core = ["importlib_metadata (>=6) ; python_version < \"3.10\"", "jaraco.functools (>=4)", "jaraco.text (>=3.7)", "more_itertools", "more_itertools (>=8.8)", "packaging (>=24.2)", "platformdirs (>=4.2.2)", "tomli (>=2.0.1) ; python_version < \"3.11\"", "wheel (>=0.43.0)"]
 cover = ["pytest-cov"]
 doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
 enabler = ["pytest-enabler (>=2.2)"]
@@ -4994,4 +4994,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "4f795847c6db8f2639c313de60e222ff8eb9a4e78ed334ae7ccebd801d084a71"
+content-hash = "f8753242fadbb3b48b6af71ae8e8c075224c2440283fb277999cdcdfe4261959"
