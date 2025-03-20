@@ -70,6 +70,7 @@ from .modules import (MISPs, PhishingInitiative, UniversalWhois,
 
 if TYPE_CHECKING:
     from playwright.async_api import Cookie
+    from playwright.async_api import StorageState
 
 
 class Lookyloo():
@@ -1457,6 +1458,7 @@ class Lookyloo():
         html: str | None = None
         last_redirected_url: str | None = None
         cookies: list[Cookie] | list[dict[str, str]] | None = None
+        storage: StorageState | None = None
         capture_settings: CaptureSettings | None = None
         potential_favicons: set[bytes] | None = None
 
@@ -1481,6 +1483,9 @@ class Lookyloo():
                 elif filename.endswith('0.cookies.json'):
                     # Not required
                     cookies = json.loads(lookyloo_capture.read(filename))
+                elif filename.endswith('0.storage.json'):
+                    # Not required
+                    storage = json.loads(lookyloo_capture.read(filename))
                 elif filename.endswith('potential_favicons.ico'):
                     # We may have more than one favicon
                     potential_favicons.add(lookyloo_capture.read(filename))
@@ -1539,7 +1544,7 @@ class Lookyloo():
                                downloaded_filename=downloaded_filename, downloaded_file=downloaded_file,
                                error=error, har=har, png=screenshot, html=html,
                                last_redirected_url=last_redirected_url,
-                               cookies=cookies,
+                               cookies=cookies, storage=storage,
                                capture_settings=capture_settings if capture_settings else None,
                                potential_favicons=potential_favicons)
             return uuid, messages
@@ -1552,6 +1557,7 @@ class Lookyloo():
                       png: bytes | None=None, html: str | None=None,
                       last_redirected_url: str | None=None,
                       cookies: list[Cookie] | list[dict[str, str]] | None=None,
+                      storage: StorageState | dict[str, Any] | None=None,
                       capture_settings: CaptureSettings | None=None,
                       potential_favicons: set[bytes] | None=None,
                       auto_report: bool | dict[str, str] | None = None
@@ -1620,6 +1626,10 @@ class Lookyloo():
         if cookies:
             with (dirpath / '0.cookies.json').open('w') as _cookies:
                 json.dump(cookies, _cookies)
+
+        if storage:
+            with (dirpath / '0.storage.json').open('w') as _storage:
+                json.dump(storage, _storage)
 
         if capture_settings:
             with (dirpath / 'capture_settings.json').open('w') as _cs:

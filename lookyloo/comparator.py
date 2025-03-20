@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import fnmatch
 import logging
+import sys
 
-from typing import Any, TypedDict
+from typing import Any
 
 from har2tree import URLNode
 
@@ -16,6 +17,11 @@ from .context import Context
 from .capturecache import CapturesIndex
 from .default import get_config, get_socket_path, LookylooException
 from .exceptions import MissingUUID, TreeNeedsRebuild
+
+if sys.version_info < (3, 12):
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
 
 
 class CompareSettings(TypedDict):
