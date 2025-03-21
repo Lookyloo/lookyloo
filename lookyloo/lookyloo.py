@@ -1071,6 +1071,10 @@ class Lookyloo():
         '''Get the screenshot(s) of the rendered page'''
         return self._get_raw(capture_uuid, 'png', all_files=False)
 
+    def get_storage_state(self, capture_uuid: str, /) -> BytesIO:
+        '''Get the storage state of the capture'''
+        return self._get_raw(capture_uuid, 'storage.json', all_files=False)
+
     def get_screenshot_thumbnail(self, capture_uuid: str, /, for_datauri: bool=False, width: int=64) -> str | BytesIO:
         '''Get the thumbnail of the rendered page. Always crop to a square.'''
         to_return = BytesIO()

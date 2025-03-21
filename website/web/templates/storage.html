@@ -1,0 +1,115 @@
+<center>
+{% if not storage %}
+  <p class="lead">No local storage available</p>
+{%else%}
+  <p class="lead">
+   <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+     data-bs-target="#collapseCookies" aria-expanded="false" aria-controls="collapseCookies">
+    Cookies
+  </button>
+  </p>
+  <div class="collapse show" id="collapseCookies">
+    <table id="storageStateCookiesTable" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+          <th>Domain</th>
+          <th>Path</th>
+          <th>Expires</th>
+          <th>HTTP Only</th>
+          <th>Secure</th>
+          <th>Same Site</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cookie in storage['cookies'] %}
+        <tr>
+          <td class="text-break">{{ cookie['name'] }}</td>
+          <td class="text-break">{{ cookie['value'] }}</td>
+          <td class="text-break">{{ cookie['domain'] }}</td>
+          <td class="text-break">{{ cookie['path'] }}</td>
+          <td>{{ (cookie['expires'] * 1000) | int }}</td>
+          <td>{{ cookie['httpOnly'] }}</td>
+          <td>{{ cookie['secure'] }}</td>
+          <td>{{ cookie['sameSite'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <hr>
+  <p class="lead">Storage</p>
+  {% for origin in storage['origins'] %}
+    <p>Origin: {{origin['origin']}}</p>
+    {% if origin['localStorage'] %}
+    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapseLocalStorage_{{loop.index}}" aria-expanded="false" aria-controls="collapseLocalStorage_{{loop.index}}">
+      Local storage
+    </button>
+   <div class="collapse" id="collapseLocalStorage_{{loop.index}}">
+    <table id="localStorageTable_{{loop.index}}" name="localStorageTable" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for local_storage in origin['localStorage'] %}
+        <tr>
+          <td class="text-break">{{ local_storage['name'] }}</td>
+          <td class="text-break">{{ local_storage['value'] }}</td>
+        </tr>
+      {% endfor%}
+      </tbody>
+    </table>
+   </div>
+    {% else %}
+      <p>Empty local storage for this origin</p>
+    {% endif %}
+    {% if origin['indexedDB']%}
+    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapseIndexedDB_{{loop.index}}" aria-expanded="false" aria-controls="collapseIndexedDB_{{loop.index}}">
+      IndexedDB
+    </button>
+    <div class="collapse" id="collapseIndexedDB_{{loop.index}}">
+      {% for db in origin['indexedDB'] %}
+      <p>Database: {{db['name']}} (v{{db['version']}})</p>
+        {% for store in db['stores'] %}
+        {% if store['records'] %}
+        <p>Store name: {{store['name']}}</p>
+        <div class="container text-center">
+          {% for record in store['records'] %}
+          {% set key_name = record['value']['key'] %}
+          {% set value = record['value']['value'] %}
+          <div class="row border">
+            <div class="col-2 text-break border">
+              {{key_name}}
+            </div>
+            <div class="col border">
+              <div class="row border">
+                {%for key in value.keys()%}
+                <div class="col text-break border">{{key}}</div>
+                {% endfor %}
+              </div>
+              <div class="row border">
+                {%for v in value.values()%}
+                <div class="col text-break border">{{v}}</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endfor%}
+      {% endfor%}
+    </div>
+    {% else %}
+    <p>Empty IndexedDB for this origin</p>
+    {% endif %}
+  <hr>
+  {% endfor%}
+{% endif %}
+</center>

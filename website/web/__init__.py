@@ -851,6 +851,15 @@ def stats(tree_uuid: str) -> str:
     return render_template('statistics.html', uuid=tree_uuid, stats=stats)
 
 
+@app.route('/tree/<string:tree_uuid>/storage_state', methods=['GET'])
+def storage_state(tree_uuid: str) -> str:
+    storage = {}
+    storage_file = lookyloo.get_storage_state(tree_uuid)
+    if content := storage_file.getvalue():
+        storage = json.loads(content)
+    return render_template('storage.html', uuid=tree_uuid, storage=storage)
+
+
 @app.route('/tree/<string:tree_uuid>/misp_lookup', methods=['GET'])
 def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not lookyloo.misps.available:

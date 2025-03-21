@@ -40,6 +40,9 @@ function downloadBase64File(contentType, base64Data, fileName) {
 }
 
 function render_datetime_with_tz(data) {
+    if(! isNaN(data)){
+        data = parseInt(data);
+    }
     const date = new Date(data);
     return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")} ${date.toTimeString()}`;
 };

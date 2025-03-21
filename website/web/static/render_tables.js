@@ -375,6 +375,37 @@ function renderTables() {
         });
       })
   }
+  if (document.getElementById('storageStateCookiesTable')) {
+      let cat_table = new DataTable('#storageStateCookiesTable', {
+        retrieve: true,
+        order: [[ 0, "desc" ]],
+        pageLength: 10,
+        columns: [
+            {width: '15%'},
+            {width: '25%'},
+            {width: '15%'},
+            {width: '10%'},
+            {width: '14%', render: DataTable.render.datetime_with_tz()},
+            {width: '7%'},
+            {width: '7%'},
+            {width: '7%'}
+        ]
+      });
+  }
+  if (document.getElementsByName('localStorageTable').length > 0) {
+    let localStorageTables = document.getElementsByName("localStorageTable");
+    Array.from(localStorageTables).forEach(function (localStorageTable) {
+      let cat_table = new DataTable(`#${localStorageTable.id}`, {
+        retrieve: true,
+        order: [[ 0, "desc" ]],
+        pageLength: 25,
+        columns: [
+            {width: '20%'},
+            {width: '80%'}
+        ]
+      });
+    });
+  }
   if (document.getElementById('category_table')) {
       let cat_table = new DataTable('#category_table', {
         retrieve: true,
