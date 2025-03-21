@@ -77,31 +77,20 @@
       {% for db in origin['indexedDB'] %}
       <p>Database: {{db['name']}} (v{{db['version']}})</p>
         {% for store in db['stores'] %}
-        {% if store['records'] %}
         <p>Store name: {{store['name']}}</p>
-        <div class="container text-center">
+        {% if store['records'] %}
+        <div class="container">
           {% for record in store['records'] %}
-          {% set key_name = record['value']['key'] %}
-          {% set value = record['value']['value'] %}
-          <div class="row border">
-            <div class="col-2 text-break border">
-              {{key_name}}
+            {% for k, v in record.items() %}
+            <div class="row border">
+              <div class="col-2 text-break">{{k}}</div>
+              <pre class="col" style="text-align: left;">{{v | tojson(2)}}</pre>
             </div>
-            <div class="col border">
-              <div class="row border">
-                {%for key in value.keys()%}
-                <div class="col text-break border">{{key}}</div>
-                {% endfor %}
-              </div>
-              <div class="row border">
-                {%for v in value.values()%}
-                <div class="col text-break border">{{v}}</div>
-                {% endfor %}
-              </div>
-            </div>
-          </div>
+            {% endfor %}
           {% endfor %}
         </div>
+        {% else %}
+        <p>Empty store</p>
         {% endif %}
         {% endfor%}
       {% endfor%}
