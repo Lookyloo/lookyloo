@@ -597,7 +597,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
     @api.param('referer', 'Referer to pass to the capture')  # type: ignore[misc]
     @api.param('proxy', 'Proxy to use for the the capture')  # type: ignore[misc]
     @api.produces(['text/text'])  # type: ignore[misc]
-    def get(self) -> Response:
+    def get(self) -> str | Response:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
         else:
@@ -626,18 +626,18 @@ class SubmitCapture(Resource):  # type: ignore[misc]
             to_query['proxy'] = request.args['proxy']
 
         perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**to_query), source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
-        return make_response(perma_uuid)
+        return perma_uuid
 
     @api.doc(body=submit_fields_post)  # type: ignore[misc]
     @api.produces(['text/text'])  # type: ignore[misc]
-    def post(self) -> Response:
+    def post(self) -> str:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
         else:
             user = src_request_ip(request)
         to_query: dict[str, Any] = request.get_json(force=True)
         perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**to_query), source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
-        return make_response(perma_uuid)
+        return perma_uuid
 
 
 # Binary stuff
