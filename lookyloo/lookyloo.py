@@ -1216,13 +1216,15 @@ class Lookyloo():
             event = self.misps.export(cache, self.is_public_instance, filename, pseudofile)
         else:
             event = self.misps.export(cache, self.is_public_instance)
-        screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png',
-                                                        data=self.get_screenshot(cache.uuid),
-                                                        disable_correlation=True)  # type: ignore[assignment]
-        screenshot.first_seen = cache.timestamp
-        # If the last object attached to tht event is a file, it is the rendered page
-        if event.objects and event.objects[-1].name == 'file':
-            event.objects[-1].add_reference(screenshot, 'rendered-as', 'Screenshot of the page')
+        success, screenshot = self.get_screenshot(capture_uuid)
+        if success:
+            misp_screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png',
+                                                                 data=screenshot,
+                                                                 disable_correlation=True)  # type: ignore[assignment]
+            misp_screenshot.first_seen = cache.timestamp
+            # If the last object attached to tht event is a file, it is the rendered page
+            if event.objects and event.objects[-1].name == 'file':
+                event.objects[-1].add_reference(misp_screenshot, 'rendered-as', 'Screenshot of the page')
 
         if self.vt.available:
             response = self.vt.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
