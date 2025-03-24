@@ -76,6 +76,8 @@ jobs:
           poetry install
           poetry run playwright install-deps
           poetry run playwright install
+          cp config/generic.json.sample config/generic.json
+          cp config/modules.json.sample config/modules.json
           poetry run update --init
           jq '.UniversalWhois.enabled = true' config/modules.json > temp.json && mv temp.json config/modules.json
           jq '.index_everything = true' config/generic.json > temp.json && mv temp.json config/generic.json
