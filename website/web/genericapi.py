@@ -753,8 +753,8 @@ comparables_model = api.model('ComparablesModel', {
 class Comparables(Resource):  # type: ignore[misc]
 
     @api.marshal_with(comparables_model)  # type: ignore[misc]
-    def get(self, capture_uuid: str) -> Response:
-        return make_response(comparator.get_comparables_capture(capture_uuid))
+    def get(self, capture_uuid: str) -> dict[str, Any]:
+        return comparator.get_comparables_capture(capture_uuid)
 
 
 # Get information for takedown
