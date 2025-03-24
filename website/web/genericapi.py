@@ -160,7 +160,11 @@ class CaptureHashes(Resource):  # type: ignore[misc]
         algorithm = request.args['algorithm'].lower() if request.args.get('algorithm') else 'sha512'
         hashes_only = False if 'hashes_only' in request.args and request.args['hashes_only'] in [0, '0'] else True
         if algorithm == 'sha512' and hashes_only:
-            to_return: dict[str, Any] = {'response': {'hashes': list(lookyloo.get_hashes(capture_uuid))}}
+            success, _hashes = lookyloo.get_hashes(capture_uuid)
+            if success:
+                to_return: dict[str, Any] = {'response': {'hashes': list(_hashes)}}
+            else:
+                return make_response({'error': 'Unable to get the hashes.'}, 400)
         else:
             hashes = lookyloo.get_hashes_with_context(capture_uuid, algorithm=algorithm, urls_only=True)
             to_return = {'response': {'hashes': list(hashes.keys())}}
