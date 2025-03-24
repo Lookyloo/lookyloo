@@ -255,15 +255,15 @@ class Lookyloo():
         ct = self.get_crawled_tree(capture_uuid)
         return ct.root_hartree.stats
 
-    def get_info(self, capture_uuid: str, /) -> dict[str, Any]:
+    def get_info(self, capture_uuid: str, /) -> tuple[bool, dict[str, Any]]:
         '''Get basic information about the capture.'''
         cache = self.capture_cache(capture_uuid)
         if not cache:
-            return {'error': f'Unable to find UUID {capture_uuid} in the cache.'}
+            return False, {'error': f'Unable to find UUID {capture_uuid} in the cache.'}
 
         if not hasattr(cache, 'uuid'):
             self.logger.critical(f'Cache for {capture_uuid} is broken: {cache}.')
-            return {'error': f'Sorry, the capture {capture_uuid} is broken, please report it to the admin.'}
+            return False, {'error': f'Sorry, the capture {capture_uuid} is broken, please report it to the admin.'}
 
         to_return = {'uuid': cache.uuid,
                      'url': cache.url if hasattr(cache, 'url') else 'Unable to get URL for the capture'}
@@ -277,7 +277,7 @@ class Lookyloo():
             to_return['user_agent'] = cache.user_agent
         if hasattr(cache, 'referer'):
             to_return['referer'] = cache.referer if cache.referer else ''
-        return to_return
+        return True, to_return
 
     def get_meta(self, capture_uuid: str, /) -> dict[str, str]:
         '''Get the meta informations from a capture (mostly, details about the User Agent used.)'''
