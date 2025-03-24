@@ -1333,7 +1333,7 @@ class Lookyloo():
             to_return[sha1]['hashlookup'] = hashlookup_entries[sha1]
         return to_return, len(hashes_tree)
 
-    def get_hashes(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
+    def get_hashes(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> tuple[bool, set[str]]:
         """Return hashes (sha512) of resources.
         Only tree_uuid: All the hashes
         tree_uuid and hostnode_uuid: hashes of all the resources in that hostnode (including embedded ressources)
@@ -1346,7 +1346,9 @@ class Lookyloo():
             container = self.get_hostnode_from_tree(tree_uuid, hostnode_uuid)
         else:
             container = self.get_crawled_tree(tree_uuid)
-        return get_resources_hashes(container)
+        if container:
+            return True, get_resources_hashes(container)
+        return False, set()
 
     def get_hostnames(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
         """Return all the unique hostnames:

@@ -755,9 +755,11 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>/hashes', methods=['GET'])
 @file_response  # type: ignore[misc]
 def hashes_hostnode(tree_uuid: str, node_uuid: str) -> Response:
-    hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
-    return send_file(BytesIO('\n'.join(hashes).encode()),
-                     mimetype='test/plain', as_attachment=True, download_name=f'hashes.{node_uuid}.txt')
+    success, hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
+    if success:
+        return send_file(BytesIO('\n'.join(hashes).encode()),
+                         mimetype='test/plain', as_attachment=True, download_name=f'hashes.{node_uuid}.txt')
+    return make_response('Unable to get the hashes.', 404)
 
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>/text', methods=['GET'])
@@ -2195,9 +2197,11 @@ def get_ressource_preview(tree_uuid: str, node_uuid: str, h_ressource: str | Non
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/hashes', methods=['GET'])
 @file_response  # type: ignore[misc]
 def hashes_urlnode(tree_uuid: str, node_uuid: str) -> Response:
-    hashes = lookyloo.get_hashes(tree_uuid, urlnode_uuid=node_uuid)
-    return send_file(BytesIO('\n'.join(hashes).encode()),
-                     mimetype='test/plain', as_attachment=True, download_name='hashes.txt')
+    success, hashes = lookyloo.get_hashes(tree_uuid, urlnode_uuid=node_uuid)
+    if success:
+        return send_file(BytesIO('\n'.join(hashes).encode()),
+                         mimetype='test/plain', as_attachment=True, download_name='hashes.txt')
+    return make_response('Unable to find the hashes.', 404)
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/add_context', methods=['POST'])
