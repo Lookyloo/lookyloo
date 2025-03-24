@@ -30,7 +30,7 @@ from zoneinfo import ZoneInfo
 from har2tree import HostNode, URLNode
 import flask_login  # type: ignore[import-untyped]
 from flask import (Flask, Response, Request, flash, jsonify, redirect, render_template,
-                   request, send_file, url_for)
+                   request, send_file, url_for, make_response)
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
@@ -44,7 +44,7 @@ from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from lookyloo import Lookyloo, CaptureSettings
-from lookyloo.default import get_config
+from lookyloo.default import get_config, get_homedir
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild
 from lookyloo.helpers import (UserAgents, load_cookies,
                               load_user_config,
@@ -854,9 +854,9 @@ def stats(tree_uuid: str) -> str:
 @app.route('/tree/<string:tree_uuid>/storage_state', methods=['GET'])
 def storage_state(tree_uuid: str) -> str:
     storage = {}
-    storage_file = lookyloo.get_storage_state(tree_uuid)
-    if content := storage_file.getvalue():
-        storage = json.loads(content)
+    success, storage_file = lookyloo.get_storage_state(tree_uuid)
+    if success and storage_file and storage_file.getvalue():
+        storage = json.loads(storage_file.getvalue())
     return render_template('storage.html', uuid=tree_uuid, storage=storage)
 
 
@@ -894,16 +894,19 @@ def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
 @app.route('/tree/<string:tree_uuid>/lookyloo_push', methods=['POST'])
 def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if remote_lookyloo_url := request.form.get('remote_lookyloo_url'):
-        to_push = lookyloo.get_capture(tree_uuid)
-        pylookyloo = PyLookyloo(remote_lookyloo_url)
-        try:
-            uuid = pylookyloo.upload_capture(full_capture=to_push, quiet=True)
-            remote_lookyloo_url = f'<a href="{pylookyloo.root_url}/tree/{uuid}" target="_blank">{uuid}</a>'
-            flash(Markup(f'Successfully pushed the capture: {remote_lookyloo_url}.'), 'success')
-        except PyLookylooError as e:
-            flash(f'Error while pushing capture: {e}', 'error')
-        except Exception as e:
-            flash(f'Unable to push capture: {e}', 'error')
+        success, to_push = lookyloo.get_capture(tree_uuid)
+        if success:
+            pylookyloo = PyLookyloo(remote_lookyloo_url)
+            try:
+                uuid = pylookyloo.upload_capture(full_capture=to_push, quiet=True)
+                remote_lookyloo_url = f'<a href="{pylookyloo.root_url}/tree/{uuid}" target="_blank">{uuid}</a>'
+                flash(Markup(f'Successfully pushed the capture: {remote_lookyloo_url}.'), 'success')
+            except PyLookylooError as e:
+                flash(f'Error while pushing capture: {e}', 'error')
+            except Exception as e:
+                flash(f'Unable to push capture: {e}', 'error')
+        else:
+            flash(f'Capture {tree_uuid} does not exist ?!', 'error')
     else:
         flash('Remote Lookyloo URL missing.', 'error')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
@@ -1116,7 +1119,11 @@ def image(tree_uuid: str) -> Response:
     if max_width and max_width.isdigit():
         to_return = lookyloo.get_screenshot_thumbnail(tree_uuid, width=int(max_width))
     else:
-        to_return = lookyloo.get_screenshot(tree_uuid)
+        success, to_return = lookyloo.get_screenshot(tree_uuid)
+        if not success:
+            error_img = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
+            with open(error_img, 'rb') as f:
+                to_return = BytesIO(f.read())
     return send_file(to_return, mimetype='image/png',
                      as_attachment=True, download_name='image.png')
 
@@ -1124,9 +1131,9 @@ def image(tree_uuid: str) -> Response:
 @app.route('/tree/<string:tree_uuid>/data', methods=['GET'])
 @file_response  # type: ignore[misc]
 def data(tree_uuid: str) -> Response:
-    filename, data = lookyloo.get_data(tree_uuid)
-    if len(filename) == 0:
-        return Response('No files.', mimetype='text/text')
+    success, filename, data = lookyloo.get_data(tree_uuid)
+    if not success:
+        return make_response(Response('No files.', mimetype='text/text'), 404)
 
     if filetype.guess_mime(data.getvalue()) is None:
         mime = 'application/octet-stream'
@@ -1147,33 +1154,41 @@ def thumbnail(tree_uuid: str, width: int) -> Response:
 @app.route('/tree/<string:tree_uuid>/html', methods=['GET'])
 @file_response  # type: ignore[misc]
 def html(tree_uuid: str) -> Response:
-    to_return = lookyloo.get_html(tree_uuid)
-    return send_file(to_return, mimetype='text/html',
-                     as_attachment=True, download_name='page.html')
+    success, to_return = lookyloo.get_html(tree_uuid)
+    if success:
+        return send_file(to_return, mimetype='text/html',
+                         as_attachment=True, download_name='page.html')
+    return make_response(Response('No HTML available.', mimetype='text/text'), 404)
 
 
 @app.route('/tree/<string:tree_uuid>/cookies', methods=['GET'])
 @file_response  # type: ignore[misc]
 def cookies(tree_uuid: str) -> Response:
-    to_return = lookyloo.get_cookies(tree_uuid)
-    return send_file(to_return, mimetype='application/json',
-                     as_attachment=True, download_name='cookies.json')
+    success, to_return = lookyloo.get_cookies(tree_uuid)
+    if success:
+        return send_file(to_return, mimetype='application/json',
+                         as_attachment=True, download_name='cookies.json')
+    return make_response(Response('No cookies available.', mimetype='text/text'), 404)
 
 
 @app.route('/tree/<string:tree_uuid>/hashes', methods=['GET'])
 @file_response  # type: ignore[misc]
 def hashes_tree(tree_uuid: str) -> Response:
-    hashes = lookyloo.get_hashes(tree_uuid)
-    return send_file(BytesIO('\n'.join(hashes).encode()),
-                     mimetype='test/plain', as_attachment=True, download_name='hashes.txt')
+    success, hashes = lookyloo.get_hashes(tree_uuid)
+    if success:
+        return send_file(BytesIO('\n'.join(hashes).encode()),
+                         mimetype='test/plain', as_attachment=True, download_name='hashes.txt')
+    return make_response(Response('No hashes available.', mimetype='text/text'), 404)
 
 
 @app.route('/tree/<string:tree_uuid>/export', methods=['GET'])
 @file_response  # type: ignore[misc]
 def export(tree_uuid: str) -> Response:
-    to_return = lookyloo.get_capture(tree_uuid)
-    return send_file(to_return, mimetype='application/zip',
-                     as_attachment=True, download_name='capture.zip')
+    success, to_return = lookyloo.get_capture(tree_uuid)
+    if success:
+        return send_file(to_return, mimetype='application/zip',
+                         as_attachment=True, download_name='capture.zip')
+    return make_response(Response('No capture available.', mimetype='text/text'), 404)
 
 
 @app.route('/tree/<string:tree_uuid>/urls_rendered_page', methods=['GET'])
@@ -1212,7 +1227,17 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
     if not cache:
         flash('Unable to find capture {base_tree_uuid} in cache.', 'error')
         return redirect(url_for('tree', tree_uuid=base_tree_uuid))
-    cookies = load_cookies(lookyloo.get_cookies(base_tree_uuid))
+    cookies: list[dict[str, str | bool]] = []
+    storage_state: dict[str, Any] = {}
+    success, storage_state_file = lookyloo.get_storage_state(base_tree_uuid)
+    if success:
+        if storage_state_content := storage_state_file.getvalue():
+            storage_state = json.loads(storage_state_content)
+    if not storage_state:
+        # Old way of doing it, the cookies are in the storage
+        success, _cookies = lookyloo.get_cookies(base_tree_uuid)
+        if success:
+            cookies = load_cookies(_cookies)
     original_capture_settings = lookyloo.get_capture_settings(base_tree_uuid)
     bulk_captures = []
     for url in [urls[int(selected_id) - 1] for selected_id in selected_urls]:
@@ -1221,6 +1246,7 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
                 update={
                     'url': url,
                     'cookies': cookies,
+                    'storage': storage_state,
                     'referer': cache.redirects[-1] if cache.redirects else cache.url,
                     'user_agent': cache.user_agent,
                     'parent': base_tree_uuid,
@@ -1230,6 +1256,7 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
             _capture: dict[str, Any] = {
                 'url': url,
                 'cookies': cookies,
+                'storage': storage_state,
                 'referer': cache.redirects[-1] if cache.redirects else cache.url,
                 'user_agent': cache.user_agent,
                 'parent': base_tree_uuid,
@@ -1366,7 +1393,11 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
     try:
         ct = lookyloo.get_crawled_tree(tree_uuid)
         b64_thumbnail = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=True)
-        screenshot_size = lookyloo.get_screenshot(tree_uuid).getbuffer().nbytes
+        success, screenshot = lookyloo.get_screenshot(tree_uuid)
+        if success:
+            screenshot_size = screenshot.getbuffer().nbytes
+        else:
+            screenshot_size = 0
         meta = lookyloo.get_meta(tree_uuid)
         capture_settings = lookyloo.get_capture_settings(tree_uuid)
         # Get a potential favicon, if it exists
@@ -1502,7 +1533,7 @@ def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
         else:
             return {'error': 'Unable to find resource in node {node_uuid} of tree {tree_uuid}'}
     else:
-        filename, content = lookyloo.get_data(tree_uuid)
+        success, filename, content = lookyloo.get_data(tree_uuid)
 
     response = lookyloo.pandora.submit_file(content, filename)
     return jsonify(response)
@@ -2551,7 +2582,9 @@ def post_table(table_name: str, value: str) -> Response:
     if table_name == 'faviconsTable':
         tree_uuid = value.strip()
         prepared_captures = []
-        favicons_zip = lookyloo.get_potential_favicons(tree_uuid, all_favicons=True, for_datauri=False)
+        success, favicons_zip = lookyloo.get_potential_favicons(tree_uuid, all_favicons=True, for_datauri=False)
+        if not success:
+            return jsonify({'error': 'No favicon found.'})
         with ZipFile(favicons_zip, 'r') as myzip:
             for name in myzip.namelist():
                 if not name.endswith('.ico'):

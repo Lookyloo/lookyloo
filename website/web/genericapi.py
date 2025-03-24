@@ -464,10 +464,11 @@ class CaptureInfo(Resource):  # type: ignore[misc]
 @api.doc(description='Get the complete cookie jar created during the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureCookies(Resource):  # type: ignore[misc]
-    def get(self, capture_uuid: str) -> dict[str, Any]:
-        if cookies := lookyloo.get_cookies(capture_uuid).read():
-            return json.loads(cookies)
-        return {}
+    def get(self, capture_uuid: str) -> dict[str, Any] | tuple[dict[str, str], int]:
+        success, cookies = lookyloo.get_cookies(capture_uuid)
+        if success and cookies.getvalue():
+            return json.loads(cookies.getvalue())
+        return {'error': 'No cookies'}, 404
 
 
 @api.route('/json/<string:capture_uuid>/report')
@@ -642,8 +643,11 @@ class SubmitCapture(Resource):  # type: ignore[misc]
 class CaptureScreenshot(Resource):  # type: ignore[misc]
 
     @api.produces(['image/png'])  # type: ignore[misc]
-    def get(self, capture_uuid: str) -> Response:
-        return send_file(lookyloo.get_screenshot(capture_uuid), mimetype='image/png')
+    def get(self, capture_uuid: str) -> Response | tuple[dict[str, str], int]:
+        success, screenshot = lookyloo.get_screenshot(capture_uuid)
+        if success:
+            return send_file(screenshot, mimetype='image/png')
+        return {'error': 'No screenshot available'}, 404
 
 
 @api.route('/bin/<string:capture_uuid>/export')
@@ -652,8 +656,11 @@ class CaptureScreenshot(Resource):  # type: ignore[misc]
 class CaptureExport(Resource):  # type: ignore[misc]
 
     @api.produces(['application/zip'])  # type: ignore[misc]
-    def get(self, capture_uuid: str) -> Response:
-        return send_file(lookyloo.get_capture(capture_uuid), mimetype='application/zip')
+    def get(self, capture_uuid: str) -> Response | tuple[dict[str, str], int]:
+        success, capture = lookyloo.get_capture(capture_uuid)
+        if success:
+            return send_file(capture, mimetype='application/zip')
+        return {'error': 'No capture available'}, 404
 
 
 @api.route('/bin/<string:capture_uuid>/data')
@@ -662,17 +669,15 @@ class CaptureExport(Resource):  # type: ignore[misc]
 class CaptureData(Resource):  # type: ignore[misc]
 
     @api.produces(['application/zip'])  # type: ignore[misc]
-    def get(self, capture_uuid: str) -> Response:
-        filename, data = lookyloo.get_data(capture_uuid)
-        if not filename:
-            # This capture didn't trigger a download.
-            filename = 'no_download'
-            data = BytesIO(b"This capture didn't trigger a download")
-        to_return = BytesIO()
-        with ZipFile(to_return, 'w') as z:
-            z.writestr(filename, data.getvalue())
-        to_return.seek(0)
-        return send_file(to_return, mimetype='application/zip')
+    def get(self, capture_uuid: str) -> Response | tuple[dict[str, str], int]:
+        success, filename, data = lookyloo.get_data(capture_uuid)
+        if success:
+            to_return = BytesIO()
+            with ZipFile(to_return, 'w') as z:
+                z.writestr(filename, data.getvalue())
+            to_return.seek(0)
+            return send_file(to_return, mimetype='application/zip')
+        return {'error': "This capture didn't trigger a download"}, 404
 
 
 # Compare captures (WiP)

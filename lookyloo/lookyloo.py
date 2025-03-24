@@ -62,7 +62,7 @@ from .helpers import (get_captures_dir, get_email_template,
                       uniq_domains, ParsedUserAgent, UserAgents,
                       get_useragent_for_requests, load_takedown_filters,
                       CaptureSettings, load_user_config,
-                      get_indexing
+                      get_indexing, get_error_screenshot
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -669,6 +669,7 @@ class Lookyloo():
                 proxy=self.global_proxy if self.global_proxy else query.proxy,
                 general_timeout_in_sec=query.general_timeout_in_sec,
                 cookies=query.cookies,
+                storage=query.storage,
                 headers=query.headers,
                 http_credentials=query.http_credentials,
                 viewport=query.viewport,
@@ -990,23 +991,23 @@ class Lookyloo():
             return {"error": "Unable to send mail"}
         return True
 
-    def _get_raw(self, capture_uuid: str, /, extension: str='*', all_files: bool=True) -> BytesIO:
+    def _get_raw(self, capture_uuid: str, /, extension: str='*', all_files: bool=True) -> tuple[bool, BytesIO]:
         '''Get file(s) from the capture directory'''
         try:
             capture_dir = self._captures_index[capture_uuid].capture_dir
         except NoValidHarFile:
-            return BytesIO(f'Capture {capture_uuid} has no HAR entries, which means it is broken.'.encode())
+            return False, BytesIO(f'Capture {capture_uuid} has no HAR entries, which means it is broken.'.encode())
         except MissingUUID:
-            return BytesIO(f'Capture {capture_uuid} not unavailable, try again later.'.encode())
+            return False, BytesIO(f'Capture {capture_uuid} not unavailable, try again later.'.encode())
         except MissingCaptureDirectory:
-            return BytesIO(f'No capture {capture_uuid} on the system (directory missing).'.encode())
+            return False, BytesIO(f'No capture {capture_uuid} on the system (directory missing).'.encode())
         all_paths = sorted(list(capture_dir.glob(f'*.{extension}')))
         if not all_files:
             # Only get the first one in the list
             if not all_paths:
-                return BytesIO()
+                return False, BytesIO()
             with open(all_paths[0], 'rb') as f:
-                return BytesIO(f.read())
+                return True, BytesIO(f.read())
         to_return = BytesIO()
         # Add uuid file to the export, allows to keep the same UUID across platforms.
         # NOTE: the UUID file will always be added, as long as all_files is True,
@@ -1019,17 +1020,17 @@ class Lookyloo():
                     continue
                 myzip.write(path, arcname=f'{capture_dir.name}/{path.name}')
         to_return.seek(0)
-        return to_return
+        return True, to_return
 
     @overload
     def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[False], for_datauri: Literal[True]) -> tuple[str, str]:
         ...
 
     @overload
-    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[True], for_datauri: Literal[False]) -> BytesIO:
+    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[True], for_datauri: Literal[False]) -> tuple[bool, BytesIO]:
         ...
 
-    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: bool=False, for_datauri: bool=False) -> BytesIO | tuple[str, str]:
+    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: bool=False, for_datauri: bool=False) -> tuple[bool, BytesIO] | tuple[str, str]:
         '''Get rendered HTML'''
         # NOTE: we sometimes have multiple favicons, and sometimes,
         #       the first entry in the list is not actually a favicon. So we
@@ -1055,23 +1056,30 @@ class Lookyloo():
                 return '', ''
         return self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
 
-    def get_html(self, capture_uuid: str, /, all_html: bool=False) -> BytesIO:
+    def get_html(self, capture_uuid: str, /, all_html: bool=False) -> tuple[bool, BytesIO]:
         '''Get rendered HTML'''
         return self._get_raw(capture_uuid, 'html', all_html)
 
-    def get_data(self, capture_uuid: str, /) -> tuple[str, BytesIO]:
+    def get_data(self, capture_uuid: str, /) -> tuple[bool, str, BytesIO]:
         '''Get the data'''
-        return self._get_raw(capture_uuid, 'data.filename', False).getvalue().decode(), self._get_raw(capture_uuid, 'data', False)
+        success, data_filename = self._get_raw(capture_uuid, 'data.filename', False)
+        if success:
+            filename = data_filename.getvalue().decode()
+            success, data = self._get_raw(capture_uuid, 'data', False)
+            if success:
+                return True, filename, data
+            return False, filename, data
+        return False, 'Unable to get the file name', BytesIO()
 
-    def get_cookies(self, capture_uuid: str, /, all_cookies: bool=False) -> BytesIO:
+    def get_cookies(self, capture_uuid: str, /, all_cookies: bool=False) -> tuple[bool, BytesIO]:
         '''Get the cookie(s)'''
         return self._get_raw(capture_uuid, 'cookies.json', all_cookies)
 
-    def get_screenshot(self, capture_uuid: str, /) -> BytesIO:
+    def get_screenshot(self, capture_uuid: str, /) -> tuple[bool, BytesIO]:
         '''Get the screenshot(s) of the rendered page'''
         return self._get_raw(capture_uuid, 'png', all_files=False)
 
-    def get_storage_state(self, capture_uuid: str, /) -> BytesIO:
+    def get_storage_state(self, capture_uuid: str, /) -> tuple[bool, BytesIO]:
         '''Get the storage state of the capture'''
         return self._get_raw(capture_uuid, 'storage.json', all_files=False)
 
@@ -1080,29 +1088,31 @@ class Lookyloo():
         to_return = BytesIO()
         size = width, width
         try:
-            s = self.get_screenshot(capture_uuid)
-            orig_screenshot = Image.open(s)
-            to_thumbnail = orig_screenshot.crop((0, 0, orig_screenshot.width, orig_screenshot.width))
+            success, s = self.get_screenshot(capture_uuid)
+            if success:
+                orig_screenshot = Image.open(s)
+                to_thumbnail = orig_screenshot.crop((0, 0, orig_screenshot.width, orig_screenshot.width))
+            else:
+                to_thumbnail = get_error_screenshot()
         except Image.DecompressionBombError as e:
             # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
             self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: image too big ({e}).')
-            error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
-            to_thumbnail = Image.open(error_img)
+            to_thumbnail = get_error_screenshot()
         except UnidentifiedImageError as e:
             # We might have a direct download link, and no screenshot. Assign the thumbnail accordingly.
             try:
-                filename, data = self.get_data(capture_uuid)
-                if filename:
-                    self.logger.info(f'{capture_uuid} is is a download link, set thumbnail.')
-                    error_img = get_homedir() / 'website' / 'web' / 'static' / 'download.png'
+                success, filename, data = self.get_data(capture_uuid)
+                if success:
+                    self.logger.debug(f'{capture_uuid} is is a download link, set thumbnail.')
+                    error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'download.png'
+                    to_thumbnail = Image.open(error_img)
                 else:
-                    # No screenshot and no data, it is probably because the capture failed.
-                    error_img = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
+                    # Unable to get data, probably a broken capture.
+                    to_thumbnail = get_error_screenshot()
             except Exception:
                 # The capture probably doesn't have a screenshot at all, no need to log that as a warning.
                 self.logger.debug(f'Unable to generate the screenshot thumbnail of {capture_uuid}: {e}.')
-                error_img = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
-            to_thumbnail = Image.open(error_img)
+            to_thumbnail = get_error_screenshot()
 
         to_thumbnail.thumbnail(size)
         to_thumbnail.save(to_return, 'png')
@@ -1113,7 +1123,7 @@ class Lookyloo():
         else:
             return to_return
 
-    def get_capture(self, capture_uuid: str, /) -> BytesIO:
+    def get_capture(self, capture_uuid: str, /) -> tuple[bool, BytesIO]:
         '''Get all the files related to this capture.'''
         return self._get_raw(capture_uuid)
 
@@ -1201,8 +1211,8 @@ class Lookyloo():
 
         # if the file submitted on lookyloo cannot be displayed (PDF), it will be downloaded.
         # In the case, we want to have it as a FileObject in the export
-        filename, pseudofile = self.get_data(capture_uuid)
-        if filename:
+        success, filename, pseudofile = self.get_data(capture_uuid)
+        if success and filename:
             event = self.misps.export(cache, self.is_public_instance, filename, pseudofile)
         else:
             event = self.misps.export(cache, self.is_public_instance)

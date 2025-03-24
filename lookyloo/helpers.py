@@ -28,6 +28,7 @@ from urllib.parse import urlparse
 
 from har2tree import CrawledTree, HostNode, URLNode
 from lacuscore import CaptureSettings as LacuscoreCaptureSettings
+from PIL import Image
 from playwrightcapture import get_devices
 from publicsuffixlist import PublicSuffixList  # type: ignore[import-untyped]
 from pytaxonomies import Taxonomies  # type: ignore[attr-defined]
@@ -90,6 +91,12 @@ def get_captures_dir() -> Path:
 def get_email_template() -> str:
     with (get_homedir() / 'config' / 'email.tmpl').open() as f:
         return f.read()
+
+
+@lru_cache
+def get_error_screenshot() -> Image.Image:
+    error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
+    return Image.open(error_img)
 
 
 @lru_cache
