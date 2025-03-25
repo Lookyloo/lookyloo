@@ -1807,14 +1807,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.13.5"
+version = "1.13.6"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.9.2"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.13.5-py3-none-any.whl", hash = "sha256:7b9255dfb779db22fad471338e3643141df780fd35d9caa720c44556640263b6"},
-    {file = "lacuscore-1.13.5.tar.gz", hash = "sha256:4b328bd2dbf4245a9a9d6331bfb439c4873a24a26c94a81442cf71435357afd3"},
+    {file = "lacuscore-1.13.6-py3-none-any.whl", hash = "sha256:cf8f13be52c85ec955e515c7bb113f5cd04d93e9c088c4964112bbc29b1d845f"},
+    {file = "lacuscore-1.13.6.tar.gz", hash = "sha256:5d5dc2b43151ee309ed79b0237037eac7457345a95e2f87574324842795e02db"},
 ]
 
 [package.dependencies]
@@ -3664,14 +3664,14 @@ trio = ["trio (>=0.24)"]
 
 [[package]]
 name = "pytz"
-version = "2025.1"
+version = "2025.2"
 description = "World timezone definitions, modern and historical"
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "pytz-2025.1-py2.py3-none-any.whl", hash = "sha256:89dd22dca55b46eac6eda23b2d72721bf1bdfef212645d81513ef5d03038de57"},
-    {file = "pytz-2025.1.tar.gz", hash = "sha256:c2db42be2a2518b28e65f9207c4d05e6ff547d1efa4086469ef855e4ab70178e"},
+    {file = "pytz-2025.2-py2.py3-none-any.whl", hash = "sha256:5ddf76296dd8c44c26eb8f4b6f35488f3ccbf6fbbd7adee0b7262d43f0ec2f00"},
+    {file = "pytz-2025.2.tar.gz", hash = "sha256:360b9e3dbb49a209c21ad61809c7fb453643e048b38924c765813546746e81c3"},
 ]
 
 [[package]]
@@ -4122,14 +4122,14 @@ test = ["pytest"]
 
 [[package]]
 name = "setuptools"
-version = "78.0.1"
+version = "78.0.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "setuptools-78.0.1-py3-none-any.whl", hash = "sha256:1cc9b32ee94f93224d6c80193cbb768004667aa2f2732a473d6949b0236c1d4e"},
-    {file = "setuptools-78.0.1.tar.gz", hash = "sha256:4321d2dc2157b976dee03e1037c9f2bc5fea503c0c47d3c9458e0e8e49e659ce"},
+    {file = "setuptools-78.0.2-py3-none-any.whl", hash = "sha256:4a612c80e1f1d71b80e4906ce730152e8dec23df439f82731d9d0b608d7b700d"},
+    {file = "setuptools-78.0.2.tar.gz", hash = "sha256:137525e6afb9022f019d6e884a319017f9bf879a0d8783985d32cbc8683cab93"},
 ]
 
 [package.extras]
@@ -4994,4 +4994,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "f8753242fadbb3b48b6af71ae8e8c075224c2440283fb277999cdcdfe4261959"
+content-hash = "4c5241b35b6f4aaaa73191c36c890703ec5507ecb418e45b32a5ebd91745cc1d"
