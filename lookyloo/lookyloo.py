@@ -1207,7 +1207,10 @@ class Lookyloo():
         # The tree is needed to generate the export. The call below makes sure it is cached
         # as it may not be if the uses calls the json export without viewing the tree first,
         # and it has been archived.
-        self.get_crawled_tree(capture_uuid)
+        try:
+            self.get_crawled_tree(capture_uuid)
+        except LookylooException as e:
+            return {'error': str(e)}
 
         # if the file submitted on lookyloo cannot be displayed (PDF), it will be downloaded.
         # In the case, we want to have it as a FileObject in the export
