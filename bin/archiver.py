@@ -53,10 +53,11 @@ class Archiver(AbstractManager):
                                                  config_kwargs={'connect_timeout': 10,
                                                                 'read_timeout': 900})
             self.s3fs_bucket = s3fs_config['config']['bucket_name']
-            self.s3fs_client.clear_multipart_uploads(self.s3fs_bucket)
 
     def _to_run_forever(self) -> None:
         archiving_done = False
+        self.s3fs_client.clear_instance_cache()
+        self.s3fs_client.clear_multipart_uploads(self.s3fs_bucket)
         # NOTE: When we archive a big directory, moving *a lot* of files, expecially to MinIO
         # can take a very long time. In order to avoid being stuck on the archiving, we break that in chunks
         # but we also want to keep archiving without waiting 1h between each run.
@@ -287,6 +288,8 @@ class Archiver(AbstractManager):
                 if random.randrange(20) == 0:
                     self._update_index(directory_to_index,
                                        s3fs_parent_dir='/'.join([self.s3fs_bucket, year]))
+                    # They take a very long time, often more than one day, quitting after we got one
+                    break
             else:
                 self._update_index(directory_to_index)
         self.logger.info('Archived indexes updated')
