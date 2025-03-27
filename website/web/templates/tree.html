@@ -484,6 +484,26 @@
   </div>
 </div>
 
+<div class="modal fade" id="cookieNameModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="cookieNameModalLabel">Cookie Name</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading cookie name ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#storageStateModal"
+                 data-remote="{{ url_for('storage_state', tree_uuid=tree_uuid) }}"
+                 data-bs-toggle="modal" data-bs-target="#storageStateModal" role="button">Back to capture's storage</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
 <div class="modal fade" id="statsModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">

@@ -317,7 +317,6 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
         return 'Unable to render icon'
 
 
-# NOTE: Add in the globals?
 def details_modal_button(target_modal_id: str, data_remote: str, button_string: str) -> dict[str, str]:
     return {'display': f'''
 <span class="d-inline-block text-break">
@@ -337,7 +336,8 @@ app.jinja_env.globals.update(
      'get_icon': get_icon,
      'generic_type': mimetype_to_generic,
      'hash_icon': hash_icon_render,
-     'tz_info': get_tz_info}
+     'tz_info': get_tz_info,
+     'details_modal_button': details_modal_button}
 )
 
 

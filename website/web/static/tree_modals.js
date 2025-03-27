@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
      "#hostnamesModal", "#hostnameDetailsModal",
      "#urlsModal", "#urlDetailsModal",
      "#urlsInPageModal", "#storageStateModal",
-     "#ipsModal", "#ipDetailsModal",
+     "#ipsModal", "#ipDetailsModal", "#cookieNameModal",
      "#mispPushModal", "#mispLookupModal"].forEach(modal => {
         $(modal).on('show.bs.modal', function(e) {
           var button = $(e.relatedTarget);
