@@ -379,7 +379,7 @@ function renderTables() {
       let cat_table = new DataTable('#storageStateCookiesTable', {
         retrieve: true,
         order: [[ 0, "desc" ]],
-        pageLength: 10,
+        pageLength: 25,
         columns: [
             {width: '15%'},
             {width: '25%'},

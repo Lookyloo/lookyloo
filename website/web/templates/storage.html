@@ -1,14 +1,21 @@
-<center>
 {% if not storage %}
-  <p class="lead">No local storage available</p>
+<div class="card text-center">
+  <div class="card-body">
+    <h5 class="card-title">No storage or cookies found</h5>
+    <p class="card-text">The capture didn't have any cookie, local storage or IndexedDB</p>
+  </div>
+</div>
 {%else%}
-  <p class="lead">
-   <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
-     data-bs-target="#collapseCookies" aria-expanded="false" aria-controls="collapseCookies">
-    Cookies
-  </button>
-  </p>
-  <div class="collapse show" id="collapseCookies">
+<nav>
+  <div class="nav nav-tabs" id="nav-tab-storage-state" role="tablist">
+    <button class="nav-link active" id="nav-cookies-tab" data-bs-toggle="tab" data-bs-target="#nav-cookies" type="button" role="tab" aria-controls="nav-cookies" aria-selected="true">Cookies</button>
+    {% if storage['origins']%}
+    <button class="nav-link" id="nav-storage-tab" data-bs-toggle="tab" data-bs-target="#nav-storage" type="button" role="tab" aria-controls="nav-storage" aria-selected="false">Storage</button>
+    {% endif %}
+  </div>
+</nav>
+<div class="tab-content" id="nav-tabContent-storage-state">
+  <div class="tab-pane fade show active" id="nav-cookies" role="tabpanel" aria-labelledby="nav-cookies-tab" tabindex="0">
     <table id="storageStateCookiesTable" class="table table-striped">
       <thead>
         <tr>
@@ -28,7 +35,8 @@
           <td class="text-break">
             {{ details_modal_button(target_modal_id="#cookieNameModal",
                                     data_remote=url_for('cookies_name_detail', cookie_name=cookie['name']),
-                                    button_string=shorten_string(cookie['name'], 100, with_title=True))['display'] | safe }}
+                                    button_string=shorten_string(cookie['name'], 100, with_title=True),
+                                    search=cookie['name'])['display'] | safe }}
           </td>
           <td class="text-break">{{ cookie['value'] }}</td>
           <td class="text-break">{{ cookie['domain'] }}</td>
@@ -42,67 +50,100 @@
       </tbody>
     </table>
   </div>
-  <hr>
-  <p class="lead">Storage</p>
-  {% for origin in storage['origins'] %}
-    <p>Origin: {{origin['origin']}}</p>
-    {% if origin['localStorage'] %}
-    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
-            data-bs-target="#collapseLocalStorage_{{loop.index}}" aria-expanded="false" aria-controls="collapseLocalStorage_{{loop.index}}">
-      Local storage
-    </button>
-   <div class="collapse" id="collapseLocalStorage_{{loop.index}}">
-    <table id="localStorageTable_{{loop.index}}" name="localStorageTable" class="table table-striped">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for local_storage in origin['localStorage'] %}
-        <tr>
-          <td class="text-break">{{ local_storage['name'] }}</td>
-          <td class="text-break">{{ local_storage['value'] }}</td>
-        </tr>
-      {% endfor%}
-      </tbody>
-    </table>
-   </div>
-    {% else %}
-      <p>Empty local storage for this origin</p>
-    {% endif %}
-    {% if origin['indexedDB']%}
-    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
-            data-bs-target="#collapseIndexedDB_{{loop.index}}" aria-expanded="false" aria-controls="collapseIndexedDB_{{loop.index}}">
-      IndexedDB
-    </button>
-    <div class="collapse" id="collapseIndexedDB_{{loop.index}}">
-      {% for db in origin['indexedDB'] %}
-      <p>Database: {{db['name']}} (v{{db['version']}})</p>
-        {% for store in db['stores'] %}
-        <p>Store name: {{store['name']}}</p>
-        {% if store['records'] %}
-        <div class="container">
-          {% for record in store['records'] %}
-            {% for k, v in record.items() %}
-            <div class="row border">
-              <div class="col-2 text-break">{{k}}</div>
-              <pre class="col" style="text-align: left;">{{v | tojson(2)}}</pre>
-            </div>
-            {% endfor %}
-          {% endfor %}
-        </div>
-        {% else %}
-        <p>Empty store</p>
-        {% endif %}
+  {% if storage['origins']%}
+  <div class="tab-pane fade" id="nav-storage" role="tabpanel" aria-labelledby="nav-storage-tab" tabindex="0">
+    <div class="d-flex align-items-start">
+      <div class="nav flex-column nav-pills me-3" id="v-pills-tab-origin" role="tablist" aria-orientation="vertical">
+        <button class="nav-link" id="v-pills-disabled-tab" data-bs-toggle="pill" data-bs-target="#"
+                type="button" role="tab" aria-controls="v-pills-disabled" aria-selected="false" disabled>Origins</button>
+        {% for origin in storage['origins'] %}
+        <button class="nav-link {% if loop.index == 1 %}active {%endif%}"
+                id="v-pills-origin_{{loop.index}}-tab" data-bs-toggle="pill"
+                data-bs-target="#v-pills-origin_{{loop.index}}" type="button" role="tab"
+                aria-controls="v-pills-origin_{{loop.index}}"
+                aria-selected="{% if loop.index == 1 %}true{%else%}false{%endif%}">{{origin['origin']}}</button>
         {% endfor%}
-      {% endfor%}
+      </div>
+      <div class="tab-content" id="v-pills-tabContent">
+        {% for origin in storage['origins'] %}
+         <div class="tab-pane fade {% if loop.index == 1 %}show active{%endif%}" id="v-pills-origin_{{loop.index}}" role="tabpanel" aria-labelledby="v-pills-origin_{{loop.index}}-tab" tabindex="0">
+          {% if origin['localStorage'] %}
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Local Storage</h5>
+                <p class="card-text">
+                  <table id="localStorageTable_{{loop.index}}" name="localStorageTable" class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for local_storage in origin['localStorage'] %}
+                      <tr>
+                        <td class="text-break">{{ local_storage['name'] }}</td>
+                        <td class="text-break">{{ local_storage['value'] }}</td>
+                      </tr>
+                    {% endfor%}
+                    </tbody>
+                  </table>
+                </p>
+              </div>
+            </div>
+          {% else %}
+            <p>Empty local storage for this origin</p>
+          {% endif %}
+
+          {% if origin['indexedDB']%}
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">IndexedDB</h5>
+                {% for db in origin['indexedDB'] %}
+                  <h6 class="card-subtitle mb-2 text-body-secondary">
+                    Database: {{db['name']}} (v{{db['version']}})
+                  </h6>
+                  {% for store in db['stores'] %}
+                  <p class="card-text">
+                    <p class="lead">Store name: {{store['name']}}</p>
+                    {% if store['records'] %}
+                    <table id="indexedDB-{{db['name']}}-{{store['name']}}" class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th width="20%">Store key</th>
+                          <th>Store Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for record in store['records'] %}
+                        {% for k, v in record.items() %}
+                        <tr>
+                          <td class="text-break">{{k}}</td>
+                          <td class="text-break">
+                            <pre style="text-align: left;">{{v | tojson(2)}}</pre>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                    {% else %}
+                    <p>No records</p>
+                    {% endif %}
+                  </p>
+                  {% endfor%}
+                {% endfor%}
+              </div>
+            </div>
+          {% else %}
+          <p>No IndexedDB</p>
+          {% endif %}
+         </div>
+        {% endfor%}
+      </div>
     </div>
-    {% else %}
-    <p>Empty IndexedDB for this origin</p>
-    {% endif %}
-  <hr>
-  {% endfor%}
+  </div>
+  {% endif %}
+</div>
 {% endif %}
-</center>
+</div>

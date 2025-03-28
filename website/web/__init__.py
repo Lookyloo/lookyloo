@@ -317,14 +317,14 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
         return 'Unable to render icon'
 
 
-def details_modal_button(target_modal_id: str, data_remote: str, button_string: str) -> dict[str, str]:
+def details_modal_button(target_modal_id: str, data_remote: str, button_string: str, search: str | None=None) -> dict[str, str]:
     return {'display': f'''
 <span class="d-inline-block text-break">
   <a href="{target_modal_id}" data-remote="{data_remote}" data-bs-toggle="modal" data-bs-target="{target_modal_id}" role="button">
     {button_string}
   </a>
 </span>''',
-        'filter': button_string}
+        'filter': search if search else button_string}
 
 
 app.jinja_env.globals.update(
@@ -2530,7 +2530,8 @@ def post_table(table_name: str, value: str) -> Response:
                 'total_captures': _info['total_captures'],
                 'url': details_modal_button(target_modal_id='#urlDetailsModal',
                                             data_remote=url_for('url_details', url=_info['quoted_url']),
-                                            button_string=shorten_string(url, 100, with_title=True))
+                                            button_string=shorten_string(url, 100, with_title=True),
+                                            search=url)
             }
             prepared_captures.append(to_append)
         return jsonify(prepared_captures)
@@ -2545,7 +2546,8 @@ def post_table(table_name: str, value: str) -> Response:
                     'total_captures': nb_captures,
                     'identifier': details_modal_button(target_modal_id='#identifierDetailsModal',
                                                        data_remote=url_for('identifier_details', identifier_type=id_type, identifier=identifier),
-                                                       button_string=shorten_string(identifier, 100, with_title=True)),
+                                                       button_string=shorten_string(identifier, 100, with_title=True),
+                                                       search=identifier),
                     'identifier_type': id_type
                 }
                 prepared_captures.append(to_append)
@@ -2560,10 +2562,12 @@ def post_table(table_name: str, value: str) -> Response:
                 'total_captures': _info['total_captures'],
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_hostname),
-                                                 button_string=shorten_string(_hostname, 100, with_title=True)),
+                                                 button_string=shorten_string(_hostname, 100, with_title=True),
+                                                 search=_hostname),
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
                                            data_remote=url_for('ip_details', ip=_info['ip']),
-                                           button_string=shorten_string(_info['ip'], 100, with_title=True)),  # type: ignore[arg-type]
+                                           button_string=shorten_string(_info['ip'], 100, with_title=True),
+                                           search=_info['ip']),  # type: ignore[arg-type]
                 'urls': __prepare_node_view(tree_uuid, h_nodes, from_popup)
             }
             prepared_captures.append(to_append)
@@ -2577,7 +2581,8 @@ def post_table(table_name: str, value: str) -> Response:
                 'total_captures': get_indexing(flask_login.current_user).get_captures_hash_type_count(hash_type, h),
                 'capture_hash': details_modal_button(target_modal_id='#captureHashesTypesDetailsModal',
                                                      data_remote=url_for('capture_hash_details', hash_type=hash_type, h=h),
-                                                     button_string=shorten_string(h, 100, with_title=True)),
+                                                     button_string=shorten_string(h, 100, with_title=True),
+                                                     search=h),
                 'hash_type': hash_type
             }
             prepared_captures.append(to_append)
@@ -2607,7 +2612,8 @@ def post_table(table_name: str, value: str) -> Response:
                     'total_captures': get_indexing(flask_login.current_user).get_captures_favicon_count(favicon_sha512),
                     'favicon': details_modal_button(target_modal_id='#faviconDetailsModal', data_remote=url_for('favicon_detail', favicon_sha512=favicon_sha512),
                                                     button_string=f'''<img src="data:{mimetype};base64,{b64_favicon}" style="width:32px;height:32px;"
-                                                                           title="Click to see other captures with the same favicon"/>'''),
+                                                                           title="Click to see other captures with the same favicon"/>''',
+                                                    search=favicon_sha512),
                     'shodan_mmh3': lookyloo.compute_mmh3_shodan(favicon),
                     'download': render_template(favicon_download_button_template, mimetype=mimetype, b64_favicon=b64_favicon)
                 }
@@ -2624,10 +2630,12 @@ def post_table(table_name: str, value: str) -> Response:
                 'total_captures': _info['total_captures'],
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
                                            data_remote=url_for('ip_details', ip=_ip),
-                                           button_string=shorten_string(_ip, 100, with_title=True)),
+                                           button_string=shorten_string(_ip, 100, with_title=True),
+                                           search=_ip),
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_info['hostname']),
-                                                 button_string=shorten_string(_info['hostname'], 100, with_title=True)),  # type: ignore[arg-type]
+                                                 button_string=shorten_string(_info['hostname'], 100, with_title=True),
+                                                 search=_info['hostname']),  # type: ignore[arg-type]
                 'urls': __prepare_node_view(tree_uuid, ip_nodes, from_popup)
             }
             prepared_captures.append(to_append)
@@ -2646,7 +2654,8 @@ def post_table(table_name: str, value: str) -> Response:
                 'urls': __prepare_node_view(tree_uuid, bh_nodes, from_popup),
                 'sha512': details_modal_button(target_modal_id='#bodyHashDetailsModal',
                                                data_remote=url_for('body_hash_details', body_hash=body_hash),
-                                               button_string=shorten_string(body_hash, 40, with_title=True))
+                                               button_string=shorten_string(body_hash, 40, with_title=True),
+                                               search=body_hash)
             }
             prepared_captures.append(to_append)
         return jsonify(prepared_captures)
