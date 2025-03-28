@@ -476,6 +476,17 @@ class CaptureCookies(Resource):  # type: ignore[misc]
         return make_response({'error': 'No cookies'}, 404)
 
 
+@api.route('/json/<string:capture_uuid>/storage_state')
+@api.doc(description='Get the complete storage state at the end of the capture.',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureStorageState(Resource):  # type: ignore[misc]
+    def get(self, capture_uuid: str) -> Response:
+        success, storage_file = lookyloo.get_storage_state(capture_uuid)
+        if success and storage_file and storage_file.getvalue():
+            return make_response(json.loads(storage_file.getvalue()))
+        return make_response({'error': 'No storage state'}, 404)
+
+
 @api.route('/json/<string:capture_uuid>/report')
 @api.doc(description='Reports the url by sending an email to the investigation team',
          params={'capture_uuid': 'The UUID of the capture'})

@@ -855,11 +855,12 @@ def stats(tree_uuid: str) -> str:
 
 @app.route('/tree/<string:tree_uuid>/storage_state', methods=['GET'])
 def storage_state(tree_uuid: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     storage = {}
     success, storage_file = lookyloo.get_storage_state(tree_uuid)
     if success and storage_file and storage_file.getvalue():
         storage = json.loads(storage_file.getvalue())
-    return render_template('storage.html', uuid=tree_uuid, storage=storage)
+    return render_template('storage.html', tree_uuid=tree_uuid, storage=storage, from_popup=from_popup)
 
 
 @app.route('/tree/<string:tree_uuid>/misp_lookup', methods=['GET'])
@@ -1171,6 +1172,16 @@ def cookies(tree_uuid: str) -> Response:
         return send_file(to_return, mimetype='application/json',
                          as_attachment=True, download_name='cookies.json')
     return make_response(Response('No cookies available.', mimetype='text/text'), 404)
+
+
+@app.route('/tree/<string:tree_uuid>/storage_state_download', methods=['GET'])
+@file_response  # type: ignore[misc]
+def storage_state_download(tree_uuid: str) -> Response:
+    success, to_return = lookyloo.get_storage_state(tree_uuid)
+    if success:
+        return send_file(to_return, mimetype='application/json',
+                         as_attachment=True, download_name='storage_state.json')
+    return make_response(Response('No storage state available.', mimetype='text/text'), 404)
 
 
 @app.route('/tree/<string:tree_uuid>/hashes', methods=['GET'])
