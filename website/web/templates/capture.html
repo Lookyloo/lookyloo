@@ -478,6 +478,24 @@
         </div>
 
         <div class="row mb-3">
+          <label for="storage_state" class="col-sm-2 col-form-label">Storage state:</label>
+          <div class="col-sm-10">
+            <input type="file" class="form-control" id="storage_state" name="storage_state">
+            <div class="alert alert-info" role="alert">
+                The file has to be a storage stste from another lookyloo capture.
+            </div>
+            <div class="alert alert-danger" role="alert">
+              The storage state will be stored on the lookyloo instance and potentially
+              accessed by third parties (either because the Lookyloo instance is public,
+              or people other than you have access to the instance).
+              If that's the case, and as the stotage state may contain login credentials and
+              other kind of unique identifiers, please make sure none of them can be used to
+              login as yourself on websites.
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
           <label for="cookies" class="col-sm-2 col-form-label">Cookies:</label>
           <div class="col-sm-10">
             <input type="file" class="form-control" id="cookies" name="cookies">

@@ -1828,6 +1828,8 @@ def capture_web() -> str | Response | WerkzeugResponse:
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
             capture_query['cookies'] = load_cookies(request.files['cookies'].stream.read())
+        if 'storage_state' in request.files and request.files['storage_state'].filename:
+            capture_query['storage'] = json.loads(request.files['storage_state'].stream.read())
 
         if request.form.get('device_name'):
             capture_query['device_name'] = request.form['device_name']
