@@ -25,7 +25,7 @@ from typing import Any, TYPE_CHECKING, overload, Literal
 from collections.abc import Iterable
 from urllib.parse import urlparse
 from uuid import uuid4
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED
 
 import mmh3
 
@@ -1013,7 +1013,7 @@ class Lookyloo():
         # NOTE: the UUID file will always be added, as long as all_files is True,
         #       even if we pass an extension
         all_paths.append(capture_dir / 'uuid')
-        with ZipFile(to_return, 'w') as myzip:
+        with ZipFile(to_return, 'w', compression=ZIP_DEFLATED) as myzip:
             for path in all_paths:
                 if 'pickle' in path.name:
                     # We do not want to export the pickle
