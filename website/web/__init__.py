@@ -240,10 +240,12 @@ def get_sri(directory: str, filename: str) -> str:
     return Markup(f'integrity="sha512-{sha512}"')
 
 
-def shorten_string(s: str, length: int, with_title: bool=False) -> str:
+def shorten_string(s: str | int, length: int, with_title: bool=False) -> str:
     to_return = ''
     if with_title:
         to_return += f'<span title="{s}">'
+    if isinstance(s, int):
+        s = str(s)
     if len(s) > length:
         to_return += f'{s[:int(length / 2)]} [...] {s[-int(length / 2):]}'
     else:
