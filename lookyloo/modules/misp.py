@@ -176,10 +176,10 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
                 first_host = hostnodes[0]
                 obj.first_seen = first_host.urls[0].start_time
                 if hasattr(first_host, 'resolved_ips'):
-                    if 'v4' in hostnodes[0].resolved_ips:
-                        obj.add_attributes('ip', *first_host.resolved_ips['v4'])
-                    if 'v6' in hostnodes[0].resolved_ips:
-                        obj.add_attributes('ip', *first_host.resolved_ips['v6'])
+                    if ipsv4 := first_host.resolved_ips.get('v4'):
+                        obj.add_attributes('ip', *ipsv4)
+                    if ipsv6 := first_host.resolved_ips.get('v6'):
+                        obj.add_attributes('ip', *ipsv6)
 
 
 class MISP(AbstractModule):
