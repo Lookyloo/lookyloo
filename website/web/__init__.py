@@ -896,8 +896,13 @@ def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
                            misps_occurrences=misps_occurrences)
 
 
-@app.route('/tree/<string:tree_uuid>/lookyloo_push', methods=['POST'])
+@app.route('/tree/<string:tree_uuid>/lookyloo_push', methods=['GET', 'POST'])
 def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
+    if request.method == 'GET':
+        # Only bots land in this page, avoid log entries.
+        flash('Only support POST calls.', 'error')
+        return make_response(redirect(url_for('tree', tree_uuid=tree_uuid)), 405)
+
     if remote_lookyloo_url := request.form.get('remote_lookyloo_url'):
         success, to_push = lookyloo.get_capture(tree_uuid)
         if success:
