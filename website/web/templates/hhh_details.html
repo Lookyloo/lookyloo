@@ -18,7 +18,7 @@
 <center>
   <p class="lead"><b>{{ hhh }}</b>
    {% if not from_popup %}
-   <a href="{{ url_for('hhh_details', hhh=hhh, from_popup=True) }}" class="btn btn-light">
+   <a href="{{ url_for('hhh_detail', hhh=hhh, from_popup=True) }}" class="btn btn-light">
        {{ render_icon('share') }}
    </a>
    {%endif%}
