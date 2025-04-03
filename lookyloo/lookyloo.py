@@ -524,7 +524,7 @@ class Lookyloo():
 
     def get_capture_status(self, capture_uuid: str, /) -> CaptureStatusCore | CaptureStatusPy:
         '''Returns the status (queued, ongoing, done, or UUID unknown)'''
-        if self.redis.hexists('lookup_dirs', capture_uuid):
+        if self.redis.hexists('lookup_dirs', capture_uuid) or self.redis.hexists('lookup_dirs_archived', capture_uuid):
             return CaptureStatusCore.DONE
         elif self.redis.sismember('ongoing', capture_uuid):
             # Post-processing on lookyloo's side
