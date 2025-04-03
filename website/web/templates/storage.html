@@ -49,6 +49,7 @@
     <table id="storageStateCookiesTable" class="table table-striped">
       <thead>
         <tr>
+          <th>Number of captures</th>
           <th>Name</th>
           <th>Value</th>
           <th>Domain</th>
@@ -62,6 +63,7 @@
       <tbody>
         {% for cookie in storage['cookies'] %}
         <tr>
+        <td>{{ cookie['frequency'] }}</td>
           <td class="text-break">
             {{ details_modal_button(target_modal_id="#cookieNameModal",
                                     data_remote=url_for('cookies_name_detail', cookie_name=cookie['name']),

@@ -862,6 +862,10 @@ def storage_state(tree_uuid: str) -> str:
     success, storage_file = lookyloo.get_storage_state(tree_uuid)
     if success and storage_file and storage_file.getvalue():
         storage = json.loads(storage_file.getvalue())
+        if 'cookies' in storage:
+            # insert the frequency
+            for cookie in storage['cookies']:
+                cookie['frequency'] = get_indexing(flask_login.current_user).get_captures_cookie_name_count(cookie['name'])
     return render_template('storage.html', tree_uuid=tree_uuid, storage=storage, from_popup=from_popup)
 
 

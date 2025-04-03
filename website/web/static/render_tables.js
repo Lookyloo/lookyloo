@@ -381,14 +381,15 @@ function renderTables() {
         order: [[ 0, "desc" ]],
         pageLength: 25,
         columns: [
-            {width: '15%'},
-            {width: '25%'},
-            {width: '15%'},
             {width: '10%'},
-            {width: '14%', render: DataTable.render.datetime_with_tz()},
+            {width: '15%'},
+            {width: '20%'},
+            {width: '15%'},
             {width: '7%'},
+            {width: '13%', render: DataTable.render.datetime_with_tz()},
             {width: '7%'},
-            {width: '7%'}
+            {width: '6%'},
+            {width: '6%'}
         ]
       });
   }
