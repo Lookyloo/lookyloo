@@ -1,0 +1,69 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from "macros.html" import pandora_submit %}
+
+{% if from_popup %}
+
+{% extends "main.html" %}
+{% from 'bootstrap5/utils.html' import render_messages %}
+{% block title %}Downloads{% endblock %}
+
+{%endif%}
+
+{% block content %}
+
+<center>
+  The files downloaded during the capture.
+  <br>
+  {% if from_popup %}
+  <a href="{{ url_for('tree', tree_uuid=tree_uuid) }}" class="btn btn-info">
+    Open the capture.
+  </a>
+  {% else %}
+  <a href="{{ url_for('downloads', tree_uuid=tree_uuid, from_popup=True) }}" class="btn btn-light">
+    {{ render_icon('share') }}
+  </a>
+  {% endif %}
+</center>
+
+
+{% if not files %}
+<div class="card text-center">
+  <div class="card-body">
+    <h5 class="card-title">No files were downloaded</h5>
+  </div>
+</div>
+{%else%}
+<table id="downloadsTable" class="table table-striped">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>File Name</th>
+      {% if has_pandora %}
+      <th>Submit to Pandora</th>
+      {% endif %}
+      <th>Download</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for file in files %}
+    <tr>
+      <th scope="row">{{loop.index}}</th>
+      <td class="text-break">
+          {{file[0]}}
+      </td>
+      {% if has_pandora %}
+      <td>{{ pandora_submit(tree_uuid, index_in_zip=loop.index - 1) }}</td>
+      {% endif %}
+      <td>
+        <a href="{{ url_for('get_downloaded_file', tree_uuid=tree_uuid, index_in_zip=loop.index - 1) }}" type="button" class="btn btn-light">
+          {{ render_icon('cloud-download', title="Download the file") }}
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+</div>
+
+{% endblock %}

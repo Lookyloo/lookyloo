@@ -867,6 +867,7 @@ def get_downloaded_file(tree_uuid: str) -> Response:
 
 @app.route('/tree/<string:tree_uuid>/downloads', methods=['GET'])
 def downloads(tree_uuid: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     success, filename, file = lookyloo.get_data(tree_uuid)
     if not success:
         return render_template('downloads.html', uuid=tree_uuid, files=None)
@@ -882,7 +883,7 @@ def downloads(tree_uuid: str) -> str:
 
     # TODO: add other info (like the mimetype)
     return render_template('downloads.html', tree_uuid=tree_uuid, files=files,
-                           has_pandora=lookyloo.pandora.available)
+                           has_pandora=lookyloo.pandora.available, from_popup=from_popup)
 
 
 @app.route('/tree/<string:tree_uuid>/storage_state', methods=['GET'])
