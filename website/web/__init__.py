@@ -21,6 +21,7 @@ from datetime import date, datetime, timedelta, timezone
 from importlib.metadata import version
 from io import BytesIO, StringIO
 from typing import Any, TypedDict
+from collections.abc import Sequence
 from collections.abc import Iterable
 from urllib.parse import unquote_plus, urlparse
 from uuid import uuid4
@@ -2323,7 +2324,13 @@ The capture contains this value in <b>{{nodes | length}}</b> nodes.
     Click on the link to go directly on the node in the tree.
     <span class="d-inline-block text-break">
       <ul class="list-group list-group-flush">
-        {%for url, node in nodes %}
+        {%for n in nodes %}
+        {% if n|length == 2 %}
+        {% set url, node = n %}
+        {% set extra = None %}
+        {% else %}
+        {% set url, node, extra = n %}
+        {% endif %}
         <li class="list-group-item">
           {% if from_popup %}
           <a href="#" class="openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{node}}">
@@ -2334,6 +2341,9 @@ The capture contains this value in <b>{{nodes | length}}</b> nodes.
             <span class="d-inline-block text-break">{{shorten_string(url, 100, with_title=True)}}</span>
           </a>
           {% endif %}
+          {% if extra %}
+          <b>{{extra}}</b>
+          {% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -2343,9 +2353,9 @@ The capture contains this value in <b>{{nodes | length}}</b> nodes.
 ''')
 
 
-def __prepare_node_view(capture_uuid: str, nodes: list[tuple[str, str]], from_popup: bool=False) -> dict[str, str]:
+def __prepare_node_view(capture_uuid: str, nodes: Sequence[tuple[str, str] | tuple[str, str, str | None]], from_popup: bool=False) -> dict[str, str]:
     return {'display': render_template(node_view_template, collapse_id=str(uuid4()), nodes=nodes, capture_uuid=capture_uuid),
-            'filter': ' '.join(url for url, _ in nodes)}
+            'filter': ' '.join(n[0] for n in nodes)}
 
 
 def __prepare_title_in_modal(capture_uuid: str, title: str, from_popup: bool=False) -> dict[str, str]:
@@ -2713,7 +2723,7 @@ def post_table(table_name: str, value: str) -> Response:
         tree_uuid = value.strip()
         prepared_captures = []
         for body_hash, _bh_info in get_all_body_hashes(tree_uuid).items():
-            bh_nodes: list[tuple[str, str]] = [(node[0].name, node[0].uuid) for node in _bh_info['nodes']]
+            bh_nodes: list[tuple[str, str, str | None]] = [(node[0].name, node[0].uuid, '(embedded)' if node[1] else None) for node in _bh_info['nodes']]
             to_append = {
                 'total_captures': _bh_info['total_captures'],
                 'file_type': {'display': hash_icon_render(tree_uuid, _bh_info['nodes'][0][0].uuid,
