@@ -56,7 +56,7 @@
     </tbody>
   </table>
   {% if has_pandora and sample_tree_uuid and sample_node_uuid%}
-  {{ pandora_submit(sample_tree_uuid, sample_node_uuid) }}
+  {{ pandora_submit(sample_tree_uuid, node_uuid=sample_node_uuid) }}
   {% endif %}
 </center>
 

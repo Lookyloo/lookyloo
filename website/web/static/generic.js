@@ -78,17 +78,20 @@ function downloadFaviconListener() {
 function submitPandoraListener() {
   document.querySelectorAll('.submitPandoraButton').forEach(
       el => el.addEventListener('click', event => {
-        submit_pandora(el.dataset.hostnode, el.dataset.hash, el.dataset.pandorasubmit);
+        submit_pandora(el.dataset.hostnode, el.dataset.hash, el.dataset.indexinzip, el.dataset.pandorasubmit);
   }));
 };
 
-function submit_pandora(node_uuid, ressource_hash, pandora_submit_url){
+function submit_pandora(node_uuid, ressource_hash, index_in_zip, pandora_submit_url){
   let data = {};
   if (node_uuid) {
       data.node_uuid = node_uuid;
   };
   if (ressource_hash) {
       data.ressource_hash = ressource_hash;
+  };
+  if (index_in_zip) {
+      data.index_in_zip = index_in_zip;
   };
   fetch(pandora_submit_url, {
       method: "POST",

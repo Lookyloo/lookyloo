@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
      "#bodyHashesModal", "#bodyHashDetailsModal",
      "#hostnamesModal", "#hostnameDetailsModal",
      "#urlsModal", "#urlDetailsModal",
-     "#urlsInPageModal", "#storageStateModal",
+     "#urlsInPageModal", "#storageStateModal", "#downloadsModal",
      "#ipsModal", "#ipDetailsModal", "#cookieNameModal",
      "#mispPushModal", "#mispLookupModal"].forEach(modal => {
         $(modal).on('show.bs.modal', function(e) {

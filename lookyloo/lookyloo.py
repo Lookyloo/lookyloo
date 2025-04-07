@@ -1060,13 +1060,31 @@ class Lookyloo():
         '''Get rendered HTML'''
         return self._get_raw(capture_uuid, 'html', all_html)
 
-    def get_data(self, capture_uuid: str, /) -> tuple[bool, str, BytesIO]:
+    def get_data(self, capture_uuid: str, /, *, index_in_zip: int | None=None) -> tuple[bool, str, BytesIO]:
         '''Get the data'''
+
+        def _get_downloaded_file_by_id_from_zip(data: BytesIO, index_in_zip: int) -> tuple[bool, str, BytesIO]:
+            '''Get the a downloaded file by hash.
+            This method is only used if the capture downloaded multiple files'''
+            with ZipFile(data) as downloaded_files:
+                files_info = downloaded_files.infolist()
+                if index_in_zip > len(files_info):
+                    self.logger.warning(f'[{capture_uuid}] Unable to get the file {index_in_zip} from the zip file (only {len(files_info)} entries).')
+                    return False, 'Invalid index in zip', BytesIO()
+                with downloaded_files.open(files_info[index_in_zip]) as f:
+                    return True, files_info[index_in_zip].filename, BytesIO(f.read())
+
         success, data_filename = self._get_raw(capture_uuid, 'data.filename', False)
         if success:
-            filename = data_filename.getvalue().decode()
+            filename = data_filename.getvalue().decode().strip()
             success, data = self._get_raw(capture_uuid, 'data', False)
             if success:
+                if filename == f'{capture_uuid}_multiple_downloads.zip' and index_in_zip is not None:
+                    # We have a zip file with multiple files in it
+                    success, filename, data = _get_downloaded_file_by_id_from_zip(data, index_in_zip)
+                    if success:
+                        # We found the file in the zip
+                        return True, filename, data
                 return True, filename, data
             return False, filename, data
         return False, 'Unable to get the file name', BytesIO()

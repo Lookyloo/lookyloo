@@ -855,6 +855,36 @@ def stats(tree_uuid: str) -> str:
     return render_template('statistics.html', uuid=tree_uuid, stats=stats)
 
 
+@app.route('/tree/<string:tree_uuid>/get_downloaded_file', methods=['GET'])
+def get_downloaded_file(tree_uuid: str) -> Response:
+    # NOTE: it can be 0
+    index_in_zip = int(request.args['index_in_zip']) if 'index_in_zip' in request.args else None
+    success, filename, file = lookyloo.get_data(tree_uuid, index_in_zip=index_in_zip)
+    if success:
+        return send_file(file, as_attachment=True, download_name=filename)
+    return make_response('Unable to get the downloaded file.', 404)
+
+
+@app.route('/tree/<string:tree_uuid>/downloads', methods=['GET'])
+def downloads(tree_uuid: str) -> str:
+    success, filename, file = lookyloo.get_data(tree_uuid)
+    if not success:
+        return render_template('downloads.html', uuid=tree_uuid, files=None)
+    if filename and file:
+        if filename.strip() == f'{tree_uuid}_multiple_downloads.zip':
+            # We have a zipfile containing all the files downloaded during the capture
+            with ZipFile(file) as downloaded_files:
+                files = []
+                for file_info in downloaded_files.infolist():
+                    files.append((file_info.filename,))
+        else:
+            files = [(filename, )]
+
+    # TODO: add other info (like the mimetype)
+    return render_template('downloads.html', tree_uuid=tree_uuid, files=files,
+                           has_pandora=lookyloo.pandora.available)
+
+
 @app.route('/tree/<string:tree_uuid>/storage_state', methods=['GET'])
 def storage_state(tree_uuid: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
@@ -1546,8 +1576,11 @@ def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
     node_uuid = None
     if request.method == 'POST':
         input_json = request.get_json(force=True)
+        # Submit a ressource from the capture / rendering of the page
         node_uuid = input_json.get('node_uuid')
         h_request = input_json.get('ressource_hash')
+        # Submit a downloaded file
+        index_in_zip = input_json.get('index_in_zip')
     if node_uuid:
         ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_request)
         if ressource:
@@ -1556,6 +1589,11 @@ def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
             return {'error': 'Unable to find resource {h_request} in node {node_uuid} of tree {tree_uuid}'}
         else:
             return {'error': 'Unable to find resource in node {node_uuid} of tree {tree_uuid}'}
+    elif index_in_zip:
+        # Submit a file from the zip
+        success, filename, content = lookyloo.get_data(tree_uuid, index_in_zip=int(index_in_zip))
+        if not success or not filename or not content:
+            return {'error': f'Unable to find file {index_in_zip} in tree {tree_uuid}'}
     else:
         success, filename, content = lookyloo.get_data(tree_uuid)
 

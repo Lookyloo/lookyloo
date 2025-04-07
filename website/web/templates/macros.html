@@ -135,12 +135,19 @@
 {% endmacro %}
 
 
-{% macro pandora_submit(tree_uuid, node_uuid, ressource_hash) %}
+{% macro pandora_submit(tree_uuid, node_uuid=node_uuid, ressource_hash=ressource_hash, index_in_zip=index_in_zip) %}
 <div class="col-sm-8">
   <button type="button" class="btn btn-primary btn-sm submitPandoraButton"
                         title="open a new tab with the pandora report"
+                        {%if node_uuid is not none %}
                         data-hostnode="{{ node_uuid }}"
+                        {%endif%}
+                        {%if ressource_hash is not none %}
                         data-hash="{{ ressource_hash }}"
+                        {%endif%}
+                        {%if index_in_zip is not none %}
+                        data-indexInZip="{{ index_in_zip }}"
+                        {%endif%}
                         data-pandorasubmit="{{ url_for('pandora_submit', tree_uuid=tree_uuid)}}">
     Submit to Pandora
   </button>
@@ -168,7 +175,7 @@
 </div>
 {% endif %}
 {% if has_pandora %}
-  {{ pandora_submit(tree_uuid, urlnode_uuid, hash) }}
+  {{ pandora_submit(tree_uuid, node_uuid=urlnode_uuid, ressource_hash=hash) }}
   <br>
 {% endif %}
 {% endmacro %}
