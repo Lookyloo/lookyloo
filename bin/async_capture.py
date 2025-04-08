@@ -10,7 +10,7 @@ import signal
 from asyncio import Task
 from pathlib import Path
 
-from lacuscore import CaptureSettingsError, LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
+from lacuscore import CaptureSettingsError, LacusCore, CaptureResponse as CaptureResponseCore
 from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 
 from lookyloo import Lookyloo, CaptureSettings
@@ -59,7 +59,7 @@ class AsyncCapture(AbstractManager):
         # Only check if the top 50 in the priority list are done, as they are the most likely ones to be
         # and if the list it very very long, iterating over it takes a very long time.
         return [uuid for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf', start=0, num=500)
-                if uuid and self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.DONE, CaptureStatusCore.DONE]]
+                if uuid and self.lookyloo.capture_ready_to_store(uuid)]
 
     def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
@@ -69,6 +69,12 @@ class AsyncCapture(AbstractManager):
                 entries = self.lookyloo.lacus.get_capture(uuid, decode=True)
             elif isinstance(self.lookyloo.lacus, PyLacus):
                 entries = self.lookyloo.lacus.get_capture(uuid)
+            elif isinstance(self.lookyloo.lacus, dict):
+                for lacus in self.lookyloo.lacus.values():
+                    entries = lacus.get_capture(uuid)
+                    if entries.get('status') != CaptureStatusPy.UNKNOWN:
+                        # Found it.
+                        break
             else:
                 raise LookylooException(f'lacus must be LacusCore or PyLacus, not {type(self.lookyloo.lacus)}.')
             log = f'Got the capture for {uuid} from Lacus'

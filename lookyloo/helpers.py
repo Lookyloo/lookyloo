@@ -431,6 +431,7 @@ class CaptureSettings(LacuscoreCaptureSettings):
     browser_name: str | None = None
     os: str | None = None
     parent: str | None = None
+    remote_lacus_name: str | None = None
 
     @field_validator('auto_report', mode='before')
     @classmethod

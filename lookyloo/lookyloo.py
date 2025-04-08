@@ -54,7 +54,8 @@ from redis.connection import UnixDomainSocketConnection
 
 from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
-from .default import LookylooException, get_homedir, get_config, get_socket_path, safe_create_dir
+from .default import (LookylooException, get_homedir, get_config, get_socket_path,
+                      ConfigError, safe_create_dir)
 from .exceptions import (MissingCaptureDirectory,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile, LacusUnreachable)
 from .helpers import (get_captures_dir, get_email_template,
@@ -165,27 +166,48 @@ class Lookyloo():
     def redis(self) -> Redis:  # type: ignore[type-arg]
         return Redis(connection_pool=self.redis_pool)
 
+    def __enable_remote_lacus(self, lacus_url: str) -> PyLacus:
+        '''Enable remote lacus'''
+        self.logger.info("Remote lacus enabled, trying to set it up...")
+        lacus_retries = 2
+        while lacus_retries > 0:
+            remote_lacus_url = lacus_url
+            lacus = PyLacus(remote_lacus_url)
+            if lacus.is_up:
+                self.logger.info(f"Remote lacus enabled to {remote_lacus_url}.")
+                break
+            lacus_retries -= 1
+            self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}, trying again {lacus_retries} more time(s).")
+            time.sleep(3)
+        else:
+            raise LacusUnreachable('Remote lacus ({remote_lacus_url}) is enabled but unreachable.')
+        return lacus
+
     @cached_property
-    def lacus(self) -> PyLacus | LacusCore:
+    def lacus(self) -> PyLacus | LacusCore | dict[str, PyLacus]:
         has_remote_lacus = False
-        self._lacus: PyLacus | LacusCore
+        self._lacus: PyLacus | LacusCore | dict[str, PyLacus]
         if get_config('generic', 'remote_lacus'):
             remote_lacus_config = get_config('generic', 'remote_lacus')
             if remote_lacus_config.get('enable'):
-                self.logger.info("Remote lacus enabled, trying to set it up...")
-                lacus_retries = 2
-                while lacus_retries > 0:
-                    remote_lacus_url = remote_lacus_config.get('url')
-                    self._lacus = PyLacus(remote_lacus_url)
-                    if self._lacus.is_up:
-                        has_remote_lacus = True
-                        self.logger.info(f"Remote lacus enabled to {remote_lacus_url}.")
-                        break
-                    lacus_retries -= 1
-                    self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}, trying again {lacus_retries} more time(s).")
-                    time.sleep(3)
-                else:
-                    raise LacusUnreachable('Remote lacus is enabled but unreachable.')
+                self._lacus = self.__enable_remote_lacus(remote_lacus_config.get('url'))
+                has_remote_lacus = True
+
+        if get_config('generic', 'multiple_remote_lacus'):
+            # Multiple remote lacus enabled
+            if has_remote_lacus:
+                raise ConfigError('You cannot use both remote_lacus and multiple_remote_lacus at the same time.')
+
+            remote_lacus_config = get_config('generic', 'multiple_remote_lacus')
+            if remote_lacus_config.get('enable'):
+                # Check default lacus is valid
+                default_remote_lacus_name = remote_lacus_config.get('default')
+                self._lacus = {}
+                for lacus_config in remote_lacus_config.get('remote_lacus'):
+                    self._lacus[lacus_config['name']] = self.__enable_remote_lacus(lacus_config['url'])
+                if default_remote_lacus_name not in self._lacus:
+                    raise ConfigError('Invalid default remote lacus name: {default_remote_lacus_name}')
+                has_remote_lacus = True
 
         if not has_remote_lacus:
             # We need a redis connector that doesn't decode.
@@ -522,6 +544,27 @@ class Lookyloo():
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 
+    def capture_ready_to_store(self, capture_uuid: str, /) -> bool:
+        lacus_status: CaptureStatusCore | CaptureStatusPy
+        try:
+            if isinstance(self.lacus, dict):
+                for lacus in self.lacus.values():
+                    lacus_status = lacus.get_capture_status(capture_uuid)
+                    if lacus_status != CaptureStatusPy.UNKNOWN:
+                        return lacus_status == CaptureStatusPy.DONE
+            elif isinstance(self.lacus, PyLacus):
+                lacus_status = self.lacus.get_capture_status(capture_uuid)
+                return lacus_status == CaptureStatusPy.DONE
+            else:
+                lacus_status = self.lacus.get_capture_status(capture_uuid)
+                return lacus_status == CaptureStatusCore.DONE
+        except LacusUnreachable as e:
+            self.logger.warning(f'Unable to connect to lacus: {e}')
+            raise e
+        except Exception as e:
+            self.logger.warning(f'Unable to get the status for {capture_uuid} from lacus: {e}')
+        return False
+
     def get_capture_status(self, capture_uuid: str, /) -> CaptureStatusCore | CaptureStatusPy:
         '''Returns the status (queued, ongoing, done, or UUID unknown)'''
         if self.redis.hexists('lookup_dirs', capture_uuid) or self.redis.hexists('lookup_dirs_archived', capture_uuid):
@@ -529,8 +572,15 @@ class Lookyloo():
         elif self.redis.sismember('ongoing', capture_uuid):
             # Post-processing on lookyloo's side
             return CaptureStatusCore.ONGOING
+        lacus_status: CaptureStatusCore | CaptureStatusPy
         try:
-            lacus_status = self.lacus.get_capture_status(capture_uuid)
+            if isinstance(self.lacus, dict):
+                for lacus in self.lacus.values():
+                    lacus_status = lacus.get_capture_status(capture_uuid)
+                    if lacus_status != CaptureStatusPy.UNKNOWN:
+                        break
+            else:
+                lacus_status = self.lacus.get_capture_status(capture_uuid)
         except LacusUnreachable as e:
             self.logger.warning(f'Unable to connect to lacus: {e}')
             raise e
@@ -658,7 +708,15 @@ class Lookyloo():
             # Shouldn't be needed, but just in case, force headless
             query.headless = True
         try:
-            perma_uuid = self.lacus.enqueue(
+            lacus: LacusCore | PyLacus
+            if isinstance(self.lacus, dict):
+                # Multiple remote lacus enabled, we need a name to identify the lacus
+                if query.remote_lacus_name is None:
+                    query.remote_lacus_name = get_config('generic', 'multiple_remote_lacus').get('default')
+                lacus = self.lacus[query.remote_lacus_name]
+            else:
+                lacus = self.lacus
+            perma_uuid = lacus.enqueue(
                 url=query.url,
                 document_name=query.document_name,
                 document=query.document,

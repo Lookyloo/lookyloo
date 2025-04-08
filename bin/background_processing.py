@@ -90,13 +90,13 @@ class Processing(AbstractManager):
                 if self.lookyloo.redis.hget(uuid, 'not_queued') == '1':
                     # The capture is marked as not queued
                     to_requeue.append(uuid)
-                elif self.lookyloo.lacus.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                elif self.lookyloo.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
                     # The capture is unknown on lacus side. It might be a race condition.
                     # Let's retry a few times.
                     retry = 3
                     while retry > 0:
                         time.sleep(1)
-                        if self.lookyloo.lacus.get_capture_status(uuid) not in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                        if self.lookyloo.get_capture_status(uuid) not in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
                             # Was a race condition, the UUID has been or is being processed by Lacus
                             self.logger.info(f'UUID {uuid} was only temporary unknown')
                             break
@@ -119,27 +119,7 @@ class Processing(AbstractManager):
                 if capture_settings := self.lookyloo.redis.hgetall(uuid):
                     query = CaptureSettings(**capture_settings)
                     try:
-                        new_uuid = self.lookyloo.lacus.enqueue(
-                            url=query.url,
-                            document_name=query.document_name,
-                            document=query.document,
-                            # depth=query.depth,
-                            browser=query.browser,
-                            device_name=query.device_name,
-                            user_agent=query.user_agent,
-                            proxy=query.proxy,
-                            general_timeout_in_sec=query.general_timeout_in_sec,
-                            cookies=query.cookies,
-                            headers=query.headers,
-                            http_credentials=query.http_credentials,
-                            viewport=query.viewport,
-                            referer=query.referer,
-                            rendered_hostname_only=query.rendered_hostname_only,
-                            # force=query.force,
-                            # recapture_interval=query.recapture_interval,
-                            priority=query.priority,
-                            uuid=uuid
-                        )
+                        new_uuid = self.lookyloo.enqueue_capture(query, 'api', 'background_processing', False)
                         if new_uuid != uuid:
                             # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
                             self.logger.warning(f'Had to change the capture UUID (duplicate). Old: {uuid} / New: {new_uuid}')

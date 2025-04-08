@@ -1738,6 +1738,12 @@ def search() -> str | Response | WerkzeugResponse:
 
 def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str, Any] | None=None, *,
                               user_config: dict[str, Any] | None=None) -> str:
+    # if we have multiple remote lacus, get the list of names
+    if isinstance(lookyloo.lacus, dict):
+        multiple_remote_lacus = list(lookyloo.lacus.keys())
+        print(multiple_remote_lacus)
+    else:
+        multiple_remote_lacus = []
     return render_template('capture.html', user_agents=user_agents.user_agents,
                            default=user_agents.default,
                            personal_ua=user_ua,
@@ -1749,6 +1755,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            show_project_page=get_config('generic', 'show_project_page'),
                            version=pkg_version,
                            headed_allowed=lookyloo.headed_allowed,
+                           multiple_remote_lacus=multiple_remote_lacus,
                            has_global_proxy=True if lookyloo.global_proxy else False)
 
 
@@ -1904,6 +1911,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
         capture_query['listing'] = True if request.form.get('listing') else False
         capture_query['allow_tracking'] = True if request.form.get('allow_tracking') else False
         capture_query['java_script_enabled'] = True if request.form.get('java_script_enabled') else False
+        capture_query['remote_lacus_name'] = request.form.get('remote_lacus_name')
 
         if request.form.get('width') or request.form.get('height'):
             capture_query['viewport'] = {'width': int(request.form.get('width', 1280)),

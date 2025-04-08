@@ -29,6 +29,20 @@
     "enable": false,
     "url": ""
   },
+  "multiple_remote_lacus": {
+  "enable": false,
+  "default": "Lacus local",
+  "remote_lacus": [
+      {
+        "name": "Lacus local",
+        "url": "http://127.0.0.1:7100"
+      },
+      {
+        "name": "Other Lacus",
+        "url": "http://127.0.0.1:17100"
+      }
+    ]
+  },
   "monitoring": {
     "enable": false,
     "url": "http://127.0.0.1:5200"
@@ -111,6 +125,7 @@
     "auto_trigger_modules": "Automatically trigger the modules when the tree is loaded and when the capture is cached",
     "enable_mail_notification": "Allow users to notify a pre-configured email address about a specific capture",
     "remote_lacus": "By default, lookyloo will do the capture locally. Enabling this feature means you have a dedicated Lacus instance somewhere",
+    "multiple_remote_lacus": "By default, lookyloo will do the capture locally. Enabling this feature means you have multiple dedicated Lacus instances somewhere",
     "monitoring": "Enable connection to a remote monitoring instance",
     "tor_proxy": "URL to connect to a SOCKS 5 proxy for tor - If you capture via a lacus instance, this value is ignored",
     "global_proxy": "Proxy configuration to use for *all* the requests (except .onions) - If you capture via a lacus instance, this value is ignored",
