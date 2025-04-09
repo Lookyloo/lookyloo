@@ -321,9 +321,8 @@
           <label for="remote_lacus_name" class="col-sm-2 col-form-label">Select the lacus instance to use:</label>
           <div class="col-sm-10">
             <select class="form-select" id="remote_lacus_name" name="remote_lacus_name" aria-label="Select the remote lacus instance to use for the capture">
-              <option value="" selected>Select an instance</option>
               {% for name in multiple_remote_lacus %}
-              <option value="{{name}}">{{name}}</option>
+              <option value="{{name}}" {% if name == default_remote_lacus %}selected{% endif %}>{{name}}</option>
               {% endfor %}
             </select>
           </div>

@@ -180,7 +180,7 @@ class Lookyloo():
             self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}, trying again {lacus_retries} more time(s).")
             time.sleep(3)
         else:
-            raise LacusUnreachable('Remote lacus ({remote_lacus_url}) is enabled but unreachable.')
+            raise LacusUnreachable(f'Remote lacus ({remote_lacus_url}) is enabled but unreachable.')
         return lacus
 
     @cached_property
@@ -193,20 +193,23 @@ class Lookyloo():
                 self._lacus = self.__enable_remote_lacus(remote_lacus_config.get('url'))
                 has_remote_lacus = True
 
-        if get_config('generic', 'multiple_remote_lacus'):
+        if remote_lacus_config := get_config('generic', 'multiple_remote_lacus'):
             # Multiple remote lacus enabled
             if has_remote_lacus:
                 raise ConfigError('You cannot use both remote_lacus and multiple_remote_lacus at the same time.')
-
-            remote_lacus_config = get_config('generic', 'multiple_remote_lacus')
             if remote_lacus_config.get('enable'):
                 # Check default lacus is valid
                 default_remote_lacus_name = remote_lacus_config.get('default')
                 self._lacus = {}
                 for lacus_config in remote_lacus_config.get('remote_lacus'):
-                    self._lacus[lacus_config['name']] = self.__enable_remote_lacus(lacus_config['url'])
+                    try:
+                        self._lacus[lacus_config['name']] = self.__enable_remote_lacus(lacus_config['url'])
+                    except LacusUnreachable as e:
+                        self.logger.warning(f'Unable to setup remote lacus {lacus_config["name"]}: {e}')
+                if not self._lacus:
+                    raise LacusUnreachable('Unable to setup any remote lacus.')
                 if default_remote_lacus_name not in self._lacus:
-                    raise ConfigError('Invalid default remote lacus name: {default_remote_lacus_name}')
+                    raise ConfigError(f'Invalid or unreachable default remote lacus: {default_remote_lacus_name}')
                 has_remote_lacus = True
 
         if not has_remote_lacus:
