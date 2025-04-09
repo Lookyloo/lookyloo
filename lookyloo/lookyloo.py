@@ -195,7 +195,7 @@ class Lookyloo():
 
         if remote_lacus_config := get_config('generic', 'multiple_remote_lacus'):
             # Multiple remote lacus enabled
-            if has_remote_lacus:
+            if remote_lacus_config.get('enable') and has_remote_lacus:
                 raise ConfigError('You cannot use both remote_lacus and multiple_remote_lacus at the same time.')
             if remote_lacus_config.get('enable'):
                 # Check default lacus is valid
