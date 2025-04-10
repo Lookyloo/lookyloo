@@ -16,7 +16,7 @@ import time
 
 from collections import OrderedDict
 from collections.abc import Mapping
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import _CacheInfo as CacheInfo
 from logging import LoggerAdapter
 from pathlib import Path
@@ -274,7 +274,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         if not has_new_cached_captures:
             return
         time_delta_on_index = get_config('generic', 'time_delta_on_index')
-        index_cur_time = datetime.now() - timedelta(**time_delta_on_index)
+        index_cur_time = datetime.now(tz=timezone.utc) - timedelta(**time_delta_on_index)
         for cache in p.execute():
             if not cache:
                 continue
