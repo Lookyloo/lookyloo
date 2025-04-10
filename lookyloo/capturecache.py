@@ -16,7 +16,7 @@ import time
 
 from collections import OrderedDict
 from collections.abc import Mapping
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import _CacheInfo as CacheInfo
 from logging import LoggerAdapter
 from pathlib import Path
@@ -47,6 +47,14 @@ class LookylooCacheLogAdapter(LoggerAdapter):  # type: ignore[type-arg]
         if self.extra:
             return '[{}] {}'.format(self.extra['uuid'], msg), kwargs
         return msg, kwargs
+
+
+def safe_make_datetime(dt: str) -> datetime:
+    try:
+        return datetime.strptime(dt, '%Y-%m-%dT%H:%M:%S.%f%z')
+    except ValueError:
+        # If the microsecond is missing (0), it fails
+        return datetime.strptime(dt, '%Y-%m-%dT%H:%M:%S%z')
 
 
 class CaptureCache():
@@ -81,11 +89,10 @@ class CaptureCache():
             self.title: str = cache_entry['title']
 
         if cache_entry.get('timestamp'):
-            try:
-                self.timestamp: datetime = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S.%f%z')
-            except ValueError:
-                # If the microsecond is missing (0), it fails
-                self.timestamp = datetime.strptime(cache_entry['timestamp'], '%Y-%m-%dT%H:%M:%S%z')
+            if isinstance(cache_entry['timestamp'], str):
+                self.timestamp: datetime = safe_make_datetime(cache_entry['timestamp'])
+            elif isinstance(cache_entry['timestamp'], datetime):
+                self.timestamp = cache_entry['timestamp']
 
         self.redirects: list[str] = json.loads(cache_entry['redirects']) if cache_entry.get('redirects') else []
 
@@ -266,9 +273,15 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             p.hgetall(directory)
         if not has_new_cached_captures:
             return
+        time_delta_on_index = get_config('generic', 'time_delta_on_index')
+        index_cur_time = datetime.now() - timedelta(**time_delta_on_index)
         for cache in p.execute():
             if not cache:
                 continue
+            if cache.get('timestamp'):
+                cache['timestamp'] = safe_make_datetime(cache['timestamp'])
+                if cache.get('timestamp') and cache['timestamp'] < index_cur_time:
+                    continue
             try:
                 cc = CaptureCache(cache)
             except LookylooException as e:
