@@ -198,8 +198,6 @@ class Lookyloo():
             if remote_lacus_config.get('enable') and has_remote_lacus:
                 raise ConfigError('You cannot use both remote_lacus and multiple_remote_lacus at the same time.')
             if remote_lacus_config.get('enable'):
-                # Check default lacus is valid
-                default_remote_lacus_name = remote_lacus_config.get('default')
                 self._lacus = {}
                 for lacus_config in remote_lacus_config.get('remote_lacus'):
                     try:
@@ -208,6 +206,8 @@ class Lookyloo():
                         self.logger.warning(f'Unable to setup remote lacus {lacus_config["name"]}: {e}')
                 if not self._lacus:
                     raise LacusUnreachable('Unable to setup any remote lacus.')
+                # Check default lacus is valid
+                default_remote_lacus_name = remote_lacus_config.get('default')
                 if default_remote_lacus_name not in self._lacus:
                     raise ConfigError(f'Invalid or unreachable default remote lacus: {default_remote_lacus_name}')
                 has_remote_lacus = True

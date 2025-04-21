@@ -182,7 +182,7 @@ class Processing(AbstractManager):
 
 def main() -> None:
     p = Processing()
-    p.run(sleep_in_sec=30)
+    p.run(sleep_in_sec=300)
 
 
 if __name__ == '__main__':

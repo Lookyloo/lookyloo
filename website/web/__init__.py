@@ -53,6 +53,7 @@ from lookyloo.helpers import (UserAgents, load_cookies,
                               mimetype_to_generic,
                               remove_pickle_tree
                               )
+from pylacus import PyLacus
 
 from zoneinfo import available_timezones
 
@@ -1739,11 +1740,39 @@ def search() -> str | Response | WerkzeugResponse:
 def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str, Any] | None=None, *,
                               user_config: dict[str, Any] | None=None) -> str:
     # if we have multiple remote lacus, get the list of names
-    multiple_remote_lacus = []
+    multiple_remote_lacus: dict[str, dict[str, Any]] = {}
     default_remote_lacus = None
     if isinstance(lookyloo.lacus, dict):
-        multiple_remote_lacus = list(lookyloo.lacus.keys())
+        multiple_remote_lacus = {}
+        for remote_lacus_name, _lacus in lookyloo.lacus.items():
+            if not _lacus.is_up:
+                logging.warning(f'Lacus "{remote_lacus_name}" is not up.')
+                continue
+            multiple_remote_lacus[remote_lacus_name] = {}
+            try:
+                if proxies := _lacus.proxies():
+                    # We might have other settings in the future.
+                    multiple_remote_lacus[remote_lacus_name]['proxies'] = proxies
+            except Exception as e:
+                # We cannot connect to Lacus, skip it.
+                logging.warning(f'Unable to get proxies from Lacus "{remote_lacus_name}": {e}.')
+                continue
+
         default_remote_lacus = get_config('generic', 'multiple_remote_lacus').get('default')
+    elif isinstance(lookyloo.lacus, PyLacus):
+        if not lookyloo.lacus.is_up:
+            logging.warning('Remote Lacus is not up.')
+        else:
+            multiple_remote_lacus = {'default': {}}
+            try:
+                if proxies := lookyloo.lacus.proxies():
+                    # We might have other settings in the future.
+                    multiple_remote_lacus['default']['proxies'] = proxies
+            except Exception as e:
+                logging.warning(f'Unable to get proxies from Lacus: {e}.')
+        default_remote_lacus = 'default'
+
+    # NOTE: Inform user if none of the remote lacuses are up?
     return render_template('capture.html', user_agents=user_agents.user_agents,
                            default=user_agents.default,
                            personal_ua=user_ua,
@@ -1950,7 +1979,9 @@ def capture_web() -> str | Response | WerkzeugResponse:
         if request.form.get('color_scheme'):
             capture_query['color_scheme'] = request.form['color_scheme']
 
-        if request.form.get('proxy'):
+        if request.form.get('remote_lacus_proxy_name'):
+            capture_query['proxy'] = request.form['remote_lacus_proxy_name']
+        elif request.form.get('proxy'):
             parsed_proxy = urlparse(request.form['proxy'])
             if parsed_proxy.scheme and parsed_proxy.hostname and parsed_proxy.port:
                 if parsed_proxy.scheme in ['http', 'https', 'socks5', 'socks5h']:

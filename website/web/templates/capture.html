@@ -327,7 +327,54 @@
             </select>
           </div>
         </div>
-        {% endif %}
+          {% for lacus_name, details in multiple_remote_lacus.items()%}
+            <div name="remote_lacus_proxies" id="proxies_{{lacus_name}}"
+                {%if lacus_name != default_remote_lacus %}style="display: none;"{% endif %}>
+              <div class="row mb-3">
+                <label for="remote_lacus_proxy_name" class="col-sm-2 col-form-label">Select the proxy to use on that lacus instance:</label>
+                {%if 'proxies' in details %}
+                <div class="col-sm-4">
+                  <select class="form-select" id="remote_lacus_proxy_name" name="remote_lacus_proxy_name" aria-label="The name of the proxy.">
+                    <option value="" selected>No pre-defined Proxy</option>
+                    {% for proxy_name in details['proxies'].keys() %}
+                    <option value="{{proxy_name}}">{{proxy_name}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div name="proxy_details" id="{{lacus_name}}_no_proxy_details" class="col-sm-6">
+                    No predefined proxy selected.
+                </div>
+                {% for proxy_name, proxy_details in details['proxies'].items() %}
+                <div name="proxy_details" id="{{lacus_name}}_{{proxy_name}}_details" class="col-sm-6" style="display: none;">
+                    <div class="card">
+                      <div class="card-body">
+                        <h5 class="card-title">{{ proxy_details['description']}}</h5>
+                        <p class="card-text">
+                          {%for key, value in proxy_details['meta'].items() %}
+                          <b>{{key}}:</b> {{ value }}<br>
+                          {%endfor%}
+                      </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="col-sm-6">
+                  No predefined proxies for that Lacus instance.
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {%endif%}
+
+        {% if not has_global_proxy %}
+        <div class="row mb-3" id="user_defined_proxy">
+          <label for="proxy" class="col-sm-2 col-form-label">Proxy:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" name="proxy" id="proxy" placeholder="Expected format: [scheme]://[username]:[password]@[hostname]:[port]">
+          </div>
+        </div>
+        {%endif%}
 
         <div class="row mb-3">
           <label for="capture_timeout" class="col-sm-2 col-form-label">Max capture time:</label>
@@ -451,15 +498,6 @@
             </div>
           </div>
         </div>
-
-        {% if not has_global_proxy %}
-        <div class="row mb-3">
-          <label for="proxy" class="col-sm-2 col-form-label">Proxy:</label>
-          <div class="col-sm-10">
-            <input type="text" class="form-control" name="proxy" id="proxy" placeholder="Expected format: [scheme]://[username]:[password]@[hostname]:[port]">
-          </div>
-        </div>
-        {%endif%}
 
         <div class="row mb-3">
           <label for="httpauth" class="col-sm-2 col-form-label">HTTP Basic Authentication</label>
