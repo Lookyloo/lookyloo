@@ -582,6 +582,14 @@ class Lookyloo():
                     lacus_status = lacus.get_capture_status(capture_uuid)
                     if lacus_status != CaptureStatusPy.UNKNOWN:
                         break
+                else:
+                    # Couldn't find that UUID in any of the remote lacus
+                    self.redis.hset(capture_uuid, 'not_queued', 1)
+            elif isinstance(self.lacus, PyLacus):
+                lacus_status = self.lacus.get_capture_status(capture_uuid)
+                if lacus_status == CaptureStatusPy.UNKNOWN:
+                    # Couldn't find that UUID in the remote lacus
+                    self.redis.hset(capture_uuid, 'not_queued', 1)
             else:
                 lacus_status = self.lacus.get_capture_status(capture_uuid)
         except LacusUnreachable as e:

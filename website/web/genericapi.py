@@ -468,7 +468,7 @@ class RemoteLacuses(Resource):  # type: ignore[misc]
             return make_response({'error': 'Lacus is not configured to use remote Lacus instances.'}, 400)
         if isinstance(lookyloo.lacus, PyLacus):
             # only one lacus instance
-            return _prepare_lacus_details(lookyloo.lacus, 'default')
+            return make_response(_prepare_lacus_details(lookyloo.lacus, 'default'))
 
         to_return = [_prepare_lacus_details(lacus, name) for name, lacus in lookyloo.lacus.items()]
 
