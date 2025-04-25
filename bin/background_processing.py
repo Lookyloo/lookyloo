@@ -117,6 +117,7 @@ class Processing(AbstractManager):
             # This capture couldn't be queued and we created the uuid locally
             try:
                 if capture_settings := self.lookyloo.redis.hgetall(uuid):
+                    self.lookyloo.redis.delete(uuid)
                     query = CaptureSettings(**capture_settings)
                     try:
                         new_uuid = self.lookyloo.enqueue_capture(query, 'api', 'background_processing', False)
