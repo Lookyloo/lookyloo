@@ -104,7 +104,8 @@ class AsyncCapture(AbstractManager):
                         auto_report=to_capture.auto_report,
                     )
                 else:
-                    self.logger.warning(f'Unable to get capture settings for {uuid}, try again later (?).')
+                    self.logger.warning(f'Unable to get capture settings for {uuid}, it expired.')
+                    self.lookyloo.redis.zrem('to_capture', uuid)
                     continue
 
             except CaptureSettingsError as e:
