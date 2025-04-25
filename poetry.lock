@@ -3004,14 +3004,14 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250423"
+version = "1.0.2.20250425"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20250423-py2.py3-none-any.whl", hash = "sha256:cd19487118e5981caee6de44dc657824146857b62f90ab4a8150658f83bc14ae"},
-    {file = "publicsuffixlist-1.0.2.20250423.tar.gz", hash = "sha256:015df7ec7beda3501815c312dee13f37c02d98d0586ec7679401c895cef16b37"},
+    {file = "publicsuffixlist-1.0.2.20250425-py2.py3-none-any.whl", hash = "sha256:53c97bf7bf340a35a2aea9843a5b94e07808861b4f2352a5cb4aeddd677a4eff"},
+    {file = "publicsuffixlist-1.0.2.20250425.tar.gz", hash = "sha256:922cf6327527ac12c6ea9354b47ef7efcde02d4ace2989f89b76b5dad15b3a7e"},
 ]
 
 [package.extras]
@@ -3454,14 +3454,14 @@ docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
 
 [[package]]
 name = "pylookyloo"
-version = "1.28.1"
+version = "1.29.0"
 description = "Python CLI and module for Lookyloo"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pylookyloo-1.28.1-py3-none-any.whl", hash = "sha256:6097d6992c7004071757b65e83cc961439b3074252d947c837ff087cf1b50207"},
-    {file = "pylookyloo-1.28.1.tar.gz", hash = "sha256:3653d35026ebbff80a50460d735250f936fc64cd6b7d0a31e0ef48a8df153263"},
+    {file = "pylookyloo-1.29.0-py3-none-any.whl", hash = "sha256:5df92b7b4965b5dfe3970a6f677a44f7f1d503a46755af0edcf0b6213be413f6"},
+    {file = "pylookyloo-1.29.0.tar.gz", hash = "sha256:c3afa74315f260d1b4df977218f6fdf3045f5a0188bf0449efdfbba31a9c1728"},
 ]
 
 [package.dependencies]
@@ -3469,7 +3469,7 @@ requests = ">=2.32.3"
 
 [package.extras]
 docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
-examples = ["pylacus (>=1.13.2)"]
+examples = ["pylacus (>=1.14.0)"]
 
 [[package]]
 name = "pylookyloomonitoring"
@@ -4158,14 +4158,14 @@ test = ["pytest"]
 
 [[package]]
 name = "setuptools"
-version = "79.0.0"
+version = "79.0.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "setuptools-79.0.0-py3-none-any.whl", hash = "sha256:b9ab3a104bedb292323f53797b00864e10e434a3ab3906813a7169e4745b912a"},
-    {file = "setuptools-79.0.0.tar.gz", hash = "sha256:9828422e7541213b0aacb6e10bbf9dd8febeaa45a48570e09b6d100e063fc9f9"},
+    {file = "setuptools-79.0.1-py3-none-any.whl", hash = "sha256:e147c0549f27767ba362f9da434eab9c5dc0045d5304feb602a0af001089fc51"},
+    {file = "setuptools-79.0.1.tar.gz", hash = "sha256:128ce7b8f33c3079fd1b067ecbb4051a66e8526e7b65f6cec075dfc650ddfa88"},
 ]
 
 [package.extras]
@@ -5071,4 +5071,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "9fb99f9e348981e3cd00cce1b9ce15b96d0c522e33a3b41839297ca2f262a749"
+content-hash = "c480d94c29f3e87761b048ec17108ef1a83c222707fa525bf553b853ae54e648"
