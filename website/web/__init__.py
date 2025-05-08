@@ -45,7 +45,7 @@ from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from lookyloo import Lookyloo, CaptureSettings
-from lookyloo.default import get_config, get_homedir
+from lookyloo.default import get_config, get_homedir, ConfigError
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild
 from lookyloo.helpers import (UserAgents, load_cookies,
                               load_user_config,
@@ -1742,35 +1742,39 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
     # if we have multiple remote lacus, get the list of names
     multiple_remote_lacus: dict[str, dict[str, Any]] = {}
     default_remote_lacus = None
-    if isinstance(lookyloo.lacus, dict):
-        multiple_remote_lacus = {}
-        for remote_lacus_name, _lacus in lookyloo.lacus.items():
-            if not _lacus.is_up:
-                logging.warning(f'Lacus "{remote_lacus_name}" is not up.')
-                continue
-            multiple_remote_lacus[remote_lacus_name] = {}
-            try:
-                if proxies := _lacus.proxies():
-                    # We might have other settings in the future.
-                    multiple_remote_lacus[remote_lacus_name]['proxies'] = proxies
-            except Exception as e:
-                # We cannot connect to Lacus, skip it.
-                logging.warning(f'Unable to get proxies from Lacus "{remote_lacus_name}": {e}.')
-                continue
+    try:
+        if isinstance(lookyloo.lacus, dict):
+            multiple_remote_lacus = {}
+            for remote_lacus_name, _lacus in lookyloo.lacus.items():
+                if not _lacus.is_up:
+                    logging.warning(f'Lacus "{remote_lacus_name}" is not up.')
+                    continue
+                multiple_remote_lacus[remote_lacus_name] = {}
+                try:
+                    if proxies := _lacus.proxies():
+                        # We might have other settings in the future.
+                        multiple_remote_lacus[remote_lacus_name]['proxies'] = proxies
+                except Exception as e:
+                    # We cannot connect to Lacus, skip it.
+                    logging.warning(f'Unable to get proxies from Lacus "{remote_lacus_name}": {e}.')
+                    continue
 
-        default_remote_lacus = get_config('generic', 'multiple_remote_lacus').get('default')
-    elif isinstance(lookyloo.lacus, PyLacus):
-        if not lookyloo.lacus.is_up:
-            logging.warning('Remote Lacus is not up.')
-        else:
-            multiple_remote_lacus = {'default': {}}
-            try:
-                if proxies := lookyloo.lacus.proxies():
-                    # We might have other settings in the future.
-                    multiple_remote_lacus['default']['proxies'] = proxies
-            except Exception as e:
-                logging.warning(f'Unable to get proxies from Lacus: {e}.')
-        default_remote_lacus = 'default'
+            default_remote_lacus = get_config('generic', 'multiple_remote_lacus').get('default')
+        elif isinstance(lookyloo.lacus, PyLacus):
+            if not lookyloo.lacus.is_up:
+                logging.warning('Remote Lacus is not up.')
+            else:
+                multiple_remote_lacus = {'default': {}}
+                try:
+                    if proxies := lookyloo.lacus.proxies():
+                        # We might have other settings in the future.
+                        multiple_remote_lacus['default']['proxies'] = proxies
+                except Exception as e:
+                    logging.warning(f'Unable to get proxies from Lacus: {e}.')
+            default_remote_lacus = 'default'
+    except ConfigError as e:
+        logging.warning(f'Unable to get remote lacus settings: {e}.')
+        flash('The capturing system is down, you can enqueue a capture and it will start ASAP.', 'error')
 
     # NOTE: Inform user if none of the remote lacuses are up?
     return render_template('capture.html', user_agents=user_agents.user_agents,
