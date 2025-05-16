@@ -104,7 +104,7 @@ types-requests = [
 ]
 types-redis = {version = "^4.6.0.20241004"}
 types-Deprecated = "^1.2.15.20250304"
-types-python-dateutil = "^2.9.0.20241206"
+types-python-dateutil = "^2.9.0.20250516"
 types-beautifulsoup4 = "^4.12.0.20250204"
 types-Pillow = "^10.2.0.20240822"
 types-pytz = "^2025.2.0.20250326"
