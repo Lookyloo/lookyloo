@@ -1824,14 +1824,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.14.1"
+version = "1.14.2"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.9.2"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.14.1-py3-none-any.whl", hash = "sha256:90daef065b5fc95dcc30d60147c8cb68fe64c1f68cee3ce73ec79f9923fb9212"},
-    {file = "lacuscore-1.14.1.tar.gz", hash = "sha256:52c1c619111043e497fac35cd5b77a4d4c62ba2a8f6f5cb54f4980d93aba7559"},
+    {file = "lacuscore-1.14.2-py3-none-any.whl", hash = "sha256:2c8a4f925889c84e9e1ab6e71bcb7d4ad88e62d8e491932b85fd8ce632a746bb"},
+    {file = "lacuscore-1.14.2.tar.gz", hash = "sha256:b4b97a90ebd4c265275d8852f6045ae4ae3b4a1df2ec6e4167bd8c8d2831d35f"},
 ]
 
 [package.dependencies]
@@ -1839,7 +1839,7 @@ async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 defang = ">=0.5.3"
 dnspython = ">=2.7.0"
 eval-type-backport = {version = ">=0.2.2", markers = "python_version < \"3.10\""}
-playwrightcapture = {version = ">=1.29.2", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.29.3", extras = ["recaptcha"]}
 pydantic = ">=2.11.4"
 redis = {version = ">=5.3.0,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.32.3"
@@ -2834,14 +2834,14 @@ test = ["pytest"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.29.2"
+version = "1.29.3"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "playwrightcapture-1.29.2-py3-none-any.whl", hash = "sha256:2703a7819ad020f1f3ccaad5dbc2902c8d9030553cd2480e5ba4036dd97446c8"},
-    {file = "playwrightcapture-1.29.2.tar.gz", hash = "sha256:2875c1dfc7ff73d9a78195be2826384b0432e58b38651558b7fc17f2fe81b4b3"},
+    {file = "playwrightcapture-1.29.3-py3-none-any.whl", hash = "sha256:d7f3bd5e33124164cf3274a2b38c6c976f43464bba2afac127a0f3bb4f4b4519"},
+    {file = "playwrightcapture-1.29.3.tar.gz", hash = "sha256:8e2fc87325bd7ea478ed6ed004d2f3d3273eac7d97445579f8b408ba8223fb96"},
 ]
 
 [package.dependencies]
@@ -2854,16 +2854,17 @@ dnspython = ">=2.7.0,<3.0.0"
 playwright = ">=1.52.0"
 playwright-stealth = ">=1.0.6"
 puremagic = ">=1.29"
-pydub = {version = ">=0.25.1", optional = true, markers = "extra == \"recaptcha\""}
+pydub = {version = ">=0.25.1", optional = true, markers = "python_version < \"3.10\" and extra == \"recaptcha\""}
+pydub-ng = {version = ">=0.2.0", optional = true, markers = "python_version >= \"3.10\" and extra == \"recaptcha\""}
 python-socks = ">=2.7.1,<3.0.0"
-setuptools = ">=80.3.1"
-SpeechRecognition = {version = ">=3.14.2", optional = true, markers = "extra == \"recaptcha\""}
+setuptools = ">=80.7.1"
+SpeechRecognition = {version = ">=3.14.3", optional = true, markers = "extra == \"recaptcha\""}
 typing-extensions = {version = ">=4.12.2,<5.0.0", markers = "python_version < \"3.12\""}
 tzdata = ">=2025.2"
 w3lib = ">=2.3.1"
 
 [package.extras]
-recaptcha = ["SpeechRecognition (>=3.14.2)", "pydub (>=0.25.1)"]
+recaptcha = ["SpeechRecognition (>=3.14.3)", "pydub (>=0.25.1) ; python_version < \"3.10\"", "pydub-ng (>=0.2.0) ; python_version >= \"3.10\""]
 
 [[package]]
 name = "prompt-toolkit"
@@ -3352,10 +3353,30 @@ description = "Manipulate audio with an simple and easy high level interface"
 optional = false
 python-versions = "*"
 groups = ["main"]
+markers = "python_version < \"3.10\""
 files = [
     {file = "pydub-0.25.1-py2.py3-none-any.whl", hash = "sha256:65617e33033874b59d87db603aa1ed450633288aefead953b30bded59cb599a6"},
     {file = "pydub-0.25.1.tar.gz", hash = "sha256:980a33ce9949cab2a569606b65674d748ecbca4f0796887fd6f46173a7b0d30f"},
 ]
+
+[[package]]
+name = "pydub-ng"
+version = "0.2.0"
+description = "Manipulate audio with a simple and easy high level interface"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+markers = "python_version >= \"3.10\""
+files = [
+    {file = "pydub_ng-0.2.0-py3-none-any.whl", hash = "sha256:dc3bf2b13152fc94c1110d926b0223c65305a71e81bba3a7936772923833d0d3"},
+    {file = "pydub_ng-0.2.0.tar.gz", hash = "sha256:d5e82e59395afa5a36a329b3d19651143f8281afad9c0b13d8a2bb646c5a3f01"},
+]
+
+[package.dependencies]
+audioop-lts = {version = ">=0.2.1", markers = "python_version >= \"3.13\""}
+
+[package.extras]
+dev = ["build (>=1.0.0)", "pytest (>=8.0.0)", "pytest-cov (>=4.1.0)", "pytest-datadir (>=1.4.1)", "ruff (>=0.1.0)"]
 
 [[package]]
 name = "pyee"
@@ -4217,7 +4238,7 @@ version = "80.7.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "setuptools-80.7.1-py3-none-any.whl", hash = "sha256:ca5cc1069b85dc23070a6628e6bcecb3292acac802399c7f8edc0100619f9009"},
     {file = "setuptools-80.7.1.tar.gz", hash = "sha256:f6ffc5f0142b1bd8d0ca94ee91b30c0ca862ffd50826da1ea85258a06fd94552"},
@@ -4416,14 +4437,14 @@ test = ["argcomplete (>=3.0.3)", "mypy (>=1.7.0)", "pre-commit", "pytest (>=7.0,
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.12.0.20250204"
+version = "4.12.0.20250516"
 description = "Typing stubs for beautifulsoup4"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_beautifulsoup4-4.12.0.20250204-py3-none-any.whl", hash = "sha256:57ce9e75717b63c390fd789c787d267a67eb01fa6d800a03b9bdde2e877ed1eb"},
-    {file = "types_beautifulsoup4-4.12.0.20250204.tar.gz", hash = "sha256:f083d8edcbd01279f8c3995b56cfff2d01f1bb894c3b502ba118d36fbbc495bf"},
+    {file = "types_beautifulsoup4-4.12.0.20250516-py3-none-any.whl", hash = "sha256:5923399d4a1ba9cc8f0096fe334cc732e130269541d66261bb42ab039c0376ee"},
+    {file = "types_beautifulsoup4-4.12.0.20250516.tar.gz", hash = "sha256:aa19dd73b33b70d6296adf92da8ab8a0c945c507e6fb7d5db553415cc77b417e"},
 ]
 
 [package.dependencies]
@@ -4431,14 +4452,14 @@ types-html5lib = "*"
 
 [[package]]
 name = "types-cffi"
-version = "1.17.0.20250326"
+version = "1.17.0.20250516"
 description = "Typing stubs for cffi"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_cffi-1.17.0.20250326-py3-none-any.whl", hash = "sha256:5af4ecd7374ae0d5fa9e80864e8d4b31088cc32c51c544e3af7ed5b5ed681447"},
-    {file = "types_cffi-1.17.0.20250326.tar.gz", hash = "sha256:6c8fea2c2f34b55e5fb77b1184c8ad849d57cf0ddccbc67a62121ac4b8b32254"},
+    {file = "types_cffi-1.17.0.20250516-py3-none-any.whl", hash = "sha256:b5a7b61fa60114072900a1f25094d0ea3d4f398d060128583ef644bb686d027d"},
+    {file = "types_cffi-1.17.0.20250516.tar.gz", hash = "sha256:f63c42ab07fd71f4ed218e2dea64f8714e71c585db5c6bdef9ea8f57cf99979b"},
 ]
 
 [package.dependencies]
@@ -4458,14 +4479,14 @@ files = [
 
 [[package]]
 name = "types-html5lib"
-version = "1.1.11.20241018"
+version = "1.1.11.20250516"
 description = "Typing stubs for html5lib"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types-html5lib-1.1.11.20241018.tar.gz", hash = "sha256:98042555ff78d9e3a51c77c918b1041acbb7eb6c405408d8a9e150ff5beccafa"},
-    {file = "types_html5lib-1.1.11.20241018-py3-none-any.whl", hash = "sha256:3f1e064d9ed2c289001ae6392c84c93833abb0816165c6ff0abfc304a779f403"},
+    {file = "types_html5lib-1.1.11.20250516-py3-none-any.whl", hash = "sha256:5e407b14b1bd2b9b1107cbd1e2e19d4a0c46d60febd231c7ab7313d7405663c1"},
+    {file = "types_html5lib-1.1.11.20250516.tar.gz", hash = "sha256:65043a6718c97f7d52567cc0cdf41efbfc33b1f92c6c0c5e19f60a7ec69ae720"},
 ]
 
 [[package]]
@@ -4505,14 +4526,14 @@ files = [
 
 [[package]]
 name = "types-psutil"
-version = "7.0.0.20250401"
+version = "7.0.0.20250516"
 description = "Typing stubs for psutil"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_psutil-7.0.0.20250401-py3-none-any.whl", hash = "sha256:ed23f7140368104afe4e05a6085a5fa56fbe8c880a0f4dfe8d63e041106071ed"},
-    {file = "types_psutil-7.0.0.20250401.tar.gz", hash = "sha256:2a7d663c0888a079fc1643ebc109ad12e57a21c9552a9e2035da504191336dbf"},
+    {file = "types_psutil-7.0.0.20250516-py3-none-any.whl", hash = "sha256:6a8a761c5161e4c9762ff4fb160af4491d08b67f3b1aebe85e1f2890e8378f23"},
+    {file = "types_psutil-7.0.0.20250516.tar.gz", hash = "sha256:3d8aa8392ac4d1e5e9237d111cf9e59d8fce8f2bde3115e687623f5e1039a1ab"},
 ]
 
 [[package]]
@@ -4533,26 +4554,26 @@ types-cffi = "*"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.9.0.20241206"
+version = "2.9.0.20250516"
 description = "Typing stubs for python-dateutil"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_python_dateutil-2.9.0.20241206-py3-none-any.whl", hash = "sha256:e248a4bc70a486d3e3ec84d0dc30eec3a5f979d6e7ee4123ae043eedbb987f53"},
-    {file = "types_python_dateutil-2.9.0.20241206.tar.gz", hash = "sha256:18f493414c26ffba692a72369fea7a154c502646301ebfe3d56a04b3767284cb"},
+    {file = "types_python_dateutil-2.9.0.20250516-py3-none-any.whl", hash = "sha256:2b2b3f57f9c6a61fba26a9c0ffb9ea5681c9b83e69cd897c6b5f668d9c0cab93"},
+    {file = "types_python_dateutil-2.9.0.20250516.tar.gz", hash = "sha256:13e80d6c9c47df23ad773d54b2826bd52dbbb41be87c3f339381c1700ad21ee5"},
 ]
 
 [[package]]
 name = "types-pytz"
-version = "2025.2.0.20250326"
+version = "2025.2.0.20250516"
 description = "Typing stubs for pytz"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_pytz-2025.2.0.20250326-py3-none-any.whl", hash = "sha256:3c397fd1b845cd2b3adc9398607764ced9e578a98a5d1fbb4a9bc9253edfb162"},
-    {file = "types_pytz-2025.2.0.20250326.tar.gz", hash = "sha256:deda02de24f527066fc8d6a19e284ab3f3ae716a42b4adb6b40e75e408c08d36"},
+    {file = "types_pytz-2025.2.0.20250516-py3-none-any.whl", hash = "sha256:e0e0c8a57e2791c19f718ed99ab2ba623856b11620cb6b637e5f62ce285a7451"},
+    {file = "types_pytz-2025.2.0.20250516.tar.gz", hash = "sha256:e1216306f8c0d5da6dafd6492e72eb080c9a166171fa80dd7a1990fd8be7a7b3"},
 ]
 
 [[package]]
@@ -4605,18 +4626,15 @@ urllib3 = ">=2"
 
 [[package]]
 name = "types-setuptools"
-version = "80.4.0.20250511"
+version = "80.7.0.20250516"
 description = "Typing stubs for setuptools"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_setuptools-80.4.0.20250511-py3-none-any.whl", hash = "sha256:972d7d947871cf7594263c764a9c2c2f137660c4ac3ad0cec1d4f1254ca8ae6a"},
-    {file = "types_setuptools-80.4.0.20250511.tar.gz", hash = "sha256:faa4159c9384e45b3b04218ca43ee3829efb6acc303e0ee561e47b3404423d32"},
+    {file = "types_setuptools-80.7.0.20250516-py3-none-any.whl", hash = "sha256:c1da6c11698139c8307c6df5987592df940e956912c204e42d844ba821dd2741"},
+    {file = "types_setuptools-80.7.0.20250516.tar.gz", hash = "sha256:57274b58e05434de42088a86074c9e630e5786f759cf9cc1e3015e886297ca21"},
 ]
-
-[package.dependencies]
-setuptools = "*"
 
 [[package]]
 name = "types-urllib3"
@@ -5126,4 +5144,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "531ef58c032a7693689b7cdb7b8712e3ad8d88add2593416c2dd4ff5b76d0ccf"
+content-hash = "b3b22e12252ed2752f9a7e3fd6bd259969b63c36ec93cde828a470570131bd97"
