@@ -53,6 +53,8 @@ class AsyncCapture(AbstractManager):
             self.captures.add(capture_task)
             self.set_running()
             capture_task.add_done_callback(clear_list_callback)
+        # The tasks may not be started immediately, so we need to wait a bit
+        await asyncio.sleep(1)
 
     def uuids_ready(self) -> list[str]:
         '''Get the list of captures ready to be processed'''
