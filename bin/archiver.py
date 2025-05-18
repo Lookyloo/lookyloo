@@ -56,8 +56,9 @@ class Archiver(AbstractManager):
 
     def _to_run_forever(self) -> None:
         archiving_done = False
-        self.s3fs_client.clear_instance_cache()
-        self.s3fs_client.clear_multipart_uploads(self.s3fs_bucket)
+        if self.archive_on_s3fs:
+            self.s3fs_client.clear_instance_cache()
+            self.s3fs_client.clear_multipart_uploads(self.s3fs_bucket)
         # NOTE: When we archive a big directory, moving *a lot* of files, expecially to MinIO
         # can take a very long time. In order to avoid being stuck on the archiving, we break that in chunks
         # but we also want to keep archiving without waiting 1h between each run.
