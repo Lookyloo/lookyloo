@@ -1824,14 +1824,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.14.2"
+version = "1.14.3"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.9.2"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.14.2-py3-none-any.whl", hash = "sha256:2c8a4f925889c84e9e1ab6e71bcb7d4ad88e62d8e491932b85fd8ce632a746bb"},
-    {file = "lacuscore-1.14.2.tar.gz", hash = "sha256:b4b97a90ebd4c265275d8852f6045ae4ae3b4a1df2ec6e4167bd8c8d2831d35f"},
+    {file = "lacuscore-1.14.3-py3-none-any.whl", hash = "sha256:d8298064f16211ad54b2a6f52e50396d7ff6408bb968daa49af7e7253ffda22f"},
+    {file = "lacuscore-1.14.3.tar.gz", hash = "sha256:5140f8d619644674f5c2f33906bfd72b21457c130dedc43398742a8d3794c8bb"},
 ]
 
 [package.dependencies]
@@ -3029,14 +3029,14 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250514"
+version = "1.0.2.20250519"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20250514-py2.py3-none-any.whl", hash = "sha256:33fe971e578651b6e1f9c92e53be1fbc2281067d3574597a8afa3ec897a56fac"},
-    {file = "publicsuffixlist-1.0.2.20250514.tar.gz", hash = "sha256:9a1415410185245af7b387f7a87a00cd4a3474c7b41c43ae1d6d8823432b0f7a"},
+    {file = "publicsuffixlist-1.0.2.20250519-py2.py3-none-any.whl", hash = "sha256:08e0e0dda01d73c717f2b92227b6af5d485baed4d41e6fb14b8e2528825f33dd"},
+    {file = "publicsuffixlist-1.0.2.20250519.tar.gz", hash = "sha256:6e026be47013db9f2cb8a25daf74d1d3e6180c74dc69708c9364894bf6f017eb"},
 ]
 
 [package.extras]
@@ -5144,4 +5144,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "f7fea8fccad90b25b5e6fcadffc5071a40c8e8b6cf012d40d830d5f9e03d7d2d"
+content-hash = "b7a447eb38aed33ead00e99899dfa6d97b0e43b0a29d482c92abf02e78679222"

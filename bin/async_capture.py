@@ -32,15 +32,18 @@ class AsyncCapture(AbstractManager):
         self.capture_dir: Path = get_captures_dir()
         self.lookyloo = Lookyloo(cache_max_size=1)
 
-        self.captures: set[asyncio.Task] = set()  # type: ignore[type-arg]
+        self.captures: set[asyncio.Task[None]] = set()
 
         self.fox = FOX(config_name='FOX')
         if not self.fox.available:
             self.logger.warning('Unable to setup the FOX module')
 
     async def _trigger_captures(self) -> None:
-        # Only called if LacusCore is used
-        def clear_list_callback(task: Task) -> None:  # type: ignore[type-arg]
+        # Can only be called if LacusCore is used
+        if not isinstance(self.lookyloo.lacus, LacusCore):
+            raise LookylooException('This function can only be called if LacusCore is used.')
+
+        def clear_list_callback(task: Task[None]) -> None:
             self.captures.discard(task)
             self.unset_running()
 
@@ -49,12 +52,10 @@ class AsyncCapture(AbstractManager):
         if max_new_captures <= 0:
             self.logger.info(f'Max amount of captures in parallel reached ({len(self.captures)})')
             return None
-        for capture_task in self.lookyloo.lacus.consume_queue(max_new_captures):  # type: ignore[union-attr]
+        async for capture_task in self.lookyloo.lacus.consume_queue(max_new_captures):
             self.captures.add(capture_task)
             self.set_running()
             capture_task.add_done_callback(clear_list_callback)
-        # The tasks may not be started immediately, so we need to wait a bit
-        await asyncio.sleep(1)
 
     def uuids_ready(self) -> list[str]:
         '''Get the list of captures ready to be processed'''
