@@ -77,7 +77,7 @@ pyfaup = "^1.2"
 chardet = "^5.2.0"
 pysecuritytxt = "^1.3.3"
 pylookyloomonitoring = "^1.1.6"
-s3fs = "^2025.3.2"
+s3fs = "^2025.5.0"
 urllib3 = [
     {version = "<2", python = "<3.10"},
     {version = "^2.3", python = ">=3.10"}
