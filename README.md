@@ -154,7 +154,7 @@ At Lookyloo, we pledge to act and interact in ways that contribute to an open, w
  * Follow us on [Twitter](https://twitter.com/lookyloo_app).
 
 ### Security
-To report vulnerabilities, see our [Security Policy](lookyloo/SECURITY.md).
+To report vulnerabilities, see our [Security Policy](SECURITY.md).
 
 ### Credits
 Thank you very much [Tech Blog @ willshouse.com](https://techblog.willshouse.com/2012/01/03/most-common-user-agents/) for the up-to-date list of UserAgents.
