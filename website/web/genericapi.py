@@ -343,6 +343,39 @@ class HashInfo(Resource):  # type: ignore[misc]
         return make_response({'error': 'Unknown Hash.'}, 404)
 
 
+def get_ip_occurrences(ip: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
+    '''Get the most recent captures and IP nodes where the IP has been seen.'''
+    captures = lookyloo.sorted_capture_cache(
+        get_indexing(flask_login.current_user).get_captures_ip(ip, offset=0, limit=limit),
+        cached_captures_only=cached_captures_only)
+
+    to_return: list[dict[str, Any]] = []
+    for capture in captures:
+        to_append: dict[str, str | dict[str, Any] | list[str]] = {'capture_uuid': capture.uuid,
+                                                                  'start_timestamp': capture.timestamp.isoformat(),
+                                                                  'title': capture.title}
+        to_append['urlnodes'] = list(get_indexing(flask_login.current_user).get_capture_ip_nodes(capture.uuid, ip))
+        to_return.append(to_append)
+    return to_return
+
+
+ip_info_fields = api.model('IPInfoFields', {
+    'ip': fields.String(description="The IP to search", required=True),
+    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
+    'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
+})
+
+
+@api.route('/json/ip_info')
+@api.doc(description='Search for an IP')
+class IPInfo(Resource):  # type: ignore[misc]
+
+    @api.doc(body=ip_info_fields)  # type: ignore[misc]
+    def post(self) -> Response:
+        to_query: dict[str, Any] = request.get_json(force=True)
+        return make_response(get_ip_occurrences(to_query.pop('ip'), **to_query))
+
+
 def get_url_occurrences(url: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
     '''Get the most recent captures and URL nodes where the URL has been seen.'''
     captures = lookyloo.sorted_capture_cache(
