@@ -374,10 +374,10 @@ class Indexing():
             return set(url_nodes)
         return set()
 
-    def get_body_hash_urlnodes(self, body_hash: str) -> dict[str, set[str]]:
+    def get_body_hash_urlnodes(self, body_hash: str) -> dict[str, list[str]]:
         # FIXME: figure out a reasonable limit for that
-        return {capture_uuid: self.redis.smembers(f'capture_indexes|{capture_uuid}|body_hashes|{body_hash}')
-                for capture_uuid in self.get_captures_body_hash(body_hash, offset=0, limit=100)}
+        return {capture_uuid: list(self.redis.smembers(f'capture_indexes|{capture_uuid}|body_hashes|{body_hash}'))
+                for capture_uuid in self.get_captures_body_hash(body_hash)}
 
     # ###### HTTP Headers Hashes ######
 
