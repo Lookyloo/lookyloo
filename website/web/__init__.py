@@ -2747,7 +2747,7 @@ def post_table(table_name: str, value: str) -> Response:
         tree_uuid = value.strip()
         prepared_captures = []
         for _ip, _info in get_all_ips(tree_uuid).items():
-            ip_nodes: list[tuple[str, str]] = [(node.name, node.uuid) for node in _info['nodes']]  # type: ignore[union-attr]
+            ip_nodes: list[tuple[str, str]] = [(node.name, node.uuid) for node in _info['nodes']]
             to_append = {
                 'total_captures': _info['total_captures'],
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
@@ -2757,7 +2757,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_info['hostname']),
                                                  button_string=shorten_string(_info['hostname'], 100, with_title=True),
-                                                 search=_info['hostname']),  # type: ignore[arg-type]
+                                                 search=_info['hostname']),
                 'urls': __prepare_node_view(tree_uuid, ip_nodes, from_popup)
             }
             prepared_captures.append(to_append)
