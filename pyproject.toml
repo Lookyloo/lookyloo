@@ -88,7 +88,7 @@ puremagic = "^1.29"
 psutil = "^7.0.0"
 flask-talisman = "^1.1.0"
 
-aiohttp = {extras = ["speedups"], version = "^3.11.18"}
+aiohttp = {extras = ["speedups"], version = "^3.12.4"}
 pyail = "^0.0.8"
 mastodon-py = "^2.0.1"
 typing-extensions = {version = "^4.13.2", python = "<3.12"}
