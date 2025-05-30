@@ -118,6 +118,17 @@ class CaptureStatusQuery(Resource):  # type: ignore[misc]
         return make_response(to_return)
 
 
+@api.route('/json/<string:capture_uuid>/ips')
+@api.doc(description='Get all the IPs of all the resources of a capture',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureIPs(Resource):  # type: ignore[misc]
+    def get(self, capture_uuid: str) -> Response:
+        cache = lookyloo.capture_cache(capture_uuid)
+        if not cache:
+            return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
+        return make_response({'response': {'ips': list(lookyloo.get_ips(capture_uuid))}})
+
+
 @api.route('/json/<string:capture_uuid>/hostnames')
 @api.doc(description='Get all the hostnames of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
