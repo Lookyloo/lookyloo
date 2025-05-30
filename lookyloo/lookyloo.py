@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import copy
 import gzip
+import ipaddress
 import itertools
 import json
 import logging
@@ -1443,6 +1444,43 @@ class Lookyloo():
         if container:
             return True, get_resources_hashes(container)
         return False, set()
+
+    def get_ips(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
+        """Return all the unique IPs:
+            * of a complete tree if no hostnode_uuid and urlnode_uuid are given
+            * of a HostNode if hostnode_uuid is given
+            * of a URLNode if urlnode_uuid is given
+        """
+        def get_node_ip(urlnode: URLNode) -> str | None:
+            ip: ipaddress.IPv4Address | ipaddress.IPv6Address | None = None
+            if 'hostname_is_ip' in urlnode.features and urlnode.hostname_is_ip:
+                ip = ipaddress.ip_address(urlnode.hostname)
+            elif 'ip_address' in urlnode.features:
+                ip = urlnode.ip_address
+
+            if ip:
+                return ip.compressed
+            return None
+
+        if urlnode_uuid:
+            node = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
+            if ip := get_node_ip(node):
+                return {ip}
+            return set()
+        elif hostnode_uuid:
+            node = self.get_hostnode_from_tree(tree_uuid, hostnode_uuid)
+            to_return = set()
+            for urlnode in node.urls:
+                if ip := get_node_ip(urlnode):
+                    to_return.add(ip)
+            return to_return
+        else:
+            ct = self.get_crawled_tree(tree_uuid)
+            to_return = set()
+            for urlnode in ct.root_hartree.url_tree.traverse():
+                if ip := get_node_ip(urlnode):
+                    to_return.add(ip)
+            return to_return
 
     def get_hostnames(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
         """Return all the unique hostnames:
