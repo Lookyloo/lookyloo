@@ -134,6 +134,37 @@ class CaptureIPs(Resource):  # type: ignore[misc]
             return make_response({'error': f'No HAR file available: {e}'}, 400)
 
 
+@api.route('/json/<string:capture_uuid>/favicons')
+@api.doc(description='Get all the potential favicons of a capture',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureFaviconss(Resource):  # type: ignore[misc]
+    def get(self, capture_uuid: str) -> Response:
+        cache = lookyloo.capture_cache(capture_uuid)
+        if not cache:
+            return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
+        try:
+            success, favicons_zip = lookyloo.get_potential_favicons(capture_uuid, all_favicons=True,
+                                                                    for_datauri=False)
+            if not success:
+                return make_response({'error': 'Unable to get the favicons.'}, 400)
+            to_return = {}
+            with ZipFile(favicons_zip, 'r') as myzip:
+                for name in myzip.namelist():
+                    if not name.endswith('.ico'):
+                        continue
+                    favicon = myzip.read(name)
+                    if not favicon:
+                        continue
+                    favicon_sha512 = hashlib.sha512(favicon).hexdigest()
+                    b64_favicon = base64.b64encode(favicon).decode()
+                    to_return[favicon_sha512] = b64_favicon
+            return make_response({'response': {'favicons': to_return}})
+        except NoValidHarFile as e:
+            if cache.error:
+                return make_response({'error': cache.error}, 400)
+            return make_response({'error': f'No HAR file available: {e}'}, 400)
+
+
 @api.route('/json/<string:capture_uuid>/hostnames')
 @api.doc(description='Get all the hostnames of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
