@@ -126,7 +126,12 @@ class CaptureIPs(Resource):  # type: ignore[misc]
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
-        return make_response({'response': {'ips': list(lookyloo.get_ips(capture_uuid))}})
+        try:
+            return make_response({'response': {'ips': list(lookyloo.get_ips(capture_uuid))}})
+        except NoValidHarFile as e:
+            if cache.error:
+                return make_response({'error': cache.error}, 400)
+            return make_response({'error': f'No HAR file available: {e}'}, 400)
 
 
 @api.route('/json/<string:capture_uuid>/hostnames')
@@ -137,7 +142,12 @@ class CaptureHostnames(Resource):  # type: ignore[misc]
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
-        return make_response({'response': {'hostnames': list(lookyloo.get_hostnames(capture_uuid))}})
+        try:
+            return make_response({'response': {'hostnames': list(lookyloo.get_hostnames(capture_uuid))}})
+        except NoValidHarFile as e:
+            if cache.error:
+                return make_response({'error': cache.error}, 400)
+            return make_response({'error': f'No HAR file available: {e}'}, 400)
 
 
 @api.route('/json/<string:capture_uuid>/urls')
@@ -148,7 +158,12 @@ class CaptureURLs(Resource):  # type: ignore[misc]
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
-        return make_response({'response': {'urls': list(lookyloo.get_urls(capture_uuid))}})
+        try:
+            return make_response({'response': {'urls': list(lookyloo.get_urls(capture_uuid))}})
+        except NoValidHarFile as e:
+            if cache.error:
+                return make_response({'error': cache.error}, 400)
+            return make_response({'error': f'No HAR file available: {e}'}, 400)
 
 
 @api.route('/json/<string:capture_uuid>/hashes')
