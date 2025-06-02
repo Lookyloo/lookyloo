@@ -35,6 +35,7 @@ services:
         - ./config:/lookyloo/config
         - ./logs:/lookyloo/logs
         - ./logs_web:/lookyloo/website/logs
+        - ./lookyloo/modules:/lookyloo/lookyloo/modules
     ports:
         - "5100:5100"
     links:
