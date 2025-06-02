@@ -1671,7 +1671,7 @@ class Lookyloo():
                       capture_settings: CaptureSettings | None=None,
                       potential_favicons: set[bytes] | None=None,
                       auto_report: bool | dict[str, str] | None = None
-                      ) -> None:
+                      ) -> Path:
 
         now = datetime.now()
         dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / f'{now.day:02}' / now.isoformat()
@@ -1760,3 +1760,5 @@ class Lookyloo():
 
         self.redis.hset('lookup_dirs', uuid, str(dirpath))
         self.redis.zadd('recent_captures', {uuid: now.timestamp()})
+        
+        return dirpath

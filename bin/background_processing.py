@@ -15,7 +15,7 @@ from lookyloo import Lookyloo
 from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings
-from lookyloo.modules import AIL
+from lookyloo.modules import AIL, AssemblyLine
 from pylacus import CaptureStatus as CaptureStatusPy
 
 logging.config.dictConfig(get_config('logging'))
@@ -31,13 +31,15 @@ class Processing(AbstractManager):
         self.use_own_ua = get_config('generic', 'use_user_agents_users')
 
         self.ail = AIL(config_name='AIL')
+        self.assemblyline = AssemblyLine(config_name='AssemblyLine')
 
     def _to_run_forever(self) -> None:
         if self.use_own_ua:
             self._build_ua_file()
         self._retry_failed_enqueue()
         # NOTE: make it more generic once we have more post processing tasks on build captures.
-        if self.ail.available:
+        self.logger.debug(f'Assemblyline Available: {self.assemblyline.available}')
+        if self.ail.available or self.assemblyline.available:
             self._process_built_captures()
 
     def _build_ua_file(self) -> None:
@@ -179,11 +181,44 @@ class Processing(AbstractManager):
                     self.logger.info(f'[{cached.uuid}] {len(response["success"])} URLs submitted to AIL.')
                     self.lookyloo.redis.hset(f'bg_processed_ail|{cached.uuid}|refs', mapping=response['success'])
                     self.lookyloo.redis.expire(f'bg_processed_ail|{cached.uuid}|refs', redis_expire)
+            self.logger.debug(f'[{cached.uuid}] AIL processing done.')
+            self.logger.debug(f'[{cached.uuid}] Processing AssemblyLine now. --- Available: {self.assemblyline.available}')
+            if self.assemblyline.available:
+                if cached.error:
+                    continue
+                if self.lookyloo.redis.exists(f'bg_processed_assemblyline|{cached.uuid}'):
+                    continue
+                self.lookyloo.redis.setex(f'bg_processed_assemblyline|{cached.uuid}', redis_expire, 1)
+                
+                # Submit URLs to AssemblyLine
+                response = self.assemblyline.capture_default_trigger(cached, force=False,
+                                                                     auto_trigger=True, as_admin=True)
+                if not response.get('error') and not response.get('success'):
+                    self.logger.debug(f'[{cached.uuid}] Nothing to submit, skip')
+                    continue
+                if response.get('error'):
+                    if isinstance(response['error'], str):
+                        # general error, the module isn't available
+                        self.logger.error(f'Unable to submit capture to AssemblyLine: {response["error"]}')
+                        break
+                    if isinstance(response['error'], list):
+                        # Errors when submitting individual URLs
+                        for error in response['error']:
+                            self.logger.warning(error)
+                if response.get('success'):
+                    # if we have successful submissions, save the response for later.
+                    self.logger.info(f'[{cached.uuid}] {len(response["success"])} URLs submitted to AssemblyLine.')
+                    self.lookyloo.redis.hset(f'bg_processed_assemblyline|{cached.uuid}|refs', mapping=response['success'])
+                    self.lookyloo.redis.expire(f'bg_processed_assemblyline|{cached.uuid}|refs', redis_expire)
+                    # Actually save to disk here
+                    # To do as we need to figure out how we want to store the AssemblyLine responses/process them if we use ingest vs submit
+                
+                self.logger.info(f'[{cached.uuid}] AssemblyLine processing done.')
 
 
 def main() -> None:
     p = Processing()
-    p.run(sleep_in_sec=300)
+    p.run(sleep_in_sec=30)
 
 
 if __name__ == '__main__':
