@@ -369,10 +369,10 @@ class HashInfo(Resource):  # type: ignore[misc]
         return make_response({'error': 'Unknown Hash.'}, 404)
 
 
-def get_favicon_occurrences(ip: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, str]]:
+def get_favicon_occurrences(favicon: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, str]]:
     '''Get the most recent captures where the favicon has been seen.'''
     captures = lookyloo.sorted_capture_cache(
-        get_indexing(flask_login.current_user).get_captures_favicon(ip, offset=0, limit=limit),
+        get_indexing(flask_login.current_user).get_captures_favicon(favicon, offset=0, limit=limit),
         cached_captures_only=cached_captures_only)
 
     to_return: list[dict[str, Any]] = []
