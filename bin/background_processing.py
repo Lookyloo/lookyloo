@@ -207,13 +207,18 @@ class Processing(AbstractManager):
                             self.logger.warning(error)
                 if response.get('success'):
                     # if we have successful submissions, save the response for later.
-                    self.logger.info(f'[{cached.uuid}] {len(response["success"])} URLs submitted to AssemblyLine.')
-                    self.lookyloo.redis.hset(f'bg_processed_assemblyline|{cached.uuid}|refs', mapping=response['success'])
+                    self.logger.info(f'[{cached.uuid}] URLs submitted to AssemblyLine.')
+                    self.logger.debug(f'[{cached.uuid}] Response: {response["success"]}')
+                    self.lookyloo.redis.hset(f'bg_processed_assemblyline|{cached.uuid}|refs',
+                                             mapping=response['success'])
                     self.lookyloo.redis.expire(f'bg_processed_assemblyline|{cached.uuid}|refs', redis_expire)
-                    # Actually save to disk here
-                    # To do as we need to figure out how we want to store the AssemblyLine responses/process them if we use ingest vs submit
+                    
+                    # Write ingest response to a file (IngestID)
+                    self.logger.debug(cached.capture_dir)
+                    with (cached.capture_dir/'assemblyline.json').open('w') as f:
+                        f.write(json.dumps(response['success'], indent=2, default=serialize_to_json))
                 
-                self.logger.info(f'[{cached.uuid}] AssemblyLine processing done.')
+                self.logger.info(f'[{cached.uuid}] AssemblyLine submission processing done.')
 
 
 def main() -> None:
