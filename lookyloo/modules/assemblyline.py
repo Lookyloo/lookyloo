@@ -7,7 +7,6 @@ from typing import Any, TYPE_CHECKING
 import requests
 
 from ..default import ConfigError, get_config
-from ..helpers import get_useragent_for_requests
 
 from .abstractmodule import AbstractModule
 
@@ -25,7 +24,8 @@ class AssemblyLine(AbstractModule):
             return False
         
         self.al_client = get_client(self.config.get('url'), apikey=(self.config.get('username'), self.config.get('apikey')))
-        self.domain = get_config('public_domain', 'lookyloo.myorg.local')
+        self.domain = get_config('generic', 'public_domain')
+        self.logger.debug(self.domain)
         
         self.logger.info('AssemblyLine module initialized successfully.')
 
@@ -44,6 +44,7 @@ class AssemblyLine(AbstractModule):
     def __submit_url(self, url: str, uuid: str) -> bool:
         self.logger.debug(f'Submitting URL to AssemblyLine: {url}')
         self.logger.debug(f'UUID: {uuid}')
+        self.logger.debug(f'Tree URL: https://{self.domain}/tree/{uuid}')
         
         settings = {
             'url': url,
@@ -58,6 +59,7 @@ class AssemblyLine(AbstractModule):
                 'lookyloo_url': f'https://{self.domain}/tree/{uuid}',
             },
         }
+        self.logger.debug(f'Submission settings: {settings}')
         
         response = self.al_client.ingest(url=settings['url'], 
                                          fname=settings['name'], 
