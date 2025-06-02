@@ -369,7 +369,39 @@ class HashInfo(Resource):  # type: ignore[misc]
         return make_response({'error': 'Unknown Hash.'}, 404)
 
 
-def get_ip_occurrences(ip: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
+def get_favicon_occurrences(ip: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, str]]:
+    '''Get the most recent captures where the favicon has been seen.'''
+    captures = lookyloo.sorted_capture_cache(
+        get_indexing(flask_login.current_user).get_captures_favicon(ip, offset=0, limit=limit),
+        cached_captures_only=cached_captures_only)
+
+    to_return: list[dict[str, Any]] = []
+    for capture in captures:
+        to_append: dict[str, str] = {'capture_uuid': capture.uuid,
+                                     'start_timestamp': capture.timestamp.isoformat(),
+                                     'title': capture.title}
+        to_return.append(to_append)
+    return to_return
+
+
+favicon_info_fields = api.model('FaviconInfoFields', {
+    'favicon': fields.String(description="The hash (sha512) of the favicon to search", required=True),
+    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
+    'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
+})
+
+
+@api.route('/json/favicon_info')
+@api.doc(description='Search for a Favicon')
+class FaviconInfo(Resource):  # type: ignore[misc]
+
+    @api.doc(body=favicon_info_fields)  # type: ignore[misc]
+    def post(self) -> Response:
+        to_query: dict[str, Any] = request.get_json(force=True)
+        return make_response(get_favicon_occurrences(to_query.pop('favicon'), **to_query))
+
+
+def get_ip_occurrences(ip: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
     '''Get the most recent captures and IP nodes where the IP has been seen.'''
     captures = lookyloo.sorted_capture_cache(
         get_indexing(flask_login.current_user).get_captures_ip(ip, offset=0, limit=limit),
@@ -380,7 +412,8 @@ def get_ip_occurrences(ip: str, /, limit: int=20, cached_captures_only: bool=Tru
         to_append: dict[str, str | dict[str, Any] | list[str]] = {'capture_uuid': capture.uuid,
                                                                   'start_timestamp': capture.timestamp.isoformat(),
                                                                   'title': capture.title}
-        to_append['urlnodes'] = list(get_indexing(flask_login.current_user).get_capture_ip_nodes(capture.uuid, ip))
+        if with_urls_occurrences:
+            to_append['urlnodes'] = list(get_indexing(flask_login.current_user).get_capture_ip_nodes(capture.uuid, ip))
         to_return.append(to_append)
     return to_return
 
@@ -389,6 +422,7 @@ ip_info_fields = api.model('IPInfoFields', {
     'ip': fields.String(description="The IP to search", required=True),
     'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
     'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
+    'with_urls_occurrences': fields.Boolean(description="If true, also return the URL nodes where the IP has been seen", default=False),
 })
 
 
@@ -402,7 +436,7 @@ class IPInfo(Resource):  # type: ignore[misc]
         return make_response(get_ip_occurrences(to_query.pop('ip'), **to_query))
 
 
-def get_url_occurrences(url: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
+def get_url_occurrences(url: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
     '''Get the most recent captures and URL nodes where the URL has been seen.'''
     captures = lookyloo.sorted_capture_cache(
         get_indexing(flask_login.current_user).get_captures_url(url, offset=0, limit=limit),
@@ -414,13 +448,14 @@ def get_url_occurrences(url: str, /, limit: int=20, cached_captures_only: bool=T
         to_append: dict[str, str | dict[str, Any]] = {'capture_uuid': capture.uuid,
                                                       'start_timestamp': capture.timestamp.isoformat(),
                                                       'title': capture.title}
-        urlnodes: dict[str, dict[str, str]] = {}
-        for urlnode in ct.root_hartree.url_tree.search_nodes(name=url):
-            urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
-                                      'hostnode_uuid': urlnode.hostnode_uuid}
-            if hasattr(urlnode, 'body_hash'):
-                urlnodes[urlnode.uuid]['hash'] = urlnode.body_hash
-        to_append['urlnodes'] = urlnodes
+        if with_urls_occurrences:
+            urlnodes: dict[str, dict[str, str]] = {}
+            for urlnode in ct.root_hartree.url_tree.search_nodes(name=url):
+                urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
+                                          'hostnode_uuid': urlnode.hostnode_uuid}
+                if hasattr(urlnode, 'body_hash'):
+                    urlnodes[urlnode.uuid]['hash'] = urlnode.body_hash
+            to_append['urlnodes'] = urlnodes
         to_return.append(to_append)
     return to_return
 
@@ -429,6 +464,7 @@ url_info_fields = api.model('URLInfoFields', {
     'url': fields.String(description="The URL to search", required=True),
     'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
     'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
+    'with_urls_occurrences': fields.Boolean(description="If true, also return the URL nodes where the URL has been seen", default=False),
 })
 
 
@@ -477,6 +513,7 @@ hostname_info_fields = api.model('HostnameInfoFields', {
     'hostname': fields.String(description="The hostname to search", required=True),
     'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
     'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
+    'with_urls_occurrences': fields.Boolean(description="If true, also return the URLs where the hostname has been seen", default=False),
 })
 
 
