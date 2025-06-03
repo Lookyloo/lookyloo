@@ -1828,14 +1828,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.15.0"
+version = "1.15.2"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.9.2"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.15.0-py3-none-any.whl", hash = "sha256:99d74dc66505523fdb9c2c0833f008550e06e78b04a992f19b8c6ac531ac7d6c"},
-    {file = "lacuscore-1.15.0.tar.gz", hash = "sha256:98d8b474443b3cf96f8e09c1bd45627b9ec001bd1a9f7db52696bf04bf479c2e"},
+    {file = "lacuscore-1.15.2-py3-none-any.whl", hash = "sha256:c73f852afd3e909e988a660924f08e34ff4eeffbf19bdd091b08b95c64575052"},
+    {file = "lacuscore-1.15.2.tar.gz", hash = "sha256:59ad00d3288fcb6014556d8fe52721d960f945080957770fca79be0aac381b97"},
 ]
 
 [package.dependencies]
@@ -1844,7 +1844,7 @@ defang = ">=0.5.3"
 dnspython = ">=2.7.0"
 eval-type-backport = {version = ">=0.2.2", markers = "python_version < \"3.10\""}
 playwrightcapture = {version = ">=1.30.0", extras = ["recaptcha"]}
-pydantic = ">=2.11.4"
+pydantic = ">=2.11.5"
 redis = {version = ">=5.3.0,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.32.3"
 typing-extensions = {version = ">=4.12.2,<5.0.0", markers = "python_version < \"3.12\""}
@@ -2019,8 +2019,11 @@ files = [
     {file = "lxml-5.4.0-cp36-cp36m-win_amd64.whl", hash = "sha256:7ce1a171ec325192c6a636b64c94418e71a1964f56d002cc28122fceff0b6121"},
     {file = "lxml-5.4.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:795f61bcaf8770e1b37eec24edf9771b307df3af74d1d6f27d812e15a9ff3872"},
     {file = "lxml-5.4.0-cp37-cp37m-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:29f451a4b614a7b5b6c2e043d7b64a15bd8304d7e767055e8ab68387a8cacf4e"},
+    {file = "lxml-5.4.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:891f7f991a68d20c75cb13c5c9142b2a3f9eb161f1f12a9489c82172d1f133c0"},
     {file = "lxml-5.4.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4aa412a82e460571fad592d0f93ce9935a20090029ba08eca05c614f99b0cc92"},
+    {file = "lxml-5.4.0-cp37-cp37m-manylinux_2_28_aarch64.whl", hash = "sha256:ac7ba71f9561cd7d7b55e1ea5511543c0282e2b6450f122672a2694621d63b7e"},
     {file = "lxml-5.4.0-cp37-cp37m-manylinux_2_28_x86_64.whl", hash = "sha256:c5d32f5284012deaccd37da1e2cd42f081feaa76981f0eaa474351b68df813c5"},
+    {file = "lxml-5.4.0-cp37-cp37m-musllinux_1_2_aarch64.whl", hash = "sha256:ce31158630a6ac85bddd6b830cffd46085ff90498b397bd0a259f59d27a12188"},
     {file = "lxml-5.4.0-cp37-cp37m-musllinux_1_2_x86_64.whl", hash = "sha256:31e63621e073e04697c1b2d23fcb89991790eef370ec37ce4d5d469f40924ed6"},
     {file = "lxml-5.4.0-cp37-cp37m-win32.whl", hash = "sha256:be2ba4c3c5b7900246a8f866580700ef0d538f2ca32535e991027bdaba944063"},
     {file = "lxml-5.4.0-cp37-cp37m-win_amd64.whl", hash = "sha256:09846782b1ef650b321484ad429217f5154da4d6e786636c38e434fa32e94e49"},
@@ -3046,14 +3049,14 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250529"
+version = "1.0.2.20250603"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20250529-py2.py3-none-any.whl", hash = "sha256:75d1ff738ee8db1e5b0993e83a9e60789460907330401178f7cd8531a051776c"},
-    {file = "publicsuffixlist-1.0.2.20250529.tar.gz", hash = "sha256:d212bd81df675b95950836dcec1aaf062d179f9572b27d304b4f14c0da72637b"},
+    {file = "publicsuffixlist-1.0.2.20250603-py2.py3-none-any.whl", hash = "sha256:04796ef19418afc9f97f3447adcc2d0a29a90780a2e0c5cb2f98e05dfcea38de"},
+    {file = "publicsuffixlist-1.0.2.20250603.tar.gz", hash = "sha256:ca294e03cbca2dbed0d4a4c033bfa23b91c89298402e2f812fae11757229717e"},
 ]
 
 [package.extras]
@@ -3515,14 +3518,14 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.15.0"
+version = "1.15.1"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pylacus-1.15.0-py3-none-any.whl", hash = "sha256:0470ea9054683298b2e1e0d82a5788b0068d45bfb000e96a17fff79025df7c12"},
-    {file = "pylacus-1.15.0.tar.gz", hash = "sha256:613759a04ed28a4f0a40e87a6e6591d9920b1c60b558d191e5d9aa38815a84a4"},
+    {file = "pylacus-1.15.1-py3-none-any.whl", hash = "sha256:7abccdff66840a9b66d71440e8517a3afceacbe2110dcae85bcde7ac712cf6a8"},
+    {file = "pylacus-1.15.1.tar.gz", hash = "sha256:7fb2e4d78cdd911817d779f1c7317b77e5c336557947662163f7e8f957398718"},
 ]
 
 [package.dependencies]
@@ -5163,4 +5166,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "295be96996dba312c0ce54e50c782ac1f47553ab985b5c1941d3e10e032ee495"
+content-hash = "7f691771427382b5e4939c958f20f1eaaf7cde0bb64e0065c64b15a8d660c790"
