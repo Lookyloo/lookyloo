@@ -107,6 +107,9 @@ class Processing(AbstractManager):
                         # UUID is still unknown
                         self.logger.info(f'UUID {uuid} is still unknown')
                         to_requeue.append(uuid)
+                if len(to_requeue) > 100:
+                    # Enough stuff to requeue
+                    break
         except LacusUnreachable:
             self.logger.warning('Lacus still unreachable, trying again later')
             return None
@@ -122,6 +125,7 @@ class Processing(AbstractManager):
                     query = CaptureSettings(**capture_settings)
                     try:
                         self.lookyloo.redis.delete(uuid)
+                        query.uuid = uuid
                         new_uuid = self.lookyloo.enqueue_capture(query, 'api', 'background_processing', False)
                         if new_uuid != uuid:
                             # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
