@@ -1,0 +1,45 @@
+version: '3'
+services:
+
+  redis-cache:
+    image: valkey/valkey:latest
+    working_dir: /cache
+    command: ./cache.conf --daemonize no
+    volumes:
+        - ./cache:/cache
+
+  redis-indexing:
+    image: valkey/valkey:latest
+    working_dir: /indexing
+    command: ./indexing.conf --daemonize no
+    volumes:
+        - ./indexing:/indexing
+
+  lookyloo:
+    build: .
+    working_dir: /lookyloo
+    tty: true
+    command:
+        - /bin/sh
+        - -c
+        - |
+            poetry run start
+            tail -F ./LICENSE
+    volumes:
+        - ./cache:/lookyloo/cache
+        - ./indexing:/lookyloo/indexing
+        - ./scraped:/lookyloo/scraped
+        - ./archived_captures:/lookyloo/archived_captures
+        - ./discarded:/lookyloo/discarded_captures
+        - ./user_agents:/lookyloo/user_agents
+        - ./config:/lookyloo/config
+        - ./logs:/lookyloo/logs
+        - ./logs_web:/lookyloo/website/logs
+        - ./lookyloo/modules:/lookyloo/lookyloo/modules
+        - ./bin:/lookyloo/bin
+        - ./tools:/lookyloo/tools
+    ports:
+        - "5100:5100"
+    links:
+        - "redis-cache"
+        - "redis-indexing"
