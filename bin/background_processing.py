@@ -157,12 +157,12 @@ class Processing(AbstractManager):
         cut_time = datetime.now() - delta_to_process
         redis_expire = int(delta_to_process.total_seconds()) - 300
         self.lookyloo.update_cache_index()
-        
+
         # Check if we have AL queue entries
         if self.assemblyline.available:
             al_queue = self.assemblyline.get_notification_queue()
             self.logger.debug(f'Notification Queue: {len(al_queue)} entries found.')
-            
+
         for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time):
             if self.ail.available:
                 if cached.error:
@@ -193,26 +193,27 @@ class Processing(AbstractManager):
                     self.lookyloo.redis.expire(f'bg_processed_ail|{cached.uuid}|refs', redis_expire)
             self.logger.debug(f'[{cached.uuid}] AIL processing done.')
             self.logger.debug(f'[{cached.uuid}] Processing AssemblyLine now. --- Available: {self.assemblyline.available}')
+
             if self.assemblyline.available:
                 if cached.error:
                     continue
                 if self.lookyloo.redis.exists(f'bg_processed_assemblyline|{cached.uuid}'):
                     # Already processed this capture
-                    # Check the Notification Queue for responses from AssemblyLine                
+                    # Check the Notification Queue for responses from AssemblyLine
                     for entry in al_queue:
                         self.logger.debug(f"Checking AssemblyLine queue entry with UUID {entry['submission']['metadata']['lookyloo_uuid']} against cached UUID {cached.uuid}")
                         # If the UUID matches, we have a response from AssemblyLine
                         if entry['submission']['metadata']['lookyloo_uuid'] == cached.uuid:
                             self.logger.debug(f'Found AssemblyLine response for {cached.uuid}: {entry}')
                             self.logger.debug(f'Ingest ID: {entry["ingest_id"]}, UUID: {entry["submission"]["metadata"]["lookyloo_uuid"]}')
-                            with (cached.capture_dir/'assemblyline_ingest.json').open('w') as f:
+                            with (cached.capture_dir / 'assemblyline_ingest.json').open('w') as f:
                                 f.write(json.dumps(entry, indent=2, default=serialize_to_json))
-                            
+
                             # Remove the entry from the queue
                             al_queue.remove(entry)
                     continue
                 self.lookyloo.redis.setex(f'bg_processed_assemblyline|{cached.uuid}', redis_expire, 1)
-                
+
                 # Submit URLs to AssemblyLine
                 response = self.assemblyline.capture_default_trigger(cached, force=False,
                                                                      auto_trigger=True, as_admin=True)
@@ -235,13 +236,13 @@ class Processing(AbstractManager):
                     self.lookyloo.redis.hset(f'bg_processed_assemblyline|{cached.uuid}|refs',
                                              mapping=response['success'])
                     self.lookyloo.redis.expire(f'bg_processed_assemblyline|{cached.uuid}|refs', redis_expire)
-                    
+
                     # Write ingest response to a file (IngestID)
                     self.logger.debug(cached.capture_dir)
-                    with (cached.capture_dir/'assemblyline.json').open('w') as f:
+                    with (cached.capture_dir / 'assemblyline.json').open('w') as f:
                         f.write(json.dumps(response['success'], indent=2, default=serialize_to_json))
-                
-                self.logger.info(f'[{cached.uuid}] AssemblyLine submission processing done.')                        
+
+                self.logger.info(f'[{cached.uuid}] AssemblyLine submission processing done.')
 
 
 def main() -> None:

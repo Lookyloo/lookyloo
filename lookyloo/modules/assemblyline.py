@@ -10,7 +10,7 @@ from ..default import ConfigError, get_config
 
 from .abstractmodule import AbstractModule
 
-from assemblyline_client import get_client
+from assemblyline_client import get_client  # type: ignore[import-untyped]
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
@@ -22,17 +22,17 @@ class AssemblyLine(AbstractModule):
         if not self.config.get('apikey'):
             self.logger.info('No API key.')
             return False
-        
+
         self.al_client = get_client(self.config.get('url'), apikey=(self.config.get('username'), self.config.get('apikey')))
         self.domain = get_config('generic', 'public_domain')
         self.logger.debug(self.domain)
-        
+
         self.logger.info('AssemblyLine module initialized successfully.')
 
         return True
 
     def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool,
-                                auto_trigger: bool, as_admin: bool) -> dict[str, str]:
+                                auto_trigger: bool, as_admin: bool) -> dict[str, Any]:
         '''Run the module on the initial URL'''
 
         if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
@@ -45,11 +45,11 @@ class AssemblyLine(AbstractModule):
         self.logger.debug(f'Submitting URL to AssemblyLine: {url}')
         self.logger.debug(f'UUID: {uuid}')
         self.logger.debug(f'Tree URL: https://{self.domain}/tree/{uuid}')
-        
+
         settings = {
             'url': url,
             'name': url,
-            'nq': self.config.get('nq', 'lookyloo'), # notification queue name
+            'nq': self.config.get('nq', 'lookyloo'),  # notification queue name
             'submission_profile': self.config.get('submission_profile', 'static_with_internet'),
             'params': {
                 'classification': self.config.get('classification', 'TLP:AMBER+STRICT'),
@@ -64,14 +64,14 @@ class AssemblyLine(AbstractModule):
             },
         }
         self.logger.debug(f'Submission settings: {settings}')
-        
-        response = self.al_client.ingest(url=settings['url'], 
-                                         fname=settings['name'], 
-                                         params=settings['params'], 
-                                         nq=settings['nq'], 
+
+        response = self.al_client.ingest(url=settings['url'],
+                                         fname=settings['name'],
+                                         params=settings['params'],
+                                         nq=settings['nq'],
                                          submission_profile=settings['submission_profile'],
                                          metadata=settings['metadata'])
-        
+
         self.logger.debug(f'Response from AssemblyLine: \n{response}')
         return response
 
@@ -100,7 +100,7 @@ class AssemblyLine(AbstractModule):
             nq = self.al_client.ingest.get_message_list(
                 nq=self.config.get('nq')
             )
-            
+
             self.logger.debug(f'Notification queue: {nq}')
             return nq
         except Exception as e:
