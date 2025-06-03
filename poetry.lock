@@ -255,13 +255,13 @@ files = [
 
 [[package]]
 name = "assemblyline-client"
-version = "4.9.7"
+version = "4.9.8"
 description = "Assemblyline v4 client library"
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "assemblyline_client-4.9.7-py2.py3-none-any.whl", hash = "sha256:ce4269d8f58170ea45b841b4e334eeb5d5282238cd7b735f99b1e7805f5f2a25"},
+    {file = "assemblyline_client-4.9.8-py2.py3-none-any.whl", hash = "sha256:119a3530740101bf425d3820cbd17b51588fa7dc3d8491016ef380eaf9922b7a"},
 ]
 
 [package.dependencies]
@@ -5386,4 +5386,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "b1d1eda3d98b1975b97aa9d3f58c46604c17511f841227a80516aba4ea80bf43"
+content-hash = "c1e6c024471ee9f9a9619b80823aadae4853652cc6b56b82055e0ac1a45aa4f2"

@@ -53,10 +53,14 @@ class AssemblyLine(AbstractModule):
             'submission_profile': self.config.get('submission_profile', 'static_with_internet'),
             'params': {
                 'classification': self.config.get('classification', 'TLP:AMBER+STRICT'),
+                'services': {
+                    'excluded': ['CyberDeck', 'Dynamic Analysis']
+                },
             },
             'metadata': {
                 'lookyloo_uuid': uuid,
                 'lookyloo_url': f'https://{self.domain}/tree/{uuid}',
+                'source': 'lookyloo',
             },
         }
         self.logger.debug(f'Submission settings: {settings}')
@@ -86,3 +90,19 @@ class AssemblyLine(AbstractModule):
             except requests.exceptions.HTTPError as e:
                 return {'error': e}
         return {'error': 'Submitting is not allowed by the configuration'}
+
+    def get_notification_queue(self) -> list[dict[str, Any]]:
+        '''Get the NQ from AssemblyLine'''
+        if not self.config.get('nq'):
+            self.logger.warning('No notification queue configured for AssemblyLine.')
+            return []
+        try:
+            nq = self.al_client.ingest.get_message_list(
+                nq=self.config.get('nq')
+            )
+            
+            self.logger.debug(f'Notification queue: {nq}')
+            return nq
+        except Exception as e:
+            self.logger.error(f'Error getting notification queue: {e}')
+            return []

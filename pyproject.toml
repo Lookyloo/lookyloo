@@ -41,7 +41,7 @@ mastobot = "bin.mastobot:main"
 
 
 [tool.poetry.dependencies]
-assemblyline_client = "^4.9.7"
+assemblyline_client = "^4.9.8"
 requests = "^2.32.3"
 flask = "^3.1.1"
 gunicorn = {version = "^23.0.0", extras = ["setproctitle"]}
