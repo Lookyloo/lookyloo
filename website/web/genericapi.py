@@ -383,10 +383,39 @@ class ModulesResponse(Resource):  # type: ignore[misc]
         return make_response(lookyloo.get_modules_responses(capture_uuid))
 
 
+def get_body_hash_occurrences(body_hash: str, *, with_urls_occurrences: bool=False, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
+    '''Get the most recent captures and URL nodes where the body hash has been seen.'''
+    entries = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash, offset=offset, limit=limit)
+    captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only)
+
+    meta = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_body_hash_count(body_hash)}
+
+    to_return: dict[str, Any] = {'meta': meta, 'response': []}
+    for capture in captures:
+        to_append: dict[str, str | dict[str, Any] | list[str]] = {'capture_uuid': capture.uuid,
+                                                                  'start_timestamp': capture.timestamp.isoformat(),
+                                                                  'title': capture.title}
+        if with_urls_occurrences:
+            to_append['urlnodes'] = list(get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture.uuid, body_hash))
+        to_return['response'].append(to_append)
+
+    return to_return
+
+
+body_hash_info_fields = api.model('BodyHashInfoFields', {
+    'body_hash': fields.String(description="The body hash to search", required=True),
+    'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
+    'with_urls_occurrences': fields.Boolean(description="If true, also return the URLs where the body hash has been seen", default=False),
+    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
+    'offset': fields.Integer(description="The offset for pagination", example=0, default=0),
+})
+
+
+@api.route('/json/hash_info')
 @api.route('/json/hash_info/<h>')
-@api.doc(description='Search for a ressource with a specific hash (sha512)',
-         params={'h': 'The hash (sha512)'})
+@api.doc(description='Search for a ressource with a specific hash (sha512)')
 class HashInfo(Resource):  # type: ignore[misc]
+
     def get(self, h: str) -> Response:
         if uuids := get_indexing(flask_login.current_user).get_hash_uuids(h):
             # got UUIDs for this hash
@@ -398,6 +427,11 @@ class HashInfo(Resource):  # type: ignore[misc]
                                       'body': base64.b64encode(body.getvalue()).decode()}})
             return make_response({'error': 'Unable to get ressource'}, 400)
         return make_response({'error': 'Unknown Hash.'}, 404)
+
+    @api.doc(body=body_hash_info_fields)  # type: ignore[misc]
+    def post(self) -> Response:
+        to_query: dict[str, Any] = request.get_json(force=True)
+        return make_response(get_body_hash_occurrences(to_query.pop('body_hash'), **to_query))
 
 
 def get_favicon_occurrences(favicon: str, *, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, str]]]:
