@@ -90,6 +90,12 @@ class AsyncCapture(AbstractManager):
 
             try:
                 to_capture: CaptureSettings | None = self.lookyloo.get_capture_settings(uuid)
+                if (entries.get('error') is not None
+                        and entries['error'].startswith('No capture settings') and to_capture):  # type: ignore[union-attr]
+                    # The settings were expired too early.
+                    self.lookyloo.redis.hset(uuid, 'not_queued', 1)
+                    self.logger.info(f'Capture settings for {uuid} were expired too early, re-adding to queue.')
+                    continue
                 if to_capture:
                     self.lookyloo.store_capture(
                         uuid, to_capture.listing,
