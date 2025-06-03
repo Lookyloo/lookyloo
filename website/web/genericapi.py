@@ -400,25 +400,28 @@ class HashInfo(Resource):  # type: ignore[misc]
         return make_response({'error': 'Unknown Hash.'}, 404)
 
 
-def get_favicon_occurrences(favicon: str, /, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, str]]:
+def get_favicon_occurrences(favicon: str, *, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, str]]]:
     '''Get the most recent captures where the favicon has been seen.'''
     captures = lookyloo.sorted_capture_cache(
-        get_indexing(flask_login.current_user).get_captures_favicon(favicon, offset=0, limit=limit),
+        get_indexing(flask_login.current_user).get_captures_favicon(favicon, offset=offset, limit=limit),
         cached_captures_only=cached_captures_only)
 
-    to_return: list[dict[str, Any]] = []
+    meta = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_favicon_count(favicon)}
+
+    to_return: dict[str, Any] = {'meta': meta, 'response': []}
     for capture in captures:
         to_append: dict[str, str] = {'capture_uuid': capture.uuid,
                                      'start_timestamp': capture.timestamp.isoformat(),
                                      'title': capture.title}
-        to_return.append(to_append)
+        to_return['response'].append(to_append)
     return to_return
 
 
 favicon_info_fields = api.model('FaviconInfoFields', {
     'favicon': fields.String(description="The hash (sha512) of the favicon to search", required=True),
-    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
     'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
+    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
+    'offset': fields.Integer(description="The offset for pagination", example=0, default=0),
 })
 
 
@@ -432,28 +435,31 @@ class FaviconInfo(Resource):  # type: ignore[misc]
         return make_response(get_favicon_occurrences(to_query.pop('favicon'), **to_query))
 
 
-def get_ip_occurrences(ip: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
+def get_ip_occurrences(ip: str, *, with_urls_occurrences: bool=False, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
     '''Get the most recent captures and IP nodes where the IP has been seen.'''
     captures = lookyloo.sorted_capture_cache(
-        get_indexing(flask_login.current_user).get_captures_ip(ip, offset=0, limit=limit),
+        get_indexing(flask_login.current_user).get_captures_ip(ip, offset=offset, limit=limit),
         cached_captures_only=cached_captures_only)
 
-    to_return: list[dict[str, Any]] = []
+    meta = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_ip_count(ip)}
+
+    to_return: dict[str, Any] = {'meta': meta, 'response': []}
     for capture in captures:
         to_append: dict[str, str | dict[str, Any] | list[str]] = {'capture_uuid': capture.uuid,
                                                                   'start_timestamp': capture.timestamp.isoformat(),
                                                                   'title': capture.title}
         if with_urls_occurrences:
             to_append['urlnodes'] = list(get_indexing(flask_login.current_user).get_capture_ip_nodes(capture.uuid, ip))
-        to_return.append(to_append)
+        to_return['response'].append(to_append)
     return to_return
 
 
 ip_info_fields = api.model('IPInfoFields', {
     'ip': fields.String(description="The IP to search", required=True),
-    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
     'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
     'with_urls_occurrences': fields.Boolean(description="If true, also return the URL nodes where the IP has been seen", default=False),
+    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
+    'offset': fields.Integer(description="The offset for pagination", example=0, default=0),
 })
 
 
@@ -467,13 +473,15 @@ class IPInfo(Resource):  # type: ignore[misc]
         return make_response(get_ip_occurrences(to_query.pop('ip'), **to_query))
 
 
-def get_url_occurrences(url: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
+def get_url_occurrences(url: str, *, with_urls_occurrences: bool=False, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
     '''Get the most recent captures and URL nodes where the URL has been seen.'''
     captures = lookyloo.sorted_capture_cache(
-        get_indexing(flask_login.current_user).get_captures_url(url, offset=0, limit=limit),
+        get_indexing(flask_login.current_user).get_captures_url(url, offset=offset, limit=limit),
         cached_captures_only=cached_captures_only)
 
-    to_return: list[dict[str, Any]] = []
+    meta = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_url_count(url)}
+
+    to_return: dict[str, Any] = {'meta': meta, 'response': []}
     for capture in captures:
         ct = lookyloo.get_crawled_tree(capture.uuid)
         to_append: dict[str, str | dict[str, Any]] = {'capture_uuid': capture.uuid,
@@ -487,15 +495,16 @@ def get_url_occurrences(url: str, /, with_urls_occurrences: bool=False, limit: i
                 if hasattr(urlnode, 'body_hash'):
                     urlnodes[urlnode.uuid]['hash'] = urlnode.body_hash
             to_append['urlnodes'] = urlnodes
-        to_return.append(to_append)
+        to_return['response'].append(to_append)
     return to_return
 
 
 url_info_fields = api.model('URLInfoFields', {
     'url': fields.String(description="The URL to search", required=True),
-    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
     'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
     'with_urls_occurrences': fields.Boolean(description="If true, also return the URL nodes where the URL has been seen", default=False),
+    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
+    'offset': fields.Integer(description="The offset for pagination", example=0, default=0),
 })
 
 
@@ -509,12 +518,14 @@ class URLInfo(Resource):  # type: ignore[misc]
         return make_response(get_url_occurrences(to_query.pop('url'), **to_query))
 
 
-def get_hostname_occurrences(hostname: str, /, with_urls_occurrences: bool=False, limit: int=20, cached_captures_only: bool=True) -> list[dict[str, Any]]:
+def get_hostname_occurrences(hostname: str, *, with_urls_occurrences: bool=False, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
     '''Get the most recent captures and URL nodes where the hostname has been seen.'''
-    entries = get_indexing(flask_login.current_user).get_captures_hostname(hostname, offset=0, limit=limit)
+    entries = get_indexing(flask_login.current_user).get_captures_hostname(hostname, offset=offset, limit=limit)
     captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only)
 
-    to_return: list[dict[str, Any]] = []
+    meta = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_hostname_count(hostname)}
+
+    to_return: dict[str, Any] = {'meta': meta, 'response': []}
     for capture in captures:
         ct = lookyloo.get_crawled_tree(capture.uuid)
         to_append: dict[str, str | list[Any] | dict[str, Any]] = {
@@ -536,15 +547,16 @@ def get_hostname_occurrences(hostname: str, /, with_urls_occurrences: bool=False
             to_append['hostnodes'] = hostnodes
             if with_urls_occurrences:
                 to_append['urlnodes'] = urlnodes
-            to_return.append(to_append)
+            to_return['response'].append(to_append)
     return to_return
 
 
 hostname_info_fields = api.model('HostnameInfoFields', {
     'hostname': fields.String(description="The hostname to search", required=True),
-    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
     'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
     'with_urls_occurrences': fields.Boolean(description="If true, also return the URLs where the hostname has been seen", default=False),
+    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
+    'offset': fields.Integer(description="The offset for pagination", example=0, default=0),
 })
 
 
