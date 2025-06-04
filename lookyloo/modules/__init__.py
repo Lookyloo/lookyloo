@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from .assemblyline import AssemblyLine # noqa
 from .fox import FOX  # noqa
 from .misp import MISPs, MISP  # noqa
 from .pi import PhishingInitiative  # noqa
@@ -16,6 +17,7 @@ from .circlpdns import CIRCLPDNS  # noqa
 from .ail import AIL  # noqa
 
 __all__ = [
+    'AssemblyLine',
     'FOX',
     'MISPs',
     'MISP',

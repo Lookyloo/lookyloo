@@ -1,4 +1,17 @@
 {
+  "AssemblyLine": {
+    "apikey": null,
+    "username": null,
+    "url": "https://malware.cyber.gc.ca",
+    "submission_profile": "static_with_internet",
+    "classification": "TLP:AMBER+STRICT",
+    "notification_queue": "lookyloo",
+    "services": {"excluded": ["CyberDeck", "Dynamic Analysis"]},
+    "priority": 1,
+    "autosubmit": false,
+    "allow_auto_trigger": false,
+    "admin_only": true
+  },
   "VirusTotal": {
     "apikey": null,
     "trustenv": false,
@@ -102,6 +115,7 @@
     "autosubmit": "Automatically submits the URL to the 3rd party service.",
     "admin_only": "Querying that module is only allowed to logged-in users (generally because the API keys have limits).",
     "allow_auto_trigger": "Allow auto trigger per module: some (i.e. VT) can be very expensive",
+    "AssemblyLine": "Module to submit URLs to AssemblyLine: https://github.com/CybercentreCanada/assemblyline",
     "VirusTotal": "Module to query Virustotal: https://www.virustotal.com/",
     "PhishingInitiative": "Module to query phishing initiative: https://phishing-initiative.fr/contrib/",
     "SaneJS": "Module to query SaneJS: https://github.com/Lookyloo/sanejs",

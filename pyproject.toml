@@ -41,6 +41,7 @@ mastobot = "bin.mastobot:main"
 
 
 [tool.poetry.dependencies]
+assemblyline_client = "^4.9.8"
 requests = "^2.32.3"
 flask = "^3.1.1"
 gunicorn = {version = "^23.0.0", extras = ["setproctitle"]}
@@ -88,7 +89,7 @@ puremagic = "^1.29"
 psutil = "^7.0.0"
 flask-talisman = "^1.1.0"
 
-aiohttp = {extras = ["speedups"], version = "^3.12.7"}
+aiohttp = {extras = ["speedups"], version = "^3.12.9"}
 pyail = "^0.0.8"
 mastodon-py = "^2.0.1"
 typing-extensions = {version = "^4.14.0", python = "<3.12"}

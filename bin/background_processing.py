@@ -15,7 +15,7 @@ from lookyloo import Lookyloo
 from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings
-from lookyloo.modules import AIL
+from lookyloo.modules import AIL, AssemblyLine
 from pylacus import CaptureStatus as CaptureStatusPy
 
 logging.config.dictConfig(get_config('logging'))
@@ -31,13 +31,14 @@ class Processing(AbstractManager):
         self.use_own_ua = get_config('generic', 'use_user_agents_users')
 
         self.ail = AIL(config_name='AIL')
+        self.assemblyline = AssemblyLine(config_name='AssemblyLine')
 
     def _to_run_forever(self) -> None:
         if self.use_own_ua:
             self._build_ua_file()
         self._retry_failed_enqueue()
         # NOTE: make it more generic once we have more post processing tasks on build captures.
-        if self.ail.available:
+        if self.ail.available or self.assemblyline.available:
             self._process_built_captures()
 
     def _build_ua_file(self) -> None:
@@ -155,39 +156,72 @@ class Processing(AbstractManager):
         cut_time = datetime.now() - delta_to_process
         redis_expire = int(delta_to_process.total_seconds()) - 300
         self.lookyloo.update_cache_index()
+
+        # AL notification queue is returnig all the entries in the queue
+        if self.assemblyline.available:
+            for entry in self.assemblyline.get_notification_queue():
+                if current_uuid := entry['submission']['metadata'].get('lookyloo_uuid'):
+                    cached = self.lookyloo.get_capture(current_uuid)
+                    self.logger.debug(f'Found AssemblyLine response for {cached.uuid}: {entry}')
+                    self.logger.debug(f'Ingest ID: {entry["ingest_id"]}, UUID: {entry["submission"]["metadata"]["lookyloo_uuid"]}')
+                    with (cached.capture_dir / 'assemblyline_ingest.json').open('w') as f:
+                        f.write(json.dumps(entry, indent=2, default=serialize_to_json))
+
         for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time):
-            if self.ail.available:
-                if cached.error:
-                    continue
-                if self.lookyloo.redis.exists(f'bg_processed_ail|{cached.uuid}'):
-                    continue
+            if cached.error:
+                continue
+
+            if self.ail.available and not self.lookyloo.redis.exists(f'bg_processed_ail|{cached.uuid}'):
                 self.lookyloo.redis.setex(f'bg_processed_ail|{cached.uuid}', redis_expire, 1)
                 # Submit onions captures to AIL
                 response = self.ail.capture_default_trigger(cached, force=False,
                                                             auto_trigger=True, as_admin=True)
                 if not response.get('error') and not response.get('success'):
                     self.logger.debug(f'[{cached.uuid}] Nothing to submit, skip')
-                    continue
-                if response.get('error'):
+                elif response.get('error'):
                     if isinstance(response['error'], str):
                         # general error, the module isn't available
                         self.logger.error(f'Unable to submit capture to AIL: {response["error"]}')
-                        break
-                    if isinstance(response['error'], list):
+                    elif isinstance(response['error'], list):
                         # Errors when submitting individual URLs
                         for error in response['error']:
                             self.logger.warning(error)
-                if response.get('success'):
+                elif response.get('success'):
                     # if we have successful submissions, we may want to get the references later.
                     # Store in redis for now.
                     self.logger.info(f'[{cached.uuid}] {len(response["success"])} URLs submitted to AIL.')
                     self.lookyloo.redis.hset(f'bg_processed_ail|{cached.uuid}|refs', mapping=response['success'])
                     self.lookyloo.redis.expire(f'bg_processed_ail|{cached.uuid}|refs', redis_expire)
+                self.logger.debug(f'[{cached.uuid}] AIL processing done.')
+
+            if self.assemblyline.available and not self.lookyloo.redis.exists(f'bg_processed_assemblyline|{cached.uuid}'):
+                self.logger.debug(f'[{cached.uuid}] Processing AssemblyLine now. --- Available: {self.assemblyline.available}')
+                self.lookyloo.redis.setex(f'bg_processed_assemblyline|{cached.uuid}', redis_expire, 1)
+
+                # Submit URLs to AssemblyLine
+                response = self.assemblyline.capture_default_trigger(cached, force=False,
+                                                                     auto_trigger=True, as_admin=True)
+                if not response.get('error') and not response.get('success'):
+                    self.logger.debug(f'[{cached.uuid}] Nothing to submit, skip')
+                elif response.get('error'):
+                    if isinstance(response['error'], str):
+                        # general error, the module isn't available
+                        self.logger.error(f'Unable to submit capture to AssemblyLine: {response["error"]}')
+                    elif isinstance(response['error'], list):
+                        # Errors when submitting individual URLs
+                        for error in response['error']:
+                            self.logger.warning(error)
+                elif response.get('success'):
+                    # if we have successful submissions, save the response for later.
+                    self.logger.info(f'[{cached.uuid}] URLs submitted to AssemblyLine.')
+                    self.logger.debug(f'[{cached.uuid}] Response: {response["success"]}')
+
+                self.logger.info(f'[{cached.uuid}] AssemblyLine submission processing done.')
 
 
 def main() -> None:
     p = Processing()
-    p.run(sleep_in_sec=300)
+    p.run(sleep_in_sec=30)
 
 
 if __name__ == '__main__':
