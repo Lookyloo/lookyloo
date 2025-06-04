@@ -388,7 +388,9 @@ def get_body_hash_occurrences(body_hash: str, *, with_urls_occurrences: bool=Fal
     entries = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash, offset=offset, limit=limit)
     captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only)
 
-    meta = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_body_hash_count(body_hash)}
+    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_body_hash_count(body_hash)}
+    if len(captures) < limit and meta['total'] > offset + limit:
+        meta['warning'] = 'Some capture are missing, they are probably not cached. You can re-run the query with the `cached_captures_only` parameter set to `False`, but it can take a while.'
 
     to_return: dict[str, Any] = {'meta': meta, 'response': []}
     for capture in captures:
@@ -440,7 +442,9 @@ def get_favicon_occurrences(favicon: str, *, cached_captures_only: bool=True, li
         get_indexing(flask_login.current_user).get_captures_favicon(favicon, offset=offset, limit=limit),
         cached_captures_only=cached_captures_only)
 
-    meta = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_favicon_count(favicon)}
+    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_favicon_count(favicon)}
+    if len(captures) < limit and meta['total'] > offset + limit:
+        meta['warning'] = 'Some capture are missing, they are probably not cached. You can re-run the query with the `cached_captures_only` parameter set to `False`, but it can take a while.'
 
     to_return: dict[str, Any] = {'meta': meta, 'response': []}
     for capture in captures:
@@ -475,7 +479,9 @@ def get_ip_occurrences(ip: str, *, with_urls_occurrences: bool=False, cached_cap
         get_indexing(flask_login.current_user).get_captures_ip(ip, offset=offset, limit=limit),
         cached_captures_only=cached_captures_only)
 
-    meta = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_ip_count(ip)}
+    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_ip_count(ip)}
+    if len(captures) < limit and meta['total'] > offset + limit:
+        meta['warning'] = 'Some capture are missing, they are probably not cached. You can re-run the query with the `cached_captures_only` parameter set to `False`, but it can take a while.'
 
     to_return: dict[str, Any] = {'meta': meta, 'response': []}
     for capture in captures:
@@ -513,15 +519,17 @@ def get_url_occurrences(url: str, *, with_urls_occurrences: bool=False, cached_c
         get_indexing(flask_login.current_user).get_captures_url(url, offset=offset, limit=limit),
         cached_captures_only=cached_captures_only)
 
-    meta = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_url_count(url)}
+    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_url_count(url)}
+    if len(captures) < limit and meta['total'] > offset + limit:
+        meta['warning'] = 'Some capture are missing, they are probably not cached. You can re-run the query with the `cached_captures_only` parameter set to `False`, but it can take a while.'
 
     to_return: dict[str, Any] = {'meta': meta, 'response': []}
     for capture in captures:
-        ct = lookyloo.get_crawled_tree(capture.uuid)
         to_append: dict[str, str | dict[str, Any]] = {'capture_uuid': capture.uuid,
                                                       'start_timestamp': capture.timestamp.isoformat(),
                                                       'title': capture.title}
         if with_urls_occurrences:
+            ct = lookyloo.get_crawled_tree(capture.uuid)
             urlnodes: dict[str, dict[str, str]] = {}
             for urlnode in ct.root_hartree.url_tree.search_nodes(name=url):
                 urlnodes[urlnode.uuid] = {'start_time': urlnode.start_time.isoformat(),
@@ -557,7 +565,9 @@ def get_hostname_occurrences(hostname: str, *, with_urls_occurrences: bool=False
     entries = get_indexing(flask_login.current_user).get_captures_hostname(hostname, offset=offset, limit=limit)
     captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only)
 
-    meta = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_hostname_count(hostname)}
+    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_hostname_count(hostname)}
+    if len(captures) < limit and meta['total'] > offset + limit:
+        meta['warning'] = 'Some capture are missing, they are probably not cached. You can re-run the query with the `cached_captures_only` parameter set to `False`, but it can take a while.'
 
     to_return: dict[str, Any] = {'meta': meta, 'response': []}
     for capture in captures:
