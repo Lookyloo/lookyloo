@@ -5,7 +5,9 @@
     "url": "https://malware.cyber.gc.ca",
     "submission_profile": "static_with_internet",
     "classification": "TLP:AMBER+STRICT",
-    "nq": null,
+    "notification_queue": "lookyloo",
+    "services": {"excluded": ["CyberDeck", "Dynamic Analysis"]},
+    "priority": 1,
     "autosubmit": false,
     "allow_auto_trigger": false,
     "admin_only": true

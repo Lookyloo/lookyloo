@@ -4,13 +4,10 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
-import requests
+from assemblyline_client import get_client  # type: ignore[import-untyped]
 
 from ..default import ConfigError, get_config
-
 from .abstractmodule import AbstractModule
-
-from assemblyline_client import get_client  # type: ignore[import-untyped]
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
@@ -24,11 +21,7 @@ class AssemblyLine(AbstractModule):
             return False
 
         self.al_client = get_client(self.config.get('url'), apikey=(self.config.get('username'), self.config.get('apikey')))
-        self.domain = get_config('generic', 'public_domain')
-        self.logger.debug(self.domain)
-
-        self.logger.info('AssemblyLine module initialized successfully.')
-
+        self.logger.info(f'AssemblyLine module initialized successfully ({self.config.get("url")}).')
         return True
 
     def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool,
@@ -38,71 +31,44 @@ class AssemblyLine(AbstractModule):
         if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
             return error
 
-        response = self.__url_submit(cache.url, cache.uuid)
+        response = self._submit(cache)
         return {'success': response}
 
-    def __submit_url(self, url: str, uuid: str) -> bool:
-        self.logger.debug(f'Submitting URL to AssemblyLine: {url}')
-        self.logger.debug(f'UUID: {uuid}')
-        self.logger.debug(f'Tree URL: https://{self.domain}/tree/{uuid}')
-
-        settings = {
-            'url': url,
-            'name': url,
-            'nq': self.config.get('nq', 'lookyloo'),  # notification queue name
-            'submission_profile': self.config.get('submission_profile', 'static_with_internet'),
-            'params': {
-                'classification': self.config.get('classification', 'TLP:AMBER+STRICT'),
-                'services': {
-                    'excluded': ['CyberDeck', 'Dynamic Analysis']
-                },
-            },
-            'metadata': {
-                'lookyloo_uuid': uuid,
-                'lookyloo_url': f'https://{self.domain}/tree/{uuid}',
-                'source': 'lookyloo',
-            },
-        }
-        self.logger.debug(f'Submission settings: {settings}')
-
-        response = self.al_client.ingest(url=settings['url'],
-                                         fname=settings['name'],
-                                         params=settings['params'],
-                                         nq=settings['nq'],
-                                         submission_profile=settings['submission_profile'],
-                                         metadata=settings['metadata'])
-
-        self.logger.debug(f'Response from AssemblyLine: \n{response}')
-        return response
-
-    def __url_submit(self, url: str, uuid: str) -> dict[str, Any]:
+    def _submit(self, cache: CaptureCache) -> dict[str, Any]:
         '''Submit a URL to AssemblyLine
         '''
         if not self.available:
             raise ConfigError('AssemblyLine not available, probably no API key')
-        if url.startswith('file'):
+        if cache.url.startswith('file'):
             return {'error': 'AssemblyLine integration does not support files.'}
+
+        params = {'classification': self.config.get('classification'),
+                  'services': self.config.get('services'),
+                  'priority': self.config.get('priority')}
+        lookyloo_domain = get_config('generic', 'public_domain')
+        metadata = {'lookyloo_uuid': cache.uuid,
+                    'lookyloo_url': f'https://{lookyloo_domain}/tree/{cache.uuid}',
+                    'source': 'lookyloo'}
 
         if self.autosubmit:
             # submit is allowed and we either force it, or it's just allowed
             try:
-                return self.__submit_url(url, uuid)
-            except requests.exceptions.HTTPError as e:
+                return self.al_client.ingest(url=cache.url, fname=cache.url,
+                                             params=params,
+                                             nq=self.config.get('notification_queue'),
+                                             submission_profile=self.config.get('submission_profile'),
+                                             metadata=metadata)
+            except Exception as e:
                 return {'error': e}
         return {'error': 'Submitting is not allowed by the configuration'}
 
     def get_notification_queue(self) -> list[dict[str, Any]]:
         '''Get the NQ from AssemblyLine'''
-        if not self.config.get('nq'):
+        if not self.config.get('notification_queue'):
             self.logger.warning('No notification queue configured for AssemblyLine.')
             return []
         try:
-            nq = self.al_client.ingest.get_message_list(
-                nq=self.config.get('nq')
-            )
-
-            self.logger.debug(f'Notification queue: {nq}')
-            return nq
+            return self.al_client.ingest.get_message_list(nq=self.config.get('notification_queue'))
         except Exception as e:
             self.logger.error(f'Error getting notification queue: {e}')
             return []
