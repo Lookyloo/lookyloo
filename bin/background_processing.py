@@ -161,11 +161,11 @@ class Processing(AbstractManager):
         if self.assemblyline.available:
             for entry in self.assemblyline.get_notification_queue():
                 if current_uuid := entry['submission']['metadata'].get('lookyloo_uuid'):
-                    cached = self.lookyloo.get_capture(current_uuid)
-                    self.logger.debug(f'Found AssemblyLine response for {cached.uuid}: {entry}')
-                    self.logger.debug(f'Ingest ID: {entry["ingest_id"]}, UUID: {entry["submission"]["metadata"]["lookyloo_uuid"]}')
-                    with (cached.capture_dir / 'assemblyline_ingest.json').open('w') as f:
-                        f.write(json.dumps(entry, indent=2, default=serialize_to_json))
+                    if cached := self.lookyloo.capture_cache(current_uuid):
+                        self.logger.debug(f'Found AssemblyLine response for {cached.uuid}: {entry}')
+                        self.logger.debug(f'Ingest ID: {entry["ingest_id"]}, UUID: {entry["submission"]["metadata"]["lookyloo_uuid"]}')
+                        with (cached.capture_dir / 'assemblyline_ingest.json').open('w') as f:
+                            f.write(json.dumps(entry, indent=2, default=serialize_to_json))
 
         for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time):
             if cached.error:
