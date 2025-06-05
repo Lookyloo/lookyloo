@@ -1204,6 +1204,8 @@ def validate_and_format_payload(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 advanced_search_fields = api.model('AdvancedSearchFields', {
+    'cached_captures_only': fields.Boolean(description="If false, re-cache the missing captures (can take a while)", default=True),
+    'limit': fields.Integer(description="The maximal amount of captures to return", example=20),
     'include': fields.Raw(
         description="Parameters to include in the search. Example: {'ip': [], 'hostname': ['example.com'], 'url': [], 'hash': ['<sha512_hash>']}",
         required=True,
@@ -1228,7 +1230,7 @@ advanced_search_fields = api.model('AdvancedSearchFields', {
 
 
 @api.route('/json/advanced_search')
-@api.doc(description='Search for captures with advanced search parameters.')
+@api.doc(description='[WiP] Search for captures with advanced search parameters, this method is still in development.',)
 class AdvancedSearch(Resource):  # type: ignore[misc]
     # Mapping of parameter names to search functions
     SEARCH_FUNCTIONS = {
@@ -1243,6 +1245,8 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
         try:
             # Parse and validate the payload
             payload: dict[str, Any] = request.get_json(force=True)
+            limit = payload.get('limit', 20)
+            cached_captures_only = payload.get('cached_captures_only', True)
             formatted_payload = validate_and_format_payload(payload)
 
             include_uuids = []
@@ -1260,8 +1264,8 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
                     for value in values:
                         try:
                             # Fetch UUIDs for the given parameter value
-                            result = search_func(value, cached_captures_only=True)
-                            param_results.append({uuid['capture_uuid'] for uuid in result['response']})  # type: ignore[index]
+                            result = search_func(value, cached_captures_only=cached_captures_only, limit=limit)
+                            param_results.append({response['capture_uuid'] for response in result['response']})  # type: ignore[index]
                         except Exception as e:
                             logging.error(f"Failed to search {param}={value}: {e}")
 
@@ -1282,8 +1286,8 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
                     for value in values:
                         try:
                             # Fetch UUIDs for the given parameter value
-                            result = search_func(value, cached_captures_only=True)
-                            param_results.append({uuid['capture_uuid'] for uuid in result['response']})  # type: ignore[index]
+                            result = search_func(value, cached_captures_only=cached_captures_only, limit=limit)
+                            param_results.append({response['capture_uuid'] for response in result['response']})  # type: ignore[index]
                         except Exception as e:
                             logging.error(f"Failed to search {param}={value}: {e}")
 
@@ -1292,26 +1296,28 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
                         param_combined = set.union(*param_results)
                         exclude_uuids.append(param_combined)
 
+            combined_include = set()
             # Combine includes using intersection (AND logic across parameters)
             if include_uuids:
                 combined_include = set.intersection(*include_uuids)  # AND logic across all include parameters
-            else:
-                combined_include = set()  # Nothing specified = nothing returned
 
+            combined_exclude = set()
             # Combine excludes using union (OR logic across all exclude params)
             if exclude_uuids:
                 combined_exclude = set.union(*exclude_uuids)  # OR logic across all exclude parameters
-            else:
-                combined_exclude = set()
 
             # Final result: include - exclude
             final_uuids = combined_include - combined_exclude  # Remove excluded UUIDs from included UUIDs
-
-            # Format the response
-            response_data = [{"capture_uuid": uuid} for uuid in final_uuids]
+            captures = lookyloo.sorted_capture_cache(final_uuids, cached_captures_only=True)
+            to_return: dict[str, Any] = {'response': []}
+            for capture in captures:
+                to_append: dict[str, str] = {'capture_uuid': capture.uuid,
+                                             'start_timestamp': capture.timestamp.isoformat(),
+                                             'title': capture.title}
+                to_return['response'].append(to_append)
 
             # Return the results
-            return make_response({'response': response_data}, 200)
+            return make_response(to_return, 200)
 
         except ValueError as e:
             return make_response({'error': str(e)}, 400)
