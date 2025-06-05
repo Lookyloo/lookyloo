@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import gzip
 import hashlib
+import ipaddress
 import json
 import logging
 import logging.config
@@ -1159,22 +1160,22 @@ class TLDCaptures(Resource):  # type: ignore[misc]
                 get_indexing(flask_login.current_user).force_reindex(uuid)
         return make_response(list(to_return))
 
-####################### Advanced Search ############################
-import ipaddress
+# ###################### Advanced Search ############################
 
-def is_valid_ip(ip):
-    try:
-        ipaddress.ip_address(ip)
-        return True
-    except ValueError:
-        return False
 
-def is_valid_sha512(hash_str):
-    return len(hash_str) == 128 and all(c in '0123456789abcdefABCDEF' for c in hash_str)
+def validate_and_format_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    def is_valid_ip(ip: str) -> bool:
+        try:
+            ipaddress.ip_address(ip)
+            return True
+        except ValueError:
+            return False
 
-def validate_and_format_payload(payload):
+    def is_valid_sha512(hash_str: str) -> bool:
+        return len(hash_str) == 128 and all(c in '0123456789abcdefABCDEF' for c in hash_str)
+
     allowed_keys = {"ip", "hostname", "url", "hash"}
-    formatted_payload = {}
+    formatted_payload: dict[str, Any] = {}
 
     for section in ["include", "exclude"]:
         if section not in payload:
@@ -1201,6 +1202,7 @@ def validate_and_format_payload(payload):
 
     return formatted_payload
 
+
 advanced_search_fields = api.model('AdvancedSearchFields', {
     'include': fields.Raw(
         description="Parameters to include in the search. Example: {'ip': [], 'hostname': ['example.com'], 'url': [], 'hash': ['<sha512_hash>']}",
@@ -1224,9 +1226,10 @@ advanced_search_fields = api.model('AdvancedSearchFields', {
     ),
 })
 
+
 @api.route('/json/advanced_search')
 @api.doc(description='Search for captures with advanced search parameters.')
-class AdvancedSearch(Resource):
+class AdvancedSearch(Resource):  # type: ignore[misc]
     # Mapping of parameter names to search functions
     SEARCH_FUNCTIONS = {
         "ip": get_ip_occurrences,
@@ -1234,7 +1237,8 @@ class AdvancedSearch(Resource):
         "url": get_url_occurrences,
         "hash": get_body_hash_occurrences  # formerly sha512
     }
-    @api.doc(body=advanced_search_fields)
+
+    @api.doc(body=advanced_search_fields)  # type: ignore[misc]
     def post(self) -> Response:
         try:
             # Parse and validate the payload
@@ -1257,7 +1261,7 @@ class AdvancedSearch(Resource):
                         try:
                             # Fetch UUIDs for the given parameter value
                             result = search_func(value, cached_captures_only=True)
-                            param_results.append(set(uuid['capture_uuid'] for uuid in result['response']))
+                            param_results.append({uuid['capture_uuid'] for uuid in result['response']})  # type: ignore[index]
                         except Exception as e:
                             logging.error(f"Failed to search {param}={value}: {e}")
 
@@ -1279,7 +1283,7 @@ class AdvancedSearch(Resource):
                         try:
                             # Fetch UUIDs for the given parameter value
                             result = search_func(value, cached_captures_only=True)
-                            param_results.append(set(uuid['capture_uuid'] for uuid in result['response']))
+                            param_results.append({uuid['capture_uuid'] for uuid in result['response']})  # type: ignore[index]
                         except Exception as e:
                             logging.error(f"Failed to search {param}={value}: {e}")
 
