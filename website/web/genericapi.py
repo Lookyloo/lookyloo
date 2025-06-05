@@ -1158,3 +1158,163 @@ class TLDCaptures(Resource):  # type: ignore[misc]
                 logging.warning(f'Capture {uuid} needs to be re-indexed.')
                 get_indexing(flask_login.current_user).force_reindex(uuid)
         return make_response(list(to_return))
+
+####################### Advanced Search ############################
+import ipaddress
+
+def is_valid_ip(ip):
+    try:
+        ipaddress.ip_address(ip)
+        return True
+    except ValueError:
+        return False
+
+def is_valid_sha512(hash_str):
+    return len(hash_str) == 128 and all(c in '0123456789abcdefABCDEF' for c in hash_str)
+
+def validate_and_format_payload(payload):
+    allowed_keys = {"ip", "hostname", "url", "hash"}
+    formatted_payload = {}
+
+    for section in ["include", "exclude"]:
+        if section not in payload:
+            continue
+
+        formatted_payload[section] = {}
+
+        for key, values in payload[section].items():
+            if key not in allowed_keys:
+                raise ValueError(f"Invalid key '{key}' in section '{section}'")
+
+            if not isinstance(values, list):
+                raise ValueError(f"Values for '{key}' in section '{section}' must be a list")
+
+            validated_values = []
+            for value in values:
+                if key == "ip" and not is_valid_ip(value):
+                    raise ValueError(f"Invalid IP address: {value}")
+                if key == "hash" and not is_valid_sha512(value):
+                    raise ValueError(f"Invalid SHA512 hash: {value}")
+                validated_values.append(value)
+
+            formatted_payload[section][key] = validated_values
+
+    return formatted_payload
+
+advanced_search_fields = api.model('AdvancedSearchFields', {
+    'include': fields.Raw(
+        description="Parameters to include in the search. Example: {'ip': [], 'hostname': ['example.com'], 'url': [], 'hash': ['<sha512_hash>']}",
+        required=True,
+        example={
+            "ip": ["string"],
+            "hostname": [],
+            "url": [],
+            "hash": []
+        }
+    ),
+    'exclude': fields.Raw(
+        description="Parameters to exclude from the search. Example: {'url': [\"8.8.8.8\"]}",
+        required=False,
+        example={
+            "url": [],
+            "hostname": [],
+            "ip": [],
+            "hash": []
+        }
+    ),
+})
+
+@api.route('/json/advanced_search')
+@api.doc(description='Search for captures with advanced search parameters.')
+class AdvancedSearch(Resource):
+    # Mapping of parameter names to search functions
+    SEARCH_FUNCTIONS = {
+        "ip": get_ip_occurrences,
+        "hostname": get_hostname_occurrences,
+        "url": get_url_occurrences,
+        "hash": get_body_hash_occurrences  # formerly sha512
+    }
+    @api.doc(body=advanced_search_fields)
+    def post(self) -> Response:
+        try:
+            # Parse and validate the payload
+            payload: dict[str, Any] = request.get_json(force=True)
+            formatted_payload = validate_and_format_payload(payload)
+
+            include_uuids = []
+            exclude_uuids = []
+
+            # Process includes
+            if "include" in formatted_payload:
+                for param, values in formatted_payload["include"].items():
+                    search_func = self.SEARCH_FUNCTIONS.get(param)
+                    if not search_func:
+                        # Skip unknown parameters
+                        continue
+
+                    param_results = []
+                    for value in values:
+                        try:
+                            # Fetch UUIDs for the given parameter value
+                            result = search_func(value, cached_captures_only=True)
+                            param_results.append(set(uuid['capture_uuid'] for uuid in result['response']))
+                        except Exception as e:
+                            logging.error(f"Failed to search {param}={value}: {e}")
+
+                    # Union results for multiple values of the same parameter (OR logic within parameter)
+                    if param_results:
+                        param_combined = set.union(*param_results)
+                        include_uuids.append(param_combined)
+
+            # Process excludes
+            if "exclude" in formatted_payload:
+                for param, values in formatted_payload["exclude"].items():
+                    search_func = self.SEARCH_FUNCTIONS.get(param)
+                    if not search_func:
+                        # Skip unknown parameters
+                        continue
+
+                    param_results = []
+                    for value in values:
+                        try:
+                            # Fetch UUIDs for the given parameter value
+                            result = search_func(value, cached_captures_only=True)
+                            param_results.append(set(uuid['capture_uuid'] for uuid in result['response']))
+                        except Exception as e:
+                            logging.error(f"Failed to search {param}={value}: {e}")
+
+                    # Union results for multiple values of the same parameter (OR logic within parameter)
+                    if param_results:
+                        param_combined = set.union(*param_results)
+                        exclude_uuids.append(param_combined)
+
+            # Combine includes using intersection (AND logic across parameters)
+            if include_uuids:
+                combined_include = set.intersection(*include_uuids)  # AND logic across all include parameters
+            else:
+                combined_include = set()  # Nothing specified = nothing returned
+
+            # Combine excludes using union (OR logic across all exclude params)
+            if exclude_uuids:
+                combined_exclude = set.union(*exclude_uuids)  # OR logic across all exclude parameters
+            else:
+                combined_exclude = set()
+
+            # Final result: include - exclude
+            final_uuids = combined_include - combined_exclude  # Remove excluded UUIDs from included UUIDs
+
+            # Format the response
+            response_data = [{"capture_uuid": uuid} for uuid in final_uuids]
+
+            # Return the results
+            return make_response({'response': response_data}, 200)
+
+        except ValueError as e:
+            return make_response({'error': str(e)}, 400)
+
+        except json.JSONDecodeError:
+            return make_response({'error': 'Invalid JSON payload'}, 400)
+
+        except Exception as e:
+            logging.error(f"Unexpected error in advanced_search: {e}")
+            return make_response({'error': f'Unexpected error: {str(e)}'}, 500)
