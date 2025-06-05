@@ -32,6 +32,7 @@ class AssemblyLine(AbstractModule):
             return error
 
         response = self._submit(cache)
+        self.logger.debug(f'Submitted {cache.url} to AssemblyLine: {response}')
         return {'success': response}
 
     def _submit(self, cache: CaptureCache) -> dict[str, Any]:
@@ -53,11 +54,14 @@ class AssemblyLine(AbstractModule):
         if self.autosubmit:
             # submit is allowed and we either force it, or it's just allowed
             try:
-                return self.al_client.ingest(url=cache.url, fname=cache.url,
-                                             params=params,
-                                             nq=self.config.get('notification_queue'),
-                                             submission_profile=self.config.get('submission_profile'),
-                                             metadata=metadata)
+                response = self.al_client.ingest(url=cache.url, fname=cache.url,
+                                                 params=params,
+                                                 nq=self.config.get('notification_queue'),
+                                                 submission_profile=self.config.get('submission_profile'),
+                                                 metadata=metadata)
+                if 'error' in response:
+                    self.logger.error(f'Error submitting to AssemblyLine: {response["error"]}')
+                return response
             except Exception as e:
                 return {'error': e}
         return {'error': 'Submitting is not allowed by the configuration'}

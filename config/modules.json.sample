@@ -4,7 +4,7 @@
     "username": null,
     "url": "https://malware.cyber.gc.ca",
     "submission_profile": "static_with_internet",
-    "classification": "TLP:AMBER+STRICT",
+    "classification": "TLP:C",
     "notification_queue": "lookyloo",
     "services": {"excluded": ["CyberDeck", "Dynamic Analysis"]},
     "priority": 1,
