@@ -6,10 +6,10 @@ from lookyloo.default import get_homedir
 
 d3js_version = '7.9.0'
 jquery_version = "3.7.1"
-datatables_version = "2.3.1"
+datatables_version = "2.3.2"
 datatables_rowgroup_version = "1.5.1"
 datatables_buttons_version = "3.2.3"
-datatables_select_version = "3.0.0"
+datatables_select_version = "3.0.1"
 
 if __name__ == '__main__':
     dest_dir = get_homedir() / 'website' / 'web' / 'static'

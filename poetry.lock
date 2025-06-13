@@ -3703,22 +3703,22 @@ docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
 
 [[package]]
 name = "pylookyloo"
-version = "1.30.0"
+version = "1.31.0"
 description = "Python CLI and module for Lookyloo"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pylookyloo-1.30.0-py3-none-any.whl", hash = "sha256:7da9b8c6b59e98430370813e5e9d4acb25a1060e4a953bff7b9831f239a8eb89"},
-    {file = "pylookyloo-1.30.0.tar.gz", hash = "sha256:86cad592f9e48431119b6959015c5ae14a6e630ba456ba22d7579f118d89b83b"},
+    {file = "pylookyloo-1.31.0-py3-none-any.whl", hash = "sha256:3be671975a31392671848e10b779ec5d8cfe14eb9fc55dc01f298e8efb66102f"},
+    {file = "pylookyloo-1.31.0.tar.gz", hash = "sha256:af7f07751c7aea9e3a150c1ed09745284afb641b2241ca1b30e605365ae3dcbd"},
 ]
 
 [package.dependencies]
-requests = ">=2.32.3"
+requests = ">=2.32.4"
 
 [package.extras]
 docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
-examples = ["pylacus (>=1.15.0)"]
+examples = ["pylacus (>=1.15.1)"]
 
 [[package]]
 name = "pylookyloomonitoring"
@@ -5454,4 +5454,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "e1647832fe67cc70003ff1ce3bde3ac28f34eccff7aa3be342913f5a44687de3"
+content-hash = "deefc37aa0918c4120d855ee72333c37c127da785791da3cb820e8ef1b7bf1ed"
