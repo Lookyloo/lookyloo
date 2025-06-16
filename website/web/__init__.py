@@ -1612,11 +1612,19 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: str 
 
     We must assume that calling cached.tree will fail, and handle it gracefully.
     """
+    mastodon_domain = None
+    mastodon_botname = None
+    if get_config('mastobot', 'enable'):
+        mastodon_domain = get_config('mastobot', 'domain')
+        mastodon_botname = get_config('mastobot', 'botname')
     return render_template('index.html', public_domain=lookyloo.public_domain,
                            show_hidden=show_hidden,
                            category=category,
                            show_project_page=get_config('generic', 'show_project_page'),
                            enable_takedown_form=get_config('generic', 'enable_takedown_form'),
+                           mastobot_enabled=get_config('mastobot', 'enable'),
+                           mastodon_domain=mastodon_domain,
+                           mastodon_botname=mastodon_botname,
                            version=pkg_version)
 
 
@@ -1742,6 +1750,11 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
     # if we have multiple remote lacus, get the list of names
     multiple_remote_lacus: dict[str, dict[str, Any]] = {}
     default_remote_lacus = None
+    mastodon_domain = None
+    mastodon_botname = None
+    if get_config('mastobot', 'enable'):
+        mastodon_domain = get_config('mastobot', 'domain')
+        mastodon_botname = get_config('mastobot', 'botname')
     try:
         if isinstance(lookyloo.lacus, dict):
             multiple_remote_lacus = {}
@@ -1790,6 +1803,9 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            headed_allowed=lookyloo.headed_allowed,
                            multiple_remote_lacus=multiple_remote_lacus,
                            default_remote_lacus=default_remote_lacus,
+                           mastobot_enabled=get_config('mastobot', 'enable'),
+                           mastodon_domain=mastodon_domain,
+                           mastodon_botname=mastodon_botname,
                            has_global_proxy=True if lookyloo.global_proxy else False)
 
 

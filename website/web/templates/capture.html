@@ -20,6 +20,12 @@
 <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
 
+{% block identity %}
+  {% if mastobot_enabled %}
+    <link rel="me" href="https://{{mastodon_domain}}/@{{mastodon_botname}}">
+  {% endif %}
+{% endblock %}
+
 {% block styles %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"
