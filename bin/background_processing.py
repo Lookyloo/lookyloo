@@ -87,7 +87,7 @@ class Processing(AbstractManager):
         '''If enqueuing failed, the settings are added, with a UUID in the 'to_capture key', and they have a UUID'''
         to_requeue: list[str] = []
         try:
-            for uuid, _ in self.lookyloo.redis.zscan_iter('to_capture'):
+            for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf', start=0, num=500):
                 if self.lookyloo.redis.hget(uuid, 'not_queued') == '1':
                     # The capture is marked as not queued
                     to_requeue.append(uuid)
