@@ -85,10 +85,10 @@ class AsyncCapture(AbstractManager):
                 log = f'{log} - Runtime: {runtime}'
             self.logger.info(log)
 
-            self.lookyloo.redis.sadd('ongoing', uuid)
             queue: str | None = self.lookyloo.redis.getdel(f'{uuid}_mgmt')
 
             try:
+                self.lookyloo.redis.sadd('ongoing', uuid)
                 to_capture: CaptureSettings | None = self.lookyloo.get_capture_settings(uuid)
                 if (entries.get('error') is not None
                         and entries['error'].startswith('No capture settings') and to_capture):  # type: ignore[union-attr]
@@ -121,12 +121,13 @@ class AsyncCapture(AbstractManager):
             except CaptureSettingsError as e:
                 # We shouldn't have a broken capture at this stage, but here we are.
                 self.logger.error(f'Got a capture ({uuid}) with invalid settings: {e}.')
+            finally:
+                self.lookyloo.redis.srem('ongoing', uuid)
 
             lazy_cleanup = self.lookyloo.redis.pipeline()
             if queue and self.lookyloo.redis.zscore('queues', queue):
                 lazy_cleanup.zincrby('queues', -1, queue)
             lazy_cleanup.zrem('to_capture', uuid)
-            lazy_cleanup.srem('ongoing', uuid)
             lazy_cleanup.delete(uuid)
             # make sure to expire the key if nothing was processed for a while (= queues empty)
             lazy_cleanup.expire('queues', 600)
