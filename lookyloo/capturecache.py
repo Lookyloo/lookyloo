@@ -181,15 +181,21 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                             dns.rdatatype.RdataType.SOA, dns.rdatatype.RdataType.NS,
                             dns.rdatatype.RdataType.MX]
 
-        try:
-            self.ipasnhistory: IPASNHistory | None = IPASNHistory()
-            if not self.ipasnhistory.is_up:
+        ipasnhistory_config = get_config('modules', 'IPASNHistory')
+        self.ipasnhistory: IPASNHistory | None = None
+        if ipasnhistory_config.get('enabled'):
+            try:
+                self.ipasnhistory = IPASNHistory(ipasnhistory_config['url'])
+                if not self.ipasnhistory.is_up:
+                    self.ipasnhistory = None
+                self.logger.info('IPASN History ready')
+            except Exception as e:
+                # Unable to setup IPASN History
+                self.logger.warning(f'Unable to setup IPASN History: {e}')
                 self.ipasnhistory = None
-            self.logger.info('IPASN History ready')
-        except Exception as e:
-            # Unable to setup IPASN History
-            self.logger.warning(f'Unable to setup IPASN History: {e}')
-            self.ipasnhistory = None
+        else:
+            self.logger.info('IPASN History disabled')
+
         self.cloudflare: Cloudflare = Cloudflare()
         if not self.cloudflare.available:
             self.logger.warning('Unable to setup Cloudflare.')

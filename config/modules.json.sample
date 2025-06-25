@@ -78,6 +78,10 @@
     "allow_auto_trigger": false,
     "admin_only": false
   },
+  "IPASNHistory": {
+    "enabled": false,
+    "url": "https://ipasnhistory.circl.lu/"
+  },
   "UrlScan": {
     "apikey": null,
     "autosubmit": false,
@@ -128,6 +132,7 @@
     "FOX": "Submission only interface by and for CCCS",
     "Pandora": "Submission only interface for https://github.com/pandora-analysis/",
     "CIRCLPDNS": "Module to query CIRCL Passive DNS (https://www.circl.lu/services/passive-dns/)",
-    "AIL": "Module to submit URLs to AIL Framework (https://github.com/CIRCL/AIL-framework)"
+    "AIL": "Module to submit URLs to AIL Framework (https://github.com/CIRCL/AIL-framework)",
+    "IPASNHistory": "Module to query IPASN History (https://ipasnhistory.circl.lu/)"
   }
 }
