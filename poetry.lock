@@ -1516,14 +1516,14 @@ files = [
 
 [[package]]
 name = "har2tree"
-version = "1.31.0"
+version = "1.31.1"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.31.0-py3-none-any.whl", hash = "sha256:ec2192d6e5245ef7c6d83aad6e7322ce15663dc5998d1faeebbfb2b0ce296387"},
-    {file = "har2tree-1.31.0.tar.gz", hash = "sha256:792c075d114b60891596edb98daf8e07a2ea7bae94efbe223f393a193a6c6d92"},
+    {file = "har2tree-1.31.1-py3-none-any.whl", hash = "sha256:7cd8ee4838b06487871b09babb48b5b8e54799329b8f520fc1dff87525b49688"},
+    {file = "har2tree-1.31.1.tar.gz", hash = "sha256:4f53583acb6d3628530037e04c7b708dcafa0b08aef89241efe4faafee4afa73"},
 ]
 
 [package.dependencies]
@@ -1534,9 +1534,9 @@ legacy-cgi = {version = ">=2.6.3", markers = "python_version >= \"3.13,<4.0\""}
 numpy = [
     {version = "<2.1", markers = "python_version < \"3.10\""},
     {version = "<2.3", markers = "python_version < \"3.11\""},
-    {version = ">=2.3.0", markers = "python_version >= \"3.11\""},
+    {version = ">=2.3.1", markers = "python_version >= \"3.11\""},
 ]
-publicsuffixlist = ">=1.0.2.20250611"
+publicsuffixlist = ">=1.0.2.20250627"
 tinycss2 = ">=1.4.0"
 w3lib = ">=2.3.1"
 
@@ -5411,4 +5411,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "e694f20febdad77bb8a8fbfd0a7bf5bd6e1b0af54ca078adfd48d52d760fcc6b"
+content-hash = "a52b0d30ee9ebc0c66032b3bde5464d27bd46620fac8b9aed69b57bbe0e1db78"
