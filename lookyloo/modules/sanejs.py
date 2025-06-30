@@ -21,6 +21,7 @@ class SaneJavaScript():
         if not self.config.get('enabled'):
             self.logger.info('Not enabled.')
             self.available = False
+            return
 
         self.client = SaneJS()
 
