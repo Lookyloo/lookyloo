@@ -96,6 +96,11 @@ jobs:
           poetry run python -m pytest tests/testing_github.py
           popd
 
+      - name: Check config files are valid
+        run: |
+          poetry run python tools/update_cloudflare_lists.py
+          poetry run python tools/validate_config_files.py --check
+
       - name: Stop instance
         run: |
           poetry run stop

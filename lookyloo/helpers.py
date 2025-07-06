@@ -23,8 +23,9 @@ from pydantic import field_validator
 from pydantic_core import from_json
 from string import punctuation
 from typing import Any, TYPE_CHECKING
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
+import requests
 
 from har2tree import CrawledTree, HostNode, URLNode
 from lacuscore import CaptureSettings as LacuscoreCaptureSettings
@@ -43,6 +44,25 @@ if TYPE_CHECKING:
     from .indexing import Indexing
 
 logger = logging.getLogger('Lookyloo - Helpers')
+
+
+def prepare_global_session() -> requests.Session:
+    session = requests.Session()
+    session.headers['user-agent'] = get_useragent_for_requests()
+    if global_proxy := get_config('generic', 'global_proxy'):
+        if global_proxy.get('enable'):
+            if not global_proxy.get('server'):
+                raise LookylooException('Global proxy is enabled, but no server is set.')
+            parsed_url = urlparse(global_proxy['server'])
+            if global_proxy.get('username') and global_proxy.get('password'):
+                parsed_url['username'] = global_proxy['username']
+                parsed_url['password'] = global_proxy['password']
+            proxies = {
+                'http': urlunparse(parsed_url),
+                'https': urlunparse(parsed_url)
+            }
+            session.proxies.update(proxies)
+    return session
 
 
 # This method is used in json.dump or json.dumps calls as the default parameter:
