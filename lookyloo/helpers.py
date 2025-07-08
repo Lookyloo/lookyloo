@@ -201,16 +201,23 @@ class UserAgents:
     def __init__(self) -> None:
         if get_config('generic', 'use_user_agents_users'):
             self.path = get_homedir() / 'own_user_agents'
+            if not list(self.path.glob('**/*.json')):
+                # If the user agents directory containing the users agents gathered by lookyloo is empty, we use the default one.
+                logger.warning(f'No user agents found in {self.path}, using default list.')
+                self.path = get_homedir() / 'user_agents'
         else:
             self.path = get_homedir() / 'user_agents'
 
-        ua_files_path = sorted(self.path.glob('**/*.json'), reverse=True)
         # This call *must* be here because otherwise, we get the devices from within the async
         # process and as we already have a playwright context, it fails.
         # it is not a problem to have it here because the devices do not change
         # until we have a new version playwright, and restart everything anyway.
         self.playwright_devices = get_devices()
-        self._load_newest_ua_file(ua_files_path[0])
+
+        if ua_files_path := sorted(self.path.glob('**/*.json'), reverse=True):
+            self._load_newest_ua_file(ua_files_path[0])
+        else:
+            self._load_playwright_devices()
 
     def _load_newest_ua_file(self, path: Path) -> None:
         self.most_recent_ua_path = path
