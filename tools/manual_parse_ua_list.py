@@ -4,7 +4,7 @@ import json
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 from bs4 import BeautifulSoup
 try:
@@ -42,7 +42,7 @@ def update_user_agents() -> None:
         json.dump(to_store, f, indent=2)
 
 
-def ua_parser(html_content: str) -> Dict[str, Any]:
+def ua_parser(html_content: str) -> dict[str, Any]:
     soup = BeautifulSoup(html_content, 'html.parser')
 
     try:
@@ -51,7 +51,7 @@ def ua_parser(html_content: str) -> Dict[str, Any]:
         traceback.print_exc()
         return {}
 
-    to_store: Dict[str, Any] = {'by_frequency': []}
+    to_store: dict[str, Any] = {'by_frequency': []}
     for ua in json.loads(uas.replace('\n', '')):
         parsed_ua = ParsedUserAgent(ua['useragent'])
         if not parsed_ua.platform or not parsed_ua.browser:
@@ -74,7 +74,8 @@ def ua_parser(html_content: str) -> Dict[str, Any]:
 
 
 def main() -> None:
-    to_parse = Path('Most Common User Agents - Tech Blog (wh).html')
+    to_parse = get_homedir() / 'tools' / 'Most Common User Agents - Tech Blog (wh).html'
+    print(to_parse, 'exists:', to_parse.exists())
 
     today = datetime.now()
     ua_path = get_homedir() / 'user_agents' / str(today.year) / f'{today.month:02}'
