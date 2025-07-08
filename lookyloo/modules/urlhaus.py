@@ -6,10 +6,9 @@ import json
 from datetime import date
 from typing import Any, TYPE_CHECKING
 
-import requests
 
 from ..default import ConfigError, get_homedir
-from ..helpers import get_cache_directory, get_useragent_for_requests
+from ..helpers import get_cache_directory, prepare_global_session
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
@@ -30,8 +29,7 @@ class URLhaus(AbstractModule):
 
         self.url = self.config.get('url')
 
-        self.session = requests.Session()
-        self.session.headers.update({'User-Agent': get_useragent_for_requests()})
+        self.session = prepare_global_session()
         self.session.headers.update({'Auth-Key': self.config['apikey']})
         self.storage_dir_uh = get_homedir() / 'urlhaus'
         self.storage_dir_uh.mkdir(parents=True, exist_ok=True)

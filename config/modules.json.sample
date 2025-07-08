@@ -114,6 +114,10 @@
     "allow_auto_trigger": true,
     "admin_only": false
   },
+  "Cloudflare": {
+    "enabled": true,
+    "autoupdate": true
+  },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
     "autosubmit": "Automatically submits the URL to the 3rd party service.",
@@ -133,6 +137,7 @@
     "Pandora": "Submission only interface for https://github.com/pandora-analysis/",
     "CIRCLPDNS": "Module to query CIRCL Passive DNS (https://www.circl.lu/services/passive-dns/)",
     "AIL": "Module to submit URLs to AIL Framework (https://github.com/CIRCL/AIL-framework)",
-    "IPASNHistory": "Module to query IPASN History (https://ipasnhistory.circl.lu/)"
+    "IPASNHistory": "Module to query IPASN History (https://ipasnhistory.circl.lu/)",
+    "Cloudflare": "Module to check if an IP is on Cloudflare infrastructure"
   }
 }
