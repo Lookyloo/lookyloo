@@ -174,7 +174,8 @@ class Lookyloo():
         lacus_retries = 2
         while lacus_retries > 0:
             remote_lacus_url = lacus_url
-            lacus = PyLacus(remote_lacus_url)
+            lacus = PyLacus(remote_lacus_url, useragent=get_useragent_for_requests(),
+                            proxies=global_proxy_for_requests())
             if lacus.is_up:
                 self.logger.info(f"Remote lacus enabled to {remote_lacus_url}.")
                 break
