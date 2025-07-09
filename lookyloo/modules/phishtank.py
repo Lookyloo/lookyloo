@@ -10,7 +10,7 @@ from typing import Any, TYPE_CHECKING
 from pyphishtanklookup import PhishtankLookup
 
 from ..default import ConfigError, get_homedir
-from ..helpers import get_cache_directory
+from ..helpers import get_cache_directory, get_useragent_for_requests, global_proxy_for_requests
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
@@ -25,10 +25,8 @@ class Phishtank(AbstractModule):
             self.logger.info('Not enabled.')
             return False
 
-        if self.config.get('url'):
-            self.client = PhishtankLookup(self.config['url'])
-        else:
-            self.client = PhishtankLookup()
+        self.client = PhishtankLookup(self.config.get('url'), useragent=get_useragent_for_requests(),
+                                      proxies=global_proxy_for_requests())
 
         if not self.client.is_up:
             self.logger.warning('Not up.')

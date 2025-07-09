@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 from pypdns import PyPDNS, PDNSRecord
 
 from ..default import ConfigError, get_homedir
-from ..helpers import get_cache_directory, get_useragent_for_requests
+from ..helpers import get_cache_directory, get_useragent_for_requests, global_proxy_for_requests
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
@@ -29,6 +29,7 @@ class CIRCLPDNS(AbstractModule):
         self.pypdns = PyPDNS(basic_auth=(self.config['user'],
                                          self.config['password']),
                              useragent=get_useragent_for_requests(),
+                             proxies=global_proxy_for_requests(),
                              # Disable active query because it should already have been done.
                              disable_active_query=True)
 

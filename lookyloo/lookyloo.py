@@ -63,6 +63,7 @@ from .helpers import (get_captures_dir, get_email_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, UserAgents,
                       get_useragent_for_requests, load_takedown_filters,
+                      global_proxy_for_requests,
                       CaptureSettings, load_user_config,
                       get_indexing, get_error_screenshot
                       )
@@ -95,7 +96,7 @@ class Lookyloo():
                 self.global_proxy = copy.copy(global_proxy)
                 self.global_proxy.pop('enable')
 
-        self.securitytxt = PySecurityTXT(useragent=get_useragent_for_requests())
+        self.securitytxt = PySecurityTXT(useragent=get_useragent_for_requests(), proxies=global_proxy_for_requests())
         self.taxonomies = get_taxonomies()
 
         self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
@@ -157,7 +158,7 @@ class Lookyloo():
         if hasattr(self, '_monitoring') and self._monitoring and self._monitoring.is_up:
             return self._monitoring
         monitoring_config = get_config('generic', 'monitoring')
-        monitoring = PyLookylooMonitoring(monitoring_config['url'], get_useragent_for_requests())
+        monitoring = PyLookylooMonitoring(monitoring_config['url'], get_useragent_for_requests(), proxies=global_proxy_for_requests())
         if monitoring.is_up:
             self._monitoring = monitoring
             return self._monitoring

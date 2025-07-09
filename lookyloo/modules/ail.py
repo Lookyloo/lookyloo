@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from pyail import PyAIL  # type: ignore[import-untyped]
 
 from ..default import ConfigError
+from ..helpers import global_proxy_for_requests
 
 from .abstractmodule import AbstractModule
 
@@ -28,7 +29,9 @@ class AIL(AbstractModule):
         try:
             self.client = PyAIL(self.config['url'], self.config['apikey'],
                                 ssl=self.config.get('verify_tls_cert'),
-                                timeout=self.config.get('timeout', 10))
+                                timeout=self.config.get('timeout', 10),
+                                proxies=global_proxy_for_requests(),
+                                tool='lookyloo')
         except Exception as e:
             self.logger.error(f'Could not connect to AIL: {e}')
             return False

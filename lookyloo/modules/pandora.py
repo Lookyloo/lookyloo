@@ -10,7 +10,7 @@ from typing import Any
 from pypandora import PyPandora
 
 from ..default import get_config, LookylooException
-from ..helpers import get_useragent_for_requests
+from ..helpers import get_useragent_for_requests, global_proxy_for_requests
 
 
 class Pandora():
@@ -23,7 +23,8 @@ class Pandora():
         if not self.config.get('url'):
             self.logger.info('No URL in config.')
             self._enabled = False
-        self.client = PyPandora(root_url=self.config['url'], useragent=get_useragent_for_requests())
+        self.client = PyPandora(root_url=self.config['url'], useragent=get_useragent_for_requests(),
+                                proxies=global_proxy_for_requests())
 
     @property
     def available(self) -> bool:

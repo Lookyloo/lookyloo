@@ -7,7 +7,7 @@ from typing import Any, TYPE_CHECKING
 import requests
 
 from ..default import ConfigError
-from ..helpers import get_useragent_for_requests
+from ..helpers import prepare_global_session
 
 from .abstractmodule import AbstractModule
 
@@ -22,8 +22,7 @@ class FOX(AbstractModule):
             self.logger.info('No API key.')
             return False
 
-        self.client = requests.session()
-        self.client.headers['User-Agent'] = get_useragent_for_requests()
+        self.client = prepare_global_session()
         self.client.headers['X-API-KEY'] = self.config['apikey']
         self.client.headers['Content-Type'] = 'application/json'
 

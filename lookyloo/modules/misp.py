@@ -18,7 +18,7 @@ from pymisp.tools import FileObject, URLObject
 
 from ..default import get_config, get_homedir
 from ..exceptions import ModuleError
-from ..helpers import get_public_suffix_list
+from ..helpers import get_public_suffix_list, global_proxy_for_requests
 
 from .abstractmodule import AbstractModule
 
@@ -196,7 +196,9 @@ class MISP(AbstractModule):
 
         try:
             self.client = PyMISP(url=self.config['url'], key=self.config['apikey'],
-                                 ssl=self.config['verify_tls_cert'], timeout=self.config['timeout'])
+                                 ssl=self.config['verify_tls_cert'], timeout=self.config['timeout'],
+                                 proxies=global_proxy_for_requests(),
+                                 tool='Lookyloo')
         except Exception as e:
             self.logger.warning(f'Unable to connect to MISP: {e}')
             return False

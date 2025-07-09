@@ -46,9 +46,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger('Lookyloo - Helpers')
 
 
-def prepare_global_session() -> requests.Session:
-    session = requests.Session()
-    session.headers['user-agent'] = get_useragent_for_requests()
+def global_proxy_for_requests() -> dict[str, str]:
     if global_proxy := get_config('generic', 'global_proxy'):
         if global_proxy.get('enable'):
             if not global_proxy.get('server'):
@@ -57,11 +55,18 @@ def prepare_global_session() -> requests.Session:
             if global_proxy.get('username') and global_proxy.get('password'):
                 parsed_url['username'] = global_proxy['username']
                 parsed_url['password'] = global_proxy['password']
-            proxies = {
+            return {
                 'http': urlunparse(parsed_url),
                 'https': urlunparse(parsed_url)
             }
-            session.proxies.update(proxies)
+    return {}
+
+
+def prepare_global_session() -> requests.Session:
+    session = requests.Session()
+    session.headers['user-agent'] = get_useragent_for_requests()
+    if proxies := global_proxy_for_requests():
+        session.proxies.update(proxies)
     return session
 
 

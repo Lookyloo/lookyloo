@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 from .abstractmodule import AbstractModule
 
+# Doesn't support proxies.
+
 
 class PhishingInitiative(AbstractModule):
 

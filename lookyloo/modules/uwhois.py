@@ -14,6 +14,7 @@ from .abstractmodule import AbstractModule
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 
+# NOTE: Direct TCP connection, no proxy
 
 class UniversalWhois(AbstractModule):
 

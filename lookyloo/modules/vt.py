@@ -14,7 +14,7 @@ from vt.error import APIError  # type: ignore[import-untyped]
 from vt.object import WhistleBlowerDict  # type: ignore[import-untyped]
 
 from ..default import ConfigError, get_homedir
-from ..helpers import get_cache_directory
+from ..helpers import get_cache_directory, global_proxy_for_requests
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
@@ -35,7 +35,13 @@ class VirusTotal(AbstractModule):
             self.logger.info('Not enabled')
             return False
 
-        self.client = vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False))
+        proxies = global_proxy_for_requests()
+        if proxies:
+            # we have a dist with 2 keys: http and https
+            # and vt client uses aiohttp, which only accepts one string for the proxy
+            proxy = proxies.get('http')
+        self.client = vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False),
+                                agent='Lookyloo', proxy=proxy)
 
         self.storage_dir_vt = get_homedir() / 'vt_url'
         self.storage_dir_vt.mkdir(parents=True, exist_ok=True)

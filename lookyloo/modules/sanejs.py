@@ -10,6 +10,7 @@ from collections.abc import Iterable
 from pysanejs import SaneJS  # type: ignore[attr-defined]
 
 from ..default import get_homedir, get_config, LookylooException
+from ..helpers import get_useragent_for_requests, global_proxy_for_requests
 
 
 class SaneJavaScript():
@@ -23,7 +24,8 @@ class SaneJavaScript():
             self.available = False
             return
 
-        self.client = SaneJS()
+        self.client = SaneJS(useragent=get_useragent_for_requests(),
+                             proxies=global_proxy_for_requests())
 
         if not self.client.is_up:
             self.logger.warning('Not up.')

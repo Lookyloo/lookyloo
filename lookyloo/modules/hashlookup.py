@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from pyhashlookup import Hashlookup
 
 from ..default import ConfigError
-from ..helpers import get_useragent_for_requests
+from ..helpers import get_useragent_for_requests, global_proxy_for_requests
 
 from .abstractmodule import AbstractModule
 
@@ -26,13 +26,15 @@ class HashlookupModule(AbstractModule):
             self.logger.info('Not enabled.')
             return False
 
-        if self.config.get('url'):
-            self.client = Hashlookup(self.config['url'], useragent=get_useragent_for_requests())
-        else:
-            self.client = Hashlookup(useragent=get_useragent_for_requests())
-        # Makes sure the webservice is reachable, raises an exception otherwise.
-        self.client.info()
-        return True
+        self.client = Hashlookup(self.config.get('url'), useragent=get_useragent_for_requests(),
+                                 proxies=global_proxy_for_requests())
+        try:
+            # Makes sure the webservice is reachable, raises an exception otherwise.
+            self.client.info()
+            return True
+        except Exception as e:
+            self.logger.error(f'Hashlookup webservice is not reachable: {e}')
+            return False
 
     def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool,
                                 auto_trigger: bool, as_admin: bool) -> dict[str, str]:

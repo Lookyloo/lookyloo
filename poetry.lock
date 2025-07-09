@@ -682,14 +682,14 @@ ujson = ["ujson (>=5.10.0)"]
 
 [[package]]
 name = "certifi"
-version = "2025.6.15"
+version = "2025.7.9"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "certifi-2025.6.15-py3-none-any.whl", hash = "sha256:2e0c7ce7cb5d8f8634ca55d2ba7e6ec2689a2fd6537d8dec1296a477a4910057"},
-    {file = "certifi-2025.6.15.tar.gz", hash = "sha256:d747aa5a8b9bbbb1bb8c22bb13e22bd1f18e9796defa16bab421f7f7a317323b"},
+    {file = "certifi-2025.7.9-py3-none-any.whl", hash = "sha256:d842783a14f8fdd646895ac26f719a061408834473cfc10203f6a575beb15d39"},
+    {file = "certifi-2025.7.9.tar.gz", hash = "sha256:c1d2ec05395148ee10cf672ffc28cd37ea0ab0d99f9cc74c43e588cbd111b079"},
 ]
 
 [[package]]
@@ -3111,14 +3111,14 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250627"
+version = "1.0.2.20250708"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20250627-py2.py3-none-any.whl", hash = "sha256:d7de5499091514c9a6f1ffe77b6306c16bb0622af9ca8c56d9c21db8d51d83dc"},
-    {file = "publicsuffixlist-1.0.2.20250627.tar.gz", hash = "sha256:0302e18d3a2338430be2f53fc66bfdf4cdd38ed6172405f501c8c266ebb9f03b"},
+    {file = "publicsuffixlist-1.0.2.20250708-py2.py3-none-any.whl", hash = "sha256:411b210339a9d7f3b47c4254f875cd19192f6fac5c62902279d22af2bb0dc3dd"},
+    {file = "publicsuffixlist-1.0.2.20250708.tar.gz", hash = "sha256:2bc16f242bd08f1dcf56a6bf56d2437331531f9a26f7841a9ce9a872948508ff"},
 ]
 
 [package.extras]
@@ -3581,14 +3581,14 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyhashlookup"
-version = "1.2.7"
+version = "1.2.8"
 description = "Python CLI and module for CIRCL hash lookup"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pyhashlookup-1.2.7-py3-none-any.whl", hash = "sha256:7fc6f3d041cf3cc47d388cb3a5a6e1096b6dc2b0fef594e27d25f952ea1e348f"},
-    {file = "pyhashlookup-1.2.7.tar.gz", hash = "sha256:5cb9f3aae09b121f4e42ca85fffecb51aabf325f7c613cd2fffe1953e059d9b9"},
+    {file = "pyhashlookup-1.2.8-py3-none-any.whl", hash = "sha256:9bec992d56f99f2870cbd580053f3b6bcff36b26819515506571e0a7430506d2"},
+    {file = "pyhashlookup-1.2.8.tar.gz", hash = "sha256:d3f15735ee7d5fa6b04b835928488f771ee85389a8a11a1ce53d81299f64ab0d"},
 ]
 
 [package.dependencies]
@@ -3722,18 +3722,18 @@ virustotal = ["validators (>=0.35.0)"]
 
 [[package]]
 name = "pypandora"
-version = "1.9.3"
+version = "1.9.4"
 description = "Python CLI and module for pandora"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pypandora-1.9.3-py3-none-any.whl", hash = "sha256:06f50f805908637dd6a5bd67dad6eb23cfb756b37bed704ed48cf5d14040ede1"},
-    {file = "pypandora-1.9.3.tar.gz", hash = "sha256:a7015051c8bee3d26f8d3f87a4b8eb9c52a574765777d85b24f6022026a068c7"},
+    {file = "pypandora-1.9.4-py3-none-any.whl", hash = "sha256:6ac4dbfff17773f67ad9bf91d244e0335d9495cf29dc3aa1c291bbb4575aeadf"},
+    {file = "pypandora-1.9.4.tar.gz", hash = "sha256:0d7b348e85b07ee00021c57ac57b8d76319ddcb6c368ec4b065875e90509ba22"},
 ]
 
 [package.dependencies]
-requests = ">=2.32.3"
+requests = ">=2.32.4"
 
 [package.extras]
 docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
@@ -3759,37 +3759,37 @@ docs = ["sphinx (>=8.1.3) ; python_version >= \"3.10\""]
 
 [[package]]
 name = "pyphishtanklookup"
-version = "1.4.1"
+version = "1.4.2"
 description = "Python CLI and module for PhishtankLookup"
 optional = false
-python-versions = "<4.0,>=3.9"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pyphishtanklookup-1.4.1-py3-none-any.whl", hash = "sha256:a5d177e24bc5009b82feaa3fd871ca81a0ecc6a1eb63a3d7b34e51ba726bd25e"},
-    {file = "pyphishtanklookup-1.4.1.tar.gz", hash = "sha256:2dc77f0202ee8f4925b2e2bdee9fd7048f4ecf41f5b7672eeacb060719cb8940"},
+    {file = "pyphishtanklookup-1.4.2-py3-none-any.whl", hash = "sha256:c2ba79a3c01a5d88b2873deeccf61005e497332c60c7ee82d70529ee343161c8"},
+    {file = "pyphishtanklookup-1.4.2.tar.gz", hash = "sha256:1f36caf41d7681726de3ec8d70e0b8896e36a4b85314649cb04e34e117da078c"},
 ]
 
 [package.dependencies]
-requests = ">=2.32.3,<3.0.0"
+requests = ">=2.32.4"
 
 [package.extras]
-docs = ["Sphinx (>=7.2,<8.0) ; python_version < \"3.10\"", "Sphinx (>=8,<9) ; python_version >= \"3.10\""]
-lookyloo-example = ["pylookyloo (>=1.26.1,<2.0.0)"]
+docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
+lookyloo-example = ["pylookyloo (>=1.31.1)"]
 
 [[package]]
 name = "pysanejs"
-version = "2.0.4"
+version = "2.0.5"
 description = "Python client for SaneJS"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pysanejs-2.0.4-py3-none-any.whl", hash = "sha256:f3809e936b49794c0b6c26b12e74c64c68ad5918ee94bbfa021c0c00f4d752c0"},
-    {file = "pysanejs-2.0.4.tar.gz", hash = "sha256:1696525c65f3d71f362d5229d8042f2bd5eee7b1999e6f3a7497995b27256016"},
+    {file = "pysanejs-2.0.5-py3-none-any.whl", hash = "sha256:6e060a500042f0918f3975faa591fd1794d462212808b5f1a4ca25ce22d12c7a"},
+    {file = "pysanejs-2.0.5.tar.gz", hash = "sha256:b69b023c69fc6cd583cb42bb5e2dad1a564326dc29842cf243ac8f3df4914ced"},
 ]
 
 [package.dependencies]
-requests = ">=2.32.3"
+requests = ">=2.32.4"
 
 [[package]]
 name = "pysecuritytxt"
@@ -4735,14 +4735,14 @@ files = [
 
 [[package]]
 name = "types-html5lib"
-version = "1.1.11.20250516"
+version = "1.1.11.20250708"
 description = "Typing stubs for html5lib"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_html5lib-1.1.11.20250516-py3-none-any.whl", hash = "sha256:5e407b14b1bd2b9b1107cbd1e2e19d4a0c46d60febd231c7ab7313d7405663c1"},
-    {file = "types_html5lib-1.1.11.20250516.tar.gz", hash = "sha256:65043a6718c97f7d52567cc0cdf41efbfc33b1f92c6c0c5e19f60a7ec69ae720"},
+    {file = "types_html5lib-1.1.11.20250708-py3-none-any.whl", hash = "sha256:bb898066b155de7081cb182179e2ded31b9e0e234605e2cb46536894e68a6954"},
+    {file = "types_html5lib-1.1.11.20250708.tar.gz", hash = "sha256:24321720fdbac71cee50d5a4bec9b7448495b7217974cffe3fcf1ede4eef7afe"},
 ]
 
 [[package]]
@@ -4810,14 +4810,14 @@ types-cffi = "*"
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.9.0.20250516"
+version = "2.9.0.20250708"
 description = "Typing stubs for python-dateutil"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_python_dateutil-2.9.0.20250516-py3-none-any.whl", hash = "sha256:2b2b3f57f9c6a61fba26a9c0ffb9ea5681c9b83e69cd897c6b5f668d9c0cab93"},
-    {file = "types_python_dateutil-2.9.0.20250516.tar.gz", hash = "sha256:13e80d6c9c47df23ad773d54b2826bd52dbbb41be87c3f339381c1700ad21ee5"},
+    {file = "types_python_dateutil-2.9.0.20250708-py3-none-any.whl", hash = "sha256:4d6d0cc1cc4d24a2dc3816024e502564094497b713f7befda4d5bc7a8e3fd21f"},
+    {file = "types_python_dateutil-2.9.0.20250708.tar.gz", hash = "sha256:ccdbd75dab2d6c9696c350579f34cffe2c281e4c5f27a585b2a2438dd1d5c8ab"},
 ]
 
 [[package]]
@@ -5444,4 +5444,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "9e6e98e60e187fda9310e1a39f657a46e49a0b0c9c64c8bbce86e8c2a4617175"
+content-hash = "a9f577ccd144bcd148280e4424d59c9855554a82af2dda6043b850e8e04a03a9"

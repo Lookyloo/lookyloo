@@ -9,7 +9,7 @@ from typing import Any, TYPE_CHECKING
 import requests
 
 from ..default import ConfigError, get_homedir
-from ..helpers import get_useragent_for_requests, get_cache_directory
+from ..helpers import prepare_global_session, get_cache_directory
 
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
@@ -24,8 +24,7 @@ class UrlScan(AbstractModule):
             self.logger.info('No API key.')
             return False
 
-        self.client = requests.session()
-        self.client.headers['User-Agent'] = get_useragent_for_requests()
+        self.client = prepare_global_session()
         self.client.headers['API-Key'] = self.config['apikey']
         self.client.headers['Content-Type'] = 'application/json'
 

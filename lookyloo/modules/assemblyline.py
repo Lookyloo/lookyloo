@@ -12,6 +12,8 @@ from .abstractmodule import AbstractModule
 if TYPE_CHECKING:
     from ..capturecache import CaptureCache
 
+# TODO: Add support for proxies, once this PR is merged: https://github.com/CybercentreCanada/assemblyline_client/pull/64
+
 
 class AssemblyLine(AbstractModule):
 
@@ -20,7 +22,9 @@ class AssemblyLine(AbstractModule):
             self.logger.info('No API key.')
             return False
 
-        self.al_client = get_client(self.config.get('url'), apikey=(self.config.get('username'), self.config.get('apikey')))
+        self.al_client = get_client(self.config.get('url'),
+                                    apikey=(self.config.get('username'),
+                                            self.config.get('apikey')))
         self.logger.info(f'AssemblyLine module initialized successfully ({self.config.get("url")}).')
         return True
 
