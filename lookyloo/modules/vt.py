@@ -40,6 +40,8 @@ class VirusTotal(AbstractModule):
             # we have a dist with 2 keys: http and https
             # and vt client uses aiohttp, which only accepts one string for the proxy
             proxy = proxies.get('http')
+        else:
+            proxy = None
         self.client = vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False),
                                 agent='Lookyloo', proxy=proxy)
 
