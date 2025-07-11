@@ -274,7 +274,7 @@ class MISP(AbstractModule):
                 new_event = self.client.add_event(event, pythonify=True)
                 if background_publish and isinstance(new_event, MISPEvent):
                     self.client.publish(new_event)
-            except requests.exceptions.ReadTimeout:
+            except requests.Timeout:
                 return {'error': 'The connection to MISP timed out, try increasing the timeout in the config.'}
             if isinstance(new_event, MISPEvent):
                 to_return.append(new_event)

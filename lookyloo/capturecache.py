@@ -33,7 +33,8 @@ from redis import Redis
 
 from .context import Context
 from .helpers import (get_captures_dir, is_locked, load_pickle_tree, get_pickle_path,
-                      remove_pickle_tree, get_indexing, mimetype_to_generic, CaptureSettings)
+                      remove_pickle_tree, get_indexing, mimetype_to_generic, CaptureSettings,
+                      global_proxy_for_requests, get_useragent_for_requests)
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild, InvalidCaptureSetting
 from .modules import Cloudflare
@@ -185,7 +186,9 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         self.ipasnhistory: IPASNHistory | None = None
         if ipasnhistory_config.get('enabled'):
             try:
-                self.ipasnhistory = IPASNHistory(ipasnhistory_config['url'])
+                self.ipasnhistory = IPASNHistory(ipasnhistory_config['url'],
+                                                 useragent=get_useragent_for_requests(),
+                                                 proxies=global_proxy_for_requests())
                 if not self.ipasnhistory.is_up:
                     self.ipasnhistory = None
                 self.logger.info('IPASN History ready')
