@@ -75,7 +75,7 @@ class Cloudflare():
         except Exception as e:
             self.logger.warning(f'Unable to get Cloudflare IPv4 list: {e}')
         with self.ipv4_path.open('w') as f:
-            f.write(ipv4_list)
+            f.write(ipv4_list + '\n')
 
         # Get IPv6
         try:
@@ -87,7 +87,7 @@ class Cloudflare():
         except Exception as e:
             self.logger.warning(f'Unable to get Cloudflare IPv6 list: {e}')
         with self.ipv6_path.open('w') as f:
-            f.write(ipv6_list)
+            f.write(ipv6_list + '\n')
 
         with last_updates_path.open('w') as f:
             json.dump(last_updates, f)
