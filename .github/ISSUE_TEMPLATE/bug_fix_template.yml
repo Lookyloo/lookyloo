@@ -40,8 +40,8 @@ body:
       label: AI used to create this report
       description: Tick this box if you used AI to create this report
       options:
-        - label: Yes
-        - label: No
+        - label: "Yes"
+        - label: "No"
     validations:
       required: true
   - type: textarea
