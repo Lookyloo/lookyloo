@@ -1089,7 +1089,14 @@ class CaptureRemove(Resource):  # type: ignore[misc]
          required=False)
 class RecentCaptures(Resource):  # type: ignore[misc]
     def get(self, timestamp: str | float | None=None) -> Response:
-        return make_response(lookyloo.get_recent_captures(since=timestamp))
+        all_recent_captures = lookyloo.get_recent_captures(since=timestamp)
+        if flask_login.current_user.is_authenticated:
+            # if authenticated, return everything
+            return make_response(all_recent_captures)
+
+        # otherwise, return the ones cached & listed on the index only
+        to_return = [capture.uuid for capture in lookyloo.sorted_capture_cache(all_recent_captures) if not capture.no_index]
+        return make_response(to_return)
 
 
 @api.route('/json/categories')
