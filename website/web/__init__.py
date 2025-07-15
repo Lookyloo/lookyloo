@@ -462,6 +462,29 @@ def get_hostname_investigator(hostname: str, offset: int | None=None, limit: int
     return total, captures
 
 
+def get_tld_investigator(tld: str, offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, str, datetime, list[tuple[str, str]]]]]:
+    '''Returns all the captures loading content from that tld, used in the web interface.'''
+    total = get_indexing(flask_login.current_user).get_captures_tld_count(tld)
+    if search:
+        cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
+            [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_tld(tld)], cached_captures_only=False) if capture.search(search)]
+    else:
+        cached_captures = lookyloo.sorted_capture_cache(
+            get_indexing(flask_login.current_user).get_captures_tld(tld=tld, offset=offset, limit=limit), cached_captures_only=False)
+    _captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_tld_nodes(cache.uuid, tld)) for cache in cached_captures]
+    captures = []
+    for capture_uuid, capture_title, landing_page, capture_ts, nodes in _captures:
+        nodes_info: list[tuple[str, str]] = []
+        for urlnode_uuid in nodes:
+            try:
+                urlnode = lookyloo.get_urlnode_from_tree(capture_uuid, urlnode_uuid)
+                nodes_info.append((urlnode.name, urlnode_uuid))
+            except IndexError:
+                continue
+        captures.append((capture_uuid, capture_title, landing_page, capture_ts, nodes_info))
+    return total, captures
+
+
 def get_ip_investigator(ip: str, offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, str, datetime, list[tuple[str, str]]]]]:
     '''Returns all the captures loading content from that ip, used in the web interface.'''
     total = get_indexing(flask_login.current_user).get_captures_ip_count(ip)
@@ -1730,6 +1753,8 @@ def search() -> str | Response | WerkzeugResponse:
         return redirect(url_for('url_details', from_popup=True, url=quoted_url))
     if request.form.get('hostname'):
         return redirect(url_for('hostname_details', from_popup=True, hostname=request.form.get('hostname')))
+    if request.form.get('tld'):
+        return redirect(url_for('tld_details', from_popup=True, tld=request.form.get('tld')))
     if request.form.get('ip'):
         return redirect(url_for('ip_details', from_popup=True, ip=request.form.get('ip')))
     if request.form.get('ressource'):
@@ -2179,6 +2204,12 @@ def hostname_details(hostname: str) -> str:
     return render_template('hostname.html', hostname=hostname, from_popup=from_popup)
 
 
+@app.route('/tlds/<string:tld>', methods=['GET'])
+def tld_details(tld: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
+    return render_template('tld.html', tld=tld, from_popup=from_popup)
+
+
 @app.route('/ips/<string:ip>', methods=['GET'])
 def ip_details(ip: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
@@ -2625,6 +2656,24 @@ def post_table(table_name: str, value: str) -> Response:
 
     if table_name == 'hostnameTable':
         total, captures = get_hostname_investigator(value.strip(), offset=start, limit=length, search=search)
+        if search and start is not None and length is not None:
+            total_filtered = len(captures)
+            captures = captures[start:start + length]
+        prepared_captures = []
+        for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            to_append = {
+                'capture_time': capture_time.isoformat(),
+                'landing_page': __prepare_landings_in_modal(landing_page)
+            }
+            title_modal = __prepare_title_in_modal(capture_uuid, title, from_popup)
+            node_view = __prepare_node_view(capture_uuid, nodes, from_popup)
+            to_append['capture_title'] = {'display': f'{title_modal["display"]}</br>{node_view["display"]}',
+                                          'filter': f'{title_modal["filter"]} {node_view["filter"]}'}
+            prepared_captures.append(to_append)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
+
+    if table_name == 'tldTable':
+        total, captures = get_tld_investigator(value.strip(), offset=start, limit=length, search=search)
         if search and start is not None and length is not None:
             total_filtered = len(captures)
             captures = captures[start:start + length]

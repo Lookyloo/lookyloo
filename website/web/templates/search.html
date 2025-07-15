@@ -44,6 +44,12 @@
     </div>
     <div class="row mb-3">
       <div class="col-sm-10">
+        <label for="tld" class="col-sm-2 col-form-label">TLD:</label>
+        <input type="text" class="form-control" name="tld" id=tld placeholder="TLD to search">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-sm-10">
         <label for="ip" class="col-sm-2 col-form-label">IP Address:</label>
         <input type="text" class="form-control" name="ip" id=ip placeholder="IP to search">
       </div>
@@ -72,7 +78,7 @@
         <input class="form-control" type="file" id="favicon_file" name="favicon_file">
       </div>
     </div>
-    <button type="submit" class="btn btn-primary" id="btn-looking">Start looking!</button>
+    <button type="submit" class="btn btn-primary" id="btn-looking">Search!</button>
   </form>
 </div>
 {% endblock %}

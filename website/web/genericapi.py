@@ -1146,7 +1146,7 @@ class TLDCaptures(Resource):  # type: ignore[misc]
             except Exception:
                 oldest_capture = None
 
-        _, recent_captures_with_tld = get_indexing(flask_login.current_user).get_captures_tld(tld, most_recent_capture, oldest_capture)
+        recent_captures_with_tld = get_indexing(flask_login.current_user).get_captures_tld(tld, most_recent_capture, oldest_capture)
         if not recent_captures_with_tld:
             return make_response([])
         if not urls_only:
@@ -1154,7 +1154,7 @@ class TLDCaptures(Resource):  # type: ignore[misc]
         # get the capture, get the node uuids, get the names, make it a list
         to_return: set[str] = set()
         # Make sure to only get the captures with a pickle ready
-        cache = lookyloo.sorted_capture_cache([uuid for uuid, _ in recent_captures_with_tld], cached_captures_only=True)
+        cache = lookyloo.sorted_capture_cache(recent_captures_with_tld, cached_captures_only=True)
         for c in cache:
             uuid = c.uuid
             nodes_with_tld = get_indexing(flask_login.current_user).get_capture_tld_nodes(uuid, tld)

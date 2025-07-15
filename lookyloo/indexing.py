@@ -749,7 +749,7 @@ class Indexing():
 
     def get_captures_tld(self, tld: str, most_recent_capture: datetime | None = None,
                          oldest_capture: datetime | None=None,
-                         offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
+                         offset: int | None=None, limit: int | None=None) -> list[str]:
         """Get all the captures for a specific TLD, on a time interval starting from the most recent one.
 
         :param tld: The TLD
@@ -758,8 +758,13 @@ class Indexing():
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
         min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
-        total = self.redis.zcard(f'tlds|{tld}|captures')
-        return total, self.redis.zrevrangebyscore(f'tlds|{tld}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+        return self.redis.zrevrangebyscore(f'tlds|{tld}|captures', max_score, min_score, start=offset, num=limit)
+
+    def scan_captures_tld(self, tld: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'tlds|{tld}|captures')
+
+    def get_captures_tld_count(self, tld: str) -> int:
+        return self.redis.zcard(f'tlds|{tld}|captures')
 
     def get_capture_tld_counter(self, capture_uuid: str, tld: str) -> int:
         # NOTE: what to do when the capture isn't indexed yet? Raise an exception?
