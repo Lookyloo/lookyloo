@@ -13,7 +13,7 @@ from collections.abc import Iterator
 
 import requests
 from har2tree import HostNode, URLNode, Har2TreeError
-from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag
+from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag, PyMISPError  # , MISPServerError
 from pymisp.tools import FileObject, URLObject
 
 from ..default import get_config, get_homedir
@@ -318,20 +318,26 @@ class MISP(AbstractModule):
             to_lookup += hostnode.cnames
         if not node.empty_response:
             to_lookup.append(node.body_hash)
-        if attributes := self.client.search(controller='attributes', value=to_lookup,
-                                            enforce_warninglist=True, pythonify=True):
-            if isinstance(attributes, list):
-                to_return: dict[int, set[tuple[str, datetime]]] = defaultdict(set)
-                a: MISPAttribute
-                for a in attributes:  # type: ignore[assignment]
-                    if isinstance(a.value, str):
-                        # a.timestamp is always a datetime in this situation
-                        to_return[a.event_id].add((a.value, a.timestamp))  # type: ignore[arg-type]
-                    else:
-                        # This shouldn't happen (?)
-                        self.logger.warning(f'Unexpected value type in MISP lookup: {type(a.value)}')
-                return to_return  # type: ignore[return-value]
-            else:
-                # The request returned an error
-                return attributes  # type: ignore[return-value]
-        return {'info': 'No hits.'}
+        try:
+            if attributes := self.client.search(controller='attributes', value=to_lookup,
+                                                enforce_warninglist=True, pythonify=True):
+                if isinstance(attributes, list):
+                    to_return: dict[int, set[tuple[str, datetime]]] = defaultdict(set)
+                    a: MISPAttribute
+                    for a in attributes:  # type: ignore[assignment]
+                        if isinstance(a.value, str):
+                            # a.timestamp is always a datetime in this situation
+                            to_return[a.event_id].add((a.value, a.timestamp))  # type: ignore[arg-type]
+                        else:
+                            # This shouldn't happen (?)
+                            self.logger.warning(f'Unexpected value type in MISP lookup: {type(a.value)}')
+                    return to_return  # type: ignore[return-value]
+                else:
+                    # The request returned an error
+                    return attributes  # type: ignore[return-value]
+        # except MISPServerError as e:
+        except PyMISPError as e:
+            self.logger.error(f'Exception when querying MISP ({self.client.root_url}): {e}')
+            return {'info': 'Error when querying MISP.'}
+        else:
+            return {'info': 'No hits.'}
