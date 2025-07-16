@@ -553,6 +553,21 @@
         </div>
 
         <div class="row mb-3">
+          <label for="init_script" class="col-sm-2 col-form-label">Init Script</label>
+          <div class="col-sm-10">
+            <textarea class="form-control" id="init_script" name="init_script" rows="5" placeholder="console.log('This is a test');"></textarea>
+            <div class="alert alert-info" role="alert">
+                The JavaScript code you set in this field will be executed on every page
+                as described in the
+                <a href="https://playwright.dev/python/docs/api/class-browsercontext#browser-context-add-init-script">
+                    Playwright documentation
+                </a>.
+                Invalid or broken code there may cause the capture to fail.
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
           <label for="cookies" class="col-sm-2 col-form-label">Cookies:</label>
           <div class="col-sm-10">
             <input type="file" class="form-control" id="cookies" name="cookies">

@@ -757,6 +757,7 @@ class Lookyloo():
                 allow_tracking=query.allow_tracking,
                 java_script_enabled=query.java_script_enabled,
                 headless=query.headless,
+                init_script=query.init_script,
                 uuid=query.uuid,
                 # force=query.force,
                 # recapture_interval=query.recapture_interval,

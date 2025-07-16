@@ -2024,6 +2024,9 @@ def capture_web() -> str | Response | WerkzeugResponse:
         if request.form.get('color_scheme'):
             capture_query['color_scheme'] = request.form['color_scheme']
 
+        if request.form.get('init_script'):
+            capture_query['init_script'] = request.form['init_script']
+
         if request.form.get('remote_lacus_proxy_name'):
             capture_query['proxy'] = request.form['remote_lacus_proxy_name']
         elif request.form.get('proxy'):
