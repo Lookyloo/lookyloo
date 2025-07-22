@@ -16,6 +16,9 @@
 {% endblock %}
 
 {% block content %}
+  {% if not_enabled %}
+  Categorization not enabled.
+  {% else %}
   <div class="table-responsive">
   <table id="table" class="table" style="width:96%">
     <thead>
@@ -36,4 +39,5 @@
     </tbody>
   </table>
   </div>
+  {% endif %}
 {% endblock %}

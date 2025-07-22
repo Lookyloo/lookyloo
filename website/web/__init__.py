@@ -842,11 +842,11 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
 @app.route('/tree/<string:tree_uuid>/categories_capture', methods=['GET', 'POST'])
 def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
-    taxonomies = get_taxonomies()
+        return render_template('categories_view.html', not_enabled=True)
     as_admin = flask_login.current_user.is_authenticated
 
     if request.method == 'GET':
+        taxonomies = get_taxonomies()
         if as_admin:
             can_categorize = True
         else:
@@ -929,11 +929,11 @@ def storage_state(tree_uuid: str) -> str:
 def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not lookyloo.misps.available:
         flash('There are no MISP instances available.', 'error')
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
+        return render_template('misp_lookup.html', nothing_to_see=True)
     as_admin = flask_login.current_user.is_authenticated
     if not as_admin and not lookyloo.misps.has_public_misp:
         flash('You need to be authenticated to search on MISP.', 'error')
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
+        return render_template('misp_lookup.html', nothing_to_see=True)
 
     if not as_admin and lookyloo.misps.default_misp.admin_only:
         current_misp = None
@@ -986,17 +986,17 @@ def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
 def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not lookyloo.misps.available:
         flash('There are no MISP instances available.', 'error')
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
+        return render_template('misp_push_view.html', nothing_to_see=True)
 
     as_admin = flask_login.current_user.is_authenticated
     if not as_admin and not lookyloo.misps.has_public_misp:
         flash('You need to be authenticated to push to MISP.', 'error')
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
+        return render_template('misp_push_view.html', nothing_to_see=True)
 
     event = lookyloo.misp_export(tree_uuid)
     if isinstance(event, dict):
         flash(f'Unable to generate the MISP export: {event}', 'error')
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
+        return render_template('misp_push_view.html', nothing_to_see=True)
 
     if request.method == 'GET':
         # Initialize settings that will be displayed on the template
@@ -1086,7 +1086,7 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
 def modules(tree_uuid: str) -> str | WerkzeugResponse | Response:
     modules_responses = lookyloo.get_modules_responses(tree_uuid)
     if not modules_responses:
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
+        return render_template('modules.html', nothing_found=True)
 
     vt_short_result: dict[str, dict[str, Any]] = {}
     if 'vt' in modules_responses:
@@ -1278,7 +1278,7 @@ def urls_rendered_page(tree_uuid: str) -> WerkzeugResponse | str | Response:
         return render_template('urls_rendered.html', base_tree_uuid=tree_uuid, urls=urls)
     except Exception:
         flash('Unable to find the rendered node in this capture, cannot get the URLs.', 'error')
-        return redirect(url_for('tree', tree_uuid=tree_uuid))
+        return render_template('urls_rendered.html', error='Unable to find the rendered node in this capture.')
 
 
 @app.route('/tree/<string:tree_uuid>/hashlookup', methods=['GET'])

@@ -1,3 +1,7 @@
+{% if nothing_to_see %}
+Nothing to see here.
+{% else %}
+
 {% if misp_instances_settings|length > 1 %}
 <center>
 <label for="mispSelector">Select the MISP instance to push to</label>
@@ -65,3 +69,4 @@
 None of the instances are available, please login.
 {%endif%}
 </div>
+{%endif%}

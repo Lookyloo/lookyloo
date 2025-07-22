@@ -1,3 +1,6 @@
+{% if nothing_to_see %}
+Nothing to see here.
+{% else %}
 <center>
   <h1 class="display-4">MISP hits</h1>
   <h6>Searching on URL, domain, IPs, and CNAMEs for all the nodes up to the rendered page.</h6>
@@ -41,3 +44,5 @@
 No hits in any of the instances available.
 {%endif%}
 </div>
+
+{%endif%}

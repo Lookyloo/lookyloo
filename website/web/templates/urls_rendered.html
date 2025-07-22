@@ -1,3 +1,6 @@
+{% if error %}
+{{error}}
+{%else%}
 <div>
   <h4>Select below the URLs you want to capture.</h4>
 	<hr>
@@ -24,3 +27,4 @@
     });
   }
 </script>
+{%endif}

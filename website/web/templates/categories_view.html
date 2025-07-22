@@ -1,3 +1,6 @@
+{% if not_enabled %}
+Categorization not enabled.
+{% else %}
 <h4 class="text-center">Select one or more categories to attach to the capture.</h4>
 <h5 class="text-center">This taxonomy was created to classify websites on the darkweb, but
     the tag names cover our usecase too.</h5>
@@ -70,4 +73,6 @@
 <div class="card">
   <div class="card-body">Capture too old, you are not allowed to attach categories to this capture.</div>
 </div>
+{% endif %}
+
 {% endif %}

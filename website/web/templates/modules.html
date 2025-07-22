@@ -1,4 +1,7 @@
 <div>
+{% if nothing_found %}
+    Nothing found on any of the modules.
+{% else %}
 {% if urlscan %}
   <hr>
   <center>
@@ -105,4 +108,5 @@
     </center>
   {% endfor %}
 {% endif%}
+{% endif %}
 </div>
