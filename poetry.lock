@@ -1517,14 +1517,14 @@ files = [
 
 [[package]]
 name = "har2tree"
-version = "1.31.2"
+version = "1.31.3"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.31.2-py3-none-any.whl", hash = "sha256:b8c2527b4b2ecfc34badf22ed20eb614dc8eb55e08ed75c0a19d1e40b3f430d6"},
-    {file = "har2tree-1.31.2.tar.gz", hash = "sha256:12a34024917e36e588286c4cdac6402a371bef6fd74161c2cc692e5131cbcf61"},
+    {file = "har2tree-1.31.3-py3-none-any.whl", hash = "sha256:55c67a2c672352cdc95081bfff45e514e0a3b5e2259e89e938264aa101b2223e"},
+    {file = "har2tree-1.31.3.tar.gz", hash = "sha256:47b613afda44727672b356f6947677a3d295f906a33de401214c3a30dac82157"},
 ]
 
 [package.dependencies]
@@ -1537,7 +1537,7 @@ numpy = [
     {version = "<2.3", markers = "python_version < \"3.11\""},
     {version = ">=2.3.1", markers = "python_version >= \"3.11\""},
 ]
-publicsuffixlist = ">=1.0.2.20250627"
+publicsuffixlist = ">=1.0.2.20250719"
 tinycss2 = ">=1.4.0"
 w3lib = ">=2.3.1"
 
@@ -5444,4 +5444,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "60165a6476deabd6b6429ea4c9e67582e07a03656a7a2c9b642527e418df79d6"
+content-hash = "bc1fde358118f9d87833d198661f5664c09fe49995d2ac3ac857365bfe03e926"
