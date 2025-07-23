@@ -76,8 +76,8 @@ if TYPE_CHECKING:
     from playwright.async_api import StorageState
     from playwrightcapture import SetCookieParam as SetCookieParamPWC, Cookie as CookiePWC
     from pylacus.api import SetCookieParam as SetCookieParamPL, Cookie as CookiePL
-    type SetCookieParams = list[SetCookieParamPWC] | list[SetCookieParamPL]
-    type Cookies = list[CookiePWC] | list[CookiePL]
+    SetCookieParams = list[SetCookieParamPWC] | list[SetCookieParamPL]
+    Cookies = list[CookiePWC] | list[CookiePL]
 
 
 class Lookyloo():
