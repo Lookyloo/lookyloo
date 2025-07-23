@@ -71,9 +71,13 @@ from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
                       Pandora, URLhaus, CIRCLPDNS)
 
+
 if TYPE_CHECKING:
-    from playwright.async_api import Cookie
     from playwright.async_api import StorageState
+    from playwrightcapture import SetCookieParam as SetCookieParamPWC, Cookie as CookiePWC
+    from pylacus.api import SetCookieParam as SetCookieParamPL, Cookie as CookiePL
+    type SetCookieParams = list[SetCookieParamPWC] | list[SetCookieParamPL]
+    type Cookies = list[CookiePWC] | list[CookiePL]
 
 
 class Lookyloo():
@@ -1609,7 +1613,7 @@ class Lookyloo():
         screenshot: bytes | None = None
         html: str | None = None
         last_redirected_url: str | None = None
-        cookies: list[Cookie] | list[dict[str, str]] | None = None
+        cookies: Cookies | list[dict[str, str]] | None = None
         storage: StorageState | None = None
         capture_settings: CaptureSettings | None = None
         potential_favicons: set[bytes] | None = None
@@ -1708,7 +1712,7 @@ class Lookyloo():
                       error: str | None=None, har: dict[str, Any] | None=None,
                       png: bytes | None=None, html: str | None=None,
                       last_redirected_url: str | None=None,
-                      cookies: list[Cookie] | list[dict[str, str]] | None=None,
+                      cookies: Cookies | list[dict[str, str]] | None=None,
                       storage: StorageState | dict[str, Any] | None=None,
                       capture_settings: CaptureSettings | None=None,
                       potential_favicons: set[bytes] | None=None,

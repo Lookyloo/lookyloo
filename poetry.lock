@@ -2,28 +2,28 @@
 
 [[package]]
 name = "aiobotocore"
-version = "2.23.0"
+version = "2.23.1"
 description = "Async client for aws services using botocore and aiohttp"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "aiobotocore-2.23.0-py3-none-any.whl", hash = "sha256:8202cebbf147804a083a02bc282fbfda873bfdd0065fd34b64784acb7757b66e"},
-    {file = "aiobotocore-2.23.0.tar.gz", hash = "sha256:0333931365a6c7053aee292fe6ef50c74690c4ae06bb019afdf706cb6f2f5e32"},
+    {file = "aiobotocore-2.23.1-py3-none-any.whl", hash = "sha256:d81c54d2eae2406ea9a473fea518fed580cf37bc4fc51ce43ba81546e5305114"},
+    {file = "aiobotocore-2.23.1.tar.gz", hash = "sha256:a59f2a78629b97d52f10936b79c73de64e481a8c44a62c1871f088df6c1afc4f"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.9.2,<4.0.0"
 aioitertools = ">=0.5.1,<1.0.0"
-botocore = ">=1.38.23,<1.38.28"
+botocore = ">=1.38.40,<1.38.47"
 jmespath = ">=0.7.1,<2.0.0"
 multidict = ">=6.0.0,<7.0.0"
 python-dateutil = ">=2.1,<3.0.0"
 wrapt = ">=1.10.10,<2.0.0"
 
 [package.extras]
-awscli = ["awscli (>=1.40.22,<1.40.27)"]
-boto3 = ["boto3 (>=1.38.23,<1.38.28)"]
+awscli = ["awscli (>=1.40.39,<1.40.46)"]
+boto3 = ["boto3 (>=1.38.40,<1.38.47)"]
 httpx = ["httpx (>=0.25.1,<0.29)"]
 
 [[package]]
@@ -455,14 +455,14 @@ WTForms = "*"
 
 [[package]]
 name = "botocore"
-version = "1.38.27"
+version = "1.38.46"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "botocore-1.38.27-py3-none-any.whl", hash = "sha256:a785d5e9a5eda88ad6ab9ed8b87d1f2ac409d0226bba6ff801c55359e94d91a8"},
-    {file = "botocore-1.38.27.tar.gz", hash = "sha256:9788f7efe974328a38cbade64cc0b1e67d27944b899f88cb786ae362973133b6"},
+    {file = "botocore-1.38.46-py3-none-any.whl", hash = "sha256:89ca782ffbf2e8769ca9c89234cfa5ca577f1987d07d913ee3c68c4776b1eb5b"},
+    {file = "botocore-1.38.46.tar.gz", hash = "sha256:8798e5a418c27cf93195b077153644aea44cb171fcd56edc1ecebaa1e49e226e"},
 ]
 
 [package.dependencies]
@@ -1841,14 +1841,14 @@ files = [
 
 [[package]]
 name = "jsonschema"
-version = "4.24.0"
+version = "4.25.0"
 description = "An implementation of JSON Schema validation for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "jsonschema-4.24.0-py3-none-any.whl", hash = "sha256:a462455f19f5faf404a7902952b6f0e3ce868f3ee09a359b05eca6673bd8412d"},
-    {file = "jsonschema-4.24.0.tar.gz", hash = "sha256:0b4e8069eb12aedfa881333004bccaec24ecef5a8a6a4b6df142b2cc9599d196"},
+    {file = "jsonschema-4.25.0-py3-none-any.whl", hash = "sha256:24c2e8da302de79c8b9382fee3e76b355e44d2a4364bb207159ce10b517bd716"},
+    {file = "jsonschema-4.25.0.tar.gz", hash = "sha256:e63acf5c11762c0e6672ffb61482bdf57f0876684d8d249c0fe2d730d48bc55f"},
 ]
 
 [package.dependencies]
@@ -1859,7 +1859,7 @@ rpds-py = ">=0.7.1"
 
 [package.extras]
 format = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3987", "uri-template", "webcolors (>=1.11)"]
-format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "uri-template", "webcolors (>=24.6.0)"]
+format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "rfc3987-syntax (>=1.1.0)", "uri-template", "webcolors (>=24.6.0)"]
 
 [[package]]
 name = "jsonschema-specifications"
@@ -1878,14 +1878,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.16.3"
+version = "1.16.6"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.9.2"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.16.3-py3-none-any.whl", hash = "sha256:0d0ed60f08144da4eb952e8d7e9484a035bdc62777c12f6f73982d46117ba998"},
-    {file = "lacuscore-1.16.3.tar.gz", hash = "sha256:12dc4305a747150f0841e5364364d8976b234bfb04877c599af4153ec18f379a"},
+    {file = "lacuscore-1.16.6-py3-none-any.whl", hash = "sha256:f323a0a9309925e5c477a5ba165d792b8e61224d010d5f8c310d30668a05fe47"},
+    {file = "lacuscore-1.16.6.tar.gz", hash = "sha256:faa93756a5ca566e96dbabd8552e2b83c39e938f0762f5119503a6d91be6beca"},
 ]
 
 [package.dependencies]
@@ -1893,7 +1893,7 @@ async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 defang = ">=0.5.3"
 dnspython = ">=2.7.0"
 eval-type-backport = {version = ">=0.2.2", markers = "python_version < \"3.10\""}
-playwrightcapture = {version = ">=1.31.4", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.31.7", extras = ["recaptcha"]}
 pydantic = ">=2.11.7"
 redis = {version = ">=5.3.0,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.32.4"
@@ -2879,20 +2879,20 @@ type = ["mypy (>=1.14.1)"]
 
 [[package]]
 name = "playwright"
-version = "1.53.0"
+version = "1.54.0"
 description = "A high-level API to automate web browsers"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "playwright-1.53.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:48a1a15ce810f0ffe512b6050de9871ea193b41dd3cc1bbed87b8431012419ba"},
-    {file = "playwright-1.53.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:a701f9498a5b87e3f929ec01cea3109fbde75821b19c7ba4bba54f6127b94f76"},
-    {file = "playwright-1.53.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:f765498341c4037b4c01e742ae32dd335622f249488ccd77ca32d301d7c82c61"},
-    {file = "playwright-1.53.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:db19cb5b58f3b15cad3e2419f4910c053e889202fc202461ee183f1530d1db60"},
-    {file = "playwright-1.53.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9276c9c935fc062f51f4f5107e56420afd6d9a524348dc437793dc2e34c742e3"},
-    {file = "playwright-1.53.0-py3-none-win32.whl", hash = "sha256:36eedec101724ff5a000cddab87dd9a72a39f9b3e65a687169c465484e667c06"},
-    {file = "playwright-1.53.0-py3-none-win_amd64.whl", hash = "sha256:d68975807a0fd997433537f1dcf2893cda95884a39dc23c6f591b8d5f691e9e8"},
-    {file = "playwright-1.53.0-py3-none-win_arm64.whl", hash = "sha256:fcfd481f76568d7b011571160e801b47034edd9e2383c43d83a5fb3f35c67885"},
+    {file = "playwright-1.54.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:bf3b845af744370f1bd2286c2a9536f474cc8a88dc995b72ea9a5be714c9a77d"},
+    {file = "playwright-1.54.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:780928b3ca2077aea90414b37e54edd0c4bbb57d1aafc42f7aa0b3fd2c2fac02"},
+    {file = "playwright-1.54.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:81d0b6f28843b27f288cfe438af0a12a4851de57998009a519ea84cee6fbbfb9"},
+    {file = "playwright-1.54.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:09919f45cc74c64afb5432646d7fef0d19fff50990c862cb8d9b0577093f40cc"},
+    {file = "playwright-1.54.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:13ae206c55737e8e3eae51fb385d61c0312eeef31535643bb6232741b41b6fdc"},
+    {file = "playwright-1.54.0-py3-none-win32.whl", hash = "sha256:0b108622ffb6906e28566f3f31721cd57dda637d7e41c430287804ac01911f56"},
+    {file = "playwright-1.54.0-py3-none-win_amd64.whl", hash = "sha256:9e5aee9ae5ab1fdd44cd64153313a2045b136fcbcfb2541cc0a3d909132671a2"},
+    {file = "playwright-1.54.0-py3-none-win_arm64.whl", hash = "sha256:a975815971f7b8dca505c441a4c56de1aeb56a211290f8cc214eeef5524e8d75"},
 ]
 
 [package.dependencies]
@@ -2916,14 +2916,14 @@ playwright = ">=1.0.0,<2.0.0"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.31.4"
+version = "1.31.7"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "playwrightcapture-1.31.4-py3-none-any.whl", hash = "sha256:c7d3a9a9db375141bb9553cf5279833ae4fdcfe882ce0c1ee2f7015fa7e361c4"},
-    {file = "playwrightcapture-1.31.4.tar.gz", hash = "sha256:0774eb0da74a4d2276fbcd8474d352aee8aaf38b5d268ed8f66ee9989669a12d"},
+    {file = "playwrightcapture-1.31.7-py3-none-any.whl", hash = "sha256:b01f707a000191afcf3faa38bc737531d3ecc80b051ae7b290ec28acaa11a7f2"},
+    {file = "playwrightcapture-1.31.7.tar.gz", hash = "sha256:31c667af70fc2080f7045b6b9a8634a132e33ff8801da017934a00a62b787d8a"},
 ]
 
 [package.dependencies]
@@ -2933,7 +2933,7 @@ async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 beautifulsoup4 = {version = ">=4.13.4", extras = ["charset-normalizer", "lxml"]}
 dateparser = ">=1.2.2"
 dnspython = ">=2.7.0,<3.0.0"
-playwright = ">=1.53.0"
+playwright = ">=1.54.0"
 playwright-stealth = ">=2"
 puremagic = ">=1.30"
 pydub = {version = ">=0.25.1", optional = true, markers = "python_version < \"3.10\" and extra == \"recaptcha\""}
@@ -3111,14 +3111,14 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250710"
+version = "1.0.2.20250719"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20250710-py2.py3-none-any.whl", hash = "sha256:1768c257ac33f5ed87047d8360fd5621f0ca58b6ec34884baabe55a8f4a051ba"},
-    {file = "publicsuffixlist-1.0.2.20250710.tar.gz", hash = "sha256:dcf92f627ca6ed619c221e09f3114251b641e42d5f9a290ad0975d9df62acd55"},
+    {file = "publicsuffixlist-1.0.2.20250719-py2.py3-none-any.whl", hash = "sha256:25a081a2f37893654687867d4e17cd37e1b819f34bb8eb9daaa534cb93e1082f"},
+    {file = "publicsuffixlist-1.0.2.20250719.tar.gz", hash = "sha256:00443aeb4b66d2310f301c48a6c22b9e2d46cb18906b5d94947f3b9ac119cde7"},
 ]
 
 [package.extras]
@@ -3636,14 +3636,14 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.16.0"
+version = "1.16.1"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pylacus-1.16.0-py3-none-any.whl", hash = "sha256:0037546b42f1422f027aa94b36f499f5ce036d53a2e983ee34235380740c95c1"},
-    {file = "pylacus-1.16.0.tar.gz", hash = "sha256:d3340890f122776dc0b929eee0a4be0762c58fb4acc2ec703de45fbd2b4d1f00"},
+    {file = "pylacus-1.16.1-py3-none-any.whl", hash = "sha256:b2fbc6b9bf32f127ace0554db27d2e76aab1f5d5057a74b8b2154d74ba3c5a46"},
+    {file = "pylacus-1.16.1.tar.gz", hash = "sha256:d9e7996d3ab8604a5f155ed7bced7325e5f6cc1e77f6de830046a08bc2d55140"},
 ]
 
 [package.dependencies]
@@ -5444,4 +5444,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "ef141e1550ffd7db1c5da836d4bba70d3d2fec0f19ebec10b4d175da574756d0"
+content-hash = "60165a6476deabd6b6429ea4c9e67582e07a03656a7a2c9b642527e418df79d6"
