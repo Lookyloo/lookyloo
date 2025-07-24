@@ -58,6 +58,7 @@
           <th>HTTP Only</th>
           <th>Secure</th>
           <th>Same Site</th>
+          <th title="Cookies Having Independent Partitioned State">CHIPS</th>
         </tr>
       </thead>
       <tbody>
@@ -77,6 +78,7 @@
           <td>{{ cookie['httpOnly'] }}</td>
           <td>{{ cookie['secure'] }}</td>
           <td>{{ cookie['sameSite'] }}</td>
+          <td>{{ cookie.get('partitionKey', '') }}</td>
         </tr>
         {% endfor %}
       </tbody>
