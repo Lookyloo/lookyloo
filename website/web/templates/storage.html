@@ -54,18 +54,18 @@
           <th>Name</th>
           <th>Value</th>
           <th>Domain</th>
-          <th>Path</th>
+          <th title="Cookies Having Independent Partitioned State">CHIPS</th>
           <th>Expires</th>
+          <th>Path</th>
           <th>HTTP Only</th>
           <th>Secure</th>
           <th>Same Site</th>
-          <th title="Cookies Having Independent Partitioned State">CHIPS</th>
         </tr>
       </thead>
-      <tbody class="small">
+      <tbody>
         {% for cookie in storage['cookies'] %}
         <tr>
-        <td>{{ cookie['frequency'] | string }}</td>
+          <td>{{ cookie['frequency'] | string }}</td>
           <td class="text-break">
             {{ details_modal_button(target_modal_id="#cookieNameModal",
                                     data_remote=url_for('cookies_name_detail', cookie_name=cookie['name']),
@@ -74,8 +74,22 @@
           </td>
           <td class="text-break">{{ cookie['value'] }}</td>
           <td class="text-break">{{ cookie['domain'] }}</td>
-          <td class="text-break fs-6">{{ cookie['path'] }}</td>
+          <td class="text-break">
+            {% if cookie.get('partitionKey') %}
+              {{  cookie['partitionKey'] }}
+              <ul>
+              {% for k, v in cookie.items() %}
+                {% if k.startswith('_') %}
+                <li><b>{{ k }}</b>: {{ v }}</li>
+                {% endif %}
+              {% endfor %}
+              </ul>
+            {% else %}
+              <center>{{ render_icon("x-lg") }}</center>
+            {% endif %}
+          </td>
           <td>{{ (cookie['expires'] * 1000) | int }}</td>
+          <td class="text-break">{{ cookie['path'] }}</td>
           <td class="text-center">
             {% if cookie['httpOnly'] %}
               {{ render_icon("check-lg", title='True') }}
@@ -91,13 +105,6 @@
             {% endif %}
           </td>
           <td>{{ cookie['sameSite'] }}</td>
-          <td class="text-center">
-            {% if cookie.get('partitionKey') %}
-              {{ render_icon("check-lg", title='True') }}
-            {% else %}
-              {{ render_icon("x-lg", title='False') }}
-            {% endif %}
-          </td>
         </tr>
         {% endfor %}
       </tbody>

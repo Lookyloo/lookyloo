@@ -403,16 +403,16 @@ function renderTables() {
         order: [[ 0, "desc" ]],
         pageLength: 25,
         columns: [
-            {width: '8%'},
+            {width: '7%'},
             {width: '15%'},
             {width: '20%'},
-            {width: '15%'},
-            {width: '7%'},
-            {width: '13%', render: DataTable.render.datetime_with_tz()},
+            {width: '12%'},
+            {width: '13%'},
+            {width: '10%', render: DataTable.render.datetime_with_tz()},
+            {width: '5%'},
             {width: '5%'},
             {width: '6%'},
-            {width: '5%'},
-            {width: '6%'}
+            {width: '5%'}
         ]
       });
   }
