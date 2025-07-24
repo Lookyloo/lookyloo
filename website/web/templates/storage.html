@@ -4,6 +4,7 @@
 
 {% extends "main.html" %}
 {% from 'bootstrap5/utils.html' import render_messages %}
+{% from 'bootstrap5/utils.html' import render_icon %}
 {% block title %}Storage State{% endblock %}
 
 {%endif%}
@@ -46,10 +47,10 @@
 </nav>
 <div class="tab-content" id="nav-tabContent-storage-state">
   <div class="tab-pane fade show active" id="nav-cookies" role="tabpanel" aria-labelledby="nav-cookies-tab" tabindex="0">
-    <table id="storageStateCookiesTable" class="table table-striped">
+    <table id="storageStateCookiesTable" class="table table-bordered table-sm table-striped small">
       <thead>
         <tr>
-          <th>Number of captures</th>
+          <th>Captures</th>
           <th>Name</th>
           <th>Value</th>
           <th>Domain</th>
@@ -61,10 +62,10 @@
           <th title="Cookies Having Independent Partitioned State">CHIPS</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="small">
         {% for cookie in storage['cookies'] %}
         <tr>
-        <td>{{ cookie['frequency'] }}</td>
+        <td>{{ cookie['frequency'] | string }}</td>
           <td class="text-break">
             {{ details_modal_button(target_modal_id="#cookieNameModal",
                                     data_remote=url_for('cookies_name_detail', cookie_name=cookie['name']),
@@ -73,12 +74,30 @@
           </td>
           <td class="text-break">{{ cookie['value'] }}</td>
           <td class="text-break">{{ cookie['domain'] }}</td>
-          <td class="text-break">{{ cookie['path'] }}</td>
+          <td class="text-break fs-6">{{ cookie['path'] }}</td>
           <td>{{ (cookie['expires'] * 1000) | int }}</td>
-          <td>{{ cookie['httpOnly'] }}</td>
-          <td>{{ cookie['secure'] }}</td>
+          <td class="text-center">
+            {% if cookie['httpOnly'] %}
+              {{ render_icon("check-lg", title='True') }}
+            {% else %}
+              {{ render_icon("x-lg", title='False') }}
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if cookie['secure'] %}
+              {{ render_icon("check-lg", title='True') }}
+            {% else %}
+              {{ render_icon("x-lg", title='False') }}
+            {% endif %}
+          </td>
           <td>{{ cookie['sameSite'] }}</td>
-          <td>{{ cookie.get('partitionKey', '') }}</td>
+          <td class="text-center">
+            {% if cookie.get('partitionKey') %}
+              {{ render_icon("check-lg", title='True') }}
+            {% else %}
+              {{ render_icon("x-lg", title='False') }}
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
       </tbody>

@@ -3111,14 +3111,14 @@ files = [
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20250719"
+version = "1.0.2.20250724"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20250719-py2.py3-none-any.whl", hash = "sha256:25a081a2f37893654687867d4e17cd37e1b819f34bb8eb9daaa534cb93e1082f"},
-    {file = "publicsuffixlist-1.0.2.20250719.tar.gz", hash = "sha256:00443aeb4b66d2310f301c48a6c22b9e2d46cb18906b5d94947f3b9ac119cde7"},
+    {file = "publicsuffixlist-1.0.2.20250724-py2.py3-none-any.whl", hash = "sha256:4d5bc2d06368981a292b43551b502b9883ef52d3b47502b342590bb8bd35debc"},
+    {file = "publicsuffixlist-1.0.2.20250724.tar.gz", hash = "sha256:79928f8a475ae56b63c524be9d919fb5c31516316b64c78756df57025e50416b"},
 ]
 
 [package.extras]
@@ -5444,4 +5444,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "bc1fde358118f9d87833d198661f5664c09fe49995d2ac3ac857365bfe03e926"
+content-hash = "23f102b27b7e4289a00e1573f553a2979b698c246cb13fab15e448feeb391ba6"
