@@ -165,7 +165,7 @@ class AbstractManager(ABC):
             self.logger.info(f'Shutting down {self.__class__.__name__}')
 
     def _wait_to_finish(self) -> None:
-        self.logger.info('Not implemented, nothing to wait for.')
+        self.__redis.close()
 
     async def stop(self) -> None:
         self.force_stop = True
@@ -174,7 +174,7 @@ class AbstractManager(ABC):
         raise NotImplementedError('This method must be implemented by the child')
 
     async def _wait_to_finish_async(self) -> None:
-        self.logger.info('Not implemented, nothing to wait for.')
+        self.__redis.close()
 
     async def stop_async(self) -> None:
         """Method to pass the signal handler:

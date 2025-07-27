@@ -58,6 +58,10 @@ class BackgroundBuildCaptures(AbstractManager):
         # Don't need the cache in this class.
         self.lookyloo.clear_tree_cache()
 
+    def _wait_to_finish(self) -> None:
+        self.redis.close()
+        super()._wait_to_finish()
+
     def _build_missing_pickles(self) -> bool:
         self.logger.debug('Build missing pickles...')
         # Sometimes, we have a huge backlog and the process might get stuck on old captures for a very long time
