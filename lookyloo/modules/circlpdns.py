@@ -8,7 +8,7 @@ from datetime import date
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-from pypdns import PyPDNS, PDNSRecord
+from pypdns import PyPDNS, PDNSRecord, PDNSError, UnauthorizedError
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory, get_useragent_for_requests, global_proxy_for_requests
@@ -86,7 +86,14 @@ class CIRCLPDNS(AbstractModule):
         if not force and pypdns_file.exists():
             return
 
-        pdns_info = [entry for entry in self.pypdns.iter_query(hostname)]
+        try:
+            pdns_info = [entry for entry in self.pypdns.iter_query(hostname)]
+        except UnauthorizedError:
+            self.logger.error('Invalid login/password.')
+            return
+        except PDNSError as e:
+            self.loger.error(f'Unexpected error: {e}')
+            return
         if not pdns_info:
             try:
                 url_storage_dir.rmdir()

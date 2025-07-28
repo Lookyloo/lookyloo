@@ -46,6 +46,7 @@
   </center>
   <br>
   <div class="accordion" id="accordionHostnode">
+   {% if circl_pdns_available %}
    <div class="accordion-item">
     <h2 class="accordion-header">
       <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePDNS" aria-expanded="false" aria-controls="collapsePDNS">
@@ -71,6 +72,7 @@
       </div>
     </div>
    </div>
+   {% endif %}
    <div class="accordion-item">
     <h2 class="accordion-header">
       <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDNS" aria-expanded="false" aria-controls="collapseDNS">

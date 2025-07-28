@@ -809,6 +809,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | R
                            hostnode=hostnode,
                            urls=urls,
                            has_pandora=lookyloo.pandora.available,
+                           circl_pdns_available=lookyloo.circl_pdns.available,
                            enable_context_by_users=enable_context_by_users,
                            uwhois_available=lookyloo.uwhois.available)
 
