@@ -92,7 +92,7 @@ class CIRCLPDNS(AbstractModule):
             self.logger.error('Invalid login/password.')
             return
         except PDNSError as e:
-            self.loger.error(f'Unexpected error: {e}')
+            self.logger.error(f'Unexpected error: {e}')
             return
         if not pdns_info:
             try:

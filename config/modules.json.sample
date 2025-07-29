@@ -66,6 +66,7 @@
           "source:lookyloo"
         ],
         "auto_publish": false,
+        "auto_push": false,
         "allow_auto_trigger": false,
         "admin_only": true
       }

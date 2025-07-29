@@ -208,6 +208,7 @@ class MISP(AbstractModule):
 
         self.default_tags: list[str] = self.config.get('default_tags')  # type: ignore[assignment]
         self.auto_publish = bool(self.config.get('auto_publish', False))
+        self.auto_push = bool(self.config.get('auto_push', False))
         self.storage_dir_misp = get_homedir() / 'misp'
         self.storage_dir_misp.mkdir(parents=True, exist_ok=True)
         self.psl = get_public_suffix_list()
@@ -216,7 +217,8 @@ class MISP(AbstractModule):
     def get_fav_tags(self) -> dict[Any, Any] | list[MISPTag]:
         return self.client.tags(pythonify=True, favouritesOnly=1)
 
-    def _prepare_push(self, to_push: list[MISPEvent] | MISPEvent, allow_duplicates: bool=False, auto_publish: bool | None=False) -> list[MISPEvent] | dict[str, str]:
+    def _prepare_push(self, to_push: list[MISPEvent] | MISPEvent, allow_duplicates: bool=False,
+                      auto_publish: bool | None=False) -> list[MISPEvent]:
         '''Adds the pre-configured information as required by the instance.
         If duplicates aren't allowed, they will be automatically skiped and the
         extends_uuid key in the next element in the list updated'''
@@ -231,6 +233,7 @@ class MISP(AbstractModule):
                 existing_event = self.__get_existing_event(event.attributes[0].value)
                 if existing_event:
                     existing_uuid_to_extend = existing_event.uuid
+                    self.logger.info(f'Event {existing_event.uuid} already on the MISP instance.')
                     continue
             if existing_uuid_to_extend:
                 event.extends_uuid = existing_uuid_to_extend
@@ -244,7 +247,7 @@ class MISP(AbstractModule):
         return events_to_push
 
     def push(self, to_push: list[MISPEvent] | MISPEvent, as_admin: bool, *, allow_duplicates: bool=False,
-             auto_publish: bool | None=None) -> list[MISPEvent] | dict[Any, Any]:
+             auto_publish: bool | None=None) -> list[MISPEvent] | dict[str, str] | dict[str, dict[str, Any]]:
         if not self.available:
             return {'error': 'Module not available.'}
         if not self.enable_push:
@@ -258,9 +261,7 @@ class MISP(AbstractModule):
         events = self._prepare_push(to_push, allow_duplicates, auto_publish)
         if not events:
             return {'error': 'All the events are already on the MISP instance.'}
-        if isinstance(events, dict):
-            return {'error': events}
-        to_return = []
+        to_return: list[MISPEvent] = []
         for event in events:
             try:
                 # NOTE: POST the event as published publishes inline, which can tak a long time.
