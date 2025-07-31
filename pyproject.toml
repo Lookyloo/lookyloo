@@ -95,7 +95,7 @@ mastodon-py = "^2.0.1"
 typing-extensions = {version = "^4.14.1", python = "<3.12"}
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.17.0"
+mypy = "^1.17.1"
 ipython = [
     {version = "^9", python = ">=3.11"}
 ]
