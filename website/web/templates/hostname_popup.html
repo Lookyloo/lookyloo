@@ -15,6 +15,16 @@
 
 {% block title %}Details for {% if hostnode.idna %}{{hostnode.idna}} {%else%} {{ hostnode.name }} {%endif%}{% endblock %}
 
+{% block scripts %}
+  {{ super() }}
+
+  <script src='{{ url_for('static', filename='hostnode_modals.js') }}'
+        {{get_sri('static', 'hostnode_modals.js')}}
+        nonce="{{ csp_nonce() }}"
+        crossorigin="anonymous"></script>
+
+{% endblock %}
+
 {% block content %}
   {# Headers #}
   <center>
@@ -239,11 +249,15 @@
 
           {% if url['url_object'].posted_data %}
            <div>This is a POST request,
-              <a href="{{ url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
-                  download content
-              </a><br>
+              <a href="#JsonRenderModal" data-remote="{{  url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid, render_in_modal=True) }}"
+                 data-bs-toggle="modal" data-bs-target="#JsonRenderModal" role="button"
+                 title="pretty print the JSON">show content</a>.
+
+              <br>
               {% if url['url_object'].posted_data is string %}
               Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
+              {% else %}
+              Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|tojson|length) }}
               {% endif %}
            </div>
           {% endif %}
@@ -375,4 +389,25 @@
     </li>
     {% endfor %}
   </ul>
+
+<!-- Modals -->
+
+
+<div class="modal fade" id="JsonRenderModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="JsonRenderModalLabel">JSON Pretty Print</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading JSON ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
 {% endblock %}

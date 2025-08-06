@@ -139,7 +139,7 @@ removed_captures
 website/web/static/d3.min.js
 website/web/static/datatables.min.css
 website/web/static/datatables.min.js
-website/web/static/jquery.min.js
+website/web/static/jquery.*
 
 # Modules
 circl_pypdns

@@ -18,6 +18,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='datatables.min.css') }}"
           {{get_sri('static', 'datatables.min.css')}}
           crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='jquery.json-viewer.css') }}"
+          {{get_sri('static', 'jquery.json-viewer.css')}}
+          crossorigin="anonymous">
     {% endblock %}
 
     <title>{% block title %}{% endblock%}</title>
@@ -51,6 +54,10 @@
             crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='generic.js') }}'
             {{get_sri('static', 'generic.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    <script src='{{ url_for('static', filename='jquery.json-viewer.js') }}'
+            {{get_sri('static', 'jquery.json-viewer.js')}}
             nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
     {% endblock %}

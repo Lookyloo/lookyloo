@@ -10,6 +10,9 @@ datatables_version = "2.3.2"
 datatables_rowgroup_version = "1.5.2"
 datatables_buttons_version = "3.2.4"
 datatables_select_version = "3.0.1"
+jquery_json_viewer_version = "1.5.0"
+json5_version = "2"
+
 
 if __name__ == '__main__':
     dest_dir = get_homedir() / 'website' / 'web' / 'static'
@@ -33,5 +36,15 @@ if __name__ == '__main__':
     with (dest_dir / 'datatables.min.css').open('wb') as f:
         f.write(datatables_css.content)
         print(f'Downloaded datatables_css v{datatables_version}.')
+
+    jquery_json_js = requests.get(f'https://cdn.jsdelivr.net/npm/jquery.json-viewer@{jquery_json_viewer_version}/json-viewer/jquery.json-viewer.min.js')
+    with (dest_dir / 'jquery.json-viewer.js').open('wb') as f:
+        f.write(jquery_json_js.content)
+        print(f'Downloaded jquery_json js v{jquery_json_viewer_version}.')
+
+    jquery_json_css = requests.get(f'https://cdn.jsdelivr.net/npm/jquery.json-viewer@{jquery_json_viewer_version}/json-viewer/jquery.json-viewer.min.css')
+    with (dest_dir / 'jquery.json-viewer.css').open('wb') as f:
+        f.write(jquery_json_css.content)
+        print(f'Downloaded jsontree css v{jquery_json_viewer_version}.')
 
     print('All 3rd party modules for the website were downloaded.')

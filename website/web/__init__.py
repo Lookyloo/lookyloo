@@ -40,7 +40,7 @@ from lacuscore import CaptureStatus, CaptureSettingsError
 from markupsafe import Markup
 from pylookyloo import PyLookylooError, Lookyloo as PyLookyloo
 from puremagic import from_string, PureError
-from pymisp import MISPEvent, MISPServerError  # type: ignore[attr-defined]
+from pymisp import MISPEvent, MISPServerError
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
@@ -306,10 +306,23 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
             title = f'''<img class="ressource_preview" src="{url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, h_ressource=h_ressource)}"/>'''
         else:
             title = icon_info['tooltip']
-        title += '<br>Click to download.'
 
-        return Markup(f'''
-<a href="{url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid)}">
+        if gt == 'json':
+            title += '<br>Click to view content.'
+        else:
+            title += '<br>Click to download.'
+
+        render_in_modal = gt in ['json']
+
+        if render_in_modal:
+            link_url = f'''
+<a href="#JsonRenderModal" data-remote="{url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, render_in_modal={render_in_modal})}"
+   data-bs-toggle="modal" data-bs-target="#JsonRenderModal" role="button">'''
+        else:
+            link_url = f'''
+<a href="{url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, render_in_modal={render_in_modal})}">'''
+
+        return Markup(f'''{link_url}
   <img src="{url_for('static', filename=icon_info['icon'])}" alt="{icon_info['tooltip']}" width="21" height="21"
        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title='{title}'/>
 </a>
@@ -2297,7 +2310,9 @@ def urlnode_rendered_content(tree_uuid: str, node_uuid: str) -> Response | None:
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/posted_data', methods=['GET'])
 @file_response  # type: ignore[misc]
-def urlnode_post_request(tree_uuid: str, node_uuid: str) -> Response | None:
+def urlnode_post_request(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | str | Response | None:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
+    render_in_modal = True if (request.args.get('render_in_modal') and request.args.get('render_in_modal') == 'True') else False
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.posted_data:
         return None
@@ -2319,6 +2334,11 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str) -> Response | None:
     if is_blob:
         return send_file(to_return, mimetype='application/octet-stream',
                          as_attachment=True, download_name='posted_data.bin')
+    if render_in_modal:
+        # return modal
+        return render_template('prettify_text.html',
+                               download_link=url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=node_uuid),
+                               from_popup=from_popup)
     else:
         return send_file(to_return, mimetype='text/plain',
                          as_attachment=True, download_name='posted_data.txt')
@@ -2326,7 +2346,9 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str) -> Response | None:
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource', methods=['POST', 'GET'])
 @file_response  # type: ignore[misc]
-def get_ressource(tree_uuid: str, node_uuid: str) -> Response:
+def get_ressource(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | str | Response:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
+    render_in_modal = True if (request.args.get('render_in_modal') and request.args.get('render_in_modal') == 'True') else False
     if request.method == 'POST':
         h_request = request.form.get('ressource_hash')
     else:
@@ -2341,7 +2363,13 @@ def get_ressource(tree_uuid: str, node_uuid: str) -> Response:
         to_return = BytesIO(b'Unknown Hash')
         filename = 'file.txt'
         mimetype = 'text/text'
-    return send_file(to_return, mimetype=mimetype, as_attachment=True, download_name=filename)
+    if render_in_modal:
+        # return modal
+        return render_template('prettify_text.html',
+                               download_link=url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=node_uuid),
+                               from_popup=from_popup)
+    else:
+        return send_file(to_return, mimetype=mimetype, as_attachment=True, download_name=filename)
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource_preview', methods=['GET'])

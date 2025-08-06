@@ -1,0 +1,44 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% if from_popup %}
+
+{% extends "main.html" %}
+{% from 'bootstrap5/utils.html' import render_messages %}
+{% block title %}Pretty code{% endblock %}
+
+{%endif%}
+
+
+{% block content %}
+
+{% if from_popup %}
+<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
+{%endif%}
+
+<script type="module">
+    async function getData() {
+      const url = "{{download_link}}";
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        $('#json-renderer').jsonViewer(result, {withLinks: false});
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
+    await getData()
+</script>
+
+<center>
+  <a href="{{ download_link }}">
+      Download content
+  </a>
+</center>
+
+<pre id="json-renderer", style="text-wrap: wrap; word-break: break-word;"></pre>
+
+{% endblock %}
