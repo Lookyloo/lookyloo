@@ -37,12 +37,12 @@ if __name__ == '__main__':
         f.write(datatables_css.content)
         print(f'Downloaded datatables_css v{datatables_version}.')
 
-    jquery_json_js = requests.get(f'https://cdn.jsdelivr.net/npm/jquery.json-viewer@{jquery_json_viewer_version}/json-viewer/jquery.json-viewer.min.js')
+    jquery_json_js = requests.get(f'https://cdn.jsdelivr.net/npm/jquery.json-viewer@{jquery_json_viewer_version}/json-viewer/jquery.json-viewer.js')
     with (dest_dir / 'jquery.json-viewer.js').open('wb') as f:
         f.write(jquery_json_js.content)
         print(f'Downloaded jquery_json js v{jquery_json_viewer_version}.')
 
-    jquery_json_css = requests.get(f'https://cdn.jsdelivr.net/npm/jquery.json-viewer@{jquery_json_viewer_version}/json-viewer/jquery.json-viewer.min.css')
+    jquery_json_css = requests.get(f'https://cdn.jsdelivr.net/npm/jquery.json-viewer@{jquery_json_viewer_version}/json-viewer/jquery.json-viewer.css')
     with (dest_dir / 'jquery.json-viewer.css').open('wb') as f:
         f.write(jquery_json_css.content)
         print(f'Downloaded jsontree css v{jquery_json_viewer_version}.')
