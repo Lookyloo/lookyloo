@@ -24,10 +24,16 @@
           throw new Error(`Response status: ${response.status}`);
         }
 
-        const result = await response.json();
-        $('#json-renderer').jsonViewer(result, {withLinks: false});
+        const result_text = await response.text();
+        try {
+            const data = JSON.parse(result_text);
+            $('#json-renderer').jsonViewer(data, {withLinks: false});
+        } catch(error) {
+          document.getElementById("json-renderer").innerHTML = encodeURIComponent(result_text);
+        }
       } catch (error) {
         console.error(error.message);
+        document.getElementById("json-renderer").innerHTML = "The POST request failed.";
       }
     }
     await getData()

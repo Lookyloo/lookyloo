@@ -247,18 +247,22 @@
             {% endif %}
           </div>
 
-          {% if url['url_object'].posted_data %}
+          {% if url['url_object'].posted_data is defined %}
            <div>This is a POST request,
-              <a href="#JsonRenderModal" data-remote="{{  url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid, render_in_modal=True) }}"
-                 data-bs-toggle="modal" data-bs-target="#JsonRenderModal" role="button"
-                 title="pretty print the JSON">show content</a>.
-
-              <br>
-              {% if url['url_object'].posted_data is string %}
-              Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
+              {% if url['url_object'].posted_data %}
+                <a href="#JsonRenderModal" data-remote="{{  url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid, render_in_modal=True) }}"
+                  data-bs-toggle="modal" data-bs-target="#JsonRenderModal" role="button"
+                  title="pretty print the JSON">show content</a>.
+                <br>
+                {% if url['url_object'].posted_data is string %}
+                Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
+                {% else %}
+                Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|tojson|length) }}
+                {% endif %}
               {% else %}
-              Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|tojson|length) }}
+                it is empty.
               {% endif %}
+
            </div>
           {% endif %}
         </li>

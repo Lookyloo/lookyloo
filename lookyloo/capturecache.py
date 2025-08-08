@@ -334,6 +334,11 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                         node.add_feature(generic_type, 1)
                     else:
                         node.add_feature(generic_type, getattr(node, generic_type) + 1)
+                if 'posted_data' in url.features:
+                    if 'posted_data' not in node.features:
+                        node.add_feature('posted_data', 1)
+                    else:
+                        node.posted_data += 1
                 if 'redirect' in url.features:
                     if 'redirect' not in node.features:
                         node.add_feature('redirect', 1)

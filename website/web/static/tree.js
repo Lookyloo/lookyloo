@@ -308,7 +308,8 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
         ['redirect', {path: "/static/redirect.png", tooltip: "redirect(s)"}],
         ['redirect_to_nothing', {path: "/static/cookie_in_url.png", tooltip: "redirect(s) to URL(s) missing in the capture"}],
         ['empty', {path: "/static/empty.svg", tooltip: "URL(s) returning no content"}],
-        ['downloaded_filename', {path: "/static/download.png", tooltip: "contains a downloaded file."}]
+        ['downloaded_filename', {path: "/static/download.png", tooltip: "contains a downloaded file."}],
+        ['posted_data', {path: "/static/send-arrow-up.svg", tooltip: "POSTs content."}]
     ]);
 
     // Put all the icone in one sub svg document
