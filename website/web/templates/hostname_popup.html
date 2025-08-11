@@ -259,6 +259,9 @@
                 {% else %}
                 Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|tojson|length) }}
                 {% endif %}
+                {% if url['url_object'].posted_data_mimetype %}
+                <br/><small>Mimetype: <b>{{ url['url_object'].posted_data_mimetype }}</b></small>
+                {% endif %}
               {% else %}
                 it is empty.
               {% endif %}
