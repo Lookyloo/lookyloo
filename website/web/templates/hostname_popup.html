@@ -255,9 +255,12 @@
                   title="pretty print the JSON">show content</a>.
                 <br>
                 {% if url['url_object'].posted_data is string %}
-                Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
+                  Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
                 {% else %}
-                Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|tojson|length) }}
+                  Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|tojson|length) }}
+                {% endif %}
+                {% if url['url_object'].posted_data_info %}
+                <br/><small><b>Warning</b>: {{ url['url_object'].posted_data_info }}</small>
                 {% endif %}
                 {% if url['url_object'].posted_data_mimetype %}
                 <br/><small>Mimetype: <b>{{ url['url_object'].posted_data_mimetype }}</b></small>
