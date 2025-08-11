@@ -37,7 +37,7 @@
     "redirect.png": "PAjzlPV97rEFvH55mG1ZC9wRl98be3yMeX/nENuFkJcds6/AXgSR2ig/QyPULgobSnNgiYieLVWY/oqsgeywrQ==",
     "render_tables.js": "1M14iUzEmo/rhfUcVENMrBbzWj4rW8qzGYE++aUMjCLZ9HUCGyPzaseyYXSnEoKmZKS4dx71JHhBQVVPDQyiXw==",
     "secure.svg": "H8ni7t0d60nCJDVGuZpuxC+RBy/ipAjWT627D12HlZGg6LUmjSwPTQTUekm3UJupEP7TUkhXyq6WHc5gy7QBjg==",
-    "send-arrow-up.svg": "0afRP7SZT9ou8X4IVwgYhf3MebcelCLSfWT2anSRC6JxM1eEl44CpzyxWFS6yDuLaJJQvGyjr4Lqa8cK/Kuj7Q==",
+    "send-arrow-up.svg": "9PCEcHs82uLwxdSFjvWW2GIPMPStWMmZAWBI7Tl9U3zkUws4LMEKnxkGYdXGroHEdjAAbQm7MlbPlflItoUM9Q==",
     "stats.css": "/kY943FwWBTne4IIyf7iBROSfbGd82TeBicEXqKkRwawMVRIvM/Pk5MRa7okUyGIxaDjFQGmV/U1vy+PhN6Jbw==",
     "stats_graph.js": "S/sMNQK1UMMLD0xQeEa7sq3ce8o6oPxwxGlyKVtaHOODjair86dbBDm7cu6pa/elMRDJT1j09jEFjWp+5GbhTw==",
     "tree.css": "jc7+RiJaZy7utfMu7iMWicpt0y0ZFiEQlB4c7MFNdlWcZf0czi3LgSQUFlDWt828Mx463V+JP1RalXuRjbGcEg==",
