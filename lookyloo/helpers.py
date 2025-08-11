@@ -124,7 +124,7 @@ def get_error_screenshot() -> Image.Image:
     return Image.open(error_img)
 
 
-@lru_cache
+# NOTE: do not cache that, otherwise we need to restart the webserver when changing the file.
 def load_takedown_filters() -> tuple[re.Pattern[str], re.Pattern[str], dict[str, list[str]]]:
     filter_ini_file = get_homedir() / 'config' / 'takedown_filters.ini'
     if not filter_ini_file.exists():
