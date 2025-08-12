@@ -2314,8 +2314,18 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | s
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     render_in_modal = True if (request.args.get('render_in_modal') and request.args.get('render_in_modal') == 'True') else False
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
+
+    if render_in_modal:
+        # return modal
+        return render_template('prettify_text.html',
+                               download_link=url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=node_uuid),
+                               post_info=urlnode.posted_data_info if 'posted_data_info' in urlnode.features else None,
+                               from_popup=from_popup)
+
+    urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.posted_data:
         return None
+
     posted: str | bytes
     if isinstance(urlnode.posted_data, (dict, list)):
         # JSON blob, pretty print.
@@ -2325,23 +2335,15 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | s
 
     if isinstance(posted, str):
         to_return = BytesIO(posted.encode())
-        is_blob = False
     else:
         to_return = BytesIO(posted)
-        is_blob = True
-    to_return.seek(0)
 
-    if is_blob:
-        return send_file(to_return, mimetype='application/octet-stream',
-                         as_attachment=True, download_name='posted_data.bin')
-    if render_in_modal:
-        # return modal
-        return render_template('prettify_text.html',
-                               download_link=url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=node_uuid),
-                               from_popup=from_popup)
-    else:
+    if isinstance(posted, str):
         return send_file(to_return, mimetype='text/plain',
                          as_attachment=True, download_name='posted_data.txt')
+    else:
+        return send_file(to_return, mimetype='application/octet-stream',
+                         as_attachment=True, download_name='posted_data.bin')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource', methods=['POST', 'GET'])

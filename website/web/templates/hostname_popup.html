@@ -253,14 +253,12 @@
                 <a href="#JsonRenderModal" data-remote="{{  url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid, render_in_modal=True) }}"
                   data-bs-toggle="modal" data-bs-target="#JsonRenderModal" role="button"
                   title="pretty print the JSON">show content</a>.
-                <br>
-                {% if url['url_object'].posted_data is string %}
-                  Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|length) }}
-                {% else %}
-                  Posted data size: {{ sizeof_fmt(url['url_object'].posted_data|tojson|length) }}
-                {% endif %}
                 {% if url['url_object'].posted_data_info %}
-                <br/><small><b>Warning</b>: {{ url['url_object'].posted_data_info }}</small>
+                <br/><small><b>Info</b>: {{ url['url_object'].posted_data_info }}</small>
+                {% endif %}
+
+                {% if url['url_object'].posted_data_size is defined %}
+                <br/><small>Posted data size: <b>{{ sizeof_fmt(url['url_object'].posted_data_size) }}</b></small>
                 {% endif %}
                 {% if url['url_object'].posted_data_mimetype %}
                 <br/><small>Mimetype: <b>{{ url['url_object'].posted_data_mimetype }}</b></small>
