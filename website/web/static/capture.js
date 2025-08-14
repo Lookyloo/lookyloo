@@ -44,27 +44,33 @@ document.getElementById('multipleCaptures').addEventListener('click', function (
 
 // Remote lacus & proxy selector
 
-document.getElementById("remote_lacus_name").addEventListener("change", function () {
-    let lacusNameSelect = document.getElementById("remote_lacus_name");
-    let lacus_name = lacusNameSelect.options[lacusNameSelect.selectedIndex].value;
+if ( document.getElementById("remote_lacus_name") ){
+  document.getElementById("remote_lacus_name").addEventListener("change", function (e) {
+    let lacus_name = this.options[this.selectedIndex].value;
     document.getElementsByName("remote_lacus_proxies").forEach(function (element) {
         element.style.display = 'none';
     });
     document.getElementById(`proxies_${lacus_name}`).style.display = 'block';
     document.getElementById('user_defined_proxy').style.display = '';
-    document.getElementById("remote_lacus_proxy_name").selectedIndex = 0;
+    document.getElementById(`remote_lacus_proxy_name_${lacus_name}`).selectedIndex = 0;
 
-    let lacusProxyNameSelect = document.getElementById("remote_lacus_proxy_name");
+    let lacusProxyNameSelect = document.getElementById(`remote_lacus_proxy_name_${lacus_name}`);
     let event = new Event('change');
     lacusProxyNameSelect.dispatchEvent(event);
-});
+  });
+}
 
-document.getElementById("remote_lacus_proxy_name").addEventListener("change", function () {
+const remote_lacuses_proxy_names = document.getElementsByName("remote_lacus_proxy_name")
+
+for (const remote_lacus_proxy_name of remote_lacuses_proxy_names) {
+  remote_lacus_proxy_name.addEventListener("change", change_proxy_details, false);
+}
+
+function change_proxy_details(e) {
     let lacusNameSelect = document.getElementById("remote_lacus_name");
     let lacus_name = lacusNameSelect.options[lacusNameSelect.selectedIndex].value;
 
-    let lacusProxyNameSelect = document.getElementById("remote_lacus_proxy_name");
-    let lacus_proxy_name = lacusProxyNameSelect.options[lacusProxyNameSelect.selectedIndex].value;
+    let lacus_proxy_name = this.options[this.selectedIndex].value;
     document.getElementsByName("proxy_details").forEach(function (element) {
         element.style.display = 'none';
     });
@@ -78,9 +84,7 @@ document.getElementById("remote_lacus_proxy_name").addEventListener("change", fu
         document.getElementById(`${lacus_name}_${lacus_proxy_name}_details`).style.display = 'block';
         document.getElementById('user_defined_proxy').style.display = 'none';
     }
-});
-
-
+};
 
 // scripts for browser configuration of the capture
 

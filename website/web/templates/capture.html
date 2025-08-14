@@ -337,10 +337,10 @@
             <div name="remote_lacus_proxies" id="proxies_{{lacus_name}}"
                 {%if lacus_name != default_remote_lacus %}style="display: none;"{% endif %}>
               <div class="row mb-3">
-                <label for="remote_lacus_proxy_name" class="col-sm-2 col-form-label">Select the proxy to use on that lacus instance:</label>
+                <label for="remote_lacus_proxy_name_{{lacus_name}}" class="col-sm-2 col-form-label">Select the proxy to use on that lacus instance:</label>
                 {%if 'proxies' in details %}
                 <div class="col-sm-4">
-                  <select class="form-select" id="remote_lacus_proxy_name" name="remote_lacus_proxy_name" aria-label="The name of the proxy.">
+                  <select class="form-select" id="remote_lacus_proxy_name_{{lacus_name}}" name="remote_lacus_proxy_name" aria-label="The name of the proxy.">
                     <option value="" selected>No pre-defined Proxy</option>
                     {% for proxy_name in details['proxies'].keys() %}
                     <option value="{{proxy_name}}">{{proxy_name}}</option>
