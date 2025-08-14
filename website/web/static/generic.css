@@ -118,3 +118,8 @@ table td p {
     font-weight: bold;
     color:#fff;
 }
+
+/* Make it more clear that an acordion is clickable */
+.accordion-button.collapsed {
+  background: var(--bs-info-bg-subtle);
+}

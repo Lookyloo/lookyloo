@@ -59,7 +59,7 @@
    {% if circl_pdns_available %}
    <div class="accordion-item">
     <h2 class="accordion-header">
-      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePDNS" aria-expanded="false" aria-controls="collapsePDNS">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePDNS" aria-expanded="false" aria-controls="collapsePDNS">
         CIRCL Passive DNS details for this hostname
       </button>
     </h2>
@@ -85,7 +85,7 @@
    {% endif %}
    <div class="accordion-item">
     <h2 class="accordion-header">
-      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDNS" aria-expanded="false" aria-controls="collapseDNS">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDNS" aria-expanded="false" aria-controls="collapseDNS">
         DNS details from standalone queries
       </button>
     </h2>
@@ -194,7 +194,7 @@
       <div class="accordion accordion" id="accordionTLS_{{url['url_object'].uuid}}">
       <div class="accordion-item">
         <h2 class="accordion-header">
-          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTLS_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseTLS">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTLS_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseTLS">
             TLS certificate
           </button>
         </h2>
@@ -217,7 +217,7 @@
           <div class="accordion accordion" id="accordionRequest_{{url['url_object'].uuid}}">
             <div class="accordion-item">
               <h2 class="accordion-header">
-                <button class="accordion-button" type="button btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseRequestHeaders_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseRequestHeaders">
+                <button class="accordion-button collapsed" type="button btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseRequestHeaders_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseRequestHeaders">
                   HTTP Headers
                 </button>
               </h2>
@@ -234,7 +234,7 @@
             {% if url['cookies_sent'] %}
             <div class="accordion-item">
               <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionRequestCookies_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseRequestCookies">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionRequestCookies_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseRequestCookies">
                   Cookies sent
                 </button>
               </h2>
@@ -330,7 +330,7 @@
             {# Details on embedded resources #}
             <div class="accordion-item">
               <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionEmbedded_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseEmbedded">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionEmbedded_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseEmbedded">
                   Embedded resources
                 </button>
               </h2>
@@ -354,7 +354,7 @@
             {% endif %}
             <div class="accordion-item">
               <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseResponseHeaders_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseResponseHeaders">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseResponseHeaders_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseResponseHeaders">
                   HTTP Headers
                 </button>
               </h2>
@@ -378,7 +378,7 @@
             {% if url['cookies_received'] %}
             <div class="accordion-item">
               <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordionResponseCookies_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseResponseCookies">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionResponseCookies_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseResponseCookies">
                   Cookies received
                 </button>
               </h2>
