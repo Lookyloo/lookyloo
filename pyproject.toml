@@ -91,7 +91,7 @@ flask-talisman = "^1.1.0"
 
 aiohttp = {extras = ["speedups"], version = "^3.12.15"}
 pyail = "^0.0.8"
-mastodon-py = "^2.0.1"
+mastodon-py = "^2.1.2"
 typing-extensions = {version = "^4.14.1", python = "<3.12"}
 
 [tool.poetry.group.dev.dependencies]
