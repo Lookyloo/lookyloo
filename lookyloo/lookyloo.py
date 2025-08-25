@@ -24,14 +24,14 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, overload, Literal
 from collections.abc import Iterable
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote_plus
 from uuid import uuid4
 from zipfile import ZipFile, ZIP_DEFLATED
 
 import mmh3
 
 from defang import defang  # type: ignore[import-untyped]
-from har2tree import CrawledTree, HostNode, URLNode
+from har2tree import CrawledTree, HostNode, URLNode, Har2TreeError
 from lacuscore import (LacusCore, CaptureSettingsError,
                        CaptureStatus as CaptureStatusCore,
                        # CaptureResponse as CaptureResponseCore)
@@ -1181,6 +1181,13 @@ class Lookyloo():
         '''Get the storage state of the capture'''
         return self._get_raw(capture_uuid, 'storage.json', all_files=False)
 
+    def get_last_url_in_address_bar(self, capture_uuid: str, /) -> str | None:
+        '''Get the URL in the address bar at the end of the capture'''
+        success, file = self._get_raw(capture_uuid, 'last_redirect.txt', all_files=False)
+        if success:
+            return unquote_plus(file.getvalue().decode().strip())
+        return None
+
     def get_screenshot_thumbnail(self, capture_uuid: str, /, for_datauri: bool=False, width: int=64) -> str | BytesIO:
         '''Get the thumbnail of the rendered page. Always crop to a square.'''
         to_return = BytesIO()
@@ -1227,8 +1234,12 @@ class Lookyloo():
 
     def get_urls_rendered_page(self, capture_uuid: str, /) -> list[str]:
         ct = self.get_crawled_tree(capture_uuid)
-        return sorted(set(ct.root_hartree.rendered_node.urls_in_rendered_page)
-                      - set(ct.root_hartree.all_url_requests.keys()))
+        try:
+            return sorted(set(ct.root_hartree.rendered_node.urls_in_rendered_page)
+                          - set(ct.root_hartree.all_url_requests.keys()))
+        except Har2TreeError as e:
+            self.logger.warning(f'Unable to get the rendered page for {capture_uuid}: {e}.')
+            raise LookylooException("Unable to get the rendered page.")
 
     def compute_mmh3_shodan(self, favicon: bytes, /) -> str:
         b64 = base64.encodebytes(favicon)

@@ -18,6 +18,7 @@ import filetype  # type: ignore[import-untyped]
 
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
+from difflib import Differ
 from importlib.metadata import version
 from io import BytesIO, StringIO
 from typing import Any, TypedDict
@@ -312,7 +313,7 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
         else:
             title += '<br>Click to download.'
 
-        render_in_modal = gt in ['json']
+        render_in_modal = gt in ['json', 'text']
 
         if render_in_modal:
             link_url = f'''
@@ -816,10 +817,22 @@ def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | R
         hostnode, urls = get_hostnode_investigator(tree_uuid, node_uuid)
     except IndexError:
         return render_template('error.html', error_message='Sorry, this one is on us. The tree was rebuild, please reload the tree and try again.')
+
+    url_in_address_bar: str | None = None
+    diff: str | None = None
+    if hostnode.contains_rendered_urlnode:
+        url_in_address_bar = lookyloo.get_last_url_in_address_bar(tree_uuid)
+        # we shouldn't havemore than one URL in that node, but it's for sure going to happen, so
+        # let's take the first URL node only
+        if url_in_address_bar and url_in_address_bar != urls[0]['url_object'].name:
+            d = Differ()
+            diff = '\n'.join(d.compare([urls[0]['url_object'].name], [url_in_address_bar]))
     return render_template('hostname_popup.html',
                            tree_uuid=tree_uuid,
                            hostnode_uuid=node_uuid,
                            hostnode=hostnode,
+                           last_url_in_address_bar=url_in_address_bar,
+                           last_url_diff=diff,
                            urls=urls,
                            has_pandora=lookyloo.pandora.available,
                            circl_pdns_available=lookyloo.circl_pdns.available,

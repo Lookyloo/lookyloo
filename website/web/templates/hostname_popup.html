@@ -170,7 +170,7 @@
     {# URL Display #}
     <li class="list-group-item">
       <div class="h3" title="{{ url['url_object'].name }}">
-        {# HTTPs or not  #}
+        {# HTTPs or not #}
         {% if url['encrypted'] %}
         {{ render_icon('lock-fill') }}
         {% else %}
@@ -184,6 +184,21 @@
           {{ render_icon('copy') }}
         </button>
       </div>
+      {% if last_url_in_address_bar %}
+        {# This is the node of the rendered page #}
+        {% if url['url_object'].name != last_url_in_address_bar %}
+        <div>
+            This node should represent the page rendered in the browser at the end of the capture.
+            However, the URL in the node differs from the one in the address bar of the browser.
+            <ul>
+                <li title="{{url['url_object'].name}}"><b>Node</b>: {{url['url_object'].name}}</li>
+                <li title="{{last_url_in_address_bar}}"><b>Address bar</b>: {{last_url_in_address_bar}}</li>
+                <li><b>Diff</b>: <pre>{{last_url_diff}}</pre>
+            </ul>
+        </div>
+        {%endif%}
+      {%endif%}
+
       {% if url['url_object'].ip_address %}
       <div>
           IP from HAR: <b>{{ url['url_object'].ip_address }}</b> (<a href="{{ url_for('ip_details', ip=url['url_object'].ip_address, from_popup=True) }}">see other captures</a>)
