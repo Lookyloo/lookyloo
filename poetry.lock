@@ -1520,14 +1520,14 @@ files = [
 
 [[package]]
 name = "har2tree"
-version = "1.32.0"
+version = "1.32.1"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.32.0-py3-none-any.whl", hash = "sha256:62955e11601287077469721db0abaedaed5e23e4a672eb043b9dc0f4f32547ed"},
-    {file = "har2tree-1.32.0.tar.gz", hash = "sha256:d17cce725e346728d1b9256c07c9266abb024f673996dea3284723ddc15504d7"},
+    {file = "har2tree-1.32.1-py3-none-any.whl", hash = "sha256:a649af35443cd826a3c86e9774f40609272c20303b50c743a46d7f3618243721"},
+    {file = "har2tree-1.32.1.tar.gz", hash = "sha256:6a56fbf5195b2dd277aeefb5c64316a35ac9c93c531086d947499effbd5d5e94"},
 ]
 
 [package.dependencies]
@@ -3899,40 +3899,40 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.16.1"
+version = "1.17.0"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pylacus-1.16.1-py3-none-any.whl", hash = "sha256:b2fbc6b9bf32f127ace0554db27d2e76aab1f5d5057a74b8b2154d74ba3c5a46"},
-    {file = "pylacus-1.16.1.tar.gz", hash = "sha256:d9e7996d3ab8604a5f155ed7bced7325e5f6cc1e77f6de830046a08bc2d55140"},
+    {file = "pylacus-1.17.0-py3-none-any.whl", hash = "sha256:f4b539d26c376db09bef3b708496df6f2bd6bbd92e09ace1644436a849583ae7"},
+    {file = "pylacus-1.17.0.tar.gz", hash = "sha256:53eee3f88fba3f5370231c145b53388bf86e516da278f8223e2e03a1352dadb1"},
 ]
 
 [package.dependencies]
-requests = ">=2.32.4"
+requests = ">=2.32.5"
 
 [package.extras]
 docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
 
 [[package]]
 name = "pylookyloo"
-version = "1.31.2"
+version = "1.32.0"
 description = "Python CLI and module for Lookyloo"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pylookyloo-1.31.2-py3-none-any.whl", hash = "sha256:8cee737add99eb4c925a1b5adfaed5b2775fa8fe5fa19c3af239f69e1e2fd840"},
-    {file = "pylookyloo-1.31.2.tar.gz", hash = "sha256:76117152146082d0e8566a4dd1d80474c9b9a75b54256b0a542b28b447703e74"},
+    {file = "pylookyloo-1.32.0-py3-none-any.whl", hash = "sha256:71242c395c15e529d9536828e88ccc71bcf0362f2b3d33d528dea5c2522072a0"},
+    {file = "pylookyloo-1.32.0.tar.gz", hash = "sha256:1f3b77c6d3d55172978f362122be45197fa66fd9580662740a075ca635b04a53"},
 ]
 
 [package.dependencies]
-requests = ">=2.32.4"
+requests = ">=2.32.5"
 
 [package.extras]
 docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
-examples = ["pylacus (>=1.15.1)"]
+examples = ["pylacus (>=1.17.0)"]
 
 [[package]]
 name = "pylookyloomonitoring"
@@ -5028,20 +5028,20 @@ files = [
 
 [[package]]
 name = "types-lxml"
-version = "2025.3.30"
+version = "2025.8.25"
 description = "Complete lxml external type annotation"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "types_lxml-2025.3.30-py3-none-any.whl", hash = "sha256:310b0ddf9e2104c8684362445808adf8a2cf41cf102d4ea0d16ced413cc46f66"},
-    {file = "types_lxml-2025.3.30.tar.gz", hash = "sha256:ea4da0d2b61a73e114e14e2dcca1f62671182d80016a483369c553a24ba8f163"},
+    {file = "types_lxml-2025.8.25-py3-none-any.whl", hash = "sha256:d61340e5329e102d3f8d64124e90d50c12c0bfeaa9088d65558279ef4e7138ac"},
+    {file = "types_lxml-2025.8.25.tar.gz", hash = "sha256:79b9f5b1f236f937f14fe3add9dc687bd8d4111ca5df58eb9f1bde1a3b032fd5"},
 ]
 
 [package.dependencies]
 beautifulsoup4 = ">=4.13,<5.0"
 cssselect = ">=1.2,<2.0"
-types-html5lib = ">=1.1.11.20241018,<1.2.0.0"
+types-html5lib = ">=1.1.11.20241018,<1.1.11.20250516 || >1.1.11.20250516,<1.2.0.0"
 typing_extensions = {version = ">=4.10,<5.0", markers = "python_version < \"3.13\""}
 
 [package.extras]
@@ -5727,4 +5727,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "563f7ec7dcf2983c8bde9e6b0988157cc359f3be04e5ecc7165db7582919221d"
+content-hash = "d266df5c83c91e09139c0a75bec2a27320f830e50318959d1344f53728320e5c"
