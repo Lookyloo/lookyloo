@@ -92,6 +92,10 @@ class Processing(AbstractManager):
         to_requeue: list[str] = []
         try:
             for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf', start=0, num=500):
+                if not self.lookyloo.redis.exists(uuid):
+                    self.logger.warning(f'The settings for {uuid} are missing, there is nothing we can do.')
+                    self.lookyloo.redis.zrem('to_capture', uuid)
+                    continue
                 if self.lookyloo.redis.hget(uuid, 'not_queued') == '1':
                     # The capture is marked as not queued
                     to_requeue.append(uuid)
