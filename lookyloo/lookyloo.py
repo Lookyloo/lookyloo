@@ -575,13 +575,7 @@ class Lookyloo():
             self.logger.warning(f'Unable to get the status for {capture_uuid} from lacus: {e}')
         return False
 
-    def get_capture_status(self, capture_uuid: str, /) -> CaptureStatusCore | CaptureStatusPy:
-        '''Returns the status (queued, ongoing, done, or UUID unknown)'''
-        if self.redis.hexists('lookup_dirs', capture_uuid) or self.redis.hexists('lookup_dirs_archived', capture_uuid):
-            return CaptureStatusCore.DONE
-        elif self.redis.sismember('ongoing', capture_uuid):
-            # Post-processing on lookyloo's side
-            return CaptureStatusCore.ONGOING
+    def _get_lacus_capture_status(self, capture_uuid: str, /) -> CaptureStatusCore | CaptureStatusPy:
         lacus_status: CaptureStatusCore | CaptureStatusPy = CaptureStatusPy.UNKNOWN
         try:
             if isinstance(self.lacus, dict):
@@ -599,7 +593,17 @@ class Lookyloo():
             raise e
         except Exception as e:
             self.logger.warning(f'Unable to get the status for {capture_uuid} from lacus: {e}')
+        return lacus_status
 
+    def get_capture_status(self, capture_uuid: str, /) -> CaptureStatusCore | CaptureStatusPy:
+        '''Returns the status (queued, ongoing, done, or UUID unknown)'''
+        if self.redis.hexists('lookup_dirs', capture_uuid) or self.redis.hexists('lookup_dirs_archived', capture_uuid):
+            return CaptureStatusCore.DONE
+        elif self.redis.sismember('ongoing', capture_uuid):
+            # Post-processing on lookyloo's side
+            return CaptureStatusCore.ONGOING
+
+        lacus_status = self._get_lacus_capture_status(capture_uuid)
         if (lacus_status in [CaptureStatusCore.UNKNOWN, CaptureStatusPy.UNKNOWN]
                 and self.redis.zscore('to_capture', capture_uuid) is not None):
             # Lacus doesn't know it, but it is in to_capture. Happens if we check before it's picked up by Lacus.

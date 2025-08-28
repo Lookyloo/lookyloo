@@ -95,8 +95,11 @@ class Processing(AbstractManager):
                     self.logger.warning(f'The settings for {uuid} are missing, there is nothing we can do.')
                     self.lookyloo.redis.zrem('to_capture', uuid)
                     continue
+                if self.lookyloo.redis.sismember('ongoing', uuid):
+                    # Finishing up on lookyloo side, ignore.
+                    continue
 
-                if self.lookyloo.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                if self.lookyloo._get_lacus_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
                     # The capture is unknown on lacus side, but we have it in the to_capture queue *and* we still have the settings on lookyloo side
                     if self.lookyloo.redis.hget(uuid, 'not_queued') == '1':
                         # The capture has already been marked as not queued
