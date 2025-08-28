@@ -582,40 +582,29 @@ class Lookyloo():
         elif self.redis.sismember('ongoing', capture_uuid):
             # Post-processing on lookyloo's side
             return CaptureStatusCore.ONGOING
-        lacus_status: CaptureStatusCore | CaptureStatusPy
+        lacus_status: CaptureStatusCore | CaptureStatusPy = CaptureStatusPy.UNKNOWN
         try:
             if isinstance(self.lacus, dict):
                 for lacus in self.lacus.values():
                     lacus_status = lacus.get_capture_status(capture_uuid)
                     if lacus_status != CaptureStatusPy.UNKNOWN:
                         break
-                else:
-                    # Couldn't find that UUID in any of the remote lacus
-                    if self.redis.exists(capture_uuid):
-                        self.redis.hset(capture_uuid, 'not_queued', 1)
             elif isinstance(self.lacus, PyLacus):
                 lacus_status = self.lacus.get_capture_status(capture_uuid)
-                if lacus_status == CaptureStatusPy.UNKNOWN:
-                    # Couldn't find that UUID in the remote lacus
-                    if self.redis.exists(capture_uuid):
-                        self.redis.hset(capture_uuid, 'not_queued', 1)
             else:
+                # Use lacuscore directly
                 lacus_status = self.lacus.get_capture_status(capture_uuid)
         except LacusUnreachable as e:
             self.logger.warning(f'Unable to connect to lacus: {e}')
             raise e
         except Exception as e:
             self.logger.warning(f'Unable to get the status for {capture_uuid} from lacus: {e}')
-            if self.redis.zscore('to_capture', capture_uuid) is not None:
-                return CaptureStatusCore.QUEUED
-            else:
-                return CaptureStatusCore.UNKNOWN
 
-        if (lacus_status == CaptureStatusCore.UNKNOWN
+        if (lacus_status in [CaptureStatusCore.UNKNOWN, CaptureStatusPy.UNKNOWN]
                 and self.redis.zscore('to_capture', capture_uuid) is not None):
-            # If we do the query before lacus picks it up, we will tell to the user that the UUID doesn't exists.
+            # Lacus doesn't know it, but it is in to_capture. Happens if we check before it's picked up by Lacus.
             return CaptureStatusCore.QUEUED
-        elif lacus_status == CaptureStatusCore.DONE:
+        elif lacus_status in [CaptureStatusCore.DONE, CaptureStatusPy.DONE]:
             # Done on lacus side, but not processed by Lookyloo yet (it would be in lookup_dirs)
             return CaptureStatusCore.ONGOING
         return lacus_status
@@ -727,15 +716,16 @@ class Lookyloo():
         if not self.headed_allowed or query.headless is None:
             # Shouldn't be needed, but just in case, force headless
             query.headless = True
+
+        lacus: LacusCore | PyLacus
+        if isinstance(self.lacus, dict):
+            # Multiple remote lacus enabled, we need a name to identify the lacus
+            if query.remote_lacus_name is None:
+                query.remote_lacus_name = get_config('generic', 'multiple_remote_lacus').get('default')
+            lacus = self.lacus[query.remote_lacus_name]
+        else:
+            lacus = self.lacus
         try:
-            lacus: LacusCore | PyLacus
-            if isinstance(self.lacus, dict):
-                # Multiple remote lacus enabled, we need a name to identify the lacus
-                if query.remote_lacus_name is None:
-                    query.remote_lacus_name = get_config('generic', 'multiple_remote_lacus').get('default')
-                lacus = self.lacus[query.remote_lacus_name]
-            else:
-                lacus = self.lacus
             perma_uuid = lacus.enqueue(
                 url=query.url,
                 document_name=query.document_name,
@@ -769,12 +759,13 @@ class Lookyloo():
             )
         except Exception as e:
             self.logger.critical(f'Unable to enqueue capture: {e}')
-            perma_uuid = str(uuid4())
+            if query.uuid:
+                perma_uuid = query.uuid
+            else:
+                perma_uuid = str(uuid4())
             query.not_queued = True
         finally:
-            if (not self.redis.hexists('lookup_dirs', perma_uuid)  # already captured
-                    and self.redis.zscore('to_capture', perma_uuid) is None):  # capture ongoing
-
+            if not self.redis.hexists('lookup_dirs', perma_uuid):  # already captured
                 p = self.redis.pipeline()
                 p.zadd('to_capture', {perma_uuid: priority})
                 p.hset(perma_uuid, mapping=query.redis_dump())

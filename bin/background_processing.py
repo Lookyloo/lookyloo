@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import time
 import logging
 import logging.config
 from collections import Counter
@@ -96,24 +95,16 @@ class Processing(AbstractManager):
                     self.logger.warning(f'The settings for {uuid} are missing, there is nothing we can do.')
                     self.lookyloo.redis.zrem('to_capture', uuid)
                     continue
-                if self.lookyloo.redis.hget(uuid, 'not_queued') == '1':
-                    # The capture is marked as not queued
-                    to_requeue.append(uuid)
-                elif self.lookyloo.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
-                    # The capture is unknown on lacus side. It might be a race condition.
-                    # Let's retry a few times.
-                    retry = 3
-                    while retry > 0:
-                        time.sleep(1)
-                        if self.lookyloo.get_capture_status(uuid) not in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
-                            # Was a race condition, the UUID has been or is being processed by Lacus
-                            self.logger.info(f'UUID {uuid} was only temporary unknown')
-                            break
-                        retry -= 1
-                    else:
-                        # UUID is still unknown
-                        self.logger.info(f'UUID {uuid} is still unknown')
+
+                if self.lookyloo.get_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                    # The capture is unknown on lacus side, but we have it in the to_capture queue *and* we still have the settings on lookyloo side
+                    if self.lookyloo.redis.hget(uuid, 'not_queued') == '1':
+                        # The capture has already been marked as not queued
                         to_requeue.append(uuid)
+                    else:
+                        # It might be a race condition so we don't add it in the requeue immediately, just flag it at not_queued.
+                        self.lookyloo.redis.hset(uuid, 'not_queued', 1)
+
                 if len(to_requeue) > 100:
                     # Enough stuff to requeue
                     break
@@ -130,9 +121,9 @@ class Processing(AbstractManager):
             try:
                 if capture_settings := self.lookyloo.redis.hgetall(uuid):
                     query = CaptureSettings(**capture_settings)
+                    # Make sure the UUID is set in the settings so we don't get a new one.
+                    query.uuid = uuid
                     try:
-                        self.lookyloo.redis.delete(uuid)
-                        query.uuid = uuid
                         new_uuid = self.lookyloo.enqueue_capture(query, 'api', 'background_processing', False)
                         if new_uuid != uuid:
                             # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
