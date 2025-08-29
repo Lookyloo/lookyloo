@@ -5,9 +5,6 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}"
-          {{get_sri('static', 'favicon.ico')}}
-          crossorigin="anonymous">
 
     {% block styles %}
     <!-- Bootstrap CSS -->
@@ -21,6 +18,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='jquery.json-viewer.css') }}"
           {{get_sri('static', 'jquery.json-viewer.css')}}
           crossorigin="anonymous">
+
+    {% set overrides_css = load_custom_css('overrides.css') %}
+    {% if overrides_css %}
+    <link rel="stylesheet" href="{{ overrides_css[0] }}"
+          integrity="{{ overrides_css[1] }}"
+          crossorigin="anonymous">
+    {% endif %}
+
     {% endblock %}
 
     <title>{% block title %}{% endblock%}</title>
@@ -32,10 +37,12 @@
     {% endblock %}
   </head>
   <body>
+    {% include "custom_header.html" ignore missing %}
     <!-- Your page content -->
     <div class="container">
       {% block content %}{% endblock%}
     </div>
+    {% include "custom_footer.html" ignore missing %}
 
     {% block scripts %}
     <!-- Optional JavaScript -->
@@ -60,6 +67,12 @@
             {{get_sri('static', 'jquery.json-viewer.js')}}
             nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
+    {% set overrides_js = load_custom_js('overrides.js') %}
+    {% if overrides_js %}
+    <script src="{{  overrides_js[0] }}"
+            integrity="{{ overrides_js[1] }}"
+            crossorigin="anonymous"></script>
+    {% endif %}
     {% endblock %}
   </body>
 </html>

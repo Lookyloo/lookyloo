@@ -32,7 +32,7 @@ from zoneinfo import ZoneInfo
 from har2tree import HostNode, URLNode
 import flask_login  # type: ignore[import-untyped]
 from flask import (Flask, Response, Request, flash, jsonify, redirect, render_template,
-                   request, send_file, url_for, make_response)
+                   request, send_file, url_for, make_response, send_from_directory)
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
@@ -345,6 +345,26 @@ def details_modal_button(target_modal_id: str, data_remote: str, button_string: 
         'filter': search if search else button_string}
 
 
+def load_custom_css(filename: str) -> tuple[str, str] | tuple[()]:
+    return load_custom_local_ressource('css', filename)
+
+
+def load_custom_js(filename: str) -> tuple[str, str] | tuple[()]:
+    return load_custom_local_ressource('js', filename)
+
+
+def load_custom_local_ressource(ressource_type: str, filename: str) -> tuple[str, str] | tuple[()]:
+    """Loads a custom file from /static/<ressource_type>/, returns the URL and the SRI"""
+    fullpath = get_homedir() / 'website' / 'web' / 'static' / ressource_type / filename
+    if not fullpath.exists() or not fullpath.is_file():
+        return ()
+    # generate the hash for the custom file on the fly
+    with fullpath.open('rb') as f:
+        sri_hash = base64.b64encode(hashlib.sha512(f.read()).digest()).decode('utf-8')
+    url = url_for('static', filename=f'{ressource_type}/{filename}')
+    return (url, sri_hash)
+
+
 app.jinja_env.globals.update(
     {'sizeof_fmt': sizeof_fmt,
      'http_status_description': http_status_description,
@@ -355,7 +375,10 @@ app.jinja_env.globals.update(
      'generic_type': mimetype_to_generic,
      'hash_icon': hash_icon_render,
      'tz_info': get_tz_info,
-     'details_modal_button': details_modal_button}
+     'details_modal_button': details_modal_button,
+     'load_custom_css': load_custom_css,
+     'load_custom_js': load_custom_js
+     }
 )
 
 
@@ -405,6 +428,20 @@ def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Respons
     else:
         flash(str(error))
     return redirect(url_for('landing_page'))
+
+
+@app.route('/favicon.ico')
+def favicon():
+    """Load either the default favicon from static/images/favicons/favicon.ico
+    or static/images/favicons/custom-favicon.ico (if it exists)"""
+
+    favicon_path = get_homedir() / 'website' / 'web' / 'static'
+    if (favicon_path / 'custom-favicon.ico').exists():
+        path = 'custom-favicon.ico'
+    else:
+        path = 'favicon.ico'
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               path, mimetype='image/vnd.microsoft.icon')
 
 
 # ##### Methods querying the indexes #####
