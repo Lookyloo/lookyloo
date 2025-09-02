@@ -332,7 +332,7 @@ def load_custom_local_ressource(ressource_type: str, filename: str) -> tuple[str
         return ()
     # generate the hash for the custom file on the fly
     with fullpath.open('rb') as f:
-        sri_hash = base64.b64encode(hashlib.sha512(f.read()).digest()).decode('utf-8')
+        sri_hash = f"sha512-{base64.b64encode(hashlib.sha512(f.read()).digest()).decode('utf-8')}"
     url = url_for('static', filename=f'{ressource_type}/{filename}')
     return (url, sri_hash)
 
