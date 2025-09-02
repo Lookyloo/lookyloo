@@ -154,22 +154,21 @@
 
     <div id=menu_vertical_content class="collapse show">
       <hr/>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item">
-            <a href="{{ url_for('capture_web') }}" role="button">New capture</a>
-          </li>
-          {% if enable_monitoring %}
-          <li class="list-group-item">
-            <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor capture</a>
-          </li>
-          {% endif %}
-          {% if enable_mail_notification %}
-          <li class="list-group-item">
-            <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious<br>capture</a>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          <a href="{{ url_for('capture_web') }}" role="button">New capture</a>
+        </li>
+        {% if enable_monitoring %}
+        <li class="list-group-item">
+          <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor capture</a>
+        </li>
+        {% endif %}
+        {% if enable_mail_notification %}
+        <li class="list-group-item">
+          <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious<br>capture</a>
+        </li>
+        {% endif %}
+      </ul>
     </div>
   </div>
 </div>
