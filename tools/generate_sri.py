@@ -11,9 +11,11 @@ from lookyloo.default import get_homedir
 if __name__ == '__main__':
     dest_dir = get_homedir() / 'website' / 'web'
 
-    to_save: Dict[str, Any] = {'static': {}}
+    to_save: dict[str, Any] = {'static': {}}
 
     for resource in (dest_dir / 'static').glob('*'):
+        if not resource.is_file():
+            continue
         if resource.name[0] == '.':
             continue
         with resource.open('rb') as f:

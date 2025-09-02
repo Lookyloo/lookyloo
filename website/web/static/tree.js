@@ -17,7 +17,7 @@ let node_width = 10;
 let node_height = 55;
 let center_node = null;
 
-let main_svg = d3.select("body").append("svg")
+let main_svg = d3.select("#tree_svg").append("svg")
             .attr("width", width + margin.right + margin.left)
             .attr("height", height + margin.top + margin.bottom)
 
