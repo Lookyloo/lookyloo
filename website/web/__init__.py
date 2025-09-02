@@ -77,49 +77,21 @@ app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.debug = bool(os.environ.get('DEBUG', False))
 
-SELF = "'self'"
-Talisman(app,
-         force_https=False,
-         content_security_policy_nonce_in=['script-src',
-                                           # Cannot enable that because https://github.com/python-restx/flask-restx/issues/252
-                                           # 'script-src-elem'
-                                           ],
-         content_security_policy={
-             'default-src': SELF,
-             'base-uri': SELF,
-             'img-src': [
-                 SELF,
-                 "data:",
-                 "blob:",
-                 "'unsafe-inline'"
-             ],
-             'script-src': [
-                 SELF,
-                 "'strict-dynamic'",
-                 "'unsafe-inline'",
-                 "http:",
-                 "https:"
-             ],
-             'script-src-elem': [
-                 SELF,
-                 # Cannot enable that because https://github.com/python-restx/flask-restx/issues/252
-                 # "'strict-dynamic'",
-                 "'unsafe-inline'",
-             ],
-             'style-src': [
-                 SELF,
-                 "'unsafe-inline'"
-             ],
-             'media-src': [
-                 SELF,
-                 "data:",
-                 "blob:",
-                 "'unsafe-inline'"
-             ],
-             'frame-ancestors': [
-                 SELF,
-             ],
-         })
+try:
+    from .custom_csp import csp
+except ImportError:
+    from .default_csp import csp
+
+Talisman(
+    app,
+    force_https=False,
+    content_security_policy_nonce_in=[
+        'script-src',
+        # Cannot enable that because https://github.com/python-restx/flask-restx/issues/252
+        # 'script-src-elem'
+    ],
+    content_security_policy=csp
+)
 
 pkg_version = version('lookyloo')
 

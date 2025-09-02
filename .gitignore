@@ -152,3 +152,9 @@ urlhaus
 urlscan
 vt_url
 config/cloudflare/last_updates.json
+
+# Custom UI stuff
+custom_*.py
+custom_*.css
+custom_*.js
+custom_*.html
