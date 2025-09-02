@@ -159,8 +159,12 @@ class Lookyloo():
                 or not get_config('generic', 'monitoring').get('enable')):
             # Not enabled, break immediately
             return None
-        if hasattr(self, '_monitoring') and self._monitoring and self._monitoring.is_up:
-            return self._monitoring
+        try:
+            if hasattr(self, '_monitoring') and self._monitoring and self._monitoring.is_up:
+                return self._monitoring
+        except TimeoutError:
+            self.logger.warning('Monitoring is temporarly (?) unreachable.')
+            return None
         monitoring_config = get_config('generic', 'monitoring')
         monitoring = PyLookylooMonitoring(monitoring_config['url'], get_useragent_for_requests(), proxies=global_proxy_for_requests())
         if monitoring.is_up:

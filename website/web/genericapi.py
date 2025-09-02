@@ -708,7 +708,11 @@ class CaptureReport(Resource):  # type: ignore[misc]
     @api.param('comment', 'Description of the URL, will be given to the analyst.')  # type: ignore[misc]
     def post(self, capture_uuid: str) -> Response:
         parameters: dict[str, Any] = request.get_json(force=True)
-        return make_response(lookyloo.send_mail(capture_uuid, parameters.get('email', ''), parameters.get('comment')))
+        mail_sent = lookyloo.send_mail(capture_uuid, parameters.get('email', ''), parameters.get('comment'))
+        if isinstance(mail_sent, bool):
+            # Success
+            mail_sent = {'info': 'Report sent succesfully'}
+        return make_response(mail_sent)
 
 
 @api.route('/json/upload')
