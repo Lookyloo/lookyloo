@@ -10,16 +10,20 @@ let margin = {
 };
 
 let menuHeight = document.getElementById('menu_vertical').clientHeight + 60;
-let width = 960 - margin.left - margin.right;
-let height = menuHeight * 2;
+let min_height = menuHeight * 2;
+
+let min_width = document.getElementById('menu_vertical').clientWidth + document.getElementById('menu_horizontal').clientWidth;
 
 let node_width = 10;
 let node_height = 55;
 let center_node = null;
 
+document.getElementById('tree_svg').style.width = min_width;
+document.getElementById('tree_svg').style.height = min_height;
+
 let main_svg = d3.select("#tree_svg").append("svg")
-            .attr("width", width + margin.right + margin.left)
-            .attr("height", height + margin.top + margin.bottom)
+            .attr("width", min_width + margin.right + margin.left)
+            .attr("height", min_height + margin.top + margin.bottom)
 
 // dummy container for tooltip
 d3.select('body')
@@ -36,12 +40,12 @@ let pattern = defs.append('pattern')
     .attr('id', 'backstripes')
     .attr('x', margin.left)
     .attr("width", node_width * 2)
-    .attr("height", height)
+    .attr("height", min_height)
     .attr('patternUnits', "userSpaceOnUse" )
 
 pattern.append('rect')
     .attr('width', node_width)
-    .attr('height', height)
+    .attr('height', min_height)
     .attr("fill", "#EEEEEE");
 
 // append the svg object to the body of the page
@@ -52,7 +56,7 @@ let node_container = main_svg.append("g")
 
 // Assigns parent, children, height, depth
 let root = d3.hierarchy(treeData);
-root.x0 = height / 2;
+root.x0 = min_height / 2;
 root.y0 = 0;
 
 // declares a tree layout
@@ -440,25 +444,25 @@ function update(root, computed_node_width=0) {
   if (computed_node_width != 0) {
     computed_node_width += 30;
     // Re-compute SVG size depending on the generated tree
-    let newWidth = Math.max((max_depth + 1) * computed_node_width, node_width);
+    let svgWidth = Math.max((max_depth + 1) * computed_node_width, node_width);
     // Update height
     // node_height is the height of a node, menuHeight * 3 is the minimum so the root node isn't behind the menu
-    let newHeight = Math.max(root.descendants().reverse().length * node_height, menuHeight * 2.5);
-    tree.size([newHeight, newWidth])
+    let svgHeight = Math.max(root.descendants().reverse().length * node_height, min_height);
+    tree.size([svgHeight, svgWidth])
 
     // Set background based on the computed width and height
     let background = main_svg.insert('rect', ':first-child')
       .attr('y', 0)
       // Note: We want the background width with an extra computed_node_width
       // in order to make sure the last node is completely covered
-      .attr('width', newWidth + (margin.right + margin.left + computed_node_width))
-      .attr('height', newHeight + margin.top + margin.bottom)
+      .attr('width', svgWidth + (margin.right + margin.left + computed_node_width))
+      .attr('height', svgHeight + margin.top + margin.bottom)
       .style('fill', "url(#backstripes)");
 
     // Update size
     main_svg
-      .attr("width", newWidth + (margin.right + margin.left)*2)
-      .attr("height", newHeight + margin.top + margin.bottom)
+      .attr("width", svgWidth + (margin.right + margin.left)*2)
+      .attr("height", svgHeight + margin.top + margin.bottom)
 
     // Update pattern
     main_svg.selectAll('pattern')
@@ -466,6 +470,9 @@ function update(root, computed_node_width=0) {
     pattern.selectAll('rect')
       .attr('width', `${computed_node_width}px`)
 
+    let tree_bbox = main_svg.node().getBBox()
+    document.getElementById('tree_svg').style.width = Math.max(tree_bbox.width, min_width);
+    document.getElementById('tree_svg').style.height = Math.max(tree_bbox.height, min_height);
   }
 
   // Assigns the x and y position for the nodes

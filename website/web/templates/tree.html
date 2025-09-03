@@ -125,19 +125,23 @@
   var capture_starttime = new Date(Date.parse("{{ info.timestamp.isoformat() }}"));
   window.addEventListener('DOMContentLoaded', (event) => {
       document.getElementById("start_time").innerHTML = capture_starttime.toString();
+      document.getElementById("content").classList.remove('container');
+      document.getElementById("content").classList.add('container-fluid');
   });
 </script>
 
-{{ render_messages(container=True, dismissible=True) }}
 
 <!-- Containers -->
 
-<div id="menu_container_vertical" class="tree-panel-container">
+<div id="tree_svg" class="container-fluid">
+
+<div id="menu-tree-top">
+ <div id="menu_container_vertical" class="tree-panel-container">
   <div id=menu_vertical>
     <div class="menu_vertical_header">
       <a href="{{ url_for('index') }}" title="Back to captures">
-        <img src="{{ url_for('static', filename='lookyloo.jpeg') }}" alt="Lookyloo icon"
-             height="110">
+        <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
+             alt="Lookyloo icon" id="tree_logo">
       </a>
     </div>
     <hr/>
@@ -171,12 +175,13 @@
       </ul>
     </div>
   </div>
-</div>
+ </div>
 
 
-<div id="menu_container_horizontal" class="tree-panel-container">
+ <div id="menu_container_horizontal" class="tree-panel-container">
   <div id=menu_horizontal class="d-flex">
     <div class="flex-shrink-1 align-self-center">
+     <div class="mx-auto" style="width: 52px;">
       <button type="button" class="btn btn-link mr-3" data-bs-toggle="collapse" data-bs-target="#menu_horizontal_content">
         <span class="if-collapsed">
           <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-right" alt="Maximize menu" height="25" width="25" title="Expand">
@@ -185,8 +190,9 @@
           <img src="{{ url_for('static', filename='up.jpg') }}" class="arrow-left" alt="Minimize menu" height="25" width="25" title="Collapse">
         </span>
       </button>
+     </div>
     </div>
-    <div id="menu_horizontal_content" class="collapse show flex-grow-1 ms-3 container">
+    <div id="menu_horizontal_content" class="collapse show flex-grow-1">
         <div class="hstack gap-3">
           <div class="vr"></div>
 
@@ -319,9 +325,20 @@
       </div>
     </div>
   </div>
+ </div>
 </div>
 
 <div id="legend_container" class="tree-panel-container">
+  <!-- Keep it behind the legend -->
+  <div id="legend_show">
+    <center>
+    <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#legend">
+      <img src="{{ url_for('static', filename='up.jpg') }}" alt="Maximize legend" height="40" width="40" title="Expand">
+      <b>Legend</b>
+    </button>
+    </center>
+  </div>
+
   <div id=legend class="collapse show">
     <center>
       <div style="display: inline">
@@ -334,7 +351,7 @@
       </div>
     </center>
   <hr/>
-  <div title="The node contains at least one insecure (not HTTPS) request">
+  <div title="This node contains at least one insecure (not HTTPS) request">
     <img src="{{ url_for('static', filename='insecure.svg') }}" alt="Insecure requests"
          height="20" width="20"> Unencrypted requests
   </div>
@@ -342,6 +359,11 @@
   <div title="This node contains only empty responses">
     <img src="{{ url_for('static', filename='empty.svg') }}" alt="Empty responses"
          height="20" width="20"> Empty responses
+  </div>
+
+  <div title="This node contains POST requests">
+    <img src="{{ url_for('static', filename='send-arrow-up.svg') }}" alt="POST requests"
+         height="20" width="20"> POST requests
   </div>
 
   <div title="Number of cookies received in the responses of this node">
@@ -415,18 +437,12 @@
     </div>
   </div>
 
-  <div style="width: 70px; float: right;">
-    <center>
-    <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#legend">
-      <img src="{{ url_for('static', filename='up.jpg') }}" alt="Maximize legend" height="40" width="40" title="Expand">
-      <b>Legend</b>
-    </button>
-    </center>
-  </div>
 </div>
 
+{{ render_messages(container=True, dismissible=True) }}
+</div>
 
-<!-- Modals -->
+<!-- Modals - Not in the main div. -->
 
 <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
@@ -1196,6 +1212,4 @@
       </div>
   </div>
 </div>
-
-<div id="tree_svg"></div>
 {% endblock content %}

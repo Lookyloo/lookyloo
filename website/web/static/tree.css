@@ -1,3 +1,9 @@
+#tree_logo {
+  width: 205px;
+}
+#tree_svg {
+  position: relative;
+}
 .node circle {
   fill: #fff;
   stroke: steelblue;
@@ -12,6 +18,8 @@
   position: fixed;
   bottom: 5px;
   text-align: center;
+  width: 50%;
+  transform: translate(50%);
 }
 
 .blur {
@@ -52,9 +60,23 @@ hr {
   border-width: 1px;
 }
 
-/* menu vertical */
-#menu_vertical {
+#menu-tree-top {
+  display: flex;
+  flex-direction: row;
   position: fixed;
+}
+
+/* menu vertical */
+#menu_container_vertical {
+  position: sticky;
+  top: 5px;
+  left: 5px;
+  padding: 5px;
+  width: fit-content;
+}
+
+#menu_vertical {
+  position: sticky;
   top: 5px;
   left: 5px;
   background: white;
@@ -62,12 +84,6 @@ hr {
   padding: 5px;
 }
 
-#menu_container_vertical {
-  position: fixed;
-  top: 5px;
-  left: 5px;
-  padding: 5px;
-}
 
 #menu_container_vertical .menu-header {
   width: 200px;
@@ -89,21 +105,22 @@ hr {
 
 
 /* menu horizontal */
+
+#menu_container_horizontal {
+  position: sticky;
+  top: 5px;
+  left: 217px;
+  padding: 5px;
+  width: 80%;
+}
+
 #menu_horizontal {
-  position: fixed;
+  position: sticky;
   top: 5px;
   background: white;
   border: 2px solid;
   padding: 5px;
-}
-
-#menu_container_horizontal {
-  position: fixed;
-  top: 5px;
-  left: 5px;
-  left: 217px;
-  padding: 5px;
-  width: 80%;
+  width: fit-content;
 }
 
 .hstack{
@@ -187,7 +204,14 @@ hr {
   padding: 5px;
 }
 
-/* Fast categories*/ 
+#legend_show {
+  position: fixed;
+  bottom: 5px;
+  right: 5px;
+  width: 70px;
+}
+
+/* Fast categories*/
 .fast-categories {
   border: 2px solid;
   margin: 5px;
