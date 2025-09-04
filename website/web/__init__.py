@@ -2914,12 +2914,20 @@ def post_table(table_name: str, value: str) -> Response:
                     data = ', '.join(record.rdata)
                 else:
                     data = record.rdata
+
+                if record.rrtype in ['A', 'AAAA']:
+                    # make the rrname a link to IP view
+                    rrname_url = url_for('ip_details', ip=record.rrname, from_popup=True)
+                    rrname = f'<a href="{rrname_url}">{record.rrname}</a>'
+                else:
+                    rrname = record.rrname
+
                 to_append = {
                     'time_first': record.time_first_datetime.isoformat(),
                     'time_last': record.time_last_datetime.isoformat(),
                     'rrtype': record.rrtype,
                     'rdata': f'<span class="d-inline-block text-break">{data}</span>',
-                    'rrname': f'<span class="d-inline-block text-break">{record.rrname}</span>'
+                    'rrname': f'<span class="d-inline-block text-break">{rrname}</span>'
                 }
                 prepared_records.append(to_append)
         return jsonify(prepared_records)
