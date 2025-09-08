@@ -1,0 +1,175 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% if error %}
+<div class="alert alert-warning" role="alert">
+ Issue while getting trusted timestamps: {{error}}
+</div>
+{% endif %}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Download</th>
+      <th scope="col">Trusted Timestamp (RFC 3161)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Screenshot</th>
+      <td>
+          <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a>
+      </td>
+      <td>{{tt_entries.get('png', 'Unavailable')}}
+        {% if tt_entries.get('png') %}
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='png') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Storage (Cookies, Local Storage, Indexed DB)</th>
+      <td><a href="{{ url_for('storage_state_download', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>{{tt_entries.get('storage', 'Unavailable')}}
+        {% if tt_entries.get('storage') %}
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='storage') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">HTTP Archive</th>
+      <td><a href="{{ url_for('har_download', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>{{tt_entries.get('har', 'Unavailable')}}
+       {% if tt_entries.get('har') %}
+       <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='har') }}" role="button">{{ render_icon('cloud-download') }}</a>
+       {% endif %}
+       </td>
+    </tr>
+    <tr>
+      <th scope="row">Rendered HTML page</th>
+      <td><a href="{{ url_for('html', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>{{tt_entries.get('html', 'Unavailable')}}
+        {% if tt_entries.get('html') %}
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='html') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% if has_downloads %}
+    <tr>
+      <th scope="row">Downloaded files</th>
+      <td><a href="{{ url_for('data', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>
+        Filename: {{tt_entries.get('downloaded_filename', 'Unavailable')}}
+        {% if tt_entries.get('downloaded_filename') %}
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='downloaded_filename') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        {% endif %}
+        <br>
+        File content: {{tt_entries.get('downloaded_file', 'Unavailable')}}
+        {% if tt_entries.get('downloaded_file') %}
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='downloaded_file') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% endif %}
+    <tr>
+      <th scope="row">Tree as PNG file</th>
+      <td><a href="#" id="dlTreeAsSVG" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <th scope="row">Cookie Jar</th>
+      <td><a href="{{ url_for('cookies', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <th scope="row">Hashes for all the ressources</th>
+      <td><a href="{{ url_for('hashes_tree', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <th scope="row">Full capture</th>
+<td><a href="{{ url_for('export', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <th scope="row">Capture as MISP event</th>
+      <td><a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
+    </tr>
+    {% if parent_uuid %}
+    <tr>
+      <th scope="row">... with the parents</th>
+      <td><a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, with_parents=True) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
+    </tr>
+    {% endif %}
+    <tr>
+      <th scope="row">List of redirects</th>
+      <td><a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
+    </tr>
+  </tbody>
+</table>
+
+{% if not error %}
+<div class="alert alert-info" role="alert">
+  <a href="{{url_for('all_trusted_timestamp', tree_uuid=tree_uuid)}}">Download</a> all the elements with trusted timestamps.
+</div>
+<div class="alert alert-info" role="alert">
+  Trusted timestamps were validated with <a href="data:application/x-x509-ca-cert;base64,{{b64_certificate}}" download="certificate.der">this certificate</a>.
+</div>
+
+<div class="alert alert-primary" role="alert">
+ When a trusted timestamp is listed above, it has been validated, but you can also validate the file manually:
+</div>
+<pre>
+  <code>openssl ts -CApath /etc/ssl/certs/ -verify [timestamp_response].tsr -in png.tsr -data [element]</code>
+</pre>
+<div>
+  Example:
+  <pre>
+    <code>openssl ts -CApath /etc/ssl/certs/ -verify -in png.tsr -data image.png</code>
+    <samp>
+Using configuration from /usr/lib/ssl/openssl.cnf
+Verification: OK
+    </samp>
+  </pre>
+</div>
+
+<hr/>
+
+<div class="alert alert-primary" role="alert">
+ You can also show the content of the TSR file:
+</div>
+<pre>
+  <code>openssl ts -reply -in [timestamp_response].tsr -text</code>
+</pre>
+<div>
+  Example:
+  <pre>
+    <code>openssl ts -reply -in png.tsr -text</code>
+    <samp>
+Using configuration from /usr/lib/ssl/openssl.cnf
+Status info:
+Status: Granted.
+Status description: Operation Okay
+Failure info: unspecified
+
+TST info:
+Version: 1
+Policy OID: 1.3.6.1.4.1.22177.300.22.1
+Hash Algorithm: sha512
+Message data:
+    0000 - 0f 64 63 e9 4d 96 be 05-40 1d 83 fa cb dd c1 62   .dc.M...@......b
+    0010 - 08 bf 0b 2e e3 07 df e8-6b a9 bf 35 b0 8f bc 58   ........k..5...X
+    0020 - 26 4b 8c e9 0f 6e f6 27-82 1a 81 df b9 16 9f 99   &K...n.'........
+    0030 - ed d7 33 a8 c7 1e 3d e3-1a 3e 6f e2 5c d3 70 8e   ..3...=..>o.\.p.
+Serial number: 0x086A1AC06DF0A3FAC191E2DDF676350C62664899
+Time stamp: Sep  8 12:48:07 2025 GMT
+Accuracy: unspecified
+Ordering: no
+Nonce: 0xDFF7090FF0BF7057
+TSA: unspecified
+    </samp>
+  </pre>
+</div>
+{% endif %}
