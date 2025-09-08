@@ -16,6 +16,7 @@ import smtplib
 import ssl
 import time
 
+from base64 import b64decode, b64encode
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from email.message import EmailMessage
@@ -28,8 +29,12 @@ from urllib.parse import urlparse, unquote_plus
 from uuid import uuid4
 from zipfile import ZipFile, ZIP_DEFLATED
 
+import certifi
+import cryptography.exceptions
 import mmh3
 
+from cryptography import x509
+from cryptography.hazmat.primitives.serialization import Encoding
 from defang import defang  # type: ignore[import-untyped]
 from har2tree import CrawledTree, HostNode, URLNode, Har2TreeError
 from lacuscore import (LacusCore, CaptureSettingsError,
@@ -52,6 +57,8 @@ from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable
 from pylookyloomonitoring import PyLookylooMonitoring
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
+from rfc3161_client import (TimeStampResponse, VerifierBuilder, VerificationError,
+                            decode_timestamp_response)
 
 from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
@@ -227,6 +234,8 @@ class Lookyloo():
             # We need a redis connector that doesn't decode.
             redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))  # type: ignore[type-arg]
             self._lacus = LacusCore(redis, tor_proxy=get_config('generic', 'tor_proxy'),
+                                    i2p_proxy=get_config('generic', 'i2p_proxy'),
+                                    tt_settings=get_config('generic', 'trusted_timestamp_settings'),
                                     max_capture_time=get_config('generic', 'max_capture_time'),
                                     only_global_lookups=get_config('generic', 'only_global_lookups'),
                                     headed_allowed=self.headed_allowed,
@@ -756,6 +765,7 @@ class Lookyloo():
                 color_scheme=query.color_scheme,
                 rendered_hostname_only=query.rendered_hostname_only,
                 with_favicon=query.with_favicon,
+                with_trusted_timestamps=query.with_trusted_timestamps,
                 allow_tracking=query.allow_tracking,
                 java_script_enabled=query.java_script_enabled,
                 headless=query.headless,
@@ -1070,6 +1080,151 @@ class Lookyloo():
             return {"error": "Unable to send mail"}
         return True
 
+    def _load_tt_file(self, capture_uuid: str, /) -> dict[str, bytes] | None:
+        tt_file = self._captures_index[capture_uuid].capture_dir / '0.trusted_timestamps.json'
+        if not tt_file.exists():
+            return None
+
+        with tt_file.open() as f:
+            return {name: b64decode(tst) for name, tst in json.load(f).items()}
+
+    def get_trusted_timestamp(self, capture_uuid: str, /, name: str) -> bytes | None:
+        if trusted_timestamps := self._load_tt_file(capture_uuid):
+            return trusted_timestamps.get(name)
+        return None
+
+    def _prepare_tsr_data(self, capture_uuid: str, /) -> tuple[dict[str, tuple[TimeStampResponse, bytes]], cryptography.x509.Certificate] | dict[str, str]:
+
+        def find_certificate(info: tuple[TimeStampResponse, bytes]) -> cryptography.x509.Certificate | None:
+            tsr, data = info
+
+            with open(certifi.where(), "rb") as f:
+                try:
+                    cert_authorities = x509.load_pem_x509_certificates(f.read())
+                except Exception as e:
+                    self.logger.warning(f'Unable to read file {f}: {e}')
+
+            for certificate in cert_authorities:
+                verifier = VerifierBuilder().add_root_certificate(certificate).build()
+                try:
+                    verifier.verify_message(tsr, data)
+                    return certificate
+                except VerificationError:
+                    continue
+            else:
+                # unable to find certificate
+                return None
+
+        trusted_timestamps = self._load_tt_file(capture_uuid)
+        if not trusted_timestamps:
+            return {'warning': "No trusted timestamps in the capture."}
+
+        certificate: cryptography.x509.Certificate | None = None
+        to_check: dict[str, tuple[TimeStampResponse, bytes]] = {}
+        success: bool
+        data: str | bytes | BytesIO | None
+        for tsr_name, tst in trusted_timestamps.items():
+            # turn the base64 encoded blobs back to bytes and TimeStampResponse for validation
+            tsr = decode_timestamp_response(tst)
+            if tsr_name == 'last_redirected_url':
+                data = self.get_last_url_in_address_bar(capture_uuid)
+                if data:
+                    to_check[tsr_name] = (tsr, data.encode())
+                    if certificate is None:
+                        certificate = find_certificate(to_check[tsr_name])
+                else:
+                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+            elif tsr_name == 'har':
+                success, data = self.get_har(capture_uuid)
+                if success:
+                    to_check[tsr_name] = (tsr, gzip.decompress(data.getvalue()))
+                    if certificate is None:
+                        certificate = find_certificate(to_check[tsr_name])
+                else:
+                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+            elif tsr_name == 'storage':
+                success, data = self.get_storage_state(capture_uuid)
+                if success:
+                    to_check[tsr_name] = (tsr, data.getvalue())
+                    if certificate is None:
+                        certificate = find_certificate(to_check[tsr_name])
+                else:
+                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+            elif tsr_name == 'html':
+                success, data = self.get_html(capture_uuid)
+                if success:
+                    to_check[tsr_name] = (tsr, data.getvalue())
+                    if certificate is None:
+                        certificate = find_certificate(to_check[tsr_name])
+                else:
+                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+            elif tsr_name == 'png':
+                success, data = self.get_screenshot(capture_uuid)
+                if success:
+                    to_check[tsr_name] = (tsr, data.getvalue())
+                    if certificate is None:
+                        certificate = find_certificate(to_check[tsr_name])
+                else:
+                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+            elif tsr_name in ['downloaded_filename', 'downloaded_file']:
+                # get those two in one call
+                if to_check.get('downloaded_filename') or to_check.get('downloaded_file'):
+                    continue
+                success, filename, data = self.get_data(capture_uuid)
+                if success:
+                    to_check['downloaded_filename'] = (tsr, filename.encode())
+                    to_check['downloaded_file'] = (tsr, data.getvalue())
+                else:
+                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+            else:
+                self.logger.warning(f'[{capture_uuid}] Unexpected entry in trusted timestamps: {tsr_name}')
+                continue
+
+        if not certificate:
+            self.logger.warning(f'[{capture_uuid}] Unable to find certificate, cannot validate trusted timestamps.')
+            return {'warning': 'Unable to find certificate, cannot validate trusted timestamps.'}
+        return to_check, certificate
+
+    def check_trusted_timestamps(self, capture_uuid: str, /) -> tuple[dict[str, datetime | str], str] | dict[str, str]:
+        tsr_data = self._prepare_tsr_data(capture_uuid)
+        if isinstance(tsr_data, dict):
+            return tsr_data
+
+        to_check, certificate = tsr_data
+
+        verifier = VerifierBuilder().add_root_certificate(certificate).build()
+        to_return: dict[str, datetime | str] = {}
+        for tsr_name, entry in to_check.items():
+            tsr, data = entry
+            try:
+                verifier.verify_message(tsr, data)
+                to_return[tsr_name] = tsr.tst_info.gen_time
+            except VerificationError as e:
+                self.logger.warning(f'Unable to validate {tsr_name} : {e}')
+                to_return[tsr_name] = 'Unable to validate: {e}'
+        return to_return, b64encode(certificate.public_bytes(Encoding.DER)).decode()
+
+    def bundle_all_trusted_timestamps(self, capture_uuid: str, /) -> BytesIO | dict[str, str]:
+        tsr_data = self._prepare_tsr_data(capture_uuid)
+        if isinstance(tsr_data, dict):
+            return tsr_data
+
+        to_check, certificate = tsr_data
+        to_return = BytesIO()
+        validator_bash = ''
+        with ZipFile(to_return, 'w', compression=ZIP_DEFLATED) as z:
+            z.writestr('certificate.der', certificate.public_bytes(Encoding.DER))
+            for tsr_name, entry in to_check.items():
+                tsr, data = entry
+                z.writestr(f'{tsr_name}.tsr', tsr.as_bytes())
+                z.writestr(f'{tsr_name}.data', data)
+                validator_bash += f"openssl ts -CApath /etc/ssl/certs/ -verify -in {tsr_name}.tsr -data {tsr_name}.data\n"
+                validator_bash += f"openssl ts -reply -in {tsr_name}.tsr -text\n"
+                validator_bash += "-------------------------------------------------\n\n"
+            z.writestr('validator.sh', validator_bash)
+        to_return.seek(0)
+        return to_return
+
     def _get_raw(self, capture_uuid: str, /, extension: str='*', all_files: bool=True) -> tuple[bool, BytesIO]:
         '''Get file(s) from the capture directory'''
         try:
@@ -1138,6 +1293,10 @@ class Lookyloo():
     def get_html(self, capture_uuid: str, /, all_html: bool=False) -> tuple[bool, BytesIO]:
         '''Get rendered HTML'''
         return self._get_raw(capture_uuid, 'html', all_html)
+
+    def get_har(self, capture_uuid: str, /, all_har: bool=False) -> tuple[bool, BytesIO]:
+        '''Get rendered HAR'''
+        return self._get_raw(capture_uuid, 'har.gz', all_har)
 
     def get_data(self, capture_uuid: str, /, *, index_in_zip: int | None=None) -> tuple[bool, str, BytesIO]:
         '''Get the data'''
@@ -1627,6 +1786,7 @@ class Lookyloo():
         storage: StorageState | None = None
         capture_settings: CaptureSettings | None = None
         potential_favicons: set[bytes] | None = None
+        trusted_timestamps: dict[str, str] | None = None
 
         files_to_skip = ['cnames.json', 'ipasn.json', 'ips.json', 'mx.json',
                          'nameservers.json', 'soa.json', 'hashlookup.json']
@@ -1677,6 +1837,8 @@ class Lookyloo():
                     downloaded_file = lookyloo_capture.read(filename)
                 elif filename.endswith('error.txt'):
                     error = lookyloo_capture.read(filename).decode()
+                elif filename.endswith('0.trusted_timestamps.json'):
+                    trusted_timestamps = json.loads(lookyloo_capture.read(filename).decode())
                 elif filename.endswith('capture_settings.json'):
                     _capture_settings = json.loads(lookyloo_capture.read(filename))
                     try:
@@ -1712,7 +1874,8 @@ class Lookyloo():
                                last_redirected_url=last_redirected_url,
                                cookies=cookies, storage=storage,
                                capture_settings=capture_settings if capture_settings else None,
-                               potential_favicons=potential_favicons)
+                               potential_favicons=potential_favicons,
+                               trusted_timestamps=trusted_timestamps if trusted_timestamps else None)
             return uuid, messages
 
     def store_capture(self, uuid: str, is_public: bool,
@@ -1726,6 +1889,7 @@ class Lookyloo():
                       storage: StorageState | dict[str, Any] | None=None,
                       capture_settings: CaptureSettings | None=None,
                       potential_favicons: set[bytes] | None=None,
+                      trusted_timestamps: dict[str, str] | None=None,
                       auto_report: bool | dict[str, str] | None = None
                       ) -> Path:
 
@@ -1805,6 +1969,10 @@ class Lookyloo():
             for f_id, favicon in enumerate(potential_favicons):
                 with (dirpath / f'{f_id}.potential_favicons.ico').open('wb') as _fw:
                     _fw.write(favicon)
+
+        if trusted_timestamps:
+            with (dirpath / '0.trusted_timestamps.json').open('w') as _tt:
+                json.dump(trusted_timestamps, _tt)
 
         if auto_report:
             # autoreport needs to be triggered once the tree is build

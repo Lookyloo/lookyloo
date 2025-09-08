@@ -50,6 +50,14 @@
   "tor_proxy": {
     "server": "socks5://127.0.0.1:9050"
   },
+  "i2p_proxy": {
+    "server": "http://127.0.0.1:4444"
+  },
+  "trusted_timestamp_settings": {
+    "url": "https://zeitstempel.dfn.de/",
+    "hashname": "sha512",
+    "enable_default": false
+  },
   "global_proxy": {
     "enable": false,
     "server": "",
@@ -127,7 +135,9 @@
     "remote_lacus": "By default, lookyloo will do the capture locally. Enabling this feature means you have a dedicated Lacus instance somewhere",
     "multiple_remote_lacus": "By default, lookyloo will do the capture locally. Enabling this feature means you have multiple dedicated Lacus instances somewhere",
     "monitoring": "Enable connection to a remote monitoring instance",
-    "tor_proxy": "URL to connect to a SOCKS 5 proxy for tor - If you capture via a lacus instance, this value is ignored",
+    "tor_proxy": "[Ignored if remote Lacus instance] URL to connect to a SOCKS 5 proxy for tor.",
+    "i2p_proxy": "[Ignored if remote Lacus instance] URL to connect to an HTTP proxy for i2p.",
+    "trusted_timestamp_settings": "[Ignored if remote Lacus instance] Settings to connect to a TimeStamp Authority.",
     "global_proxy": "Proxy configuration to use for *all* the requests (except .onions) - If you capture via a lacus instance, this value is ignored",
     "email": "Configuration for sending email notifications.",
     "email_smtp_auth": "Email SMTP auth configuration",

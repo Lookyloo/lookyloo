@@ -136,7 +136,7 @@
 <div id="tree_svg" class="container-fluid">
 
 <div id="menu-tree-top">
- <div id="menu_container_vertical" class="tree-panel-container">
+ <div id="menu_container_vertical">
   <div id=menu_vertical>
     <div class="menu_vertical_header">
       <a href="{{ url_for('index') }}" title="Back to captures">
@@ -178,7 +178,7 @@
  </div>
 
 
- <div id="menu_container_horizontal" class="tree-panel-container">
+ <div id="menu_container_horizontal">
   <div id=menu_horizontal class="d-flex">
     <div class="flex-shrink-1 align-self-center">
      <div class="mx-auto" style="width: 52px;">
@@ -279,8 +279,9 @@
               <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button"
                   title="Submit the URL again">Re-Capture</a>
 
-              <a href="#downloadModal" data-bs-toggle="modal" data-bs-target="#downloadModal" role="button"
-                  title="Download specific elements of the capture">Download elements</a>
+              <a href="#downloadModal" data-remote="{{ url_for('download_elements', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
+                 data-bs-target="#downloadModal" role="button" title="Forensic Acquisition of the Web Capture">Get forensic aquisition</a>
+
               {% if misp_push%}
                 <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
                   data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
@@ -328,7 +329,7 @@
  </div>
 </div>
 
-<div id="legend_container" class="tree-panel-container">
+<div id="legend_container">
   <!-- Keep it behind the legend -->
   <div id="legend_show">
     <center>
@@ -970,46 +971,36 @@
   </div>
 </div>
 
+<div class="modal fade" id="statsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="statsModalLabel">Statistics</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading statistics ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
 <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
           <div class="modal-header">
               <h4 class="modal-title" id="downloadModalLabel">
-                  Download specific elements of the capture.
+                  Forensic Acquisition of the Web Capture
               </h4>
               <br>
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <br>
           <div class="modal-body">
-          <ul>
-            <li>
-              <a href="#" id="dlTreeAsSVG" role="button">Download tree as PNG</a>
-            </li>
-            <li>
-              <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">Download screenshot</a>
-            </li>
-            <li>
-              <a href="{{ url_for('cookies', tree_uuid=tree_uuid) }}" role="button">Download cookiejar</a>
-            </li>
-            <li>
-              <a href="{{ url_for('hashes_tree', tree_uuid=tree_uuid) }}" role="button">Download hashes for all the resources</a>
-            </li>
-            <li>
-              <a href="{{ url_for('export', tree_uuid=tree_uuid) }}" role="button">Download full capture</a>
-            </li>
-            <li>
-              <a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid) }}" role="button">Download as MISP Event</a>
-              {% if parent_uuid %}
-              (<a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, with_parents=True) }}" role="button">with parents</a>)
-              {% endif %}
-            </li>
-            {% if has_redirects %}
-            <li>
-              <a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">Download redirects</a>
-            </li>
-            {% endif %}
-          </ul>
+            ... loading elements ...
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

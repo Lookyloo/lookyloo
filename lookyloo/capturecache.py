@@ -24,6 +24,7 @@ from typing import Any
 from collections.abc import MutableMapping, Iterator
 
 import dns.rdatatype
+
 from dns.resolver import Cache
 from dns.asyncresolver import Resolver
 from har2tree import CrawledTree, Har2TreeError, HarFile

@@ -111,6 +111,7 @@ class AsyncCapture(AbstractManager):
                         storage=entries.get('storage'),
                         capture_settings=to_capture,
                         potential_favicons=entries.get('potential_favicons'),
+                        trusted_timestamps=entries.get('trusted_timestamps'),
                         auto_report=to_capture.auto_report,
                     )
                 else:

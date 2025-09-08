@@ -1,9 +1,7 @@
-#tree_logo {
-  width: 205px;
-}
 #tree_svg {
   position: relative;
 }
+
 .node circle {
   fill: #fff;
   stroke: steelblue;
@@ -67,6 +65,10 @@ hr {
 }
 
 /* menu vertical */
+#tree_logo {
+  width: 205px;
+}
+
 #menu_container_vertical {
   position: sticky;
   top: 5px;
@@ -84,7 +86,6 @@ hr {
   padding: 5px;
 }
 
-
 #menu_container_vertical .menu-header {
   width: 200px;
   height: 110px;
@@ -95,14 +96,12 @@ hr {
     padding: 10px 0;
 }
 
-
 #menu_container_vertical ul li a {
     padding: 5px;
     font-size: 1.1em;
     display: block;
     text-align: center;;
 }
-
 
 /* menu horizontal */
 
@@ -126,7 +125,6 @@ hr {
 .hstack{
   height: 106.6px;
 }
-
 
 
 /* Dropdown Menus */
@@ -186,7 +184,6 @@ hr {
   display: block;
 }
 
-
 /* legend */
 #legend_container {
   position: fixed;
@@ -197,7 +194,7 @@ hr {
 
 #legend {
   position: fixed;
-  bottom: 5px;
+  top: 55vw;
   right: 5px;
   background: white;
   border: 2px solid;
@@ -206,8 +203,8 @@ hr {
 
 #legend_show {
   position: fixed;
-  bottom: 5px;
-  right: 5px;
+  top: 85vw;
+  right: 10px;
   width: 70px;
 }
 

@@ -299,6 +299,17 @@
         </div>
 
         <div class="row mb-3">
+          <label for="with_trusted_timestamps" class="col-sm-2 col-form-check-label">Request trusted timestamps (<a href="https://en.wikipedia.org/wiki/Trusted_timestamping">RFC 3161</a>):</label>
+          <div class="col-sm-10">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="with_trusted_timestamps" name="with_trusted_timestamps" aria-describedby="with_trusted_timestamps_help"
+                {% if predefined_settings.get('with_trusted_timestamps') is true or tt_enabled_default%}checked="checked"{% endif %}>
+              <div id="with_trusted_timestamps_help" class="form-text">Once the capture is done, we trigger a request to get Trusted Timestamps from a pre-defined provider.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
           <label for="java_script_enabled" class="col-sm-2 col-form-check-label">Enable <a href="https://playwright.dev/python/docs/emulation#javascript-enabled">JavaScript</a>:</label>
           <div class="col-sm-10">
             <div class="form-check">

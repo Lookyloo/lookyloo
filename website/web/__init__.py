@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import calendar
 import functools
+import gzip
 import hashlib
 import http
 import ipaddress
@@ -916,6 +917,44 @@ def stats(tree_uuid: str) -> str:
     return render_template('statistics.html', uuid=tree_uuid, stats=stats)
 
 
+@app.route('/tree/<string:tree_uuid>/trusted_timestamp/<string:name>', methods=['GET'])
+def trusted_timestamp_tsr(tree_uuid: str, name: str) -> Response:
+    if tsr := lookyloo.get_trusted_timestamp(tree_uuid, name):
+        return send_file(BytesIO(tsr), as_attachment=True, download_name=f'{name}.tsr')
+    return send_file(BytesIO(f'No trusted timestamp for {name}'.encode()), as_attachment=True, download_name='empty.txt')
+
+
+@app.route('/tree/<string:tree_uuid>/all_trusted_timestamp', methods=['GET'])
+def all_trusted_timestamp(tree_uuid: str) -> Response:
+    bundle = lookyloo.bundle_all_trusted_timestamps(tree_uuid)
+    if isinstance(bundle, BytesIO):
+        return send_file(bundle, as_attachment=True, download_name=f'{tree_uuid}_all_trusted_timestamps.zip')
+    return send_file(BytesIO(f'No trusted timestamp for {tree_uuid}'.encode()), as_attachment=True, download_name='empty.txt')
+
+
+@app.route('/tree/<string:tree_uuid>/download_elements', methods=['GET'])
+def download_elements(tree_uuid: str) -> str:
+    error: str | None
+    tts = lookyloo.check_trusted_timestamps(tree_uuid)
+    tt_entries: dict[str, str | datetime]
+    if isinstance(tts, dict):
+        error = list(tts.values())[0]
+        tt_entries = {}
+        cert = ''
+    else:
+        error = None
+        tt_entries, cert = tts
+    if cache := lookyloo.capture_cache(tree_uuid):
+        parent_uuid = True if cache.parent else False
+    else:
+        parent_uuid = False
+    has_downloads, _, _ = lookyloo.get_data(tree_uuid)
+    return render_template('download_elements.html', tree_uuid=tree_uuid,
+                           tt_entries=tt_entries, parent_uuid=parent_uuid,
+                           b64_certificate=cert, error=error,
+                           has_downloads=has_downloads)
+
+
 @app.route('/tree/<string:tree_uuid>/get_downloaded_file', methods=['GET'])
 def get_downloaded_file(tree_uuid: str) -> Response:
     # NOTE: it can be 0
@@ -1283,6 +1322,17 @@ def storage_state_download(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_storage_state(tree_uuid)
     if success:
         return send_file(to_return, mimetype='application/json',
+                         as_attachment=True, download_name='storage_state.json')
+    return make_response(Response('No storage state available.', mimetype='text/text'), 404)
+
+
+@app.route('/tree/<string:tree_uuid>/har_download', methods=['GET'])
+@file_response  # type: ignore[misc]
+def har_download(tree_uuid: str) -> Response:
+    success, to_return = lookyloo.get_har(tree_uuid)
+    if success:
+        # The file is gzipped by default unpack and return as json
+        return send_file(BytesIO(gzip.decompress(to_return.getvalue())), mimetype='application/json',
                          as_attachment=True, download_name='storage_state.json')
     return make_response(Response('No storage state available.', mimetype='text/text'), 404)
 
@@ -1816,6 +1866,12 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
     if get_config('mastobot', 'enable'):
         mastodon_domain = get_config('mastobot', 'domain')
         mastodon_botname = get_config('mastobot', 'botname')
+
+    # check if trusted_timestamp should be enabled by default
+    if tt_settings := get_config('generic', 'trusted_timestamp_settings'):
+        tt_enabled_default = tt_settings.get('enable_default', False)
+    else:
+        tt_enabled_default = False
     try:
         if isinstance(lookyloo.lacus, dict):
             multiple_remote_lacus = {}
@@ -1862,6 +1918,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            show_project_page=get_config('generic', 'show_project_page'),
                            version=pkg_version,
                            headed_allowed=lookyloo.headed_allowed,
+                           tt_enabled_default=tt_enabled_default,
                            multiple_remote_lacus=multiple_remote_lacus,
                            default_remote_lacus=default_remote_lacus,
                            mastobot_enabled=get_config('mastobot', 'enable'),
@@ -2021,6 +2078,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
 
         capture_query['listing'] = True if request.form.get('listing') else False
         capture_query['allow_tracking'] = True if request.form.get('allow_tracking') else False
+        capture_query['with_trusted_timestamps'] = True if request.form.get('with_trusted_timestamps') else False
         capture_query['java_script_enabled'] = True if request.form.get('java_script_enabled') else False
         capture_query['remote_lacus_name'] = request.form.get('remote_lacus_name')
 
