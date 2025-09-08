@@ -62,6 +62,7 @@ hr {
   display: flex;
   flex-direction: row;
   position: fixed;
+  width: 0;
 }
 
 /* menu vertical */
