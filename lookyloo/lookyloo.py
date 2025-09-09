@@ -1173,8 +1173,21 @@ class Lookyloo():
                     continue
                 success, filename, data = self.get_data(capture_uuid)
                 if success:
-                    to_check['downloaded_filename'] = (tsr, filename.encode())
-                    to_check['downloaded_file'] = (tsr, data.getvalue())
+                    # get the right tsr, in a dirtyish way.
+                    if dl_filename := trusted_timestamps.get('downloaded_filename'):
+                        tsr_filename = decode_timestamp_response(dl_filename)
+                    else:
+                        self.logger.warning(f'[{capture_uuid}] Unable to get downloaded_filename for trusted timestamp validation.')
+                        continue
+
+                    if dl_file := trusted_timestamps.get('downloaded_file'):
+                        tsr_file = decode_timestamp_response(dl_file)
+                    else:
+                        self.logger.warning(f'[{capture_uuid}] Unable to get downloaded_file for trusted timestamp validation.')
+                        continue
+
+                    to_check['downloaded_filename'] = (tsr_filename, filename.encode())
+                    to_check['downloaded_file'] = (tsr_file, data.getvalue())
                 else:
                     self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
             else:
@@ -1202,7 +1215,7 @@ class Lookyloo():
                 to_return[tsr_name] = tsr.tst_info.gen_time
             except VerificationError as e:
                 self.logger.warning(f'Unable to validate {tsr_name} : {e}')
-                to_return[tsr_name] = 'Unable to validate: {e}'
+                to_return[tsr_name] = f'Unable to validate: {e}'
         return to_return, b64encode(certificate.public_bytes(Encoding.DER)).decode()
 
     def bundle_all_trusted_timestamps(self, capture_uuid: str, /) -> BytesIO | dict[str, str]:
@@ -1217,11 +1230,25 @@ class Lookyloo():
             z.writestr('certificate.der', certificate.public_bytes(Encoding.DER))
             for tsr_name, entry in to_check.items():
                 tsr, data = entry
-                z.writestr(f'{tsr_name}.tsr', tsr.as_bytes())
-                z.writestr(f'{tsr_name}.data', data)
-                validator_bash += f"openssl ts -CApath /etc/ssl/certs/ -verify -in {tsr_name}.tsr -data {tsr_name}.data\n"
-                validator_bash += f"openssl ts -reply -in {tsr_name}.tsr -text\n"
-                validator_bash += "-------------------------------------------------\n\n"
+                if tsr_name == 'har':
+                    filename = 'har.json'
+                elif tsr_name == 'html':
+                    filename = 'rendered_page.html'
+                elif tsr_name == 'last_redirected_url':
+                    filename = 'last_redirected_url.txt'
+                elif tsr_name == 'png':
+                    filename = 'screenshot.png'
+                elif tsr_name == 'storage':
+                    filename = 'storage.json'
+                elif tsr_name == 'downloaded_filename':
+                    filename = 'downloaded_filename.txt'
+                elif tsr_name == 'downloaded_file':
+                    filename = 'downloaded_file.bin'
+                z.writestr(f'{filename}.tsr', tsr.as_bytes())
+                z.writestr(filename, data)
+                validator_bash += f"openssl ts -CApath /etc/ssl/certs/ -verify -in {filename}.tsr -data {filename}\n"
+                validator_bash += f"openssl ts -reply -in {filename}.tsr -text\n"
+                validator_bash += " echo -------------------------------------------------\n\n"
             z.writestr('validator.sh', validator_bash)
         to_return.seek(0)
         return to_return
