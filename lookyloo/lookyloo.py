@@ -116,6 +116,7 @@ class Lookyloo():
 
         self._priority = get_config('generic', 'priority')
         self.headed_allowed = get_config('generic', 'allow_headed')
+        self.force_trusted_timestamp = get_config('generic', 'force_trusted_timestamp')
 
         # Initialize 3rd party components
         # ## Initialize MISP(s)
@@ -765,7 +766,7 @@ class Lookyloo():
                 color_scheme=query.color_scheme,
                 rendered_hostname_only=query.rendered_hostname_only,
                 with_favicon=query.with_favicon,
-                with_trusted_timestamps=query.with_trusted_timestamps,
+                with_trusted_timestamps=True if self.force_trusted_timestamp else query.with_trusted_timestamps,
                 allow_tracking=query.allow_tracking,
                 java_script_enabled=query.java_script_enabled,
                 headless=query.headless,

@@ -58,6 +58,7 @@
     "hashname": "sha512",
     "enable_default": false
   },
+  "force_trusted_timestamp": false,
   "global_proxy": {
     "enable": false,
     "server": "",
@@ -137,7 +138,8 @@
     "monitoring": "Enable connection to a remote monitoring instance",
     "tor_proxy": "[Ignored if remote Lacus instance] URL to connect to a SOCKS 5 proxy for tor.",
     "i2p_proxy": "[Ignored if remote Lacus instance] URL to connect to an HTTP proxy for i2p.",
-    "trusted_timestamp_settings": "[Ignored if remote Lacus instance] Settings to connect to a TimeStamp Authority.",
+    "trusted_timestamp_settings": "[URL Ignored if remote Lacus instance] Settings to connect to a TimeStamp Authority.",
+    "force_trusted_timestamp": "[If enabled and/or supported in Lacus] Always trigger a call to get trusted timestamps for each capture.",
     "global_proxy": "Proxy configuration to use for *all* the requests (except .onions) - If you capture via a lacus instance, this value is ignored",
     "email": "Configuration for sending email notifications.",
     "email_smtp_auth": "Email SMTP auth configuration",

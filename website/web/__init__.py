@@ -1867,11 +1867,15 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
         mastodon_domain = get_config('mastobot', 'domain')
         mastodon_botname = get_config('mastobot', 'botname')
 
-    # check if trusted_timestamp should be enabled by default
-    if tt_settings := get_config('generic', 'trusted_timestamp_settings'):
-        tt_enabled_default = tt_settings.get('enable_default', False)
-    else:
-        tt_enabled_default = False
+    # If it is forced, no reason to add the checkbox on the UI
+    hide_tt_checkbox = get_config('generic', 'force_trusted_timestamp')
+
+    tt_enabled_default = False
+    if not hide_tt_checkbox:
+        # check if trusted_timestamp should be enabled by default on the UI
+        if tt_settings := get_config('generic', 'trusted_timestamp_settings'):
+            tt_enabled_default = tt_settings.get('enable_default', False)
+
     try:
         if isinstance(lookyloo.lacus, dict):
             multiple_remote_lacus = {}
@@ -1919,6 +1923,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            version=pkg_version,
                            headed_allowed=lookyloo.headed_allowed,
                            tt_enabled_default=tt_enabled_default,
+                           hide_tt_checkbox=hide_tt_checkbox,
                            multiple_remote_lacus=multiple_remote_lacus,
                            default_remote_lacus=default_remote_lacus,
                            mastobot_enabled=get_config('mastobot', 'enable'),

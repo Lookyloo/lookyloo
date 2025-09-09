@@ -298,6 +298,7 @@
           </div>
         </div>
 
+        {% if not hide_tt_checkbox %}
         <div class="row mb-3">
           <label for="with_trusted_timestamps" class="col-sm-2 col-form-check-label">Request trusted timestamps (<a href="https://en.wikipedia.org/wiki/Trusted_timestamping">RFC 3161</a>):</label>
           <div class="col-sm-10">
@@ -308,6 +309,7 @@
             </div>
           </div>
         </div>
+        {% endif %}
 
         <div class="row mb-3">
           <label for="java_script_enabled" class="col-sm-2 col-form-check-label">Enable <a href="https://playwright.dev/python/docs/emulation#javascript-enabled">JavaScript</a>:</label>
