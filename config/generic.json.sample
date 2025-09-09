@@ -30,9 +30,9 @@
     "url": ""
   },
   "multiple_remote_lacus": {
-  "enable": false,
-  "default": "Lacus local",
-  "remote_lacus": [
+    "enable": false,
+    "default": "Lacus local",
+    "remote_lacus": [
       {
         "name": "Lacus local",
         "url": "http://127.0.0.1:7100"
@@ -73,17 +73,17 @@
     "confirm_message": "Message the users need to confirm before they submit a notification.",
     "defang_urls": true,
     "deduplicate": {
-        "uuid": true,
-        "hostnames": false,
-        "interval_in_sec": 86400
+      "uuid": true,
+      "hostnames": false,
+      "interval_in_sec": 86400
     }
   },
   "email_smtp_auth": {
-      "auth": false,
-      "smtp_user":"johndoe@myorg.local",
-      "smtp_pass":"password",
-      "smtp_use_starttls": true,
-      "verify_certificate": true
+    "auth": false,
+    "smtp_user": "johndoe@myorg.local",
+    "smtp_pass": "password",
+    "smtp_use_starttls": true,
+    "verify_certificate": true
   },
   "priority": {
     "sources": {
