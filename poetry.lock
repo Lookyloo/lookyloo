@@ -2038,21 +2038,21 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.17.4"
+version = "1.17.5"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.9.2"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.17.4-py3-none-any.whl", hash = "sha256:c1c1534d402320c3cc6b3f7d4cd01c9fac43a1512f0cdb01369a1836568c22f1"},
-    {file = "lacuscore-1.17.4.tar.gz", hash = "sha256:92e43a1e858585a4d32f619b309308fa1e067ef674024e97e3697b3251b4696b"},
+    {file = "lacuscore-1.17.5-py3-none-any.whl", hash = "sha256:d58213354428929d79ae933b42f7eb7f40d48c1c7db88988c345b818840f98ed"},
+    {file = "lacuscore-1.17.5.tar.gz", hash = "sha256:aec1741e89676c310c21e732e56967ea57546a160da0bb7b62202982c147bdbb"},
 ]
 
 [package.dependencies]
 async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 defang = ">=0.5.3"
 dnspython = [
-    {version = "<2.8", markers = "python_version < \"3.10\""},
+    {version = "<2.8.0", markers = "python_version < \"3.10\""},
     {version = ">=2.8.0", markers = "python_version >= \"3.10\""},
 ]
 eval-type-backport = {version = ">=0.2.2", markers = "python_version < \"3.10\""}
@@ -5828,4 +5828,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9.2,<3.14"
-content-hash = "56302395c58a54b272ace1de9ca9a8ea74b83f18af5a671b2228fcc1ce03f484"
+content-hash = "13b8e6bb15b26d8913f4045f6852f5f45558b586646371e164c3c44f9c63f737"
