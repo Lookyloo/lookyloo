@@ -37,6 +37,7 @@ api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 lookyloo: Lookyloo = get_lookyloo_instance()
 comparator: Comparator = Comparator()
 logging.config.dictConfig(get_config('logging'))
+logger = logging.getLogger('Lookyloo_WebAPI')
 
 
 def api_auth_check(method):  # type: ignore[no-untyped-def]
@@ -639,7 +640,7 @@ def _prepare_lacus_details(lacus: PyLacus, name: str) -> dict[str, Any]:
         if proxies := lacus.proxies():
             to_return['proxies'] = proxies
     except Exception as e:
-        logging.error(f'Unable to get proxies from Lacus: {e}')
+        logger.error(f'Unable to get proxies from Lacus: {e}')
     return to_return
 
 
@@ -1167,7 +1168,7 @@ class TLDCaptures(Resource):  # type: ignore[misc]
             except IndexError:
                 # The capture needs to be re-indexed
                 # NOTE: If this warning it printed on a loop for a capture, we have a problem with the index.
-                logging.warning(f'Capture {uuid} needs to be re-indexed.')
+                logger.warning(f'Capture {uuid} needs to be re-indexed.')
                 get_indexing(flask_login.current_user).force_reindex(uuid)
         return make_response(list(to_return))
 
@@ -1278,7 +1279,7 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
                             result = search_func(value, cached_captures_only=cached_captures_only, limit=limit)
                             param_results.append({response['capture_uuid'] for response in result['response']})  # type: ignore[index]
                         except Exception as e:
-                            logging.error(f"Failed to search {param}={value}: {e}")
+                            logger.error(f"Failed to search {param}={value}: {e}")
 
                     # Union results for multiple values of the same parameter (OR logic within parameter)
                     if param_results:
@@ -1300,7 +1301,7 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
                             result = search_func(value, cached_captures_only=cached_captures_only, limit=limit)
                             param_results.append({response['capture_uuid'] for response in result['response']})  # type: ignore[index]
                         except Exception as e:
-                            logging.error(f"Failed to search {param}={value}: {e}")
+                            logger.error(f"Failed to search {param}={value}: {e}")
 
                     # Union results for multiple values of the same parameter (OR logic within parameter)
                     if param_results:
@@ -1337,5 +1338,5 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
             return make_response({'error': 'Invalid JSON payload'}, 400)
 
         except Exception as e:
-            logging.error(f"Unexpected error in advanced_search: {e}")
+            logger.error(f"Unexpected error in advanced_search: {e}")
             return make_response({'error': f'Unexpected error: {str(e)}'}, 500)

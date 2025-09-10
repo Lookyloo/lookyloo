@@ -60,7 +60,7 @@ from redis.connection import UnixDomainSocketConnection
 from rfc3161_client import (TimeStampResponse, VerifierBuilder, VerificationError,
                             decode_timestamp_response)
 
-from .capturecache import CaptureCache, CapturesIndex
+from .capturecache import CaptureCache, CapturesIndex, LookylooCacheLogAdapter
 from .context import Context
 from .default import (LookylooException, get_homedir, get_config, get_socket_path,
                       ConfigError, safe_create_dir)
@@ -327,6 +327,7 @@ class Lookyloo():
 
     def get_meta(self, capture_uuid: str, /) -> dict[str, str]:
         '''Get the meta informations from a capture (mostly, details about the User Agent used.)'''
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         cache = self.capture_cache(capture_uuid)
         if not cache:
             return {}
@@ -350,18 +351,19 @@ class Lookyloo():
 
         if not meta:
             # UA not recognized
-            self.logger.info(f'Unable to recognize the User agent: {ua}')
+            logger.info(f'Unable to recognize the User agent: {ua}')
         with metafile.open('w') as f:
             json.dump(meta, f)
         return meta
 
     def get_capture_settings(self, capture_uuid: str, /) -> CaptureSettings | None:
         '''Get the capture settings from the cache or the disk.'''
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         try:
             if capture_settings := self.redis.hgetall(capture_uuid):
                 return CaptureSettings(**capture_settings)
         except CaptureSettingsError as e:
-            self.logger.warning(f'Invalid capture settings for {capture_uuid}: {e}')
+            logger.warning(f'Invalid capture settings: {e}')
             raise e
         cache = self.capture_cache(capture_uuid)
         if not cache:
@@ -373,13 +375,14 @@ class Lookyloo():
         if not get_config('generic', 'enable_categorization'):
             return set(), set()
 
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         # Make sure the category is mappable to the dark-web taxonomy
         valid_categories = set()
         invalid_categories = set()
         for category in categories:
             taxonomy, predicate, name = self.taxonomies.revert_machinetag(category)  # type: ignore[misc]
             if not taxonomy or not predicate or not name and taxonomy.name != 'dark-web':
-                self.logger.warning(f'Invalid category: {category}')
+                logger.warning(f'Invalid category: {category}')
                 invalid_categories.add(category)
             else:
                 valid_categories.add(category)
@@ -440,13 +443,14 @@ class Lookyloo():
 
     def get_modules_responses(self, capture_uuid: str, /) -> dict[str, Any]:
         '''Get the responses of the modules from the cached responses on the disk'''
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         cache = self.capture_cache(capture_uuid)
         # TODO: return a message when we cannot get the modules responses, update the code checking if it is falsy accordingly.
         if not cache:
-            self.logger.warning(f'Unable to get the modules responses unless the capture {capture_uuid} is cached')
+            logger.warning('Unable to get the modules responses unless the capture is cached')
             return {}
         if not hasattr(cache, 'url'):
-            self.logger.warning(f'The capture {capture_uuid} does not have a URL in the cache, it is broken.')
+            logger.warning('The capture does not have a URL in the cache, it is broken.')
             return {}
 
         to_return: dict[str, Any] = {}
@@ -629,6 +633,7 @@ class Lookyloo():
 
     def capture_cache(self, capture_uuid: str, /, *, force_update: bool = False) -> CaptureCache | None:
         """Get the cache from redis, rebuild the tree if the internal UUID changed => slow"""
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         try:
             cache = self._captures_index[capture_uuid]
             if cache and force_update:
@@ -645,21 +650,21 @@ class Lookyloo():
                     cache = self._captures_index[capture_uuid]
             return cache
         except NoValidHarFile:
-            self.logger.debug('No HAR files, {capture_uuid} is a broken capture.')
+            logger.debug('No HAR files, broken capture.')
             return None
         except MissingCaptureDirectory as e:
             # The UUID is in the captures but the directory is not on the disk.
-            self.logger.warning(f'Missing Directory: {e}')
+            logger.warning(f'Missing Directory: {e}')
             return None
         except MissingUUID:
             if self.get_capture_status(capture_uuid) not in [CaptureStatusCore.QUEUED, CaptureStatusCore.ONGOING]:
-                self.logger.info(f'Unable to find {capture_uuid} (not in the cache and/or missing capture directory).')
+                logger.info('Unable to find the capture (not in the cache and/or missing capture directory).')
             return None
         except LookylooException as e:
-            self.logger.warning(f'Lookyloo Exception: {e}')
+            logger.warning(f'Lookyloo Exception: {e}')
             return None
         except Exception as e:
-            self.logger.exception(e)
+            logger.exception(e)
             return None
 
     def get_crawled_tree(self, capture_uuid: str, /) -> CrawledTree:
@@ -1094,7 +1099,7 @@ class Lookyloo():
             return trusted_timestamps.get(name)
         return None
 
-    def _prepare_tsr_data(self, capture_uuid: str, /) -> tuple[dict[str, tuple[TimeStampResponse, bytes]], cryptography.x509.Certificate] | dict[str, str]:
+    def _prepare_tsr_data(self, capture_uuid: str, /, *, logger: LookylooCacheLogAdapter) -> tuple[dict[str, tuple[TimeStampResponse, bytes]], cryptography.x509.Certificate] | dict[str, str]:
 
         def find_certificate(info: tuple[TimeStampResponse, bytes]) -> cryptography.x509.Certificate | None:
             tsr, data = info
@@ -1103,7 +1108,7 @@ class Lookyloo():
                 try:
                     cert_authorities = x509.load_pem_x509_certificates(f.read())
                 except Exception as e:
-                    self.logger.warning(f'Unable to read file {f}: {e}')
+                    logger.warning(f'Unable to read file {f}: {e}')
 
             for certificate in cert_authorities:
                 verifier = VerifierBuilder().add_root_certificate(certificate).build()
@@ -1134,7 +1139,7 @@ class Lookyloo():
                     if certificate is None:
                         certificate = find_certificate(to_check[tsr_name])
                 else:
-                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
             elif tsr_name == 'har':
                 success, data = self.get_har(capture_uuid)
                 if success:
@@ -1142,7 +1147,7 @@ class Lookyloo():
                     if certificate is None:
                         certificate = find_certificate(to_check[tsr_name])
                 else:
-                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
             elif tsr_name == 'storage':
                 success, data = self.get_storage_state(capture_uuid)
                 if success:
@@ -1150,7 +1155,7 @@ class Lookyloo():
                     if certificate is None:
                         certificate = find_certificate(to_check[tsr_name])
                 else:
-                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
             elif tsr_name == 'html':
                 success, data = self.get_html(capture_uuid)
                 if success:
@@ -1158,7 +1163,7 @@ class Lookyloo():
                     if certificate is None:
                         certificate = find_certificate(to_check[tsr_name])
                 else:
-                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
             elif tsr_name == 'png':
                 success, data = self.get_screenshot(capture_uuid)
                 if success:
@@ -1166,7 +1171,7 @@ class Lookyloo():
                     if certificate is None:
                         certificate = find_certificate(to_check[tsr_name])
                 else:
-                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
             elif tsr_name in ['downloaded_filename', 'downloaded_file']:
                 # get those two in one call
                 if to_check.get('downloaded_filename') or to_check.get('downloaded_file'):
@@ -1177,30 +1182,31 @@ class Lookyloo():
                     if dl_filename := trusted_timestamps.get('downloaded_filename'):
                         tsr_filename = decode_timestamp_response(dl_filename)
                     else:
-                        self.logger.warning(f'[{capture_uuid}] Unable to get downloaded_filename for trusted timestamp validation.')
+                        logger.warning('Unable to get downloaded_filename for trusted timestamp validation.')
                         continue
 
                     if dl_file := trusted_timestamps.get('downloaded_file'):
                         tsr_file = decode_timestamp_response(dl_file)
                     else:
-                        self.logger.warning(f'[{capture_uuid}] Unable to get downloaded_file for trusted timestamp validation.')
+                        logger.warning('Unable to get downloaded_file for trusted timestamp validation.')
                         continue
 
                     to_check['downloaded_filename'] = (tsr_filename, filename.encode())
                     to_check['downloaded_file'] = (tsr_file, data.getvalue())
                 else:
-                    self.logger.warning(f'[{capture_uuid}] Unable to get {tsr_name} for trusted timestamp validation.')
+                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
             else:
-                self.logger.warning(f'[{capture_uuid}] Unexpected entry in trusted timestamps: {tsr_name}')
+                logger.warning(f'Unexpected entry in trusted timestamps: {tsr_name}')
                 continue
 
         if not certificate:
-            self.logger.warning(f'[{capture_uuid}] Unable to find certificate, cannot validate trusted timestamps.')
+            logger.warning('Unable to find certificate, cannot validate trusted timestamps.')
             return {'warning': 'Unable to find certificate, cannot validate trusted timestamps.'}
         return to_check, certificate
 
     def check_trusted_timestamps(self, capture_uuid: str, /) -> tuple[dict[str, datetime | str], str] | dict[str, str]:
-        tsr_data = self._prepare_tsr_data(capture_uuid)
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        tsr_data = self._prepare_tsr_data(capture_uuid, logger=logger)
         if isinstance(tsr_data, dict):
             return tsr_data
 
@@ -1214,12 +1220,13 @@ class Lookyloo():
                 verifier.verify_message(tsr, data)
                 to_return[tsr_name] = tsr.tst_info.gen_time
             except VerificationError as e:
-                self.logger.warning(f'Unable to validate {tsr_name} : {e}')
+                logger.warning(f'Unable to validate {tsr_name} : {e}')
                 to_return[tsr_name] = f'Unable to validate: {e}'
         return to_return, b64encode(certificate.public_bytes(Encoding.DER)).decode()
 
     def bundle_all_trusted_timestamps(self, capture_uuid: str, /) -> BytesIO | dict[str, str]:
-        tsr_data = self._prepare_tsr_data(capture_uuid)
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        tsr_data = self._prepare_tsr_data(capture_uuid, logger=logger)
         if isinstance(tsr_data, dict):
             return tsr_data
 
@@ -1297,10 +1304,11 @@ class Lookyloo():
         # NOTE: we sometimes have multiple favicons, and sometimes,
         #       the first entry in the list is not actually a favicon. So we
         #       iterate until we find one (or fail to, but at least we tried)
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         if not all_favicons and for_datauri:
             favicons_paths = sorted(list(self._captures_index[capture_uuid].capture_dir.glob('*.potential_favicons.ico')))
             if not favicons_paths:
-                self.logger.debug(f'No potential favicon found for {capture_uuid}.')
+                logger.debug('No potential favicon found.')
                 return '', ''
             for favicon_path in favicons_paths:
                 with favicon_path.open('rb') as f:
@@ -1311,10 +1319,10 @@ class Lookyloo():
                     mimetype = from_string(favicon, mime=True)
                     return mimetype, base64.b64encode(favicon).decode()
                 except PureError:
-                    self.logger.info(f'Unable to get the mimetype of the favicon for {capture_uuid}.')
+                    logger.info('Unable to get the mimetype of the favicon.')
                     continue
             else:
-                self.logger.info(f'No valid favicon found for {capture_uuid}.')
+                logger.info('No valid favicon found.')
                 return '', ''
         return self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
 
@@ -1328,6 +1336,7 @@ class Lookyloo():
 
     def get_data(self, capture_uuid: str, /, *, index_in_zip: int | None=None) -> tuple[bool, str, BytesIO]:
         '''Get the data'''
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
 
         def _get_downloaded_file_by_id_from_zip(data: BytesIO, index_in_zip: int) -> tuple[bool, str, BytesIO]:
             '''Get the a downloaded file by hash.
@@ -1335,7 +1344,7 @@ class Lookyloo():
             with ZipFile(data) as downloaded_files:
                 files_info = downloaded_files.infolist()
                 if index_in_zip > len(files_info):
-                    self.logger.warning(f'[{capture_uuid}] Unable to get the file {index_in_zip} from the zip file (only {len(files_info)} entries).')
+                    logger.warning(f'Unable to get the file {index_in_zip} from the zip file (only {len(files_info)} entries).')
                     return False, 'Invalid index in zip', BytesIO()
                 with downloaded_files.open(files_info[index_in_zip]) as f:
                     return True, files_info[index_in_zip].filename, BytesIO(f.read())
@@ -1376,6 +1385,7 @@ class Lookyloo():
 
     def get_screenshot_thumbnail(self, capture_uuid: str, /, for_datauri: bool=False, width: int=64) -> str | BytesIO:
         '''Get the thumbnail of the rendered page. Always crop to a square.'''
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         to_return = BytesIO()
         size = width, width
         try:
@@ -1387,14 +1397,14 @@ class Lookyloo():
                 to_thumbnail = get_error_screenshot()
         except Image.DecompressionBombError as e:
             # The image is most probably too big: https://pillow.readthedocs.io/en/stable/reference/Image.html
-            self.logger.warning(f'Unable to generate the screenshot thumbnail of {capture_uuid}: image too big ({e}).')
+            logger.warning(f'Unable to generate the screenshot thumbnail: image too big ({e}).')
             to_thumbnail = get_error_screenshot()
         except UnidentifiedImageError as e:
             # We might have a direct download link, and no screenshot. Assign the thumbnail accordingly.
             try:
                 success, filename, data = self.get_data(capture_uuid)
                 if success:
-                    self.logger.debug(f'{capture_uuid} is is a download link, set thumbnail.')
+                    logger.debug('Download link, set thumbnail.')
                     error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'download.png'
                     to_thumbnail = Image.open(error_img)
                 else:
@@ -1402,7 +1412,7 @@ class Lookyloo():
                     to_thumbnail = get_error_screenshot()
             except Exception:
                 # The capture probably doesn't have a screenshot at all, no need to log that as a warning.
-                self.logger.debug(f'Unable to generate the screenshot thumbnail of {capture_uuid}: {e}.')
+                logger.debug(f'Unable to generate the screenshot thumbnail: {e}.')
             to_thumbnail = get_error_screenshot()
 
         to_thumbnail.thumbnail(size)
@@ -1419,12 +1429,13 @@ class Lookyloo():
         return self._get_raw(capture_uuid)
 
     def get_urls_rendered_page(self, capture_uuid: str, /) -> list[str]:
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         ct = self.get_crawled_tree(capture_uuid)
         try:
             return sorted(set(ct.root_hartree.rendered_node.urls_in_rendered_page)
                           - set(ct.root_hartree.all_url_requests.keys()))
         except Har2TreeError as e:
-            self.logger.warning(f'Unable to get the rendered page for {capture_uuid}: {e}.')
+            logger.warning(f'Unable to get the rendered page: {e}.')
             raise LookylooException("Unable to get the rendered page.")
 
     def compute_mmh3_shodan(self, favicon: bytes, /) -> str:
@@ -1438,19 +1449,20 @@ class Lookyloo():
         if h == 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e':
             return ('empty', BytesIO(), 'inode/x-empty')
 
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': tree_uuid})
         try:
             url = self.get_urlnode_from_tree(tree_uuid, urlnode_uuid)
         except IndexError:
             # unable to find the uuid, the cache is probably in a weird state.
-            self.logger.info(f'Unable to find node "{urlnode_uuid}" in "{tree_uuid}"')
+            logger.info(f'Unable to find node "{urlnode_uuid}"')
             return None
         except NoValidHarFile as e:
             # something went poorly when rebuilding the tree (probably a recursive error)
-            self.logger.warning(e)
+            logger.warning(e)
             return None
 
         if url.empty_response:
-            self.logger.info(f'The response for node "{urlnode_uuid}" in "{tree_uuid}" is empty.')
+            logger.info(f'The response for node "{urlnode_uuid}" is empty.')
             return None
         if not h or h == url.body_hash:
             # we want the body
@@ -1458,13 +1470,13 @@ class Lookyloo():
 
         # We want an embedded ressource
         if h not in url.resources_hashes:
-            self.logger.info(f'Unable to find "{h}" in capture "{tree_uuid}" - node "{urlnode_uuid}".')
+            logger.info(f'Unable to find "{h}" in node "{urlnode_uuid}".')
             return None
         for mimetype, blobs in url.embedded_ressources.items():
             for ressource_h, blob in blobs:
                 if ressource_h == h:
                     return 'embedded_ressource.bin', BytesIO(blob.getvalue()), mimetype
-        self.logger.info(f'Unable to find "{h}" in capture "{tree_uuid}" - node "{urlnode_uuid}", but in a weird way.')
+        logger.info(f'Unable to find "{h}" in node "{urlnode_uuid}", but in a weird way.')
         return None
 
     def __misp_add_vt_to_URLObject(self, obj: MISPObject) -> MISPObject | None:

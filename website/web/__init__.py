@@ -66,6 +66,7 @@ from .helpers import (User, build_users_table, get_secret_key,
 from .proxied import ReverseProxied
 
 logging.config.dictConfig(get_config('logging'))
+logger = logging.getLogger('Lookyloo_Website')
 
 app: Flask = Flask(__name__)
 app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore[method-assign]
@@ -1474,7 +1475,7 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
-        logging.info(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
+        logger.info(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
 
     collection: str = request.form['collection'] if request.form.get('collection') else ''
@@ -1502,7 +1503,7 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
-        logging.info(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
+        logger.info(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
 
     email: str = request.form['email'] if request.form.get('email') else ''
@@ -1581,7 +1582,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                     if hostnode:
                         hostnode_to_highlight = hostnode.uuid
                 except IndexError as e:
-                    logging.info(f'Invalid uuid ({e}): {node_uuid}')
+                    logger.info(f'Invalid uuid ({e}): {node_uuid}')
         if cache.error:
             flash(cache.error, 'warning')
 
@@ -1628,7 +1629,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                capture_settings=capture_settings.model_dump(exclude_none=True) if capture_settings else {})
 
     except (NoValidHarFile, TreeNeedsRebuild) as e:
-        logging.info(f'[{tree_uuid}] The capture exists, but we cannot use the HAR files: {e}')
+        logger.info(f'[{tree_uuid}] The capture exists, but we cannot use the HAR files: {e}')
         flash(f'Unable to build a tree for {tree_uuid}: {cache.error}.', 'warning')
         return index_generic()
     finally:
@@ -1881,7 +1882,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
             multiple_remote_lacus = {}
             for remote_lacus_name, _lacus in lookyloo.lacus.items():
                 if not _lacus.is_up:
-                    logging.warning(f'Lacus "{remote_lacus_name}" is not up.')
+                    logger.warning(f'Lacus "{remote_lacus_name}" is not up.')
                     continue
                 multiple_remote_lacus[remote_lacus_name] = {}
                 try:
@@ -1890,13 +1891,13 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                         multiple_remote_lacus[remote_lacus_name]['proxies'] = proxies
                 except Exception as e:
                     # We cannot connect to Lacus, skip it.
-                    logging.warning(f'Unable to get proxies from Lacus "{remote_lacus_name}": {e}.')
+                    logger.warning(f'Unable to get proxies from Lacus "{remote_lacus_name}": {e}.')
                     continue
 
             default_remote_lacus = get_config('generic', 'multiple_remote_lacus').get('default')
         elif isinstance(lookyloo.lacus, PyLacus):
             if not lookyloo.lacus.is_up:
-                logging.warning('Remote Lacus is not up.')
+                logger.warning('Remote Lacus is not up.')
             else:
                 multiple_remote_lacus = {'default': {}}
                 try:
@@ -1904,10 +1905,10 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                         # We might have other settings in the future.
                         multiple_remote_lacus['default']['proxies'] = proxies
                 except Exception as e:
-                    logging.warning(f'Unable to get proxies from Lacus: {e}.')
+                    logger.warning(f'Unable to get proxies from Lacus: {e}.')
             default_remote_lacus = 'default'
     except ConfigError as e:
-        logging.warning(f'Unable to get remote lacus settings: {e}.')
+        logger.warning(f'Unable to get remote lacus settings: {e}.')
         flash('The capturing system is down, you can enqueue a capture and it will start ASAP.', 'error')
 
     # NOTE: Inform user if none of the remote lacuses are up?
@@ -2065,7 +2066,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
                     capture_query['storage'] = json.loads(_storage)
                 except json.JSONDecodeError:
                     flash(f'Invalid storage state: must be a JSON: {_storage.decode()}.', 'error')
-                    logging.warning(f'Invalid storage state: must be a JSON: {_storage.decode()}.')
+                    logger.info(f'Invalid storage state: must be a JSON: {_storage.decode()}.')
 
         if request.form.get('device_name'):
             capture_query['device_name'] = request.form['device_name']
