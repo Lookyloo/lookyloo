@@ -122,12 +122,12 @@
  When a trusted timestamp is listed above, it has been validated, but you can also validate the file manually:
 </div>
 <pre>
-  <code>openssl ts -CApath /etc/ssl/certs/ -verify [timestamp_response].tsr -in png.tsr -data [element]</code>
+  <code>openssl ts -CAfile certificates.pem -verify [timestamp_response].tsr -in png.tsr -data [element]</code>
 </pre>
 <div>
   Example:
   <pre>
-    <code>openssl ts -CApath /etc/ssl/certs/ -verify -in png.tsr -data image.png</code>
+    <code>openssl ts -CAfile certificates.pem -verify -in screenshot.png.tsr -data screenshot.png</code>
     <samp>
 Using configuration from /usr/lib/ssl/openssl.cnf
 Verification: OK
@@ -146,7 +146,7 @@ Verification: OK
 <div>
   Example:
   <pre>
-    <code>openssl ts -reply -in png.tsr -text</code>
+    <code>openssl ts -reply -in screenshot.png.tsr -text</code>
     <samp>
 Using configuration from /usr/lib/ssl/openssl.cnf
 Status info:

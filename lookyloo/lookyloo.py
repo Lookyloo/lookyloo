@@ -66,7 +66,7 @@ from .default import (LookylooException, get_homedir, get_config, get_socket_pat
                       ConfigError, safe_create_dir)
 from .exceptions import (MissingCaptureDirectory,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile, LacusUnreachable)
-from .helpers import (get_captures_dir, get_email_template,
+from .helpers import (get_captures_dir, get_email_template, get_tt_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, UserAgents,
                       get_useragent_for_requests, load_takedown_filters,
@@ -1238,6 +1238,11 @@ class Lookyloo():
         if isinstance(tsr_data, dict):
             return tsr_data
 
+        if cache := self.capture_cache(capture_uuid):
+            initial_url = cache.url
+        else:
+            return {'warning': 'The capture is not ready yet.'}
+
         to_check, certificates = tsr_data
         certs_as_pem = b'\n'.join([certificate.public_bytes(Encoding.PEM) for certificate in certificates])
         to_return = BytesIO()
@@ -1262,11 +1267,16 @@ class Lookyloo():
                     filename = 'downloaded_file.bin'
                 z.writestr(f'{filename}.tsr', tsr.as_bytes())
                 z.writestr(filename, data)
-                validator_bash += f" echo ---------- {tsr_name} ----------\n"
+                validator_bash += f"echo ---------- {tsr_name} ----------\n"
                 validator_bash += f"openssl ts -CAfile certificates.pem -verify -in {filename}.tsr -data {filename}\n"
                 validator_bash += f"openssl ts -reply -in {filename}.tsr -text\n"
-                validator_bash += " echo ---------------------------------\n\n"
+                validator_bash += "echo ---------------------------------\n\n"
             z.writestr('validator.sh', validator_bash)
+            tt_readme = get_tt_template()
+            readme_content = tt_readme.format(capture_uuid=capture_uuid,
+                                              initial_url=initial_url,
+                                              domain=self.public_domain)
+            z.writestr('README.md', readme_content)
         to_return.seek(0)
         return to_return
 

@@ -119,6 +119,12 @@ def get_email_template() -> str:
 
 
 @lru_cache
+def get_tt_template() -> str:
+    with (get_homedir() / 'config' / 'tt_readme.tmpl').open() as f:
+        return f.read()
+
+
+@lru_cache
 def get_error_screenshot() -> Image.Image:
     error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
     return Image.open(error_img)
