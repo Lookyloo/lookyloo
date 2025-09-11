@@ -115,7 +115,7 @@
   <a href="{{url_for('all_trusted_timestamp', tree_uuid=tree_uuid)}}">Download</a> all the elements with trusted timestamps.
 </div>
 <div class="alert alert-info" role="alert">
-  Trusted timestamps were validated with <a href="data:application/x-x509-ca-cert;base64,{{b64_certificate}}" download="certificate.der">this certificate</a>.
+  Trusted timestamps were validated with <a href="data:application/x-pem-file;base64,{{b64_certificate}}" download="certificates.pem">this certificate(s)</a>.
 </div>
 
 <div class="alert alert-primary" role="alert">

@@ -1475,7 +1475,7 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
-        logger.info(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
+        logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
 
     collection: str = request.form['collection'] if request.form.get('collection') else ''
@@ -1503,7 +1503,7 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
-        logger.info(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
+        logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
 
     email: str = request.form['email'] if request.form.get('email') else ''
