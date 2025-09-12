@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 import re
 from functools import lru_cache
 from pathlib import Path
+
+import orjson
 
 import flask_login  # type: ignore[import-untyped]
 from flask import Request
@@ -115,8 +116,8 @@ def get_secret_key() -> bytes:
 
 @lru_cache(64)
 def sri_load() -> dict[str, dict[str, str]]:
-    with (get_homedir() / 'website' / 'web' / 'sri.txt').open() as f:
-        return json.load(f)
+    with (get_homedir() / 'website' / 'web' / 'sri.txt').open('rb') as f:
+        return orjson.loads(f.read())
 
 
 def get_indexing(user: User | None) -> Indexing:

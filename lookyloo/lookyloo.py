@@ -7,7 +7,6 @@ import copy
 import gzip
 import ipaddress
 import itertools
-import json
 import logging
 import operator
 import shutil
@@ -32,6 +31,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 import certifi
 import cryptography.exceptions
 import mmh3
+import orjson
 
 from cryptography import x509
 from cryptography.hazmat.primitives.serialization import Encoding
@@ -333,8 +333,8 @@ class Lookyloo():
             return {}
         metafile = cache.capture_dir / 'meta'
         if metafile.exists():
-            with metafile.open('r') as f:
-                return json.load(f)
+            with metafile.open('rb') as f:
+                return orjson.loads(f.read())
 
         if not cache.user_agent:
             return {}
@@ -352,8 +352,8 @@ class Lookyloo():
         if not meta:
             # UA not recognized
             logger.info(f'Unable to recognize the User agent: {ua}')
-        with metafile.open('w') as f:
-            json.dump(meta, f)
+        with metafile.open('wb') as f:
+            f.write(orjson.dumps(meta))
         return meta
 
     def get_capture_settings(self, capture_uuid: str, /) -> CaptureSettings | None:
@@ -1062,7 +1062,8 @@ class Lookyloo():
         msg.set_content(body)
         try:
             contact_for_takedown = self.contacts(capture_uuid)
-            msg.add_attachment(json.dumps(contact_for_takedown, indent=2), filename='contacts.json')
+            msg.add_attachment(orjson.dumps(contact_for_takedown, option=orjson.OPT_INDENT_2),
+                               filename='contacts.json')
         except Exception as e:
             self.logger.warning(f'Unable to get the contacts: {e}')
         try:
@@ -1092,7 +1093,7 @@ class Lookyloo():
             return None
 
         with tt_file.open() as f:
-            return {name: b64decode(tst) for name, tst in json.load(f).items()}
+            return {name: b64decode(tst) for name, tst in orjson.loads(f.read()).items()}
 
     def get_trusted_timestamp(self, capture_uuid: str, /, name: str) -> bytes | None:
         if trusted_timestamps := self._load_tt_file(capture_uuid):
@@ -1656,7 +1657,7 @@ class Lookyloo():
             return {}, len(hashes_tree)
 
         with hashlookup_file.open() as f:
-            hashlookup_entries = json.load(f)
+            hashlookup_entries = orjson.loads(f.read())
 
         to_return: dict[str, dict[str, Any]] = defaultdict(dict)
 
@@ -1856,10 +1857,10 @@ class Lookyloo():
             for filename in lookyloo_capture.namelist():
                 if filename.endswith('0.har.gz'):
                     # new formal
-                    har = json.loads(gzip.decompress(lookyloo_capture.read(filename)))
+                    har = orjson.loads(gzip.decompress(lookyloo_capture.read(filename)))
                 elif filename.endswith('0.har'):
                     # old format
-                    har = json.loads(lookyloo_capture.read(filename))
+                    har = orjson.loads(lookyloo_capture.read(filename))
                 elif filename.endswith('0.html'):
                     html = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('0.last_redirect.txt'):
@@ -1868,10 +1869,10 @@ class Lookyloo():
                     screenshot = lookyloo_capture.read(filename)
                 elif filename.endswith('0.cookies.json'):
                     # Not required
-                    cookies = json.loads(lookyloo_capture.read(filename))
+                    cookies = orjson.loads(lookyloo_capture.read(filename))
                 elif filename.endswith('0.storage.json'):
                     # Not required
-                    storage = json.loads(lookyloo_capture.read(filename))
+                    storage = orjson.loads(lookyloo_capture.read(filename))
                 elif filename.endswith('potential_favicons.ico'):
                     # We may have more than one favicon
                     potential_favicons.add(lookyloo_capture.read(filename))
@@ -1881,7 +1882,7 @@ class Lookyloo():
                         messages['warnings'].append(f'UUID {uuid} already exists, set a new one.')
                         uuid = str(uuid4())
                 elif filename.endswith('meta'):
-                    meta = json.loads(lookyloo_capture.read(filename))
+                    meta = orjson.loads(lookyloo_capture.read(filename))
                     if 'os' in meta:
                         os = meta['os']
                     if 'browser' in meta:
@@ -1898,9 +1899,9 @@ class Lookyloo():
                 elif filename.endswith('error.txt'):
                     error = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('0.trusted_timestamps.json'):
-                    trusted_timestamps = json.loads(lookyloo_capture.read(filename).decode())
+                    trusted_timestamps = orjson.loads(lookyloo_capture.read(filename).decode())
                 elif filename.endswith('capture_settings.json'):
-                    _capture_settings = json.loads(lookyloo_capture.read(filename))
+                    _capture_settings = orjson.loads(lookyloo_capture.read(filename))
                     try:
                         capture_settings = CaptureSettings(**_capture_settings)
                     except CaptureSettingsError as e:
@@ -1963,8 +1964,8 @@ class Lookyloo():
                 meta['os'] = os
             if browser:
                 meta['browser'] = browser
-            with (dirpath / 'meta').open('w') as _meta:
-                json.dump(meta, _meta)
+            with (dirpath / 'meta').open('wb') as _meta:
+                _meta.write(orjson.dumps(meta))
 
         # Write UUID
         with (dirpath / 'uuid').open('w') as _uuid:
@@ -1988,12 +1989,12 @@ class Lookyloo():
                 _downloaded_file.write(downloaded_file)
 
         if error:
-            with (dirpath / 'error.txt').open('w') as _error:
-                json.dump(error, _error)
+            with (dirpath / 'error.txt').open('wb') as _error:
+                _error.write(orjson.dumps(error))
 
         if har:
-            with gzip.open(dirpath / '0.har.gz', 'wt') as f_out:
-                f_out.write(json.dumps(har))
+            with gzip.open(dirpath / '0.har.gz', 'wb') as f_out:
+                f_out.write(orjson.dumps(har))
 
         if png:
             with (dirpath / '0.png').open('wb') as _img:
@@ -2014,12 +2015,12 @@ class Lookyloo():
                 _redir.write(last_redirected_url)
 
         if cookies:
-            with (dirpath / '0.cookies.json').open('w') as _cookies:
-                json.dump(cookies, _cookies)
+            with (dirpath / '0.cookies.json').open('wb') as _cookies:
+                _cookies.write(orjson.dumps(cookies))
 
         if storage:
-            with (dirpath / '0.storage.json').open('w') as _storage:
-                json.dump(storage, _storage)
+            with (dirpath / '0.storage.json').open('wb') as _storage:
+                _storage.write(orjson.dumps(storage))
 
         if capture_settings:
             with (dirpath / 'capture_settings.json').open('w') as _cs:
@@ -2031,16 +2032,16 @@ class Lookyloo():
                     _fw.write(favicon)
 
         if trusted_timestamps:
-            with (dirpath / '0.trusted_timestamps.json').open('w') as _tt:
-                json.dump(trusted_timestamps, _tt)
+            with (dirpath / '0.trusted_timestamps.json').open('wb') as _tt:
+                _tt.write(orjson.dumps(trusted_timestamps))
 
         if auto_report:
             # autoreport needs to be triggered once the tree is build
             if isinstance(auto_report, bool):
                 (dirpath / 'auto_report').touch()
             else:
-                with (dirpath / 'auto_report').open('w') as _ar:
-                    json.dump(auto_report, _ar)
+                with (dirpath / 'auto_report').open('wb') as _ar:
+                    _ar.write(orjson.dumps(auto_report))
 
         self.redis.hset('lookup_dirs', uuid, str(dirpath))
         self.redis.zadd('recent_captures', {uuid: now.timestamp()})

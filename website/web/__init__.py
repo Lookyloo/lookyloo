@@ -9,13 +9,13 @@ import gzip
 import hashlib
 import http
 import ipaddress
-import json
 import logging
 import logging.config
 import os
 import time
 
 import filetype  # type: ignore[import-untyped]
+import orjson
 
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
@@ -810,7 +810,7 @@ def hashes_hostnode(tree_uuid: str, node_uuid: str) -> Response:
     success, hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
     if success:
         return send_file(BytesIO('\n'.join(hashes).encode()),
-                         mimetype='test/plain', as_attachment=True, download_name=f'hashes.{node_uuid}.txt')
+                         mimetype='test/plain', as_attachment=True, download_name=f'{tree_uuid}_hashes.{node_uuid}.txt')
     return make_response('Unable to get the hashes.', 404)
 
 
@@ -819,7 +819,7 @@ def hashes_hostnode(tree_uuid: str, node_uuid: str) -> Response:
 def urls_hostnode(tree_uuid: str, node_uuid: str) -> Response:
     hostnode = lookyloo.get_hostnode_from_tree(tree_uuid, node_uuid)
     return send_file(BytesIO('\n'.join(url.name for url in hostnode.urls).encode()),
-                     mimetype='test/plain', as_attachment=True, download_name=f'urls.{node_uuid}.txt')
+                     mimetype='test/plain', as_attachment=True, download_name=f'{tree_uuid}_urls.{node_uuid}.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/host/<string:node_uuid>', methods=['GET'])
@@ -921,7 +921,7 @@ def stats(tree_uuid: str) -> str:
 @app.route('/tree/<string:tree_uuid>/trusted_timestamp/<string:name>', methods=['GET'])
 def trusted_timestamp_tsr(tree_uuid: str, name: str) -> Response:
     if tsr := lookyloo.get_trusted_timestamp(tree_uuid, name):
-        return send_file(BytesIO(tsr), as_attachment=True, download_name=f'{name}.tsr')
+        return send_file(BytesIO(tsr), as_attachment=True, download_name=f'{tree_uuid}_{name}.tsr')
     return send_file(BytesIO(f'No trusted timestamp for {name}'.encode()), as_attachment=True, download_name='empty.txt')
 
 
@@ -962,7 +962,7 @@ def get_downloaded_file(tree_uuid: str) -> Response:
     index_in_zip = int(request.args['index_in_zip']) if 'index_in_zip' in request.args else None
     success, filename, file = lookyloo.get_data(tree_uuid, index_in_zip=index_in_zip)
     if success:
-        return send_file(file, as_attachment=True, download_name=filename)
+        return send_file(file, as_attachment=True, download_name=f'{tree_uuid}_{filename}')
     return make_response('Unable to get the downloaded file.', 404)
 
 
@@ -993,7 +993,7 @@ def storage_state(tree_uuid: str) -> str:
     storage = {}
     success, storage_file = lookyloo.get_storage_state(tree_uuid)
     if success and storage_file and storage_file.getvalue():
-        storage = json.loads(storage_file.getvalue())
+        storage = orjson.loads(storage_file.getvalue())
         if 'cookies' in storage:
             # insert the frequency
             for cookie in storage['cookies']:
@@ -1255,7 +1255,7 @@ def redirects(tree_uuid: str) -> Response:
     else:
         to_return = BytesIO('\n'.join([cache.url] + cache.redirects).encode())
     return send_file(to_return, mimetype='text/text',
-                     as_attachment=True, download_name='redirects.txt')
+                     as_attachment=True, download_name=f'{tree_uuid}_redirects.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/image', methods=['GET'])
@@ -1271,7 +1271,7 @@ def image(tree_uuid: str) -> Response:
             with open(error_img, 'rb') as f:
                 to_return = BytesIO(f.read())
     return send_file(to_return, mimetype='image/png',
-                     as_attachment=True, download_name='image.png')
+                     as_attachment=True, download_name=f'{tree_uuid}_image.png')
 
 
 @app.route('/tree/<string:tree_uuid>/data', methods=['GET'])
@@ -1286,7 +1286,7 @@ def data(tree_uuid: str) -> Response:
     else:
         mime = filetype.guess_mime(data.getvalue())
     return send_file(data, mimetype=mime,
-                     as_attachment=True, download_name=filename)
+                     as_attachment=True, download_name=f'{tree_uuid}_{filename}')
 
 
 @app.route('/tree/<string:tree_uuid>/thumbnail/', defaults={'width': 64}, methods=['GET'])
@@ -1303,7 +1303,7 @@ def html(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_html(tree_uuid)
     if success:
         return send_file(to_return, mimetype='text/html',
-                         as_attachment=True, download_name='page.html')
+                         as_attachment=True, download_name=f'{tree_uuid}_page.html')
     return make_response(Response('No HTML available.', mimetype='text/text'), 404)
 
 
@@ -1313,7 +1313,7 @@ def cookies(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_cookies(tree_uuid)
     if success:
         return send_file(to_return, mimetype='application/json',
-                         as_attachment=True, download_name='cookies.json')
+                         as_attachment=True, download_name=f'{tree_uuid}_cookies.json')
     return make_response(Response('No cookies available.', mimetype='text/text'), 404)
 
 
@@ -1323,7 +1323,7 @@ def storage_state_download(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_storage_state(tree_uuid)
     if success:
         return send_file(to_return, mimetype='application/json',
-                         as_attachment=True, download_name='storage_state.json')
+                         as_attachment=True, download_name=f'{tree_uuid}_storage_state.json')
     return make_response(Response('No storage state available.', mimetype='text/text'), 404)
 
 
@@ -1334,7 +1334,7 @@ def har_download(tree_uuid: str) -> Response:
     if success:
         # The file is gzipped by default unpack and return as json
         return send_file(BytesIO(gzip.decompress(to_return.getvalue())), mimetype='application/json',
-                         as_attachment=True, download_name='storage_state.json')
+                         as_attachment=True, download_name=f'{tree_uuid}_har.json')
     return make_response(Response('No storage state available.', mimetype='text/text'), 404)
 
 
@@ -1344,7 +1344,7 @@ def hashes_tree(tree_uuid: str) -> Response:
     success, hashes = lookyloo.get_hashes(tree_uuid)
     if success:
         return send_file(BytesIO('\n'.join(hashes).encode()),
-                         mimetype='test/plain', as_attachment=True, download_name='hashes.txt')
+                         mimetype='test/plain', as_attachment=True, download_name=f'{tree_uuid}_hashes.txt')
     return make_response(Response('No hashes available.', mimetype='text/text'), 404)
 
 
@@ -1354,7 +1354,7 @@ def export(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_capture(tree_uuid)
     if success:
         return send_file(to_return, mimetype='application/zip',
-                         as_attachment=True, download_name='capture.zip')
+                         as_attachment=True, download_name=f'{tree_uuid}_capture.zip')
     return make_response(Response('No capture available.', mimetype='text/text'), 404)
 
 
@@ -1399,7 +1399,7 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
     success, storage_state_file = lookyloo.get_storage_state(base_tree_uuid)
     if success:
         if storage_state_content := storage_state_file.getvalue():
-            storage_state = json.loads(storage_state_content)
+            storage_state = orjson.loads(storage_state_content)
     if not storage_state:
         # Old way of doing it, the cookies are in the storage
         success, _cookies = lookyloo.get_cookies(base_tree_uuid)
@@ -2004,7 +2004,7 @@ def submit_capture() -> str | Response | WerkzeugResponse:
             screenshot: bytes | None = None
 
             new_uuid = str(uuid4())
-            har = json.loads(request.files['har_file'].stream.read())
+            har = orjson.loads(request.files['har_file'].stream.read())
             last_redirected_url = request.form.get('landing_page')
             if 'screenshot_file' in request.files:
                 screenshot = request.files['screenshot_file'].stream.read()
@@ -2063,8 +2063,8 @@ def capture_web() -> str | Response | WerkzeugResponse:
         if 'storage_state' in request.files and request.files['storage_state'].filename:
             if _storage := request.files['storage_state'].stream.read():
                 try:
-                    capture_query['storage'] = json.loads(_storage)
-                except json.JSONDecodeError:
+                    capture_query['storage'] = orjson.loads(_storage)
+                except orjson.JSONDecodeError:
                     flash(f'Invalid storage state: must be a JSON: {_storage.decode()}.', 'error')
                     logger.info(f'Invalid storage state: must be a JSON: {_storage.decode()}.')
 
@@ -2345,8 +2345,8 @@ def urlnode_request_cookies(tree_uuid: str, node_uuid: str) -> Response | None:
     if not urlnode.request_cookie:
         return None
 
-    return send_file(BytesIO(json.dumps(urlnode.request_cookie, indent=2).encode()),
-                     mimetype='text/plain', as_attachment=True, download_name='request_cookies.txt')
+    return send_file(BytesIO(orjson.dumps(urlnode.request_cookie, option=orjson.OPT_INDENT_2)),
+                     mimetype='text/plain', as_attachment=True, download_name=f'{tree_uuid}_{node_uuid}_request_cookies.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/response_cookies', methods=['GET'])
@@ -2356,8 +2356,8 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str) -> Response | None:
     if not urlnode.response_cookie:
         return None
 
-    return send_file(BytesIO(json.dumps(urlnode.response_cookie, indent=2).encode()),
-                     mimetype='text/plain', as_attachment=True, download_name='response_cookies.txt')
+    return send_file(BytesIO(orjson.dumps(urlnode.response_cookie, option=orjson.OPT_INDENT_2)),
+                     mimetype='text/plain', as_attachment=True, download_name=f'{tree_uuid}_{node_uuid}_response_cookies.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/urls_in_rendered_content', methods=['GET'])
@@ -2375,7 +2375,7 @@ def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str) -> Response
     to_return = StringIO()
     to_return.writelines([f'{u}\n' for u in not_loaded_urls])
     return send_file(BytesIO(to_return.getvalue().encode()), mimetype='text/plain',
-                     as_attachment=True, download_name='urls_in_rendered_content.txt')
+                     as_attachment=True, download_name=f'{tree_uuid}_urls_in_rendered_content.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/rendered_content', methods=['GET'])
@@ -2387,11 +2387,11 @@ def urlnode_rendered_content(tree_uuid: str, node_uuid: str) -> Response | None:
         to_send = b"Unable to find rendered content, the tree seem to be broken. Please reload the page and try again."
         lookyloo.remove_pickle(tree_uuid)
         return send_file(BytesIO(to_send), mimetype='text/plain',
-                         as_attachment=True, download_name='rendered_content.txt')
+                         as_attachment=True, download_name=f'{tree_uuid}_rendered_content.txt')
     if not urlnode.rendered_html:
         return None
     return send_file(BytesIO(urlnode.rendered_html.getvalue()), mimetype='text/plain',
-                     as_attachment=True, download_name='rendered_content.txt')
+                     as_attachment=True, download_name=f'{tree_uuid}_rendered_content.txt')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/posted_data', methods=['GET'])
@@ -2415,7 +2415,7 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | s
     posted: str | bytes
     if isinstance(urlnode.posted_data, (dict, list)):
         # JSON blob, pretty print.
-        posted = json.dumps(urlnode.posted_data, indent=2)
+        posted = orjson.dumps(urlnode.posted_data, option=orjson.OPT_INDENT_2).decode()
     else:
         posted = urlnode.posted_data
 
@@ -2426,10 +2426,10 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | s
 
     if isinstance(posted, str):
         return send_file(to_return, mimetype='text/plain',
-                         as_attachment=True, download_name='posted_data.txt')
+                         as_attachment=True, download_name=f'{tree_uuid}_{node_uuid}_posted_data.txt')
     else:
         return send_file(to_return, mimetype='application/octet-stream',
-                         as_attachment=True, download_name='posted_data.bin')
+                         as_attachment=True, download_name=f'{tree_uuid}_{node_uuid}_posted_data.bin')
 
 
 @app.route('/tree/<string:tree_uuid>/url/<string:node_uuid>/ressource', methods=['POST', 'GET'])
@@ -2480,7 +2480,7 @@ def hashes_urlnode(tree_uuid: str, node_uuid: str) -> Response:
     success, hashes = lookyloo.get_hashes(tree_uuid, urlnode_uuid=node_uuid)
     if success:
         return send_file(BytesIO('\n'.join(hashes).encode()),
-                         mimetype='test/plain', as_attachment=True, download_name='hashes.txt')
+                         mimetype='test/plain', as_attachment=True, download_name=f'{tree_uuid}_{node_uuid}_hashes.txt')
     return make_response('Unable to find the hashes.', 404)
 
 

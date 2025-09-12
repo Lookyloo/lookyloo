@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-import json
 import logging
 import logging.config
 import shutil
 
 from datetime import datetime, timedelta
 from pathlib import Path
+
+import orjson
 
 from redis import Redis
 
@@ -40,10 +41,10 @@ class BackgroundBuildCaptures(AbstractManager):
             capture_uuid = f.read()
         self.logger.info(f'Triggering autoreport for {capture_uuid}...')
         settings = {}
-        with (path / 'auto_report').open() as f:
+        with (path / 'auto_report').open('rb') as f:
             if ar := f.read():
                 # could be an empty file.
-                settings = json.loads(ar)
+                settings = orjson.loads(ar)
         try:
             self.lookyloo.send_mail(capture_uuid, as_admin=True, email=settings.get('email', ''),
                                     comment=settings.get('comment'))
