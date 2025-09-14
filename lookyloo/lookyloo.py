@@ -990,6 +990,7 @@ class Lookyloo():
         if not get_config('generic', 'enable_mail_notification'):
             return {"error": "Unable to send mail: mail notification disabled"}
 
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         email_config = get_config('generic', 'email')
         if email_deduplicate := email_config.get('deduplicate'):
             if email_deduplicate.get('uuid') and self.already_sent_mail(capture_uuid, uuid_only=True):
@@ -1025,7 +1026,7 @@ class Lookyloo():
                 redirects = "No redirects."
 
             if not self.misps.available:
-                self.logger.info('There are no MISP instances available for a lookup.')
+                logger.info('There are no MISP instances available for a lookup.')
             else:
                 for instance_name in self.misps.keys():
                     if occurrences := self.get_misp_occurrences(capture_uuid,
@@ -1061,11 +1062,15 @@ class Lookyloo():
         )
         msg.set_content(body)
         try:
-            contact_for_takedown = self.contacts(capture_uuid)
-            msg.add_attachment(orjson.dumps(contact_for_takedown, option=orjson.OPT_INDENT_2),
-                               filename='contacts.json')
+            if contact_for_takedown := self.contacts(capture_uuid):
+                msg.add_attachment(orjson.dumps(contact_for_takedown, option=orjson.OPT_INDENT_2),
+                                   maintype='application',
+                                   subtype='json',
+                                   filename='contacts.json')
+            else:
+                logger.warning('Contact list empty.')
         except Exception as e:
-            self.logger.warning(f'Unable to get the contacts: {e}')
+            logger.warning(f'Unable to get the contacts: {e}')
         try:
             with smtplib.SMTP(email_config['smtp_host'], email_config['smtp_port']) as s:
                 if smtp_auth['auth']:
@@ -1082,8 +1087,8 @@ class Lookyloo():
                 if deduplicate_interval:
                     self.set_sent_mail_key(capture_uuid, deduplicate_interval)
         except Exception as e:
-            self.logger.exception(e)
-            self.logger.warning(msg.as_string())
+            logger.exception(e)
+            logger.warning(msg.as_string())
             return {"error": "Unable to send mail"}
         return True
 
