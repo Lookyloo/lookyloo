@@ -24,7 +24,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, overload, Literal
 from collections.abc import Iterable
-from urllib.parse import urlparse, unquote_plus
+from urllib.parse import urlparse
 from uuid import uuid4
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -1406,7 +1406,7 @@ class Lookyloo():
         '''Get the URL in the address bar at the end of the capture'''
         success, file = self._get_raw(capture_uuid, 'last_redirect.txt', all_files=False)
         if success:
-            return unquote_plus(file.getvalue().decode().strip())
+            return file.getvalue().decode()
         return None
 
     def get_screenshot_thumbnail(self, capture_uuid: str, /, for_datauri: bool=False, width: int=64) -> str | BytesIO:

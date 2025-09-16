@@ -832,7 +832,9 @@ def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | R
     url_in_address_bar: str | None = None
     diff: str | None = None
     if hostnode.contains_rendered_urlnode:
-        url_in_address_bar = lookyloo.get_last_url_in_address_bar(tree_uuid)
+        url_in_address_bar = '<Unable to load URL from address bar>'
+        if u := lookyloo.get_last_url_in_address_bar(tree_uuid):
+            url_in_address_bar = unquote_plus(u)
         # we shouldn't havemore than one URL in that node, but it's for sure going to happen, so
         # let's take the first URL node only
         if url_in_address_bar and url_in_address_bar != urls[0]['url_object'].name:
