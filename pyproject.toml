@@ -100,7 +100,7 @@ rfc3161-client = "^1.0.4"
 orjson = "^3.11.3"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.18.1"
+mypy = "^1.18.2"
 ipython = [
     {version = "^9", python = ">=3.11"}
 ]
