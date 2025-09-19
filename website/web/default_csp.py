@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+from typing import Any
 
-SELF = "'self'"
+SELF: str = "'self'"
 
-csp = {
+csp: dict[str, Any] = {
     'default-src': SELF,
     'base-uri': SELF,
     'img-src': [

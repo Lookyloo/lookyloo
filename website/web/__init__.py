@@ -80,7 +80,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.debug = bool(os.environ.get('DEBUG', False))
 
 try:
-    from .custom_csp import csp
+    from .custom_csp import csp  # type: ignore[import-untyped]
 except ImportError:
     from .default_csp import csp
 
