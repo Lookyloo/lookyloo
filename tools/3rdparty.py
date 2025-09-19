@@ -6,12 +6,11 @@ from lookyloo.default import get_homedir
 
 d3js_version = '7.9.0'
 jquery_version = "3.7.1"
-datatables_version = "2.3.2"
-datatables_rowgroup_version = "1.5.2"
-datatables_buttons_version = "3.2.4"
-datatables_select_version = "3.0.1"
+datatables_version = "2.3.4"
+datatables_rowgroup_version = "1.6.0"
+datatables_buttons_version = "3.2.5"
+datatables_select_version = "3.1.0"
 jquery_json_viewer_version = "1.5.0"
-json5_version = "2"
 
 
 if __name__ == '__main__':
