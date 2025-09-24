@@ -53,6 +53,7 @@ from pylacus import (PyLacus,
                      # CaptureSettings as CaptureSettingsPy
                      )
 from pymisp import MISPAttribute, MISPEvent, MISPObject
+from pymisp.tools import FileObject
 from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable
 from pylookyloomonitoring import PyLookylooMonitoring
 from redis import ConnectionPool, Redis
@@ -1133,90 +1134,66 @@ class Lookyloo():
             else:
                 # unable to find certificate
                 logger.warning('Unable to verify with any known certificate either.')
-                return None
+            return None
 
         trusted_timestamps = self._load_tt_file(capture_uuid)
         if not trusted_timestamps:
             return {'warning': "No trusted timestamps in the capture."}
 
-        certificates: list[cryptography.x509.Certificate] | None = None
         to_check: dict[str, tuple[TimeStampResponse, bytes]] = {}
         success: bool
-        data: str | bytes | BytesIO | None
+        data: bytes
+        d: str | bytes | BytesIO | None
         for tsr_name, tst in trusted_timestamps.items():
             # turn the base64 encoded blobs back to bytes and TimeStampResponse for validation
             tsr = decode_timestamp_response(tst)
             if tsr_name == 'last_redirected_url':
-                data = self.get_last_url_in_address_bar(capture_uuid)
-                if data:
-                    to_check[tsr_name] = (tsr, data.encode())
-                    if certificates is None:
-                        certificates = find_certificate(to_check[tsr_name])
-                else:
-                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+                if d := self.get_last_url_in_address_bar(capture_uuid):
+                    data = d.encode()
             elif tsr_name == 'har':
-                success, data = self.get_har(capture_uuid)
+                success, d = self.get_har(capture_uuid)
                 if success:
-                    to_check[tsr_name] = (tsr, gzip.decompress(data.getvalue()))
-                    if certificates is None:
-                        certificates = find_certificate(to_check[tsr_name])
-                else:
-                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+                    data = gzip.decompress(d.getvalue())
             elif tsr_name == 'storage':
-                success, data = self.get_storage_state(capture_uuid)
+                success, d = self.get_storage_state(capture_uuid)
                 if success:
-                    to_check[tsr_name] = (tsr, data.getvalue())
-                    if certificates is None:
-                        certificates = find_certificate(to_check[tsr_name])
-                else:
-                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+                    data = d.getvalue()
             elif tsr_name == 'html':
-                success, data = self.get_html(capture_uuid)
+                success, d = self.get_html(capture_uuid)
                 if success:
-                    to_check[tsr_name] = (tsr, data.getvalue())
-                    if certificates is None:
-                        certificates = find_certificate(to_check[tsr_name])
-                else:
-                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+                    data = d.getvalue()
             elif tsr_name == 'png':
-                success, data = self.get_screenshot(capture_uuid)
+                success, d = self.get_screenshot(capture_uuid)
                 if success:
-                    to_check[tsr_name] = (tsr, data.getvalue())
-                    if certificates is None:
-                        certificates = find_certificate(to_check[tsr_name])
-                else:
-                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+                    data = d.getvalue()
             elif tsr_name in ['downloaded_filename', 'downloaded_file']:
-                # get those two in one call
-                if to_check.get('downloaded_filename') or to_check.get('downloaded_file'):
-                    continue
-                success, filename, data = self.get_data(capture_uuid)
-                if success:
-                    # get the right tsr, in a dirtyish way.
-                    if dl_filename := trusted_timestamps.get('downloaded_filename'):
-                        tsr_filename = decode_timestamp_response(dl_filename)
-                    else:
-                        logger.warning('Unable to get downloaded_filename for trusted timestamp validation.')
-                        continue
-
-                    if dl_file := trusted_timestamps.get('downloaded_file'):
-                        tsr_file = decode_timestamp_response(dl_file)
-                    else:
-                        logger.warning('Unable to get downloaded_file for trusted timestamp validation.')
-                        continue
-
-                    to_check['downloaded_filename'] = (tsr_filename, filename.encode())
-                    to_check['downloaded_file'] = (tsr_file, data.getvalue())
-                else:
-                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+                # Get these values differently, see below
+                continue
             else:
                 logger.warning(f'Unexpected entry in trusted timestamps: {tsr_name}')
                 continue
 
-        if not certificates:
+            if data:
+                to_check[tsr_name] = (tsr, data)
+            else:
+                logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+
+        if 'downloaded_filename' in trusted_timestamps and 'downloaded_file' in trusted_timestamps:
+            success, filename, file_content = self.get_data(capture_uuid)
+            if success:
+                tsr_filename = decode_timestamp_response(trusted_timestamps['downloaded_filename'])
+                to_check['downloaded_filename'] = (tsr_filename, filename.encode())
+                tsr_file = decode_timestamp_response(trusted_timestamps['downloaded_file'])
+                to_check['downloaded_file'] = (tsr_file, file_content.getvalue())
+            else:
+                logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+
+        for v in to_check.values():
+            if certificates := find_certificate(v):
+                return to_check, certificates
+        else:
             logger.warning('Unable to find certificate, cannot validate trusted timestamps.')
             return {'warning': 'Unable to find certificate, cannot validate trusted timestamps.'}
-        return to_check, certificates
 
     def check_trusted_timestamps(self, capture_uuid: str, /) -> tuple[dict[str, datetime | str], str] | dict[str, str]:
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
@@ -1533,6 +1510,7 @@ class Lookyloo():
     def misp_export(self, capture_uuid: str, /, with_parent: bool=False, *, as_admin: bool=False) -> list[MISPEvent] | dict[str, str]:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         cache = self.capture_cache(capture_uuid)
         if not cache:
             return {'error': 'UUID missing in cache, try again later.'}
@@ -1545,27 +1523,75 @@ class Lookyloo():
         except LookylooException as e:
             return {'error': str(e)}
 
+        # ### NOTE: get all the relevant elements gathered during the capture:
+        # * downloaded file(s)
+
         # if the file submitted on lookyloo cannot be displayed (PDF), it will be downloaded.
         # In the case, we want to have it as a FileObject in the export
-        success, filename, pseudofile = self.get_data(capture_uuid)
-        if success and filename:
+        success_downloaded, filename, pseudofile = self.get_data(capture_uuid)
+        if success_downloaded and filename and pseudofile:
             event = self.misps.export(cache, self.is_public_instance, filename, pseudofile)
         else:
             event = self.misps.export(cache, self.is_public_instance)
+
+        if event.objects and isinstance(event.objects[-1], FileObject):
+            content_before_rendering = event.objects[-1]
+
+        if success_downloaded:
+            # NOTE: in case the first object is a FileObject, we got one single file, and can use that
+            #   for the trusted timestamp. In any other case, there is also a URL and he download is
+            #   not the rendered page.
+            if event.objects and isinstance(event.objects[0], FileObject):
+                misp_downloaded_files = event.objects[0]
+            else:
+                # It's not in the event yet.
+                misp_downloaded_files = FileObject(pseudofile=pseudofile, filename=filename)
+                misp_downloaded_files.comment = 'One or more files downloaded during the capture.'
+                event.add_object(misp_downloaded_files)
+
         success, screenshot = self.get_screenshot(capture_uuid)
         if success:
             misp_screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png',
                                                                  data=screenshot,
+                                                                 comment='Screenshot of the page at the end of the capture',
                                                                  disable_correlation=True)  # type: ignore[assignment]
             misp_screenshot.first_seen = cache.timestamp
-            # If the last object attached to tht event is a file, it is the rendered page
-            if event.objects and event.objects[-1].name == 'file':
-                event.objects[-1].add_reference(misp_screenshot, 'rendered-as', 'Screenshot of the page')
+            if 'content_before_rendering' in locals():
+                content_before_rendering.add_reference(misp_screenshot, 'rendered-as', 'Screenshot of the page')
+
+        success, d = self.get_har(capture_uuid)
+        if success:
+            har = BytesIO(gzip.decompress(d.getvalue()))
+            misp_har: MISPAttribute = event.add_attribute('attachment', 'har.json',
+                                                          data=har,
+                                                          comment='HTTP Archive (HAR) of the whole capture',
+                                                          disable_correlation=True)  # type: ignore[assignment]
+
+        success, storage = self.get_storage_state(capture_uuid)
+        if success:
+            misp_storage: MISPAttribute = event.add_attribute('attachment', 'storage.json',
+                                                              data=storage,
+                                                              comment='The complete storage for the capture: Cookies, Local Storage and Indexed DB',
+                                                              disable_correlation=True)  # type: ignore[assignment]
+
+        success, html = self.get_html(capture_uuid)
+        if success:
+            misp_rendered_html: MISPAttribute = event.add_attribute('attachment', 'rendered_page.html',
+                                                                    data=html,
+                                                                    comment='The rendered page at the end of the capture',
+                                                                    disable_correlation=True)  # type: ignore[assignment]
+
+            if 'content_before_rendering' in locals():
+                content_before_rendering.add_reference(misp_rendered_html, 'rendered-as', 'Rendered HTML at the end of the capture')
+
+        if url_address_bar := self.get_last_url_in_address_bar(capture_uuid):
+            misp_url_address_bar: MISPAttribute = event.add_attribute('url', url_address_bar,
+                                                                      comment='The address in the browser address bar at the end of the capture.')  # type: ignore[assignment]
 
         if self.vt.available:
             response = self.vt.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
             if 'error' in response:
-                self.logger.info(f'Unable to trigger VT: {response["error"]}')
+                logger.info(f'Unable to trigger VT: {response["error"]}')
             else:
                 for e_obj in event.objects:
                     if e_obj.name != 'url':
@@ -1590,11 +1616,64 @@ class Lookyloo():
         if self.urlscan.available:
             response = self.urlscan.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
             if 'error' in response:
-                self.logger.info(f'Unable to trigger URLScan: {response["error"]}')
+                logger.info(f'Unable to trigger URLScan: {response["error"]}')
             else:
                 urlscan_attribute = self.__misp_add_urlscan_to_event(capture_uuid)
                 if urlscan_attribute:
                     event.add_attribute(**urlscan_attribute)
+
+        tsr_data = self._prepare_tsr_data(capture_uuid, logger=logger)
+        if isinstance(tsr_data, dict):
+            logger.warning(f'Unable to set TSR data: {response.get("warning")}')
+        else:
+            to_check, certificates = tsr_data
+            tsa_certificates_pem = b'\n'.join([certificate.public_bytes(Encoding.PEM) for certificate in certificates])
+            for name, tsr_blob in to_check.items():
+                tsr, data = tsr_blob
+                imprint = tsr.tst_info.message_imprint
+                hash_algo = imprint.hash_algorithm
+                hash_value = imprint.message
+                timestamp = tsr.tst_info.gen_time
+                misp_tsr = MISPObject('trusted-timestamp')
+                misp_tsr.add_attribute('timestamp', simple_value=timestamp.isoformat())
+                if hash_algo._name == 'sha256':
+                    misp_tsr.add_attribute('hash-sha256', simple_value=hash_value.hex())
+                elif hash_algo._name == 'sha512':
+                    misp_tsr.add_attribute('hash-sha512', simple_value=hash_value.hex())
+                else:
+                    logger.warning(f'Unsupported hash algorithm: {str(hash_algo)}')
+                    continue
+                misp_tsr.add_attribute('format', simple_value='RFC3161')
+                misp_tsr.add_attribute('tsa-certificates', value='certficates.pem',
+                                       comment='The list of certificates used for signing',
+                                       data=tsa_certificates_pem)
+                misp_tsr.add_attribute('trusted-timestamp-response',
+                                       value=f'{name}.tsr',
+                                       data=BytesIO(tsr.as_bytes()))
+                # Add references
+                if name == 'png' and 'misp_screenshot' in locals():
+                    misp_tsr.add_reference(misp_screenshot, 'verifies', 'Trusted Timestamp for the screenshot')
+                    misp_tsr.comment = 'Trusted timestamp for the screenshot.'
+                elif name == 'last_redirected_url' and 'misp_url_address_bar' in locals():
+                    misp_tsr.add_reference(misp_url_address_bar, 'verifies', 'Trusted timestamp for the URL in the address bar at the end of the capture.')
+                    misp_tsr.comment = 'Trusted timestamp for the URL in the address bar.'
+                elif name == 'har' and 'misp_har' in locals():
+                    misp_tsr.add_reference(misp_har, 'verifies', 'Trusted Timestamp for the HTTP Archive (HAR)')
+                    misp_tsr.comment = 'Trusted timestamp for the HAR.'
+                elif name == 'storage' and 'misp_storage' in locals():
+                    misp_tsr.add_reference(misp_storage, 'verifies', 'Trusted Timestamp for the capture storage')
+                    misp_tsr.comment = 'Trusted timestamp for the storage.'
+                elif name == 'html' and 'misp_rendered_html' in locals():
+                    misp_tsr.add_reference(misp_rendered_html, 'verifies', 'Trusted Timestamp for the rendered HTML')
+                    misp_tsr.comment = 'Trusted timestamp for the rendered HTML.'
+                elif name == 'downloaded_filename' and 'misp_downloaded_files' in locals():
+                    misp_tsr.add_reference(misp_downloaded_files, 'verifies', 'Trusted Timestamp for the file name of the downloaded element(s)')
+                    misp_tsr.comment = 'Trusted timestamp for the filename of the downloaded element(s).'
+                elif name == 'downloaded_file' and 'misp_downloaded_files' in locals():
+                    misp_tsr.add_reference(misp_downloaded_files, 'verifies', 'Trusted Timestamp for the downloaded element(s)')
+                    misp_tsr.comment = 'Trusted timestamp for the downloaded element(s).'
+
+                event.add_object(misp_tsr)
 
         if with_parent and cache.parent:
             parent = self.misp_export(cache.parent, with_parent)
