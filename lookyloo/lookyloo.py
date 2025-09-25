@@ -1624,7 +1624,7 @@ class Lookyloo():
 
         tsr_data = self._prepare_tsr_data(capture_uuid, logger=logger)
         if isinstance(tsr_data, dict):
-            logger.warning(f'Unable to set TSR data: {response.get("warning")}')
+            logger.info(f'Unable to set TSR data: {tsr_data.get("warning")}')
         else:
             to_check, certificates = tsr_data
             tsa_certificates_pem = b'\n'.join([certificate.public_bytes(Encoding.PEM) for certificate in certificates])
