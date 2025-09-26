@@ -662,7 +662,10 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
 
         _all_ips = set()
         _all_hostnames: set[str] = {node.name for node in ct.root_hartree.hostname_tree.traverse()
-                                    if not getattr(node, 'hostname_is_ip', False)}
+                                    if (not getattr(node, 'hostname_is_ip', False)
+                                        and node.name
+                                        and not node.name.endswith('onion')
+                                        and not node.name.endswith('i2p'))}
         self.dnsresolver.cache.flush()
         logger.info(f'Resolving DNS: {len(_all_hostnames)} hostnames.')
         semaphore = asyncio.Semaphore(20)
@@ -672,7 +675,8 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         await asyncio.gather(*all_requests)
         logger.info('Done resolving DNS.')
         for node in ct.root_hartree.hostname_tree.traverse():
-            if 'hostname_is_ip' in node.features and node.hostname_is_ip:
+            if ('hostname_is_ip' in node.features and node.hostname_is_ip
+                    or (node.name and any([node.name.endswith('onion'), node.name.endswith('i2p')]))):
                 continue
             domain = self.psl.privatesuffix(node.name)
 
