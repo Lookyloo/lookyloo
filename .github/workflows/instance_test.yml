@@ -2,9 +2,9 @@ name: Run local instance of lookyloo to test that current repo
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main", "develop" ]
 
 jobs:
   splash-container:
@@ -13,7 +13,7 @@ jobs:
      strategy:
        fail-fast: false
        matrix:
-         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+         python-version: ["3.10", "3.11", "3.12", "3.13"]
 
      steps:
       - uses: actions/checkout@v5
