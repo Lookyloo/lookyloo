@@ -1671,7 +1671,12 @@ def tree_body_hashes(tree_uuid: str) -> str:
 
 @app.route('/tree/<string:tree_uuid>/ips', methods=['GET'])
 def tree_ips(tree_uuid: str) -> str:
-    return render_template('tree_ips.html', tree_uuid=tree_uuid)
+    proxified = False
+    if cache := lookyloo.capture_cache(tree_uuid):
+        print(cache.capture_settings)
+        if cache.capture_settings and cache.capture_settings.proxy:
+            proxified = True
+    return render_template('tree_ips.html', tree_uuid=tree_uuid, proxified=proxified)
 
 
 @app.route('/tree/<string:tree_uuid>/hostnames', methods=['GET'])
@@ -2088,7 +2093,6 @@ def capture_web() -> str | Response | WerkzeugResponse:
         capture_query['allow_tracking'] = True if request.form.get('allow_tracking') else False
         capture_query['with_trusted_timestamps'] = True if request.form.get('with_trusted_timestamps') else False
         capture_query['java_script_enabled'] = True if request.form.get('java_script_enabled') else False
-        capture_query['remote_lacus_name'] = request.form.get('remote_lacus_name')
 
         if request.form.get('width') or request.form.get('height'):
             capture_query['viewport'] = {'width': int(request.form.get('width', 1280)),
@@ -2129,8 +2133,9 @@ def capture_web() -> str | Response | WerkzeugResponse:
         if request.form.get('init_script'):
             capture_query['init_script'] = request.form['init_script']
 
-        if request.form.get('remote_lacus_proxy_name'):
-            capture_query['proxy'] = request.form['remote_lacus_proxy_name']
+        capture_query['remote_lacus_name'] = request.form.get('remote_lacus_name')
+        if _p_name := [n for n in request.form.getlist('remote_lacus_proxy_name') if n]:
+            capture_query['proxy'] = _p_name[0]
         elif request.form.get('proxy'):
             parsed_proxy = urlparse(request.form['proxy'])
             if parsed_proxy.scheme and parsed_proxy.hostname and parsed_proxy.port:

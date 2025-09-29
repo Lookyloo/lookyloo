@@ -1,3 +1,13 @@
+{% if proxified %}
+<div class="alert alert-info" role="alert">
+    The capture was done via a proxy, the IPs below can be one of the two:
+    <ul>
+      <li>A public IP address: a DNS request triggered via the proxy was successful</li>
+      <li>Loopback (127.0.0.0/8): unable to trigger a DNS lookup via the proxy</li>
+    </ul>
+</div>
+{% endif %}
+
 <table id="ipsTable" class="table table-striped" style="width:100%" data-treeuuid="{{tree_uuid}}">
 <thead>
  <tr>
