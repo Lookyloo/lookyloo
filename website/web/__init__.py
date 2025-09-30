@@ -1861,7 +1861,7 @@ def search() -> str | Response | WerkzeugResponse:
         favicon = request.files['favicon_file'].stream.read()
         favicon_sha512 = hashlib.sha512(favicon).hexdigest()
         return redirect(url_for('favicon_detail', from_popup=True, favicon_sha512=favicon_sha512))
-    return render_template('search.html')
+    return render_template('search.html', version=pkg_version)
 
 
 def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str, Any] | None=None, *,
@@ -2329,7 +2329,7 @@ def ip_details(ip: str) -> str:
 @app.route('/stats', methods=['GET'])
 def statsfull() -> str:
     stats = lookyloo.get_stats()
-    return render_template('stats.html', stats=stats)
+    return render_template('stats.html', stats=stats, version=pkg_version)
 
 
 @app.route('/whois/<string:query>', methods=['GET'])
