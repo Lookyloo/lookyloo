@@ -1005,10 +1005,13 @@ class Takedown(Resource):  # type: ignore[misc]
         capture_uuid = parameters.get('capture_uuid')
         if not capture_uuid:
             return make_response({'error': f'Invalid request: {parameters}'}, 400)
-        if parameters.get('filter'):
-            return make_response(list(lookyloo.contacts_filtered(capture_uuid)))
-        else:
-            return make_response(lookyloo.contacts(capture_uuid))
+        try:
+            if parameters.get('filter'):
+                return make_response(list(lookyloo.contacts_filtered(capture_uuid)))
+            else:
+                return make_response(lookyloo.contacts(capture_uuid))
+        except Exception as e:
+            return make_response({'error': f'Unable to get contacts: {e}'}, 400)
 
 
 # Admin stuff

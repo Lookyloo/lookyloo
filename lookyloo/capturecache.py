@@ -324,7 +324,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             self.redis.delete(capture_dir)
             self.logger.warning(f'UUID ({uuid}) linked to a missing directory ({capture_dir}).')
             raise MissingCaptureDirectory(f'UUID ({uuid}) linked to a missing directory ({capture_dir}).')
-        raise MissingUUID(f'Unable to find UUID {uuid}.')
+        raise MissingUUID(f'Unable to find UUID "{uuid}".')
 
     def _prepare_hostnode_tree_for_icons(self, tree: CrawledTree) -> None:
         for node in tree.root_hartree.hostname_tree.traverse():

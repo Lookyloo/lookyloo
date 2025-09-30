@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 from pypdns import PyPDNS, PDNSRecord, PDNSError, UnauthorizedError
+from requests.exceptions import Timeout as RequestsTimeout
 
 from ..default import ConfigError, get_homedir
 from ..helpers import get_cache_directory, get_useragent_for_requests, global_proxy_for_requests
@@ -37,9 +38,13 @@ class CIRCLPDNS(AbstractModule):
         self.storage_dir_pypdns.mkdir(parents=True, exist_ok=True)
         return True
 
-    def _get_live_passivedns(self, query: str) -> list[PDNSRecord]:
+    def _get_live_passivedns(self, query: str) -> list[PDNSRecord] | None:
         # No cache, just get the records.
-        return [entry for entry in self.pypdns.iter_query(query) if isinstance(entry, PDNSRecord)]
+        try:
+            return [entry for entry in self.pypdns.iter_query(query) if isinstance(entry, PDNSRecord)]
+        except RequestsTimeout:
+            self.logger.warning(f'CIRCL PDNS request timed out: {query}')
+            return None
 
     def get_passivedns(self, query: str, live: bool=False) -> list[PDNSRecord] | None:
         if live:

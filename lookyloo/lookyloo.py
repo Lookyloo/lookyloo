@@ -58,6 +58,7 @@ from pysecuritytxt import PySecurityTXT, SecurityTXTNotAvailable
 from pylookyloomonitoring import PyLookylooMonitoring
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
+from requests.exceptions import Timeout as RequestsTimeout
 from rfc3161_client import (TimeStampResponse, VerifierBuilder, VerificationError,
                             decode_timestamp_response)
 
@@ -171,7 +172,7 @@ class Lookyloo():
         try:
             if hasattr(self, '_monitoring') and self._monitoring and self._monitoring.is_up:
                 return self._monitoring
-        except TimeoutError:
+        except (TimeoutError, RequestsTimeout):
             self.logger.warning('Monitoring is temporarly (?) unreachable.')
             return None
         monitoring_config = get_config('generic', 'monitoring')
