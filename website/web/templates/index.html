@@ -30,32 +30,16 @@
 
 {% block styles %}
 {{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"
-      {{get_sri('static', 'index.css')}}
-      crossorigin="anonymous">
 {% endblock %}
 
 
 {% block content %}
-  <div class="corner-ribbon top-left sticky white shadow">
-    <a href="https://www.lookyloo.eu/docs/main/index.html">Documentation</a>
-  </div>
-  <div class="corner-ribbon bottom-left sticky white shadow">
-      <a href="https://github.com/Lookyloo/lookyloo/releases/tag/v{{version}}">Changelog<br>(v{{version}})</a>
-  </div>
-  {% if show_project_page %}
-  <div class="corner-ribbon top-right sticky white shadow">
-    <a href="https://github.com/Lookyloo">Project page</a>
-  </div>
-  {% endif %}
+  {% include 'top_navbar.html' %}
   <center>
     <a href="{{ url_for('capture_web') }}">
       <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
-           alt="Lookyloo" width="200">
+           alt="Lookyloo" width="250">
     </a>
-  </center>
-  <center>
-    <h4>Web forensics tool</h4>
     <br>
     <a href="{{ url_for('capture_web') }}">
       <button class="new-capture-button btn btn-primary">Start a new capture</button>

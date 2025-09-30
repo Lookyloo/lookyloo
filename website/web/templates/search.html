@@ -21,12 +21,7 @@
 
 {% block content %}
 <div class="container">
-  <center>
-    <a href="{{ url_for('index') }}" title="Go back to index">
-      <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
-           alt="Lookyloo" width="400">
-    </a>
-  </center>
+  {% include 'top_navbar.html' %}
   <br>
   <div>Please only search one of the following thing at a time.</div>
   <form role="form" action="{{ url_for('search') }}" method=post enctype=multipart/form-data>
@@ -78,7 +73,7 @@
         <input class="form-control" type="file" id="favicon_file" name="favicon_file">
       </div>
     </div>
-    <button type="submit" class="btn btn-primary" id="btn-looking">Search!</button>
+    <button type="submit" class="btn btn-primary" id="btn-looking">Search</button>
   </form>
 </div>
 {% endblock %}

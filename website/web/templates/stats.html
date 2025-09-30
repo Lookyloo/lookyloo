@@ -3,6 +3,7 @@
 {% block title %}Statistics{% endblock %}
 
 {% block content %}
+{% include 'top_navbar.html' %}
 <div>
 {% for week in stats['weeks'] %}
   <h2> Week: {{ week['week_number'] }}</h2>
