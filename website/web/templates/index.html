@@ -37,11 +37,6 @@
   {% include 'top_navbar.html' %}
   <center>
     <a href="{{ url_for('capture_web') }}">
-      <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
-           alt="Lookyloo" width="250">
-    </a>
-    <br>
-    <a href="{{ url_for('capture_web') }}">
       <button class="new-capture-button btn btn-primary">Start a new capture</button>
     </a>
     <a href="{{ url_for('submit_capture') }}">

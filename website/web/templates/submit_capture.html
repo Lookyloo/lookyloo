@@ -22,12 +22,7 @@
 
 {% block content %}
 <div class="container">
-  <center>
-    <a href="{{ url_for('index') }}" title="Go back to index">
-      <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
-           alt="Lookyloo" width="25%">
-    </a>
-  </center>
+  {% include 'top_navbar.html' %}
   {{ render_messages(container=True, dismissible=True) }}
   <form role="form" action="{{ url_for('submit_capture') }}" method=post enctype=multipart/form-data>
     <div class="row mb-3">
