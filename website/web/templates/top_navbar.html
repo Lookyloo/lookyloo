@@ -1,13 +1,14 @@
 <nav class="navbar bg-body-tertiary">
   <div class="container-fluid">
-    <a class="navbar-brand ms-auto" href="{{ url_for('landing_page')}}" style="float=none">
+    <a class="navbar-brand position-relative bottom-0 start-50 translate-middle-x"
+       href="{{ url_for('landing_page')}}">
       <img src="{{ url_for('static', filename='lookyloo.png') }}"
                alt="Lookyloo logo" width="250"
                class="d-inline-block align-text-top">
       <br>
       <h4>Web forensics tool</h4>
     </a>
-    <button class="navbar-toggler ms-auto p-2" type="button" data-bs-toggle="offcanvas"
+    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
             data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar"
             aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
