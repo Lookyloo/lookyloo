@@ -35,7 +35,8 @@
   {% include 'top_navbar.html' %}
   {{ render_messages(container=True, dismissible=True) }}
   {% if current_user.is_authenticated %}
-    <center><p class="lead">You are logged-in as <strong>{{ current_user.id }}</strong></p></center>
+  <div class="alert alert-info" role="alert">
+    <p class="lead">You are logged-in as <strong>{{ current_user.id }}</strong></p>
     <hr>
     {% if user_config %}
     <p>
@@ -66,6 +67,7 @@
     </p>
     <hr>
     {% endif %}
+  </div>
   {% endif %}
 
   <form role="form" action="{{ url_for('capture_web') }}" method=post enctype=multipart/form-data>
