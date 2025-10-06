@@ -21,11 +21,29 @@
       </div>
       <div class="offcanvas-body">
         <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-          <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="{{ url_for('index')}}">Index</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Show index
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{{ url_for('index')}}">Recent captures</a></li>
+              {% if current_user.is_authenticated %}
+              <li><a class="dropdown-item" href="{{ url_for('index_hidden')}}">Hidden recent captures</a></li>
+              {% endif%}
+            </ul>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="{{ url_for('capture_web')}}">Capture</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Capture options
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{{ url_for('capture_web')}}">New Capture</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('submit_capture')}}">Submit existing Capture</a></li>
+              {% if current_user.is_authenticated %}
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('simple_capture')}}">Capture for takedown</a></li>
+              {% endif%}
+            </ul>
           </li>
           <li class="nav-item">
             <a class="nav-link" aria-current="page" href="{{ url_for('search')}}">Search</a>
