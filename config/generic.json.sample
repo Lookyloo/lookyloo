@@ -73,6 +73,7 @@
     "smtp_port": "25",
     "confirm_message": "Message the users need to confirm before they submit a notification.",
     "defang_urls": true,
+    "auto_filter_contact": false,
     "deduplicate": {
       "uuid": true,
       "hostnames": false,
