@@ -1064,7 +1064,14 @@ class Lookyloo():
         )
         msg.set_content(body)
         try:
-            if contact_for_takedown := self.contacts(capture_uuid):
+            contact_for_takedown: list[str] | list[dict[str, Any]] | None
+            if email_config.get('auto_filter_contacts'):
+                if f_contacts := self.contacts_filtered(capture_uuid):
+                    contact_for_takedown = list(f_contacts)
+            else:
+                contact_for_takedown = self.contacts(capture_uuid)
+
+            if contact_for_takedown:
                 msg.add_attachment(orjson.dumps(contact_for_takedown, option=orjson.OPT_INDENT_2),
                                    maintype='application',
                                    subtype='json',
