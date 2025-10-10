@@ -4,7 +4,9 @@
        href="{{ url_for('landing_page')}}">
       <img src="{{ url_for('static', filename='lookyloo.png') }}"
                alt="Lookyloo logo" width="250"
-               class="d-inline-block align-text-top">
+               class="d-inline-block align-text-top"
+               {{get_sri('static', 'lookyloo.png')}}
+               crossorigin="anonymous">
       <br>
       <h4>Web forensics tool</h4>
     </a>
