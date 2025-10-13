@@ -201,8 +201,12 @@
 
       {% if url['url_object'].ip_address %}
       <div>
+        {% if url['url_object'].ip_address.is_loopback %}
+          IP from HAR: <b>{{ url['url_object'].ip_address }}</b> (loopback address, capture via proxy)
+        {% else %}
           IP from HAR: <b>{{ url['url_object'].ip_address }}</b> (<a href="{{ url_for('ip_details', ip=url['url_object'].ip_address, from_popup=True) }}">see other captures</a>)
-        {% if uwhois_available %}(<a href="{{ url_for('whois', query=url['url_object'].ip_address)}}">whois</a>){% endif %}
+          {% if uwhois_available %}(<a href="{{ url_for('whois', query=url['url_object'].ip_address)}}">whois</a>){% endif %}
+        {% endif %}
       </div>
       {% endif %}
       {% if url['url_object'].security_details %}

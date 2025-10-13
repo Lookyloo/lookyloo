@@ -498,8 +498,8 @@ class Indexing():
                 # The IP address from the HAR file, this is the one used for the connection
                 ip_to_index = urlnode.ip_address
 
-            if not ip_to_index:
-                # No IP available, skip
+            if not ip_to_index or ip_to_index.is_loopback:
+                # No IP available, or loopback, skip
                 continue
             ip_version_key = f'ipv{ip_to_index.version}'
 
