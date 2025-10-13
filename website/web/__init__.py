@@ -2940,6 +2940,9 @@ def post_table(table_name: str, value: str) -> Response:
         tree_uuid = value.strip()
         prepared_captures = []
         for _ip, _info in get_all_ips(tree_uuid).items():
+            if _ip.startswith('127'):
+                # Skip the loopback entries
+                continue
             ip_nodes: list[tuple[str, str]] = [(node.name, node.uuid) for node in _info['nodes']]
             to_append = {
                 'total_captures': _info['total_captures'],
