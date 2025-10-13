@@ -38,7 +38,7 @@ jobs:
           mv valkey-tmp ../valkey
           pushd ..
           pushd valkey
-          make
+          make -j $(nproc)
           popd
           popd
 
@@ -48,7 +48,7 @@ jobs:
 
       - name: Install kvrocks from deb
         run: |
-          wget https://github.com/RocksLabs/kvrocks-fpm/releases/download/202502091/kvrocks_2.11.1-1_amd64.deb -O kvrocks.deb
+          wget https://github.com/Lookyloo/kvrocks-fpm/releases/download/v2.13.0/kvrocks_2.13-1_amd64.deb -O kvrocks.deb
           sudo dpkg -i kvrocks.deb
 
       - name: Clone uwhoisd
@@ -102,7 +102,9 @@ jobs:
           poetry run python tools/validate_config_files.py --check
 
       - name: Run playwright tests
-        run: pytest tests --tracing=retain-on-failure
+        run: |
+          poetry install --with dev
+          poetry run python -m pytest tests --tracing=retain-on-failure
 
       - name: Stop instance
         run: |
