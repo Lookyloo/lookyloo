@@ -3,7 +3,7 @@
 }
 
 .node circle {
-  fill: #fff;
+  fill: light-dark(white, black);
   stroke: steelblue;
   stroke-width: 3px;
 }
@@ -36,14 +36,15 @@
   text-decoration: none;
   height: 50px;
   width: 50px;
+  padding: 5px;
+  align-content: center;
   background-color: #0d6efd;
   color: white;
-  align-content: center;
 }
 
 #help:hover {
-  background-color: white;
-  color: blue;
+  background-color: light-dark(black, white);
+  color: light-dark(white, black);
 }
 
 /* Generic parts of menus */
@@ -74,23 +75,20 @@ hr {
   position: sticky;
   top: 5px;
   left: 5px;
-  padding: 5px;
   width: fit-content;
+  background-color: light-dark(white, #212529);;
 }
 
 #menu_vertical {
   position: sticky;
   top: 5px;
   left: 5px;
-  background: white;
   border: 2px solid;
   padding: 5px;
 }
 
-#menu_container_vertical .menu-header {
-  width: 200px;
-  height: 110px;
-  resize: both;
+.menu_vertical_header {
+  padding: 5px;
 }
 
 #menu_container_vertical ul.components {
@@ -110,16 +108,14 @@ hr {
   position: sticky;
   top: 5px;
   left: 217px;
-  padding: 5px;
   width: 80%;
 }
 
 #menu_horizontal {
   position: sticky;
   top: 5px;
-  background: white;
   border: 2px solid;
-  padding: 5px;
+  background-color: light-dark(white, #212529);;
   width: fit-content;
 }
 
@@ -130,42 +126,18 @@ hr {
 
 /* Dropdown Menus */
 .dropbtn {
-  background-color: #0d6efd;
-  color: white;
   font-size: 16px;
-  border: none;
   width: 180px;
   text-align: center;
   height: 50px;
 }
 
-.dropbtn:hover, .dropbtn:focus {
-  background-color: #0067fc;
-}
-
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
+.dropdown-menu {
   width: 180px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
 }
 
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-.dropdown-content a:hover {
-  background-color: #f1f1f1;
+.dropdown-item {
+  text-wrap: wrap;
 }
 
 /* Show the dropdown menus on hover */
@@ -197,7 +169,8 @@ hr {
   position: fixed;
   top: 60%;
   right: 5px;
-  background: white;
+  background-color: light-dark(white, #212529);
+  color: light-dark(black, white);
   border: 2px solid;
   padding: 5px;
 }

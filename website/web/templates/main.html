@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
   <head>
     {% block head %}
     <!-- Required meta tags -->
@@ -65,6 +65,10 @@
             crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='jquery.json-viewer.js') }}'
             {{get_sri('static', 'jquery.json-viewer.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    <script src='{{ url_for('static', filename='theme_toggle.js') }}'
+            {{get_sri('static', 'theme_toggle.js')}}
             nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
     {% set overrides_js = load_custom_js('overrides.js') %}

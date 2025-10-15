@@ -55,12 +55,10 @@ table td p {
 .tooltip {
     position: absolute;
     text-align: left;
-    font: 11px;
-    font-smooth: auto;
-    color: white;
-    background: black;
+    background-color: light-dark(#212529, white);
+    color: light-dark(white, black);;
     border: 2px solid;
-    border-color: white;
+    border-color: black;
     padding-top: 2px;
     padding-left: 5px;
     padding-right: 5px;
@@ -68,7 +66,7 @@ table td p {
 }
 
 .tooltip img {
-  background: white;
+  background-color: light-dark(white, #212529);
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 5px;
@@ -122,4 +120,12 @@ table td p {
 /* Make it more clear that an acordion is clickable */
 .accordion-button.collapsed {
   background: var(--bs-info-bg-subtle);
+}
+
+/* Dark mode stuff */
+
+@media (prefers-color-scheme: dark) {
+  #tree_logo, #navbar_logo {
+    filter: invert(1);
+  }
 }
