@@ -140,7 +140,7 @@
   <div id=menu_vertical>
     <div class="menu_vertical_header">
       <a href="{{ url_for('index') }}" title="Back to captures">
-        <img src="{{ url_for('static', filename='lookyloo.jpeg') }}"
+        <img src="{{ url_for('static', filename='lookyloo.png') }}"
              alt="Lookyloo icon" id="tree_logo">
       </a>
     </div>
@@ -197,131 +197,223 @@
           <div class="vr"></div>
 
           <div id="capture-menu" class="dropdown">
-              <button class="dropbtn">Capture</button>
-              <div id="capture-menu-content" class="dropdown-content">
+              <button class="btn btn-primary dropdown-toggle dropbtn" type="button" id="capture-menu-btn"
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                Capture
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="capture-menu-btn">
+                <li>
                 <a href="#detailsModal" data-bs-toggle="modal" data-bs-target="#detailsModal"
-                    role="button" title="Details about the capture configuration">Capture Details</a>
-
+                   class="dropdown-item"
+                   role="button" title="Details about the capture configuration">Capture Details</a>
+                </li>
+                <li>
                 <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
-                    data-bs-target="#statsModal" role="button" title="The capture in numbers">Statistics</a>
-
+                   class="dropdown-item"
+                   data-bs-target="#statsModal" role="button" title="The capture in numbers">Statistics</a>
+                </li>
+                <li>
                 <a href="#storageStateModal" data-remote="{{ url_for('storage_state', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
+                    class="dropdown-item"
                     data-bs-target="#storageStateModal" role="button" title="The storage state at the end of the capture">Storage state</a>
-
+                </li>
+                <li>
                 <a href="#downloadsModal" data-remote="{{ url_for('downloads', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
+                    class="dropdown-item"
                     data-bs-target="#downloadsModal" role="button" title="The file(s) downloaded during the capture">Downloads</a>
-
+                </li>
+                <li>
                 <a href="#screenshotModal" data-bs-toggle="modal" data-bs-target="#screenshotModal"
+                    class="dropdown-item"
                     role="button" title="Contains the URL rendered in the browser">Page Screenshot</a>
-              </div>
+                </li>
+              </ul>
           </div>
 
           <div id="tools-menu" class="dropdown">
-            <button class="dropbtn">Analytical Tools</button>
-            <div id="tools-menu-content" class="dropdown-content">
+            <button class="btn btn-primary dropdown-toggle dropbtn" type="button" id="tools-menu-btn"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Analytical Tools
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="tools-menu-btn">
               {% if not capture_indexed %}
-                <a href="{{ url_for('trigger_indexing', tree_uuid=tree_uuid) }}" role="button" class="btn btn-warning"
+              <li>
+                <center>
+                <a href="{{ url_for('trigger_indexing', tree_uuid=tree_uuid) }}" role="button"
+                   class="dropdown-item alert alert-warning"
                    title="The capture isn't (fully) indexed, index now.">Index capture</a>
+                </center>
+              </li>
               {% endif %}
               {% if misp_lookup%}
+              <li>
                 <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
+                  class="dropdown-item"
                   data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
+              </li>
               {% endif %}
+              <li>
               <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
-                  data-bs-toggle="modal" data-bs-target="#modulesModal" role="button"
-                  title="Lookups from supported 3rd party services">Third Party Reports</a>
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#modulesModal" role="button"
+                 title="Lookups from supported 3rd party services">Third Party Reports</a>
 
+              </li>
+              <li>
               <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
-                  data-bs-toggle="modal" data-bs-target="#historyModal" role="button"
-                  title="Historical data and context about this capture ">Historical lookups</a>
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#historyModal" role="button"
+                 title="Historical data and context about this capture ">Historical lookups</a>
 
+              </li>
+              <li>
               <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
-                  data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button"
-                  title="Hits in Hashlookup ">Hashlookup hits</a>
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button"
+                 title="Hits in Hashlookup ">Hashlookup hits</a>
 
+              </li>
+              <li>
               <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
-                  data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button"
-                  title="All resources contained in the tree">Resources</a>
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button"
+                 title="All resources contained in the tree">Resources</a>
 
+              </li>
+              <li>
               <a href="#ipsModal" data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid) }}"
+                 class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#ipsModal" role="button"
                  title="All IPs contained in the tree">IP Addresses</a>
 
+              </li>
+              <li>
               <a href="#hostnamesModal" data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
-                  data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button"
-                  title="All hostnames contained in the tree">Hostnames</a>
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button"
+                 title="All hostnames contained in the tree">Hostnames</a>
 
+              </li>
+              <li>
               <a href="#urlsModal" data-remote="{{ url_for('tree_urls', tree_uuid=tree_uuid) }}"
+                 class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#urlsModal" role="button"
                  title="All URLs contained in the tree">URLs</a>
 
+              </li>
+              <li>
               <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
-                  data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button"
-                  title="Favicons found on the rendered page">Favicons</a>
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button"
+                 title="Favicons found on the rendered page">Favicons</a>
 
+              </li>
+              <li>
               <a href="#captureHashesTypesModal" data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid) }}"
-                  data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button"
-                  title="Compare hashes of the rendered page">(Fuzzy)Hashes types</a>
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button"
+                 title="Compare hashes of the rendered page">(Fuzzy)Hashes types</a>
 
+              </li>
+              <li>
               <a href="#identifiersModal" data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid) }}"
-                  data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button"
-                  title="Identifiers found on the rendered page">Other Identifiers</a>
-            </div>
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button"
+                 title="Identifiers found on the rendered page">Other Identifiers</a>
+              </li>
+            </ul>
           </div>
 
           <div id="actions-menu" class="dropdown">
-            <button class="dropbtn">Actions</button>
-            <div id="actions-menu-content" class="dropdown-content">
+            <button class="btn btn-primary dropdown-toggle dropbtn" type="button" id="actions-menu-btn"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Actions
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="actions-menu-btn">
+              <li>
               <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
-                  data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button"
-                  title="Start a capture from one of the URLs rendered in the page">Subsequent Captures</a>
+                 data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button"
+                 class="dropdown-item"
+                 title="Start a capture from one of the URLs rendered in the page">Subsequent Captures</a>
 
+              </li>
+              <li>
               <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button"
-                  title="Submit the URL again">Re-Capture</a>
+                 class="dropdown-item"
+                 title="Submit the URL again">Re-Capture</a>
 
+              </li>
+              <li>
               <a href="#downloadModal" data-remote="{{ url_for('download_elements', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
+                 class="dropdown-item"
                  data-bs-target="#downloadModal" role="button" title="Forensic Acquisition of the Web Capture">Get forensic acquisition</a>
 
+              </li>
               {% if misp_push%}
+                <li>
                 <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
-                  data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
+                   class="dropdown-item"
+                   data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
+                </li>
               {% endif %}
+              </li>
               <a href="#lookylooPushModal" data-bs-toggle="modal" data-bs-target="#lookylooPushModal" role="button"
-                  title="Push the capture to another Lookyloo Instance">Push to another Lookyloo</a>
-            </div>
+                 class="dropdown-item"
+                 title="Push the capture to another Lookyloo Instance">Push to another Lookyloo</a>
+              </li>
+            </ul>
           </div>
 
           {% if current_user.is_authenticated %}
             <div id="admin-menu" class="dropdown">
-              <button class="dropbtn">Admin only</button>
-              <div id="admin-menu-content" class="dropdown-content">
-                <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" role="button">Rebuild capture</a>
-                <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" role="button">Hide capture</a>
-                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" role="button" id="removeCapture">Remove capture</a>
-                <a href="{{ url_for('logout') }}" role="button" style="color: red">Logout</a>
-              </div>
+              <button class="btn btn-primary dropdown-toggle dropbtn" type="button" id="admin-menu-btn"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Admin only
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="admin-menu-btn">
+                <li>
+                <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" class="dropdown-item" role="button">Rebuild capture</a>
+                </li>
+                <li>
+                <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" class="dropdown-item" role="button">Hide capture</a>
+                </li>
+                <li>
+                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" class="dropdown-item" role="button" id="removeCapture">Remove capture</a>
+                </li>
+              </ul>
             </div>
           {% endif %}
 
           {%if enable_categorization or enable_bookmark or enable_context_by_users %}
             <div id="extra-menu" class="dropdown">
-              <button class="dropbtn">Extras</button>
-              <div id="extra-menu-content" class="dropdown-content">
+              <button class="btn btn-primary dropdown-toggle dropbtn" type="button" id="extra-menu-btn"
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                Extras
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="extra-menu-btn">
                 {% if enable_categorization %}
+                    <li>
                     <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
-                    data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
+                       class="dropdown-item"
+                       data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
+                    </li>
                 {% endif %}
                 {% if enable_bookmark %}
-                    <a href="#/" role="button" id="unbookmarkAllNodes">Unbookmark all nodes</a>
+                    <li>
+                    <a href="#/" class="dropdown-item" role="button" id="unbookmarkAllNodes">Unbookmark all nodes</a>
+                    </li>
                 {% endif %}
                 {% if enable_context_by_users %}
-                    <a href="#/" role="button" id="markAsKnown">Mark all the captures' entries as known</a>
+                    <li>
+                    <a href="#/" class="dropdown-item" role="button" id="markAsKnown">Mark all the captures' entries as known</a>
+                    </li>
                 {% endif %}
-              </div>
+              </ul>
             </div>
           {% endif %}
 
           <a id="help" href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button" title="Lookyloo Manual" target="_blank">?</a>
+          <div></div>
 
       </div>
     </div>

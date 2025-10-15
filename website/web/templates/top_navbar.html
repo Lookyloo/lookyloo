@@ -1,8 +1,10 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
 <nav class="navbar bg-body-tertiary">
   <div class="container-fluid">
     <a class="navbar-brand position-relative bottom-0 start-50 translate-middle-x"
        href="{{ url_for('landing_page')}}">
-      <img src="{{ url_for('static', filename='lookyloo.png') }}"
+      <img id="navbar_logo" src="{{ url_for('static', filename='lookyloo.png') }}"
                alt="Lookyloo logo" width="250"
                class="d-inline-block align-text-top"
                {{get_sri('static', 'lookyloo.png')}}
