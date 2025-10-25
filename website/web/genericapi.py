@@ -766,7 +766,10 @@ class UploadCapture(Resource):  # type: ignore[misc]
             if 'har' not in parameters or not parameters.get('har'):
                 return make_response({'error': 'Missing HAR file'}, 400)
             try:
-                uuid = str(uuid4())
+                if 'uuid' in parameters and parameters['uuid']:
+                    uuid = parameters['uuid']
+                else:
+                    uuid = str(uuid4())
                 # The following parameters are base64 encoded and need to be decoded first
                 if 'png' in parameters and parameters['png']:
                     parameters['png'] = base64.b64decode(parameters['png'])
@@ -783,7 +786,9 @@ class UploadCapture(Resource):  # type: ignore[misc]
                     png=parameters.get('png'), html=parameters.get('html'),
                     last_redirected_url=parameters.get('last_redirected_url'),
                     cookies=parameters.get('cookies'),
+                    storage=parameters.get('storage'),
                     potential_favicons=parameters.get('potential_favicons'),
+                    trusted_timestamps=parameters.get('trusted_timestamps'),
                 )
                 return make_response({'uuid': uuid})
             except Exception as e:
