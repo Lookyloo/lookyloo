@@ -9,7 +9,7 @@ jquery_version = "3.7.1"
 datatables_version = "2.3.4"
 datatables_rowgroup_version = "1.6.0"
 datatables_buttons_version = "3.2.5"
-datatables_select_version = "3.1.0"
+datatables_select_version = "3.1.3"
 jquery_json_viewer_version = "1.5.0"
 
 
