@@ -83,7 +83,7 @@ urllib3 = "^2.5.0"
 pypdns = "^2.2.8"
 mmh3 = "^5.2.0"
 puremagic = "^1.30"
-psutil = "^7.1.0"
+psutil = "^7.1.2"
 flask-talisman = "^1.1.0"
 
 aiohttp = {extras = ["speedups"], version = "^3.13.1"}
