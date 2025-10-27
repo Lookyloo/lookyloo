@@ -110,6 +110,7 @@ class Processing(AbstractManager):
 
                 if len(to_requeue) > 100:
                     # Enough stuff to requeue
+                    self.logger.info('Got enough captures to requeue.')
                     break
         except LacusUnreachable:
             self.logger.warning('Lacus still unreachable, trying again later')

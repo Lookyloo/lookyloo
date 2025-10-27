@@ -1985,24 +1985,23 @@ def __get_remote_capture(remote_lookyloo: str, remote_uuid: str) -> str | BytesI
 
 @app.route('/submit_capture', methods=['GET', 'POST'])
 def submit_capture() -> str | Response | WerkzeugResponse:
+    listing: bool = True if request.form.get('listing') else False
+    messages: dict[str, list[str]] = {'errors': [], 'warnings': []}
+    new_uuid: str = ''
 
     if request.method == 'POST':
-        new_uuid = ''
-        listing = True if request.form.get('listing') else False
-
         if request.form.get('pull_capture_domain') and request.form.get('pull_capture_uuid'):
             remote_capture = __get_remote_capture(request.form['pull_capture_domain'],
                                                   request.form['pull_capture_uuid'])
             if isinstance(remote_capture, str):
-                flash(remote_capture, 'error')
+                messages['errors'].append(remote_capture)
             else:
                 new_uuid, messages = lookyloo.unpack_full_capture_archive(remote_capture, listing)
-                if 'errors' in messages and messages['errors']:
-                    for error in messages['errors']:
-                        flash(error, 'error')
-                elif 'warnings' in messages:
-                    for warning in messages['warnings']:
-                        flash(warning, 'warning')
+
+        elif 'full_capture' in request.files and request.files['full_capture']:
+            # it *only* accepts a lookyloo export.
+            full_capture_file = BytesIO(request.files['full_capture'].stream.read())
+            new_uuid, messages = lookyloo.unpack_full_capture_archive(full_capture_file, listing)
 
         elif 'har_file' in request.files and request.files['har_file']:
             har: dict[str, Any] | None = None
@@ -2010,7 +2009,6 @@ def submit_capture() -> str | Response | WerkzeugResponse:
             last_redirected_url: str | None = None
             screenshot: bytes | None = None
 
-            new_uuid = str(uuid4())
             har = orjson.loads(request.files['har_file'].stream.read())
             last_redirected_url = request.form.get('landing_page')
             if 'screenshot_file' in request.files:
@@ -2018,29 +2016,28 @@ def submit_capture() -> str | Response | WerkzeugResponse:
             if 'html_file' in request.files:
                 html = request.files['html_file'].stream.read().decode()
             try:
+                new_uuid = str(uuid4())
                 lookyloo.store_capture(new_uuid, is_public=listing, har=har,
                                        last_redirected_url=last_redirected_url,
                                        png=screenshot, html=html)
             except Exception as e:
-                new_uuid = ''
-                flash(f'Unable to store the capture: {e}', 'error')
+                messages['errors'].append(f'Unable to store the capture: {e}')
 
-        elif 'full_capture' in request.files and request.files['full_capture']:
-            # it *only* accepts a lookyloo export.
-            full_capture_file = BytesIO(request.files['full_capture'].stream.read())
-            new_uuid, messages = lookyloo.unpack_full_capture_archive(full_capture_file, listing)
-            if 'errors' in messages and messages['errors']:
-                for error in messages['errors']:
-                    flash(error, 'error')
-            elif 'warnings' in messages:
+        else:
+            messages['errors'].append('Invalid submission: please submit at least an HAR file.')
+
+        if 'errors' in messages and messages['errors']:
+            # Got an error, no tree to redirect to.
+            for error in messages['errors']:
+                flash(error, 'error')
+        else:
+            if 'warnings' in messages and messages['warnings']:
                 for warning in messages['warnings']:
                     flash(warning, 'warning')
-        else:
-            flash('Invalid submission: please submit at least an HAR file.', 'error')
 
-        if new_uuid:
-            # Got a new capture
-            return redirect(url_for('tree', tree_uuid=new_uuid))
+            if new_uuid:
+                # Got a new capture
+                return redirect(url_for('tree', tree_uuid=new_uuid))
 
     return render_template('submit_capture.html',
                            default_public=get_config('generic', 'default_public'),

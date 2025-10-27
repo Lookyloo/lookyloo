@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import gzip
 import hashlib
 import ipaddress
@@ -721,14 +722,20 @@ class CaptureReport(Resource):  # type: ignore[misc]
 class UploadCapture(Resource):  # type: ignore[misc]
     def post(self) -> Response:
         parameters: dict[str, Any] = request.get_json(force=True)
-        listing = True if parameters.get('listing') else False
+        listing: bool = True if parameters.get('listing') else False
+        uuid: str = parameters['uuid'] if parameters.get('uuid') else str(uuid4())
         har: dict[str, Any] | None = None
         html: str | None = None
         last_redirected_url: str | None = None
         screenshot: bytes | None = None
+        messages: dict[str, list[str]] = {'errors': [], 'warnings': []}
+
+        if uuid and lookyloo._captures_index.uuid_exists(uuid):
+            # NOTE make sure it doesn't exists, set a new one if it does
+            messages['warnings'].append(f'UUID {uuid} already exists, set a new one.')
+            uuid = str(uuid4())
 
         if 'har_file' in parameters and parameters.get('har_file'):
-            uuid = str(uuid4())
             try:
                 har_decoded = base64.b64decode(parameters['har_file'])
                 try:
@@ -748,51 +755,50 @@ class UploadCapture(Resource):  # type: ignore[misc]
                                        last_redirected_url=last_redirected_url,
                                        png=screenshot, html=html)
             except Exception as e:
-                return make_response({'error': f'Unable to process the upload: {e}'}, 400)
-            return make_response({'uuid': uuid})
+                messages['errors'].append(f'Unable to process the upload: {e}')
 
         elif 'full_capture' in parameters and parameters.get('full_capture'):
             try:
                 zipped_capture = base64.b64decode(parameters['full_capture'].encode())
-            except Exception:
-                return make_response({'error': 'Invalid base64-encoding'}, 400)
-            full_capture_file = BytesIO(zipped_capture)
-            uuid, messages = lookyloo.unpack_full_capture_archive(full_capture_file, listing=listing)
-            if 'errors' in messages and messages['errors']:
-                return make_response({'error': ', '.join(messages['errors'])}, 400)
-            return make_response({'uuid': uuid, 'messages': messages})
+                uuid, messages = lookyloo.unpack_full_capture_archive(BytesIO(zipped_capture), listing=listing)
+            except (binascii.Error, ValueError) as e:
+                messages['errors'].append(f'Invalid base64-encoding: {e}')
+            except Exception as e:
+                messages['errors'].append(f'Unexpected error while loading full capture: {e}')
         else:
             # Treat it as a direct export from Lacus, requires at a bare minimum a HAR
             if 'har' not in parameters or not parameters.get('har'):
-                return make_response({'error': 'Missing HAR file'}, 400)
-            try:
-                if 'uuid' in parameters and parameters['uuid']:
-                    uuid = parameters['uuid']
-                else:
-                    uuid = str(uuid4())
-                # The following parameters are base64 encoded and need to be decoded first
-                if 'png' in parameters and parameters['png']:
-                    parameters['png'] = base64.b64decode(parameters['png'])
-                if 'downloaded_file' in parameters and parameters['downloaded_file']:
-                    parameters['downloaded_file'] = base64.b64decode(parameters['downloaded_file'])
-                if 'potential_favicons' in parameters and parameters['potential_favicons']:
-                    parameters['potential_favicons'] = {base64.b64decode(f) for f in parameters['potential_favicons']}
+                messages['errors'].append('Missing HAR file')
+            else:
+                try:
+                    # The following parameters are base64 encoded and need to be decoded first
+                    if 'png' in parameters and parameters['png']:
+                        parameters['png'] = base64.b64decode(parameters['png'])
+                    if 'downloaded_file' in parameters and parameters['downloaded_file']:
+                        parameters['downloaded_file'] = base64.b64decode(parameters['downloaded_file'])
+                    if 'potential_favicons' in parameters and parameters['potential_favicons']:
+                        parameters['potential_favicons'] = {base64.b64decode(f) for f in parameters['potential_favicons']}
 
-                lookyloo.store_capture(
-                    uuid, is_public=listing,
-                    downloaded_filename=parameters.get('downloaded_filename'),
-                    downloaded_file=parameters.get('downloaded_file'),
-                    error=parameters.get('error'), har=parameters.get('har'),
-                    png=parameters.get('png'), html=parameters.get('html'),
-                    last_redirected_url=parameters.get('last_redirected_url'),
-                    cookies=parameters.get('cookies'),
-                    storage=parameters.get('storage'),
-                    potential_favicons=parameters.get('potential_favicons'),
-                    trusted_timestamps=parameters.get('trusted_timestamps'),
-                )
-                return make_response({'uuid': uuid})
-            except Exception as e:
-                return make_response({'error': f'Unable to load capture results in lacus format: {e}'}, 400)
+                    lookyloo.store_capture(
+                        uuid, is_public=listing,
+                        downloaded_filename=parameters.get('downloaded_filename'),
+                        downloaded_file=parameters.get('downloaded_file'),
+                        error=parameters.get('error'), har=parameters.get('har'),
+                        png=parameters.get('png'), html=parameters.get('html'),
+                        last_redirected_url=parameters.get('last_redirected_url'),
+                        cookies=parameters.get('cookies'),
+                        storage=parameters.get('storage'),
+                        potential_favicons=parameters.get('potential_favicons'),
+                        trusted_timestamps=parameters.get('trusted_timestamps'),
+                    )
+                except (binascii.Error, ValueError) as e:
+                    messages['errors'].append(f'Invalid base64-encoding: {e}')
+                except Exception as e:
+                    messages['errors'].append(f'Unable to load capture results in lacus format: {e}')
+
+        if 'errors' in messages and messages['errors']:
+            return make_response({'error': ', '.join(messages['errors'])}, 400)
+        return make_response({'uuid': uuid, 'messages': messages})
 
 
 auto_report_model = api.model('AutoReportModel', {

@@ -11,6 +11,10 @@ class MissingUUID(LookylooException):
     pass
 
 
+class DuplicateUUID(LookylooException):
+    pass
+
+
 class MissingCaptureDirectory(LookylooException):
     pass
 

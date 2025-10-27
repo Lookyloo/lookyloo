@@ -14,7 +14,7 @@ from lacuscore import CaptureSettingsError, LacusCore, CaptureResponse as Captur
 from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 
 from lookyloo import Lookyloo, CaptureSettings
-from lookyloo.exceptions import LacusUnreachable
+from lookyloo.exceptions import LacusUnreachable, DuplicateUUID
 from lookyloo.default import AbstractManager, get_config, LookylooException
 from lookyloo.helpers import get_captures_dir
 
@@ -122,6 +122,8 @@ class AsyncCapture(AbstractManager):
             except CaptureSettingsError as e:
                 # We shouldn't have a broken capture at this stage, but here we are.
                 self.logger.error(f'Got a capture ({uuid}) with invalid settings: {e}.')
+            except DuplicateUUID as e:
+                self.logger.critical(f'Got a duplicate UUID ({uuid}) it should never happen, and deserves some investigation: {e}.')
             finally:
                 self.lookyloo.redis.srem('ongoing', uuid)
 

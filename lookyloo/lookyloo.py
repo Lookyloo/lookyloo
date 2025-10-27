@@ -66,7 +66,7 @@ from .capturecache import CaptureCache, CapturesIndex, LookylooCacheLogAdapter
 from .context import Context
 from .default import (LookylooException, get_homedir, get_config, get_socket_path,
                       ConfigError, safe_create_dir)
-from .exceptions import (MissingCaptureDirectory,
+from .exceptions import (MissingCaptureDirectory, DuplicateUUID,
                          MissingUUID, TreeNeedsRebuild, NoValidHarFile, LacusUnreachable)
 from .helpers import (get_captures_dir, get_email_template, get_tt_template,
                       get_resources_hashes, get_taxonomies,
@@ -2045,6 +2045,12 @@ class Lookyloo():
                       trusted_timestamps: dict[str, str] | None=None,
                       auto_report: bool | dict[str, str] | None = None
                       ) -> Path:
+
+        if self._captures_index.uuid_exists(uuid):
+            # NOTE If we reach this place and the UUID exists for any reason, we need to stop everyting
+            # How to handle the duplicate UUID must be handled by the caller.
+            uuid_dir = self._captures_index._get_capture_dir(uuid)
+            raise DuplicateUUID(f'This UUID ({uuid}) anready exists in {uuid_dir}')
 
         now = datetime.now()
         dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / f'{now.day:02}' / now.isoformat()
