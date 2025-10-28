@@ -1,48 +1,49 @@
 #!/usr/bin/env python3
 
 import json
+import time
 import traceback
+
 from datetime import datetime
+from io import StringIO
 from pathlib import Path
 from typing import Any
-
-from bs4 import BeautifulSoup
-try:
-    import cloudscraper  # type: ignore
-    HAS_CF = True
-except ImportError:
-    HAS_CF = False
 
 from lookyloo.default import get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 
+from bs4 import BeautifulSoup
+from git import Repo
+from pylookyloo import Lookyloo
 
-def update_user_agents() -> None:
+
+def update_user_agents(lookyloo: Lookyloo) -> None | Path:
     # NOTE: this URL is behind cloudflare and tehre is no easy reliable way around it.
     # The manual way it to open the page in the browser, save it, and run this script.
-    if not HAS_CF:
-        # The website with the UAs is behind Cloudflare's anti-bot page, we need cloudscraper
-        return
-
     today = datetime.now()
     ua_path = get_homedir() / 'user_agents' / str(today.year) / f'{today.month:02}'
     safe_create_dir(ua_path)
     ua_file_name: Path = ua_path / f'{today.date().isoformat()}.json'
     if ua_file_name.exists():
         # Already have a UA for that day.
-        return
-    try:
-        s = cloudscraper.create_scraper()
-        r = s.get('https://techblog.willshouse.com/2012/01/03/most-common-user-agents/')
-    except Exception:
-        traceback.print_exc()
-        return
-    to_store = ua_parser(r.text)
-    with open(ua_file_name, 'w') as f:
-        json.dump(to_store, f, indent=2)
+        return None
+    ua_page = 'https://techblog.willshouse.com/2012/01/03/most-common-user-agents/'
+    uuid = lookyloo.submit(url=ua_page, headless=False, listing=False, quiet=True)
+    while True:
+        if lookyloo.get_status(uuid)['status_code'] != 1:
+            print(f'UA page capture ({uuid}) is not done yet, waiting...')
+            time.sleep(5)
+            continue
+        break
+    if rendered_html := lookyloo.get_html(uuid):
+        to_store = ua_parser(rendered_html)
+        with open(ua_file_name, 'w') as f:
+            json.dump(to_store, f, indent=2, default=serialize_to_json)
+        return ua_file_name
+    return None
 
 
-def ua_parser(html_content: str) -> dict[str, Any]:
+def ua_parser(html_content: StringIO) -> dict[str, Any]:
     soup = BeautifulSoup(html_content, 'html.parser')
 
     try:
@@ -73,20 +74,17 @@ def ua_parser(html_content: str) -> dict[str, Any]:
     return to_store
 
 
+def commit_ua_file(ua_file: Path) -> None:
+    repo = Repo(get_homedir())
+    repo.index.add([ua_file])
+    repo.index.commit(f"Add user_agents from willshouse.com for {datetime.now()}")
+
+
 def main() -> None:
-    to_parse = get_homedir() / 'tools' / 'Most Common User Agents - Tech Blog (wh).html'
-    print(to_parse, 'exists:', to_parse.exists())
+    lookyloo = Lookyloo(root_url='http://127.0.0.1:5100')
 
-    today = datetime.now()
-    ua_path = get_homedir() / 'user_agents' / str(today.year) / f'{today.month:02}'
-    safe_create_dir(ua_path)
-    ua_file_name: Path = ua_path / f'{today.date().isoformat()}.json'
-
-    with to_parse.open() as f:
-        to_store = ua_parser(f.read())
-
-    with open(ua_file_name, 'w') as f:
-        json.dump(to_store, f, indent=2, default=serialize_to_json)
+    if new_ua_file := update_user_agents(lookyloo):
+        commit_ua_file(new_ua_file)
 
 
 if __name__ == '__main__':
