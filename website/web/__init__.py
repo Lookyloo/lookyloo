@@ -1390,12 +1390,22 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
         user = flask_login.current_user.get_id()
     else:
         user = src_request_ip(request)
-    selected_urls = request.form.getlist('url')
-    urls = lookyloo.get_urls_rendered_page(base_tree_uuid)
     cache = lookyloo.capture_cache(base_tree_uuid)
     if not cache:
         flash('Unable to find capture {base_tree_uuid} in cache.', 'error')
         return redirect(url_for('tree', tree_uuid=base_tree_uuid))
+
+    urls_to_capture: list[str] = []
+    if selected_urls := request.form.getlist('url'):
+        _urls = lookyloo.get_urls_rendered_page(base_tree_uuid)
+        urls_to_capture += [_urls[int(selected_id) - 1] for selected_id in selected_urls]
+    if user_urls := request.form.get('user_urls'):
+        urls_to_capture += user_urls.strip().split('\n')
+
+    if not urls_to_capture:
+        flash('Please provide URLs to capture, none were selected.', 'warning')
+        return redirect(url_for('tree', tree_uuid=base_tree_uuid))
+
     cookies: list[dict[str, str | bool]] = []
     storage_state: dict[str, Any] = {}
     success, storage_state_file = lookyloo.get_storage_state(base_tree_uuid)
@@ -1409,7 +1419,7 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
             cookies = load_cookies(_cookies)
     original_capture_settings = lookyloo.get_capture_settings(base_tree_uuid)
     bulk_captures = []
-    for url in [urls[int(selected_id) - 1] for selected_id in selected_urls]:
+    for url in urls_to_capture:
         if original_capture_settings:
             capture = original_capture_settings.model_copy(
                 update={
