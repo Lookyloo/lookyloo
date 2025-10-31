@@ -1364,7 +1364,9 @@ def export(tree_uuid: str) -> Response:
 def urls_rendered_page(tree_uuid: str) -> WerkzeugResponse | str | Response:
     try:
         urls = lookyloo.get_urls_rendered_page(tree_uuid)
-        return render_template('urls_rendered.html', base_tree_uuid=tree_uuid, urls=urls)
+        guessed_urls = lookyloo.get_guessed_urls(tree_uuid)
+        return render_template('urls_rendered.html', base_tree_uuid=tree_uuid,
+                               urls=urls, guessed_urls=guessed_urls)
     except Exception:
         flash('Unable to find the rendered node in this capture, cannot get the URLs.', 'error')
         return render_template('urls_rendered.html', error='Unable to find the rendered node in this capture.')
@@ -1399,6 +1401,9 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
     if selected_urls := request.form.getlist('url'):
         _urls = lookyloo.get_urls_rendered_page(base_tree_uuid)
         urls_to_capture += [_urls[int(selected_id) - 1] for selected_id in selected_urls]
+    if selected_urls_guessed := request.form.getlist('guessed_url'):
+        _urls = lookyloo.get_guessed_urls(base_tree_uuid)
+        urls_to_capture += [_urls[int(selected_id) - 1] for selected_id in selected_urls_guessed]
     if user_urls := request.form.get('user_urls'):
         urls_to_capture += user_urls.strip().split('\n')
 
