@@ -24,7 +24,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, overload, Literal
 from collections.abc import Iterable
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 from uuid import uuid4
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -1438,6 +1438,23 @@ class Lookyloo():
     def get_capture(self, capture_uuid: str, /) -> tuple[bool, BytesIO]:
         '''Get all the files related to this capture.'''
         return self._get_raw(capture_uuid)
+
+    def get_guessed_urls(self, capture_uuid: str, /) -> list[str]:
+        """Some URLs can be guessed from the landing page.
+        This feature is a WIP, starting with getting the download links for google docs
+        """
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        to_return: list[str] = []
+        cache = self.capture_cache(capture_uuid)
+        if not cache:
+            logger.warning('Capture not cached, cannot guess URLs.')
+            return to_return
+        for redirect in cache.redirects:
+            parsed_url = urlparse(redirect)
+            if parsed_url.hostname == 'docs.google.com' and parsed_url.path.endswith('/edit'):
+                # got a google doc we can work with
+                to_return.append(urljoin(redirect, 'export?format=pdf'))
+        return to_return
 
     def get_urls_rendered_page(self, capture_uuid: str, /) -> list[str]:
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})

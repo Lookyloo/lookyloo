@@ -7,6 +7,15 @@
       <label for="user_urls" class="form-label">Arbitrary URLs to capture in current context (with cookies)</label>
       <textarea class="form-control" id="user_urls" name="user_urls" rows="3"></textarea>
     </div>
+    <h4>URLs guessed during redirects:</h4>
+    <hr>
+    {% for url in guessed_urls %}
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="guessed_url" id="guest_url_{{loop.index}}" value="{{loop.index}}">
+      <label class="form-check-label text-wrap text-break" for="guessed_url_{{loop.index}}">{{url}}</label>
+    </div>
+    {% endfor %}
+    <hr>
     <h4>URLs in the rendered page:</h4>
     <hr>
     {% for url in urls %}
