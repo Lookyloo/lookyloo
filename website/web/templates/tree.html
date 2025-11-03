@@ -218,10 +218,12 @@
                     data-bs-target="#storageStateModal" role="button" title="The storage state at the end of the capture">Storage state</a>
                 </li>
                 <li>
+                {% if has_downloads %}
                 <a href="#downloadsModal" data-remote="{{ url_for('downloads', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
                     class="dropdown-item"
                     data-bs-target="#downloadsModal" role="button" title="The file(s) downloaded during the capture">Downloads</a>
                 </li>
+                {% endif %}
                 <li>
                 <a href="#screenshotModal" data-bs-toggle="modal" data-bs-target="#screenshotModal"
                     class="dropdown-item"

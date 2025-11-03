@@ -48,7 +48,7 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from lookyloo import Lookyloo, CaptureSettings
 from lookyloo.default import get_config, get_homedir, ConfigError
-from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild
+from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild, LookylooException
 from lookyloo.helpers import (UserAgents, load_cookies,
                               load_user_config,
                               get_taxonomies,
@@ -1367,8 +1367,12 @@ def urls_rendered_page(tree_uuid: str) -> WerkzeugResponse | str | Response:
         guessed_urls = lookyloo.get_guessed_urls(tree_uuid)
         return render_template('urls_rendered.html', base_tree_uuid=tree_uuid,
                                urls=urls, guessed_urls=guessed_urls)
-    except Exception:
+    except LookylooException:
         flash('Unable to find the rendered node in this capture, cannot get the URLs.', 'error')
+        return render_template('urls_rendered.html', error='Unable to find the rendered node in this capture.')
+    except Exception as e:
+        logger.warning(f'Unable to get URLs: {e}')
+        flash('Unable to find the rendered node in this capture.', 'error')
         return render_template('urls_rendered.html', error='Unable to find the rendered node in this capture.')
 
 
@@ -1620,6 +1624,10 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
         if not capture_indexed:
             flash('The capture has not been indexed yet. Some correlations will be missing.', 'warning')
 
+        has_downloads, _, _ = lookyloo.get_data(tree_uuid)
+        if has_downloads:
+            flash('Download(s) have been triggered during the capture. View them in Capture > Downloads.', 'info')
+
         return render_template('tree.html', tree_json=ct.to_json(),
                                info=cache,
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
@@ -1642,6 +1650,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                confirm_message=confirm_message if confirm_message else 'Tick to confirm.',
                                parent_uuid=cache.parent,
                                has_redirects=True if cache.redirects else False,
+                               has_downloads=has_downloads,
                                capture_indexed=capture_indexed,
                                capture_settings=capture_settings.model_dump(exclude_none=True) if capture_settings else {})
 

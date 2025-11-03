@@ -24,7 +24,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, overload, Literal
 from collections.abc import Iterable
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, parse_qs, urlencode
 from uuid import uuid4
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -1454,6 +1454,14 @@ class Lookyloo():
             if parsed_url.hostname == 'docs.google.com' and parsed_url.path.endswith('/edit'):
                 # got a google doc we can work with
                 to_return.append(urljoin(redirect, 'export?format=pdf'))
+            elif parsed_url.hostname == 'www.dropbox.com':
+                if p_query := parse_qs(parsed_url.query):
+                    p_query['dl'] = ['1']
+                    new_parsed_url = parsed_url._replace(query=urlencode(p_query, doseq=True))
+                else:
+                    new_query = {'dl': ['1']}
+                    new_parsed_url = parsed_url._replace(query=urlencode(new_query, doseq=True))
+                to_return.append(new_parsed_url.geturl())
         return to_return
 
     def get_urls_rendered_page(self, capture_uuid: str, /) -> list[str]:
