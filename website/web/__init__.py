@@ -1709,7 +1709,6 @@ def tree_body_hashes(tree_uuid: str) -> str:
 def tree_ips(tree_uuid: str) -> str:
     proxified = False
     if cache := lookyloo.capture_cache(tree_uuid):
-        print(cache.capture_settings)
         if cache.capture_settings and cache.capture_settings.proxy:
             proxified = True
     return render_template('tree_ips.html', tree_uuid=tree_uuid, proxified=proxified)

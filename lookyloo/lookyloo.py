@@ -1982,7 +1982,7 @@ class Lookyloo():
                 elif filename.endswith('0.html'):
                     html = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('0.frames.json'):
-                    frames = lookyloo_capture.read(filename).decode()
+                    frames = orjson.loads(lookyloo_capture.read(filename))
                 elif filename.endswith('0.last_redirect.txt'):
                     last_redirected_url = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('0.png'):
