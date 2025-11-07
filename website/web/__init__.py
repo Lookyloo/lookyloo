@@ -2676,8 +2676,11 @@ def post_table(table_name: str, value: str) -> Response:
                 continue
             if not show_error and cached.error:
                 continue
+            title = cached.title
+            if not title:
+                title = "--- No Title ---"
             to_append = {
-                'page': {'display': f"""<p title="{cached.title}"><a href="{url_for('tree', tree_uuid=cached.uuid)}">{cached.title}</a><p>{shorten_string(cached.url, 100, with_title=True)}""",
+                'page': {'display': f"""<p title="{title}"><a href="{url_for('tree', tree_uuid=cached.uuid)}">{cached.title}</a><p>{shorten_string(cached.url, 100, with_title=True)}""",
                          'filter': cached.title},
                 'capture_time': cached.timestamp.isoformat(),
             }
