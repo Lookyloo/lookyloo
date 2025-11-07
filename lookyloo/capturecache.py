@@ -340,6 +340,11 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                         node.add_feature('posted_data', 1)
                     else:
                         node.posted_data += 1
+                if 'iframe' in url.features:
+                    if 'iframe' not in node.features:
+                        node.add_feature('iframe', 1)
+                    else:
+                        node.iframe += 1
                 if 'redirect' in url.features:
                     if 'redirect' not in node.features:
                         node.add_feature('redirect', 1)
