@@ -83,7 +83,7 @@ from .modules import (MISPs, PhishingInitiative, UniversalWhois,
 
 if TYPE_CHECKING:
     from playwright.async_api import StorageState
-    from playwrightcapture import SetCookieParam as SetCookieParamPWC, Cookie as CookiePWC
+    from playwrightcapture import SetCookieParam as SetCookieParamPWC, Cookie as CookiePWC, FramesResponse
     from pylacus.api import SetCookieParam as SetCookieParamPL, Cookie as CookiePL
     SetCookieParams = list[SetCookieParamPWC] | list[SetCookieParamPL]
     Cookies = list[CookiePWC] | list[CookiePL]
@@ -1451,7 +1451,8 @@ class Lookyloo():
             return to_return
         for redirect in cache.redirects:
             parsed_url = urlparse(redirect)
-            if parsed_url.hostname == 'docs.google.com' and parsed_url.path.endswith('/edit'):
+            if (parsed_url.hostname == 'docs.google.com'
+                    and (parsed_url.path.endswith('/edit') or parsed_url.path.endswith('/preview'))):
                 # got a google doc we can work with
                 to_return.append(urljoin(redirect, 'export?format=pdf'))
             elif parsed_url.hostname == 'www.dropbox.com':
@@ -1980,6 +1981,8 @@ class Lookyloo():
                     har = orjson.loads(lookyloo_capture.read(filename))
                 elif filename.endswith('0.html'):
                     html = lookyloo_capture.read(filename).decode()
+                elif filename.endswith('0.frames.json'):
+                    frames = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('0.last_redirect.txt'):
                     last_redirected_url = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('0.png'):
@@ -2049,6 +2052,7 @@ class Lookyloo():
                                os=os, browser=browser, parent=parent,
                                downloaded_filename=downloaded_filename, downloaded_file=downloaded_file,
                                error=error, har=har, png=screenshot, html=html,
+                               frames=frames,
                                last_redirected_url=last_redirected_url,
                                cookies=cookies, storage=storage,
                                capture_settings=capture_settings if capture_settings else None,
@@ -2062,6 +2066,7 @@ class Lookyloo():
                       downloaded_filename: str | None=None, downloaded_file: bytes | None=None,
                       error: str | None=None, har: dict[str, Any] | None=None,
                       png: bytes | None=None, html: str | None=None,
+                      frames: FramesResponse | str | None=None,
                       last_redirected_url: str | None=None,
                       cookies: Cookies | list[dict[str, str]] | None=None,
                       storage: StorageState | dict[str, Any] | None=None,
@@ -2132,6 +2137,10 @@ class Lookyloo():
                 #        Yes, it is dirty.
                 with (dirpath / '0.html').open('wb') as _html:
                     _html.write(html.encode('utf-16', 'surrogatepass'))
+
+        if frames:
+            with (dirpath / '0.frames.json').open('wb') as _tt:
+                _tt.write(orjson.dumps(frames))
 
         if last_redirected_url:
             with (dirpath / '0.last_redirect.txt').open('w') as _redir:

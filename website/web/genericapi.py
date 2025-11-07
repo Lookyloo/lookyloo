@@ -785,6 +785,7 @@ class UploadCapture(Resource):  # type: ignore[misc]
                         downloaded_file=parameters.get('downloaded_file'),
                         error=parameters.get('error'), har=parameters.get('har'),
                         png=parameters.get('png'), html=parameters.get('html'),
+                        frames=parameters.get('frames'),
                         last_redirected_url=parameters.get('last_redirected_url'),
                         cookies=parameters.get('cookies'),
                         storage=parameters.get('storage'),

@@ -7,6 +7,7 @@
       <label for="user_urls" class="form-label">Arbitrary URLs to capture in current context (with cookies)</label>
       <textarea class="form-control" id="user_urls" name="user_urls" rows="3"></textarea>
     </div>
+    {% if guessed_urls %}
     <h4>URLs guessed during redirects:</h4>
     <hr>
     {% for url in guessed_urls %}
@@ -16,6 +17,7 @@
     </div>
     {% endfor %}
     <hr>
+    {%endif%}
     <h4>URLs in the rendered page:</h4>
     <hr>
     {% for url in urls %}

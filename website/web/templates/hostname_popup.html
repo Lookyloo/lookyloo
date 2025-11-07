@@ -314,6 +314,15 @@
             </a>
           </div>
           {% endif %}
+          {% if url['url_object'].rendered_frame %}
+          This URL response contains iFrames, or is an iFrame itself, download the rendered contents below:
+          <ul>
+              {% for rendered_content in url['url_object'].rendered_frame %}
+              <li><a href="data:text/html;base64,{{rendered_content|b64encode}}" download="{{url['url_object'].uuid}}_iframe.txt">Download rendered iFrame</a></li>
+              {% endfor %}
+          </ul>
+
+          {% endif %}
 
           {{ redirect_response(url['url_object'], tree_uuid) }}
           {% if url['url_object'].empty_response %}

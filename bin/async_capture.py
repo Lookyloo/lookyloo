@@ -106,6 +106,7 @@ class AsyncCapture(AbstractManager):
                         downloaded_file=entries.get('downloaded_file'),
                         error=entries.get('error'), har=entries.get('har'),
                         png=entries.get('png'), html=entries.get('html'),
+                        frames=entries.get('frames'),
                         last_redirected_url=entries.get('last_redirected_url'),
                         cookies=entries.get('cookies'),
                         storage=entries.get('storage'),

@@ -46,9 +46,9 @@ from pymisp import MISPEvent, MISPServerError
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
-from lookyloo import Lookyloo, CaptureSettings
+from lookyloo import Lookyloo, CaptureSettings, LookylooException
 from lookyloo.default import get_config, get_homedir, ConfigError
-from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild, LookylooException
+from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild
 from lookyloo.helpers import (UserAgents, load_cookies,
                               load_user_config,
                               get_taxonomies,
@@ -354,6 +354,18 @@ app.jinja_env.globals.update(
      'load_custom_js': load_custom_js
      }
 )
+
+
+@app.template_filter('b64encode')
+def b64enode_filter(blob: str | bytes | BytesIO) -> str:
+    to_encode: bytes
+    if isinstance(blob, BytesIO):
+        to_encode = blob.getvalue()
+    elif isinstance(blob, str):
+        to_encode = blob.encode()
+    else:
+        to_encode = blob
+    return base64.b64encode(to_encode).decode()
 
 
 # ##### Generic/configuration methods #####
