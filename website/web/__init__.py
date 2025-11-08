@@ -2623,6 +2623,12 @@ def __prepare_landings_in_modal(landing_page: str) -> dict[str, str]:
             'filter': landing_page}
 
 
+index_link_template = app.jinja_env.from_string(source='''
+<b>Page title</b>: <span title="{{title}}">{{title}}</span><br>
+<b>Initial URL</b>: {{shorten_string(url, 100, with_title=True)}}<br>
+<a style="float: right;" href="{{url_for('tree', tree_uuid=capture_uuid)}}" class="btn btn-outline-primary" role="button">Show capture</a>
+''')
+
 redir_chain_template = app.jinja_env.from_string(source='''
 {% from 'bootstrap5/utils.html' import render_icon %}
 <p>
@@ -2632,7 +2638,7 @@ redir_chain_template = app.jinja_env.from_string(source='''
     {{ "&nbsp;"|safe * loop.index }} {{ render_icon("arrow-return-right") }} {{ shorten_string(r, 50, with_title=True) }}
   {% endfor %}
 </p>
-<a style="float: right;" href="{{url_for('redirects', tree_uuid=uuid)}}">Download redirects</a>
+<a style="float: right;" href="{{url_for('redirects', tree_uuid=uuid)}}" class="btn btn-outline-primary" role="button">Download redirects</a>
 ''')
 
 
@@ -2676,11 +2682,11 @@ def post_table(table_name: str, value: str) -> Response:
                 continue
             if not show_error and cached.error:
                 continue
-            title = cached.title
-            if not title:
-                title = "--- No Title ---"
             to_append = {
-                'page': {'display': f"""<p title="{title}"><a href="{url_for('tree', tree_uuid=cached.uuid)}">{cached.title}</a><p>{shorten_string(cached.url, 100, with_title=True)}""",
+                'page': {'display': render_template(index_link_template,
+                                                    title=cached.title,
+                                                    url=cached.url,
+                                                    capture_uuid=cached.uuid),
                          'filter': cached.title},
                 'capture_time': cached.timestamp.isoformat(),
             }
