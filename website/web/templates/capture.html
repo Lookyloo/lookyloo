@@ -554,7 +554,15 @@
         <div class="row mb-3">
           <label for="init_script" class="col-sm-2 col-form-label">Init Script</label>
           <div class="col-sm-10">
-            <textarea class="form-control" id="init_script" name="init_script" rows="5" placeholder="console.log('This is a test');"></textarea>
+            <textarea class="form-control" id="init_script" name="init_script" rows="5"
+                      placeholder="// Smooth scrool to the bottom of the page, once the DOM is loaded
+window.addEventListener('DOMContentLoaded', () => {
+ window.scrollTo({
+  top: document.body.scrollHeight,
+  behavior: 'smooth',
+ });
+});
+"></textarea>
             <div class="alert alert-info" role="alert">
                 The JavaScript code you set in this field will be executed on every page
                 as described in the
