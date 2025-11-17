@@ -36,6 +36,15 @@
       </td>
     </tr>
     <tr>
+      <th scope="row">Frames contents (if any)</th>
+      <td><a href="{{ url_for('frames_download', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>{{tt_entries.get('frames', 'Unavailable')}}
+        {% if tt_entries.get('frames') %}
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='frames') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
       <th scope="row">HTTP Archive</th>
       <td><a href="{{ url_for('har_download', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>{{tt_entries.get('har', 'Unavailable')}}

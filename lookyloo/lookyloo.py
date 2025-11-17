@@ -1166,6 +1166,10 @@ class Lookyloo():
                 success, d = self.get_storage_state(capture_uuid)
                 if success:
                     data = d.getvalue()
+            elif tsr_name == 'frames':
+                success, d = self.get_frames(capture_uuid)
+                if success:
+                    data = d.getvalue()
             elif tsr_name == 'html':
                 success, d = self.get_html(capture_uuid)
                 if success:
@@ -1252,6 +1256,8 @@ class Lookyloo():
                     filename = 'screenshot.png'
                 elif tsr_name == 'storage':
                     filename = 'storage.json'
+                elif tsr_name == 'frames':
+                    filename = 'frames.json'
                 elif tsr_name == 'downloaded_filename':
                     filename = 'downloaded_filename.txt'
                 elif tsr_name == 'downloaded_file':
@@ -1386,6 +1392,10 @@ class Lookyloo():
     def get_storage_state(self, capture_uuid: str, /) -> tuple[bool, BytesIO]:
         '''Get the storage state of the capture'''
         return self._get_raw(capture_uuid, 'storage.json', all_files=False)
+
+    def get_frames(self, capture_uuid: str, /) -> tuple[bool, BytesIO]:
+        '''Get the frames of the capture'''
+        return self._get_raw(capture_uuid, 'frames.json', all_files=False)
 
     def get_last_url_in_address_bar(self, capture_uuid: str, /) -> str | None:
         '''Get the URL in the address bar at the end of the capture'''
