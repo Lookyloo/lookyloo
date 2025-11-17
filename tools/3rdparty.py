@@ -6,7 +6,7 @@ from lookyloo.default import get_homedir
 
 d3js_version = '7.9.0'
 jquery_version = "3.7.1"
-datatables_version = "2.3.4"
+datatables_version = "2.3.5"
 datatables_rowgroup_version = "1.6.0"
 datatables_buttons_version = "3.2.5"
 datatables_select_version = "3.1.3"
