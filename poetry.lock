@@ -3548,14 +3548,14 @@ files = [
 
 [[package]]
 name = "pyail"
-version = "0.0.8"
+version = "0.0.10"
 description = ""
 optional = false
-python-versions = "<4.0,>=3.6"
+python-versions = "<4.0,>=3.8"
 groups = ["main"]
 files = [
-    {file = "pyail-0.0.8-py3-none-any.whl", hash = "sha256:d8b9ba64e05983f6d01658557ff5ef8162723b552d2b80d66380d8eb71e1344f"},
-    {file = "pyail-0.0.8.tar.gz", hash = "sha256:23eaac7e4c45846e56bb46f32f4f267956b15ccaf80330e815e6e570cfb51c11"},
+    {file = "pyail-0.0.10-py3-none-any.whl", hash = "sha256:1a0d1e186b1732a29255e2551837ded7b78e9ff4f3e68eb8dfa5258abe103a5e"},
+    {file = "pyail-0.0.10.tar.gz", hash = "sha256:5af43a8b9192b733f6b048fb339c87946377efd6b7546c84746938af4105775b"},
 ]
 
 [package.dependencies]
@@ -5933,4 +5933,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "9a02d5ce9378a4b6c9dea3778ac278c48d1bcfa954c1447166f5542600097961"
+content-hash = "c7c9698af3158ec8e30524e0de6ec4719987bcac43dc0887a95a779df4292ec8"
