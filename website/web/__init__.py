@@ -1341,6 +1341,16 @@ def storage_state_download(tree_uuid: str) -> Response:
     return make_response(Response('No storage state available.', mimetype='text/text'), 404)
 
 
+@app.route('/tree/<string:tree_uuid>/frames_download', methods=['GET'])
+@file_response  # type: ignore[misc]
+def frames_download(tree_uuid: str) -> Response:
+    success, to_return = lookyloo.get_frames(tree_uuid)
+    if success:
+        return send_file(to_return, mimetype='application/json',
+                         as_attachment=True, download_name=f'{tree_uuid}_frames.json')
+    return make_response(Response('No frames available.', mimetype='text/text'), 404)
+
+
 @app.route('/tree/<string:tree_uuid>/har_download', methods=['GET'])
 @file_response  # type: ignore[misc]
 def har_download(tree_uuid: str) -> Response:
