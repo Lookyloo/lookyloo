@@ -1687,14 +1687,14 @@ files = [
 
 [[package]]
 name = "har2tree"
-version = "1.34.2"
+version = "1.35.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.34.2-py3-none-any.whl", hash = "sha256:a232413b12cd39d80ca0aec80c10962420def8eb8f99c9f1cac6fd0c8c4ae0d5"},
-    {file = "har2tree-1.34.2.tar.gz", hash = "sha256:aba6e85da08b983fc2621c86818dfd465de50da5707c70cc11a7829d7a290113"},
+    {file = "har2tree-1.35.0-py3-none-any.whl", hash = "sha256:60b1a4915eabd3d4c46da9fbb6b2a77d9f595111ebbb9d1602f4570c62704842"},
+    {file = "har2tree-1.35.0.tar.gz", hash = "sha256:3d0137f3da8e101740da19a10227065730ada667a91a8778b959cbf391aa202a"},
 ]
 
 [package.dependencies]
@@ -1706,7 +1706,7 @@ legacy-cgi = {version = ">=2.6.4", markers = "python_version >= \"3.13\" and pyt
 multipart = ">=1.3.0,<2.0.0"
 numpy = [
     {version = ">=2.2,<2.3", markers = "python_version < \"3.11\""},
-    {version = ">=2.3.4", markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
+    {version = ">=2.3.5", markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
 ]
 publicsuffixlist = ">=1.0.2.20251115"
 requests-toolbelt = ">=1.0.0,<2.0.0"
@@ -2040,14 +2040,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.19.3"
+version = "1.20.1"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.19.3-py3-none-any.whl", hash = "sha256:908a88437c4976c5b963556239a35b2a5326d4ad3c1c2621162ac471e8ce37af"},
-    {file = "lacuscore-1.19.3.tar.gz", hash = "sha256:759228e35dcce4e25d169b2660a66133698d9960f9d08e971e2588967edc45a5"},
+    {file = "lacuscore-1.20.1-py3-none-any.whl", hash = "sha256:d72047c3d41b66a373bc9da85ee9e1033e3f76f59cecc88ea47fc41f94c42ffa"},
+    {file = "lacuscore-1.20.1.tar.gz", hash = "sha256:5cb95dc0938c5eb9bbb060a8288b9246c8021ef1e42cdb7980fe85e6f9c0799a"},
 ]
 
 [package.dependencies]
@@ -2055,7 +2055,7 @@ async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 defang = ">=0.5.3"
 dnspython = ">=2.8.0"
 orjson = ">=3.11.3,<4.0.0"
-playwrightcapture = {version = ">=1.34.2", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.35.1", extras = ["recaptcha"]}
 pydantic = ">=2.12.4"
 redis = {version = ">=5.3.0,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.32.5"
@@ -3304,14 +3304,14 @@ playwright = ">=1.0.0,<2.0.0"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.34.5"
+version = "1.35.1"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "playwrightcapture-1.34.5-py3-none-any.whl", hash = "sha256:b85ed0c3557bc3723775f1955a98154327311f02a9659e6baf1ede0685fa56b6"},
-    {file = "playwrightcapture-1.34.5.tar.gz", hash = "sha256:37797ed60fb026eb8c5374debf05a1952cedd77f636765cd1fa287ba94950d43"},
+    {file = "playwrightcapture-1.35.1-py3-none-any.whl", hash = "sha256:1571d178a52285a257f1759ec590f5792d3cc67cbc6a8943f4d9c3bb343adedf"},
+    {file = "playwrightcapture-1.35.1.tar.gz", hash = "sha256:bf4213006419b861219567725d1a7ec0f78bbe13f262239f5f5b47478f1e5f25"},
 ]
 
 [package.dependencies]
@@ -4052,14 +4052,14 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.19.1"
+version = "1.20.0"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pylacus-1.19.1-py3-none-any.whl", hash = "sha256:9ededaa55ad9fdf56c5a4eb597b4a09e6b617f335445a5f45e2cd93b5000e538"},
-    {file = "pylacus-1.19.1.tar.gz", hash = "sha256:446f8d8f06ef5b0636146a2fe2e8213195c7c70e67f6b9d2116ba1e8168ebd13"},
+    {file = "pylacus-1.20.0-py3-none-any.whl", hash = "sha256:6986ecb4c2af6fa4c4b0b3e794775d609bfa7e0d09f89c880a2c654f945ae906"},
+    {file = "pylacus-1.20.0.tar.gz", hash = "sha256:4852b19baabd1dab256a3bf58f2e969b4ed5397a398f690022c90d4abe4d42c1"},
 ]
 
 [package.dependencies]
@@ -5264,14 +5264,14 @@ files = [
 
 [[package]]
 name = "types-html5lib"
-version = "1.1.11.20251115"
+version = "1.1.11.20251117"
 description = "Typing stubs for html5lib"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_html5lib-1.1.11.20251115-py3-none-any.whl", hash = "sha256:6cee9173cdf4a3494174b84c8c78adffabb8a1d4f532da4edaad3ec1643fc6e7"},
-    {file = "types_html5lib-1.1.11.20251115.tar.gz", hash = "sha256:a4b666a06e496d7b2a9489dc9206f09a249fab7c62865ac6024cec24628b15d3"},
+    {file = "types_html5lib-1.1.11.20251117-py3-none-any.whl", hash = "sha256:2a3fc935de788a4d2659f4535002a421e05bea5e172b649d33232e99d4272d08"},
+    {file = "types_html5lib-1.1.11.20251117.tar.gz", hash = "sha256:1a6a3ac5394aa12bf547fae5d5eff91dceec46b6d07c4367d9b39a37f42f201a"},
 ]
 
 [package.dependencies]
@@ -5933,4 +5933,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "9d09852e2ffe2a2b5842379ebf301946719bee87a0d9f34700d0c230f1286c8a"
+content-hash = "c7c9698af3158ec8e30524e0de6ec4719987bcac43dc0887a95a779df4292ec8"
