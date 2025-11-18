@@ -39,7 +39,7 @@ from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus, CaptureSettingsError
-from markupsafe import Markup
+from markupsafe import Markup, escape
 from pylookyloo import PyLookylooError, Lookyloo as PyLookyloo
 from puremagic import from_string, PureError
 from pymisp import MISPEvent, MISPServerError
@@ -219,6 +219,9 @@ def get_sri(directory: str, filename: str) -> str:
 
 def shorten_string(s: str | int, length: int, with_title: bool=False) -> str:
     to_return = ''
+    if isinstance(s, str):
+        # NOTE: otherwise, anything passed to this method can contain HTML
+        s = escape(s)
     if with_title:
         to_return += f'<span title="{s}">'
     if isinstance(s, int):
