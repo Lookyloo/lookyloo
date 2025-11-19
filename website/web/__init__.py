@@ -39,7 +39,7 @@ from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus, CaptureSettingsError
-from markupsafe import Markup, escape
+from markupsafe import Markup
 from pylookyloo import PyLookylooError, Lookyloo as PyLookyloo
 from puremagic import from_string, PureError
 from pymisp import MISPEvent, MISPServerError
@@ -217,22 +217,35 @@ def get_sri(directory: str, filename: str) -> str:
     return Markup(f'integrity="sha512-{sha512}"')
 
 
-def shorten_string(s: str | int, length: int, with_title: bool=False) -> str:
-    to_return = ''
-    if isinstance(s, str):
-        # NOTE: otherwise, anything passed to this method can contain HTML
-        s = escape(s)
-    if with_title:
-        to_return += f'<span title="{s}">'
-    if isinstance(s, int):
-        s = str(s)
-    if len(s) > length:
-        to_return += f'{s[:int(length / 2)]} [...] {s[-int(length / 2):]}'
-    else:
-        to_return += s
-    if with_title:
-        to_return += '</span>'
-    return Markup(to_return)
+# Inspired by: https://stackoverflow.com/questions/59157322/overflow-ellipsis-in-middle-of-a-string
+class SafeMiddleEllipsisString():
+
+    def __init__(self, unsafe_string: str | int):
+        if isinstance(unsafe_string, int):
+            self.unsafe_string = str(unsafe_string)
+        else:
+            self.unsafe_string = unsafe_string
+
+        self.left, self.right = self.unsafe_string[:len(self.unsafe_string) // 2], self.unsafe_string[len(self.unsafe_string) // 2:]
+
+    def __html_format__(self, format_spec: str) -> Markup:
+        if format_spec == "with_title":
+            return Markup('<div title="{title}">{ellipsis}</div>').format(title=self.unsafe_string, ellipsis=self.__html__())
+        elif format_spec:
+            raise ValueError(f"Invalid format spec: {format_spec}")
+        return self.__html__()
+
+    def __html__(self) -> Markup:
+        return Markup("""
+<span class="middleEllipsis flex-grow-1">
+  <span class="middleEllipsisleft"><div class="middleEllipsiswrap">{left}</div></span><span class="middleEllipsisright">&#x202A;{right}</span>
+</span>"""
+                      ).format(left=self.left, right=self.right)
+
+
+def shorten_string(s: str | int, length: int=0, with_title: bool=False) -> Markup:
+    ss = SafeMiddleEllipsisString(s)
+    return Markup("{s:with_title}").format(s=ss)
 
 
 class Icon(TypedDict):
@@ -314,11 +327,10 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
 
 def details_modal_button(target_modal_id: str, data_remote: str, button_string: str, search: str | None=None) -> dict[str, str]:
     return {'display': f'''
-<span class="d-inline-block text-break">
-  <a href="{target_modal_id}" data-remote="{data_remote}" data-bs-toggle="modal" data-bs-target="{target_modal_id}" role="button">
-    {button_string}
-  </a>
-</span>''',
+<a href="{target_modal_id}" data-remote="{data_remote}" data-bs-toggle="modal" data-bs-target="{target_modal_id}" role="button">
+  {button_string}
+</a>
+''',
         'filter': search if search else button_string}
 
 
@@ -2598,11 +2610,11 @@ The capture contains this value in <b>{{nodes | length}}</b> nodes.
         <li class="list-group-item">
           {% if from_popup %}
           <a href="#" class="openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{node}}">
-            <span class="d-inline-block text-break" style="max-width: 400px;">{{shorten_string(url, 50, with_title=True)}}</span>
+            {{shorten_string(url, with_title=True)}}
           </a>
           {% else %}
           <a href="{{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}}">
-            <span class="d-inline-block text-break">{{shorten_string(url, 100, with_title=True)}}</span>
+            {{shorten_string(url, with_title=True)}}
           </a>
           {% endif %}
           {% if extra %}
@@ -2632,25 +2644,28 @@ def __prepare_title_in_modal(capture_uuid: str, title: str, from_popup: bool=Fal
 
 
 def __prepare_landings_in_modal(landing_page: str) -> dict[str, str]:
-    return {'display': f"""<span class="d-inline-block text-break" style="max-width: 400px;">{shorten_string(landing_page, 100, with_title=True)}</span>""",
+    return {'display': shorten_string(landing_page, with_title=True),
             'filter': landing_page}
 
 
 index_link_template = app.jinja_env.from_string(source='''
 <b>Page title</b>: <span title="{{title}}">{{title}}</span><br>
-<b>Initial URL</b>: {{shorten_string(url, 100, with_title=True)}}<br>
+<b>Initial URL</b>: {{shorten_string(url, with_title=True)}}<br>
 <a style="float: right;" href="{{url_for('tree', tree_uuid=capture_uuid)}}" class="btn btn-outline-primary" role="button">Show capture</a>
 ''')
 
 redir_chain_template = app.jinja_env.from_string(source='''
 {% from 'bootstrap5/utils.html' import render_icon %}
+
+<center>
 <p>
-  {{shorten_string(redirects[0], 50, with_title=True)}}
+  {{shorten_string(redirects[0], with_title=True)}}
   {% for r in redirects[1:] %}
-    <br>
-    {{ "&nbsp;"|safe * loop.index }} {{ render_icon("arrow-return-right") }} {{ shorten_string(r, 50, with_title=True) }}
+    {{ render_icon("arrow-down") }}
+    {{ shorten_string(r, with_title=True) }}
   {% endfor %}
 </p>
+</center>
 <a style="float: right;" href="{{url_for('redirects', tree_uuid=uuid)}}" class="btn btn-outline-primary" role="button">Download redirects</a>
 ''')
 
@@ -3026,7 +3041,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'urls': __prepare_node_view(tree_uuid, bh_nodes, from_popup),
                 'sha512': details_modal_button(target_modal_id='#bodyHashDetailsModal',
                                                data_remote=url_for('body_hash_details', body_hash=body_hash),
-                                               button_string=shorten_string(body_hash, 40, with_title=True),
+                                               button_string=shorten_string(body_hash, with_title=True),
                                                search=body_hash)
             }
             prepared_captures.append(to_append)

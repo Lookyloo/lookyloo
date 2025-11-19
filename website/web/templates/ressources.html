@@ -39,7 +39,7 @@
       {% for h, freq, context, capture_uuid, urlnode_uuid, filename, mimetype in ressources %}
       <tr>
         <td>
-          <a href="{{ url_for('body_hash_details', body_hash=h) }}">{{ shorten_string(h, 10) }}</a><br>
+          <a href="{{ url_for('body_hash_details', body_hash=h) }}">{{ shorten_string(h) }}</a><br>
           {{ hash_icon(capture_uuid, urlnode_uuid, mimetype, h) }}
         </td>
         <td>{{ freq }}</td>
