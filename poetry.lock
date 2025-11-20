@@ -1687,14 +1687,14 @@ files = [
 
 [[package]]
 name = "har2tree"
-version = "1.35.0"
+version = "1.35.1"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.35.0-py3-none-any.whl", hash = "sha256:60b1a4915eabd3d4c46da9fbb6b2a77d9f595111ebbb9d1602f4570c62704842"},
-    {file = "har2tree-1.35.0.tar.gz", hash = "sha256:3d0137f3da8e101740da19a10227065730ada667a91a8778b959cbf391aa202a"},
+    {file = "har2tree-1.35.1-py3-none-any.whl", hash = "sha256:a37f9833b2c523324b7b6170eea2f477d66bbd22a7175e9417185431e6c22893"},
+    {file = "har2tree-1.35.1.tar.gz", hash = "sha256:740ba0843d6b84fb017be612a65d7f169f6cc7e0a2d9a397d08e0dae46e1705d"},
 ]
 
 [package.dependencies]
@@ -1708,9 +1708,9 @@ numpy = [
     {version = ">=2.2,<2.3", markers = "python_version < \"3.11\""},
     {version = ">=2.3.5", markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
 ]
-publicsuffixlist = ">=1.0.2.20251115"
+publicsuffixlist = ">=1.0.2.20251119"
 requests-toolbelt = ">=1.0.0,<2.0.0"
-tinycss2 = ">=1.4.0"
+tinycss2 = ">=1.5.0"
 w3lib = ">=2.3.1"
 
 [package.extras]
@@ -3520,14 +3520,14 @@ test = ["pytest", "pytest-instafail", "pytest-subtests", "pytest-xdist", "pywin3
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20251115"
+version = "1.0.2.20251119"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20251115-py2.py3-none-any.whl", hash = "sha256:2fd26c6bf3fe706d6d8904b90dbd6a3731d3b2046ab6f83abec4af9ba395820c"},
-    {file = "publicsuffixlist-1.0.2.20251115.tar.gz", hash = "sha256:03d8398e961d4d9de1e2b5dcc3f3b1c5a5ecada35c35d22642d121279e03d2a7"},
+    {file = "publicsuffixlist-1.0.2.20251119-py2.py3-none-any.whl", hash = "sha256:ca3fba55ae6aed98c5a801311ad3780192edc08bc8234e5e691ee1a009216815"},
+    {file = "publicsuffixlist-1.0.2.20251119.tar.gz", hash = "sha256:a035428f3f28224e8f7ad7d02d2975d2bd6e096f0ef7de68af96e61dd30acbf4"},
 ]
 
 [package.extras]
@@ -5080,14 +5080,14 @@ files = [
 
 [[package]]
 name = "speechrecognition"
-version = "3.14.3"
+version = "3.14.4"
 description = "Library for performing speech recognition, with support for several engines and APIs, online and offline."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "speechrecognition-3.14.3-py3-none-any.whl", hash = "sha256:1859fbb09ae23fa759200f5b0677307f1fb16e2c5c798f4259fcc41dd5399fe6"},
-    {file = "speechrecognition-3.14.3.tar.gz", hash = "sha256:bdd2000a9897832b33095e33adfa48580787255706092e1346d1c6c36adae0a4"},
+    {file = "speechrecognition-3.14.4-py3-none-any.whl", hash = "sha256:8b09d99a6ed31f994ed6b1749d6f921717e41179aa6387a79e8d514d30d98577"},
+    {file = "speechrecognition-3.14.4.tar.gz", hash = "sha256:e698248b611589b5ba4f760fcf6ec9bc3a8a25a87a2e0e88ec926c63539b6a6f"},
 ]
 
 [package.dependencies]
@@ -5099,11 +5099,12 @@ typing-extensions = "*"
 assemblyai = ["requests"]
 audio = ["PyAudio (>=0.2.11)"]
 dev = ["numpy", "pytest", "pytest-randomly", "respx"]
-faster-whisper = ["faster-whisper"]
+faster-whisper = ["faster-whisper", "soundfile"]
 google-cloud = ["google-cloud-speech"]
 groq = ["groq", "httpx (<0.28)"]
 openai = ["httpx (<0.28)", "openai"]
 pocketsphinx = ["pocketsphinx"]
+vosk = ["vosk"]
 whisper-local = ["openai-whisper", "soundfile"]
 
 [[package]]
@@ -5150,21 +5151,21 @@ files = [
 
 [[package]]
 name = "tinycss2"
-version = "1.4.0"
+version = "1.5.0"
 description = "A tiny CSS parser"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "tinycss2-1.4.0-py3-none-any.whl", hash = "sha256:3a49cf47b7675da0b15d0c6e1df8df4ebd96e9394bb905a5775adb0d884c5289"},
-    {file = "tinycss2-1.4.0.tar.gz", hash = "sha256:10c0972f6fc0fbee87c3edb76549357415e94548c1ae10ebccdea16fb404a9b7"},
+    {file = "tinycss2-1.5.0-py3-none-any.whl", hash = "sha256:6645326e562ea497d6d11cfa608ce3ad30c1e96576b0e43d678dcf6275df6761"},
+    {file = "tinycss2-1.5.0.tar.gz", hash = "sha256:6a7be7a654f38a2a55b61d2d97b1f65a7eb40d1cb4057ac37145f675f16efdf9"},
 ]
 
 [package.dependencies]
 webencodings = ">=0.4"
 
 [package.extras]
-doc = ["sphinx", "sphinx_rtd_theme"]
+doc = ["furo", "sphinx"]
 test = ["pytest", "ruff"]
 
 [[package]]
@@ -5933,4 +5934,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "c7c9698af3158ec8e30524e0de6ec4719987bcac43dc0887a95a779df4292ec8"
+content-hash = "7ccb22672f39996549e432011880d7facd36d06c63052742df54d3360755f0f1"
