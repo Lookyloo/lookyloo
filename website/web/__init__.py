@@ -237,15 +237,17 @@ class SafeMiddleEllipsisString():
 
     def __html__(self) -> Markup:
         return Markup("""
-<span class="middleEllipsis flex-grow-1">
-  <span class="middleEllipsisleft"><div class="middleEllipsiswrap">{left}</div></span><span class="middleEllipsisright">&#x202A;{right}</span>
+<span class="middleEllipsis">
+  <span class="middleEllipsisleft"><div class="middleEllipsiswrap pb-1">{left}</div></span><span class="middleEllipsisright pb-1">&#x202A;{right}</span>
 </span>"""
                       ).format(left=self.left, right=self.right)
 
 
-def shorten_string(s: str | int, length: int=0, with_title: bool=False) -> Markup:
+def shorten_string(s: str | int, with_title: bool=True) -> Markup:
     ss = SafeMiddleEllipsisString(s)
-    return Markup("{s:with_title}").format(s=ss)
+    if with_title:
+        return Markup("{s:with_title}").format(s=ss)
+    return Markup(ss)
 
 
 class Icon(TypedDict):
@@ -2610,11 +2612,11 @@ The capture contains this value in <b>{{nodes | length}}</b> nodes.
         <li class="list-group-item">
           {% if from_popup %}
           <a href="#" class="openNewTab" data-capture="{{capture_uuid}}" data-hostnode="{{node}}">
-            {{shorten_string(url, with_title=True)}}
+            {{shorten_string(url)}}
           </a>
           {% else %}
           <a href="{{url_for("tree", tree_uuid=capture_uuid, node_uuid=node)}}">
-            {{shorten_string(url, with_title=True)}}
+            {{shorten_string(url)}}
           </a>
           {% endif %}
           {% if extra %}
@@ -2644,28 +2646,26 @@ def __prepare_title_in_modal(capture_uuid: str, title: str, from_popup: bool=Fal
 
 
 def __prepare_landings_in_modal(landing_page: str) -> dict[str, str]:
-    return {'display': shorten_string(landing_page, with_title=True),
+    return {'display': shorten_string(landing_page),
             'filter': landing_page}
 
 
 index_link_template = app.jinja_env.from_string(source='''
 <b>Page title</b>: <span title="{{title}}">{{title}}</span><br>
-<b>Initial URL</b>: {{shorten_string(url, with_title=True)}}<br>
+<b>Initial URL</b>: {{shorten_string(url)}}<br>
 <a style="float: right;" href="{{url_for('tree', tree_uuid=capture_uuid)}}" class="btn btn-outline-primary" role="button">Show capture</a>
 ''')
 
 redir_chain_template = app.jinja_env.from_string(source='''
 {% from 'bootstrap5/utils.html' import render_icon %}
 
-<center>
-<p>
-  {{shorten_string(redirects[0], with_title=True)}}
-  {% for r in redirects[1:] %}
-    {{ render_icon("arrow-down") }}
-    {{ shorten_string(r, with_title=True) }}
-  {% endfor %}
-</p>
-</center>
+<div class="text-center">
+ <div class="row"><div class="col">{{shorten_string(redirects[0])}}</div></div>
+ {% for r in redirects[1:] %}
+   <div class="row"><div class="col">{{ render_icon("arrow-down") }}</div></div>
+   <div class="row"><div class="col">{{ shorten_string(r) }}</div></div>
+ {% endfor %}
+</div>
 <a style="float: right;" href="{{url_for('redirects', tree_uuid=uuid)}}" class="btn btn-outline-primary" role="button">Download redirects</a>
 ''')
 
@@ -2914,7 +2914,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'total_captures': _info['total_captures'],
                 'url': details_modal_button(target_modal_id='#urlDetailsModal',
                                             data_remote=url_for('url_details', url=_info['quoted_url']),
-                                            button_string=shorten_string(url, 100, with_title=True),
+                                            button_string=shorten_string(url),
                                             search=url)
             }
             prepared_captures.append(to_append)
@@ -2930,7 +2930,7 @@ def post_table(table_name: str, value: str) -> Response:
                     'total_captures': nb_captures,
                     'identifier': details_modal_button(target_modal_id='#identifierDetailsModal',
                                                        data_remote=url_for('identifier_details', identifier_type=id_type, identifier=identifier),
-                                                       button_string=shorten_string(identifier, 100, with_title=True),
+                                                       button_string=shorten_string(identifier),
                                                        search=identifier),
                     'identifier_type': id_type
                 }
@@ -2946,11 +2946,11 @@ def post_table(table_name: str, value: str) -> Response:
                 'total_captures': _info['total_captures'],
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_hostname),
-                                                 button_string=shorten_string(_hostname, 100, with_title=True),
+                                                 button_string=shorten_string(_hostname),
                                                  search=_hostname),
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
                                            data_remote=url_for('ip_details', ip=_info['ip']),
-                                           button_string=shorten_string(_info['ip'], 100, with_title=True),
+                                           button_string=shorten_string(_info['ip']),
                                            search=_info['ip']),  # type: ignore[arg-type]
                 'urls': __prepare_node_view(tree_uuid, h_nodes, from_popup)
             }
@@ -2965,7 +2965,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'total_captures': get_indexing(flask_login.current_user).get_captures_hash_type_count(hash_type, h),
                 'capture_hash': details_modal_button(target_modal_id='#captureHashesTypesDetailsModal',
                                                      data_remote=url_for('capture_hash_details', hash_type=hash_type, h=h),
-                                                     button_string=shorten_string(h, 100, with_title=True),
+                                                     button_string=shorten_string(h),
                                                      search=h),
                 'hash_type': hash_type
             }
@@ -3017,11 +3017,11 @@ def post_table(table_name: str, value: str) -> Response:
                 'total_captures': _info['total_captures'],
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
                                            data_remote=url_for('ip_details', ip=_ip),
-                                           button_string=shorten_string(_ip, 100, with_title=True),
+                                           button_string=shorten_string(_ip),
                                            search=_ip),
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_info['hostname']),
-                                                 button_string=shorten_string(_info['hostname'], 100, with_title=True),
+                                                 button_string=shorten_string(_info['hostname']),
                                                  search=_info['hostname']),
                 'urls': __prepare_node_view(tree_uuid, ip_nodes, from_popup)
             }
@@ -3041,7 +3041,7 @@ def post_table(table_name: str, value: str) -> Response:
                 'urls': __prepare_node_view(tree_uuid, bh_nodes, from_popup),
                 'sha512': details_modal_button(target_modal_id='#bodyHashDetailsModal',
                                                data_remote=url_for('body_hash_details', body_hash=body_hash),
-                                               button_string=shorten_string(body_hash, with_title=True),
+                                               button_string=shorten_string(body_hash),
                                                search=body_hash)
             }
             prepared_captures.append(to_append)

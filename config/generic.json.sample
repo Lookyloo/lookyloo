@@ -15,7 +15,7 @@
     "hours": 0
   },
   "ignore_sri": false,
-  "async_capture_processes": 1,
+  "async_capture_processes": 3,
   "use_user_agents_users": false,
   "enable_default_blur_screenshot": false,
   "show_project_page": true,

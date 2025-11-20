@@ -169,8 +169,8 @@
     {% for url in urls %}
     {# URL Display #}
     <li class="list-group-item">
-      <div class="h3 d-flex flex-row mb-4" title="{{ url['url_object'].name }}">
-        <div class="p-2">
+      <div class="h3 row" title="{{ url['url_object'].name }}">
+        <div class="col-1 text-end">
           {# HTTPs or not #}
           {% if url['encrypted'] %}
           {{ render_icon('lock-fill') }}
@@ -179,16 +179,14 @@
           {%endif%}
         </div>
         {# URL #}
-        <div class="p-2">.. /</div>
-        <div class="p-2" style="width:80%">
-            {{ shorten_string(url['url_path'], with_title=True)}}
-        </div>
-        <div class="p-2">
-        {# Copy full URL to clipbard #}
-        <button type="button" class="btn btn-default btn-copy js-copy"
+        <div class="col-1 g-0 text-end">..&nbsp;/</div>
+        <div class="col-9 g-0">{{ shorten_string(url['url_path'])}}</div>
+        <div class="col-1">
+         {# Copy full URL to clipbard #}
+         <button type="button" class="btn btn-default btn-copy js-copy"
                 data-bs-toggle="tooltip" data-bs-placement="bottom" data-copy="{{ url['url_object'].name }}" data-bs-original-title="Copy to clipboard">
           {{ render_icon('copy') }}
-        </button>
+         </button>
         </div>
       </div>
       {% if last_url_in_address_bar %}

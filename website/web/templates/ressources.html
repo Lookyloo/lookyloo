@@ -47,7 +47,7 @@
           {{ context_form(capture_uuid, urlnode_uuid, h, 'ressources') }}
         </td>
         <td>{{ mimetype }}</td>
-        <td>{{ shorten_string(filename, 10) }}</td>
+        <td>{{ shorten_string(filename) }}</td>
       </tr>
       {% endfor %}
     </tbody>

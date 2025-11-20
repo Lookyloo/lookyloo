@@ -78,7 +78,7 @@
       <div class="border-top my-3"></div>
       <center>
         <h3><small class="text-muted">URL</small>
-          {{ shorten_string(url, with_title=True) }}
+          {{ shorten_string(url) }}
         </h3>
       </center>
       {% if entries['malicious'] %}
@@ -102,7 +102,7 @@
   {% for url, tag in pi.items() %}
     <center>
       <h3><small class="text-muted">URL</small>
-        {{ shorten_string(url, with_title=True) }}
+        {{ shorten_string(url) }}
       </h3>
       <div>This URL is tagged as <b>{{ tag }}</b> on Phishing Initiative</div>
     </center>

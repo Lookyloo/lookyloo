@@ -69,7 +69,7 @@
           <td class="text-break">
             {{ details_modal_button(target_modal_id="#cookieNameModal",
                                     data_remote=url_for('cookies_name_detail', cookie_name=cookie['name']),
-                                    button_string=shorten_string(cookie['name'], with_title=True),
+                                    button_string=shorten_string(cookie['name']),
                                     search=cookie['name'])['display'] | safe }}
           </td>
           <td class="text-break">{{ cookie['value'] }}</td>
