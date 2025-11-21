@@ -16,7 +16,7 @@ jobs:
          python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
      steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Set up Python ${{matrix.python-version}}
         uses: actions/setup-python@v6
@@ -27,7 +27,7 @@ jobs:
         run: pipx install poetry
 
       - name: Clone Valkey
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: valkey-io/valkey
           path: valkey-tmp
@@ -52,7 +52,7 @@ jobs:
           sudo dpkg -i kvrocks.deb
 
       - name: Clone uwhoisd
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: Lookyloo/uwhoisd
           path: uwhoisd-tmp
@@ -84,7 +84,7 @@ jobs:
           poetry run start
 
       - name: Clone PyLookyloo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: Lookyloo/PyLookyloo
           path: PyLookyloo
