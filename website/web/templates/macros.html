@@ -99,27 +99,36 @@
 {% macro indexed_cookies(header_text, button_text, cookies) %}
 {% if cookies %}
 <div>{{ header_text }}</div>
-<ul>
+<ul class="list-group">
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Value</th>
+            <th scope="col">Domain</th>
+            <th scope="col">Locate on tree</th>
+        </tr>
+    </thead>
+    <tbody>
 {% for cookie, details in cookies.items() %}
   {% set cookie_name_value = cookie.split('=', 1) %}
   {% for detail in details %}
-    {% if detail|length == 1 %}
-    <li>
-        {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0], from_popup=True) }}">
-            {{ cookie_name_value[0] }}</a>={{ shorten_string(cookie_name_value[1], 200) }}
-    </li>
-    {% else %}
-    <li>
-        {{ detail[0] }}: <a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0], from_popup=True) }}">
-          {{ cookie_name_value[0] }}</a>={{ shorten_string(cookie_name_value[1], 200) }} -
-        <br>
-        {{ button_text }}
-        <button type="button" class="btn btn-primary locateInTree" data-hostnode="{{ detail[1] }}">Locate</button>
-    </li>
-    {% endif %}
+    <tr>
+      <td><a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0], from_popup=True) }}">{{ cookie_name_value[0] }}</a></td>
+      <td>{{ shorten_string(cookie_name_value[1]) }}</td>
+      <td>{{ detail[0] }}</td>
+      {% if detail|length == 1 %}
+      <td></td>
+      {% else %}
+      <td>{{ button_text }}
+          <button type="button" class="btn btn-primary locateInTree" data-hostnode="{{ detail[1] }}">Locate</button>
+      </td>
+      {% endif %}
+    </tr>
   {% endfor %}
 {% endfor %}
-</ul>
+    </tbody>
+</table>
 {% endif %}
 {% endmacro %}
 
@@ -194,17 +203,22 @@
 {% macro redirect_response(urlnode, tree_uuid) %}
 {% if urlnode["redirect"] %}
   {% set icon_info = get_icon('redirect') %}
+  <div class="row">
   {% for child in urlnode.children if child.name == urlnode.redirect_url %}
-  <div title='{{ urlnode.redirect_url }}'>
-    <b>Redirect to</b>: {{ shorten_string(urlnode.redirect_url, 50) }}
-    <button type="button" class="btn btn-link locateInTree" data-hostnode="{{ child.hostnode_uuid }}" title="See the node the URL redirects to.">
-      <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}" width="21" height="21"/>
-    </button>
-  </div>
+    <div class="col"><b>Redirect to</b>:</div>
+    <div class="col w-75">{{ shorten_string(urlnode.redirect_url) }}</div>
+    <div class="col">
+      <button type="button" class="btn btn-link locateInTree" data-hostnode="{{ child.hostnode_uuid }}" title="See the node the URL redirects to.">
+        <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}" width="21" height="21"/>
+      </button>
+    </div>
   {% else %}
+  <div class="col">
   <img src="{{ url_for('static', filename=icon_info['icon']) }}"
        alt="{{ icon_info['tooltip'] }}" title="{{ icon_info['tooltip'] }}"
        width="21" height="21"/>
+  </div>
   {% endfor %}
+  </div>
 {%endif%}
 {% endmacro %}
