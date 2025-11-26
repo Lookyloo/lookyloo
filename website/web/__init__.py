@@ -203,7 +203,7 @@ def sizeof_fmt(num: float, suffix: str='B') -> str:
 def http_status_description(code: int) -> str:
     if code in http.client.responses:
         return http.client.responses[code]
-    return Markup(f'Invalid code: "{code}"')
+    return Markup('Invalid code: "{}"').format(code)
 
 
 def month_name(month: int) -> str:
@@ -213,8 +213,7 @@ def month_name(month: int) -> str:
 def get_sri(directory: str, filename: str) -> str:
     if ignore_sri:
         return ""
-    sha512 = sri_load()[directory][filename]
-    return Markup(f'integrity="sha512-{sha512}"')
+    return Markup('integrity="sha512-{}"').format(sri_load()[directory][filename])
 
 
 # Inspired by: https://stackoverflow.com/questions/59157322/overflow-ellipsis-in-middle-of-a-string
@@ -292,39 +291,34 @@ def get_tz_info() -> tuple[str | None, str, dict[str, str]]:
     return local_TZ, local_UTC_offset, all_timezones_set
 
 
-def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressource: str) -> str:
+def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressource: str) -> Markup:
     gt = mimetype_to_generic(mimetype)
     if icon_info := get_icon(gt):
         if gt == 'image':
-            title = f'''<img class="ressource_preview" src="{url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, h_ressource=h_ressource)}"/>'''
+            ressource_preview_url = url_for('get_ressource_preview', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, h_ressource=h_ressource)
+            title = Markup('<img class="ressource_preview" src="{}"/>').format(ressource_preview_url)
         else:
-            title = icon_info['tooltip']
+            # Just for safety so we *always* have a Markup.
+            title = Markup('{}').format(icon_info['tooltip'])
 
         if gt == 'json':
-            title += '<br>Click to view content.'
+            title += Markup('<br>Click to view content.')
         else:
-            title += '<br>Click to download.'
+            title += Markup('<br>Click to download.')
 
         render_in_modal = gt in ['json', 'text']
 
         if render_in_modal:
-            link_url = f'''
-<a href="#JsonRenderModal" data-remote="{url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, render_in_modal={render_in_modal})}"
-   data-bs-toggle="modal" data-bs-target="#JsonRenderModal" role="button">'''
+            url_data_remote = url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, render_in_modal={render_in_modal})
+            link_url = Markup('<a href="#JsonRenderModal" data-remote="{}" data-bs-toggle="modal" data-bs-target="#JsonRenderModal" role="button">').format(url_data_remote)
         else:
-            link_url = f'''
-<a href="{url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, render_in_modal={render_in_modal})}">'''
+            url_get_ressource = url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, render_in_modal={render_in_modal})
+            link_url = Markup('<a href="{}">').format(url_get_ressource)
 
-        return Markup(f'''{link_url}
-  <img src="{url_for('static', filename=icon_info['icon'])}" alt="{icon_info['tooltip']}" width="21" height="21"
-       data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title='{title}'/>
-</a>
-<br>
-<small>Mimetype: <b>{mimetype}</b></small>
-<br>
-''')
+        url_img = url_for('static', filename=icon_info['icon'])
+        return Markup('{link_url} <img src="{url_img}" alt="{alt_tooltip}" width="21" height="21" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="{title}"/></a><br><small>Mimetype: <b>{mimetype}</b></small><br>').format(link_url=link_url, url_img=url_img, alt_tooltip=icon_info['tooltip'], title=title, mimetype=mimetype)
     else:
-        return 'Unable to render icon'
+        return Markup('Unable to render icon')
 
 
 def details_modal_button(target_modal_id: str, data_remote: str, button_string: str, search: str | None=None) -> dict[str, str]:
@@ -1076,8 +1070,7 @@ def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
             pylookyloo = PyLookyloo(remote_lookyloo_url)
             try:
                 uuid = pylookyloo.upload_capture(full_capture=to_push, quiet=True)
-                remote_lookyloo_url = f'<a href="{pylookyloo.root_url}/tree/{uuid}" target="_blank">{uuid}</a>'
-                flash(Markup(f'Successfully pushed the capture: {remote_lookyloo_url}.'), 'success')
+                flash(Markup('Successfully pushed the capture: <a href="{root_url}/tree/{uuid}" target="_blank">{uuid}</a>.').format(root_url=pylookyloo.root_url, uuid=uuid), 'success')
             except PyLookylooError as e:
                 flash(f'Error while pushing capture: {e}', 'error')
             except Exception as e:
@@ -1184,8 +1177,7 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
                 flash(f'Unable to create event(s): {new_events}', 'error')
             else:
                 for e in new_events:
-                    remote_misp_url = f'<a href="{misp.client.root_url}/events/view/{e.id}" target="_blank">{e.id}</a>'
-                    flash(Markup(f'MISP event {remote_misp_url} created on {misp.client.root_url}'), 'success')
+                    flash(Markup('MISP event <a href="{root_url}/events/view/{eid}" target="_blank">{eid}</a> created on {root_url}.').format(root_url=misp.client.root_url, eid=e.id), 'success')
         return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
