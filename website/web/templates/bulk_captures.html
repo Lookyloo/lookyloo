@@ -22,16 +22,16 @@
         .then(response => response.json())
         .then(cs => {
           if ((cs.status_code == 0) || (cs.status_code == 2)) {
-            capture_status[i].innerHTML = DOMPurify.sanitize("Capture ongoing, please wait...")
+            capture_status[i].textContent = "Capture ongoing, please wait...";
           }
           else if (cs.status_code == 1){
-            capture_status[i].innerHTML = DOMPurify.sanitize("Capture done.");
+            capture_status[i].textContent = "Capture done.";
             if ('error' in cs ){
-                capture_error[i].innerHTML = DOMPurify.sanitize(cs.error);
+                capture_error[i].textContent = cs.error;
             }
           }
           else {
-            capture_status[i].innerHTML = DOMPurify.sanitize("Unknown capture.");
+            capture_status[i].textContent = "Unknown capture.";
           };
           if (cs.status_code != 1) {
             keep_going = true;

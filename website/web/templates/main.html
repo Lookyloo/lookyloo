@@ -71,10 +71,6 @@
             {{get_sri('static', 'theme_toggle.js')}}
             nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
-    <script src='{{ url_for('static', filename='purify.min.js') }}'
-            {{get_sri('static', 'purify.min.js')}}
-            nonce="{{ csp_nonce() }}"
-            crossorigin="anonymous"></script>
     {% set overrides_js = load_custom_js('overrides.js') %}
     {% if overrides_js %}
     <script src="{{  overrides_js[0] }}"
