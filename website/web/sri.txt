@@ -34,6 +34,7 @@
     "loader.gif": "ZZKD5vLSKBWKeUpa2KI9qheUJ49iTI/UULmVU/AX28fBfH00K3lLc2v5pVJZ4qXG1BbB13LTXzRKKU35H2XfNg==",
     "lookyloo.jpeg": "i6wBj8CsIM5YAQLEMQfhs3CNOSKkErF8AMqqM6ZygSwCyQgv9CU8xt94veMZhM/ufBWoz7kAXmR+yywmxsTxug==",
     "lookyloo.png": "RBEyk/q/Iyinz5hroz4fsc7eeLSutjPbi7tW2AcB7VoANLdO4AIfmOH/6UAvGFvjtNKp5gMcU25OfcBQB6Tz1g==",
+    "purify.min.js": "jUcgkWN1Bhyjb4BsaJ+dH+aNMcuHnRnYVfvDI2ATmZmHNSxExPL9Lb1sDa6ReMbYStFUQBTo385m1KMSti0VxA==",
     "redirect.png": "PAjzlPV97rEFvH55mG1ZC9wRl98be3yMeX/nENuFkJcds6/AXgSR2ig/QyPULgobSnNgiYieLVWY/oqsgeywrQ==",
     "render_tables.js": "1M14iUzEmo/rhfUcVENMrBbzWj4rW8qzGYE++aUMjCLZ9HUCGyPzaseyYXSnEoKmZKS4dx71JHhBQVVPDQyiXw==",
     "secure.svg": "H8ni7t0d60nCJDVGuZpuxC+RBy/ipAjWT627D12HlZGg6LUmjSwPTQTUekm3UJupEP7TUkhXyq6WHc5gy7QBjg==",

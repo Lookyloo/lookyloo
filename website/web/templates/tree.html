@@ -124,7 +124,7 @@
   var parent_uuid = {{ parent_uuid|tojson }};
   var capture_starttime = new Date(Date.parse("{{ info.timestamp.isoformat() }}"));
   window.addEventListener('DOMContentLoaded', (event) => {
-      document.getElementById("start_time").innerHTML = capture_starttime.toString();
+      document.getElementById("start_time").innerHTML = DOMPurify.sanitize(capture_starttime.toString());
       document.getElementById("content").classList.remove('container');
       document.getElementById("content").classList.add('container-fluid');
   });
@@ -1118,7 +1118,7 @@
               <form role="form" action="{{ url_for('web_lookyloo_push_view', tree_uuid=tree_uuid) }}"
                     method=post enctype=multipart/form-data>
                   <label for="remote_lookyloo_url" class="col-sm-2 col-form-label">Submit capture to:</label>
-                  <input type="text" class="form-control" name="remote_lookyloo_url" required>
+                  <input type="text" class="form-control" name="remote_lookyloo_url" id="remote_lookyloo_url" required>
                   <button type="submit" class="btn btn-primary">Submit</button>
               </form>
           </div>

@@ -35,6 +35,8 @@ csp: dict[str, Any] = {
         "blob:",
         "'unsafe-inline'"
     ],
+    # jquery doesn't support that.
+    # 'require-trusted-types-for': "'script'",
     'frame-ancestors': [
         SELF,
     ],
