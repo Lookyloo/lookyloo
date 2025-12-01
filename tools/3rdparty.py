@@ -11,6 +11,7 @@ datatables_rowgroup_version = "1.6.0"
 datatables_buttons_version = "3.2.5"
 datatables_select_version = "3.1.3"
 jquery_json_viewer_version = "1.5.0"
+dompurify_version = "3.3.0"
 
 
 if __name__ == '__main__':
@@ -45,5 +46,10 @@ if __name__ == '__main__':
     with (dest_dir / 'jquery.json-viewer.css').open('wb') as f:
         f.write(jquery_json_css.content)
         print(f'Downloaded jsontree css v{jquery_json_viewer_version}.')
+
+    dompurify_js = requests.get(f'https://cdn.jsdelivr.net/npm/dompurify@{dompurify_version}/dist/purify.min.js')
+    with (dest_dir / 'purify.min.js').open('wb') as f:
+        f.write(dompurify_js.content)
+        print(f'Downloaded dompurify js v{dompurify_version}.')
 
     print('All 3rd party modules for the website were downloaded.')

@@ -104,7 +104,7 @@ class AuthToken(Resource):  # type: ignore[misc]
         return make_response({'error': 'User/Password invalid.'}, 401)
 
 
-@api.route('/json/<string:capture_uuid>/status')
+@api.route('/json/<uuid:capture_uuid>/status')
 @api.doc(description='Get the status of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureStatusQuery(Resource):  # type: ignore[misc]
@@ -121,7 +121,7 @@ class CaptureStatusQuery(Resource):  # type: ignore[misc]
         return make_response(to_return)
 
 
-@api.route('/json/<string:capture_uuid>/ips')
+@api.route('/json/<uuid:capture_uuid>/ips')
 @api.doc(description='Get all the IPs of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureIPs(Resource):  # type: ignore[misc]
@@ -137,7 +137,7 @@ class CaptureIPs(Resource):  # type: ignore[misc]
             return make_response({'error': f'No HAR file available: {e}'}, 400)
 
 
-@api.route('/json/<string:capture_uuid>/favicons')
+@api.route('/json/<uuid:capture_uuid>/favicons')
 @api.doc(description='Get all the potential favicons of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureFaviconss(Resource):  # type: ignore[misc]
@@ -168,7 +168,7 @@ class CaptureFaviconss(Resource):  # type: ignore[misc]
             return make_response({'error': f'No HAR file available: {e}'}, 400)
 
 
-@api.route('/json/<string:capture_uuid>/hostnames')
+@api.route('/json/<uuid:capture_uuid>/hostnames')
 @api.doc(description='Get all the hostnames of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureHostnames(Resource):  # type: ignore[misc]
@@ -184,7 +184,7 @@ class CaptureHostnames(Resource):  # type: ignore[misc]
             return make_response({'error': f'No HAR file available: {e}'}, 400)
 
 
-@api.route('/json/<string:capture_uuid>/urls')
+@api.route('/json/<uuid:capture_uuid>/urls')
 @api.doc(description='Get all the URLs of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureURLs(Resource):  # type: ignore[misc]
@@ -200,7 +200,7 @@ class CaptureURLs(Resource):  # type: ignore[misc]
             return make_response({'error': f'No HAR file available: {e}'}, 400)
 
 
-@api.route('/json/<string:capture_uuid>/hashes')
+@api.route('/json/<uuid:capture_uuid>/hashes')
 @api.doc(description='Get all the hashes of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureHashes(Resource):  # type: ignore[misc]
@@ -233,7 +233,7 @@ class CaptureHashes(Resource):  # type: ignore[misc]
         return make_response(to_return)
 
 
-@api.route('/json/<string:capture_uuid>/redirects')
+@api.route('/json/<uuid:capture_uuid>/redirects')
 @api.doc(description='Get all the redirects of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureRedirects(Resource):  # type: ignore[misc]
@@ -256,7 +256,7 @@ class CaptureRedirects(Resource):  # type: ignore[misc]
         return make_response(to_return)
 
 
-@api.route('/json/<string:capture_uuid>/misp_export')
+@api.route('/json/<uuid:capture_uuid>/misp_export')
 @api.doc(description='Get an export of the capture in MISP format',
          params={'capture_uuid': 'The UUID of the capture'})
 class MISPExport(Resource):  # type: ignore[misc]
@@ -283,8 +283,8 @@ misp_push_fields = api.model('MISPPushFields', {
 })
 
 
-@api.route('/json/<string:capture_uuid>/misp_push')
-@api.route('/json/<string:capture_uuid>/misp_push/<string:instance_name>')
+@api.route('/json/<uuid:capture_uuid>/misp_push')
+@api.route('/json/<uuid:capture_uuid>/misp_push/<string:instance_name>')
 @api.doc(description='Push an event to a pre-configured MISP instance',
          params={'capture_uuid': 'The UUID of the capture'},
          security='apikey')
@@ -365,7 +365,7 @@ trigger_modules_fields = api.model('TriggerModulesFields', {
 })
 
 
-@api.route('/json/<string:capture_uuid>/trigger_modules')
+@api.route('/json/<uuid:capture_uuid>/trigger_modules')
 @api.doc(description='Trigger all the available 3rd party modules on the given capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class TriggerModules(Resource):  # type: ignore[misc]
@@ -378,7 +378,7 @@ class TriggerModules(Resource):  # type: ignore[misc]
                                                       as_admin=flask_login.current_user.is_authenticated))
 
 
-@api.route('/json/<string:capture_uuid>/modules')
+@api.route('/json/<uuid:capture_uuid>/modules')
 @api.doc(description='Get responses from the 3rd party modules',
          params={'capture_uuid': 'The UUID of the capture'})
 class ModulesResponse(Resource):  # type: ignore[misc]
@@ -661,7 +661,7 @@ class RemoteLacuses(Resource):  # type: ignore[misc]
         return make_response(to_return)
 
 
-@api.route('/json/<string:capture_uuid>/stats')
+@api.route('/json/<uuid:capture_uuid>/stats')
 @api.doc(description='Get the statistics of the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureStats(Resource):  # type: ignore[misc]
@@ -669,7 +669,7 @@ class CaptureStats(Resource):  # type: ignore[misc]
         return make_response(lookyloo.get_statistics(capture_uuid))
 
 
-@api.route('/json/<string:capture_uuid>/info')
+@api.route('/json/<uuid:capture_uuid>/info')
 @api.doc(description='Get basic information about the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureInfo(Resource):  # type: ignore[misc]
@@ -680,7 +680,7 @@ class CaptureInfo(Resource):  # type: ignore[misc]
         return make_response(info, 404)
 
 
-@api.route('/json/<string:capture_uuid>/cookies')
+@api.route('/json/<uuid:capture_uuid>/cookies')
 @api.doc(description='Get the complete cookie jar created during the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureCookies(Resource):  # type: ignore[misc]
@@ -691,7 +691,7 @@ class CaptureCookies(Resource):  # type: ignore[misc]
         return make_response({'error': 'No cookies'}, 404)
 
 
-@api.route('/json/<string:capture_uuid>/storage_state')
+@api.route('/json/<uuid:capture_uuid>/storage_state')
 @api.doc(description='Get the complete storage state at the end of the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureStorageState(Resource):  # type: ignore[misc]
@@ -702,7 +702,7 @@ class CaptureStorageState(Resource):  # type: ignore[misc]
         return make_response({'error': 'No storage state'}, 404)
 
 
-@api.route('/json/<string:capture_uuid>/report')
+@api.route('/json/<uuid:capture_uuid>/report')
 @api.doc(description='Reports the url by sending an email to the investigation team',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureReport(Resource):  # type: ignore[misc]
@@ -883,7 +883,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
 
 # Binary stuff
 
-@api.route('/bin/<string:capture_uuid>/screenshot')
+@api.route('/bin/<uuid:capture_uuid>/screenshot')
 @api.doc(description='Get the screenshot associated to the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureScreenshot(Resource):  # type: ignore[misc]
@@ -896,7 +896,7 @@ class CaptureScreenshot(Resource):  # type: ignore[misc]
         return make_response({'error': 'No screenshot available'}, 404)
 
 
-@api.route('/bin/<string:capture_uuid>/export')
+@api.route('/bin/<uuid:capture_uuid>/export')
 @api.doc(description='Get all the files generated by the capture, except the pickle.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureExport(Resource):  # type: ignore[misc]
@@ -909,7 +909,7 @@ class CaptureExport(Resource):  # type: ignore[misc]
         return make_response({'error': 'No capture available'}, 404)
 
 
-@api.route('/bin/<string:capture_uuid>/data')
+@api.route('/bin/<uuid:capture_uuid>/data')
 @api.doc(description='Get the file downloaded by the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureData(Resource):  # type: ignore[misc]
@@ -989,7 +989,7 @@ comparables_model = api.model('ComparablesModel', {
 })
 
 
-@api.route('/json/<string:capture_uuid>/comparables')
+@api.route('/json/<uuid:capture_uuid>/comparables')
 @api.doc(description='Get the data we can compare across captures')
 class Comparables(Resource):  # type: ignore[misc]
 
@@ -1056,7 +1056,7 @@ class RebuildAllCache(Resource):  # type: ignore[misc]
         return make_response({'info': 'All caches successfully rebuilt.'})
 
 
-@api.route('/admin/<string:capture_uuid>/rebuild')
+@api.route('/admin/<uuid:capture_uuid>/rebuild')
 @api.doc(description='Rebuild the tree.',
          params={'capture_uuid': 'The UUID of the capture'},
          security='apikey')
@@ -1072,7 +1072,7 @@ class CaptureRebuildTree(Resource):  # type: ignore[misc]
         return make_response({'info': f'Tree {capture_uuid} successfully rebuilt.'})
 
 
-@api.route('/admin/<string:capture_uuid>/hide')
+@api.route('/admin/<uuid:capture_uuid>/hide')
 @api.doc(description='Hide the capture from the index.',
          params={'capture_uuid': 'The UUID of the capture'},
          security='apikey')
@@ -1087,7 +1087,7 @@ class CaptureHide(Resource):  # type: ignore[misc]
         return make_response({'info': f'Capture {capture_uuid} successfully hidden.'})
 
 
-@api.route('/admin/<string:capture_uuid>/remove')
+@api.route('/admin/<uuid:capture_uuid>/remove')
 @api.doc(description='Remove the capture from the index.',
          params={'capture_uuid': 'The UUID of the capture'},
          security='apikey')
