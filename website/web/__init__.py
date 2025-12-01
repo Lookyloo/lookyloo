@@ -143,7 +143,7 @@ else:
         return redirect(url_for('index'))
 
 
-@login_manager.user_loader  # type: ignore[misc]
+@login_manager.user_loader  # type: ignore[untyped-decorator]
 def user_loader(username: str) -> User | None:
     if username not in build_users_table():
         return None
@@ -152,7 +152,7 @@ def user_loader(username: str) -> User | None:
     return user
 
 
-@login_manager.request_loader  # type: ignore[misc]
+@login_manager.request_loader  # type: ignore[untyped-decorator]
 def _load_user_from_request(request: Request) -> User | None:
     return load_user_from_request(request)
 
@@ -182,7 +182,7 @@ def login() -> WerkzeugResponse | str | Response:
 
 
 @app.route('/logout')
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def logout() -> WerkzeugResponse:
     flask_login.logout_user()
     flash('Successfully logged out.', 'success')
@@ -846,7 +846,7 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
 # ##### Hostnode level methods #####
 
 @app.route('/tree/<uuid:tree_uuid>/host/<uuid:node_uuid>/hashes', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def hashes_hostnode(tree_uuid: str, node_uuid: str) -> Response:
     success, hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
     if success:
@@ -856,7 +856,7 @@ def hashes_hostnode(tree_uuid: str, node_uuid: str) -> Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/host/<uuid:node_uuid>/text', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def urls_hostnode(tree_uuid: str, node_uuid: str) -> Response:
     hostnode = lookyloo.get_hostnode_from_tree(tree_uuid, node_uuid)
     return send_file(BytesIO('\n'.join(url.name for url in hostnode.urls).encode()),
@@ -1284,7 +1284,7 @@ def modules(tree_uuid: str) -> str | WerkzeugResponse | Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/redirects', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def redirects(tree_uuid: str) -> Response:
     cache = lookyloo.capture_cache(tree_uuid)
     if not cache or not hasattr(cache, 'redirects'):
@@ -1300,7 +1300,7 @@ def redirects(tree_uuid: str) -> Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/image', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def image(tree_uuid: str) -> Response:
     max_width = request.args.get('width')
     if max_width and max_width.isdigit():
@@ -1316,7 +1316,7 @@ def image(tree_uuid: str) -> Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/data', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def data(tree_uuid: str) -> Response:
     success, filename, data = lookyloo.get_data(tree_uuid)
     if not success:
@@ -1332,14 +1332,14 @@ def data(tree_uuid: str) -> Response:
 
 @app.route('/tree/<uuid:tree_uuid>/thumbnail/', defaults={'width': 64}, methods=['GET'])
 @app.route('/tree/<uuid:tree_uuid>/thumbnail/<int:width>', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def thumbnail(tree_uuid: str, width: int) -> Response:
     to_return = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=False, width=width)
     return send_file(to_return, mimetype='image/png')
 
 
 @app.route('/tree/<uuid:tree_uuid>/html', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def html(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_html(tree_uuid)
     if success:
@@ -1349,7 +1349,7 @@ def html(tree_uuid: str) -> Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/cookies', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def cookies(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_cookies(tree_uuid)
     if success:
@@ -1359,7 +1359,7 @@ def cookies(tree_uuid: str) -> Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/storage_state_download', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def storage_state_download(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_storage_state(tree_uuid)
     if success:
@@ -1369,7 +1369,7 @@ def storage_state_download(tree_uuid: str) -> Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/frames_download', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def frames_download(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_frames(tree_uuid)
     if success:
@@ -1379,7 +1379,7 @@ def frames_download(tree_uuid: str) -> Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/har_download', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def har_download(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_har(tree_uuid)
     if success:
@@ -1390,7 +1390,7 @@ def har_download(tree_uuid: str) -> Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/hashes', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def hashes_tree(tree_uuid: str) -> Response:
     success, hashes = lookyloo.get_hashes(tree_uuid)
     if success:
@@ -1400,7 +1400,7 @@ def hashes_tree(tree_uuid: str) -> Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/export', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def export(tree_uuid: str) -> Response:
     success, to_return = lookyloo.get_capture(tree_uuid)
     if success:
@@ -1507,7 +1507,7 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/hide', methods=['GET'])
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def hide_capture(tree_uuid: str) -> WerkzeugResponse:
     lookyloo.hide_capture(tree_uuid)
     flash('Successfully hidden.', 'success')
@@ -1515,7 +1515,7 @@ def hide_capture(tree_uuid: str) -> WerkzeugResponse:
 
 
 @app.route('/tree/<uuid:tree_uuid>/remove', methods=['GET'])
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def remove_capture(tree_uuid: str) -> WerkzeugResponse:
     lookyloo.remove_capture(tree_uuid)
     flash(f'{tree_uuid} successfully removed.', 'success')
@@ -1523,7 +1523,7 @@ def remove_capture(tree_uuid: str) -> WerkzeugResponse:
 
 
 @app.route('/tree/<uuid:tree_uuid>/rebuild')
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def rebuild_tree(tree_uuid: str) -> WerkzeugResponse:
     try:
         lookyloo.remove_pickle(tree_uuid)
@@ -1712,7 +1712,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
 
 
 @app.route('/tree/<uuid:tree_uuid>/mark_as_legitimate', methods=['POST'])
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def mark_as_legitimate(tree_uuid: str) -> Response:
     if request.data:
         legitimate_entries: dict[str, Any] = request.get_json(force=True)
@@ -1838,7 +1838,7 @@ def index() -> str:
 
 
 @app.route('/hidden', methods=['GET'])
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def index_hidden() -> str:
     show_error, category = get_index_params(request)
     return index_generic(show_hidden=True, show_error=show_error, category=category)
@@ -1900,14 +1900,14 @@ def categories() -> str:
 
 
 @app.route('/rebuild_all')
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def rebuild_all() -> WerkzeugResponse:
     lookyloo.rebuild_all()
     return redirect(url_for('index'))
 
 
 @app.route('/rebuild_cache')
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def rebuild_cache() -> WerkzeugResponse:
     lookyloo.rebuild_cache()
     return redirect(url_for('index'))
@@ -2025,7 +2025,7 @@ def recapture(tree_uuid: str) -> str | Response | WerkzeugResponse:
 
 
 @app.route('/ressource_by_hash/<sha512:sha512>', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def ressource_by_hash(sha512: str) -> Response:
     content_fallback = f'Unable to find "{sha512}"'
     if uuids := get_indexing(flask_login.current_user).get_hash_uuids(sha512):
@@ -2268,7 +2268,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
 
 
 @app.route('/simple_capture', methods=['GET', 'POST'])
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def simple_capture() -> str | Response | WerkzeugResponse:
     user = flask_login.current_user.get_id()
     if request.method == 'POST':
@@ -2397,7 +2397,7 @@ def ip_details(ip: str) -> str:
 
 
 @app.route('/stats', methods=['GET'])
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def statsfull() -> str:
     stats = lookyloo.get_stats()
     return render_template('stats.html', stats=stats, version=pkg_version)
@@ -2405,7 +2405,7 @@ def statsfull() -> str:
 
 @app.route('/whois/<string:query>', methods=['GET'])
 @app.route('/whois/<string:query>/<int:email_only>', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def whois(query: str, email_only: int=0) -> Response:
     to_return = lookyloo.uwhois.whois(query, bool(email_only))
     if isinstance(to_return, str):
@@ -2417,7 +2417,7 @@ def whois(query: str, email_only: int=0) -> Response:
 # ##### Methods related to a specific URLNode #####
 
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/request_cookies', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def urlnode_request_cookies(tree_uuid: str, node_uuid: str) -> Response | None:
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.request_cookie:
@@ -2428,7 +2428,7 @@ def urlnode_request_cookies(tree_uuid: str, node_uuid: str) -> Response | None:
 
 
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/response_cookies', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def urlnode_response_cookies(tree_uuid: str, node_uuid: str) -> Response | None:
     urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
     if not urlnode.response_cookie:
@@ -2439,7 +2439,7 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str) -> Response | None:
 
 
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/urls_in_rendered_content', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str) -> Response | None:
     # Note: we could simplify it with lookyloo.get_urls_rendered_page, but if at somepoint,
     # we have multiple page rendered on one tree, it will be a problem.
@@ -2457,7 +2457,7 @@ def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str) -> Response
 
 
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/rendered_content', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def urlnode_rendered_content(tree_uuid: str, node_uuid: str) -> Response | None:
     try:
         urlnode = lookyloo.get_urlnode_from_tree(tree_uuid, node_uuid)
@@ -2473,7 +2473,7 @@ def urlnode_rendered_content(tree_uuid: str, node_uuid: str) -> Response | None:
 
 
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/posted_data', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def urlnode_post_request(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | str | Response | None:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     render_in_modal = True if (request.args.get('render_in_modal') and request.args.get('render_in_modal') == 'True') else False
@@ -2511,7 +2511,7 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | s
 
 
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/ressource', methods=['POST', 'GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def get_ressource(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | str | Response:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     render_in_modal = True if (request.args.get('render_in_modal') and request.args.get('render_in_modal') == 'True') else False
@@ -2540,7 +2540,7 @@ def get_ressource(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | str | Re
 
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/ressource_preview', methods=['GET'])
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/ressource_preview/<sha512:h_ressource>', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def get_ressource_preview(tree_uuid: str, node_uuid: str, h_ressource: str | None=None) -> Response:
     ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_ressource)
     if not ressource:
@@ -2553,7 +2553,7 @@ def get_ressource_preview(tree_uuid: str, node_uuid: str, h_ressource: str | Non
 
 
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/hashes', methods=['GET'])
-@file_response  # type: ignore[misc]
+@file_response  # type: ignore[untyped-decorator]
 def hashes_urlnode(tree_uuid: str, node_uuid: str) -> Response:
     success, hashes = lookyloo.get_hashes(tree_uuid, urlnode_uuid=node_uuid)
     if success:
@@ -2563,7 +2563,7 @@ def hashes_urlnode(tree_uuid: str, node_uuid: str) -> Response:
 
 
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/add_context', methods=['POST'])
-@flask_login.login_required  # type: ignore[misc]
+@flask_login.login_required  # type: ignore[untyped-decorator]
 def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
     if not enable_context_by_users:
         return redirect(url_for('ressources'))

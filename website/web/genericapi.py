@@ -53,13 +53,13 @@ token_request_fields = api.model('AuthTokenFields', {
 })
 
 
-@api.errorhandler(NoValidHarFile)  # type: ignore[misc]
+@api.errorhandler(NoValidHarFile)  # type: ignore[untyped-decorator]
 def handle_no_HAR_file_exception(error: Any) -> Response:
     '''The capture has no HAR file, it failed for some reason.'''
     return make_response({'message': str(error)}, 400)
 
 
-@api.errorhandler(CaptureSettingsError)  # type: ignore[misc]
+@api.errorhandler(CaptureSettingsError)  # type: ignore[untyped-decorator]
 def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Response:
     '''Return the validation error message and 400 status code'''
     if error.pydantic_validation_errors:
@@ -85,8 +85,8 @@ class AuthToken(Resource):  # type: ignore[misc]
 
     users_table = build_users_table()
 
-    @api.param('username', 'Your username')  # type: ignore[misc]
-    @api.param('password', 'Your password')  # type: ignore[misc]
+    @api.param('username', 'Your username')  # type: ignore[untyped-decorator]
+    @api.param('password', 'Your password')  # type: ignore[untyped-decorator]
     def get(self) -> Response:
         username: str | None = request.args['username'] if request.args.get('username') else None
         password: str | None = request.args['password'] if request.args.get('password') else None
@@ -94,7 +94,7 @@ class AuthToken(Resource):  # type: ignore[misc]
             return make_response({'authkey': self.users_table[username]['authkey']})
         return make_response({'error': 'User/Password invalid.'}, 401)
 
-    @api.doc(body=token_request_fields)  # type: ignore[misc]
+    @api.doc(body=token_request_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         auth: dict[str, Any] = request.get_json(force=True)
         if 'username' in auth and 'password' in auth:  # Expected keys in json
@@ -109,7 +109,7 @@ class AuthToken(Resource):  # type: ignore[misc]
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureStatusQuery(Resource):  # type: ignore[misc]
 
-    @api.param('with_error', 'Add the error message of the capture (if there is one)')  # type: ignore[misc]
+    @api.param('with_error', 'Add the error message of the capture (if there is one)')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         with_error: bool = True if request.args.get('with_error') else False
         status_code = lookyloo.get_capture_status(capture_uuid)
@@ -210,8 +210,8 @@ class CaptureHashes(Resource):  # type: ignore[misc]
     # NOTE: the SHA512 hashes are pre-computed in the tree, anything else must be computed on the spot
     #       so we return the SHA512 hashes by default
 
-    @api.param('algorithm', default='sha512', description=f'Algorithm of the hashes (default: sha512). Supported options: {", ".join(supported_hash_algos)}')  # type: ignore[misc]
-    @api.param('hashes_only', default=1, description='If 1 (default), only returns a list hashes instead of a dictionary of hashes with their respective URLs..')  # type: ignore[misc]
+    @api.param('algorithm', default='sha512', description=f'Algorithm of the hashes (default: sha512). Supported options: {", ".join(supported_hash_algos)}')  # type: ignore[untyped-decorator]
+    @api.param('hashes_only', default=1, description='If 1 (default), only returns a list hashes instead of a dictionary of hashes with their respective URLs..')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         cache = lookyloo.capture_cache(capture_uuid)
         if not cache:
@@ -291,8 +291,8 @@ misp_push_fields = api.model('MISPPushFields', {
 class MISPPush(Resource):  # type: ignore[misc]
     method_decorators = [api_auth_check]
 
-    @api.param('with_parents', 'Also push the parents of the capture (if any)')  # type: ignore[misc]
-    @api.param('allow_duplicates', 'Push the event even if it is already present on the MISP instance')  # type: ignore[misc]
+    @api.param('with_parents', 'Also push the parents of the capture (if any)')  # type: ignore[untyped-decorator]
+    @api.param('allow_duplicates', 'Push the event even if it is already present on the MISP instance')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str, instance_name: str | None=None) -> Response:
         with_parents = True if request.args.get('with_parents') else False
         allow_duplicates = True if request.args.get('allow_duplicates') else False
@@ -325,7 +325,7 @@ class MISPPush(Resource):  # type: ignore[misc]
 
         return make_response(to_return)
 
-    @api.doc(body=misp_push_fields)  # type: ignore[misc]
+    @api.doc(body=misp_push_fields)  # type: ignore[untyped-decorator]
     def post(self, capture_uuid: str, instance_name: str | None=None) -> Response:
         parameters: dict[str, Any] = request.get_json(force=True)
         with_parents = True if parameters.get('with_parents') else False
@@ -369,7 +369,7 @@ trigger_modules_fields = api.model('TriggerModulesFields', {
 @api.doc(description='Trigger all the available 3rd party modules on the given capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class TriggerModules(Resource):  # type: ignore[misc]
-    @api.doc(body=trigger_modules_fields)  # type: ignore[misc]
+    @api.doc(body=trigger_modules_fields)  # type: ignore[untyped-decorator]
     def post(self, capture_uuid: str) -> Response:
         parameters: dict[str, Any] = request.get_json(force=True)
         force = True if parameters.get('force') else False
@@ -433,7 +433,7 @@ class HashInfo(Resource):  # type: ignore[misc]
             return make_response({'error': 'Unable to get ressource'}, 400)
         return make_response({'error': 'Unknown Hash.'}, 404)
 
-    @api.doc(body=body_hash_info_fields)  # type: ignore[misc]
+    @api.doc(body=body_hash_info_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         to_query: dict[str, Any] = request.get_json(force=True)
         return make_response(get_body_hash_occurrences(to_query.pop('body_hash'), **to_query))
@@ -470,7 +470,7 @@ favicon_info_fields = api.model('FaviconInfoFields', {
 @api.doc(description='Search for a Favicon')
 class FaviconInfo(Resource):  # type: ignore[misc]
 
-    @api.doc(body=favicon_info_fields)  # type: ignore[misc]
+    @api.doc(body=favicon_info_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         to_query: dict[str, Any] = request.get_json(force=True)
         return make_response(get_favicon_occurrences(to_query.pop('favicon'), **to_query))
@@ -510,7 +510,7 @@ ip_info_fields = api.model('IPInfoFields', {
 @api.doc(description='Search for an IP')
 class IPInfo(Resource):  # type: ignore[misc]
 
-    @api.doc(body=ip_info_fields)  # type: ignore[misc]
+    @api.doc(body=ip_info_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         to_query: dict[str, Any] = request.get_json(force=True)
         return make_response(get_ip_occurrences(to_query.pop('ip'), **to_query))
@@ -557,7 +557,7 @@ url_info_fields = api.model('URLInfoFields', {
 @api.doc(description='Search for a URL')
 class URLInfo(Resource):  # type: ignore[misc]
 
-    @api.doc(body=url_info_fields)  # type: ignore[misc]
+    @api.doc(body=url_info_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         to_query: dict[str, Any] = request.get_json(force=True)
         return make_response(get_url_occurrences(to_query.pop('url'), **to_query))
@@ -611,7 +611,7 @@ hostname_info_fields = api.model('HostnameInfoFields', {
 @api.doc(description='Search for a hostname')
 class HostnameInfo(Resource):  # type: ignore[misc]
 
-    @api.doc(body=hostname_info_fields)  # type: ignore[misc]
+    @api.doc(body=hostname_info_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         to_query: dict[str, Any] = request.get_json(force=True)
         return make_response(get_hostname_occurrences(to_query.pop('hostname'), **to_query))
@@ -706,8 +706,8 @@ class CaptureStorageState(Resource):  # type: ignore[misc]
 @api.doc(description='Reports the url by sending an email to the investigation team',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureReport(Resource):  # type: ignore[misc]
-    @api.param('email', 'Email of the reporter, used by the analyst to get in touch.')  # type: ignore[misc]
-    @api.param('comment', 'Description of the URL, will be given to the analyst.')  # type: ignore[misc]
+    @api.param('email', 'Email of the reporter, used by the analyst to get in touch.')  # type: ignore[untyped-decorator]
+    @api.param('comment', 'Description of the URL, will be given to the analyst.')  # type: ignore[untyped-decorator]
     def post(self, capture_uuid: str) -> Response:
         parameters: dict[str, Any] = request.get_json(force=True)
         mail_sent = lookyloo.send_mail(capture_uuid, parameters.get('email', ''), parameters.get('comment'))
@@ -828,16 +828,16 @@ submit_fields_post = api.model('SubmitFieldsPost', {
 @api.route('/submit')
 class SubmitCapture(Resource):  # type: ignore[misc]
 
-    @api.param('url', 'The URL to capture', required=True)  # type: ignore[misc]
-    @api.param('listing', 'Display the capture on the index', default=1)  # type: ignore[misc]
-    @api.param('allow_tracking', 'Attempt to let the website violate your privacy', default=1)  # type: ignore[misc]
-    @api.param('java_script_enabled', 'Enable/Disable running JavaScript when rendering the page', default=1)  # type: ignore[misc]
-    @api.param('user_agent', 'User agent to use for the capture')  # type: ignore[misc]
-    @api.param('browser_name', 'Use this browser. Must be chromium, firefox or webkit.')  # type: ignore[misc]
-    @api.param('device_name', 'Use the pre-configured settings for this device')  # type: ignore[misc]
-    @api.param('referer', 'Referer to pass to the capture')  # type: ignore[misc]
-    @api.param('proxy', 'Proxy to use for the the capture')  # type: ignore[misc]
-    @api.produces(['text/text'])  # type: ignore[misc]
+    @api.param('url', 'The URL to capture', required=True)  # type: ignore[untyped-decorator]
+    @api.param('listing', 'Display the capture on the index', default=1)  # type: ignore[untyped-decorator]
+    @api.param('allow_tracking', 'Attempt to let the website violate your privacy', default=1)  # type: ignore[untyped-decorator]
+    @api.param('java_script_enabled', 'Enable/Disable running JavaScript when rendering the page', default=1)  # type: ignore[untyped-decorator]
+    @api.param('user_agent', 'User agent to use for the capture')  # type: ignore[untyped-decorator]
+    @api.param('browser_name', 'Use this browser. Must be chromium, firefox or webkit.')  # type: ignore[untyped-decorator]
+    @api.param('device_name', 'Use the pre-configured settings for this device')  # type: ignore[untyped-decorator]
+    @api.param('referer', 'Referer to pass to the capture')  # type: ignore[untyped-decorator]
+    @api.param('proxy', 'Proxy to use for the the capture')  # type: ignore[untyped-decorator]
+    @api.produces(['text/text'])  # type: ignore[untyped-decorator]
     def get(self) -> str | Response:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
@@ -869,8 +869,8 @@ class SubmitCapture(Resource):  # type: ignore[misc]
         perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**to_query), source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
         return perma_uuid
 
-    @api.doc(body=submit_fields_post)  # type: ignore[misc]
-    @api.produces(['text/text'])  # type: ignore[misc]
+    @api.doc(body=submit_fields_post)  # type: ignore[untyped-decorator]
+    @api.produces(['text/text'])  # type: ignore[untyped-decorator]
     def post(self) -> str:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
@@ -888,7 +888,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureScreenshot(Resource):  # type: ignore[misc]
 
-    @api.produces(['image/png'])  # type: ignore[misc]
+    @api.produces(['image/png'])  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         success, screenshot = lookyloo.get_screenshot(capture_uuid)
         if success:
@@ -901,7 +901,7 @@ class CaptureScreenshot(Resource):  # type: ignore[misc]
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureExport(Resource):  # type: ignore[misc]
 
-    @api.produces(['application/zip'])  # type: ignore[misc]
+    @api.produces(['application/zip'])  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         success, capture = lookyloo.get_capture(capture_uuid)
         if success:
@@ -914,7 +914,7 @@ class CaptureExport(Resource):  # type: ignore[misc]
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureData(Resource):  # type: ignore[misc]
 
-    @api.produces(['application/zip'])  # type: ignore[misc]
+    @api.produces(['application/zip'])  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         success, filename, data = lookyloo.get_data(capture_uuid)
         if success:
@@ -943,7 +943,7 @@ compare_captures_fields = api.model('CompareCapturesFields', {
 @api.route('/json/compare_captures')
 @api.doc(description='Compare two captures')
 class CompareCaptures(Resource):  # type: ignore[misc]
-    @api.doc(body=compare_captures_fields)  # type: ignore[misc]
+    @api.doc(body=compare_captures_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         parameters: dict[str, Any] = request.get_json(force=True)
         left_uuid = parameters.get('capture_left')
@@ -993,7 +993,7 @@ comparables_model = api.model('ComparablesModel', {
 @api.doc(description='Get the data we can compare across captures')
 class Comparables(Resource):  # type: ignore[misc]
 
-    @api.marshal_with(comparables_model)  # type: ignore[misc]
+    @api.marshal_with(comparables_model)  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> dict[str, Any]:
         return comparator.get_comparables_capture(capture_uuid)
 
@@ -1009,7 +1009,7 @@ takedown_fields = api.model('TakedownFields', {
 @api.route('/json/takedown')
 @api.doc(description='Get information for triggering a takedown request')
 class Takedown(Resource):  # type: ignore[misc]
-    @api.doc(body=takedown_fields)  # type: ignore[misc]
+    @api.doc(body=takedown_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         if not lookyloo.uwhois.available:
             return make_response({'error': 'UWhois not available, cannot get contacts.'}, 400)
@@ -1141,10 +1141,10 @@ class CategoriesCaptures(Resource):  # type: ignore[misc]
 @api.doc(description='Get captures with hits on a specific TLD, to TLD returns the a list of most frequent TLDs.')
 class TLDCaptures(Resource):  # type: ignore[misc]
 
-    @api.param('tld', 'Get captures with a specific TLD and their capture timestamp.')  # type: ignore[misc]
-    @api.param('urls_only', 'Returns recent URLs with that TLD, regardless the capture.')  # type: ignore[misc]
-    @api.param('most_recent_capture', 'Timestamp of the most recent capture to check for a TLD (fallback to now)')  # type: ignore[misc]
-    @api.param('oldest_capture', 'Timestamp of the oldest capture to check for a TLD (fallback to 1 day ago)')  # type: ignore[misc]
+    @api.param('tld', 'Get captures with a specific TLD and their capture timestamp.')  # type: ignore[untyped-decorator]
+    @api.param('urls_only', 'Returns recent URLs with that TLD, regardless the capture.')  # type: ignore[untyped-decorator]
+    @api.param('most_recent_capture', 'Timestamp of the most recent capture to check for a TLD (fallback to now)')  # type: ignore[untyped-decorator]
+    @api.param('oldest_capture', 'Timestamp of the oldest capture to check for a TLD (fallback to 1 day ago)')  # type: ignore[untyped-decorator]
     def get(self) -> Response:
         tld: str | None = request.args['tld'] if request.args.get('tld') else None
         if not tld:
@@ -1267,7 +1267,7 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
         "hash": get_body_hash_occurrences  # formerly sha512
     }
 
-    @api.doc(body=advanced_search_fields)  # type: ignore[misc]
+    @api.doc(body=advanced_search_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         try:
             # Parse and validate the payload
