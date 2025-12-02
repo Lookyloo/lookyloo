@@ -321,7 +321,7 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
             title = Markup('<img class="ressource_preview" src="{}"/>').format(ressource_preview_url)
         else:
             # Just for safety so we *always* have a Markup.
-            title = Markup('{}').format(icon_info['tooltip'])
+            title = escape(icon_info['tooltip'])
 
         if gt == 'json':
             title += Markup('<br>Click to view content.')
