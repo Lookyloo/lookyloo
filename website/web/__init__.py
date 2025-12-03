@@ -338,7 +338,8 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
             link_url = Markup('<a href="{}">').format(url_get_ressource)
 
         url_img = url_for('static', filename=icon_info['icon'])
-        return Markup('{link_url} <img src="{url_img}" alt="{alt_tooltip}" width="21" height="21" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="{title}"/></a><br><small>Mimetype: <b>{mimetype}</b></small><br>').format(link_url=link_url, url_img=url_img, alt_tooltip=icon_info['tooltip'], title=title, mimetype=mimetype)
+        # NOTE: the title contains ", so we absolutely must wrap it in '
+        return Markup('{link_url} <img src="{url_img}" alt="{alt_tooltip}" width="21" height="21" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title=\'{title}\'/></a><br><small>Mimetype: <b>{mimetype}</b></small><br>').format(link_url=link_url, url_img=url_img, alt_tooltip=icon_info['tooltip'], title=title, mimetype=mimetype)
     else:
         return Markup('Unable to render icon')
 
