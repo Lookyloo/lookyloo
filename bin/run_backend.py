@@ -53,7 +53,10 @@ def launch_indexing(storage_directory: Path | None=None) -> None:
     if not storage_directory:
         storage_directory = get_homedir()
     if not check_running('indexing'):
-        process = Popen(["./run_redis.sh"], cwd=(storage_directory / 'indexing'))
+        if get_config('generic', 'kvrocks_index'):
+            process = Popen(["./run_kvrocks.sh"], cwd=(storage_directory / 'kvrocks_index'))
+        else:
+            process = Popen(["./run_redis.sh"], cwd=(storage_directory / 'indexing'))
         try:
             # Give time for the process to start (and potentailly fail)
             process.wait(timeout=5)
@@ -68,7 +71,10 @@ def shutdown_indexing(storage_directory: Path | None=None) -> None:
     if not storage_directory:
         storage_directory = get_homedir()
     r = Redis(unix_socket_path=get_socket_path('indexing'))
-    r.shutdown(save=True)
+    if get_config('generic', 'kvrocks_index'):
+        r.shutdown()
+    else:
+        r.shutdown(save=True)
     print('Redis indexing database shutdown.')
 
 
@@ -98,6 +104,7 @@ def shutdown_full_index(storage_directory: Path | None=None) -> None:
 def launch_all() -> None:
     launch_cache()
     launch_indexing()
+
     if get_config('generic', 'index_everything'):
         launch_full_index()
 

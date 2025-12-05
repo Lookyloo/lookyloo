@@ -99,13 +99,13 @@ class Cloudflare():
 
         if self.ipv4_path.exists():
             with self.ipv4_path.open('r') as ipv4_file:
-                self.ipv4_list = [ipaddress.IPv4Network(net) for net in ipv4_file.read().strip().split('\n')]
+                self.ipv4_list = [ipaddress.IPv4Network(net) for net in ipv4_file.read().strip().split('\n') if net]
         else:
             self.logger.warning('No IPv4 list available.')
 
         if self.ipv6_path.exists():
             with self.ipv6_path.open('r') as ipv6_file:
-                self.ipv6_list = [ipaddress.IPv6Network(net) for net in ipv6_file.read().strip().split('\n')]
+                self.ipv6_list = [ipaddress.IPv6Network(net) for net in ipv6_file.read().strip().split('\n') if net]
         else:
             self.logger.warning('No IPv6 list available.')
 
