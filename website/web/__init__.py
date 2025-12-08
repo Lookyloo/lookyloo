@@ -2711,7 +2711,11 @@ def get_index(public: bool=True, show_error: bool=False, category: str | None=No
             cached_captures = lookyloo.sorted_capture_cache(
                 get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit))
     else:
-        cached_captures = lookyloo.sorted_capture_cache(public=public, cached_captures_only=False)
+        cut_time: datetime | None = None
+        if time_delta_on_index:
+            # We want to filter the captures on the index
+            cut_time = (datetime.now() - timedelta(**time_delta_on_index))
+        cached_captures = lookyloo.sorted_capture_cache(public=public, cached_captures_only=False, index_cut_time=cut_time)
         if not show_error:
             cached_captures = [cached for cached in cached_captures if not cached.error]
         total = len(cached_captures)
@@ -2736,10 +2740,6 @@ def post_table(table_name: str, value: str) -> Response:
         if show_hidden and not flask_login.current_user.is_authenticated:
             # NOTE: hidden captures are only available to authenticated users.
             return jsonify({'error': 'Not allowed.'})
-        # cut_time: datetime | None = None
-        # if time_delta_on_index:
-            # We want to filter the captures on the index
-        #    cut_time = (datetime.now() - timedelta(**time_delta_on_index))
 
         total, captures = get_index(show_hidden is False, category=category, offset=start, limit=length, search=search)
         if search:

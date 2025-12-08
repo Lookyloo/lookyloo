@@ -529,10 +529,11 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         p.expire(capture_dir_str, int(time_delta_on_index.total_seconds()) * 2)
 
         to_return = CaptureCache(cache)
-        p.zadd('recent_captures', {uuid: to_return.timestamp.timestamp()})
-        if not to_return.no_index:
-            # public capture
-            p.zadd('recent_captures_public', {uuid: to_return.timestamp.timestamp()})
+        if hasattr(to_return, 'timestamp') and to_return.timestamp:
+            p.zadd('recent_captures', {uuid: to_return.timestamp.timestamp()})
+            if not to_return.no_index:
+                # public capture
+                p.zadd('recent_captures_public', {uuid: to_return.timestamp.timestamp()})
 
         p.execute()
         return to_return
