@@ -51,6 +51,9 @@ class Processing(AbstractManager):
         self.logger.debug('Done.')
 
     def _update_recent_captures(self) -> None:
+        # recent_captures_public is a new key, if it doesnt exist, remove recent_captures to retrigger it
+        if not self.lookyloo.redis.exists('recent_captures_public'):
+            self.lookyloo.redis.delete('recent_captures')
         p = self.lookyloo.redis.pipeline()
         i = 0
         for uuid, directory in self.lookyloo.redis.hscan_iter('lookup_dirs'):
