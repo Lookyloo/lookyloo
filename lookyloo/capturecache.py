@@ -16,7 +16,7 @@ import time
 
 from collections import OrderedDict
 from collections.abc import Mapping
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from functools import _CacheInfo as CacheInfo
 from logging import LoggerAdapter
 from pathlib import Path
@@ -171,7 +171,6 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         self.contextualizer = contextualizer
         self.__cache_max_size = maxsize
         self.__cache: dict[str, CaptureCache] = OrderedDict()
-        self._quick_init()
         self.timeout = get_config('generic', 'max_tree_create_time')
 
         self.psl = PublicSuffixList()
@@ -267,42 +266,6 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             return True
         return False
 
-    def _quick_init(self) -> None:
-        '''Initialize the cache with a list of UUIDs, with less back and forth with redis.
-        Only get recent captures.'''
-        if self.__cache_max_size is not None:
-            self.logger.info('Cache max size set, skip quick init.')
-            return None
-        p = self.redis.pipeline()
-        has_new_cached_captures = False
-        recent_captures: dict[str, float] = {}
-        for uuid, directory in self.redis.hscan_iter('lookup_dirs'):
-            if uuid in self.__cache:
-                continue
-            has_new_cached_captures = True
-            p.hgetall(directory)
-        if not has_new_cached_captures:
-            return
-        time_delta_on_index = get_config('generic', 'time_delta_on_index')
-        index_cur_time = datetime.now(tz=timezone.utc) - timedelta(**time_delta_on_index)
-        for cache in p.execute():
-            if not cache:
-                continue
-            if cache.get('timestamp'):
-                cache['timestamp'] = safe_make_datetime(cache['timestamp'])
-                if cache.get('timestamp') and cache['timestamp'] < index_cur_time:
-                    continue
-            try:
-                cc = CaptureCache(cache)
-            except LookylooException as e:
-                self.logger.warning(f'Unable to initialize the cache: {e}')
-                continue
-            self.__cache[cc.uuid] = cc
-            if hasattr(cc, 'timestamp'):
-                recent_captures[cc.uuid] = cc.timestamp.timestamp()
-        if recent_captures:
-            self.redis.zadd('recent_captures', mapping=recent_captures, nx=True)  # type: ignore[arg-type]
-
     def _get_capture_dir(self, uuid: str) -> str:
         # Try to get from the recent captures cache in redis
         capture_dir = self.redis.hget('lookup_dirs', uuid)
@@ -310,9 +273,12 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             if os.path.exists(capture_dir):
                 return capture_dir
             # The capture was either removed or archived, cleaning up
-            self.redis.hdel('lookup_dirs', uuid)
-            self.redis.zrem('recent_captures', uuid)
-            self.redis.delete(capture_dir)
+            p = self.redis.pipeline()
+            p.hdel('lookup_dirs', uuid)
+            p.zrem('recent_captures', uuid)
+            p.zrem('recent_captures_public', uuid)
+            p.delete(capture_dir)
+            p.execute()
 
         # Try to get from the archived captures cache in redis
         capture_dir = self.redis.hget('lookup_dirs_archived', uuid)
@@ -557,8 +523,19 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
 
         p.delete(capture_dir_str)
         p.hset(capture_dir_str, mapping=cache)  # type: ignore[arg-type]
+        # NOTE: just expire it from redis after it's not on the index anymore.
+        # Avoids to have an evergrowing cache.
+        time_delta_on_index = timedelta(**get_config('generic', 'time_delta_on_index'))
+        p.expire(capture_dir_str, int(time_delta_on_index.total_seconds()) * 2)
+
+        to_return = CaptureCache(cache)
+        p.zadd('recent_captures', {uuid: to_return.timestamp.timestamp()})
+        if not to_return.no_index:
+            # public capture
+            p.zadd('recent_captures_public', {uuid: to_return.timestamp.timestamp()})
+
         p.execute()
-        return CaptureCache(cache)
+        return to_return
 
     async def __resolve_dns(self, ct: CrawledTree, logger: LookylooCacheLogAdapter) -> None:
         '''Resolves all domains of the tree, keeps A (IPv4), AAAA (IPv6), and CNAME entries

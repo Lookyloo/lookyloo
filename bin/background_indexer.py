@@ -20,7 +20,6 @@ class BackgroundIndexer(AbstractManager):
 
     def __init__(self, full: bool=False, loglevel: int | None=None):
         super().__init__(loglevel)
-        self.is_public_instance = get_config('generic', 'public_instance')
         self.full_indexer = full
         self.indexing = Indexing(full_index=self.full_indexer)
         if self.full_indexer:
@@ -45,7 +44,7 @@ class BackgroundIndexer(AbstractManager):
         for uuid, d in self.redis.hscan_iter('lookup_dirs'):
             if not self.full_indexer:
                 # If we're not running the full indexer, check if the capture should be indexed.
-                if self.is_public_instance and self.redis.hexists(d, 'no_index'):
+                if self.redis.hexists(d, 'no_index'):
                     # Capture unindexed
                     continue
             __counter_shutdown += 1

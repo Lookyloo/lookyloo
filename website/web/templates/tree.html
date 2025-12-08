@@ -120,7 +120,7 @@
   var favicon = "{{ favicon }}";
   var mime_favicon = "{{ mime_favicon }}";
   var enable_bookmark = {{ enable_bookmark|tojson }};
-  var treeData = {{ tree_json | safe }};
+  var treeData = {{ tree_json|safe }};
   var parent_uuid = {{ parent_uuid|tojson }};
   var capture_starttime = new Date(Date.parse("{{ info.timestamp.isoformat() }}"));
   window.addEventListener('DOMContentLoaded', (event) => {

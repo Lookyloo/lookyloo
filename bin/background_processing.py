@@ -7,13 +7,14 @@ import logging
 import logging.config
 from collections import Counter
 from datetime import date, timedelta, datetime
+from pathlib import Path
 from typing import Any
 
 from lacuscore import CaptureStatus as CaptureStatusCore, CaptureSettingsError
 from lookyloo import Lookyloo
 from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
-from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings
+from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings, load_pickle_tree
 from lookyloo.modules import AIL, AssemblyLine, MISPs, MISP
 from pylacus import CaptureStatus as CaptureStatusPy
 
@@ -41,8 +42,44 @@ class Processing(AbstractManager):
     def _to_run_forever(self) -> None:
         if self.use_own_ua:
             self._build_ua_file()
+        self.logger.debug('Update recent captures.')
+        self._update_recent_captures()
+        self.logger.debug('Retry failed queue.')
         self._retry_failed_enqueue()
+        self.logger.debug('Build captures.')
         self._process_built_captures()
+        self.logger.debug('Done.')
+
+    def _update_recent_captures(self) -> None:
+        p = self.lookyloo.redis.pipeline()
+        i = 0
+        for uuid, directory in self.lookyloo.redis.hscan_iter('lookup_dirs'):
+            if self.lookyloo.redis.zscore('recent_captures', uuid) is not None:
+                # the UUID is already in the recent captures
+                continue
+
+            if not self.lookyloo.redis.exists(directory):
+                # we do not want this method to build the pickle, **but** if the pickle exists
+                # AND the capture isn't in the cache, we want to add it
+                d = Path(directory)
+                try:
+                    load_pickle_tree(d, d.stat().st_mtime, self.logger)
+                except Exception:
+                    # Pickle doesn't exists
+                    continue
+            if cache := self.lookyloo.capture_cache(uuid):
+                i += 1
+                p.zadd('recent_captures', mapping={uuid: cache.timestamp.timestamp()})
+                if not cache.no_index:
+                    p.zadd('recent_captures_public', mapping={uuid: cache.timestamp.timestamp()})
+                if i % 100 == 0:
+                    i = 0
+                    p.execute()
+                    self.logger.info('Update recent captures...')
+                    p = self.lookyloo.redis.pipeline()
+
+        p.execute()
+        self.logger.info('Done updating recent captures.')
 
     def _build_ua_file(self) -> None:
         '''Build a file in a format compatible with the capture page'''
@@ -162,7 +199,6 @@ class Processing(AbstractManager):
         delta_to_process = timedelta(days=1)
         cut_time = datetime.now() - delta_to_process
         redis_expire = int(delta_to_process.total_seconds()) - 300
-        self.lookyloo.update_cache_index()
 
         # AL notification queue is returnig all the entries in the queue
         if self.assemblyline.available:
@@ -174,7 +210,7 @@ class Processing(AbstractManager):
                         with (cached.capture_dir / 'assemblyline_ingest.json').open('w') as f:
                             f.write(json.dumps(entry, indent=2, default=serialize_to_json))
 
-        for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time):
+        for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time, public=False):
             if cached.error:
                 continue
 

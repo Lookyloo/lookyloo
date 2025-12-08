@@ -1109,14 +1109,13 @@ class CaptureRemove(Resource):  # type: ignore[misc]
          required=False)
 class RecentCaptures(Resource):  # type: ignore[misc]
     def get(self, timestamp: str | float | None=None) -> Response:
-        all_recent_captures = lookyloo.get_recent_captures(since=timestamp)
         if flask_login.current_user.is_authenticated:
             # if authenticated, return everything
-            return make_response(all_recent_captures)
-
-        # otherwise, return the ones cached & listed on the index only
-        to_return = [capture.uuid for capture in lookyloo.sorted_capture_cache(all_recent_captures) if not capture.no_index]
-        return make_response(to_return)
+            all_recent_captures = lookyloo.get_recent_captures(public=False, since=timestamp)
+        else:
+            # otherwise, return the ones cached & listed on the index only
+            all_recent_captures = lookyloo.get_recent_captures(public=True, since=timestamp)
+        return make_response(all_recent_captures)
 
 
 @api.route('/json/categories')
@@ -1127,12 +1126,11 @@ class RecentCaptures(Resource):  # type: ignore[misc]
 class CategoriesCaptures(Resource):  # type: ignore[misc]
     def get(self, category: str | None=None) -> Response:
         if category:
-            _, entries = get_indexing(flask_login.current_user).get_captures_category(category)
-            return make_response([uuid for uuid, _ in entries])
+            entries = get_indexing(flask_login.current_user).get_captures_category(category)
+            return make_response(entries)
         to_return: dict[str, list[str]] = {}
         for c in get_indexing(flask_login.current_user).categories:
-            _, entries = get_indexing(flask_login.current_user).get_captures_category(c)
-            to_return[c] = [uuid for uuid, _ in entries]
+            to_return[c] = get_indexing(flask_login.current_user).get_captures_category(c)
         return make_response(to_return)
 
 

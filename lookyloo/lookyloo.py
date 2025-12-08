@@ -245,11 +245,6 @@ class Lookyloo():
                                     loglevel=get_config('generic', 'loglevel'))
         return self._lacus
 
-    def update_cache_index(self) -> None:
-        '''Update the cache index with the latest captures'''
-        # NOTE: This call is moderately expensive as it iterates over all the non-archived captures
-        self._captures_index._quick_init()
-
     def add_context(self, capture_uuid: str, /, urlnode_uuid: str, *, ressource_hash: str,
                     legitimate: bool, malicious: bool, details: dict[str, dict[str, str]]) -> None:
         '''Adds context information to a capture or a URL node'''
@@ -521,7 +516,7 @@ class Lookyloo():
     def clear_tree_cache(self) -> None:
         self._captures_index.lru_cache_clear()
 
-    def get_recent_captures(self, /, *, since: datetime | str | float | None=None,
+    def get_recent_captures(self, /, public: bool = True, *, since: datetime | str | float | None=None,
                             before: datetime | float | str | None=None) -> list[str]:
         '''Get the captures that were done between two dates
 
@@ -537,11 +532,15 @@ class Lookyloo():
             before = '+Inf'
         elif isinstance(before, datetime):
             before = before.timestamp()
-        return self.redis.zrevrangebyscore('recent_captures', before, since)
+        if public:
+            return self.redis.zrevrangebyscore('recent_captures_public', before, since)
+        else:
+            return self.redis.zrevrangebyscore('recent_captures', before, since)
 
     def sorted_capture_cache(self, capture_uuids: Iterable[str] | None=None,
                              cached_captures_only: bool=True,
-                             index_cut_time: datetime | None=None) -> list[CaptureCache]:
+                             index_cut_time: datetime | None=None,
+                             public: bool=True) -> list[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''
         # Make sure we do not try to load archived captures that would still be in 'lookup_dirs'
@@ -553,7 +552,7 @@ class Lookyloo():
             index_cut_time = cut_time
 
         if capture_uuids is None:
-            capture_uuids = self.get_recent_captures(since=index_cut_time)
+            capture_uuids = self.get_recent_captures(public=public, since=index_cut_time)
             # NOTE: we absolutely have to respect the cached_captures_only setting and
             #       never overwrite it. This method is called to display the index
             #       and if we try to display everything, including the non-cached entries,
@@ -1884,7 +1883,7 @@ class Lookyloo():
         """Get the preconfigured devices from Playwright"""
         return get_devices()
 
-    def get_stats(self) -> dict[str, list[Any]]:
+    def get_stats(self, public: bool=True) -> dict[str, list[Any]]:
         '''Gather statistics about the lookyloo instance'''
         today = date.today()
         calendar_week = today.isocalendar()[1]
@@ -1894,7 +1893,7 @@ class Lookyloo():
         weeks_stats: dict[int, dict[str, Any]] = {}
 
         # Only recent captures that are not archived
-        for cache in self.sorted_capture_cache():
+        for cache in self.sorted_capture_cache(public=public):
             if not hasattr(cache, 'timestamp'):
                 continue
             date_submission: datetime = cache.timestamp
@@ -2186,5 +2185,4 @@ class Lookyloo():
                     _ar.write(orjson.dumps(auto_report))
 
         self.redis.hset('lookup_dirs', uuid, str(dirpath))
-        self.redis.zadd('recent_captures', {uuid: now.timestamp()})
         return dirpath

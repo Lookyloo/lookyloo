@@ -5,15 +5,15 @@ function renderTables() {
     let indexType = document.getElementById('IndexTable').dataset.indextype;
     new DataTable('#IndexTable', {
       processing: true,
+      serverSide: true,
       retrieve: true,
       ordering: false,
       searching: true,
-      pageLength: 50,
+      drawCallback: function (settings) { newTabClickListener() },
       order: [[ 1, "desc" ]],
       ajax: {
         url: `/tables/indexTable/${indexType}${window.location.search}`,
         type: 'POST',
-        dataSrc:""
       },
       columns : [
           { data: {_: 'page.display', filter: 'page.filter'}, width: '40%' },

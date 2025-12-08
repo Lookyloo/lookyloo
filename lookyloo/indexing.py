@@ -1099,7 +1099,7 @@ class Indexing():
 
     def get_captures_category(self, category: str, most_recent_capture: datetime | None=None,
                               oldest_capture: datetime | None = None,
-                              offset: int | None=None, limit: int | None=None) -> tuple[int, list[tuple[str, float]]]:
+                              offset: int | None=None, limit: int | None=None) -> list[str]:
         """Get all the captures for a specific category, on a time interval starting from the most recent one.
 
         :param category: The category
@@ -1108,8 +1108,7 @@ class Indexing():
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
         min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
-        total = self.redis.zcard(f'categories|{category}|captures')
-        return total, self.redis.zrevrangebyscore(f'categories|{category}|captures', max_score, min_score, withscores=True, start=offset, num=limit)
+        return self.redis.zrevrangebyscore(f'categories|{category}|captures', max_score, min_score, start=offset, num=limit)
 
     def get_capture_categories(self, capture_uuid: str) -> set[str]:
         return self.redis.smembers(f'capture_indexes|{capture_uuid}|categories')

@@ -2697,6 +2697,30 @@ favicon_download_button_template = app.jinja_env.from_string(source='''
 </button>''')
 
 
+def get_index(public: bool=True, show_error: bool=False, category: str | None=None,
+              offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, list[str], datetime]]]:
+    '''Returns the index.'''
+    # NOTE: this probably want to make it a method, and stop the count to the stuff that is supposed
+    #       to be on the index (time_delta_on_index)
+    if category:
+        total = get_indexing(flask_login.current_user).get_captures_category_count(category)
+        if search:
+            cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
+                [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)]) if capture.search(search)]
+        else:
+            cached_captures = lookyloo.sorted_capture_cache(
+                get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit))
+    else:
+        cached_captures = lookyloo.sorted_capture_cache(public=public, cached_captures_only=False)
+        if not show_error:
+            cached_captures = [cached for cached in cached_captures if not cached.error]
+        total = len(cached_captures)
+
+        if search:
+            cached_captures = [capture for capture in cached_captures if capture.search(search)]
+    return total, [(cache.uuid, cache.title, cache.redirects, cache.timestamp) for cache in cached_captures]
+
+
 @app.route('/tables/<string:table_name>/<string:value>', methods=['POST'])
 def post_table(table_name: str, value: str) -> Response:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
@@ -2704,7 +2728,7 @@ def post_table(table_name: str, value: str) -> Response:
     start = request.form.get('start', type=int)
     length = request.form.get('length', type=int)
     search = request.form.get('search[value]', type=str)
-    captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, list[tuple[str, str]]]] | list[tuple[str, str, str, datetime]]
+    captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, list[tuple[str, str]]]] | list[tuple[str, str, str, datetime]] | list[tuple[str, str, list[str], datetime]]
     to_append: dict[str, int | str | dict[str, str] | dict[str, Markup]]
     if table_name == 'indexTable':
         show_error, category = get_index_params(request)
@@ -2712,40 +2736,34 @@ def post_table(table_name: str, value: str) -> Response:
         if show_hidden and not flask_login.current_user.is_authenticated:
             # NOTE: hidden captures are only available to authenticated users.
             return jsonify({'error': 'Not allowed.'})
-        cut_time: datetime | None = None
-        if time_delta_on_index:
+        # cut_time: datetime | None = None
+        # if time_delta_on_index:
             # We want to filter the captures on the index
-            cut_time = (datetime.now() - timedelta(**time_delta_on_index))
+        #    cut_time = (datetime.now() - timedelta(**time_delta_on_index))
 
-        lookyloo.update_cache_index()
+        total, captures = get_index(show_hidden is False, category=category, offset=start, limit=length, search=search)
+        if search:
+            total_filtered = len(captures)
+        if start is not None and length is not None:
+            captures = captures[start:start + length]
         prepared_captures = []
-        for cached in lookyloo.sorted_capture_cache(index_cut_time=cut_time):
-            if category and not get_indexing(flask_login.current_user).capture_in_category(cached.uuid, category):
-                continue
-            if show_hidden:
-                # Only display the hidden ones
-                if not cached.no_index:
-                    continue
-            elif cached.no_index:
-                continue
-            if not show_error and cached.error:
-                continue
+        for capture_uuid, title, redirects, capture_time in captures:
             to_append = {
                 'page': {'display': render_template(index_link_template,
-                                                    title=cached.title,
-                                                    url=cached.url,
-                                                    capture_uuid=cached.uuid),
-                         'filter': escape(cached.title)},
-                'capture_time': cached.timestamp.isoformat(),
+                                                    title=title,
+                                                    url=redirects[0],
+                                                    capture_uuid=capture_uuid),
+                         'filter': escape(title)},
+                'capture_time': capture_time.isoformat(),
             }
             to_append['redirects'] = {'display': Markup('No redirect'), 'filter': escape('')}
-            if cached.redirects:
+            if redirects:
                 to_append['redirects'] = {'display': render_template(redir_chain_template,
-                                                                     redirects=cached.redirects,
-                                                                     uuid=cached.uuid),
-                                          'filter': escape(' '.join(cached.redirects))}
+                                                                     redirects=redirects,
+                                                                     uuid=capture_uuid),
+                                          'filter': escape(' '.join(redirects))}
             prepared_captures.append(to_append)
-        return jsonify(prepared_captures)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
     if table_name == 'HHHDetailsTable':
         hhh = value.strip()

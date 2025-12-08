@@ -66,7 +66,6 @@ def load_configs(path_to_config_files: str | Path | None=None) -> None:
 @lru_cache(64)
 def get_config(config_type: str, entry: str | None=None, quiet: bool=False) -> Any:
     """Get an entry from the given config_type file. Automatic fallback to the sample file"""
-    global configs
     if not configs:
         load_configs()
     if config_type in configs:
