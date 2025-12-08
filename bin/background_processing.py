@@ -71,6 +71,8 @@ class Processing(AbstractManager):
                     # Pickle doesn't exists
                     continue
             if cache := self.lookyloo.capture_cache(uuid):
+                if not hasattr(cache, 'timestamp') or not cache.timestamp:
+                    continue
                 i += 1
                 p.zadd('recent_captures', mapping={uuid: cache.timestamp.timestamp()})
                 if not cache.no_index:

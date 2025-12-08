@@ -503,6 +503,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 and isinstance(cache['error'], str)
                 and 'HTTP Error' not in cache['error']
                 and 'Unable to resolve' not in cache['error']
+                and 'Capturing ressources on private IPs' not in cache['error']
                 and "No har files in" not in cache['error']):
             logger.info(cache['error'])
 
