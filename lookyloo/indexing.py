@@ -114,28 +114,28 @@ class Indexing():
         # This call for sure returns a tuple of 9 booleans
         return tuple(to_return)  # type: ignore[return-value]
 
-    def index_capture(self, uuid_to_index: str, directory: Path) -> None:
+    def index_capture(self, uuid_to_index: str, directory: Path) -> bool:
         if self.redis.sismember('nothing_to_index', uuid_to_index):
             # No HAR file in the capture, break immediately.
-            return
+            return False
         if not self.can_index(uuid_to_index):
             self.logger.info(f'Indexing on {uuid_to_index} ongoing, skipping. ')
-            return
+            return False
 
         try:
             indexed = self.capture_indexed(uuid_to_index)
             if all(indexed):
-                return
+                return False
 
             if not list(directory.rglob('*.har.gz')) and not list(directory.rglob('*.har')):
                 self.logger.debug(f'No harfile in {uuid_to_index} - {directory}, nothing to index. ')
                 self.redis.sadd('nothing_to_index', uuid_to_index)
-                return
+                return False
 
             if not any((directory / pickle_name).exists()
                        for pickle_name in ['tree.pickle.gz', 'tree.pickle']):
                 self.logger.info(f'No pickle for {uuid_to_index} - {directory}, skipping. ')
-                return
+                return False
 
             # do the indexing
             ct = load_pickle_tree(directory, directory.stat().st_mtime, self.logger)
@@ -182,6 +182,7 @@ class Indexing():
             remove_pickle_tree(directory)
         finally:
             self.indexing_done(uuid_to_index)
+            return True
 
     def __limit_failsafe(self, oldest_capture: datetime | None=None, limit: int | None=None) -> float | str:
         if limit:

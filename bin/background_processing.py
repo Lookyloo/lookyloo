@@ -51,8 +51,8 @@ class Processing(AbstractManager):
         self.logger.debug('Done.')
 
     def _update_recent_captures(self) -> None:
-        # recent_captures_public is a new key, if it doesnt exist, remove recent_captures to retrigger it
         if not self.lookyloo.redis.exists('recent_captures_public'):
+            # recent_captures_public is a new key, if it doesnt exist, remove recent_captures to retrigger it
             self.lookyloo.redis.delete('recent_captures')
         p = self.lookyloo.redis.pipeline()
         i = 0
@@ -68,7 +68,7 @@ class Processing(AbstractManager):
                 try:
                     load_pickle_tree(d, d.stat().st_mtime, self.logger)
                 except Exception:
-                    # Pickle doesn't exists
+                    # Pickle doesn't exists, it will be created by the builder
                     continue
             if cache := self.lookyloo.capture_cache(uuid):
                 if not hasattr(cache, 'timestamp') or not cache.timestamp:
@@ -77,14 +77,12 @@ class Processing(AbstractManager):
                 p.zadd('recent_captures', mapping={uuid: cache.timestamp.timestamp()})
                 if not cache.no_index:
                     p.zadd('recent_captures_public', mapping={uuid: cache.timestamp.timestamp()})
-                if i % 100 == 0:
-                    i = 0
-                    p.execute()
-                    self.logger.info('Update recent captures...')
-                    p = self.lookyloo.redis.pipeline()
-
+            if i % 100 == 0:
+                # Avoid huge pipeline on initialization
+                p.execute()
+                self.logger.debug('Update recent captures...')
+                p = self.lookyloo.redis.pipeline()
         p.execute()
-        self.logger.info('Done updating recent captures.')
 
     def _build_ua_file(self) -> None:
         '''Build a file in a format compatible with the capture page'''
@@ -296,7 +294,7 @@ class Processing(AbstractManager):
 
 def main() -> None:
     p = Processing()
-    p.run(sleep_in_sec=30)
+    p.run(sleep_in_sec=60)
 
 
 if __name__ == '__main__':

@@ -367,6 +367,21 @@ class Lookyloo():
             return None
         return cache.capture_settings
 
+    def index_capture(self, capture_uuid: str, /) -> bool:
+        cache = self.capture_cache(capture_uuid)
+        if cache and hasattr(cache, 'capture_dir'):
+            try:
+                get_indexing().index_capture(capture_uuid, cache.capture_dir)
+                if get_config('generic', 'index_everything'):
+                    get_indexing(full=True).index_capture(capture_uuid, cache.capture_dir)
+                return True
+            except Exception as e:
+                self.logger.warning(f'Unable to index capture {capture_uuid}: {e}')
+                self.remove_pickle(capture_uuid)
+        else:
+            self.logger.warning(f'Unable to index capture {capture_uuid}: No capture_dir in cache.')
+        return False
+
     def categorize_capture(self, capture_uuid: str, /, categories: list[str], *, as_admin: bool=False) -> tuple[set[str], set[str]]:
         '''Add a category (MISP Taxonomy tag) to a capture.'''
         if not get_config('generic', 'enable_categorization'):

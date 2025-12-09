@@ -76,10 +76,6 @@ class BackgroundBuildCaptures(AbstractManager):
         for month_dir in make_dirs_list(self.captures_dir):
             __counter_shutdown = 0
             for capture_time, path in sorted(get_sorted_captures_from_disk(month_dir, cut_time=cut_time, keep_more_recent=True), reverse=True):
-                __counter_shutdown += 1
-                if __counter_shutdown % 10 and self.shutdown_requested():
-                    self.logger.warning('Shutdown requested, breaking.')
-                    return False
                 if ((path / 'tree.pickle.gz').exists() or (path / 'tree.pickle').exists()):
                     # We already have a pickle file
                     # self.logger.debug(f'{path} has a pickle.')
@@ -120,6 +116,7 @@ class BackgroundBuildCaptures(AbstractManager):
                             self.redis.hset('lookup_dirs', uuid, str(path))
 
                 try:
+                    __counter_shutdown += 1
                     self.logger.info(f'Build pickle for {uuid}: {path.name}')
                     ct = self.lookyloo.get_crawled_tree(uuid)
                     try:
@@ -154,6 +151,9 @@ class BackgroundBuildCaptures(AbstractManager):
                     except FileNotFoundError as e:
                         self.logger.warning(f'Unable to move capture: {e}')
                         continue
+                if __counter_shutdown % 10 and self.shutdown_requested():
+                    self.logger.warning('Shutdown requested, breaking.')
+                    return False
                 if max_captures <= 0:
                     self.logger.info('Too many captures in the backlog, start from the beginning.')
                     return False

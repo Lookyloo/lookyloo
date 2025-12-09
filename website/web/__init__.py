@@ -54,7 +54,6 @@ from lookyloo.helpers import (UserAgents, load_cookies,
                               load_user_config,
                               get_taxonomies,
                               mimetype_to_generic,
-                              remove_pickle_tree
                               )
 from pylacus import PyLacus
 
@@ -1594,13 +1593,8 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
 
 @app.route('/tree/<uuid:tree_uuid>/trigger_indexing', methods=['POST', 'GET'])
 def trigger_indexing(tree_uuid: str) -> WerkzeugResponse:
-    cache = lookyloo.capture_cache(tree_uuid)
-    if cache and hasattr(cache, 'capture_dir'):
-        try:
-            get_indexing(flask_login.current_user).index_capture(tree_uuid, cache.capture_dir)
-        except Exception as e:
-            flash(f"Unable to index {tree_uuid}: {e}", 'error')
-            remove_pickle_tree(cache.capture_dir)
+    if not lookyloo.index_capture(tree_uuid):
+        flash("Unable to index the tree, see logs.", 'error')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
@@ -2706,10 +2700,10 @@ def get_index(public: bool=True, show_error: bool=False, category: str | None=No
         total = get_indexing(flask_login.current_user).get_captures_category_count(category)
         if search:
             cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
-                [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)]) if capture.search(search)]
+                [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)], cached_captures_only=False) if capture.search(search)]
         else:
             cached_captures = lookyloo.sorted_capture_cache(
-                get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit))
+                get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit), cached_captures_only=False)
     else:
         cut_time: datetime | None = None
         if time_delta_on_index:

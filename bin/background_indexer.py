@@ -42,15 +42,13 @@ class BackgroundIndexer(AbstractManager):
         # NOTE: only get the non-archived captures for now.
         __counter_shutdown = 0
         for uuid, d in self.redis.hscan_iter('lookup_dirs'):
-            if not self.full_indexer:
+            if not self.full_indexer and self.redis.hexists(d, 'no_index'):
                 # If we're not running the full indexer, check if the capture should be indexed.
-                if self.redis.hexists(d, 'no_index'):
-                    # Capture unindexed
-                    continue
-            __counter_shutdown += 1
+                continue
             path = Path(d)
             try:
-                self.indexing.index_capture(uuid, path)
+                if self.indexing.index_capture(uuid, path):
+                    __counter_shutdown += 1
             except Exception as e:
                 self.logger.warning(f'Error while indexing {uuid}: {e}')
                 remove_pickle_tree(path)
