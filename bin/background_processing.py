@@ -56,7 +56,13 @@ class Processing(AbstractManager):
             self.lookyloo.redis.delete('recent_captures')
         p = self.lookyloo.redis.pipeline()
         i = 0
+        __counter_shutdown_force = 0
         for uuid, directory in self.lookyloo.redis.hscan_iter('lookup_dirs'):
+            __counter_shutdown_force += 1
+            if __counter_shutdown_force % 1000 == 0 and self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
+
             if self.lookyloo.redis.zscore('recent_captures', uuid) is not None:
                 # the UUID is already in the recent captures
                 continue

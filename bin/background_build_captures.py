@@ -75,7 +75,13 @@ class BackgroundBuildCaptures(AbstractManager):
         cut_time = (datetime.now() - archive_interval)
         for month_dir in make_dirs_list(self.captures_dir):
             __counter_shutdown = 0
+            __counter_shutdown_force = 0
             for capture_time, path in sorted(get_sorted_captures_from_disk(month_dir, cut_time=cut_time, keep_more_recent=True), reverse=True):
+                __counter_shutdown_force += 1
+                if __counter_shutdown_force % 1000 == 0 and self.shutdown_requested():
+                    self.logger.warning('Shutdown requested, breaking.')
+                    return False
+
                 if ((path / 'tree.pickle.gz').exists() or (path / 'tree.pickle').exists()):
                     # We already have a pickle file
                     # self.logger.debug(f'{path} has a pickle.')
@@ -151,12 +157,15 @@ class BackgroundBuildCaptures(AbstractManager):
                     except FileNotFoundError as e:
                         self.logger.warning(f'Unable to move capture: {e}')
                         continue
-                if __counter_shutdown % 10 and self.shutdown_requested():
+                if __counter_shutdown % 10 == 0 and self.shutdown_requested():
                     self.logger.warning('Shutdown requested, breaking.')
                     return False
                 if max_captures <= 0:
                     self.logger.info('Too many captures in the backlog, start from the beginning.')
                     return False
+            if self.shutdown_requested():
+                # just in case.
+                break
         if got_new_captures:
             self.logger.info('Finished building all missing pickles.')
             # Only return True if we built new pickles.

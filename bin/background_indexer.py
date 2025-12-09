@@ -41,7 +41,13 @@ class BackgroundIndexer(AbstractManager):
         self.logger.info(f'Check {self.script_name}...')
         # NOTE: only get the non-archived captures for now.
         __counter_shutdown = 0
+        __counter_shutdown_force = 0
         for uuid, d in self.redis.hscan_iter('lookup_dirs'):
+            __counter_shutdown_force += 1
+            if __counter_shutdown_force % 10000 == 0 and self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
+
             if not self.full_indexer and self.redis.hexists(d, 'no_index'):
                 # If we're not running the full indexer, check if the capture should be indexed.
                 continue
@@ -52,7 +58,7 @@ class BackgroundIndexer(AbstractManager):
             except Exception as e:
                 self.logger.warning(f'Error while indexing {uuid}: {e}')
                 remove_pickle_tree(path)
-            if __counter_shutdown % 10 and self.shutdown_requested():
+            if __counter_shutdown % 100 == 0 and self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 break
         else:

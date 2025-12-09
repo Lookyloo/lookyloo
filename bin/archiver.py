@@ -334,20 +334,22 @@ class Archiver(AbstractManager):
 
         # Let's use the indexes instead of listing directories to find what we want to archive.
         capture_breakpoint = 300
+        __counter_shutdown_force = 0
         for u, p in self.redis.hscan_iter('lookup_dirs'):
-            uuid = u.decode()
-            path = p.decode()
+            __counter_shutdown_force += 1
+            if __counter_shutdown_force % 1000 == 0 and self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                archiving_done = False
+                break
+
             if capture_breakpoint <= 0:
                 # Break and restart later
                 self.logger.info('Archived many captures will keep going later.')
                 archiving_done = False
                 break
-            elif capture_breakpoint % 10:
-                # Just check if we requested a shutdown.
-                if self.shutdown_requested():
-                    self.logger.warning('Shutdown requested, breaking.')
-                    break
 
+            uuid = u.decode()
+            path = p.decode()
             capture_time_isoformat = os.path.basename(path)
             if not capture_time_isoformat:
                 continue
