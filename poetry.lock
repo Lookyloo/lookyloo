@@ -214,14 +214,14 @@ speedups = ["Brotli ; platform_python_implementation == \"CPython\"", "aiodns (>
 
 [[package]]
 name = "aiohttp-socks"
-version = "0.10.2"
+version = "0.11.0"
 description = "Proxy connector for aiohttp"
 optional = false
 python-versions = ">=3.8.0"
 groups = ["main"]
 files = [
-    {file = "aiohttp_socks-0.10.2-py3-none-any.whl", hash = "sha256:84b29d14356bcda4affa03ef267108416390e1c9029922c66be18ef4b106f980"},
-    {file = "aiohttp_socks-0.10.2.tar.gz", hash = "sha256:942d7c86e2e579418fc7a734610dd97daaf00707c7462f6ccf679b2325767930"},
+    {file = "aiohttp_socks-0.11.0-py3-none-any.whl", hash = "sha256:9aacce57c931b8fbf8f6d333cf3cafe4c35b971b35430309e167a35a8aab9ec1"},
+    {file = "aiohttp_socks-0.11.0.tar.gz", hash = "sha256:0afe51638527c79077e4bd6e57052c87c4824233d6e20bb061c53766421b10f0"},
 ]
 
 [package.dependencies]
@@ -2032,14 +2032,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.20.1"
+version = "1.21.0"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.20.1-py3-none-any.whl", hash = "sha256:d72047c3d41b66a373bc9da85ee9e1033e3f76f59cecc88ea47fc41f94c42ffa"},
-    {file = "lacuscore-1.20.1.tar.gz", hash = "sha256:5cb95dc0938c5eb9bbb060a8288b9246c8021ef1e42cdb7980fe85e6f9c0799a"},
+    {file = "lacuscore-1.21.0-py3-none-any.whl", hash = "sha256:9b4a153c09a3786592516688f7a702e50cfaea5821ef5eb571ca5745e59b7b41"},
+    {file = "lacuscore-1.21.0.tar.gz", hash = "sha256:129c0e301cdf31de03ad66646ff1b4dc3e4a1983021a0f47a4626dc95b74bff2"},
 ]
 
 [package.dependencies]
@@ -2047,15 +2047,15 @@ async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 defang = ">=0.5.3"
 dnspython = ">=2.8.0"
 orjson = ">=3.11.3,<4.0.0"
-playwrightcapture = {version = ">=1.35.1", extras = ["recaptcha"]}
-pydantic = ">=2.12.4"
+playwrightcapture = {version = ">=1.36.0", extras = ["recaptcha"]}
+pydantic = ">=2.12.5"
 redis = {version = ">=5.3.0,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.32.5"
 typing-extensions = {version = ">=4.12.2,<5.0.0", markers = "python_version < \"3.12\""}
 ua-parser = {version = ">=1.0.1", extras = ["regex"]}
 
 [package.extras]
-docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
+docs = ["Sphinx (>=9.0.4) ; python_version >= \"3.11\""]
 
 [[package]]
 name = "legacy-cgi"
@@ -3346,20 +3346,20 @@ type = ["mypy (>=1.18.2)"]
 
 [[package]]
 name = "playwright"
-version = "1.56.0"
+version = "1.57.0"
 description = "A high-level API to automate web browsers"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "playwright-1.56.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:b33eb89c516cbc6723f2e3523bada4a4eb0984a9c411325c02d7016a5d625e9c"},
-    {file = "playwright-1.56.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:b228b3395212b9472a4ee5f1afe40d376eef9568eb039fcb3e563de8f4f4657b"},
-    {file = "playwright-1.56.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:0ef7e6fd653267798a8a968ff7aa2dcac14398b7dd7440ef57524e01e0fbbd65"},
-    {file = "playwright-1.56.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:404be089b49d94bc4c1fe0dfb07664bda5ffe87789034a03bffb884489bdfb5c"},
-    {file = "playwright-1.56.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:64cda7cf4e51c0d35dab55190841bfcdfb5871685ec22cb722cd0ad2df183e34"},
-    {file = "playwright-1.56.0-py3-none-win32.whl", hash = "sha256:d87b79bcb082092d916a332c27ec9732e0418c319755d235d93cc6be13bdd721"},
-    {file = "playwright-1.56.0-py3-none-win_amd64.whl", hash = "sha256:3c7fc49bb9e673489bf2622855f9486d41c5101bbed964638552b864c4591f94"},
-    {file = "playwright-1.56.0-py3-none-win_arm64.whl", hash = "sha256:2745490ae8dd58d27e5ea4d9aa28402e8e2991eb84fb4b2fd5fbde2106716f6f"},
+    {file = "playwright-1.57.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:9351c1ac3dfd9b3820fe7fc4340d96c0d3736bb68097b9b7a69bd45d25e9370c"},
+    {file = "playwright-1.57.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:a4a9d65027bce48eeba842408bcc1421502dfd7e41e28d207e94260fa93ca67e"},
+    {file = "playwright-1.57.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:99104771abc4eafee48f47dac2369e0015516dc1ce8c409807d2dd440828b9a4"},
+    {file = "playwright-1.57.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:284ed5a706b7c389a06caa431b2f0ba9ac4130113c3a779767dda758c2497bb1"},
+    {file = "playwright-1.57.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:38a1bae6c0a07839cdeaddbc0756b3b2b85e476c07945f64ece08f1f956a86f1"},
+    {file = "playwright-1.57.0-py3-none-win32.whl", hash = "sha256:1dd93b265688da46e91ecb0606d36f777f8eadcf7fbef12f6426b20bf0c9137c"},
+    {file = "playwright-1.57.0-py3-none-win_amd64.whl", hash = "sha256:6caefb08ed2c6f29d33b8088d05d09376946e49a73be19271c8cd5384b82b14c"},
+    {file = "playwright-1.57.0-py3-none-win_arm64.whl", hash = "sha256:5f065f5a133dbc15e6e7c71e7bc04f258195755b1c32a432b792e28338c8335e"},
 ]
 
 [package.dependencies]
@@ -3383,38 +3383,38 @@ playwright = ">=1.0.0,<2.0.0"
 
 [[package]]
 name = "playwrightcapture"
-version = "1.35.1"
+version = "1.36.0"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "playwrightcapture-1.35.1-py3-none-any.whl", hash = "sha256:1571d178a52285a257f1759ec590f5792d3cc67cbc6a8943f4d9c3bb343adedf"},
-    {file = "playwrightcapture-1.35.1.tar.gz", hash = "sha256:bf4213006419b861219567725d1a7ec0f78bbe13f262239f5f5b47478f1e5f25"},
+    {file = "playwrightcapture-1.36.0-py3-none-any.whl", hash = "sha256:b5f24e45f5b1b0301404aba878fdd5ebd1ba5083ad4e2cdd4996e3d46090cc4c"},
+    {file = "playwrightcapture-1.36.0.tar.gz", hash = "sha256:f53b886816133807163223847bf9102535f6957e07b180e2f3b46138623d89d6"},
 ]
 
 [package.dependencies]
 aiohttp = {version = ">=3.13.2", extras = ["speedups"]}
-aiohttp-socks = ">=0.10.2"
+aiohttp-socks = ">=0.11.0"
 async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
-beautifulsoup4 = {version = ">=4.14.2", extras = ["charset-normalizer", "lxml"]}
+beautifulsoup4 = {version = ">=4.14.3", extras = ["charset-normalizer", "lxml"]}
 dateparser = ">=1.2.2"
 dnspython = ">=2.7.0,<3.0.0"
 orjson = ">=3.11.4,<4.0.0"
-playwright = ">=1.56.0"
+playwright = ">=1.57.0"
 playwright-stealth = ">=2"
 puremagic = ">=1.30"
 pydub-ng = {version = ">=0.2.0", optional = true, markers = "extra == \"recaptcha\""}
 python-socks = ">=2.7.1,<3.0.0"
 rfc3161-client = ">=1.0.4,<2.0.0"
 setuptools = ">=80.9.0"
-SpeechRecognition = {version = ">=3.14.3", optional = true, markers = "extra == \"recaptcha\""}
+SpeechRecognition = {version = ">=3.14.4", optional = true, markers = "extra == \"recaptcha\""}
 typing-extensions = {version = ">=4.12.2,<5.0.0", markers = "python_version < \"3.12\""}
 tzdata = ">=2025.2"
 w3lib = ">=2.3.1"
 
 [package.extras]
-recaptcha = ["SpeechRecognition (>=3.14.3)", "pydub-ng (>=0.2.0)"]
+recaptcha = ["SpeechRecognition (>=3.14.4)", "pydub-ng (>=0.2.0)"]
 
 [[package]]
 name = "pluggy"
@@ -3599,14 +3599,14 @@ test = ["pytest", "pytest-instafail", "pytest-subtests", "pytest-xdist", "pywin3
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20251207"
+version = "1.0.2.20251209"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20251207-py2.py3-none-any.whl", hash = "sha256:e6bf2656f541327fb44f599c4017de0ff8c69ccee52a8a2706f3f9ee2e6fce15"},
-    {file = "publicsuffixlist-1.0.2.20251207.tar.gz", hash = "sha256:6b49fb98c4f7b70ac97a2c296f9705c474895b3192d8e43c4bb379dc7933b2d6"},
+    {file = "publicsuffixlist-1.0.2.20251209-py2.py3-none-any.whl", hash = "sha256:1615d6c4006df69e531016129b1ea221df85883588b0a87c8c0def6f8bcef7e2"},
+    {file = "publicsuffixlist-1.0.2.20251209.tar.gz", hash = "sha256:dfb863d00dfb9bc071340596229468ae89a75d62546eabce38ebbd8b0d350ca9"},
 ]
 
 [package.extras]
@@ -4619,14 +4619,14 @@ docs = ["sphinx"]
 
 [[package]]
 name = "python-socks"
-version = "2.7.3"
+version = "2.8.0"
 description = "Proxy (SOCKS4, SOCKS5, HTTP CONNECT) client for Python"
 optional = false
 python-versions = ">=3.8.0"
 groups = ["main"]
 files = [
-    {file = "python_socks-2.7.3-py3-none-any.whl", hash = "sha256:e0fda261fa8d08bbcbb7852cdf5e7f576f15d5e55559f6bc16db1bad8bad399b"},
-    {file = "python_socks-2.7.3.tar.gz", hash = "sha256:06f4ae34c5828c96f631872e102425bbf44ad841d65ce68329e8dc1af428c1f1"},
+    {file = "python_socks-2.8.0-py3-none-any.whl", hash = "sha256:57c24b416569ccea493a101d38b0c82ed54be603aa50b6afbe64c46e4a4e4315"},
+    {file = "python_socks-2.8.0.tar.gz", hash = "sha256:340f82778b20a290bdd538ee47492978d603dff7826aaf2ce362d21ad9ee6f1b"},
 ]
 
 [package.dependencies]
@@ -6131,4 +6131,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "969b36ce857c5ec7350e2a0f34c12f3f64cd27ad7ee2f602c83e9012bc9ef37f"
+content-hash = "1f6b73727b4e2981168458822dc8a450380495f3e340ffcf9798185df3b0d13e"

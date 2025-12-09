@@ -578,13 +578,19 @@ class Lookyloo():
             # No captures at all on the instance
             return []
 
-        if cached_captures_only:
-            # Do not try to build pickles
-            capture_uuids = set(capture_uuids) & self._captures_index.cached_captures
+        all_cache: list[CaptureCache] = []
 
-        all_cache: list[CaptureCache] = [self._captures_index[uuid] for uuid in capture_uuids
-                                         if self.capture_cache(uuid)
-                                         and hasattr(self._captures_index[uuid], 'timestamp')]
+        if cached_captures_only:
+            # Do not try to build picklesa
+            for uuid in capture_uuids:
+                if c := self._captures_index.get_capture_cache_quick(uuid):
+                    if hasattr(c, 'timestamp') and c.tree_ready:
+                        all_cache.append(c)
+        else:
+            for uuid in capture_uuids:
+                if c := self.capture_cache(uuid):
+                    if hasattr(c, 'timestamp'):
+                        all_cache.append(c)
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 

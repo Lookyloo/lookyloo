@@ -266,6 +266,23 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             return True
         return False
 
+    def get_capture_cache_quick(self, uuid: str) -> CaptureCache | None:
+        """Get the CaptureCache for the UUID if it exists in redis,
+        WARNING: it doesn't check if the path exists, nor if the pickle is there
+        """
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
+        if uuid in self.cached_captures:
+            return self.__cache[uuid]
+        try:
+            capture_dir = self._get_capture_dir(uuid)
+            if cached := self.redis.hgetall(capture_dir):
+                return CaptureCache(cached)
+        except MissingUUID as e:
+            logger.warning(f'Unable to get CaptureCache: {e}')
+        except Exception as e:
+            logger.warning(f'Unable to get CaptureCache: {e}')
+        return None
+
     def _get_capture_dir(self, uuid: str) -> str:
         # Try to get from the recent captures cache in redis
         capture_dir = self.redis.hget('lookup_dirs', uuid)

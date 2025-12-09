@@ -2700,16 +2700,16 @@ def get_index(public: bool=True, show_error: bool=False, category: str | None=No
         total = get_indexing(flask_login.current_user).get_captures_category_count(category)
         if search:
             cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
-                [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)], cached_captures_only=False) if capture.search(search)]
+                [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)], cached_captures_only=True) if capture.search(search)]
         else:
             cached_captures = lookyloo.sorted_capture_cache(
-                get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit), cached_captures_only=False)
+                get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit), cached_captures_only=True)
     else:
         cut_time: datetime | None = None
         if time_delta_on_index:
             # We want to filter the captures on the index
             cut_time = (datetime.now() - timedelta(**time_delta_on_index))
-        cached_captures = lookyloo.sorted_capture_cache(public=public, cached_captures_only=False, index_cut_time=cut_time)
+        cached_captures = lookyloo.sorted_capture_cache(public=public, cached_captures_only=True, index_cut_time=cut_time)
         if not show_error:
             cached_captures = [cached for cached in cached_captures if not cached.error]
         total = len(cached_captures)
