@@ -271,7 +271,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         except MissingUUID as e:
             logger.warning(f'Unable to get CaptureCache: {e}')
         except Exception as e:
-            logger.warning(f'Unable to get CaptureCache: {e}')
+            logger.error(f'Unable to get CaptureCache: {e}')
         return None
 
     def _get_capture_dir(self, uuid: str) -> str:
