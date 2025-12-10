@@ -581,7 +581,7 @@ class Lookyloo():
         all_cache: list[CaptureCache] = []
 
         if cached_captures_only:
-            # Do not try to build picklesa
+            # Do not try to build pickles
             for uuid in capture_uuids:
                 if c := self._captures_index.get_capture_cache_quick(uuid):
                     if hasattr(c, 'timestamp') and c.tree_ready:
@@ -653,9 +653,15 @@ class Lookyloo():
             return CaptureStatusCore.ONGOING
         return lacus_status
 
-    def capture_cache(self, capture_uuid: str, /, *, force_update: bool = False) -> CaptureCache | None:
-        """Get the cache from redis, rebuild the tree if the internal UUID changed => slow"""
+    def capture_cache(self, capture_uuid: str, /, *, force_update: bool = False, quick: bool=False) -> CaptureCache | None:
+        """Get the cache from redis.
+            * force_update: Reload the cache if needed (new format)
+            * quick is True: Only return a cache **if** it is in valkey, doesn't try to build the tree.
+            * quick is False: (the default) Builds the tree is needed => slow"""
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        if quick:
+            return self._captures_index.get_capture_cache_quick(capture_uuid)
+
         try:
             cache = self._captures_index[capture_uuid]
             if cache and force_update:
@@ -688,6 +694,15 @@ class Lookyloo():
         except Exception as e:
             logger.exception(e)
             return None
+
+    def uuid_exists(self, uuid: str) -> bool:
+        if uuid in self._captures_index.cached_captures:
+            return True
+        if self.redis.hexists('lookup_dirs', uuid):
+            return True
+        if self.redis.hexists('lookup_dirs_archived', uuid):
+            return True
+        return False
 
     def get_crawled_tree(self, capture_uuid: str, /) -> CrawledTree:
         '''Get the generated tree in ETE Toolkit format.
@@ -2028,7 +2043,7 @@ class Lookyloo():
                     potential_favicons.add(lookyloo_capture.read(filename))
                 elif filename.endswith('uuid'):
                     uuid = lookyloo_capture.read(filename).decode()
-                    if self._captures_index.uuid_exists(uuid):
+                    if self.uuid_exists(uuid):
                         messages['warnings'].append(f'UUID {uuid} already exists, set a new one.')
                         uuid = str(uuid4())
                 elif filename.endswith('meta'):
@@ -2106,7 +2121,7 @@ class Lookyloo():
                       auto_report: bool | dict[str, str] | None = None
                       ) -> Path:
 
-        if self._captures_index.uuid_exists(uuid):
+        if self.uuid_exists(uuid):
             # NOTE If we reach this place and the UUID exists for any reason, we need to stop everyting
             # How to handle the duplicate UUID must be handled by the caller.
             uuid_dir = self._captures_index._get_capture_dir(uuid)

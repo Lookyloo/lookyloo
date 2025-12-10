@@ -257,15 +257,6 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
     def lru_cache_clear(self) -> None:
         load_pickle_tree.cache_clear()
 
-    def uuid_exists(self, uuid: str) -> bool:
-        if uuid in self.__cache:
-            return True
-        if self.redis.hexists('lookup_dirs', uuid):
-            return True
-        if self.redis.hexists('lookup_dirs_archived', uuid):
-            return True
-        return False
-
     def get_capture_cache_quick(self, uuid: str) -> CaptureCache | None:
         """Get the CaptureCache for the UUID if it exists in redis,
         WARNING: it doesn't check if the path exists, nor if the pickle is there

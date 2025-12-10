@@ -7,14 +7,13 @@ import logging
 import logging.config
 from collections import Counter
 from datetime import date, timedelta, datetime
-from pathlib import Path
 from typing import Any
 
 from lacuscore import CaptureStatus as CaptureStatusCore, CaptureSettingsError
 from lookyloo import Lookyloo
 from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
-from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings, load_pickle_tree
+from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings
 from lookyloo.modules import AIL, AssemblyLine, MISPs, MISP
 from pylacus import CaptureStatus as CaptureStatusPy
 
@@ -67,16 +66,9 @@ class Processing(AbstractManager):
                 # the UUID is already in the recent captures
                 continue
 
-            if not self.lookyloo.redis.exists(directory):
+            if cache := self.lookyloo.capture_cache(uuid, quick=True):
                 # we do not want this method to build the pickle, **but** if the pickle exists
                 # AND the capture isn't in the cache, we want to add it
-                d = Path(directory)
-                try:
-                    load_pickle_tree(d, d.stat().st_mtime, self.logger)
-                except Exception:
-                    # Pickle doesn't exists, it will be created by the builder
-                    continue
-            if cache := self.lookyloo.capture_cache(uuid):
                 if not hasattr(cache, 'timestamp') or not cache.timestamp:
                     continue
                 i += 1

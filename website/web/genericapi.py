@@ -730,7 +730,7 @@ class UploadCapture(Resource):  # type: ignore[misc]
         screenshot: bytes | None = None
         messages: dict[str, list[str]] = {'errors': [], 'warnings': []}
 
-        if uuid and lookyloo._captures_index.uuid_exists(uuid):
+        if uuid and lookyloo.uuid_exists(uuid):
             # NOTE make sure it doesn't exists, set a new one if it does
             messages['warnings'].append(f'UUID {uuid} already exists, set a new one.')
             uuid = str(uuid4())
