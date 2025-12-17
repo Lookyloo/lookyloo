@@ -241,8 +241,9 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             del self.__cache[uuid]
 
     def remove_pickle(self, uuid: str) -> None:
+        if cache := self.get_capture_cache_quick(uuid):
+            remove_pickle_tree(cache.capture_dir)
         if uuid in self.__cache:
-            remove_pickle_tree(self.__cache[uuid].capture_dir)
             del self.__cache[uuid]
 
     def rebuild_all(self) -> None:
