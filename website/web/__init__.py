@@ -2394,7 +2394,8 @@ def ip_details(ip: str) -> str:
 @app.route('/stats', methods=['GET'])
 @flask_login.login_required  # type: ignore[untyped-decorator]
 def statsfull() -> str:
-    stats = lookyloo.get_stats()
+    # only available to logged in users, get all the captures
+    stats = lookyloo.get_stats(public=False)
     return render_template('stats.html', stats=stats, version=pkg_version)
 
 

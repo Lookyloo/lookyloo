@@ -1929,7 +1929,7 @@ class Lookyloo():
         weeks_stats: dict[int, dict[str, Any]] = {}
 
         # Only recent captures that are not archived
-        for cache in self.sorted_capture_cache(public=public):
+        for cache in self.sorted_capture_cache(public=public, cached_captures_only=False):
             if not hasattr(cache, 'timestamp'):
                 continue
             date_submission: datetime = cache.timestamp
