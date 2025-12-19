@@ -536,7 +536,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         p.hset(capture_dir_str, mapping=cache)  # type: ignore[arg-type]
         # NOTE: just expire it from redis after it's not on the index anymore.
         # Avoids to have an evergrowing cache.
-        time_delta_on_index = timedelta(**get_config('generic', 'time_delta_on_index'))
+        time_delta_on_index = timedelta(days=get_config('generic', 'archive'))
         p.expire(capture_dir_str, int(time_delta_on_index.total_seconds()) * 2)
 
         to_return = CaptureCache(cache)

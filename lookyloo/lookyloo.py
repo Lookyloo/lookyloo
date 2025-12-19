@@ -565,7 +565,6 @@ class Lookyloo():
                 index_cut_time = cut_time
         else:
             index_cut_time = cut_time
-
         if capture_uuids is None:
             capture_uuids = self.get_recent_captures(public=public, since=index_cut_time)
             # NOTE: we absolutely have to respect the cached_captures_only setting and
@@ -1929,7 +1928,7 @@ class Lookyloo():
         weeks_stats: dict[int, dict[str, Any]] = {}
 
         # Only recent captures that are not archived
-        for cache in self.sorted_capture_cache(public=public, cached_captures_only=False):
+        for cache in self.sorted_capture_cache(public=public, cached_captures_only=True):
             if not hasattr(cache, 'timestamp'):
                 continue
             date_submission: datetime = cache.timestamp
