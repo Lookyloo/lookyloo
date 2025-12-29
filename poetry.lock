@@ -3600,14 +3600,14 @@ test = ["pytest", "pytest-instafail", "pytest-subtests", "pytest-xdist", "pywin3
 
 [[package]]
 name = "publicsuffixlist"
-version = "1.0.2.20251209"
+version = "1.0.2.20251229"
 description = "publicsuffixlist implement"
 optional = false
 python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "publicsuffixlist-1.0.2.20251209-py2.py3-none-any.whl", hash = "sha256:1615d6c4006df69e531016129b1ea221df85883588b0a87c8c0def6f8bcef7e2"},
-    {file = "publicsuffixlist-1.0.2.20251209.tar.gz", hash = "sha256:dfb863d00dfb9bc071340596229468ae89a75d62546eabce38ebbd8b0d350ca9"},
+    {file = "publicsuffixlist-1.0.2.20251229-py2.py3-none-any.whl", hash = "sha256:aa55ff49247dabeed6f3ae8d1f302f5bec1299c3fd243873ecacdbe3958026df"},
+    {file = "publicsuffixlist-1.0.2.20251229.tar.gz", hash = "sha256:bfe05e029bec0aa7f840d68df9bfbaa18c8acfbfca51245ff1f80815c608cffe"},
 ]
 
 [package.extras]
@@ -6133,4 +6133,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "c095637a8551c56662cf66d36e22ecd497649cfd30b2dad147721d5bc8bd3e7e"
+content-hash = "b48c38b84a9bbfa9976edcd5a1ff5ccd2e46774450e72afc7b34ac0feaaa3d94"
