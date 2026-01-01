@@ -277,8 +277,24 @@ class UserAgents:
 
     @property
     def default(self) -> dict[str, str]:
-        '''The default useragent for desktop chrome from playwright'''
-        parsed_ua = ParsedUserAgent(self.playwright_devices['desktop']['default']['Desktop Chrome']['user_agent'])
+        '''The default useragent for desktop firefox from playwright'''
+        # 2025-12-26: New feature default device picked from the known devices in Playwright.
+        default_device_name = get_config('generic', 'default_device_name')
+        # check if the device name exists, ignore and warn if not.
+        if default_device_name in self.playwright_devices['desktop']['default']:
+            default_ua = self.playwright_devices['desktop']['default'][default_device_name]['user_agent']
+            default_device_type = 'desktop'
+        elif default_device_name in self.playwright_devices['mobile']['default']:
+            default_ua = self.playwright_devices['mobile']['default'][default_device_name]['user_agent']
+            default_device_type = 'mobile'
+        # elif default_device_name in self.playwright_devices['mobile']['landscape']:
+        #     default_ua = self.playwright_devices['mobile']['landscape'][default_device_name]['user_agent']
+        else:
+            logger.warning(f'Unable to find "{default_device_name}" in the devices proposed by Playwright, falling back to default: "Desktop Chrome" / "{default_ua}".')
+            default_device_type = 'desktop'
+            default_device_name = 'Desktop Chrome'
+            default_ua = self.playwright_devices['desktop']['default'][default_device_name]['user_agent']
+        parsed_ua = ParsedUserAgent(default_ua)
         platform_key = parsed_ua.platform
         if parsed_ua.platform_version:
             platform_key = f'{platform_key} {parsed_ua.platform_version}'
@@ -289,7 +305,9 @@ class UserAgents:
             raise LookylooException(f'Unable to get valid default user agent from playwright: {parsed_ua}')
         return {'os': platform_key,
                 'browser': browser_key,
-                'useragent': parsed_ua.string}
+                'useragent': parsed_ua.string,
+                'default_device_type': default_device_type,
+                'default_device_name': default_device_name}
 
 
 def load_known_content(directory: str='known_content') -> dict[str, dict[str, Any]]:

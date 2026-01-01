@@ -167,8 +167,8 @@
           <div class="row mb-3">
             <label for="os-type" class="col-sm-2 col-form-label">OS type:</label>
             <div class="col-sm-10">
-              <select class="form-select" name="os-type" id="os-type" autocomplete="off">
-                <option value="desktop" selected>Desktop</option>
+              <select class="form-select" name="os-type" id="os-type">
+                <option value="desktop">Desktop</option>
                 <option value="mobile">Mobile</option>
               </select>
             </div>
@@ -182,7 +182,7 @@
                 <select class="form-select" name="os" id="os">
                   {% for os in user_agents.keys()|sort(reverse=True) %}
                   <!-- Select the default os -->
-                  <option value="{{ os }}" {% if os==default['os'] %}selected{% endif %}>{{ os }}</option>
+                  <option value="{{ os }}">{{ os }}</option>
                   {% endfor%}
                 </select>
               </div>
@@ -190,15 +190,15 @@
 
             {% for os, browsers in user_agents.items() %}
             <!-- Hide the browsers that aren't part of the default os -->
-            <div id="{{os.replace(' ', '_')}}" class="style-sub-1" {% if not os==default['os'] %}style="display: none;"{%endif%}>
+            <div id="{{os.replace(' ', '_')}}" class="style-sub-1" style="display: none;">
               <label class="row mb-3">
                 <span class="col-sm-2 col-form-label">Browser Type:</span>
                 <span class="col-sm-10">
                   <!-- Disable all the selects not related to the default os -->
-                  <select class="form-select" name="browser" {% if not os==default['os'] %}disabled{%endif%}>
+                  <select class="form-select" name="browser" id="sel_{{os.replace(' ', '_')}}" disabled>
                   {% for browser in browsers.keys()|sort(reverse=True) %}
                   <!-- Select the default browser -->
-                  <option value="{{ browser }}" {% if browser==default['browser'] %}selected{% endif %}>{{ browser }}</option>
+                  <option value="{{ browser }}">{{ browser }}</option>
                   {% endfor%}
                   </select>
                 </span>
@@ -206,15 +206,15 @@
             </div>
             {% for browser, user_agents in browsers.items() %}
             <!-- Hide the user agents that aren't part of the default OS and browsers that aren't part of the default os -->
-            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2" {% if not os==default['os'] or not browser==default['browser']%} style="display: none;"{%endif%}>
+            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2" style="display: none;">
               <label class="row mb-3">
                 <span class="col-sm-2 col-form-label">User-Agent:</span>
                 <span class="col-sm-10">
                   <!-- Disable all the selects, unless it is in default os and browser -->
-                  <select class="form-select" name="user_agent" {% if not os==default['os'] or not browser==default['browser']  %}disabled{%endif%}>
+                  <select class="form-select" name="user_agent" id="sel_{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" disabled>
                     {% for user_agent in user_agents %}
                     <!-- Select the default ua -->
-                    <option value="{{ user_agent }}" {% if user_agent==default['useragent'] %}selected{% endif %}>{{ user_agent }}</option>
+                    <option value="{{ user_agent }}">{{ user_agent }}</option>
                     {% endfor%}
                   </select>
                 </span>
@@ -227,11 +227,11 @@
         <!-- End of Desktops -->
 
         <!-- Mobiles -->
-        <div id="mobiles-list" style="display:none">
+        <div id="mobiles-list">
           <div class="row mb-3">
             <label for="device-name-mobile" class="col-sm-2 col-form-label">Device name:</label>
             <div class="col-sm-10">
-              <select class="form-select" name="device_name" id="device-name-mobile" disabled>
+                <select class="form-select" name="device_name" id="device-name-mobile" disabled>
                 {% for device_name in devices['mobile']['default'].keys() %}
                 <option value="{{ device_name }}">{{ device_name }}</option>
                 {%endfor%}
@@ -662,5 +662,10 @@ window.addEventListener('DOMContentLoaded', () => {
     {{get_sri('static', 'capture.js')}}
     nonce="{{ csp_nonce() }}"
     crossorigin="anonymous"></script>
+
+  <script nonce="{{ csp_nonce() }}">
+      var default_device = {{default|tojson}};
+
+  </script>
 
 {% endblock %}
