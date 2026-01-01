@@ -114,6 +114,7 @@
   "index_everything": false,
   "kvrocks_index": false,
   "allow_headed": false,
+  "default_device_name": "Desktop Chrome",
   "_notes": {
     "loglevel": "(lookyloo) Can be one of the value listed here: https://docs.python.org/3/library/logging.html#levels",
     "only_global_lookups": "Set it to True if your instance is publicly available so users aren't able to scan your internal network",
@@ -155,6 +156,7 @@
     "kvrocks_index": "If true, use kvrocks instead of valkey for the public index. Requires kvrocks to be installed.",
     "ignore_sri": "If true, the sri values are ignored and not calculated so that there are no problems while developing and testing.",
     "enable_takedown_form": "If true, a form for simplified takedown will be enabled.",
-    "allow_headed": "Allow users to use the headed version of the browser. It requires a graphical environment."
+    "allow_headed": "Allow users to use the headed version of the browser. It requires a graphical environment.",
+    "default_device_name": "The default device to use for captures. Must be a device known by Playwright, see what is available by running the script: 'tools/show_known_devices.py'."
   }
 }

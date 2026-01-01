@@ -195,31 +195,70 @@ const disablePredefinedUA = function () {
 
 };
 
+function enable_mobile() {
+    document.getElementById("mobiles-list").style.display = 'block';
+    document.getElementById('device-name-mobile').disabled = false;
+    document.getElementById("desktops-list").style.display = 'none';
+    document.getElementById('os').disabled = true;
+
+    document.querySelectorAll('select[name="browser"]').forEach(function (element) {
+        element.disabled = true;
+    });
+    document.querySelectorAll('select[name="user_agent"]').forEach(function (element) {
+        element.disabled = true;
+    });
+
+    if (default_device.default_device_type === "mobile") {
+        const selectMobileDeviceName = document.getElementById('device-name-mobile');
+        selectMobileDeviceName.disabled = false;
+        selectMobileDeviceName.value = default_device.default_device_name;
+    }
+    else {
+        // just have the first in the list
+    }
+};
+
+function enable_desktop() {
+    document.getElementById("mobiles-list").style.display = 'none';
+    document.getElementById('device-name-mobile').disabled = true;
+    document.getElementById("desktops-list").style.display = 'block';
+    document.getElementById('os').disabled = false;
+
+    if (default_device.default_device_type === "mobile") {
+        // get first OS in the selector
+        let fallback_id_os = document.getElementById('os')[0].value.replace(' ', '_');
+        document.getElementById(fallback_id_os).style.display = 'block';
+        document.getElementById(`sel_${fallback_id_os}`).disabled = false;
+        // get first os browser in selector
+        let fallback_id_os_browser = document.getElementById(`sel_${fallback_id_os}`)[0].value.replace(' ', '_');
+        document.getElementById(`${fallback_id_os}_${fallback_id_os_browser}`).style.display = 'block';
+        document.getElementById(`sel_${fallback_id_os}_${fallback_id_os_browser}`).disabled = false;
+
+        document.getElementById("mobiles-list").style.display = 'none';
+    } else {
+        const selectOS = document.getElementById('os');
+        selectOS.value = default_device.os;
+
+        const id_os = `${default_device.os.replace(' ', '_')}`;
+        document.getElementById(id_os).style.display = 'block';
+        const selectBrowserType = document.getElementById(`sel_${id_os}`);
+        selectBrowserType.disabled = false;
+        selectBrowserType.value = default_device.browser;
+
+        const id_os_browser = `${id_os}_${default_device.browser.replace(' ', '_')}`
+        document.getElementById(id_os_browser).style.display = 'block';
+        const selectUA = document.getElementById(`sel_${id_os_browser}`);
+        selectUA.disabled = false;
+        selectUA.value = default_device.useragent;
+    }
+}
+
 document.getElementById('os-type').addEventListener('change', function () {
     document.getElementById('os-type').disabled = false;
     if (this.value === "mobile") {
-        document.getElementById("mobiles-list").style.display = 'block';
-        document.getElementById('device-name-mobile').disabled = false;
-
-        document.getElementById("desktops-list").style.display = 'none';
-        document.getElementById('os').disabled = true;
-        document.querySelectorAll('select[name="browser"]').forEach(function (element) {
-            element.disabled = true;
-        });
-        document.querySelectorAll('select[name="user_agent"]').forEach(function (element) {
-            element.disabled = true;
-        });
+        enable_mobile();
     } else { // os-type is desktop
-        document.getElementById("desktops-list").style.display = 'block';
-        document.getElementById('os').disabled = false;
-        document.querySelectorAll('select[name="browser"]:not([hidden])').forEach(function (element) {
-            element.disabled = false;
-        });
-        document.querySelectorAll('select[name="user_agent"]:not([hidden])').forEach(function (element) {
-            element.disabled = false;
-        });
-        document.getElementById("mobiles-list").style.display = 'none';
-        document.getElementById('device-name-mobile').disabled = true;
+        enable_desktop();
     }
 });
 
@@ -235,3 +274,16 @@ if (report_form) { // admin is logged in
         }
     });
 }
+
+window.addEventListener('DOMContentLoaded', (event) => {
+    // trigger default select from config
+    if (default_device.default_device_type === "mobile") {
+        const selectOSType = document.getElementById('os-type');
+        selectOSType.value = "mobile"
+        enable_mobile();
+    } else {
+        const selectOSType = document.getElementById('os-type');
+        selectOSType.value = "desktop"
+        enable_desktop();
+    };
+});
