@@ -7,11 +7,12 @@ document.getElementById('nav-url-tab').addEventListener('click', function (e) {
 
     // default: single capture field
     document.getElementById("singleCaptureField").required = true;
-    document.getElementById("singleCaptureField").classList.remove("d-none");
+    document.getElementById("singleCaptureField").style.display = 'block';
+
     // hide multiple captures field
     document.getElementById('multipleCaptures').checked = false;
     document.getElementById("multipleCapturesField").required = false;
-    document.getElementById("multipleCapturesField").classList.add("d-none");
+    document.getElementById("multipleCapturesField").style.display = 'none';
 
     document.getElementById("document").required = false;
 });
@@ -23,23 +24,27 @@ document.getElementById('nav-doc-tab').addEventListener('click', function (e) {
     document.getElementById("singleCaptureField").required = false;
 });
 
-document.getElementById('multipleCaptures').addEventListener('click', function (e) {
-    // switch input-fields between multiple and single capture
+function toggle_multiple_captures() {
     if (document.getElementById('multipleCaptures').checked === true) {
         // enable multiple captures
         document.getElementById('singleCaptureField').value = '';
-        document.getElementById("singleCaptureField").classList.add("d-none");
+        document.getElementById("singleCaptureField").style.display = 'none';
         document.getElementById("singleCaptureField").required = false;
-        document.getElementById("multipleCapturesField").classList.remove("d-none");
+        document.getElementById("multipleCapturesField").style.display = 'block';
         document.getElementById("multipleCapturesField").required = true;
     } else {
         // disable multiple captures
         document.getElementById('multipleCapturesField').value = '';
-        document.getElementById("multipleCapturesField").classList.add("d-none");
+        document.getElementById("multipleCapturesField").style.display = 'none';
         document.getElementById("multipleCapturesField").required = false;
-        document.getElementById("singleCaptureField").classList.remove("d-none");
+        document.getElementById("singleCaptureField").style.display = 'block';
         document.getElementById("singleCaptureField").required = true;
     }
+};
+
+document.getElementById('multipleCaptures').addEventListener('click', function (e) {
+    // switch input-fields between multiple and single capture
+    toggle_multiple_captures();
 });
 
 // Remote lacus & proxy selector
@@ -58,12 +63,6 @@ if ( document.getElementById("remote_lacus_name") ){
     let event = new Event('change');
     lacusProxyNameSelect.dispatchEvent(event);
   });
-}
-
-const remote_lacuses_proxy_names = document.getElementsByName("remote_lacus_proxy_name")
-
-for (const remote_lacus_proxy_name of remote_lacuses_proxy_names) {
-  remote_lacus_proxy_name.addEventListener("change", change_proxy_details, false);
 }
 
 function change_proxy_details(e) {
@@ -85,6 +84,10 @@ function change_proxy_details(e) {
         document.getElementById('user_defined_proxy').style.display = 'none';
     }
 };
+
+document.getElementsByName("remote_lacus_proxy_name").forEach(function(remote_lacus_proxy_name) {
+  remote_lacus_proxy_name.addEventListener("change", change_proxy_details, false);
+});
 
 // scripts for browser configuration of the capture
 
@@ -252,6 +255,8 @@ if (report_form) { // admin is logged in
 }
 
 window.addEventListener('DOMContentLoaded', (event) => {
+    // In case the bok is ticked, make sure it is consistent.
+    toggle_multiple_captures();
     // trigger default select from config
     if (default_device.default_device_type === "mobile") {
         document.getElementById('os-type').value = "mobile"
