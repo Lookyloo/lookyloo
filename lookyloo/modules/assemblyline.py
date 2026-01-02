@@ -7,6 +7,7 @@ from typing import Any, TYPE_CHECKING
 from assemblyline_client import get_client  # type: ignore[import-untyped]
 
 from ..default import ConfigError, get_config
+from ..helpers import global_proxy_for_requests
 from .abstractmodule import AbstractModule
 
 if TYPE_CHECKING:
@@ -24,7 +25,8 @@ class AssemblyLine(AbstractModule):
 
         self.al_client = get_client(self.config.get('url'),
                                     apikey=(self.config.get('username'),
-                                            self.config.get('apikey')))
+                                            self.config.get('apikey')),
+                                    proxies=global_proxy_for_requests())
         self.logger.info(f'AssemblyLine module initialized successfully ({self.config.get("url")}).')
         return True
 
