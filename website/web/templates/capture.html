@@ -189,31 +189,29 @@
             </div>
 
             {% for os, browsers in user_agents.items() %}
-            <!-- Hide the browsers that aren't part of the default os -->
-            <div id="{{os.replace(' ', '_')}}" class="style-sub-1" style="display: none;">
+            <!-- Hide the browsers -->
+            <div id="{{os.replace(' ', '_')}}" class="browsers" style="display: none;">
               <label class="row mb-3">
                 <span class="col-sm-2 col-form-label">Browser Type:</span>
                 <span class="col-sm-10">
-                  <!-- Disable all the selects not related to the default os -->
+                  <!-- Disable all the selects -->
                   <select class="form-select" name="browser" id="sel_{{os.replace(' ', '_')}}" disabled>
-                  {% for browser in browsers.keys()|sort(reverse=True) %}
-                  <!-- Select the default browser -->
-                  <option value="{{ browser }}">{{ browser }}</option>
-                  {% endfor%}
+                    {% for browser in browsers.keys()|sort(reverse=True) %}
+                    <option value="{{ browser }}">{{ browser }}</option>
+                    {% endfor%}
                   </select>
                 </span>
               </label>
             </div>
             {% for browser, user_agents in browsers.items() %}
-            <!-- Hide the user agents that aren't part of the default OS and browsers that aren't part of the default os -->
-            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="style-sub-2" style="display: none;">
+            <!-- Hide the user agents -->
+            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="user-agents" style="display: none;">
               <label class="row mb-3">
                 <span class="col-sm-2 col-form-label">User-Agent:</span>
                 <span class="col-sm-10">
-                  <!-- Disable all the selects, unless it is in default os and browser -->
+                  <!-- Disable all the selects -->
                   <select class="form-select" name="user_agent" id="sel_{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" disabled>
                     {% for user_agent in user_agents %}
-                    <!-- Select the default ua -->
                     <option value="{{ user_agent }}">{{ user_agent }}</option>
                     {% endfor%}
                   </select>
