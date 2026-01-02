@@ -290,10 +290,10 @@ class UserAgents:
         # elif default_device_name in self.playwright_devices['mobile']['landscape']:
         #     default_ua = self.playwright_devices['mobile']['landscape'][default_device_name]['user_agent']
         else:
-            logger.warning(f'Unable to find "{default_device_name}" in the devices proposed by Playwright, falling back to default: "Desktop Chrome" / "{default_ua}".')
             default_device_type = 'desktop'
             default_device_name = 'Desktop Chrome'
             default_ua = self.playwright_devices['desktop']['default'][default_device_name]['user_agent']
+            logger.warning(f'Unable to find "{default_device_name}" in the devices proposed by Playwright, falling back to default: "Desktop Chrome" / "{default_ua}".')
         parsed_ua = ParsedUserAgent(default_ua)
         platform_key = parsed_ua.platform
         if parsed_ua.platform_version:
