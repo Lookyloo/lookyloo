@@ -88,71 +88,56 @@ function change_proxy_details(e) {
 
 // scripts for browser configuration of the capture
 
-document.getElementById("os").addEventListener("change", function () {
-    let osSelect = document.getElementById("os");
-    let os_name = osSelect.options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
-    let first_browser_name = document.querySelector(`[id='${os_name}'] select option:first-child`).value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
+function hide_disable_browser_ua() {
+    document.querySelectorAll(".browsers").forEach(function (element) {
+        element.style.display = 'none';
+    });
+    document.querySelectorAll('select[name="browser"]').forEach(function (select) {
+        select.disabled = true;
+    });
+    document.querySelectorAll(".user-agents").forEach(function (element) {
+        element.style.display = 'none';
+    });
+    document.querySelectorAll('select[name="user_agent"]').forEach(function (select) {
+        select.disabled = true;
+    });
+}
+
+document.getElementById("os").addEventListener("change", function (e) {
+    let id_os_name = this.options[this.selectedIndex].value.replace(/ /g, "_");
+    let first_browser_name = document.querySelector(`[id='${id_os_name}'] select option:first-child`).value;
+    let id_first_browser_name = first_browser_name.replace(/ /g, "_");
 
     // Hide and disable everything
-    document.querySelectorAll("#os option").forEach(function (option) {
-        option.removeAttribute('selected');
-    });
-    document.querySelectorAll(".style-sub-1").forEach(function (element) {
-        element.style.display = 'none';
-    });
-    document.querySelectorAll(".style-sub-1 > label > span > select").forEach(function (select) {
-        select.disabled = true;
-        select.querySelectorAll('option').forEach(function (option) {
-            option.removeAttribute('selected');
-        });
-    });
-    document.querySelectorAll(".style-sub-2").forEach(function (element) {
-        element.style.display = 'none';
-    });
-    document.querySelectorAll(".style-sub-2 > label > span > select").forEach(function (select) {
-        select.disabled = true;
-        select.querySelectorAll('option').forEach(function (option) {
-            option.removeAttribute('selected');
-        });
-    });
+    hide_disable_browser_ua()
 
     // Re-enable and show what makes sense
-    document.querySelector(`[id='${os_name}']`).style.display = 'block';
-    document.querySelectorAll(`[id='${os_name}'] > label > span > select`).forEach(function (select) {
-        select.disabled = false;
-        select.querySelector('option:first-child').selected = true;
-    });
-    document.querySelector(`[id='${os_name}_${first_browser_name}']`).style.display = 'block';
-    document.querySelectorAll(`[id='${os_name}_${first_browser_name}'] > label > span > select`).forEach(function (select) {
-        select.disabled = false;
-        select.querySelector('option:first-child').selected = true;
-    });
+    document.getElementById(id_os_name).style.display = 'block';
+    let id_os_sel = document.getElementById(`sel_${id_os_name}`);
+    id_os_sel.disabled = false;
+    id_os_sel.value = first_browser_name;
+
+    document.getElementById(`${id_os_name}_${id_first_browser_name}`).style.display = 'block';
+    document.getElementById(`sel_${id_os_name}_${id_first_browser_name}`).disabled = false;
 });
 
-document.querySelectorAll('select[name="browser"]').forEach( function(element)
-{
+document.querySelectorAll('select[name="browser"]').forEach( function(element) {
     element.addEventListener('change', function (e) {
-        let browser_name = element.options[element.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
         let osSelect = document.getElementById("os");
-        let os_name = osSelect.options[osSelect.selectedIndex].value.replace(/(:|\.|\[|\]|,|=|\\)/g, "\\$1").replace(/ /g, "_");
+        let id_os_name = osSelect.options[osSelect.selectedIndex].value.replace(/ /g, "_");
+        let id_browser_name = this.options[this.selectedIndex].value.replace(/ /g, "_");
 
         // Hide and disable every useragent
-        document.querySelectorAll(".style-sub-2").forEach(function (element) {
+        document.querySelectorAll(".user-agents").forEach(function (element) {
             element.style.display = 'none';
         });
-        document.querySelectorAll(".style-sub-2 > label > span > select").forEach(function (select) {
+        document.querySelectorAll('select[name="user_agent"]').forEach(function (select) {
             select.disabled = true;
-            select.querySelectorAll('option').forEach(function (option) {
-                option.removeAttribute('selected');
-            });
         });
 
         // Show only the correct user-agent
-        document.querySelector(`[id='${os_name}_${browser_name}']`).style.display = 'block';
-        document.querySelectorAll(`[id='${os_name}_${browser_name}'] > label > span > select`).forEach(function (select) {
-            select.disabled = false;
-            select.querySelector('option:first-child').selected = true;
-        });
+        document.getElementById(`${id_os_name}_${id_browser_name}`).style.display = 'block';
+        document.getElementById(`sel_${id_os_name}_${id_browser_name}`).disabled = false;
     });
 });
 
@@ -192,7 +177,6 @@ const disablePredefinedUA = function () {
     document.querySelectorAll('select[name="user_agent"]').forEach(function (element) {
         element.disabled = true;
     });
-
 };
 
 function enable_mobile() {
@@ -201,20 +185,14 @@ function enable_mobile() {
     document.getElementById("desktops-list").style.display = 'none';
     document.getElementById('os').disabled = true;
 
-    document.querySelectorAll('select[name="browser"]').forEach(function (element) {
-        element.disabled = true;
-    });
-    document.querySelectorAll('select[name="user_agent"]').forEach(function (element) {
-        element.disabled = true;
-    });
+    // Hide and disable everything
+    hide_disable_browser_ua()
 
     if (default_device.default_device_type === "mobile") {
-        const selectMobileDeviceName = document.getElementById('device-name-mobile');
-        selectMobileDeviceName.disabled = false;
-        selectMobileDeviceName.value = default_device.default_device_name;
+        document.getElementById('device-name-mobile').value = default_device.default_device_name;
     }
     else {
-        // just have the first in the list
+        // just have the first in the list ?
     }
 };
 
@@ -236,8 +214,7 @@ function enable_desktop() {
 
         document.getElementById("mobiles-list").style.display = 'none';
     } else {
-        const selectOS = document.getElementById('os');
-        selectOS.value = default_device.os;
+        document.getElementById('os').value = default_device.os;
 
         const id_os = `${default_device.os.replace(' ', '_')}`;
         document.getElementById(id_os).style.display = 'block';
@@ -254,7 +231,6 @@ function enable_desktop() {
 }
 
 document.getElementById('os-type').addEventListener('change', function () {
-    document.getElementById('os-type').disabled = false;
     if (this.value === "mobile") {
         enable_mobile();
     } else { // os-type is desktop
@@ -278,12 +254,10 @@ if (report_form) { // admin is logged in
 window.addEventListener('DOMContentLoaded', (event) => {
     // trigger default select from config
     if (default_device.default_device_type === "mobile") {
-        const selectOSType = document.getElementById('os-type');
-        selectOSType.value = "mobile"
+        document.getElementById('os-type').value = "mobile"
         enable_mobile();
     } else {
-        const selectOSType = document.getElementById('os-type');
-        selectOSType.value = "desktop"
+        document.getElementById('os-type').value = "desktop"
         enable_desktop();
     };
 });
