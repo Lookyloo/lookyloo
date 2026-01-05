@@ -514,6 +514,7 @@ class Lookyloo():
         """
         capture_dir = self._captures_index[capture_uuid].capture_dir
         self.redis.hset(str(capture_dir), 'no_index', 1)
+        self.redis.zrem('recent_captures_public', capture_uuid)
         (capture_dir / 'no_index').touch()
         self._captures_index.reload_cache(capture_uuid)
 
