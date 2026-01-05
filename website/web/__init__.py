@@ -2695,16 +2695,15 @@ favicon_download_button_template = app.jinja_env.from_string(source='''
 def get_index(public: bool=True, show_error: bool=False, category: str | None=None,
               offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, list[str], datetime]]]:
     '''Returns the index.'''
-    # NOTE: this probably want to make it a method, and stop the count to the stuff that is supposed
-    #       to be on the index (time_delta_on_index)
     if category:
+        # NOTE: 2026-01-05: when we search for categories, we want to also display the non-cached captures, even if it takes some time.
         total = get_indexing(flask_login.current_user).get_captures_category_count(category)
         if search:
             cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
-                [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)], cached_captures_only=True) if capture.search(search)]
+                [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)], cached_captures_only=False) if capture.search(search)]
         else:
             cached_captures = lookyloo.sorted_capture_cache(
-                get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit), cached_captures_only=True)
+                get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit), cached_captures_only=False)
     else:
         cut_time: datetime | None = None
         if time_delta_on_index:
