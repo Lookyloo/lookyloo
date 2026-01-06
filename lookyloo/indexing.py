@@ -29,6 +29,7 @@ class Indexing():
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.__redis_pool_bytes: ConnectionPool
         self.__redis_pool: ConnectionPool
+        self.time_delta_on_index = timedelta(**get_config('generic', 'time_delta_on_index'))
         if full_index:
             self.__redis_pool_bytes = ConnectionPool(connection_class=UnixDomainSocketConnection,
                                                      path=get_socket_path('full_index'))
@@ -185,14 +186,10 @@ class Indexing():
             return True
 
     def __limit_failsafe(self, oldest_capture: datetime | None=None, limit: int | None=None) -> float | str:
-        if limit:
-            if not oldest_capture:
-                return '-Inf'
-            return oldest_capture.timestamp()
+        if limit and not oldest_capture:
+            return '-Inf'
         # We have no limit set, we *must* set an oldest capture
-        if not oldest_capture:
-            return (datetime.now() - timedelta(days=1)).timestamp()
-        return oldest_capture.timestamp()
+        return oldest_capture.timestamp() if oldest_capture else (datetime.now() - self.time_delta_on_index).timestamp()
 
     # ###### Cookies ######
 
