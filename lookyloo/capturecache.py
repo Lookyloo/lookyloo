@@ -172,6 +172,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         self.__cache_max_size = maxsize
         self.__cache: dict[str, CaptureCache] = OrderedDict()
         self.timeout = get_config('generic', 'max_tree_create_time')
+        self.expire_cache_sec = int(timedelta(days=get_config('generic', 'archive')).total_seconds()) * 2
 
         self.psl = PublicSuffixList()
         self.dnsresolver: Resolver = Resolver()
@@ -267,9 +268,11 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         """
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
         if uuid in self.cached_captures:
+            self.redis.expire(str(self.__cache[uuid].capture_dir), self.expire_cache_sec)
             return self.__cache[uuid]
         try:
             capture_dir = self._get_capture_dir(uuid)
+            self.redis.expire(capture_dir, self.expire_cache_sec)
             if cached := self.redis.hgetall(capture_dir):
                 return CaptureCache(cached)
         except MissingUUID as e:
@@ -539,8 +542,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         p.hset(capture_dir_str, mapping=cache)  # type: ignore[arg-type]
         # NOTE: just expire it from redis after it's not on the index anymore.
         # Avoids to have an evergrowing cache.
-        time_delta_on_index = timedelta(days=get_config('generic', 'archive'))
-        p.expire(capture_dir_str, int(time_delta_on_index.total_seconds()) * 2)
+        p.expire(capture_dir_str, self.expire_cache_sec)
 
         to_return = CaptureCache(cache)
         if hasattr(to_return, 'timestamp') and to_return.timestamp:
