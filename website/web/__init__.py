@@ -2703,7 +2703,9 @@ def get_index(public: bool=True, show_error: bool=False, category: str | None=No
                 [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)], cached_captures_only=False) if capture.search(search)]
         else:
             cached_captures = lookyloo.sorted_capture_cache(
-                get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit), cached_captures_only=False)
+                get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit),
+                public=public,
+                cached_captures_only=False)
     else:
         cut_time: datetime | None = None
         if time_delta_on_index:
