@@ -124,7 +124,7 @@
     "categories": {
         "invalid_init_script": {
             "enabled": false,
-            "tags": ["tooling:lookyloo:http-spam"]
+            "tags": ["tooling:lookyloo=\"http-spam\""]
         }
     }
   },

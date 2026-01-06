@@ -2700,10 +2700,14 @@ def get_index(public: bool=True, show_error: bool=False, category: str | None=No
         total = get_indexing(flask_login.current_user).get_captures_category_count(category)
         if search:
             cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
-                [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)], cached_captures_only=False) if capture.search(search)]
+                [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)],
+                public=public,
+                cached_captures_only=False) if capture.search(search)]
         else:
             cached_captures = lookyloo.sorted_capture_cache(
-                get_indexing(flask_login.current_user).get_captures_category(category, offset=offset, limit=limit),
+                get_indexing(flask_login.current_user).get_captures_category(category,
+                                                                             offset=offset,
+                                                                             limit=limit),
                 public=public,
                 cached_captures_only=False)
     else:
@@ -2738,9 +2742,8 @@ def post_table(table_name: str, value: str) -> Response:
             return jsonify({'error': 'Not allowed.'})
 
         total, captures = get_index(show_hidden is False, category=category, offset=start, limit=length, search=search)
-        if search:
+        if search and start is not None and length is not None:
             total_filtered = len(captures)
-        if start is not None and length is not None:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, redirects, capture_time in captures:
