@@ -92,6 +92,7 @@ mastodon-py = "^2.1.4"
 typing-extensions = {version = "^4.15.0", python = "<3.12"}
 rfc3161-client = "^1.0.5"
 orjson = "^3.11.5"
+esprima = "^4.0.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.19.1"
