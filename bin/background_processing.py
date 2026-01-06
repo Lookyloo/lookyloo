@@ -14,7 +14,7 @@ from lookyloo import Lookyloo
 from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings
-from lookyloo.modules import AIL, AssemblyLine, MISPs, MISP
+from lookyloo.modules import AIL, AssemblyLine, MISPs, MISP, AutoCategorize
 from pylacus import CaptureStatus as CaptureStatusPy
 
 logging.config.dictConfig(get_config('logging'))
@@ -29,6 +29,7 @@ class Processing(AbstractManager):
 
         self.use_own_ua = get_config('generic', 'use_user_agents_users')
 
+        self.auto_categorize = AutoCategorize(config_name='AutoCategorize')
         self.ail = AIL(config_name='AIL')
         self.assemblyline = AssemblyLine(config_name='AssemblyLine')
         self.misps = MISPs(config_name='MultipleMISPs')
@@ -192,8 +193,8 @@ class Processing(AbstractManager):
         We do not want to duplicate the background build script here.
         """
 
-        # NOTE: make it more generic once we have more post processing tasks on build captures.
-        if not any([self.ail.available, self.assemblyline.available, self.misps_auto_push]):
+        if not any([self.ail.available, self.assemblyline.available,
+                    self.misps_auto_push, self.auto_categorize.available]):
             return
 
         # Just check the captures of the last day
@@ -214,6 +215,12 @@ class Processing(AbstractManager):
         for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time, public=False):
             if cached.error:
                 continue
+
+            # NOTE: categorization must be first as the tags could be submitted to MISP
+            if self.auto_categorize.available and not self.lookyloo.redis.exists(f'auto_categorize|{cached.uuid}'):
+                self.lookyloo.redis.setex(f'auto_categorize|{cached.uuid}', redis_expire, 1)
+                self.auto_categorize.categorize(self.lookyloo, cached)
+                self.logger.debug(f'[{cached.uuid}] Auto categorize done.')
 
             if self.ail.available and not self.lookyloo.redis.exists(f'bg_processed_ail|{cached.uuid}'):
                 self.lookyloo.redis.setex(f'bg_processed_ail|{cached.uuid}', redis_expire, 1)

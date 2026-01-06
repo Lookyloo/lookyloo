@@ -392,17 +392,22 @@ class Lookyloo():
         valid_categories = set()
         invalid_categories = set()
         for category in categories:
-            taxonomy, predicate, name = self.taxonomies.revert_machinetag(category)  # type: ignore[misc]
-            if not taxonomy or not predicate or not name and taxonomy.name != 'dark-web':
-                logger.warning(f'Invalid category: {category}')
+            try:
+                taxonomy, predicate, name = self.taxonomies.revert_machinetag(category)  # type: ignore[misc]
+                if not taxonomy or not predicate or not name and taxonomy.name != 'dark-web':
+                    logger.warning(f'Invalid category: {category}')
+                    invalid_categories.add(category)
+                else:
+                    valid_categories.add(category)
+            except (IndexError, KeyError):
+                logger.warning(f'Unknown category: {category}')
                 invalid_categories.add(category)
-            else:
-                valid_categories.add(category)
 
         if as_admin:
             # Keep categories that aren't a part of the dark-web taxonomy, force the rest
             current_categories = {c for c in self._captures_index[capture_uuid].categories if not c.startswith('dark-web')}
             current_categories |= valid_categories
+            current_categories |= invalid_categories
         else:
             # Only add categories.
             current_categories = self._captures_index[capture_uuid].categories
