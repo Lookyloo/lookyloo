@@ -15,6 +15,7 @@ from .urlhaus import URLhaus  # noqa
 from .cloudflare import Cloudflare  # noqa
 from .circlpdns import CIRCLPDNS  # noqa
 from .ail import AIL  # noqa
+from .auto_categorize import AutoCategorize  # noqa
 
 __all__ = [
     'AssemblyLine',
@@ -32,5 +33,6 @@ __all__ = [
     'URLhaus',
     'Cloudflare',
     'CIRCLPDNS',
-    'AIL'
+    'AIL',
+    'AutoCategorize'
 ]

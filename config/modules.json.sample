@@ -119,6 +119,15 @@
     "enabled": true,
     "autoupdate": true
   },
+  "AutoCategorize": {
+    "enabled": false,
+    "categories": {
+        "invalid_init_script": {
+            "enabled": false,
+            "tags": ["tooling:lookyloo:http-spam"]
+        }
+    }
+  },
   "_notes": {
     "apikey": "null disables the module. Pass a string otherwise.",
     "autosubmit": "Automatically submits the URL to the 3rd party service.",
@@ -139,6 +148,7 @@
     "CIRCLPDNS": "Module to query CIRCL Passive DNS (https://www.circl.lu/services/passive-dns/)",
     "AIL": "Module to submit URLs to AIL Framework (https://github.com/CIRCL/AIL-framework)",
     "IPASNHistory": "Module to query IPASN History (https://ipasnhistory.circl.lu/)",
-    "Cloudflare": "Module to check if an IP is on Cloudflare infrastructure"
+    "Cloudflare": "Module to check if an IP is on Cloudflare infrastructure",
+    "AutoCategorize": "Module that runs after the capture is done and assign categories to captures based on rules."
   }
 }
