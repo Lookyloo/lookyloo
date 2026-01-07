@@ -4,6 +4,28 @@
 
 {% block title %}Categories{% endblock %}
 
+{% block card %}
+<meta property="og:title" content="Lookyloo" />
+<meta property="og:type" content="website"/>
+<meta
+  property="og:description"
+  content="Lookyloo captures websites and let you investigate them."
+/>
+<meta
+  property="og:image"
+  content="https://{{public_domain}}{{ url_for('static', filename='lookyloo.jpeg') }}"
+/>
+<meta
+  property="og:url"
+  content="https://{{public_domain}}"
+/>
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+{% endblock %}
+
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript" nonce="{{ csp_nonce() }}">
@@ -16,27 +38,26 @@
 {% endblock %}
 
 {% block content %}
+  {% include 'top_navbar.html' %}
+
   {% if not_enabled %}
-  Categorization not enabled.
+  <center>
+    <p class="lead">Categorization not enabled.</p>
+  </center>
   {% else %}
+  <center>
+    <p class="lead">See known categories below.</p>
+  </center>
+
+
   <div class="table-responsive">
-  <table id="table" class="table" style="width:96%">
+  <table id="categoriesTable" class="table table-striped" style="width:100%">
     <thead>
      <tr>
        <th>Category</th>
-       <th>Frequency</th>
+       <th>Total captures</th>
      </tr>
     </thead>
-    <tbody>
-      {% for category, freq in categories %}
-      <tr>
-        <td>
-          <a href="{{ url_for('index', category=category) }}">{{ category }}</a>
-        </td>
-        <td>{{ freq }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
   </table>
   </div>
   {% endif %}

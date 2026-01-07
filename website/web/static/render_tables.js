@@ -22,6 +22,23 @@ function renderTables() {
       ],
     })
   }
+  if (document.getElementById('categoriesTable')) {
+      new DataTable('#categoriesTable', {
+        processing: true,
+        retrieve: true,
+        searching: true,
+        drawCallback: function (settings) { newTabClickListener() },
+        order: [[ 1, "desc" ]],
+        pageLength: 25,
+        ajax: {
+            url: `/tables/categoriesTable/${window.location.search}`,
+            type: 'POST',
+            dataSrc:""
+        },
+        columns: [{ data: {_: 'category.display', filter: 'category.filter'}, width: '90%' },
+                  { data: 'total_captures', width: '10%', orderable: true }]
+      })
+  }
   if (document.getElementById('HHHDetailsTable')) {
     let hhh = document.getElementById('HHHDetailsTable').dataset.hhh;
     new DataTable('#HHHDetailsTable', {
