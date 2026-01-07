@@ -2725,8 +2725,9 @@ def get_index(public: bool=True, show_error: bool=False, category: str | None=No
     return total, [(cache.uuid, cache.title, cache.redirects, cache.timestamp) for cache in cached_captures]
 
 
+@app.route('/tables/<string:table_name>/', methods=['POST'])
 @app.route('/tables/<string:table_name>/<string:value>', methods=['POST'])
-def post_table(table_name: str, value: str) -> Response:
+def post_table(table_name: str, value: str | None=None) -> Response:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     draw = request.form.get('draw', type=int)
     start = request.form.get('start', type=int)
@@ -2763,6 +2764,18 @@ def post_table(table_name: str, value: str) -> Response:
                                           'filter': escape(' '.join(redirects))}
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
+
+    if table_name == 'categoriesTable':
+        prepared_captures = []
+        for category in get_indexing(flask_login.current_user).categories:
+            nb_captures = get_indexing(flask_login.current_user).get_captures_category_count(category)
+            to_append = {
+                'total_captures': nb_captures,
+                'category': {'display': Markup('<a href="{url}">{category}</a>').format(url=url_for("index", category=category), category=category),
+                             'filter': escape(category)}
+            }
+            prepared_captures.append(to_append)
+        return jsonify(prepared_captures)
 
     if table_name == 'HHHDetailsTable':
         hhh = value.strip()
