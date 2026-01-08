@@ -102,6 +102,7 @@ class AsyncCapture(AbstractManager):
                         uuid, to_capture.listing,
                         os=to_capture.os, browser=to_capture.browser,
                         parent=to_capture.parent,
+                        categories=to_capture.categories,
                         downloaded_filename=entries.get('downloaded_filename'),
                         downloaded_file=entries.get('downloaded_file'),
                         error=entries.get('error'), har=entries.get('har'),

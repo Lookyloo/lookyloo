@@ -2005,7 +2005,8 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            mastobot_enabled=get_config('mastobot', 'enable'),
                            mastodon_domain=mastodon_domain,
                            mastodon_botname=mastodon_botname,
-                           has_global_proxy=True if lookyloo.global_proxy else False)
+                           has_global_proxy=True if lookyloo.global_proxy else False,
+                           categories=sorted(get_indexing(flask_login.current_user).categories))
 
 
 @app.route('/recapture/<uuid:tree_uuid>', methods=['GET'])
@@ -2197,6 +2198,9 @@ def capture_web() -> str | Response | WerkzeugResponse:
 
         if request.form.get('init_script'):
             capture_query['init_script'] = request.form['init_script']
+
+        if request.form.get('categories'):
+            capture_query['categories'] = request.form.getlist('categories')
 
         capture_query['remote_lacus_name'] = request.form.get('remote_lacus_name')
         if _p_name := [n for n in request.form.getlist('remote_lacus_proxy_name') if n]:
@@ -2727,7 +2731,7 @@ def get_index(public: bool=True, show_error: bool=False, category: str | None=No
 
 @app.route('/tables/<string:table_name>/', methods=['POST'])
 @app.route('/tables/<string:table_name>/<string:value>', methods=['POST'])
-def post_table(table_name: str, value: str | None=None) -> Response:
+def post_table(table_name: str, value: str='') -> Response:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     draw = request.form.get('draw', type=int)
     start = request.form.get('start', type=int)
