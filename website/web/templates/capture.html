@@ -378,6 +378,18 @@
           </div>
         </div>
         {%endif%}
+        {% if current_user.is_authenticated and categories%}
+        <div class="row mb-3" id="user_categories">
+          <label for="categories" class="col-sm-2 col-form-label">Categories (select one or more):</label>
+          <div class="col-sm-10">
+            <select class="form-select" multiple size="5" name="categories" id="categories" aria-label="size 3 multiple select categories">
+                {% for category in categories %}
+                <option value="{{category}}">{{category}}</option>
+                {% endfor %}
+            </select>
+          </div>
+        </div>
+        {%endif%}
 
         <div class="row mb-3">
           <label for="capture_timeout_in_sec" class="col-sm-2 col-form-label">Max capture time:</label>

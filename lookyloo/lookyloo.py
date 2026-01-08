@@ -737,6 +737,13 @@ class Lookyloo():
         else:
             return CaptureSettings(**recursive_merge(user_config, query.model_dump()))
 
+    def _valid_category(self, category: str) -> bool:
+        '''For now, an authenticated user can submit anything they want.
+        Otherwise, it must be an existing category
+        '''
+        # Use the public index
+        return category in get_indexing().categories
+
     def enqueue_capture(self, query: CaptureSettings, source: str, user: str, authenticated: bool) -> str:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
 
@@ -752,6 +759,10 @@ class Lookyloo():
             else:
                 usr_prio = self._priority['users'][user] if self._priority['users'].get(user) else self._priority['users']['_default_auth']
             return src_prio + usr_prio
+
+        if query.categories and not authenticated:
+            # remove from the list of categories the ones we don't know
+            query.categories = [c for c in query.categories if self._valid_category(c)]
 
         # NOTE: Make sure we have a useragent
         if not query.user_agent:
@@ -2062,6 +2073,8 @@ class Lookyloo():
                     listing = False
                 elif filename.endswith('parent'):
                     parent = lookyloo_capture.read(filename).decode()
+                elif filename.endswith('categories'):
+                    categories = [c.strip() for c in lookyloo_capture.read(filename).decode().split("\n") if c.strip()]
                 elif filename.endswith('0.data.filename'):
                     downloaded_filename = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('0.data'):
@@ -2107,7 +2120,8 @@ class Lookyloo():
                                cookies=cookies, storage=storage,
                                capture_settings=capture_settings if capture_settings else None,
                                potential_favicons=potential_favicons,
-                               trusted_timestamps=trusted_timestamps if trusted_timestamps else None)
+                               trusted_timestamps=trusted_timestamps if trusted_timestamps else None,
+                               categories=categories)
             return uuid, messages
 
     def store_capture(self, uuid: str, is_public: bool,
@@ -2123,7 +2137,8 @@ class Lookyloo():
                       capture_settings: CaptureSettings | None=None,
                       potential_favicons: set[bytes] | None=None,
                       trusted_timestamps: dict[str, str] | None=None,
-                      auto_report: bool | dict[str, str] | None = None
+                      auto_report: bool | dict[str, str] | None = None,
+                      categories: list[str] | None=None
                       ) -> Path:
 
         if self.uuid_exists(uuid):
@@ -2152,6 +2167,10 @@ class Lookyloo():
         # Write no_index marker (optional)
         if not is_public:
             (dirpath / 'no_index').touch()
+
+        if categories:
+            with (dirpath / 'categories').open('w') as _categories:
+                _categories.write('\n'.join(categories))
 
         # Write parent UUID (optional)
         if parent:
