@@ -1350,6 +1350,10 @@ class Lookyloo():
         # NOTE: the UUID file will always be added, as long as all_files is True,
         #       even if we pass an extension
         all_paths.append(capture_dir / 'uuid')
+        if extension == '*':
+            # also add the categories
+            all_paths.append(capture_dir / 'categories')
+
         with ZipFile(to_return, 'w', compression=ZIP_DEFLATED) as myzip:
             for path in all_paths:
                 if 'pickle' in path.name:
@@ -2027,6 +2031,7 @@ class Lookyloo():
         capture_settings: CaptureSettings | None = None
         potential_favicons: set[bytes] | None = None
         trusted_timestamps: dict[str, str] | None = None
+        categories: list[str] | None = None
 
         files_to_skip = ['cnames.json', 'ipasn.json', 'ips.json', 'mx.json',
                          'nameservers.json', 'soa.json', 'hashlookup.json']
@@ -2121,7 +2126,7 @@ class Lookyloo():
                                capture_settings=capture_settings if capture_settings else None,
                                potential_favicons=potential_favicons,
                                trusted_timestamps=trusted_timestamps if trusted_timestamps else None,
-                               categories=categories)
+                               categories=categories if categories else None)
             return uuid, messages
 
     def store_capture(self, uuid: str, is_public: bool,
