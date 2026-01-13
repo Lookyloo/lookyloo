@@ -1351,8 +1351,10 @@ class Lookyloo():
         #       even if we pass an extension
         all_paths.append(capture_dir / 'uuid')
         if extension == '*':
-            # also add the categories
-            all_paths.append(capture_dir / 'categories')
+            # also add the categories, if any
+            c_path = capture_dir / 'categories'
+            if c_path.exists():
+                all_paths.append(c_path)
 
         with ZipFile(to_return, 'w', compression=ZIP_DEFLATED) as myzip:
             for path in all_paths:
