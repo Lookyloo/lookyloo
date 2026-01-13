@@ -724,6 +724,7 @@ class UploadCapture(Resource):  # type: ignore[misc]
         parameters: dict[str, Any] = request.get_json(force=True)
         listing: bool = True if parameters.get('listing') else False
         uuid: str = parameters['uuid'] if parameters.get('uuid') else str(uuid4())
+        categories: list[str] | None = parameters['categories'] if parameters.get('categories') else None
         har: dict[str, Any] | None = None
         html: str | None = None
         last_redirected_url: str | None = None
@@ -753,7 +754,7 @@ class UploadCapture(Resource):  # type: ignore[misc]
                     html = base64.b64decode(parameters['html_file']).decode()
                 lookyloo.store_capture(uuid, is_public=listing, har=har,
                                        last_redirected_url=last_redirected_url,
-                                       png=screenshot, html=html)
+                                       png=screenshot, html=html, categories=categories)
             except Exception as e:
                 messages['errors'].append(f'Unable to process the upload: {e}')
 
@@ -791,6 +792,7 @@ class UploadCapture(Resource):  # type: ignore[misc]
                         storage=parameters.get('storage'),
                         potential_favicons=parameters.get('potential_favicons'),
                         trusted_timestamps=parameters.get('trusted_timestamps'),
+                        categories=categories,
                     )
                 except (binascii.Error, ValueError) as e:
                     messages['errors'].append(f'Invalid base64-encoding: {e}')
