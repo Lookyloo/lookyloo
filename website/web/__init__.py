@@ -2696,18 +2696,23 @@ favicon_download_button_template = app.jinja_env.from_string(source='''
 </button>''')
 
 
-def get_index(public: bool=True, show_error: bool=False, category: str | None=None,
-              offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, list[str], datetime]]]:
+def get_index(offset: int, limit: int, public: bool=True, show_error: bool=False, category: str | None=None,
+              search: str | None=None) -> tuple[int, int | None, list[tuple[str, str, list[str], datetime]]]:
     '''Returns the index.'''
+    total_filtered: int | None = None
     if category:
         # NOTE: 2026-01-05: when we search for categories, we want to also display the non-cached captures, even if it takes some time.
         total = get_indexing(flask_login.current_user).get_captures_category_count(category)
         if search:
+            # get all the *recent* captures in that category, then filter
             cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
                 [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)],
                 public=public,
                 cached_captures_only=False) if capture.search(search)]
+            total_filtered = len(cached_captures)
+            cached_captures = cached_captures[offset: offset + limit]
         else:
+            # get the subset of captures in that category only (faster)
             cached_captures = lookyloo.sorted_capture_cache(
                 get_indexing(flask_login.current_user).get_captures_category(category,
                                                                              offset=offset,
@@ -2726,7 +2731,9 @@ def get_index(public: bool=True, show_error: bool=False, category: str | None=No
 
         if search:
             cached_captures = [capture for capture in cached_captures if capture.search(search)]
-    return total, [(cache.uuid, cache.title, cache.redirects, cache.timestamp) for cache in cached_captures]
+            total_filtered = len(cached_captures)
+        cached_captures = cached_captures[offset: offset + limit]
+    return total, total_filtered, [(cache.uuid, cache.title, cache.redirects, cache.timestamp) for cache in cached_captures]
 
 
 @app.route('/tables/<string:table_name>/', methods=['POST'])
@@ -2746,10 +2753,11 @@ def post_table(table_name: str, value: str='') -> Response:
             # NOTE: hidden captures are only available to authenticated users.
             return jsonify({'error': 'Not allowed.'})
 
-        total, captures = get_index(show_hidden is False, category=category, offset=start, limit=length, search=search)
-        if search and start is not None and length is not None:
-            total_filtered = len(captures)
-            captures = captures[start:start + length]
+        if start is None or length is None:
+            logger.warning(f'Missing start {start} or length {length}.')
+            return jsonify({'error': f'Missing start {start} or length {length}.'})
+
+        total, total_filtered, captures = get_index(public=show_hidden is False, category=category, offset=start, limit=length, search=search)
         prepared_captures = []
         for capture_uuid, title, redirects, capture_time in captures:
             to_append = {
