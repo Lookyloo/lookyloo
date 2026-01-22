@@ -3206,14 +3206,14 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "25.0"
+version = "26.0"
 description = "Core utilities for Python packages"
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"},
-    {file = "packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"},
+    {file = "packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529"},
+    {file = "packaging-26.0.tar.gz", hash = "sha256:00243ae351a257117b6a241061796684b084ed1c516a08c48a3f7e147a9d80b4"},
 ]
 
 [[package]]
@@ -3402,14 +3402,14 @@ black = ["black (>=25.9.0)"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.36.1"
+version = "1.36.2"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "playwrightcapture-1.36.1-py3-none-any.whl", hash = "sha256:d1a3fe554c7d96c5256554479062cd4b0b796b4c9281a6b5c65d2622008c3c93"},
-    {file = "playwrightcapture-1.36.1.tar.gz", hash = "sha256:d88c7b7db31717d0311b7f7e2da1e151df873f5fa4fa961e2d39adaf615e8f34"},
+    {file = "playwrightcapture-1.36.2-py3-none-any.whl", hash = "sha256:30d9c07f992d5bc502bdb605347f8c9bbee79f2e636af24a278e4fe9c4ecc90b"},
+    {file = "playwrightcapture-1.36.2.tar.gz", hash = "sha256:a6e3d007a6d91e980ed69ec71ba5408fd44d8b3a72968e3fc45d454923a90cfd"},
 ]
 
 [package.dependencies]
@@ -3421,12 +3421,12 @@ dateparser = ">=1.2.2"
 dnspython = ">=2.7.0,<3.0.0"
 orjson = ">=3.11.4,<4.0.0"
 playwright = ">=1.57.0"
-playwright-stealth = ">=2"
+playwright-stealth = ">=2.0.1"
 puremagic = ">=1.30"
 pydub-ng = {version = ">=0.2.0", optional = true, markers = "extra == \"recaptcha\""}
 python-socks = ">=2.7.1,<3.0.0"
 rfc3161-client = ">=1.0.4,<2.0.0"
-setuptools = ">=80.9.0"
+setuptools = ">=80.10.1"
 SpeechRecognition = {version = ">=3.14.5", optional = true, markers = "extra == \"recaptcha\""}
 typing-extensions = {version = ">=4.12.2,<5.0.0", markers = "python_version < \"3.12\""}
 tzdata = ">=2025.3"
@@ -3885,14 +3885,14 @@ idna = ["idna (>=2.1)"]
 
 [[package]]
 name = "pycparser"
-version = "2.23"
+version = "3.0"
 description = "C parser in Python"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["main", "dev"]
 files = [
-    {file = "pycparser-2.23-py3-none-any.whl", hash = "sha256:e5c6e8d3fbad53479cab09ac03729e0a9faf2bee3db8208a550daf5af81a5934"},
-    {file = "pycparser-2.23.tar.gz", hash = "sha256:78816d4f24add8f10a06d6f05b4d424ad9e96cfebf68a4ddc99c65c0720d00c2"},
+    {file = "pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"},
+    {file = "pycparser-3.0.tar.gz", hash = "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29"},
 ]
 markers = {main = "implementation_name != \"PyPy\"", dev = "platform_python_implementation != \"PyPy\" and implementation_name != \"PyPy\""}
 
@@ -4266,21 +4266,21 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.21.0"
+version = "1.21.2"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pylacus-1.21.0-py3-none-any.whl", hash = "sha256:0a8e025b994b97ea054970e61bc3da7ad3b87d95f259d291c22ab0691fa0e559"},
-    {file = "pylacus-1.21.0.tar.gz", hash = "sha256:dda71d34cc27abceb58df13a2ca29eadafb70441ed485f730444956a100be32e"},
+    {file = "pylacus-1.21.2-py3-none-any.whl", hash = "sha256:d7c938e5a8eb4b0dbe2422344532436574b287d1c8330055f8a77530d61ca3a9"},
+    {file = "pylacus-1.21.2.tar.gz", hash = "sha256:e7ff42544c58aa721fbed51f519da0a7ebf5b5fec18a2f8412c1c465b3af1c29"},
 ]
 
 [package.dependencies]
 requests = ">=2.32.5"
 
 [package.extras]
-docs = ["Sphinx (>=9.0.4) ; python_version >= \"3.11\""]
+docs = ["Sphinx (>=9.1.0) ; python_version >= \"3.12\""]
 
 [[package]]
 name = "pylookyloo"
@@ -6204,4 +6204,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "ba4a2c9c83f1909a4c74fc389267eddab7d10a2250051710ae06d4309e5b1f40"
+content-hash = "939ba5321060ddc96085d791e9f91e8adcacaa48e1d28f4c3c40d718f8e11380"
