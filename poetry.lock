@@ -1654,14 +1654,14 @@ test = ["objgraph", "psutil", "setuptools"]
 
 [[package]]
 name = "gunicorn"
-version = "23.0.0"
+version = "24.0.0"
 description = "WSGI HTTP Server for UNIX"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "gunicorn-23.0.0-py3-none-any.whl", hash = "sha256:ec400d38950de4dfd418cff8328b2c8faed0edb0d517d3394e457c317908ca4d"},
-    {file = "gunicorn-23.0.0.tar.gz", hash = "sha256:f014447a0101dc57e294f6c18ca6b40227a4c90e9bdb586042628030cba004ec"},
+    {file = "gunicorn-24.0.0-py3-none-any.whl", hash = "sha256:30401647ed4f162a3f7e5b8b3ed77e6e88d9a4ea5599f1ff31f7f54a7610339c"},
+    {file = "gunicorn-24.0.0.tar.gz", hash = "sha256:7f6c916308740942586f49f14cf3743bdfc4130c29520c42706f42fa5a2dacdb"},
 ]
 
 [package.dependencies]
@@ -1669,11 +1669,11 @@ packaging = "*"
 setproctitle = {version = "*", optional = true, markers = "extra == \"setproctitle\""}
 
 [package.extras]
-eventlet = ["eventlet (>=0.24.1,!=0.36.0)"]
-gevent = ["gevent (>=1.4.0)"]
+eventlet = ["eventlet (>=0.40.3)"]
+gevent = ["gevent (>=24.10.1)"]
 setproctitle = ["setproctitle"]
-testing = ["coverage", "eventlet", "gevent", "pytest", "pytest-cov"]
-tornado = ["tornado (>=0.2)"]
+testing = ["coverage", "eventlet (>=0.40.3)", "gevent (>=24.10.1)", "pytest", "pytest-asyncio", "pytest-cov"]
+tornado = ["tornado (>=6.5.0)"]
 
 [[package]]
 name = "h11"
@@ -6204,4 +6204,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "939ba5321060ddc96085d791e9f91e8adcacaa48e1d28f4c3c40d718f8e11380"
+content-hash = "3997f502fc64e5a898bf6ad86824098bb69270945b8af6ac2f383814072025b2"
