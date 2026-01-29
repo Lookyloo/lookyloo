@@ -920,6 +920,10 @@ class CaptureData(Resource):  # type: ignore[misc]
     def get(self, capture_uuid: str) -> Response:
         success, filename, data = lookyloo.get_data(capture_uuid)
         if success:
+            if filename == f'{capture_uuid}_multiple_downloads.zip':
+                # got multiple downloads, return as-is instead of double zipping
+                return send_file(data, mimetype='application/zip')
+
             to_return = BytesIO()
             with ZipFile(to_return, 'w') as z:
                 z.writestr(filename, data.getvalue())
