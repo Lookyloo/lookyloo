@@ -44,7 +44,7 @@ mastobot = "bin.mastobot:main"
 assemblyline_client = "^4.9.9"
 requests = "^2.32.5"
 flask = "^3.1.2"
-gunicorn = {version = "^23.0.0", extras = ["setproctitle"]}
+gunicorn = {version = "^24.1.1", extras = ["setproctitle"]}
 charset-normalizer = "^3.4.4"
 redis = {version = "^5.3.0,<6.0", extras = ["hiredis"]}
 beautifulsoup4 = {version = "^4.14.3", extras = ["lxml", "charset_normalizer"]}
