@@ -2103,17 +2103,18 @@ class Lookyloo():
                             break
                     else:
                         messages['warnings'].append(f'Unexpected file in the capture archive: {filename}')
-            if not har or not html or not last_redirected_url or not screenshot:
-                # If we don't have these 4 files, the archive is incomplete and we should not store it.
+            if not har:
+                # 2026-02-02: only the HAR is absolutely required, we may have captures without html, langing page and screenshots
                 unrecoverable_error = True
                 if not har:
                     messages['errors'].append('Invalid submission: missing HAR file')
+            elif not html or not last_redirected_url or not screenshot:
                 if not html:
-                    messages['errors'].append('Invalid submission: missing HTML file')
+                    messages['warnings'].append('Incomplete submission: missing HTML file')
                 if not last_redirected_url:
-                    messages['errors'].append('Invalid submission: missing landing page')
+                    messages['warnings'].append('Incomplete submission: missing landing page')
                 if not screenshot:
-                    messages['errors'].append('Invalid submission: missing screenshot')
+                    messages['warnings'].append('Incomplete submission: missing screenshot')
 
             if unrecoverable_error:
                 return '', messages
