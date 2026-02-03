@@ -142,7 +142,9 @@ class Indexing():
 
             # do the indexing
             ct = load_pickle_tree(directory, directory.stat().st_mtime, self.logger)
-            # rebuild pickles if a new entry is missing
+            # 2026-02-03: rebuild pickles if a new entry is missing
+            # That's the place where we force that when har2tree adds a new feature we need for indexing
+            # * original_url: added in v1.36.3 to allow cleaner indexing of tlds/domains with pyfaup-rs
             new_entries = ['original_url']
             for entry in new_entries:
                 if not hasattr(ct.root_hartree.url_tree, entry):
@@ -740,6 +742,11 @@ class Indexing():
 
         already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            try:
+                urlnode.tld
+            except Exception as e:
+                self.logger.warning(f'Unable to parse {urlnode.name}: {e}')
+                continue
             if urlnode.tld not in already_indexed_global:
                 # TLD hasn't been indexed in that run yet
                 already_indexed_global.add(urlnode.tld)
@@ -803,6 +810,12 @@ class Indexing():
 
         already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            try:
+                urlnode.domain
+            except Exception as e:
+                self.logger.warning(f'Unable to parse {urlnode.name}: {e}')
+                continue
+
             if urlnode.domain and urlnode.domain not in already_indexed_global:
                 # Domain hasn't been indexed in that run yet
                 already_indexed_global.add(urlnode.domain)
@@ -815,7 +828,7 @@ class Indexing():
             pipeline.sadd(f'{internal_index}|domains|{urlnode.domain}', urlnode.uuid)
 
         pipeline.execute()
-        self.logger.debug(f'done with domainss for {crawled_tree.uuid}.')
+        self.logger.debug(f'done with domains for {crawled_tree.uuid}.')
 
     def get_captures_domain(self, domain: str, most_recent_capture: datetime | None = None,
                             oldest_capture: datetime | None=None,
