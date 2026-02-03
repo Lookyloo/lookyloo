@@ -324,6 +324,28 @@ function renderTables() {
     });
   }
 
+  if (document.getElementById('domainTable')) {
+      let domain = document.getElementById('domainTable').dataset.domain;
+      new DataTable('#domainTable', {
+        processing: true,
+        serverSide: true,
+        retrieve: true,
+        ordering: false,
+        searching: true,
+        drawCallback: function (settings) { newTabClickListener() },
+        ajax: {
+           url: `/tables/domainTable/${domain}${window.location.search}`,
+           type: 'POST'
+        },
+        columns : [
+           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
+           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
+        ],
+    });
+  }
+
+
   if (document.getElementById('tldTable')) {
       let tld = document.getElementById('tldTable').dataset.tld;
       new DataTable('#tldTable', {

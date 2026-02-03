@@ -31,7 +31,6 @@ from har2tree import CrawledTree, HostNode, URLNode
 from lacuscore import CaptureSettings as LacuscoreCaptureSettings
 from PIL import Image
 from playwrightcapture import get_devices
-from publicsuffixlist import PublicSuffixList  # type: ignore[import-untyped]
 from pytaxonomies import Taxonomies  # type: ignore[attr-defined]
 import ua_parser
 from werkzeug.user_agent import UserAgent
@@ -96,13 +95,6 @@ def get_resources_hashes(har2tree_container: CrawledTree | HostNode | URLNode) -
 @lru_cache
 def get_taxonomies() -> Taxonomies:
     return Taxonomies()
-
-
-@lru_cache
-def get_public_suffix_list() -> PublicSuffixList:
-    """Initialize Public Suffix List"""
-    # TODO (?): fetch the list
-    return PublicSuffixList()
 
 
 @lru_cache

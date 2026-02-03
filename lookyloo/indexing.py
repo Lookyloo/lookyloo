@@ -74,6 +74,7 @@ class Indexing():
         p.srem('indexed_identifiers', capture_uuid)
         p.srem('indexed_categories', capture_uuid)
         p.srem('indexed_tlds', capture_uuid)
+        p.srem('indexed_domains', capture_uuid)
         p.srem('indexed_ips', capture_uuid)
         for identifier_type in self.identifiers_types():
             p.srem(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
@@ -84,7 +85,7 @@ class Indexing():
                 p.srem(f'indexed_hash_type|{hash_type}', capture_uuid)
         for internal_index in self.redis.smembers(f'capture_indexes|{capture_uuid}'):
             # NOTE: these ones need to be removed because the node UUIDs are recreated on tree rebuild
-            # internal_index can be "tlds"
+            # internal_index can be "tlds" or "domains"
             for entry in self.redis.smembers(f'capture_indexes|{capture_uuid}|{internal_index}'):
                 # entry can be a "com", we delete a set of UUIDs, remove from the captures set
                 for i in self.redis.smembers(f'capture_indexes|{capture_uuid}|{internal_index}|{entry}'):
@@ -97,7 +98,7 @@ class Indexing():
         p.delete(f'capture_indexes|{capture_uuid}')
         p.execute()
 
-    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool, bool, bool, bool]:
+    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool]:
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
@@ -107,6 +108,7 @@ class Indexing():
         p.sismember('indexed_identifiers', capture_uuid)
         p.sismember('indexed_categories', capture_uuid)
         p.sismember('indexed_tlds', capture_uuid)
+        p.sismember('indexed_domains', capture_uuid)
         p.sismember('indexed_ips', capture_uuid)
         # We also need to check if the hash_type are all indexed for this capture
         hash_types_indexed = all(self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid) for hash_type in self.captures_hashes_types())
@@ -140,6 +142,13 @@ class Indexing():
 
             # do the indexing
             ct = load_pickle_tree(directory, directory.stat().st_mtime, self.logger)
+            # rebuild pickles if a new entry is missing
+            new_entries = ['original_url']
+            for entry in new_entries:
+                if not hasattr(ct.root_hartree.url_tree, entry):
+                    remove_pickle_tree(directory)
+                    return False
+
             if not indexed[0]:
                 self.logger.info(f'Indexing urls for {uuid_to_index}')
                 self.index_url_capture(ct)
@@ -165,9 +174,12 @@ class Indexing():
                 self.logger.info(f'Indexing TLDs for {uuid_to_index}')
                 self.index_tld_capture(ct)
             if not indexed[8]:
+                self.logger.info(f'Indexing domains for {uuid_to_index}')
+                self.index_domain_capture(ct)
+            if not indexed[9]:
                 self.logger.info(f'Indexing IPs for {uuid_to_index}')
                 self.index_ips_capture(ct)
-            if not indexed[9]:
+            if not indexed[10]:
                 self.logger.info(f'Indexing hash types for {uuid_to_index}')
                 self.index_capture_hashes_types(ct)
 
@@ -728,19 +740,16 @@ class Indexing():
 
         already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if not hasattr(urlnode, 'known_tld'):
-                # No TLD in the node.
-                continue
-            if urlnode.known_tld not in already_indexed_global:
+            if urlnode.tld not in already_indexed_global:
                 # TLD hasn't been indexed in that run yet
-                already_indexed_global.add(urlnode.known_tld)
-                pipeline.sadd(f'{internal_index}|tlds', urlnode.known_tld)  # Only used to delete index
-                pipeline.sadd('tlds', urlnode.known_tld)
-                pipeline.zadd(f'tlds|{urlnode.known_tld}|captures',
+                already_indexed_global.add(urlnode.tld)
+                pipeline.sadd(f'{internal_index}|tlds', urlnode.tld)  # Only used to delete index
+                pipeline.sadd('tlds', urlnode.tld)
+                pipeline.zadd(f'tlds|{urlnode.tld}|captures',
                               mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
 
             # Add hostnode UUID in internal index
-            pipeline.sadd(f'{internal_index}|tlds|{urlnode.known_tld}', urlnode.uuid)
+            pipeline.sadd(f'{internal_index}|tlds|{urlnode.tld}', urlnode.uuid)
 
         pipeline.execute()
         self.logger.debug(f'done with TLDs for {crawled_tree.uuid}.')
@@ -771,6 +780,69 @@ class Indexing():
 
     def get_capture_tld_nodes(self, capture_uuid: str, tld: str) -> set[str]:
         if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|tlds|{tld}'):
+            return set(url_nodes)
+        return set()
+
+    # ###### Domains ######
+
+    @property
+    def domains(self) -> set[str]:
+        return self.redis.smembers('domains')
+
+    def index_domain_capture(self, crawled_tree: CrawledTree) -> None:
+        if self.redis.sismember('indexed_domains', crawled_tree.uuid):
+            # Do not reindex
+            return
+        self.redis.sadd('indexed_domains', crawled_tree.uuid)
+        self.logger.debug(f'Indexing domains for {crawled_tree.uuid} ... ')
+        pipeline = self.redis.pipeline()
+
+        # Add the domains key in internal indexes set
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'domains')
+
+        already_indexed_global: set[str] = set()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            if urlnode.domain and urlnode.domain not in already_indexed_global:
+                # Domain hasn't been indexed in that run yet
+                already_indexed_global.add(urlnode.domain)
+                pipeline.sadd(f'{internal_index}|domains', urlnode.domain)  # Only used to delete index
+                pipeline.sadd('domains', urlnode.domain)
+                pipeline.zadd(f'domains|{urlnode.domain}|captures',
+                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+            # Add hostnode UUID in internal index
+            pipeline.sadd(f'{internal_index}|domains|{urlnode.domain}', urlnode.uuid)
+
+        pipeline.execute()
+        self.logger.debug(f'done with domainss for {crawled_tree.uuid}.')
+
+    def get_captures_domain(self, domain: str, most_recent_capture: datetime | None = None,
+                            oldest_capture: datetime | None=None,
+                            offset: int | None=None, limit: int | None=None) -> list[str]:
+        """Get all the captures for a specific domain, on a time interval starting from the most recent one.
+
+        :param domain: The domain
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
+        return self.redis.zrevrangebyscore(f'domains|{domain}|captures', max_score, min_score, start=offset, num=limit)
+
+    def scan_captures_domain(self, domain: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'domains|{domain}|captures')
+
+    def get_captures_domain_count(self, domain: str) -> int:
+        return self.redis.zcard(f'domains|{domain}|captures')
+
+    def get_capture_domain_counter(self, capture_uuid: str, domain: str) -> int:
+        # NOTE: what to do when the capture isn't indexed yet? Raise an exception?
+        # For now, return 0
+        return self.redis.scard(f'capture_indexes|{capture_uuid}|domains|{domain}')
+
+    def get_capture_domain_nodes(self, capture_uuid: str, domain: str) -> set[str]:
+        if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|domains|{domain}'):
             return set(url_nodes)
         return set()
 

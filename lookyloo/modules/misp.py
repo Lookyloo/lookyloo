@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-import re
 
 from io import BytesIO
 from collections import defaultdict
@@ -18,7 +17,7 @@ from pymisp.tools import FileObject, URLObject
 
 from ..default import get_config, get_homedir
 from ..exceptions import ModuleError
-from ..helpers import get_public_suffix_list, global_proxy_for_requests
+from ..helpers import global_proxy_for_requests
 
 from .abstractmodule import AbstractModule
 
@@ -211,7 +210,6 @@ class MISP(AbstractModule):
         self.auto_push = bool(self.config.get('auto_push', False))
         self.storage_dir_misp = get_homedir() / 'misp'
         self.storage_dir_misp.mkdir(parents=True, exist_ok=True)
-        self.psl = get_public_suffix_list()
         return True
 
     def get_fav_tags(self) -> dict[Any, Any] | list[MISPTag]:
@@ -307,9 +305,9 @@ class MISP(AbstractModule):
         if self.admin_only and not as_admin:
             return {'error': 'Admin only module, cannot lookup.'}
 
-        tld = self.psl.publicsuffix(hostnode.name)
-        domain = re.sub(f'.{tld}$', '', hostnode.name).split('.')[-1]
-        to_lookup = [node.name, hostnode.name, f'{domain}.{tld}']
+        to_lookup = [node.name, hostnode.name]
+        if hostnode.domain:
+            to_lookup.append(hostnode.domain)
         if hasattr(hostnode, 'resolved_ips'):
             if 'v4' in hostnode.resolved_ips:
                 to_lookup += hostnode.resolved_ips['v4']
