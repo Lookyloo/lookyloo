@@ -2784,7 +2784,7 @@ def post_table(table_name: str, value: str='') -> Response:
             return jsonify({'error': 'Not allowed.'})
 
         if start is None or length is None:
-            app.logger.warning(f'Missing start {start} or length {length}.')
+            app.logger.info(f'Missing start {start} or length {length}.')
             return jsonify({'error': f'Missing start {start} or length {length}.'})
 
         total, total_filtered, captures = get_index(public=show_hidden is False, category=category, offset=start, limit=length, search=search)
