@@ -752,16 +752,31 @@ class Indexing():
             except Exception as e:
                 self.logger.warning(f'Unable to parse {urlnode.name}: {e}')
                 continue
-            if urlnode.tld not in already_indexed_global:
-                # TLD hasn't been indexed in that run yet
-                already_indexed_global.add(urlnode.tld)
-                pipeline.sadd(f'{internal_index}|tlds', urlnode.tld)  # Only used to delete index
-                pipeline.sadd('tlds', urlnode.tld)
-                pipeline.zadd(f'tlds|{urlnode.tld}|captures',
-                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+            # NOTE: the TLD here is a suffix list we get from Mozilla's Public Suffix List
+            # It means the string may contain more things than just what a normal user would consider a TLD
+            # Example: "pages.dev" is a suffix, it is a vendor, so it's handy to be able to get all the
+            # captures with that specific value, but we may also want to search for "dev"
+            # And if we don't post-process that suffix (split it and index all the possibilities),
+            # we wont get the pages.dev captures id we just search for dev.
 
-            # Add hostnode UUID in internal index
-            pipeline.sadd(f'{internal_index}|tlds|{urlnode.tld}', urlnode.uuid)
+            suffix = urlnode.tld
+            while True:
+                if suffix not in already_indexed_global:
+                    # TLD hasn't been indexed in that run yet
+                    already_indexed_global.add(suffix)
+                    pipeline.sadd(f'{internal_index}|tlds', suffix)  # Only used to delete index
+                    pipeline.sadd('tlds', suffix)
+                    pipeline.zadd(f'tlds|{suffix}|captures',
+                                  mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+                # Add hostnode UUID in internal index
+                pipeline.sadd(f'{internal_index}|tlds|{suffix}', urlnode.uuid)
+
+                if '.' in suffix:
+                    suffix = suffix.split('.', 1)[1]
+                else:
+                    # we processed the last segment
+                    break
 
         pipeline.execute()
         self.logger.debug(f'done with TLDs for {crawled_tree.uuid}.')
