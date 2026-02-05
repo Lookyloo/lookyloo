@@ -77,7 +77,7 @@ class CaptureCache():
 
         if url := cache_entry.get('url'):
             # This entry *should* be present even if there is an error.
-            self.url: str = url
+            self.url: str = url.strip()
 
         # if the cache doesn't have the keys in __default_cache_keys, it must have an error.
         # if it has neither all the expected entries, nor error, we must raise an exception
@@ -473,7 +473,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                     # That's if we have broken dumps that are twice json encoded
                     capture_settings = json.load(capture_settings)
             if capture_settings.get('url') and capture_settings['url'] is not None:
-                cache['url'] = capture_settings['url']
+                cache['url'] = capture_settings['url'].strip()
 
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
@@ -503,7 +503,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 cache['user_agent'] = har.root_user_agent if har.root_user_agent else 'No User Agent.'
                 if 'url' not in cache:
                     # if all went well, we already filled that one above.
-                    cache['url'] = har.root_url
+                    cache['url'] = har.root_url.strip()
                 if har.root_referrer:
                     cache['referer'] = har.root_referrer
             except Har2TreeError as e:

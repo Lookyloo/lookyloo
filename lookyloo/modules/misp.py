@@ -118,7 +118,14 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
             initial_obj = event.add_object(initial_file)
         else:
             event.info = f'Lookyloo Capture ({cache.url})'
-            initial_url = URLObject(cache.url)
+            url = cache.url.strip()
+            if not url:
+                raise ModuleError('No URL, cannot make a MISP event.')
+
+            if not url.startswith('http'):
+                initial_url = URLObject(f'http://{url}')
+            else:
+                initial_url = URLObject(cache.url)
             initial_url.comment = 'Submitted URL'
             initial_url.first_seen = cache.timestamp
             self.__misp_add_ips_to_URLObject(initial_url, cache.tree.root_hartree.hostname_tree)

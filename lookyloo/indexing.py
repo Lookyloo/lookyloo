@@ -192,8 +192,11 @@ class Indexing():
             # Skip from the the warning logs.
             self.logger.info(f'Error during indexing for {uuid_to_index}, recreate pickle: {e}')
             remove_pickle_tree(directory)
+        except ValueError as e:
+            self.logger.exception(f'[Faup] Error during indexing for {uuid_to_index}, recreate pickle: {e}')
+            remove_pickle_tree(directory)
         except Exception as e:
-            self.logger.error(f'Error during indexing for {uuid_to_index}, recreate pickle: {e}')
+            self.logger.exception(f'Error during indexing for {uuid_to_index}, recreate pickle: {e}')
             remove_pickle_tree(directory)
         finally:
             self.indexing_done(uuid_to_index)
@@ -743,7 +746,9 @@ class Indexing():
         already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             try:
-                urlnode.tld
+                if not urlnode.tld:
+                    self.logger.warning(f'Unable to get tld {urlnode.name}')
+                    continue
             except Exception as e:
                 self.logger.warning(f'Unable to parse {urlnode.name}: {e}')
                 continue
@@ -811,7 +816,10 @@ class Indexing():
         already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             try:
-                urlnode.domain
+                if not urlnode.domain:
+                    self.logger.warning(f'Unable to get domain {urlnode.name}')
+                    continue
+
             except Exception as e:
                 self.logger.warning(f'Unable to parse {urlnode.name}: {e}')
                 continue
