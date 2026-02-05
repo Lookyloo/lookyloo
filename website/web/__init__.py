@@ -40,6 +40,7 @@ from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus, CaptureSettingsError
 from markupsafe import Markup, escape
+from pyfaup import Host, Url
 from pylookyloo import PyLookylooError, Lookyloo as PyLookyloo
 from puremagic import from_string, PureError
 from pymisp import MISPEvent, MISPServerError
@@ -1932,15 +1933,40 @@ def rebuild_cache() -> WerkzeugResponse:
 
 @app.route('/search', methods=['GET', 'POST'])
 def search() -> str | Response | WerkzeugResponse:
-    if request.form.get('url'):
-        quoted_url: str = base64.urlsafe_b64encode(request.form.get('url', '').strip().encode()).decode()
-        return redirect(url_for('url_details', from_popup=True, url=quoted_url))
-    if request.form.get('hostname'):
-        return redirect(url_for('hostname_details', from_popup=True, hostname=request.form.get('hostname')))
-    if request.form.get('tld'):
-        return redirect(url_for('tld_details', from_popup=True, tld=request.form.get('tld')))
-    if request.form.get('domain'):
-        return redirect(url_for('domain_details', from_popup=True, domain=request.form.get('domain')))
+    # the URL search bar will work for:
+    # * tld: dev
+    # * suffix: pages.dev
+    # * domain: foo.pages.dev
+    # * hostname: bar.foo.pages.dev
+    # And faups figures it out.
+    if url := request.form.get('url', '').strip():
+        try:
+            # if that works, we have a URL, act accordingly.
+            Url(url)
+            quoted_url: str = base64.urlsafe_b64encode(url.encode()).decode()
+            return redirect(url_for('url_details', from_popup=True, url=quoted_url))
+        except ValueError:
+            app.logger.debug('Not a url, try as hostname.')
+
+        try:
+            # If tht works, we have a host, which can be a hostname, a domain, a suffix, or a tld or even an IP
+            f_host = Host(url)
+            if f_host.is_ip_addr():
+                return redirect(url_for('ip_details', from_popup=True, ip=str(f_host)))
+            elif f_host.is_hostname():
+                f_hostname = f_host.try_into_hostname()
+                if str(f_hostname.suffix) == str(f_hostname):
+                    # got a suffix, process as TLD
+                    return redirect(url_for('tld_details', from_popup=True, tld=f_hostname.suffix))
+                elif str(f_hostname.domain) == str(f_hostname):
+                    # got a domain
+                    return redirect(url_for('domain_details', from_popup=True, domain=f_hostname.domain))
+                else:
+                    # Actual hostname
+                    return redirect(url_for('hostname_details', from_popup=True, hostname=str(f_hostname)))
+        except ValueError:
+            app.logger.warning(f'Not a hostname, unable to do anything: {url}.')
+
     if request.form.get('ip'):
         return redirect(url_for('ip_details', from_popup=True, ip=request.form.get('ip')))
     if request.form.get('ressource'):
