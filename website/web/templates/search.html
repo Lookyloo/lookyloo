@@ -27,8 +27,8 @@
   <form role="form" action="{{ url_for('search') }}" method=post enctype=multipart/form-data>
     <div class="row mb-3">
       <div class="col-sm-10">
-        <label for="url" class="col-sm-2 col-form-label">URL:</label>
-        <input type="text" class="form-control" name="url" id=url placeholder="URL to search">
+        <label for="url" class="col-sm-2 col-form-label">URL part (can be a full URL, a hostname, a domain, a suffix, or a TLD):</label>
+        <input type="text" class="form-control" name="url" id=url placeholder="Part to search">
       </div>
     </div>
     <div class="row mb-3">
