@@ -24,40 +24,41 @@
   {% include 'top_navbar.html' %}
   <br>
   <div>Please only search one of the following thing at a time.</div>
+  <br>
   <form role="form" action="{{ url_for('search') }}" method=post enctype=multipart/form-data>
     <div class="row mb-3">
+      <label for="url" class="col-sm-2 col-form-label">URL part:</label>
       <div class="col-sm-10">
-        <label for="url" class="col-sm-2 col-form-label">URL part (can be a full URL, a hostname, a domain, a suffix, or a TLD):</label>
-        <input type="text" class="form-control" name="url" id=url placeholder="Part to search">
+        <input type="text" class="form-control" name="url" id=url placeholder="Full URL, hostname, domain, suffix, or TLD">
       </div>
     </div>
     <div class="row mb-3">
+      <label for="ip" class="col-sm-2 col-form-label">IP Address:</label>
       <div class="col-sm-10">
-        <label for="ip" class="col-sm-2 col-form-label">IP Address:</label>
-        <input type="text" class="form-control" name="ip" id=ip placeholder="IP to search">
+        <input type="text" class="form-control" name="ip" id=ip placeholder="IP">
       </div>
     </div>
     <div class="row mb-3">
+      <label for="ressource" class="col-sm-2 col-form-label">Ressource:</label>
       <div class="col-sm-10">
-        <label for="ressource" class="col-sm-2 col-form-label">Ressource:</label>
-        <input type="text" class="form-control" name="ressource" id=ressource placeholder="SHA 521 of the ressource to search">
+        <input type="text" class="form-control" name="ressource" id=ressource placeholder="Sha521 of the ressource">
       </div>
     </div>
     <div class="row mb-3">
+      <label for="cookie" class="col-sm-2 col-form-label">Cookie name:</label>
       <div class="col-sm-10">
-        <label for="cookie" class="col-sm-2 col-form-label">Cookie name:</label>
-        <input type="text" class="form-control" name="cookie" id=cookie placeholder="Cookie name to search">
+        <input type="text" class="form-control" name="cookie" id=cookie placeholder="Cookie name">
       </div>
     </div>
     <div class="row mb-3">
+      <label for="favicon_sha512" class="col-sm-2 col-form-label">Favicon SHA512:</label>
       <div class="col-sm-10">
-        <label for="favicon_sha512" class="col-sm-2 col-form-label">Favicon SHA512:</label>
-        <input type="text" class="form-control" name="favicon_sha512" id=favicon_sha512 placeholder="SHA512 of a favicon">
+        <input type="text" class="form-control" name="favicon_sha512" id=favicon_sha512 placeholder="Sha512 of a favicon">
       </div>
     </div>
     <div class="row mb-3">
+      <label for="favicon_file" class="col-sm-2 col-form-label">Favicon:</label>
       <div class="col-sm-10">
-        <label for="favicon_file" class="col-sm-2 col-form-label">Favicon:</label>
         <input class="form-control" type="file" id="favicon_file" name="favicon_file">
       </div>
     </div>
