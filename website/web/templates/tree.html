@@ -549,7 +549,7 @@
     <div class="modal-body">
       <dl class="row">
         <dt class="col-sm-2">URL captured</dt>
-        <dd class="col-sm-10 d-inline-block text-break">{{ shorten_string(info.url) }}</dd>
+        <dd class="col-sm-10 d-inline-block text-break">{{ shorten_string(info.url, with_copy_button=True) }}</dd>
 
         <dt class="col-sm-2">Page title</dt>
         <dd class="col-sm-10">{{ info.title }}</dd>

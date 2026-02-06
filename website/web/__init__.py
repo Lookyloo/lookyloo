@@ -240,7 +240,8 @@ def get_sri(directory: str, filename: str) -> str:
 # Inspired by: https://stackoverflow.com/questions/59157322/overflow-ellipsis-in-middle-of-a-string
 class SafeMiddleEllipsisString():
 
-    def __init__(self, unsafe_string: str | int):
+    def __init__(self, unsafe_string: str | int, with_copy_button: bool=False):
+        self.with_copy_button = with_copy_button
         if isinstance(unsafe_string, int):
             self.unsafe_string = str(unsafe_string)
         else:
@@ -255,16 +256,35 @@ class SafeMiddleEllipsisString():
             raise ValueError(f"Invalid format spec: {format_spec}")
         return self.__html__()
 
+    def _copy_button(self) -> Markup:
+        return Markup("""
+    <button type="button" class="btn btn-default btn-copy js-copy"
+         data-bs-toggle="tooltip" data-bs-placement="top"
+         style="vertical-align:top;--bs-btn-padding-x: -1rem;"
+         data-copy="{full}"
+         data-bs-original-title="Copy to clipboard">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/>
+      </svg>
+    </button>""").format(full=self.unsafe_string)
+
     def __html__(self) -> Markup:
+        button = Markup('')
+        if self.with_copy_button:
+            button = self._copy_button()
         return Markup("""
 <span class="middleEllipsis">
-  <span class="middleEllipsisleft"><div class="middleEllipsiswrap pb-1">{left}</div></span><span class="middleEllipsisright pb-1">&#x202A;{right}</span>
-</span>"""
-                      ).format(left=self.left, right=self.right)
+  <span class="middleEllipsisleft">
+    <div class="middleEllipsiswrap">{left}</div>
+  </span><!--no space--><span class="middleEllipsisright">&#x202A;{right}</span>
+  {button}
+</span>
+"""
+                      ).format(left=self.left, right=self.right, button=button)
 
 
-def shorten_string(s: str | int, with_title: bool=True) -> Markup:
-    ss = SafeMiddleEllipsisString(s)
+def shorten_string(s: str | int, with_title: bool=True, with_copy_button: bool=False) -> Markup:
+    ss = SafeMiddleEllipsisString(s, with_copy_button)
     if with_title:
         return Markup("{s:with_title}").format(s=ss)
     return Markup(ss)
@@ -2713,7 +2733,7 @@ def __prepare_title_in_modal(capture_uuid: str, title: str, from_popup: bool=Fal
 
 
 def __prepare_landings_in_modal(landing_page: str) -> dict[str, Markup]:
-    return {'display': shorten_string(landing_page),
+    return {'display': shorten_string(landing_page, with_copy_button=True),
             'filter': escape(landing_page)}
 
 
@@ -2727,7 +2747,7 @@ def _safe_capture_title(capture_uuid: str, title: str, nodes: Sequence[tuple[str
 
 index_link_template = app.jinja_env.from_string(source='''
 <b>Page title</b>: <span title="{{title}}">{{title}}</span><br>
-<b>Initial URL</b>: {{shorten_string(url)}}<br>
+<b>Initial URL</b>: {{shorten_string(url, with_copy_button=True)}}<br>
 <a style="float: right;" href="{{url_for('tree', tree_uuid=capture_uuid)}}" class="btn btn-outline-primary" role="button">Show capture</a>
 ''')
 
@@ -2735,10 +2755,10 @@ redir_chain_template = app.jinja_env.from_string(source='''
 {% from 'bootstrap5/utils.html' import render_icon %}
 
 <div class="text-center">
- <div class="row"><div class="col">{{shorten_string(redirects[0])}}</div></div>
+ <div class="row"><div class="col">{{shorten_string(redirects[0], with_copy_button=True)}}</div></div>
  {% for r in redirects[1:] %}
    <div class="row"><div class="col">{{ render_icon("arrow-down") }}</div></div>
-   <div class="row"><div class="col">{{ shorten_string(r) }}</div></div>
+   <div class="row"><div class="col">{{ shorten_string(r, with_copy_button=True) }}</div></div>
  {% endfor %}
 </div>
 <a style="float: right;" href="{{url_for('redirects', tree_uuid=uuid)}}" class="btn btn-outline-primary" role="button">Download redirects</a>

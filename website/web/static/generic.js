@@ -109,6 +109,24 @@ function submit_pandora(node_uuid, ressource_hash, index_in_zip, pandora_submit_
     });
 };
 
+function add_event_js_copy() {
+    // trigger all the BS tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    document.querySelectorAll('.js-copy').forEach(
+        el => el.addEventListener('click', function(e) {
+          e.preventDefault();
+          navigator.clipboard.writeText(el.dataset.copy).then(function() {
+            el.setAttribute('data-bs-original-title', 'Copying to clipboard was successful!');
+          }, function(err) {
+            el.setAttribute('data-bs-original-title', 'Could not copy text: ' + err);
+          }).then(function() {
+            $(el).tooltip('dispose').tooltip().tooltip('show');
+          });
+        })
+    );
+};
+
 document.addEventListener("DOMContentLoaded", () => {
 
   // trigger all the BS tooltips
@@ -123,17 +141,10 @@ document.addEventListener("DOMContentLoaded", () => {
     window.opener.LocateNode(el.dataset.hostnode);
   }));
 
-  document.querySelectorAll('.js-copy').forEach(
-      el => el.addEventListener('click', event => {
-        navigator.clipboard.writeText(el.dataset.copy).then(function() {
-            el.setAttribute('data-bs-original-title', 'Copying to clipboard was successful!');
-        }, function(err) {
-            el.setAttribute('data-bs-original-title', 'Could not copy text: ' + err);
-        });
-      })
-  );
+  add_event_js_copy();
 
   submitPandoraListener();
   newTabClickListener();
   renderTables();
+
 });

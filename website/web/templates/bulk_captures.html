@@ -68,7 +68,7 @@
       {% for uuid, captured_url in bulk_captures %}
       <tr>
         <td>
-          {{ shorten_string(captured_url) }}
+          {{ shorten_string(captured_url, with_copy_button=True) }}
         </td>
         <td><a href="{{ url_for('tree', tree_uuid=uuid) }}">Show capture</a></td>
         <td id="{{uuid}}" class="capture_status">Please wait...</td>

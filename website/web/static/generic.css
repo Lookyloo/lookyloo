@@ -144,7 +144,7 @@ table td p {
   /* white-space: normal;*/
   overflow: hidden;
   display: inline-block;
-  max-width: 50%;
+  max-width: 47%;
 }
 
 .middleEllipsiswrap{
@@ -160,7 +160,7 @@ table td p {
 
 .middleEllipsisright{
   display: inline-block;
-  max-width: 50%;
+  max-width: 47%;
   overflow: hidden;
   text-overflow: ellipsis;
   direction: rtl;

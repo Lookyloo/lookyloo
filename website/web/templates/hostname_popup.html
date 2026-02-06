@@ -180,14 +180,7 @@
         </div>
         {# URL #}
         <div class="col-1 g-0 text-end">..&nbsp;/</div>
-        <div class="col-9 g-0">{{ shorten_string(url['url_path'])}}</div>
-        <div class="col-1">
-         {# Copy full URL to clipbard #}
-         <button type="button" class="btn btn-default btn-copy js-copy"
-                data-bs-toggle="tooltip" data-bs-placement="bottom" data-copy="{{ url['url_object'].name }}" data-bs-original-title="Copy to clipboard">
-          {{ render_icon('copy') }}
-         </button>
-        </div>
+        <div class="col-8 g-0">{{ shorten_string(url['url_path'], with_copy_button=True)}}</div>
       </div>
       {% if last_url_in_address_bar %}
         {# This is the node of the rendered page #}

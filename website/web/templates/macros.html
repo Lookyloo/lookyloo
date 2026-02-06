@@ -115,7 +115,7 @@
   {% for detail in details %}
     <tr>
       <td><a href="{{ url_for('cookies_name_detail', cookie_name=cookie_name_value[0], from_popup=True) }}">{{ cookie_name_value[0] }}</a></td>
-      <td>{{ shorten_string(cookie_name_value[1]) }}</td>
+      <td>{{ shorten_string(cookie_name_value[1], with_copy_button=True) }}</td>
       <td>{{ detail[0] }}</td>
       {% if detail|length == 1 %}
       <td></td>
@@ -206,7 +206,7 @@
   <div class="row">
   {% for child in urlnode.children if child.name == urlnode.redirect_url %}
     <div class="col"><b>Redirect to</b>:</div>
-    <div class="col w-75">{{ shorten_string(urlnode.redirect_url) }}</div>
+    <div class="col w-75">{{ shorten_string(urlnode.redirect_url, with_copy_button=True) }}</div>
     <div class="col">
       <button type="button" class="btn btn-link locateInTree" data-hostnode="{{ child.hostnode_uuid }}" title="See the node the URL redirects to.">
         <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}" width="21" height="21"/>

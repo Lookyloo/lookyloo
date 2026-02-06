@@ -9,7 +9,7 @@ function renderTables() {
       retrieve: true,
       ordering: false,
       searching: true,
-      drawCallback: function (settings) { newTabClickListener() },
+      drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
       order: [[ 1, "desc" ]],
       ajax: {
         url: `/tables/indexTable/${indexType}${window.location.search}`,
@@ -27,7 +27,7 @@ function renderTables() {
         processing: true,
         retrieve: true,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         order: [[ 1, "desc" ]],
         pageLength: 25,
         ajax: {
@@ -47,7 +47,7 @@ function renderTables() {
       retrieve: true,
       ordering: false,
       searching: true,
-      drawCallback: function (settings) { newTabClickListener() },
+      drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
       ajax: {
           url: `/tables/HHHDetailsTable/${hhh}${window.location.search}`,
           type: 'POST'
@@ -67,7 +67,7 @@ function renderTables() {
       retrieve: true,
       ordering: false,
       searching: true,
-      drawCallback: function (settings) { newTabClickListener() },
+      drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
       ajax: {
           url: `/tables/bodyHashDetailsTable/${bodyhash}${window.location.search}`,
           type: 'POST'
@@ -87,7 +87,7 @@ function renderTables() {
         retrieve: true,
         ordering: false,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         ajax: {
             url: `/tables/hashTypeDetailsTable/${hash_value}${window.location.search}`,
             type: 'POST'
@@ -108,7 +108,7 @@ function renderTables() {
         retrieve: true,
         ordering: false,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         ajax: {
             url: `/tables/identifierDetailsTable/${identifier_value}${window.location.search}`,
             type: 'POST'
@@ -127,7 +127,7 @@ function renderTables() {
         retrieve: true,
         searching: true,
         drawCallback: function (settings) {
-            newTabClickListener();
+            newTabClickListener(); add_event_js_copy();;
             $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         },
         order: [[ 0, "desc" ]],
@@ -149,7 +149,7 @@ function renderTables() {
         retrieve: true,
         searching: true,
         drawCallback: function (settings) {
-            newTabClickListener();
+            newTabClickListener(); add_event_js_copy();;
             downloadFaviconListener();
         },
         order: [[ 0, "desc" ]],
@@ -170,7 +170,7 @@ function renderTables() {
         processing: true,
         retrieve: true,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         order: [[ 0, "desc" ]],
         ajax: {
             url: `/tables/treeHashesTable/${treeUUID}${window.location.search}`,
@@ -189,7 +189,7 @@ function renderTables() {
         retrieve: true,
         searching: true,
         drawCallback: function (settings) {
-            newTabClickListener();
+            newTabClickListener(); add_event_js_copy();;
             $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         },
         order: [[ 0, "desc" ]],
@@ -211,7 +211,7 @@ function renderTables() {
         retrieve: true,
         searching: true,
         drawCallback: function (settings) {
-            newTabClickListener();
+            newTabClickListener(); add_event_js_copy();;
             $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         },
         order: [[ 0, "desc" ]],
@@ -232,7 +232,7 @@ function renderTables() {
         processing: true,
         retrieve: true,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         order: [[ 0, "desc" ]],
         ajax: {
             url: `/tables/identifiersTable/${treeUUID}${window.location.search}`,
@@ -250,7 +250,7 @@ function renderTables() {
         processing: true,
         retrieve: true,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         order: [[ 0, "desc" ]],
         ajax: {
             url: `/tables/urlsTable/${treeUUID}${window.location.search}`,
@@ -269,7 +269,7 @@ function renderTables() {
         retrieve: true,
         ordering: false,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         ajax: {
             url: `/tables/cookieNameTable/${cookieName}${window.location.search}`,
             type: 'POST'
@@ -290,7 +290,7 @@ function renderTables() {
         retrieve: true,
         ordering: false,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         ajax: {
            url: `/tables/ipTable/${hostname}${window.location.search}`,
            type: 'POST'
@@ -311,7 +311,7 @@ function renderTables() {
         retrieve: true,
         ordering: false,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         ajax: {
            url: `/tables/hostnameTable/${hostname}${window.location.search}`,
            type: 'POST'
@@ -332,7 +332,7 @@ function renderTables() {
         retrieve: true,
         ordering: false,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         ajax: {
            url: `/tables/domainTable/${domain}${window.location.search}`,
            type: 'POST'
@@ -354,7 +354,7 @@ function renderTables() {
         retrieve: true,
         ordering: false,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         ajax: {
            url: `/tables/tldTable/${tld}${window.location.search}`,
            type: 'POST'
@@ -376,7 +376,7 @@ function renderTables() {
         retrieve: true,
         ordering: false,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         ajax: {
             url: `/tables/urlTable/${url}${window.location.search}`,
             type: 'POST'
@@ -397,7 +397,7 @@ function renderTables() {
         retrieve: true,
         ordering: false,
         searching: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         ajax: {
            url: `/tables/faviconDetailsTable/${favicon}${window.location.search}`,
            type: 'POST'
@@ -418,7 +418,7 @@ function renderTables() {
           retrieve: true,
           ordering: true,
           searching: true,
-          drawCallback: function (settings) { newTabClickListener() },
+          drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
           order: [[ 1, "desc" ]],
           ajax: {
              url: `/tables/CIRCL_pdns_table/${query}${window.location.search}`,
@@ -472,7 +472,7 @@ function renderTables() {
   if (document.getElementById('category_table')) {
       let cat_table = new DataTable('#category_table', {
         retrieve: true,
-        drawCallback: function (settings) { newTabClickListener() },
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
         order: [[ 0, "desc" ]],
         pageLength: 25,
         lengthMenu: [25, 50, {label: 'All', value:-1} ],
