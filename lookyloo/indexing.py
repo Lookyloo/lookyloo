@@ -122,7 +122,7 @@ class Indexing():
             # No HAR file in the capture, break immediately.
             return False
         if not self.can_index(uuid_to_index):
-            self.logger.info(f'Indexing on {uuid_to_index} ongoing, skipping. ')
+            self.logger.info(f'[{uuid_to_index}] Indexing ongoing, skip.')
             return False
 
         try:
@@ -131,13 +131,13 @@ class Indexing():
                 return False
 
             if not list(directory.rglob('*.har.gz')) and not list(directory.rglob('*.har')):
-                self.logger.debug(f'No harfile in {uuid_to_index} - {directory}, nothing to index. ')
+                self.logger.debug(f'[{uuid_to_index}] No harfile in {directory}, nothing to index. ')
                 self.redis.sadd('nothing_to_index', uuid_to_index)
                 return False
 
             if not any((directory / pickle_name).exists()
                        for pickle_name in ['tree.pickle.gz', 'tree.pickle']):
-                self.logger.info(f'No pickle for {uuid_to_index} - {directory}, skipping. ')
+                self.logger.info(f'[{uuid_to_index}] No pickle in {directory}, skip.')
                 return False
 
             # do the indexing
@@ -152,51 +152,51 @@ class Indexing():
                     return False
 
             if not indexed[0]:
-                self.logger.info(f'Indexing urls for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing urls')
                 self.index_url_capture(ct)
             if not indexed[1]:
-                self.logger.info(f'Indexing resources for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing resources')
                 self.index_body_hashes_capture(ct)
             if not indexed[2]:
-                self.logger.info(f'Indexing cookies for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing cookies')
                 self.index_cookies_capture(ct)
             if not indexed[3]:
-                self.logger.info(f'Indexing HH Hashes for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing HH Hashes')
                 self.index_hhhashes_capture(ct)
             if not indexed[4]:
-                self.logger.info(f'Indexing favicons for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing favicons')
                 self.index_favicons_capture(ct, directory)
             if not indexed[5]:
-                self.logger.info(f'Indexing identifiers for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing identifiers')
                 self.index_identifiers_capture(ct)
             if not indexed[6]:
-                self.logger.info(f'Indexing categories for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing categories')
                 self.index_categories_capture(ct, directory)
             if not indexed[7]:
-                self.logger.info(f'Indexing TLDs for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing TLDs')
                 self.index_tld_capture(ct)
             if not indexed[8]:
-                self.logger.info(f'Indexing domains for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing domains')
                 self.index_domain_capture(ct)
             if not indexed[9]:
-                self.logger.info(f'Indexing IPs for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing IPs')
                 self.index_ips_capture(ct)
             if not indexed[10]:
-                self.logger.info(f'Indexing hash types for {uuid_to_index}')
+                self.logger.info(f'[{uuid_to_index}] Indexing hash types')
                 self.index_capture_hashes_types(ct)
 
         except (TreeNeedsRebuild, NoValidHarFile) as e:
-            self.logger.warning(f'Error loading the pickle for {uuid_to_index}: {e}')
+            self.logger.warning(f'[{uuid_to_index}] Error loading the pickle: {e}')
         except AttributeError as e:
             # Happens when indexing the IPs, they were a list, and are now dict.
             # Skip from the the warning logs.
-            self.logger.info(f'Error during indexing for {uuid_to_index}, recreate pickle: {e}')
+            self.logger.info(f'[{uuid_to_index}] [Old format] Error during indexing, recreate pickle: {e}')
             remove_pickle_tree(directory)
         except ValueError as e:
-            self.logger.exception(f'[Faup] Error during indexing for {uuid_to_index}, recreate pickle: {e}')
+            self.logger.exception(f'[{uuid_to_index}] [Faup] Error during indexing, recreate pickle: {e}')
             remove_pickle_tree(directory)
         except Exception as e:
-            self.logger.exception(f'Error during indexing for {uuid_to_index}, recreate pickle: {e}')
+            self.logger.exception(f'[{uuid_to_index}] Error during indexing, recreate pickle: {e}')
             remove_pickle_tree(directory)
         finally:
             self.indexing_done(uuid_to_index)
@@ -747,10 +747,10 @@ class Indexing():
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             try:
                 if not urlnode.tld:
-                    self.logger.warning(f'Unable to get tld {urlnode.name}')
+                    self.logger.info(f'[{crawled_tree.uuid}] Unable to get tld {urlnode.name}')
                     continue
             except Exception as e:
-                self.logger.warning(f'Unable to parse {urlnode.name}: {e}')
+                self.logger.warning(f'[{crawled_tree.uuid}] Unable to parse {urlnode.name}: {e}')
                 continue
             # NOTE: the TLD here is a suffix list we get from Mozilla's Public Suffix List
             # It means the string may contain more things than just what a normal user would consider a TLD
@@ -832,11 +832,11 @@ class Indexing():
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             try:
                 if not urlnode.domain:
-                    self.logger.warning(f'Unable to get domain {urlnode.name}')
+                    self.logger.info(f'[{crawled_tree.uuid}] Unable to get domain {urlnode.name}')
                     continue
 
             except Exception as e:
-                self.logger.warning(f'Unable to parse {urlnode.name}: {e}')
+                self.logger.warning(f'[{crawled_tree.uuid}] Unable to parse {urlnode.name}: {e}')
                 continue
 
             if urlnode.domain and urlnode.domain not in already_indexed_global:
@@ -1007,11 +1007,11 @@ class Indexing():
                 # we have a rendered HTML, compute the hash
                 hash_to_index = crawled_tree.root_hartree.rendered_node.domhash
             else:
-                self.logger.warning(f'Unknown hash type: {hash_type}')
+                self.logger.warning(f'[{crawled_tree.uuid}] Unknown hash type: {hash_type}')
                 continue
 
             if not hash_to_index:
-                self.logger.info(f'No hash to index for {hash_type} in {capture_uuid} ... ')
+                self.logger.info(f'[{crawled_tree.uuid}] No hash to index for {hash_type} in {capture_uuid} ... ')
                 continue
 
             if self.redis.zscore(f'capture_hash_types|{hash_type}|{hash_to_index}|captures', capture_uuid) is not None:
