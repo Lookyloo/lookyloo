@@ -2240,6 +2240,9 @@ def capture_web() -> str | Response | WerkzeugResponse:
         if request.form.get('general_timeout_in_sec'):
             capture_query['general_timeout_in_sec'] = request.form['general_timeout_in_sec']
 
+        if request.form.get('final_wait'):
+            capture_query['final_wait'] = request.form['final_wait']
+
         if request.form.get('referer'):
             capture_query['referer'] = request.form['referer']
 

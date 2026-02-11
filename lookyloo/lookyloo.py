@@ -830,6 +830,7 @@ class Lookyloo():
                 headless=query.headless,
                 init_script=query.init_script,
                 uuid=query.uuid,
+                final_wait=query.final_wait,
                 # force=query.force,
                 # recapture_interval=query.recapture_interval,
                 priority=priority
