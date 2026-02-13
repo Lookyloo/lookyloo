@@ -180,7 +180,8 @@
         </div>
         {# URL #}
         <div class="col-1 g-0 text-end">..&nbsp;/</div>
-        <div class="col-8 g-0">{{ shorten_string(url['url_path'], with_copy_button=True)}}</div>
+        <div class="col-8 g-0">{{ shorten_string(url['url_path'], with_copy_button=True,
+                                                 copy_content=url['url_object'].name)}}</div>
       </div>
       {% if last_url_in_address_bar %}
         {# This is the node of the rendered page #}

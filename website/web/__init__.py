@@ -240,8 +240,9 @@ def get_sri(directory: str, filename: str) -> str:
 # Inspired by: https://stackoverflow.com/questions/59157322/overflow-ellipsis-in-middle-of-a-string
 class SafeMiddleEllipsisString():
 
-    def __init__(self, unsafe_string: str | int, with_copy_button: bool=False):
+    def __init__(self, unsafe_string: str | int, with_copy_button: bool=False, copy_content: str | None=None):
         self.with_copy_button = with_copy_button
+        self.copy_content = copy_content
         if isinstance(unsafe_string, int):
             self.unsafe_string = str(unsafe_string)
         else:
@@ -266,7 +267,7 @@ class SafeMiddleEllipsisString():
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/>
       </svg>
-    </button>""").format(full=self.unsafe_string)
+    </button>""").format(full=self.copy_content if self.copy_content else self.unsafe_string)
 
     def __html__(self) -> Markup:
         button = Markup('')
@@ -283,8 +284,9 @@ class SafeMiddleEllipsisString():
                       ).format(left=self.left, right=self.right, button=button)
 
 
-def shorten_string(s: str | int, with_title: bool=True, with_copy_button: bool=False) -> Markup:
-    ss = SafeMiddleEllipsisString(s, with_copy_button)
+def shorten_string(s: str | int, with_title: bool=True, with_copy_button: bool=False,
+                   copy_content: str | None=None) -> Markup:
+    ss = SafeMiddleEllipsisString(s, with_copy_button, copy_content=copy_content)
     if with_title:
         return Markup("{s:with_title}").format(s=ss)
     return Markup(ss)
