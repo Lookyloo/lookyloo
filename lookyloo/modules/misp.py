@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from datetime import datetime
 
 from io import BytesIO
@@ -13,7 +15,7 @@ from collections.abc import Iterator
 import requests
 from har2tree import HostNode, URLNode, Har2TreeError
 from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag, PyMISPError  # , MISPServerError
-from pymisp.tools import FileObject, URLObject
+from pymisp.tools import FileObject, URLObject, DataURLObject
 
 from ..default import get_config, get_homedir
 from ..exceptions import ModuleError
@@ -97,7 +99,7 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
             for category in cache.categories:
                 event.add_tag(category)
 
-        if cache.url.startswith('file://'):
+        if re.match("file://", cache.url, re.I):
             filename = cache.url.rsplit('/', 1)[-1]
             event.info = f'Lookyloo Capture ({filename})'
             # Create file object as initial
@@ -116,16 +118,29 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
             initial_file.comment = 'This is a capture of a file, rendered in the browser'
             initial_file.first_seen = cache.timestamp
             initial_obj = event.add_object(initial_file)
+        elif re.match("data:", cache.url, re.I):
+            event.info = f'Lookyloo Capture Data URI ({cache.url[:50]})'
+            try:
+                initial_dataurl = DataURLObject(cache.url)
+            except Exception as e:
+                raise ModuleError(f'Unable to parse data URL: {e}')
+
+            initial_dataurl.comment = 'Submitted Data URL'
+            initial_dataurl.first_seen = cache.timestamp
+            initial_obj = event.add_object(initial_dataurl)
         else:
+            # http, https, or no scheme
             event.info = f'Lookyloo Capture ({cache.url})'
             url = cache.url.strip()
             if not url:
                 raise ModuleError('No URL, cannot make a MISP event.')
 
-            if not url.startswith('http'):
-                initial_url = URLObject(f'http://{url}')
+            if re.match('http', url, re.I):
+                initial_url = URLObject(url)
             else:
-                initial_url = URLObject(cache.url)
+                # we may have "Http", which is fine but will barf if we're not doing a case insensitive check.
+                # Also, we do not want to blanket lower the whole URL.
+                initial_url = URLObject(f'http://{url}')
             initial_url.comment = 'Submitted URL'
             initial_url.first_seen = cache.timestamp
             self.__misp_add_ips_to_URLObject(initial_url, cache.tree.root_hartree.hostname_tree)
