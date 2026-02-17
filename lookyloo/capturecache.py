@@ -347,9 +347,12 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 f.write(f"{datetime.now().isoformat()};{os.getpid()}")
         else:
             # The pickle is being created somewhere else, wait until it's done.
+            # is locked returns false if it as been set by the same process
             while is_locked(capture_dir):
                 time.sleep(5)
             try:
+                # this call fails if the pickle is missing, handling the case
+                # where this method was called from background build
                 return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, logger)
             except TreeNeedsRebuild:
                 # If this exception is raised, the building failed somewhere else, let's give it another shot.

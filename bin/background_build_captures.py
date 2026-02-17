@@ -165,6 +165,7 @@ class BackgroundBuildCaptures(AbstractManager):
                         self.logger.warning(f'Unable to move capture: {e}')
                         continue
                 finally:
+                    # Should already have been removed by now, but if something goes poorly, remove it here too
                     lock_file.unlink(missing_ok=True)
                 if __counter_shutdown % 10 == 0 and self.shutdown_requested():
                     self.logger.warning('Shutdown requested, breaking.')

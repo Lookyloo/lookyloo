@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import pickle
+import random
 import re
 import time
 
@@ -403,13 +404,16 @@ def is_locked(locked_dir_path: Path, /) -> bool:
             # The file is empty, we're between the creation and setting the content
             logger.info(f'Lock file empty ({lock_file}), waiting...')
             max_wait_content -= 1
-            time.sleep(1)
+            time.sleep(random.random())
         else:
             logger.warning('Lock file empty for too long, removing it.')
             lock_file.unlink(missing_ok=True)
             return False
 
         ts, pid = content.split(';')
+        if int(pid) == os.getpid():
+            # locked by current process
+            return False
         try:
             os.kill(int(pid), 0)
         except OSError:
