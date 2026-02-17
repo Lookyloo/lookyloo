@@ -164,6 +164,8 @@ class BackgroundBuildCaptures(AbstractManager):
                     except FileNotFoundError as e:
                         self.logger.warning(f'Unable to move capture: {e}')
                         continue
+                finally:
+                    lock_file.unlink(missing_ok=True)
                 if __counter_shutdown % 10 == 0 and self.shutdown_requested():
                     self.logger.warning('Shutdown requested, breaking.')
                     return False
