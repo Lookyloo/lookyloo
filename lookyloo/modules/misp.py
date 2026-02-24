@@ -14,7 +14,7 @@ from collections.abc import Iterator
 
 import requests
 from har2tree import HostNode, URLNode, Har2TreeError
-from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag, PyMISPError  # , MISPServerError
+from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag, PyMISPError, MISPObjectException
 from pymisp.tools import FileObject, URLObject, DataURLObject
 
 from ..default import get_config, get_homedir
@@ -156,10 +156,13 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
         for nb, url in enumerate(cache.redirects):
             if url == cache.url:
                 continue
-            obj = URLObject(url)
-            obj.comment = f'Redirect {nb}'
-            self.__misp_add_ips_to_URLObject(obj, cache.tree.root_hartree.hostname_tree)
-            redirects.append(obj)
+            try:
+                obj = URLObject(url)
+                obj.comment = f'Redirect {nb}'
+                self.__misp_add_ips_to_URLObject(obj, cache.tree.root_hartree.hostname_tree)
+                redirects.append(obj)
+            except MISPObjectException as e:
+                self.logger.warning(f"Unable to add URL: {e}")
 
         if redirects:
             redirects[-1].comment = f'Last redirect ({nb})'

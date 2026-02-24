@@ -2026,6 +2026,7 @@ class Lookyloo():
         downloaded_file: bytes | None = None
         error: str | None = None
         har: dict[str, Any] | None = None
+        frames: FramesResponse | None = None
         screenshot: bytes | None = None
         html: str | None = None
         last_redirected_url: str | None = None
