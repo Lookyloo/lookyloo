@@ -2,20 +2,20 @@
 
 [[package]]
 name = "aiobotocore"
-version = "3.1.3"
+version = "3.2.0"
 description = "Async client for aws services using botocore and aiohttp"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "aiobotocore-3.1.3-py3-none-any.whl", hash = "sha256:3afc93bf14de304dbd4a2c90f36fb3ce6348b06a5a1ec7f87261be628d7876d9"},
-    {file = "aiobotocore-3.1.3.tar.gz", hash = "sha256:b1b6a95aa4c17410090f4adf16fd45e45a898140c83d4e9d554602f9310408c0"},
+    {file = "aiobotocore-3.2.0-py3-none-any.whl", hash = "sha256:7578eb807d2215f2c34d49a3986c821431af3c85ae9a464020ed91dff7925e2e"},
+    {file = "aiobotocore-3.2.0.tar.gz", hash = "sha256:93e67b507d913bc168212f30a0e01e1835e07e665f00749fcac037e01999d72a"},
 ]
 
 [package.dependencies]
 aiohttp = ">=3.12.0,<4.0.0"
 aioitertools = ">=0.5.1,<1.0.0"
-botocore = ">=1.41.0,<1.42.50"
+botocore = ">=1.42.53,<1.42.56"
 jmespath = ">=0.7.1,<2.0.0"
 multidict = ">=6.0.0,<7.0.0"
 python-dateutil = ">=2.1,<3.0.0"
@@ -254,6 +254,44 @@ files = [
 [package.dependencies]
 frozenlist = ">=1.1.0"
 typing-extensions = {version = ">=4.2", markers = "python_version < \"3.13\""}
+
+[[package]]
+name = "amazon-ion"
+version = "0.13.0"
+description = "A Python implementation of Amazon Ion."
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "amazon.ion-0.13.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:1e7f1a670010509169f4960d85bd24bff2757c038a950b5000f1662128b953d5"},
+    {file = "amazon.ion-0.13.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:0a15a16086420994f6af07cfedb12512b9b8005209c2df70638dbc8bda6b2467"},
+    {file = "amazon.ion-0.13.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4f252e4395dd269b80e675eb71a71f255e282bb8e6faf30f1dca96514f66aa40"},
+    {file = "amazon.ion-0.13.0-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:896a7d7e412de935f4faf86c7e015451c15960eaac5e2ed15fad60973f53f61f"},
+    {file = "amazon.ion-0.13.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:eca585339870c856d08927d64dd2ea7e6ccdfb4acf684fcb7cfdef605233381c"},
+    {file = "amazon.ion-0.13.0-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:ee9c5153f0c2d652424583952f0787c7ff66ccbab5a5c471734e77e705c73651"},
+    {file = "amazon.ion-0.13.0-cp310-cp310-musllinux_1_2_i686.whl", hash = "sha256:33fd6123f282b0b437e8fccb2f955e8544220993a38e4598f4b022dc7f865b59"},
+    {file = "amazon.ion-0.13.0-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:4a52c40694d5e335a41f00b84078b536fa6ad4d3057be9d363cdd7430dccbe5f"},
+    {file = "amazon.ion-0.13.0-cp310-cp310-win_amd64.whl", hash = "sha256:895e51bef03f6e00b80b48ed4abfed090580c734ec4947702deba1bfa6974320"},
+    {file = "amazon.ion-0.13.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:bcadd9a11531434e5bc42bf72e57e120a610d5ed3503e6184782c2ec29f5f5e9"},
+    {file = "amazon.ion-0.13.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:6999fd3f75117ff2e3d297c7faf294f3a4160bbd333d57d14503c2679479fe4e"},
+    {file = "amazon.ion-0.13.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bcc9ef773663c0eec40ad7d8b761b7e6f43f2a73129ec2a1515a659c62ec84e5"},
+    {file = "amazon.ion-0.13.0-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:65b8fda970954936c18e934426a59375cbea9d123bb8aff7a00472cfe2f406a5"},
+    {file = "amazon.ion-0.13.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:33abce8970e221209d825208cf2a625fc993cbb73274fc07c50031ed6f17d831"},
+    {file = "amazon.ion-0.13.0-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:84d8edfe36bb16db8244ce5be67f95767c191e9a6bfe6089d8d7f5f918e0fa67"},
+    {file = "amazon.ion-0.13.0-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:423805a7de0481980d0372da3ea74370e3bb404b4231a5bca6bcbfc8d9b8bf57"},
+    {file = "amazon.ion-0.13.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:b961dcd5d0c67cdb24f88fb0c2e18e2564738b7f49a791af42619c6713205ef0"},
+    {file = "amazon.ion-0.13.0-cp311-cp311-win_amd64.whl", hash = "sha256:ecd1fa9d1abcc8b1c197667ec991a2f25aa49d9ca0e6e9cc955956cfd04e6008"},
+    {file = "amazon.ion-0.13.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:23924e681d74d01fea566e57dc01d4caca9f00bef2f38865be877e61487a1d0a"},
+    {file = "amazon.ion-0.13.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:09c743a38456ba6802e178338590d60a54d6c53fbd8cb123d24d3de430bf8a6c"},
+    {file = "amazon.ion-0.13.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3166130c3bb308d1266aebb69d5f33314397075976c58b62fa81049353a9b210"},
+    {file = "amazon.ion-0.13.0-cp39-cp39-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:c49305628b791aee6f0e1cb5a9069666ee40b302249e46f7c110c6f6cf1b45ff"},
+    {file = "amazon.ion-0.13.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:94aeac4210ea01ec006a828bbdf73fbd50571ebd4fa1ff5fdc4ff518b356a4ed"},
+    {file = "amazon.ion-0.13.0-cp39-cp39-musllinux_1_2_aarch64.whl", hash = "sha256:a945a9eb5a22374ca723add404fea3523337a7f626c392f1a46994fa46b62476"},
+    {file = "amazon.ion-0.13.0-cp39-cp39-musllinux_1_2_i686.whl", hash = "sha256:d39e9014fda245a29e3921cbd979a74e27896445d4182dde01515b86cedba2ba"},
+    {file = "amazon.ion-0.13.0-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:5a878aa3285ab5e5b62815de5d54135784624ca3b7a363fd0cba7b4e5fe53164"},
+    {file = "amazon.ion-0.13.0-cp39-cp39-win_amd64.whl", hash = "sha256:47a3f15badda8aad8f27d8aa4934640be361e356ba088eab0ae770b0131022c1"},
+    {file = "amazon.ion-0.13.0.tar.gz", hash = "sha256:18a41d3f1192e287ada981dd833af7b2d9cdc8406f3fbb1b54558b0ce36e85be"},
+]
 
 [[package]]
 name = "aniso8601"
@@ -518,6 +556,21 @@ files = [
 ]
 
 [[package]]
+name = "bbpb"
+version = "1.4.2"
+description = "Library for working with protobuf messages without a protobuf type definition."
+optional = false
+python-versions = "<4.0,>=3.8"
+groups = ["main"]
+files = [
+    {file = "bbpb-1.4.2-py3-none-any.whl", hash = "sha256:ca5ae8c820a12616f0f33b5647d9889515b751ace5820741213fd3f85c7485c0"},
+    {file = "bbpb-1.4.2.tar.gz", hash = "sha256:03446991bc500cfc9dd2049e6cc9489979e157c5ecb793e27936ab3d579d3496"},
+]
+
+[package.dependencies]
+six = ">=1.16,<2.0"
+
+[[package]]
 name = "beautifulsoup4"
 version = "4.14.3"
 description = "Screen-scraping library"
@@ -599,14 +652,14 @@ WTForms = "*"
 
 [[package]]
 name = "botocore"
-version = "1.42.49"
+version = "1.42.55"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "botocore-1.42.49-py3-none-any.whl", hash = "sha256:1c33544f72101eed4ccf903ebb667a803e14e25b2af4e0836e4b871da1c0af37"},
-    {file = "botocore-1.42.49.tar.gz", hash = "sha256:333115a64a507697b0c450ade7e2d82bc8b4e21c0051542514532b455712bdcc"},
+    {file = "botocore-1.42.55-py3-none-any.whl", hash = "sha256:c092eb99d17b653af3ec9242061a7cde1c7b1940ed4abddfada68a9e1a3492d6"},
+    {file = "botocore-1.42.55.tar.gz", hash = "sha256:af22a7d7881883bcb475a627d0750ec6f8ee3d7b2f673e9ff342ebaa498447ee"},
 ]
 
 [package.dependencies]
@@ -785,14 +838,14 @@ ujson = ["ujson (>=5.10.0)"]
 
 [[package]]
 name = "certifi"
-version = "2026.1.4"
+version = "2026.2.25"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "dev"]
 files = [
-    {file = "certifi-2026.1.4-py3-none-any.whl", hash = "sha256:9943707519e4add1115f44c2bc244f782c0249876bf51b6599fee1ffbedd685c"},
-    {file = "certifi-2026.1.4.tar.gz", hash = "sha256:ac726dd470482006e014ad384921ed6438c457018f4b3d204aea4281258b2120"},
+    {file = "certifi-2026.2.25-py3-none-any.whl", hash = "sha256:027692e4402ad994f1c42e52a4997a9763c646b73e4096e4d5d6db8af1d6f0fa"},
+    {file = "certifi-2026.2.25.tar.gz", hash = "sha256:e887ab5cee78ea814d3472169153c2d12cd43b14bd03329a39a9c6e2e80bfba7"},
 ]
 
 [[package]]
@@ -1691,17 +1744,19 @@ files = [
 
 [[package]]
 name = "har2tree"
-version = "1.36.6"
+version = "1.36.7"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.36.6-py3-none-any.whl", hash = "sha256:32f82272de3bf01c5ebda5e3bc1d5e8aa9ae9888d36754cfd817f3c693eb9ffd"},
-    {file = "har2tree-1.36.6.tar.gz", hash = "sha256:f67d25b228b2f6b5683520708a3241c9f7ff957a516849ef0424321c03712457"},
+    {file = "har2tree-1.36.7-py3-none-any.whl", hash = "sha256:fd7ddfa2831ad003bee6962cac27cb71da9536ad646ba8fd307c76c5223bcb25"},
+    {file = "har2tree-1.36.7.tar.gz", hash = "sha256:e3e41c514bbb5764fb88454b314a8b73fc044ef61356c55ecc6e1167910578d4"},
 ]
 
 [package.dependencies]
+amazon-ion = ">=0.13.0,<0.14.0"
+bbpb = ">=1.4.2,<2.0.0"
 beautifulsoup4 = {version = ">=4.14.3", extras = ["charset-normalizer", "lxml"]}
 ete3 = ">=3.1.3"
 json-stream = ">=2.3.3,<3.0.0"
@@ -2045,14 +2100,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.21.2"
+version = "1.21.3"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.21.2-py3-none-any.whl", hash = "sha256:5d0ab3cb67dd90cdc439c5b061f5bba5ff1d987c07f4ee9db85642bf1238a098"},
-    {file = "lacuscore-1.21.2.tar.gz", hash = "sha256:4535e129e60749f7406c3fab509c3d2db92f98d0d24ea045f1db61b9494f2c0d"},
+    {file = "lacuscore-1.21.3-py3-none-any.whl", hash = "sha256:8edc6a91cd2d6c0917b1ad517411a068558aeaa9560db37422eb575b68d7dbc1"},
+    {file = "lacuscore-1.21.3.tar.gz", hash = "sha256:b04596e79ac12d606ad91e6bbd94cdb1e4941a3e1183e1990e336f6fd1a75929"},
 ]
 
 [package.dependencies]
@@ -2060,7 +2115,7 @@ async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 defang = ">=0.5.3"
 dnspython = ">=2.8.0"
 orjson = ">=3.11.3,<4.0.0"
-playwrightcapture = {version = ">=1.36.7", extras = ["recaptcha"]}
+playwrightcapture = {version = ">=1.36.10", extras = ["recaptcha"]}
 pydantic = ">=2.12.5"
 redis = {version = ">=5.3.0,<6.0.0", extras = ["hiredis"]}
 requests = ">=2.32.5"
@@ -3402,14 +3457,14 @@ black = ["black (>=25.9.0)"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.36.9"
+version = "1.36.10"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "playwrightcapture-1.36.9-py3-none-any.whl", hash = "sha256:471436b6eedfcf78bdde89991a6e692cad4ce9b4554a37f51a5be602dd280f8b"},
-    {file = "playwrightcapture-1.36.9.tar.gz", hash = "sha256:0a70b8898460ee30d97250bfb315d6223f11fbeeec5568077e38385001c4c1b9"},
+    {file = "playwrightcapture-1.36.10-py3-none-any.whl", hash = "sha256:941d38fa6bb4387d8f6941da4157010b9dbf66b6aa18d7a9d4e99b01ad00ea2e"},
+    {file = "playwrightcapture-1.36.10.tar.gz", hash = "sha256:6f46d208f58882e824a6337204ca6350dd453ac8a56e9a201398f07d0aae5c51"},
 ]
 
 [package.dependencies]
@@ -6266,4 +6321,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "5c63245a567ac1bc46bf4a3e9cee15e26893709bc48567922f94300652582628"
+content-hash = "cfc477cbab256445b33f1feba148583570c3d256edd1fd33930cd4877ce66ee0"
