@@ -162,7 +162,7 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
                 self.__misp_add_ips_to_URLObject(obj, cache.tree.root_hartree.hostname_tree)
                 redirects.append(obj)
             except MISPObjectException as e:
-                self.logger.warning(f"Unable to add URL: {e}")
+                self.logger.warning(f"[{cache.uuid}] Unable to add URL: {e}")
 
         if redirects:
             redirects[-1].comment = f'Last redirect ({nb})'
