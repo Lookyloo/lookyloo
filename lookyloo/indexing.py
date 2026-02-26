@@ -7,6 +7,7 @@ import ipaddress
 import logging
 import re
 from collections.abc import Iterator
+from collections import namedtuple
 
 from datetime import datetime, timedelta
 from ipaddress import IPv4Address, IPv6Address
@@ -20,6 +21,9 @@ from redis.connection import UnixDomainSocketConnection
 from .exceptions import NoValidHarFile, TreeNeedsRebuild
 from .helpers import load_pickle_tree, remove_pickle_tree
 from .default import get_socket_path, get_config
+
+Indexed = namedtuple('Indexed', ['urls', 'body_hashes', 'cookies', 'hhhashes', 'favicons',
+                                 'identifiers', 'categories', 'tlds', 'domains', 'ips', 'hash_types'])
 
 
 class Indexing():
@@ -98,7 +102,7 @@ class Indexing():
         p.delete(f'capture_indexes|{capture_uuid}')
         p.execute()
 
-    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool]:
+    def capture_indexed(self, capture_uuid: str) -> Indexed:
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
@@ -115,9 +119,9 @@ class Indexing():
         to_return: list[bool] = p.execute()
         to_return.append(hash_types_indexed)
         # This call for sure returns a tuple of 9 booleans
-        return tuple(to_return)  # type: ignore[return-value]
+        return Indexed(*to_return)
 
-    def index_capture(self, uuid_to_index: str, directory: Path) -> bool:
+    def index_capture(self, uuid_to_index: str, directory: Path, force: bool=False) -> bool:
         if self.redis.sismember('nothing_to_index', uuid_to_index):
             # No HAR file in the capture, break immediately.
             return False
@@ -145,43 +149,49 @@ class Indexing():
             # 2026-02-03: rebuild pickles if a new entry is missing
             # That's the place where we force that when har2tree adds a new feature we need for indexing
             # * original_url: added in v1.36.3 to allow cleaner indexing of tlds/domains with pyfaup-rs
+            #                 this field is required for tld and domain indexing. Domain is new and
+            #                 we don't want to re-build *all the captures* just for that.
+            #                 So we check if the only missing index is domains, and consder the
+            #                 capture indexed if it's the case. Only exception is if force is true
+            #                 which means it was triggered via the web interface.
             new_entries = ['original_url']
             for entry in new_entries:
                 if not hasattr(ct.root_hartree.url_tree, entry):
-                    remove_pickle_tree(directory)
+                    if force or not (indexed.count(False) == 1 and indexed.domains is False):
+                        remove_pickle_tree(directory)
                     return False
 
-            if not indexed[0]:
+            if not indexed.urls:
                 self.logger.info(f'[{uuid_to_index}] Indexing urls')
                 self.index_url_capture(ct)
-            if not indexed[1]:
+            if not indexed.body_hashes:
                 self.logger.info(f'[{uuid_to_index}] Indexing resources')
                 self.index_body_hashes_capture(ct)
-            if not indexed[2]:
+            if not indexed.cookies:
                 self.logger.info(f'[{uuid_to_index}] Indexing cookies')
                 self.index_cookies_capture(ct)
-            if not indexed[3]:
+            if not indexed.hhhashes:
                 self.logger.info(f'[{uuid_to_index}] Indexing HH Hashes')
                 self.index_hhhashes_capture(ct)
-            if not indexed[4]:
+            if not indexed.favicons:
                 self.logger.info(f'[{uuid_to_index}] Indexing favicons')
                 self.index_favicons_capture(ct, directory)
-            if not indexed[5]:
+            if not indexed.identifiers:
                 self.logger.info(f'[{uuid_to_index}] Indexing identifiers')
                 self.index_identifiers_capture(ct)
-            if not indexed[6]:
+            if not indexed.categories:
                 self.logger.info(f'[{uuid_to_index}] Indexing categories')
                 self.index_categories_capture(ct, directory)
-            if not indexed[7]:
+            if not indexed.tlds:
                 self.logger.info(f'[{uuid_to_index}] Indexing TLDs')
                 self.index_tld_capture(ct)
-            if not indexed[8]:
+            if not indexed.domains:
                 self.logger.info(f'[{uuid_to_index}] Indexing domains')
                 self.index_domain_capture(ct)
-            if not indexed[9]:
+            if not indexed.ips:
                 self.logger.info(f'[{uuid_to_index}] Indexing IPs')
                 self.index_ips_capture(ct)
-            if not indexed[10]:
+            if not indexed.hash_types:
                 self.logger.info(f'[{uuid_to_index}] Indexing hash types')
                 self.index_capture_hashes_types(ct)
 

@@ -1638,7 +1638,7 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
 
 @app.route('/tree/<uuid:tree_uuid>/trigger_indexing', methods=['POST', 'GET'])
 def trigger_indexing(tree_uuid: str) -> WerkzeugResponse:
-    if not lookyloo.index_capture(tree_uuid):
+    if not lookyloo.index_capture(tree_uuid, force=True):
         flash("Unable to index the tree, see logs.", 'error')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
