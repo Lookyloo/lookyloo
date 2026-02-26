@@ -48,7 +48,7 @@ jobs:
 
       - name: Install kvrocks from deb
         run: |
-          wget https://github.com/Lookyloo/kvrocks-fpm/releases/download/v2.13.0/kvrocks_2.13-1_amd64.deb -O kvrocks.deb
+          wget https://github.com/Lookyloo/kvrocks-fpm/releases/download/2.14.0-2/kvrocks_2.14.0-1_amd64.deb -O kvrocks.deb
           sudo dpkg -i kvrocks.deb
 
       - name: Clone uwhoisd
