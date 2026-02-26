@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import pickle
+import random
 import re
 import time
 
@@ -31,7 +32,6 @@ from har2tree import CrawledTree, HostNode, URLNode
 from lacuscore import CaptureSettings as LacuscoreCaptureSettings
 from PIL import Image
 from playwrightcapture import get_devices
-from publicsuffixlist import PublicSuffixList  # type: ignore[import-untyped]
 from pytaxonomies import Taxonomies  # type: ignore[attr-defined]
 import ua_parser
 from werkzeug.user_agent import UserAgent
@@ -96,13 +96,6 @@ def get_resources_hashes(har2tree_container: CrawledTree | HostNode | URLNode) -
 @lru_cache
 def get_taxonomies() -> Taxonomies:
     return Taxonomies()
-
-
-@lru_cache
-def get_public_suffix_list() -> PublicSuffixList:
-    """Initialize Public Suffix List"""
-    # TODO (?): fetch the list
-    return PublicSuffixList()
 
 
 @lru_cache
@@ -411,13 +404,16 @@ def is_locked(locked_dir_path: Path, /) -> bool:
             # The file is empty, we're between the creation and setting the content
             logger.info(f'Lock file empty ({lock_file}), waiting...')
             max_wait_content -= 1
-            time.sleep(1)
+            time.sleep(random.random())
         else:
             logger.warning('Lock file empty for too long, removing it.')
             lock_file.unlink(missing_ok=True)
             return False
 
         ts, pid = content.split(';')
+        if int(pid) == os.getpid():
+            # locked by current process
+            return False
         try:
             os.kill(int(pid), 0)
         except OSError:

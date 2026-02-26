@@ -367,13 +367,13 @@ class Lookyloo():
             return None
         return cache.capture_settings
 
-    def index_capture(self, capture_uuid: str, /) -> bool:
+    def index_capture(self, capture_uuid: str, /, *, force: bool=False) -> bool:
         cache = self.capture_cache(capture_uuid)
         if cache and hasattr(cache, 'capture_dir'):
             try:
-                get_indexing().index_capture(capture_uuid, cache.capture_dir)
+                get_indexing().index_capture(capture_uuid, cache.capture_dir, force)
                 if get_config('generic', 'index_everything'):
-                    get_indexing(full=True).index_capture(capture_uuid, cache.capture_dir)
+                    get_indexing(full=True).index_capture(capture_uuid, cache.capture_dir, force)
                 return True
             except Exception as e:
                 self.logger.warning(f'Unable to index capture {capture_uuid}: {e}')
@@ -830,6 +830,7 @@ class Lookyloo():
                 headless=query.headless,
                 init_script=query.init_script,
                 uuid=query.uuid,
+                final_wait=query.final_wait,
                 # force=query.force,
                 # recapture_interval=query.recapture_interval,
                 priority=priority
@@ -2025,6 +2026,7 @@ class Lookyloo():
         downloaded_file: bytes | None = None
         error: str | None = None
         har: dict[str, Any] | None = None
+        frames: FramesResponse | None = None
         screenshot: bytes | None = None
         html: str | None = None
         last_redirected_url: str | None = None
@@ -2103,17 +2105,18 @@ class Lookyloo():
                             break
                     else:
                         messages['warnings'].append(f'Unexpected file in the capture archive: {filename}')
-            if not har or not html or not last_redirected_url or not screenshot:
-                # If we don't have these 4 files, the archive is incomplete and we should not store it.
+            if not har:
+                # 2026-02-02: only the HAR is absolutely required, we may have captures without html, langing page and screenshots
                 unrecoverable_error = True
                 if not har:
                     messages['errors'].append('Invalid submission: missing HAR file')
+            elif not html or not last_redirected_url or not screenshot:
                 if not html:
-                    messages['errors'].append('Invalid submission: missing HTML file')
+                    messages['warnings'].append('Incomplete submission: missing HTML file')
                 if not last_redirected_url:
-                    messages['errors'].append('Invalid submission: missing landing page')
+                    messages['warnings'].append('Incomplete submission: missing landing page')
                 if not screenshot:
-                    messages['errors'].append('Invalid submission: missing screenshot')
+                    messages['warnings'].append('Incomplete submission: missing screenshot')
 
             if unrecoverable_error:
                 return '', messages

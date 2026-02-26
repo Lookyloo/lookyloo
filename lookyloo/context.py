@@ -150,10 +150,8 @@ class Context():
                     to_store[h]['hostnames'] = set(to_store[h]['hostnames'])
 
                 to_store[h]['hostnames'].add(urlnode.hostname)
-                if urlnode.url_split.path:
-                    filename = Path(urlnode.url_split.path).name
-                    if filename:
-                        to_store[h]['filenames'].add(filename)
+                if hasattr(urlnode, 'filename'):
+                    to_store[h]['filenames'].add(urlnode.filename)
 
         with open(capture_file, 'w') as f:
             json.dump(to_store, f, indent=2, default=serialize_to_json)

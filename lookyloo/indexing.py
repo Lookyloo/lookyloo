@@ -7,6 +7,7 @@ import ipaddress
 import logging
 import re
 from collections.abc import Iterator
+from collections import namedtuple
 
 from datetime import datetime, timedelta
 from ipaddress import IPv4Address, IPv6Address
@@ -20,6 +21,9 @@ from redis.connection import UnixDomainSocketConnection
 from .exceptions import NoValidHarFile, TreeNeedsRebuild
 from .helpers import load_pickle_tree, remove_pickle_tree
 from .default import get_socket_path, get_config
+
+Indexed = namedtuple('Indexed', ['urls', 'body_hashes', 'cookies', 'hhhashes', 'favicons',
+                                 'identifiers', 'categories', 'tlds', 'domains', 'ips', 'hash_types'])
 
 
 class Indexing():
@@ -74,6 +78,7 @@ class Indexing():
         p.srem('indexed_identifiers', capture_uuid)
         p.srem('indexed_categories', capture_uuid)
         p.srem('indexed_tlds', capture_uuid)
+        p.srem('indexed_domains', capture_uuid)
         p.srem('indexed_ips', capture_uuid)
         for identifier_type in self.identifiers_types():
             p.srem(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
@@ -84,7 +89,7 @@ class Indexing():
                 p.srem(f'indexed_hash_type|{hash_type}', capture_uuid)
         for internal_index in self.redis.smembers(f'capture_indexes|{capture_uuid}'):
             # NOTE: these ones need to be removed because the node UUIDs are recreated on tree rebuild
-            # internal_index can be "tlds"
+            # internal_index can be "tlds" or "domains"
             for entry in self.redis.smembers(f'capture_indexes|{capture_uuid}|{internal_index}'):
                 # entry can be a "com", we delete a set of UUIDs, remove from the captures set
                 for i in self.redis.smembers(f'capture_indexes|{capture_uuid}|{internal_index}|{entry}'):
@@ -97,7 +102,7 @@ class Indexing():
         p.delete(f'capture_indexes|{capture_uuid}')
         p.execute()
 
-    def capture_indexed(self, capture_uuid: str) -> tuple[bool, bool, bool, bool, bool, bool, bool, bool, bool, bool]:
+    def capture_indexed(self, capture_uuid: str) -> Indexed:
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
@@ -107,20 +112,21 @@ class Indexing():
         p.sismember('indexed_identifiers', capture_uuid)
         p.sismember('indexed_categories', capture_uuid)
         p.sismember('indexed_tlds', capture_uuid)
+        p.sismember('indexed_domains', capture_uuid)
         p.sismember('indexed_ips', capture_uuid)
         # We also need to check if the hash_type are all indexed for this capture
         hash_types_indexed = all(self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid) for hash_type in self.captures_hashes_types())
         to_return: list[bool] = p.execute()
         to_return.append(hash_types_indexed)
         # This call for sure returns a tuple of 9 booleans
-        return tuple(to_return)  # type: ignore[return-value]
+        return Indexed(*to_return)
 
-    def index_capture(self, uuid_to_index: str, directory: Path) -> bool:
+    def index_capture(self, uuid_to_index: str, directory: Path, force: bool=False) -> bool:
         if self.redis.sismember('nothing_to_index', uuid_to_index):
             # No HAR file in the capture, break immediately.
             return False
         if not self.can_index(uuid_to_index):
-            self.logger.info(f'Indexing on {uuid_to_index} ongoing, skipping. ')
+            self.logger.info(f'[{uuid_to_index}] Indexing ongoing, skip.')
             return False
 
         try:
@@ -129,57 +135,78 @@ class Indexing():
                 return False
 
             if not list(directory.rglob('*.har.gz')) and not list(directory.rglob('*.har')):
-                self.logger.debug(f'No harfile in {uuid_to_index} - {directory}, nothing to index. ')
+                self.logger.debug(f'[{uuid_to_index}] No harfile in {directory}, nothing to index. ')
                 self.redis.sadd('nothing_to_index', uuid_to_index)
                 return False
 
             if not any((directory / pickle_name).exists()
                        for pickle_name in ['tree.pickle.gz', 'tree.pickle']):
-                self.logger.info(f'No pickle for {uuid_to_index} - {directory}, skipping. ')
+                self.logger.info(f'[{uuid_to_index}] No pickle in {directory}, skip.')
                 return False
 
             # do the indexing
             ct = load_pickle_tree(directory, directory.stat().st_mtime, self.logger)
-            if not indexed[0]:
-                self.logger.info(f'Indexing urls for {uuid_to_index}')
+            # 2026-02-03: rebuild pickles if a new entry is missing
+            # That's the place where we force that when har2tree adds a new feature we need for indexing
+            # * original_url: added in v1.36.3 to allow cleaner indexing of tlds/domains with pyfaup-rs
+            #                 this field is required for tld and domain indexing. Domain is new and
+            #                 we don't want to re-build *all the captures* just for that.
+            #                 So we check if the only missing index is domains, and consder the
+            #                 capture indexed if it's the case. Only exception is if force is true
+            #                 which means it was triggered via the web interface.
+            new_entries = ['original_url']
+            for entry in new_entries:
+                if not hasattr(ct.root_hartree.url_tree, entry):
+                    if force or not (indexed.count(False) == 1 and indexed.domains is False):
+                        remove_pickle_tree(directory)
+                    return False
+
+            if not indexed.urls:
+                self.logger.info(f'[{uuid_to_index}] Indexing urls')
                 self.index_url_capture(ct)
-            if not indexed[1]:
-                self.logger.info(f'Indexing resources for {uuid_to_index}')
+            if not indexed.body_hashes:
+                self.logger.info(f'[{uuid_to_index}] Indexing resources')
                 self.index_body_hashes_capture(ct)
-            if not indexed[2]:
-                self.logger.info(f'Indexing cookies for {uuid_to_index}')
+            if not indexed.cookies:
+                self.logger.info(f'[{uuid_to_index}] Indexing cookies')
                 self.index_cookies_capture(ct)
-            if not indexed[3]:
-                self.logger.info(f'Indexing HH Hashes for {uuid_to_index}')
+            if not indexed.hhhashes:
+                self.logger.info(f'[{uuid_to_index}] Indexing HH Hashes')
                 self.index_hhhashes_capture(ct)
-            if not indexed[4]:
-                self.logger.info(f'Indexing favicons for {uuid_to_index}')
+            if not indexed.favicons:
+                self.logger.info(f'[{uuid_to_index}] Indexing favicons')
                 self.index_favicons_capture(ct, directory)
-            if not indexed[5]:
-                self.logger.info(f'Indexing identifiers for {uuid_to_index}')
+            if not indexed.identifiers:
+                self.logger.info(f'[{uuid_to_index}] Indexing identifiers')
                 self.index_identifiers_capture(ct)
-            if not indexed[6]:
-                self.logger.info(f'Indexing categories for {uuid_to_index}')
+            if not indexed.categories:
+                self.logger.info(f'[{uuid_to_index}] Indexing categories')
                 self.index_categories_capture(ct, directory)
-            if not indexed[7]:
-                self.logger.info(f'Indexing TLDs for {uuid_to_index}')
+            if not indexed.tlds:
+                self.logger.info(f'[{uuid_to_index}] Indexing TLDs')
                 self.index_tld_capture(ct)
-            if not indexed[8]:
-                self.logger.info(f'Indexing IPs for {uuid_to_index}')
+            if not indexed.domains:
+                self.logger.info(f'[{uuid_to_index}] Indexing domains')
+                self.index_domain_capture(ct)
+            if not indexed.ips:
+                self.logger.info(f'[{uuid_to_index}] Indexing IPs')
                 self.index_ips_capture(ct)
-            if not indexed[9]:
-                self.logger.info(f'Indexing hash types for {uuid_to_index}')
+            if not indexed.hash_types:
+                self.logger.info(f'[{uuid_to_index}] Indexing hash types')
                 self.index_capture_hashes_types(ct)
 
         except (TreeNeedsRebuild, NoValidHarFile) as e:
-            self.logger.warning(f'Error loading the pickle for {uuid_to_index}: {e}')
+            self.logger.warning(f'[{uuid_to_index}] Error loading the pickle: {e}')
         except AttributeError as e:
             # Happens when indexing the IPs, they were a list, and are now dict.
             # Skip from the the warning logs.
-            self.logger.info(f'Error during indexing for {uuid_to_index}, recreate pickle: {e}')
+            self.logger.info(f'[{uuid_to_index}] [Old format] Error during indexing, recreate pickle: {e}')
+            remove_pickle_tree(directory)
+        except ValueError as e:
+            self.logger.exception(f'[{uuid_to_index}] [Faup] Error during indexing, recreate pickle: {e}')
             remove_pickle_tree(directory)
         except Exception as e:
-            self.logger.error(f'Error during indexing for {uuid_to_index}, recreate pickle: {e}')
+            self.logger.exception(f'[{uuid_to_index}] Error during indexing, recreate pickle: {e}')
             remove_pickle_tree(directory)
         finally:
             self.indexing_done(uuid_to_index)
@@ -728,19 +755,38 @@ class Indexing():
 
         already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
-            if not hasattr(urlnode, 'known_tld'):
-                # No TLD in the node.
+            try:
+                if not urlnode.tld:
+                    self.logger.info(f'[{crawled_tree.uuid}] Unable to get tld {urlnode.name}')
+                    continue
+            except Exception as e:
+                self.logger.warning(f'[{crawled_tree.uuid}] Unable to parse {urlnode.name}: {e}')
                 continue
-            if urlnode.known_tld not in already_indexed_global:
-                # TLD hasn't been indexed in that run yet
-                already_indexed_global.add(urlnode.known_tld)
-                pipeline.sadd(f'{internal_index}|tlds', urlnode.known_tld)  # Only used to delete index
-                pipeline.sadd('tlds', urlnode.known_tld)
-                pipeline.zadd(f'tlds|{urlnode.known_tld}|captures',
-                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+            # NOTE: the TLD here is a suffix list we get from Mozilla's Public Suffix List
+            # It means the string may contain more things than just what a normal user would consider a TLD
+            # Example: "pages.dev" is a suffix, it is a vendor, so it's handy to be able to get all the
+            # captures with that specific value, but we may also want to search for "dev"
+            # And if we don't post-process that suffix (split it and index all the possibilities),
+            # we wont get the pages.dev captures id we just search for dev.
 
-            # Add hostnode UUID in internal index
-            pipeline.sadd(f'{internal_index}|tlds|{urlnode.known_tld}', urlnode.uuid)
+            suffix = urlnode.tld
+            while True:
+                if suffix not in already_indexed_global:
+                    # TLD hasn't been indexed in that run yet
+                    already_indexed_global.add(suffix)
+                    pipeline.sadd(f'{internal_index}|tlds', suffix)  # Only used to delete index
+                    pipeline.sadd('tlds', suffix)
+                    pipeline.zadd(f'tlds|{suffix}|captures',
+                                  mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+                # Add hostnode UUID in internal index
+                pipeline.sadd(f'{internal_index}|tlds|{suffix}', urlnode.uuid)
+
+                if '.' in suffix:
+                    suffix = suffix.split('.', 1)[1]
+                else:
+                    # we processed the last segment
+                    break
 
         pipeline.execute()
         self.logger.debug(f'done with TLDs for {crawled_tree.uuid}.')
@@ -771,6 +817,78 @@ class Indexing():
 
     def get_capture_tld_nodes(self, capture_uuid: str, tld: str) -> set[str]:
         if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|tlds|{tld}'):
+            return set(url_nodes)
+        return set()
+
+    # ###### Domains ######
+
+    @property
+    def domains(self) -> set[str]:
+        return self.redis.smembers('domains')
+
+    def index_domain_capture(self, crawled_tree: CrawledTree) -> None:
+        if self.redis.sismember('indexed_domains', crawled_tree.uuid):
+            # Do not reindex
+            return
+        self.redis.sadd('indexed_domains', crawled_tree.uuid)
+        self.logger.debug(f'Indexing domains for {crawled_tree.uuid} ... ')
+        pipeline = self.redis.pipeline()
+
+        # Add the domains key in internal indexes set
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'domains')
+
+        already_indexed_global: set[str] = set()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            try:
+                if not urlnode.domain:
+                    self.logger.info(f'[{crawled_tree.uuid}] Unable to get domain {urlnode.name}')
+                    continue
+
+            except Exception as e:
+                self.logger.warning(f'[{crawled_tree.uuid}] Unable to parse {urlnode.name}: {e}')
+                continue
+
+            if urlnode.domain and urlnode.domain not in already_indexed_global:
+                # Domain hasn't been indexed in that run yet
+                already_indexed_global.add(urlnode.domain)
+                pipeline.sadd(f'{internal_index}|domains', urlnode.domain)  # Only used to delete index
+                pipeline.sadd('domains', urlnode.domain)
+                pipeline.zadd(f'domains|{urlnode.domain}|captures',
+                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+
+            # Add hostnode UUID in internal index
+            pipeline.sadd(f'{internal_index}|domains|{urlnode.domain}', urlnode.uuid)
+
+        pipeline.execute()
+        self.logger.debug(f'done with domains for {crawled_tree.uuid}.')
+
+    def get_captures_domain(self, domain: str, most_recent_capture: datetime | None = None,
+                            oldest_capture: datetime | None=None,
+                            offset: int | None=None, limit: int | None=None) -> list[str]:
+        """Get all the captures for a specific domain, on a time interval starting from the most recent one.
+
+        :param domain: The domain
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider.
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
+        return self.redis.zrevrangebyscore(f'domains|{domain}|captures', max_score, min_score, start=offset, num=limit)
+
+    def scan_captures_domain(self, domain: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'domains|{domain}|captures')
+
+    def get_captures_domain_count(self, domain: str) -> int:
+        return self.redis.zcard(f'domains|{domain}|captures')
+
+    def get_capture_domain_counter(self, capture_uuid: str, domain: str) -> int:
+        # NOTE: what to do when the capture isn't indexed yet? Raise an exception?
+        # For now, return 0
+        return self.redis.scard(f'capture_indexes|{capture_uuid}|domains|{domain}')
+
+    def get_capture_domain_nodes(self, capture_uuid: str, domain: str) -> set[str]:
+        if url_nodes := self.redis.smembers(f'capture_indexes|{capture_uuid}|domains|{domain}'):
             return set(url_nodes)
         return set()
 
@@ -899,11 +1017,11 @@ class Indexing():
                 # we have a rendered HTML, compute the hash
                 hash_to_index = crawled_tree.root_hartree.rendered_node.domhash
             else:
-                self.logger.warning(f'Unknown hash type: {hash_type}')
+                self.logger.warning(f'[{crawled_tree.uuid}] Unknown hash type: {hash_type}')
                 continue
 
             if not hash_to_index:
-                self.logger.info(f'No hash to index for {hash_type} in {capture_uuid} ... ')
+                self.logger.info(f'[{crawled_tree.uuid}] No hash to index for {hash_type} in {capture_uuid} ... ')
                 continue
 
             if self.redis.zscore(f'capture_hash_types|{hash_type}|{hash_to_index}|captures', capture_uuid) is not None:

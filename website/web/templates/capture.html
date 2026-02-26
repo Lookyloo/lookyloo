@@ -256,6 +256,14 @@
           </div>
         </div>
       </div>
+      <div class="alert alert-info" role="alert">
+        Depending on the User-Agent, Lookyloo will select a specific browser for the capture (Firefox, Chromium, or WebKit).
+        <ul>
+            <li><b>Firefox</b>: Better at bypassing bot detections</li>
+            <li><b>Chromium</b>: Better HAR file, making the tree more reliable</li>
+        </ul>
+        You may want to do the same capture with different browser to see the difference.
+      </div>
     </div>
 
     <hr>
@@ -390,6 +398,17 @@
           </div>
         </div>
         {%endif%}
+
+        <div class="row mb-3">
+          <label for="final_wait" class="col-sm-2 col-form-label">Final wait time:</label>
+          <div class="col-sm-10">
+            <input class="form-control" type="number" id="final_wait" name="final_wait" aria-describedby="final_wait_help" placeholder="5">
+            <div class="alert alert-info" role="alert">
+                The capture will wait for that time (in sec) after the instrumentation is over.
+            </div>
+          </div>
+        </div>
+
 
         <div class="row mb-3">
           <label for="capture_timeout_in_sec" class="col-sm-2 col-form-label">Max capture time:</label>

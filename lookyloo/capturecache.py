@@ -28,7 +28,6 @@ import dns.rdatatype
 from dns.resolver import Cache
 from dns.asyncresolver import Resolver
 from har2tree import CrawledTree, Har2TreeError, HarFile
-from publicsuffixlist import PublicSuffixList  # type: ignore[import-untyped]
 from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
@@ -78,7 +77,7 @@ class CaptureCache():
 
         if url := cache_entry.get('url'):
             # This entry *should* be present even if there is an error.
-            self.url: str = url
+            self.url: str = url.strip()
 
         # if the cache doesn't have the keys in __default_cache_keys, it must have an error.
         # if it has neither all the expected entries, nor error, we must raise an exception
@@ -174,7 +173,6 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         self.timeout = get_config('generic', 'max_tree_create_time')
         self.expire_cache_sec = int(timedelta(days=get_config('generic', 'archive')).total_seconds()) * 2
 
-        self.psl = PublicSuffixList()
         self.dnsresolver: Resolver = Resolver()
         self.dnsresolver.cache = Cache(900)
         self.dnsresolver.timeout = 4
@@ -349,9 +347,12 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 f.write(f"{datetime.now().isoformat()};{os.getpid()}")
         else:
             # The pickle is being created somewhere else, wait until it's done.
+            # is locked returns false if it as been set by the same process
             while is_locked(capture_dir):
                 time.sleep(5)
             try:
+                # this call fails if the pickle is missing, handling the case
+                # where this method was called from background build
                 return load_pickle_tree(capture_dir, capture_dir.stat().st_mtime, logger)
             except TreeNeedsRebuild:
                 # If this exception is raised, the building failed somewhere else, let's give it another shot.
@@ -475,7 +476,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                     # That's if we have broken dumps that are twice json encoded
                     capture_settings = json.load(capture_settings)
             if capture_settings.get('url') and capture_settings['url'] is not None:
-                cache['url'] = capture_settings['url']
+                cache['url'] = capture_settings['url'].strip()
 
         if (capture_dir / 'error.txt').exists():
             # Something went wrong
@@ -505,7 +506,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 cache['user_agent'] = har.root_user_agent if har.root_user_agent else 'No User Agent.'
                 if 'url' not in cache:
                     # if all went well, we already filled that one above.
-                    cache['url'] = har.root_url
+                    cache['url'] = har.root_url.strip()
                 if har.root_referrer:
                     cache['referer'] = har.root_referrer
             except Har2TreeError as e:
@@ -574,8 +575,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 to_search = known_cnames[to_search]
             return cnames
 
-        async def _dns_query(hostname: str, semaphore: asyncio.Semaphore) -> None:
-            domain = self.psl.privatesuffix(hostname)
+        async def _dns_query(hostname: str, domain: str, semaphore: asyncio.Semaphore) -> None:
             async with semaphore:
                 for qt in self.query_types:
                     try:
@@ -660,15 +660,16 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 host_ns = {}
 
         _all_ips = set()
-        _all_hostnames: set[str] = {node.name for node in ct.root_hartree.hostname_tree.traverse()
-                                    if (not getattr(node, 'hostname_is_ip', False)
-                                        and node.name
-                                        and not node.name.endswith('onion')
-                                        and not node.name.endswith('i2p'))}
+        _all_hostnames: set[tuple[str, str]] = {
+            (node.name, node.domain) for node in ct.root_hartree.hostname_tree.traverse()
+            if (not getattr(node, 'hostname_is_ip', False)
+                and not getattr(node, 'file_on_disk', False)
+                and node.name
+                and not (node.tld in ('onion', 'i2p')))}
         self.dnsresolver.cache.flush()
         logger.info(f'Resolving DNS: {len(_all_hostnames)} hostnames.')
         semaphore = asyncio.Semaphore(20)
-        all_requests = [_dns_query(hostname, semaphore) for hostname in _all_hostnames]
+        all_requests = [_dns_query(hostname, domain, semaphore) for hostname, domain in _all_hostnames]
         # run all the requests, cache them and let the rest of the code deal.
         # And if a few fail due to network issues, we retry later.
         await asyncio.gather(*all_requests)
@@ -677,7 +678,6 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             if ('hostname_is_ip' in node.features and node.hostname_is_ip
                     or (node.name and any([node.name.endswith('onion'), node.name.endswith('i2p')]))):
                 continue
-            domain = self.psl.privatesuffix(node.name)
 
             # A and AAAA records, they contain the CNAME responses, even if there are no A or AAAA records.
             try:
@@ -737,9 +737,9 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 # logger.info(f'No MX record for {node.name}.')
                 # Try again on the domain
                 try:
-                    mx_response = await self.dnsresolver.resolve(domain, dns.rdatatype.RdataType.MX, search=True, raise_on_no_answer=True)
+                    mx_response = await self.dnsresolver.resolve(node.domain, dns.rdatatype.RdataType.MX, search=True, raise_on_no_answer=True)
                 except dns.resolver.NoAnswer:
-                    logger.debug(f'No MX record for {domain}.')
+                    logger.debug(f'No MX record for {node.domain}.')
                     mx_response = None
                 except Exception as e:
                     logger.info(f'[MX record] Unable to resolve: {e}')
@@ -764,29 +764,25 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
 
             # We must always have a NS record, otherwise, we couldn't resolve.
             # Let's keep trying removing the first part of the hostname until we get an answer.
+            ns_response = None
             try:
                 ns_response = await self.dnsresolver.resolve(node.name, dns.rdatatype.RdataType.NS, search=True, raise_on_no_answer=True)
             except dns.resolver.NoAnswer:
                 # Try again on the domain and keep trying until we get an answer.
-                to_query = domain
-                ns_response = None
-                while ns_response is None:
-                    try:
-                        ns_response = await self.dnsresolver.resolve(to_query, dns.rdatatype.RdataType.NS, search=True, raise_on_no_answer=True)
-                    except dns.resolver.NoAnswer:
-                        ns_response = None
-                        if '.' not in to_query:
-                            # We are at the root, we cannot go further.
+                if to_query := node.domain:
+                    while ns_response is None:
+                        try:
+                            ns_response = await self.dnsresolver.resolve(to_query, dns.rdatatype.RdataType.NS, search=True, raise_on_no_answer=True)
+                        except dns.resolver.NoAnswer:
+                            if '.' not in to_query:
+                                # We are at the root, we cannot go further.
+                                break
+                            to_query = to_query[to_query.index('.') + 1:]
+                        except Exception as e:
+                            logger.info(f'[NS record] Unable to resolve: {e}')
                             break
-                        to_query = to_query[to_query.index('.') + 1:]
-                        continue
-                    except Exception as e:
-                        logger.info(f'[NS record] Unable to resolve: {e}')
-                        ns_response = None
-                        break
             except Exception as e:
                 logger.info(f'[NS record] Unable to resolve: {e}')
-                ns_response = None
 
             if ns_response:
                 for answer in ns_response.response.answer:

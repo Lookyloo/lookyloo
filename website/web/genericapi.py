@@ -8,8 +8,6 @@ import gzip
 import hashlib
 import ipaddress
 import json
-import logging
-import logging.config
 
 from datetime import datetime
 from io import BytesIO
@@ -24,9 +22,8 @@ from werkzeug.security import check_password_hash
 
 from lacuscore import CaptureStatus as CaptureStatusCore, CaptureSettingsError, LacusCore
 from pylacus import CaptureStatus as CaptureStatusPy, PyLacus
-from lookyloo import CaptureSettings, Lookyloo
-from lookyloo.default import get_config
 from lookyloo.comparator import Comparator
+from lookyloo import CaptureSettings, Lookyloo
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, ModuleError
 from lookyloo.helpers import load_user_config
 
@@ -37,8 +34,6 @@ api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
 lookyloo: Lookyloo = get_lookyloo_instance()
 comparator: Comparator = Comparator()
-logging.config.dictConfig(get_config('logging'))
-logger = logging.getLogger('Lookyloo_WebAPI')
 
 
 def api_auth_check(method):  # type: ignore[no-untyped-def]
@@ -641,7 +636,7 @@ def _prepare_lacus_details(lacus: PyLacus, name: str) -> dict[str, Any]:
         if proxies := lacus.proxies():
             to_return['proxies'] = proxies
     except Exception as e:
-        logger.error(f'Unable to get proxies from Lacus: {e}')
+        api.logger.error(f'Unable to get proxies from Lacus: {e}')
     return to_return
 
 
@@ -920,6 +915,10 @@ class CaptureData(Resource):  # type: ignore[misc]
     def get(self, capture_uuid: str) -> Response:
         success, filename, data = lookyloo.get_data(capture_uuid)
         if success:
+            if filename == f'{capture_uuid}_multiple_downloads.zip':
+                # got multiple downloads, return as-is instead of double zipping
+                return send_file(data, mimetype='application/zip')
+
             to_return = BytesIO()
             with ZipFile(to_return, 'w') as z:
                 z.writestr(filename, data.getvalue())
@@ -1183,7 +1182,7 @@ class TLDCaptures(Resource):  # type: ignore[misc]
             except IndexError:
                 # The capture needs to be re-indexed
                 # NOTE: If this warning it printed on a loop for a capture, we have a problem with the index.
-                logger.warning(f'Capture {uuid} needs to be re-indexed.')
+                api.logger.warning(f'Capture {uuid} needs to be re-indexed.')
                 get_indexing(flask_login.current_user).force_reindex(uuid)
         return make_response(list(to_return))
 
@@ -1294,7 +1293,7 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
                             result = search_func(value, cached_captures_only=cached_captures_only, limit=limit)
                             param_results.append({response['capture_uuid'] for response in result['response']})  # type: ignore[index]
                         except Exception as e:
-                            logger.error(f"Failed to search {param}={value}: {e}")
+                            api.logger.error(f"Failed to search {param}={value}: {e}")
 
                     # Union results for multiple values of the same parameter (OR logic within parameter)
                     if param_results:
@@ -1316,7 +1315,7 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
                             result = search_func(value, cached_captures_only=cached_captures_only, limit=limit)
                             param_results.append({response['capture_uuid'] for response in result['response']})  # type: ignore[index]
                         except Exception as e:
-                            logger.error(f"Failed to search {param}={value}: {e}")
+                            api.logger.error(f"Failed to search {param}={value}: {e}")
 
                     # Union results for multiple values of the same parameter (OR logic within parameter)
                     if param_results:
@@ -1353,5 +1352,5 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
             return make_response({'error': 'Invalid JSON payload'}, 400)
 
         except Exception as e:
-            logger.error(f"Unexpected error in advanced_search: {e}")
+            api.logger.error(f"Unexpected error in advanced_search: {e}")
             return make_response({'error': f'Unexpected error: {str(e)}'}, 500)

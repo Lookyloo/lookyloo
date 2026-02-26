@@ -40,6 +40,7 @@ from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus, CaptureSettingsError
 from markupsafe import Markup, escape
+from pyfaup import Host, Url
 from pylookyloo import PyLookylooError, Lookyloo as PyLookyloo
 from puremagic import from_string, PureError
 from pymisp import MISPEvent, MISPServerError
@@ -65,8 +66,7 @@ from .helpers import (User, build_users_table, get_secret_key,
                       get_lookyloo_instance, get_indexing, build_keys_table)
 from .proxied import ReverseProxied
 
-logging.config.dictConfig(get_config('logging'))
-logger = logging.getLogger('Lookyloo_Website')
+logging.config.dictConfig(get_config('logging_web'))
 
 app: Flask = Flask(__name__)
 app.wsgi_app = ReverseProxied(app.wsgi_app)  # type: ignore[method-assign]
@@ -240,7 +240,9 @@ def get_sri(directory: str, filename: str) -> str:
 # Inspired by: https://stackoverflow.com/questions/59157322/overflow-ellipsis-in-middle-of-a-string
 class SafeMiddleEllipsisString():
 
-    def __init__(self, unsafe_string: str | int):
+    def __init__(self, unsafe_string: str | int, with_copy_button: bool=False, copy_content: str | None=None):
+        self.with_copy_button = with_copy_button
+        self.copy_content = copy_content
         if isinstance(unsafe_string, int):
             self.unsafe_string = str(unsafe_string)
         else:
@@ -255,16 +257,36 @@ class SafeMiddleEllipsisString():
             raise ValueError(f"Invalid format spec: {format_spec}")
         return self.__html__()
 
+    def _copy_button(self) -> Markup:
+        return Markup("""
+    <button type="button" class="btn btn-default btn-copy js-copy"
+         data-bs-toggle="tooltip" data-bs-placement="top"
+         style="vertical-align:top;--bs-btn-padding-x: -1rem;"
+         data-copy="{full}"
+         data-bs-original-title="Copy to clipboard">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/>
+      </svg>
+    </button>""").format(full=self.copy_content if self.copy_content else self.unsafe_string)
+
     def __html__(self) -> Markup:
+        button = Markup('')
+        if self.with_copy_button:
+            button = self._copy_button()
         return Markup("""
 <span class="middleEllipsis">
-  <span class="middleEllipsisleft"><div class="middleEllipsiswrap pb-1">{left}</div></span><span class="middleEllipsisright pb-1">&#x202A;{right}</span>
-</span>"""
-                      ).format(left=self.left, right=self.right)
+  <span class="middleEllipsisleft">
+    <div class="middleEllipsiswrap">{left}</div>
+  </span><!--no space--><span class="middleEllipsisright">&#x202A;{right}</span>
+  {button}
+</span>
+"""
+                      ).format(left=self.left, right=self.right, button=button)
 
 
-def shorten_string(s: str | int, with_title: bool=True) -> Markup:
-    ss = SafeMiddleEllipsisString(s)
+def shorten_string(s: str | int, with_title: bool=True, with_copy_button: bool=False,
+                   copy_content: str | None=None) -> Markup:
+    ss = SafeMiddleEllipsisString(s, with_copy_button, copy_content=copy_content)
     if with_title:
         return Markup("{s:with_title}").format(s=ss)
     return Markup(ss)
@@ -515,6 +537,29 @@ def get_hostname_investigator(hostname: str, offset: int | None=None, limit: int
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname, offset=offset, limit=limit), cached_captures_only=False)
     _captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_hostname_nodes(cache.uuid, hostname)) for cache in cached_captures]
+    captures = []
+    for capture_uuid, capture_title, landing_page, capture_ts, nodes in _captures:
+        nodes_info: list[tuple[str, str]] = []
+        for urlnode_uuid in nodes:
+            try:
+                urlnode = lookyloo.get_urlnode_from_tree(capture_uuid, urlnode_uuid)
+                nodes_info.append((urlnode.name, urlnode_uuid))
+            except IndexError:
+                continue
+        captures.append((capture_uuid, capture_title, landing_page, capture_ts, nodes_info))
+    return total, captures
+
+
+def get_domain_investigator(domain: str, offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, str, datetime, list[tuple[str, str]]]]]:
+    '''Returns all the captures loading content from that domain, used in the web interface.'''
+    total = get_indexing(flask_login.current_user).get_captures_domain_count(domain)
+    if search:
+        cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
+            [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_domain(domain)], cached_captures_only=False) if capture.search(search)]
+    else:
+        cached_captures = lookyloo.sorted_capture_cache(
+            get_indexing(flask_login.current_user).get_captures_domain(domain=domain, offset=offset, limit=limit), cached_captures_only=False)
+    _captures = [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_domain_nodes(cache.uuid, domain)) for cache in cached_captures]
     captures = []
     for capture_uuid, capture_title, landing_page, capture_ts, nodes in _captures:
         nodes_info: list[tuple[str, str]] = []
@@ -1181,7 +1226,7 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
                 e.add_tag(tag)
 
         # Change the event info field of the last event in the chain
-        events[-1].info = request.form.get('event_info')
+        events[-1].info = request.form.get('event_info', 'Lookyloo Event')
 
         try:
             new_events = misp.push(events, as_admin=as_admin,
@@ -1420,7 +1465,7 @@ def urls_rendered_page(tree_uuid: str) -> WerkzeugResponse | str | Response:
         flash('Unable to find the rendered node in this capture, cannot get the URLs.', 'error')
         return render_template('urls_rendered.html', error='Unable to find the rendered node in this capture.')
     except Exception as e:
-        logger.warning(f'Unable to get URLs: {e}')
+        app.logger.warning(f'Unable to get URLs: {e}')
         flash('Unable to find the rendered node in this capture.', 'error')
         return render_template('urls_rendered.html', error='Unable to find the rendered node in this capture.')
 
@@ -1545,7 +1590,7 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
-        logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
+        app.logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
 
     collection: str = request.form['collection'] if request.form.get('collection') else ''
@@ -1573,7 +1618,7 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
-        logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
+        app.logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
 
     email: str = request.form['email'] if request.form.get('email') else ''
@@ -1593,7 +1638,7 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
 
 @app.route('/tree/<uuid:tree_uuid>/trigger_indexing', methods=['POST', 'GET'])
 def trigger_indexing(tree_uuid: str) -> WerkzeugResponse:
-    if not lookyloo.index_capture(tree_uuid):
+    if not lookyloo.index_capture(tree_uuid, force=True):
         flash("Unable to index the tree, see logs.", 'error')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
@@ -1647,7 +1692,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                     if hostnode:
                         hostnode_to_highlight = hostnode.uuid
                 except IndexError as e:
-                    logger.info(f'Invalid uuid ({e}): {node_uuid}')
+                    app.logger.info(f'Invalid uuid ({e}): {node_uuid}')
         if cache.error:
             flash(cache.error, 'warning')
 
@@ -1699,7 +1744,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                capture_settings=capture_settings.model_dump(exclude_none=True) if capture_settings else {})
 
     except (NoValidHarFile, TreeNeedsRebuild) as e:
-        logger.info(f'[{tree_uuid}] The capture exists, but we cannot use the HAR files: {e}')
+        app.logger.info(f'[{tree_uuid}] The capture exists, but we cannot use the HAR files: {e}')
         flash(Markup('Unable to build a tree for {uuid}: {error}.').format(uuid=tree_uuid, error=cache.error), 'warning')
         return index_generic()
     finally:
@@ -1910,13 +1955,40 @@ def rebuild_cache() -> WerkzeugResponse:
 
 @app.route('/search', methods=['GET', 'POST'])
 def search() -> str | Response | WerkzeugResponse:
-    if request.form.get('url'):
-        quoted_url: str = base64.urlsafe_b64encode(request.form.get('url', '').strip().encode()).decode()
-        return redirect(url_for('url_details', from_popup=True, url=quoted_url))
-    if request.form.get('hostname'):
-        return redirect(url_for('hostname_details', from_popup=True, hostname=request.form.get('hostname')))
-    if request.form.get('tld'):
-        return redirect(url_for('tld_details', from_popup=True, tld=request.form.get('tld')))
+    # the URL search bar will work for:
+    # * tld: dev
+    # * suffix: pages.dev
+    # * domain: foo.pages.dev
+    # * hostname: bar.foo.pages.dev
+    # And faups figures it out.
+    if url := request.form.get('url', '').strip():
+        try:
+            # if that works, we have a URL, act accordingly.
+            Url(url)
+            quoted_url: str = base64.urlsafe_b64encode(url.encode()).decode()
+            return redirect(url_for('url_details', from_popup=True, url=quoted_url))
+        except ValueError:
+            app.logger.debug('Not a url, try as hostname.')
+
+        try:
+            # If tht works, we have a host, which can be a hostname, a domain, a suffix, or a tld or even an IP
+            f_host = Host(url)
+            if f_host.is_ip_addr():
+                return redirect(url_for('ip_details', from_popup=True, ip=str(f_host)))
+            elif f_host.is_hostname():
+                f_hostname = f_host.try_into_hostname()
+                if str(f_hostname.suffix) == str(f_hostname):
+                    # got a suffix, process as TLD
+                    return redirect(url_for('tld_details', from_popup=True, tld=f_hostname.suffix))
+                elif str(f_hostname.domain) == str(f_hostname):
+                    # got a domain
+                    return redirect(url_for('domain_details', from_popup=True, domain=f_hostname.domain))
+                else:
+                    # Actual hostname
+                    return redirect(url_for('hostname_details', from_popup=True, hostname=str(f_hostname)))
+        except ValueError:
+            app.logger.warning(f'Not a hostname, unable to do anything: {url}.')
+
     if request.form.get('ip'):
         return redirect(url_for('ip_details', from_popup=True, ip=request.form.get('ip')))
     if request.form.get('ressource'):
@@ -1957,7 +2029,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
             multiple_remote_lacus = {}
             for remote_lacus_name, _lacus in lookyloo.lacus.items():
                 if not _lacus.is_up:
-                    logger.warning(f'Lacus "{remote_lacus_name}" is not up.')
+                    app.logger.warning(f'Lacus "{remote_lacus_name}" is not up.')
                     continue
                 multiple_remote_lacus[remote_lacus_name] = {}
                 try:
@@ -1966,13 +2038,13 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                         multiple_remote_lacus[remote_lacus_name]['proxies'] = proxies
                 except Exception as e:
                     # We cannot connect to Lacus, skip it.
-                    logger.warning(f'Unable to get proxies from Lacus "{remote_lacus_name}": {e}.')
+                    app.logger.warning(f'Unable to get proxies from Lacus "{remote_lacus_name}": {e}.')
                     continue
 
             default_remote_lacus = get_config('generic', 'multiple_remote_lacus').get('default')
         elif isinstance(lookyloo.lacus, PyLacus):
             if not lookyloo.lacus.is_up:
-                logger.warning('Remote Lacus is not up.')
+                app.logger.warning('Remote Lacus is not up.')
             else:
                 multiple_remote_lacus = {'default': {}}
                 try:
@@ -1980,10 +2052,10 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                         # We might have other settings in the future.
                         multiple_remote_lacus['default']['proxies'] = proxies
                 except Exception as e:
-                    logger.warning(f'Unable to get proxies from Lacus: {e}.')
+                    app.logger.warning(f'Unable to get proxies from Lacus: {e}.')
             default_remote_lacus = 'default'
     except ConfigError as e:
-        logger.warning(f'Unable to get remote lacus settings: {e}.')
+        app.logger.warning(f'Unable to get remote lacus settings: {e}.')
         flash('The capturing system is down, you can enqueue a capture and it will start ASAP.', 'error')
 
     # NOTE: Inform user if none of the remote lacuses are up?
@@ -2139,7 +2211,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
                     capture_query['storage'] = orjson.loads(_storage)
                 except orjson.JSONDecodeError:
                     flash(Markup('Invalid storage state: must be a JSON: {}.').format(_storage.decode()), 'error')
-                    logger.info(f'Invalid storage state: must be a JSON: {_storage.decode()}.')
+                    app.logger.info(f'Invalid storage state: must be a JSON: {_storage.decode()}.')
 
         if request.form.get('device_name'):
             capture_query['device_name'] = request.form['device_name']
@@ -2169,6 +2241,9 @@ def capture_web() -> str | Response | WerkzeugResponse:
 
         if request.form.get('general_timeout_in_sec'):
             capture_query['general_timeout_in_sec'] = request.form['general_timeout_in_sec']
+
+        if request.form.get('final_wait'):
+            capture_query['final_wait'] = request.form['final_wait']
 
         if request.form.get('referer'):
             capture_query['referer'] = request.form['referer']
@@ -2387,6 +2462,12 @@ def hostname_details(hostname: str) -> str:
 def tld_details(tld: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     return render_template('tld.html', tld=tld, from_popup=from_popup)
+
+
+@app.route('/domains/<string:domain>', methods=['GET'])
+def domain_details(domain: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
+    return render_template('domain.html', domain=domain, from_popup=from_popup)
 
 
 @app.route('/ips/<string:ip>', methods=['GET'])
@@ -2657,7 +2738,7 @@ def __prepare_title_in_modal(capture_uuid: str, title: str, from_popup: bool=Fal
 
 
 def __prepare_landings_in_modal(landing_page: str) -> dict[str, Markup]:
-    return {'display': shorten_string(landing_page),
+    return {'display': shorten_string(landing_page, with_copy_button=True),
             'filter': escape(landing_page)}
 
 
@@ -2671,7 +2752,7 @@ def _safe_capture_title(capture_uuid: str, title: str, nodes: Sequence[tuple[str
 
 index_link_template = app.jinja_env.from_string(source='''
 <b>Page title</b>: <span title="{{title}}">{{title}}</span><br>
-<b>Initial URL</b>: {{shorten_string(url)}}<br>
+<b>Initial URL</b>: {{shorten_string(url, with_copy_button=True)}}<br>
 <a style="float: right;" href="{{url_for('tree', tree_uuid=capture_uuid)}}" class="btn btn-outline-primary" role="button">Show capture</a>
 ''')
 
@@ -2679,10 +2760,10 @@ redir_chain_template = app.jinja_env.from_string(source='''
 {% from 'bootstrap5/utils.html' import render_icon %}
 
 <div class="text-center">
- <div class="row"><div class="col">{{shorten_string(redirects[0])}}</div></div>
+ <div class="row"><div class="col">{{shorten_string(redirects[0], with_copy_button=True)}}</div></div>
  {% for r in redirects[1:] %}
    <div class="row"><div class="col">{{ render_icon("arrow-down") }}</div></div>
-   <div class="row"><div class="col">{{ shorten_string(r) }}</div></div>
+   <div class="row"><div class="col">{{ shorten_string(r, with_copy_button=True) }}</div></div>
  {% endfor %}
 </div>
 <a style="float: right;" href="{{url_for('redirects', tree_uuid=uuid)}}" class="btn btn-outline-primary" role="button">Download redirects</a>
@@ -2754,7 +2835,7 @@ def post_table(table_name: str, value: str='') -> Response:
             return jsonify({'error': 'Not allowed.'})
 
         if start is None or length is None:
-            logger.warning(f'Missing start {start} or length {length}.')
+            app.logger.info(f'Missing start {start} or length {length}.')
             return jsonify({'error': f'Missing start {start} or length {length}.'})
 
         total, total_filtered, captures = get_index(public=show_hidden is False, category=category, offset=start, limit=length, search=search)
@@ -2916,6 +2997,21 @@ def post_table(table_name: str, value: str='') -> Response:
 
     if table_name == 'tldTable':
         total, captures = get_tld_investigator(value.strip(), offset=start, limit=length, search=search)
+        if search and start is not None and length is not None:
+            total_filtered = len(captures)
+            captures = captures[start:start + length]
+        prepared_captures = []
+        for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            to_append = {
+                'capture_time': capture_time.isoformat(),
+                'landing_page': __prepare_landings_in_modal(landing_page),
+                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
+            }
+            prepared_captures.append(to_append)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
+
+    if table_name == 'domainTable':
+        total, captures = get_domain_investigator(value.strip(), offset=start, limit=length, search=search)
         if search and start is not None and length is not None:
             total_filtered = len(captures)
             captures = captures[start:start + length]

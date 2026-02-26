@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 import re
+
+from datetime import datetime
 
 from io import BytesIO
 from collections import defaultdict
@@ -13,12 +14,12 @@ from collections.abc import Iterator
 
 import requests
 from har2tree import HostNode, URLNode, Har2TreeError
-from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag, PyMISPError  # , MISPServerError
-from pymisp.tools import FileObject, URLObject
+from pymisp import MISPAttribute, MISPEvent, PyMISP, MISPTag, PyMISPError, MISPObjectException
+from pymisp.tools import FileObject, URLObject, DataURLObject
 
 from ..default import get_config, get_homedir
 from ..exceptions import ModuleError
-from ..helpers import get_public_suffix_list, global_proxy_for_requests
+from ..helpers import global_proxy_for_requests
 
 from .abstractmodule import AbstractModule
 
@@ -98,7 +99,7 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
             for category in cache.categories:
                 event.add_tag(category)
 
-        if cache.url.startswith('file://'):
+        if re.match("file://", cache.url, re.I):
             filename = cache.url.rsplit('/', 1)[-1]
             event.info = f'Lookyloo Capture ({filename})'
             # Create file object as initial
@@ -117,9 +118,29 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
             initial_file.comment = 'This is a capture of a file, rendered in the browser'
             initial_file.first_seen = cache.timestamp
             initial_obj = event.add_object(initial_file)
+        elif re.match("data:", cache.url, re.I):
+            event.info = f'Lookyloo Capture Data URI ({cache.url[:50]})'
+            try:
+                initial_dataurl = DataURLObject(cache.url)
+            except Exception as e:
+                raise ModuleError(f'Unable to parse data URL: {e}')
+
+            initial_dataurl.comment = 'Submitted Data URL'
+            initial_dataurl.first_seen = cache.timestamp
+            initial_obj = event.add_object(initial_dataurl)
         else:
+            # http, https, or no scheme
             event.info = f'Lookyloo Capture ({cache.url})'
-            initial_url = URLObject(cache.url)
+            url = cache.url.strip()
+            if not url:
+                raise ModuleError('No URL, cannot make a MISP event.')
+
+            if re.match('http', url, re.I):
+                initial_url = URLObject(url)
+            else:
+                # we may have "Http", which is fine but will barf if we're not doing a case insensitive check.
+                # Also, we do not want to blanket lower the whole URL.
+                initial_url = URLObject(f'http://{url}')
             initial_url.comment = 'Submitted URL'
             initial_url.first_seen = cache.timestamp
             self.__misp_add_ips_to_URLObject(initial_url, cache.tree.root_hartree.hostname_tree)
@@ -135,10 +156,13 @@ class MISPs(Mapping, AbstractModule):  # type: ignore[type-arg]
         for nb, url in enumerate(cache.redirects):
             if url == cache.url:
                 continue
-            obj = URLObject(url)
-            obj.comment = f'Redirect {nb}'
-            self.__misp_add_ips_to_URLObject(obj, cache.tree.root_hartree.hostname_tree)
-            redirects.append(obj)
+            try:
+                obj = URLObject(url)
+                obj.comment = f'Redirect {nb}'
+                self.__misp_add_ips_to_URLObject(obj, cache.tree.root_hartree.hostname_tree)
+                redirects.append(obj)
+            except MISPObjectException as e:
+                self.logger.warning(f"[{cache.uuid}] Unable to add URL: {e}")
 
         if redirects:
             redirects[-1].comment = f'Last redirect ({nb})'
@@ -211,7 +235,6 @@ class MISP(AbstractModule):
         self.auto_push = bool(self.config.get('auto_push', False))
         self.storage_dir_misp = get_homedir() / 'misp'
         self.storage_dir_misp.mkdir(parents=True, exist_ok=True)
-        self.psl = get_public_suffix_list()
         return True
 
     def get_fav_tags(self) -> dict[Any, Any] | list[MISPTag]:
@@ -307,9 +330,9 @@ class MISP(AbstractModule):
         if self.admin_only and not as_admin:
             return {'error': 'Admin only module, cannot lookup.'}
 
-        tld = self.psl.publicsuffix(hostnode.name)
-        domain = re.sub(f'.{tld}$', '', hostnode.name).split('.')[-1]
-        to_lookup = [node.name, hostnode.name, f'{domain}.{tld}']
+        to_lookup = [node.name, hostnode.name]
+        if hostnode.domain:
+            to_lookup.append(hostnode.domain)
         if hasattr(hostnode, 'resolved_ips'):
             if 'v4' in hostnode.resolved_ips:
                 to_lookup += hostnode.resolved_ips['v4']
