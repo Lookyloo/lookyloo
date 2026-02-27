@@ -812,7 +812,7 @@ submit_fields_post = api.model('SubmitFieldsPost', {
     'allow_tracking': fields.Integer(description="Attempt to let the website violate your privacy", min=0, max=1, example=0),
     'java_script_enabled': fields.Integer(description="Enable/Disable running JavaScript when rendering the page", min=0, max=1, example=1),
     'user_agent': fields.String(description="User agent to use for the capture", example=''),
-    'browser_name': fields.String(description="Use this browser. Must be chromium, firefox or webkit.", example=''),
+    'browser': fields.String(description="Use this browser. Must be chromium, firefox or webkit.", example=''),
     'device_name': fields.String(description="Use the pre-configured settings for this device. Get a list from /json/devices.", example=''),
     'referer': fields.String(description="Referer to pass to the capture", example=''),
     'headers': fields.String(description="Headers to pass to the capture", example='Accept-Language: en-US;q=0.5, fr-FR;q=0.4'),
@@ -830,7 +830,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
     @api.param('allow_tracking', 'Attempt to let the website violate your privacy', default=1)  # type: ignore[untyped-decorator]
     @api.param('java_script_enabled', 'Enable/Disable running JavaScript when rendering the page', default=1)  # type: ignore[untyped-decorator]
     @api.param('user_agent', 'User agent to use for the capture')  # type: ignore[untyped-decorator]
-    @api.param('browser_name', 'Use this browser. Must be chromium, firefox or webkit.')  # type: ignore[untyped-decorator]
+    @api.param('browser', 'Use this browser. Must be chromium, firefox or webkit.')  # type: ignore[untyped-decorator]
     @api.param('device_name', 'Use the pre-configured settings for this device')  # type: ignore[untyped-decorator]
     @api.param('referer', 'Referer to pass to the capture')  # type: ignore[untyped-decorator]
     @api.param('proxy', 'Proxy to use for the the capture')  # type: ignore[untyped-decorator]
@@ -852,8 +852,8 @@ class SubmitCapture(Resource):  # type: ignore[misc]
         }
         if request.args.get('user_agent'):
             to_query['user_agent'] = request.args['user_agent']
-        if request.args.get('browser_name'):
-            to_query['browser_name'] = request.args['browser_name']
+        if request.args.get('browser'):
+            to_query['browser'] = request.args['browser']
         if request.args.get('device_name'):
             to_query['device_name'] = request.args['device_name']
         if request.args.get('referer'):
