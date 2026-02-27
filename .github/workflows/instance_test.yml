@@ -116,7 +116,7 @@ jobs:
           find -wholename ./logs/*.log -exec cat {} \;
           find -wholename ./website/logs/*.log -exec cat {} \;
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-traces
