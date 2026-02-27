@@ -384,11 +384,14 @@ class Archiver(AbstractManager):
                 capture_breakpoint -= 1
             except OSError:
                 self.logger.exception(f'Unable to archive capture {capture_path}')
-                (capture_path / 'lock').unlink(missing_ok=True)
+                # copy failed, remove lock in original dir
+                lock_file.unlink(missing_ok=True)
             except Exception:
                 self.logger.exception(f'Critical exception while archiving {capture_path}')
-                (capture_path / 'lock').unlink(missing_ok=True)
+                # copy failed, remove lock in original dir
+                lock_file.unlink(missing_ok=True)
             else:
+                # copy worked, remove lock in new dir
                 (new_capture_path / 'lock').unlink(missing_ok=True)
 
         if archiving_done:
