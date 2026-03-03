@@ -42,7 +42,7 @@ from lacuscore import CaptureStatus, CaptureSettingsError
 from markupsafe import Markup, escape
 from pyfaup import Host, Url
 from pylookyloo import PyLookylooError, Lookyloo as PyLookyloo
-from puremagic import from_string, PureError
+from pure_magic_rs import MagicDb
 from pymisp import MISPEvent, MISPServerError
 from werkzeug.routing import BaseConverter
 from werkzeug.security import check_password_hash
@@ -78,6 +78,8 @@ app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.debug = bool(os.environ.get('DEBUG', False))
+
+magicdb = MagicDb()
 
 try:
     from .custom_csp import csp  # type: ignore[import-untyped]
@@ -1971,7 +1973,7 @@ def search() -> str | Response | WerkzeugResponse:
             app.logger.debug('Not a url, try as hostname.')
 
         try:
-            # If tht works, we have a host, which can be a hostname, a domain, a suffix, or a tld or even an IP
+            # If that works, we have a host, which can be a hostname, a domain, a suffix, or a tld or even an IP
             f_host = Host(url)
             if f_host.is_ip_addr():
                 return redirect(url_for('ip_details', from_popup=True, ip=str(f_host)))
@@ -2408,7 +2410,8 @@ def favicon_detail(favicon_sha512: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     favicon = get_indexing(flask_login.current_user).get_favicon(favicon_sha512)
     if favicon:
-        mimetype = from_string(favicon, mime=True)
+        m = magicdb.best_magic_buffer(favicon)
+        mimetype = m.mime_type
         b64_favicon = base64.b64encode(favicon).decode()
         mmh3_shodan = lookyloo.compute_mmh3_shodan(favicon)
     else:
@@ -3121,9 +3124,11 @@ def post_table(table_name: str, value: str='') -> Response:
                 if not favicon:
                     continue
                 try:
-                    mimetype = from_string(favicon, mime=True)
-                except PureError:
+                    m = magicdb.best_magic_buffer(favicon)
+                    mimetype = m.mime_type
+                except Exception as e:
                     # Not a valid image
+                    app.logger.info(f'Unblet o get mimetype: {e}')
                     continue
                 favicon_sha512 = hashlib.sha512(favicon).hexdigest()
                 b64_favicon = base64.b64encode(favicon).decode()

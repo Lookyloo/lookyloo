@@ -45,7 +45,7 @@ from lacuscore import (LacusCore, CaptureSettingsError,
                        )
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
-from puremagic import from_string, PureError
+from pure_magic_rs import MagicDb
 from pylacus import (PyLacus,
                      CaptureStatus as CaptureStatusPy
                      # CaptureResponse as CaptureResponsePy,
@@ -161,6 +161,8 @@ class Lookyloo():
         self.logger.info('Initializing index...')
         self._captures_index = CapturesIndex(self.redis, self.context, maxsize=cache_max_size)
         self.logger.info('Index initialized.')
+
+        self.magicdb = MagicDb()
 
     @property
     def monitoring(self) -> PyLookylooMonitoring | None:
@@ -1391,10 +1393,10 @@ class Lookyloo():
                 if not favicon:
                     continue
                 try:
-                    mimetype = from_string(favicon, mime=True)
-                    return mimetype, base64.b64encode(favicon).decode()
-                except PureError:
-                    logger.info('Unable to get the mimetype of the favicon.')
+                    m = self.magicdb.best_magic_buffer(favicon)
+                    return m.mime_type, base64.b64encode(favicon).decode()
+                except Exception as e:
+                    logger.info(f'Unable to get the mimetype of the favicon: {e}.')
                     continue
             else:
                 logger.info('No valid favicon found.')
