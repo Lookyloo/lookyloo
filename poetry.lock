@@ -1879,6 +1879,20 @@ files = [
 ]
 
 [[package]]
+name = "html-to-markdown"
+version = "2.27.2"
+description = "High-performance HTML to Markdown converter powered by Rust with a clean Python API"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "html_to_markdown-2.27.2-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:f306cb45ada12a15a31ce3dcbadd890b86ab0b34dfcbdc69a16954fd29698e67"},
+    {file = "html_to_markdown-2.27.2-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:aeae1f35894ae29a2494ddfa79613ba036e9c4fc8999bd59b73cedbeff7fdffd"},
+    {file = "html_to_markdown-2.27.2-cp310-abi3-win_amd64.whl", hash = "sha256:c75a2243cd0032936dab745804fe0fa252d809b88fbc915433b4c93d9b75fb0a"},
+    {file = "html_to_markdown-2.27.2.tar.gz", hash = "sha256:9ce7df1e6a9cde2a31727b1a83154c9a957cad63bb91d0cad3a558cb3dc6930a"},
+]
+
+[[package]]
 name = "idna"
 version = "3.11"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -6295,4 +6309,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "a06f351cace9e2f3119355bed950a0e2dec10f8b6a0acb5e50772ebd1bdc9460"
+content-hash = "a310ca85cee06f3ac861f1a73b1de14ba521b04bf360025719f7e55b3d187b71"

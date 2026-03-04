@@ -91,6 +91,7 @@ orjson = "^3.11.7"
 esprima = "^4.0.1"
 pyfaup-rs = "^0.4.0"
 pure-magic-rs = "^0.3.2"
+html-to-markdown = "^2.27.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.19.1"

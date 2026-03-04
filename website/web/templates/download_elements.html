@@ -45,7 +45,7 @@
       </td>
     </tr>
     <tr>
-      <th scope="row">HTTP Archive</th>
+      <th scope="row">HTTP Archive (HAR)</th>
       <td><a href="{{ url_for('har_download', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>{{tt_entries.get('har', 'Unavailable')}}
        {% if tt_entries.get('har') %}
@@ -61,6 +61,11 @@
         <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='html') }}" role="button">{{ render_icon('cloud-download') }}</a>
         {% endif %}
       </td>
+    </tr>
+    <tr>
+      <th scope="row">Rendered HTML page, as Markdown</th>
+      <td><a href="{{ url_for('html_as_markdown', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
     </tr>
     {% if has_downloads %}
     <tr>

@@ -37,6 +37,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives.serialization import Encoding
 from defang import defang  # type: ignore[import-untyped]
 from har2tree import CrawledTree, HostNode, URLNode, Har2TreeError
+from html_to_markdown import convert
 from lacuscore import (LacusCore, CaptureSettingsError,
                        CaptureStatus as CaptureStatusCore,
                        # CaptureResponse as CaptureResponseCore)
@@ -1406,6 +1407,19 @@ class Lookyloo():
     def get_html(self, capture_uuid: str, /, all_html: bool=False) -> tuple[bool, BytesIO]:
         '''Get rendered HTML'''
         return self._get_raw(capture_uuid, 'html', all_html)
+
+    def get_html_as_md(self, capture_uuid: str, /, all_html: bool=False) -> tuple[bool, BytesIO]:
+        '''Get rendered HTML'''
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        success, html = self.get_html(capture_uuid, all_html=all_html)
+        if success:
+            try:
+                markdown = convert(html.getvalue().decode())
+                return True, BytesIO(markdown.encode())
+            except Exception as e:
+                logger.warning(f'Unable to convert HTML to MD: {e}')
+                return False, BytesIO()
+        return success, html
 
     def get_har(self, capture_uuid: str, /, all_har: bool=False) -> tuple[bool, BytesIO]:
         '''Get rendered HAR'''

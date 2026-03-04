@@ -1395,6 +1395,16 @@ def html(tree_uuid: str) -> Response:
     return make_response(Response('No HTML available.', mimetype='text/text'), 404)
 
 
+@app.route('/tree/<uuid:tree_uuid>/html_as_markdown', methods=['GET'])
+@file_response  # type: ignore[untyped-decorator]
+def html_as_markdown(tree_uuid: str) -> Response:
+    success, to_return = lookyloo.get_html_as_md(tree_uuid)
+    if success:
+        return send_file(to_return, mimetype='text/markdown',
+                         as_attachment=True, download_name=f'{tree_uuid}_page.md')
+    return make_response(Response('Unable to turn HTML into MD.', mimetype='text/text'), 404)
+
+
 @app.route('/tree/<uuid:tree_uuid>/cookies', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def cookies(tree_uuid: str) -> Response:
