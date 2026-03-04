@@ -9,9 +9,13 @@ import logging.config
 import os
 import random
 import shutil
+import time
 
 from datetime import datetime, timedelta
 from pathlib import Path
+
+# import botocore  # type: ignore[import-untyped]
+import aiohttp
 
 from redis import Redis
 import s3fs  # type: ignore[import-untyped]
@@ -37,12 +41,6 @@ class Archiver(AbstractManager):
 
         # NOTE 2023-10-03: if we store the archived captures in s3fs (as it is the case in the CIRCL demo instance),
         # listing the directories directly with s3fs-fuse causes I/O errors and is making the interface unusable.
-        # It is only a problem on directory listing and not when accessing a capture, so we only need to change the way
-        # we generate the index files.
-        # Other issue: the python module s3fs requires urllib < 2.0 (https://github.com/boto/botocore/issues/2926) so
-        # we cannot run the script creating the indexes in the same virtual environment as the rest of the project.
-        # The variable below will only be used to make sure we don't try to trigger a directory listing on a s3fs-fuse mount
-        # and we're going to create the index files from another script, in tools/create_archive_indexes.
         self.archive_on_s3fs = False
         s3fs_config = get_config('generic', 's3fs')
         if s3fs_config.get('archive_on_s3fs'):
@@ -50,8 +48,14 @@ class Archiver(AbstractManager):
             self.s3fs_client = s3fs.S3FileSystem(key=s3fs_config['config']['key'],
                                                  secret=s3fs_config['config']['secret'],
                                                  endpoint_url=s3fs_config['config']['endpoint_url'],
-                                                 config_kwargs={'connect_timeout': 10,
-                                                                'read_timeout': 900})
+                                                 config_kwargs={'connect_timeout': 20,
+                                                                'read_timeout': 90,
+                                                                'max_pool_connections': 20,
+                                                                'retries': {
+                                                                    'max_attempts': 1,
+                                                                    'mode': 'adaptive'
+                                                                },
+                                                                'tcp_keepalive': True})
             self.s3fs_bucket = s3fs_config['config']['bucket_name']
 
     def _to_run_forever(self) -> None:
@@ -66,10 +70,13 @@ class Archiver(AbstractManager):
             if self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 break
-            archiving_done = self._archive()
-            self._load_indexes()
-            if not archiving_done:
+            if self._archive():
+                self._load_indexes()
+            else:
                 self._update_all_capture_indexes(recent_only=True)
+                if self.archive_on_s3fs:
+                    self.s3fs_client.clear_instance_cache()
+                    self.s3fs_client.clear_multipart_uploads(self.s3fs_bucket)
         if not self.shutdown_requested():
             # This call takes a very long time on MinIO
             self._update_all_capture_indexes()
@@ -298,7 +305,6 @@ class Archiver(AbstractManager):
     def __archive_single_capture(self, capture_path: Path) -> Path:
         capture_timestamp = make_ts_from_dirname(capture_path.name)
         dest_dir = self.archived_captures_dir / str(capture_timestamp.year) / f'{capture_timestamp.month:02}' / f'{capture_timestamp.day:02}'
-        dest_dir.mkdir(parents=True, exist_ok=True)
         # If the HAR isn't archived yet, archive it before copy
         for har in capture_path.glob('*.har'):
             with har.open('rb') as f_in:
@@ -310,9 +316,18 @@ class Archiver(AbstractManager):
         with (capture_path / 'uuid').open() as _uuid:
             uuid = _uuid.read().strip()
 
-        (capture_path / 'tree.pickle').unlink(missing_ok=True)
-        (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
-        shutil.move(str(capture_path), str(dest_dir))
+        if self.archive_on_s3fs:
+            dest_dir_bucket = '/'.join([self.s3fs_bucket, str(capture_timestamp.year), f'{capture_timestamp.month:02}', f'{capture_timestamp.day:02}'])
+            self.s3fs_client.makedirs(dest_dir_bucket, exist_ok=True)
+            (capture_path / 'tree.pickle').unlink(missing_ok=True)
+            (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
+            self.s3fs_client.put(str(capture_path), dest_dir_bucket, recursive=True)
+            shutil.rmtree(str(capture_path))
+        else:
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            (capture_path / 'tree.pickle').unlink(missing_ok=True)
+            (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
+            shutil.move(str(capture_path), str(dest_dir))
         # Update index in parent
         with (dest_dir / 'index').open('a') as _index:
             index_writer = csv.writer(_index)
@@ -337,7 +352,7 @@ class Archiver(AbstractManager):
         __counter_shutdown_force = 0
         for u, p in self.redis.hscan_iter('lookup_dirs'):
             __counter_shutdown_force += 1
-            if __counter_shutdown_force % 1000 == 0 and self.shutdown_requested():
+            if __counter_shutdown_force % 100 == 0 and self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 archiving_done = False
                 break
@@ -380,16 +395,29 @@ class Archiver(AbstractManager):
                     continue
 
             try:
+                start = time.time()
                 new_capture_path = self.__archive_single_capture(capture_path)
+                end = time.time()
+                self.logger.debug(f'[{uuid}] {round(end - start, 2)}s to archive ({capture_path})')
                 capture_breakpoint -= 1
-            except OSError:
-                self.logger.exception(f'Unable to archive capture {capture_path}')
+            except OSError as e:
+                self.logger.warning(f'Unable to archive capture {capture_path}: {e}')
                 # copy failed, remove lock in original dir
                 lock_file.unlink(missing_ok=True)
-            except Exception:
-                self.logger.exception(f'Critical exception while archiving {capture_path}')
+                archiving_done = False
+                break
+            except aiohttp.client_exceptions.SocketTimeoutError:
+                self.logger.warning(f'Timeout error while archiving {capture_path}')
                 # copy failed, remove lock in original dir
                 lock_file.unlink(missing_ok=True)
+                archiving_done = False
+                break
+            except Exception as e:
+                self.logger.warning(f'Critical exception while archiving {capture_path}: {e}')
+                # copy failed, remove lock in original dir
+                lock_file.unlink(missing_ok=True)
+                archiving_done = False
+                break
             else:
                 # copy worked, remove lock in new dir
                 (new_capture_path / 'lock').unlink(missing_ok=True)
