@@ -4468,14 +4468,14 @@ docs = ["Sphinx (>=8.2.3) ; python_version >= \"3.11\""]
 
 [[package]]
 name = "pymisp"
-version = "2.5.33"
+version = "2.5.33.1"
 description = "Python API for MISP."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "pymisp-2.5.33-py3-none-any.whl", hash = "sha256:77ea3b1350cca99f77167298da438961a84b94a0439db31f3b426605417b2095"},
-    {file = "pymisp-2.5.33.tar.gz", hash = "sha256:9646b4f82c4cd66c49e595fed9fe547c1b1ce313c97e62864b304ed580ef968e"},
+    {file = "pymisp-2.5.33.1-py3-none-any.whl", hash = "sha256:7d7034bb5b05235e0836c15af9a8116d56a65247e0037a796216942a1d3eb977"},
+    {file = "pymisp-2.5.33.1.tar.gz", hash = "sha256:b5cd9aac342596fbe2696b7c3ee02a2a221574557c0334451b0d4e21a4c5928f"},
 ]
 
 [package.dependencies]
@@ -4488,12 +4488,12 @@ requests = ">=2.32.5"
 
 [package.extras]
 brotli = ["urllib3[broti] (>=2.6.3)"]
-docs = ["docutils (>=0.22.4) ; python_version >= \"3.12\"", "myst-parser (>=5.0.0) ; python_version >= \"3.12\"", "sphinx (>=9.1.0) ; python_version >= \"3.12\"", "sphinx-autodoc-typehints (>=3.8.0) ; python_version >= \"3.12\""]
+docs = ["docutils (>=0.22.4) ; python_version >= \"3.12\"", "myst-parser (>=5.0.0) ; python_version >= \"3.12\"", "sphinx (>=9.1.0) ; python_version >= \"3.12\"", "sphinx-autodoc-typehints (>=3.9.5) ; python_version >= \"3.12\""]
 email = ["RTFDE (>=0.1.2.2) ; python_version <= \"3.10\"", "extract_msg (>=0.55.0)", "oletools (>=0.60.2)"]
 fileobjects = ["lief (>=0.17.4)", "pure-magic-rs (>=0.3.2)", "pydeep2 (>=0.5.1)"]
 openioc = ["beautifulsoup4 (>=4.13.5,<4.14)"]
 pdfexport = ["reportlab (>=4.4.10)"]
-url = ["pyfaup-rs (>=0.3)"]
+url = ["pyfaup-rs (>=0.4,<0.5)"]
 virustotal = ["validators (>=0.35.0)"]
 
 [[package]]
@@ -6295,4 +6295,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "89c4a662d290924bf31a44804cc097177fd6c6fcff35f0afe973c995d05c67c8"
+content-hash = "a06f351cace9e2f3119355bed950a0e2dec10f8b6a0acb5e50772ebd1bdc9460"
