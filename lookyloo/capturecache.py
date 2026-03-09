@@ -153,6 +153,25 @@ class CaptureCache():
                 self.logger.warning(f'[In file!] Invalid capture settings for {self.uuid}: {e}')
         return None
 
+    @property
+    def monitor_uuid(self) -> str | None:
+        monitor_uuid_file = self.capture_dir / 'monitor_uuid'
+        if monitor_uuid_file.exists():
+            try:
+                with monitor_uuid_file.open() as f:
+                    return f.read().strip()
+            except Exception as e:
+                self.logger.warning(f'Unable to read monitor_uuid file: {e}')
+        return None
+
+    @monitor_uuid.setter
+    def monitor_uuid(self, uuid: str) -> None:
+        monitor_uuid_file = self.capture_dir / 'monitor_uuid'
+        if monitor_uuid_file.exists():
+            raise LookylooException('The capture is already monitored.')
+        with monitor_uuid_file.open('w') as f:
+            f.write(uuid.strip())
+
 
 def serialize_sets(obj: Any) -> Any:
     if isinstance(obj, set):

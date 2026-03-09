@@ -211,6 +211,23 @@ auto_trigger_modules = get_config('generic', 'auto_trigger_modules')
 hide_captures_with_error = get_config('generic', 'hide_captures_with_error')
 
 
+def prepare_monitoring() -> tuple[bool, list[str], dict[str, int | bool]]:
+    monitoring_collections: list[str] = []
+    monitoring_settings: dict[str, int | bool] = {}
+    if lookyloo.monitoring:
+        try:
+            monitoring_collections = lookyloo.monitoring.collections()
+        except Exception as e:
+            flash(Markup('Unable to get existing connections from the monitoring : {}').format(e), 'warning')
+        try:
+            monitoring_settings = lookyloo.monitoring.instance_settings()  # type: ignore[assignment]
+        except Exception as e:
+            flash(Markup('Unable to initialize the monitoring instance: {}').format(e), 'warning')
+        return True, monitoring_collections, monitoring_settings
+    else:
+        return False, [], {}
+
+
 # ##### Global methods passed to jinja
 
 # Method to make sizes in bytes human readable
@@ -1598,6 +1615,10 @@ def cache_tree(tree_uuid: str) -> WerkzeugResponse:
 
 @app.route('/tree/<uuid:tree_uuid>/monitor', methods=['POST', 'GET'])
 def monitor(tree_uuid: str) -> WerkzeugResponse:
+    cache = lookyloo.capture_cache(tree_uuid)
+    if not cache:
+        flash("Unable to monitor capture: Cache unavailable.", 'error')
+        return redirect(url_for('tree', tree_uuid=tree_uuid))
     if not lookyloo.monitoring:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     if request.form.get('name') or not request.form.get('confirm'):
@@ -1605,22 +1626,29 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
         app.logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
 
-    collection: str = request.form['collection'] if request.form.get('collection') else ''
-    notification_email: str = request.form['notification'] if request.form.get('notification') else ''
-    frequency: str = request.form['frequency'] if request.form.get('frequency') else 'daily'
+    collection: str = request.form.get('collection', '')
+    notification_email: str = request.form.get('notification', '')
+    frequency: str = request.form.get('frequency', 'daily')
     expire_at: float | None = datetime.fromisoformat(request.form['expire_at']).timestamp() if request.form.get('expire_at') else None
-    cache = lookyloo.capture_cache(tree_uuid)
-    if cache:
-        monitoring_uuid = lookyloo.monitoring.monitor({'url': cache.url, 'user_agent': cache.user_agent, 'listing': False},
-                                                      frequency=frequency, collection=collection, expire_at=expire_at,
-                                                      notification={'email': notification_email})
-        flash(f"Sent to monitoring ({monitoring_uuid}).", 'success')
-        if collection:
-            flash(f"See monitored captures in the same collection here: {lookyloo.monitoring.root_url}/monitored/{collection}.", 'success')
-        else:
-            flash(f"Comparison available as soon as we have more than one capture: {lookyloo.monitoring.root_url}/changes_tracking/{monitoring_uuid}.", 'success')
+    if capture_settings := cache.capture_settings:
+        capture_settings.listing = False
+        try:
+            monitoring_uuid = lookyloo.monitoring.monitor(capture_settings.dict(), frequency=frequency,
+                                                          collection=collection, expire_at=expire_at,
+                                                          notification={'email': notification_email})
+            if monitoring_uuid:
+                cache.monitor_uuid = monitoring_uuid
+                flash(f"Sent to monitoring ({monitoring_uuid}).", 'success')
+                if collection:
+                    flash(f"See monitored captures in the same collection here: {lookyloo.monitoring.root_url}/monitored/{collection}.", 'success')
+                else:
+                    flash(f"Comparison available as soon as we have more than one capture: {lookyloo.monitoring.root_url}/changes_tracking/{monitoring_uuid}.", 'success')
+            else:
+                flash("Got no UUID from the monitoring interface.", 'error')
+        except Exception as e:
+            flash(f"Unable to monitor capture: {e}", 'error')
     else:
-        flash(f"Unable to send to monitoring, uuid {tree_uuid} not found in cache.", 'error')
+        flash("Unable to get capture settings, cannot monitor.", 'error')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
 
 
@@ -1708,17 +1736,12 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
         if cache.error:
             flash(cache.error, 'warning')
 
-        monitoring_collections: list[str] = []
-        monitoring_settings: dict[str, int | bool] = {}
-        if lookyloo.monitoring:
-            try:
-                monitoring_collections = lookyloo.monitoring.collections()
-            except Exception as e:
-                flash(Markup('Unable to get existing connections from the monitoring : {}').format(e), 'warning')
-            try:
-                monitoring_settings = lookyloo.monitoring.instance_settings()  # type: ignore[assignment]
-            except Exception as e:
-                flash(Markup('Unable to initialize the monitoring instance: {}').format(e), 'warning')
+        enable_monitoring, monitoring_collections, monitoring_settings = prepare_monitoring()
+        if lookyloo.monitoring and enable_monitoring and cache.monitor_uuid:
+            # the capture is already monitored, pass the URL
+            monitoring_url = f'{lookyloo.monitoring.root_url}/changes_tracking/{cache.monitor_uuid}'
+        else:
+            monitoring_url = ''
 
         # Check if the capture has been indexed yet. Print a warning if not.
         capture_indexed = all(get_indexing(flask_login.current_user).capture_indexed(tree_uuid))
@@ -1741,6 +1764,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                ignore_sri=ignore_sri,
                                monitoring_settings=monitoring_settings,
                                monitoring_collections=monitoring_collections,
+                               monitoring_url=monitoring_url,
                                enable_context_by_users=enable_context_by_users,
                                enable_categorization=enable_categorization,
                                enable_bookmark=enable_bookmark,
@@ -2071,6 +2095,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
         flash('The capturing system is down, you can enqueue a capture and it will start ASAP.', 'error')
 
     # NOTE: Inform user if none of the remote lacuses are up?
+    enable_monitoring, monitoring_collections, monitoring_settings = prepare_monitoring()
     return render_template('capture.html', user_agents=user_agents.user_agents,
                            default=user_agents.default,
                            personal_ua=user_ua,
@@ -2090,6 +2115,9 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            mastodon_domain=mastodon_domain,
                            mastodon_botname=mastodon_botname,
                            has_global_proxy=True if lookyloo.global_proxy else False,
+                           enable_monitoring=enable_monitoring,
+                           monitoring_settings=monitoring_settings,
+                           monitoring_collections=monitoring_collections,
                            categories=sorted(get_indexing(flask_login.current_user).categories))
 
 
@@ -2305,12 +2333,20 @@ def capture_web() -> str | Response | WerkzeugResponse:
             else:
                 flash('Invalid proxy: Check that you entered a scheme, a hostname and a port.', 'error')
 
-        # auto report
         if flask_login.current_user.is_authenticated:
+            # auto report
             if request.form.get('auto-report'):
                 capture_query['auto_report'] = {
-                    'email': request.form.get('email', ""),
-                    'comment': request.form.get('comment', ""),
+                    'email': request.form.get('email_notify', ""),
+                    'comment': request.form.get('comment_notify', ""),
+                }
+            # auto monitoring
+            if request.form.get('monitor_capture'):
+                capture_query['monitor_capture'] = {
+                    'frequency': request.form.get('frequency', ""),
+                    'expire_at': request.form.get('expire_at', ""),
+                    'collection': request.form.get('collection', ""),
+                    'notification': request.form.get('monitor_notification', "")
                 }
 
         if request.form.get('url'):

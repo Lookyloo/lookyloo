@@ -254,6 +254,20 @@ if (report_form) { // admin is logged in
     });
 }
 
+// admin-only monitoring
+let monitoring_form = document.getElementById("monitor_capture");
+if (monitoring_form) { // admin is logged in
+    monitoring_form.addEventListener('change', function() {
+        let show_form = document.getElementById("monitor_capture").checked;
+        if(show_form) {
+          document.getElementById("collapseMonitoringConfiguration").style.display = "block";
+        } else {
+          document.getElementById("collapseMonitoringConfiguration").style.display = "none";
+        }
+    });
+}
+
+
 window.addEventListener('DOMContentLoaded', (event) => {
     // In case the bok is ticked, make sure it is consistent.
     toggle_multiple_captures();
@@ -265,4 +279,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
         document.getElementById('os-type').value = "desktop"
         enable_desktop();
     };
+
+    // Make sure the monitoring and notifications are unchecked by default
+    if (document.getElementById('monitor_capture')){
+        document.getElementById("monitor_capture").checked = false;
+    }
+    if (document.getElementById('auto-report')){
+        document.getElementById("auto-report").checked = false;
+    }
 });

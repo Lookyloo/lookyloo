@@ -2164,6 +2164,7 @@ class Lookyloo():
                       potential_favicons: set[bytes] | None=None,
                       trusted_timestamps: dict[str, str] | None=None,
                       auto_report: bool | dict[str, str] | None = None,
+                      monitor_capture: dict[str, str] | None = None,
                       categories: list[str] | None=None
                       ) -> Path:
 
@@ -2269,6 +2270,11 @@ class Lookyloo():
             else:
                 with (dirpath / 'auto_report').open('wb') as _ar:
                     _ar.write(orjson.dumps(auto_report))
+
+        if monitor_capture:
+            # The monitoring needs to be trigered after the capture is done
+            with (dirpath / 'monitor_capture').open('wb') as _mc:
+                _mc.write(orjson.dumps(monitor_capture))
 
         self.redis.hset('lookup_dirs', uuid, str(dirpath))
         return dirpath

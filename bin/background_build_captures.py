@@ -55,6 +55,45 @@ class BackgroundBuildCaptures(AbstractManager):
         else:
             self.logger.info(f'Auto report for {capture_uuid} sent.')
 
+    def __auto_monitor(self, path: Path) -> None:
+        with (path / 'uuid').open() as f:
+            capture_uuid = f.read()
+        if not self.lookyloo.monitoring:
+            self.logger.warning(f'Unable to monitor {capture_uuid}, not enabled ont he instance.')
+            return
+
+        self.logger.info(f'Starting monitoring for {capture_uuid}...')
+        monitor_settings = {}
+        with (path / 'monitor_capture').open('rb') as f:
+            if m := f.read():
+                # could be an empty file.
+                monitor_settings = orjson.loads(m)
+        if not monitor_settings:
+            self.logger.warning(f'Unable to monitor {capture_uuid}, missing settings.')
+            return
+
+        capture_settings = self.lookyloo.get_capture_settings(capture_uuid)
+        if not capture_settings:
+            self.logger.warning(f'Unable to monitor {capture_uuid}, missing capture settings.')
+            return
+        try:
+            monitoring_uuid = self.lookyloo.monitoring.monitor(capture_settings.dict(), **monitor_settings)
+            with (path / 'monitor_uuid').open('w') as f:
+                f.write(monitoring_uuid)
+            (path / 'monitor_capture').unlink()
+        except Exception as e:
+            self.logger.warning(f'Unable to trigger monitoring for {capture_uuid}: {e}')
+        else:
+            self.logger.info(f'Monitoring for {capture_uuid} enabled.')
+
+    def _auto_trigger(self, path: Path) -> None:
+        if (path / 'auto_report').exists():
+            # the pickle was built somewhere else, trigger report.
+            self.__auto_report(path)
+        if (path / 'monitor_capture').exists():
+            # the pickle was built somewhere else, trigger monitoring.
+            self.__auto_monitor(path)
+
     def _to_run_forever(self) -> None:
         self._build_missing_pickles()
         # Don't need the cache in this class.
@@ -85,10 +124,7 @@ class BackgroundBuildCaptures(AbstractManager):
 
                 if ((path / 'tree.pickle.gz').exists() or (path / 'tree.pickle').exists()):
                     # We already have a pickle file
-                    # self.logger.debug(f'{path} has a pickle.')
-                    if (path / 'auto_report').exists():
-                        # the pickle was built somewhere else, trigger report.
-                        self.__auto_report(path)
+                    self._auto_trigger(path)
                     continue
                 if not list(path.rglob('*.har.gz')) and not list(path.rglob('*.har')):
                     # No HAR file
@@ -145,8 +181,7 @@ class BackgroundBuildCaptures(AbstractManager):
                     self.logger.info(f'Pickle for {uuid} built.')
                     got_new_captures = True
                     max_captures -= 1
-                    if (path / 'auto_report').exists():
-                        self.__auto_report(path)
+                    self._auto_trigger(path)
                 except MissingUUID:
                     self.logger.warning(f'Unable to find {uuid}. That should not happen.')
                 except NoValidHarFile as e:

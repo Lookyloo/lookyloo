@@ -115,6 +115,7 @@ class AsyncCapture(AbstractManager):
                         potential_favicons=entries.get('potential_favicons'),
                         trusted_timestamps=entries.get('trusted_timestamps'),
                         auto_report=to_capture.auto_report,
+                        monitor_capture=to_capture.monitor_capture,
                     )
                 else:
                     self.logger.warning(f'Unable to get capture settings for {uuid}, it expired.')

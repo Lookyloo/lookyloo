@@ -2,6 +2,8 @@
 
 {% from 'bootstrap5/utils.html' import render_icon %}
 {% from 'bootstrap5/utils.html' import render_messages %}
+{% from "macros.html" import monitoring_form %}
+{% from "macros.html" import notify_form %}
 
 {% block title %}Capture of {{info.url}}{% endblock %}
 
@@ -163,9 +165,13 @@
           <a href="{{ url_for('capture_web') }}" role="button">New capture</a>
         </li>
         {% if enable_monitoring %}
-        <li class="list-group-item">
-          <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor capture</a>
-        </li>
+            <li class="list-group-item">
+            {% if monitoring_url %}
+              <a href="{{monitoring_url}}" role="button" class="btn btn-outline-info">Show monitoring</a>
+            {% else %}
+              <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor capture</a>
+            {% endif %}
+            </li>
         {% endif %}
         {% if enable_mail_notification %}
         <li class="list-group-item">
@@ -1177,60 +1183,8 @@
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            {% if monitoring_settings["force_expire"] %}
-            <div class="alert alert-warning" role="alert">
-              The monitoring instance is configured to automatically expire what you want to
-              monitor after <b>{{monitoring_settings["max_captures"]}} captures</b>.
-              <br>
-              Keep that in mind when you select the frequency.
-            </div>
-            {% endif %}
             <p>The capture will be submitted to the monitoring interface.</p>
-            <div class="mb-3">
-              <label for=frequency" class="form-label">Frequency (must be higher than {{monitoring_settings["min_frequency"]}} seconds)</label>
-              <select name="frequency" id="frequency" class="form-select" aria-label="Select a frequency for the monitoring" required>
-                <option value="hourly" selected>Hourly</option>
-                <option value="daily">Daily</option>
-              </select>
-
-              <!-- boat fields -->
-              <label class="boatymcboat form-label" for="name">Your Name</label>
-              <input class="boatymcboat" autocomplete="off" type="text" id="name" name="name"
-                     placeholder="Your fav boat name here">
-              <!-- end -->
-            </div>
-            <div class="mb-3">
-              <label for="expire_at" class="form-label">Expire</label>
-              <input type="date" class="form-control" name="expire_at" id="expire_at"
-                     value="" />
-              {% if monitoring_settings["force_expire"] %}
-              <div class="alert alert-warning" role="alert">
-                The expire date will be ignored if the max amount of captures ({{monitoring_settings["max_captures"]}}) is reached first.
-              </div>
-              {% endif %}
-            </div>
-            <div class="mb-3">
-              {% if monitoring_collections %}
-              <label for="collection" class="form-label">Pick a collection.</label>
-              <input type="text" class="form-control" list="collections" id="collection" name="collection" placeholder="Type a collection name, or select an existing one (arrow down to see them)">
-              <datalist id="collections">
-                {% for name in monitoring_collections %}
-                <option value="{{name}}">{{name}}</option>
-                {% endfor %}
-              </datalist>
-              {%else%}
-              <label for=collection" class="form-label">Add to a collection.</label>
-              <input type="text" class="form-control" name="collection" id="collection" placeholder="Name of the collection">
-              {% endif %}
-            </div>
-            <div class="mb-3">
-              <label for=notification" class="form-label">Get notified when the capture changes (WiP)</label>
-              <input type="email" class="form-control" name="notification" id="notification" placeholder="Email address to receive the notification">
-            </div>
-            <div class="mb-3 form-check">
-                <input class="form-check-input" type="checkbox" name="confirm" id="monitoring_toc" required >
-                <label for="monitoring_toc" class="form-check-label">{{ confirm_message }}</label>
-            </div>
+            {{monitoring_form(monitoring_settings, monitoring_collections, confirm_message="Yes, I want to submit this capture for monitoring.")}}
           </div>
           <div class="modal-footer">
               <button type="submit" class="btn btn-success" id="btn-notification-monitoring">Send to monitoring</button>
@@ -1253,23 +1207,7 @@
           </div>
           <div class="modal-body">
             <p>A notification of this capture will be sent to the owners of this Lookyloo instance. They may or may not act on it.</p>
-            <div class="mb-3">
-              <label for="email" class="form-label">Email address - used to get back in touch with you if needed (optional)</label>
-              <input type="email" class="form-control" name="email" id="email" placeholder="Enter email">
-
-              <!-- boat fields -->
-              <label class="boatymcboat form-label" for="name">Your Name</label>
-              <input class="boatymcboat" autocomplete="off" type="text" id="name" name="name"
-                     placeholder="Your fav boat name here">
-            </div>
-            <div class="mb-3">
-              <label for="comment" class="form-label">Please write a comment (optional)</label>
-              <textarea class="form-control" name="comment" id=comment rows="3"></textarea>
-            </div>
-            <div class="mb-3 form-check">
-                <input class="form-check-input" type="checkbox" name="confirm" id="mail_notification_toc" required>
-                <label for="mail_notification_toc" class="form-check-label">{{ confirm_message }}</label>
-            </div>
+            {{notify_form(confirm_message)}}
           </div>
           <div class="modal-footer">
               <button type="submit" class="btn btn-success" id="btn-notification-report">Send email</button>

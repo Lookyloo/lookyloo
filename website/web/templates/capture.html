@@ -1,5 +1,7 @@
 {% extends "main.html" %}
 {% from 'bootstrap5/utils.html' import render_messages %}
+{% from "macros.html" import monitoring_form %}
+{% from "macros.html" import notify_form %}
 {% block title %}Capture{% endblock %}
 
 {% block card %}
@@ -640,34 +642,69 @@ window.addEventListener('DOMContentLoaded', () => {
 
     <hr>
 
-  {% if current_user.is_authenticated %}
-    <!-- admin only checkbox for autoreport -->
+{% if current_user.is_authenticated %}
+  <!-- admin only checkbox for auto monitoring -->
+  {% if enable_monitoring %}
     <div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox"  id="auto-report" name="auto-report" >
-        <label for="auto-report" class="form-check-label">Automatically submit to investigation team</label>
-      </div>
-      <div id="collapseMailConfiguration" class="collapse">
-        <div class="card card-body">
-          <div class="row mb-3">
-            <label class="col-sm-3 col-form-label" for="email">Email of the sender (optional): </label>
-            <div class="col-sm-9">
-              <input class="form-control" type="text" id="email"
-                 name="email" placeholder="myself@example.com">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-sm-3 col-form-label" for="comment">Comment (optional): </label>
-            <div class="col-sm-9">
-              <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-            </div>
-          </div>
+      <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMonitoring" aria-expanded="false" aria-controls="collapseMonitoring">
+        <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
+          <b>Monitoring</b>
+        </p>
+      </button>
+      <div class="help-tip" title="Configure monitoring for the capture"></div>
+    </div>
 
+    <div id="collapseMonitoring" class="collapse show">
+      <div class="card card-body">
+        <div class="row mb-3">
+          <label for="monitor_capture" class="col-sm-2 col-form-check-label">Monitor Capture:</label>
+          <div class="col-sm-10">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="monitor_capture" name="monitor_capture" aria-describedby="monitor_capture_help">
+              <div id="monitor_capture_help" class="form-text">If checked, the URL(s) will be monitored.</div>
+            </div>
+          </div>
+        </div>
+        <div id="collapseMonitoringConfiguration" class="collapse">
+          <div class="card card-body">
+            {{monitoring_form(monitoring_settings, monitoring_collections)}}
+          </div>
         </div>
       </div>
     </div>
+
     <hr>
-  {%  endif %}
+  {% endif %}
+  <!-- admin only checkbox for autoreport -->
+  <div>
+    <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReporting" aria-expanded="false" aria-controls="collapseReporting">
+      <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
+        <b>Auto-Report</b>
+      </p>
+    </button>
+    <div class="help-tip" title="Automatically report this capture"></div>
+  </div>
+
+  <div id="collapseReporting" class="collapse show">
+    <div class="card card-body">
+      <div class="row mb-3">
+        <label for="report_capture" class="col-sm-2 col-form-check-label">Report Capture:</label>
+        <div class="col-sm-10">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox"  id="auto-report" name="auto-report" aria-describedby="auto_report_help">
+            <div id="auto_report_help" class="form-text">Automatically submit to investigation team</div>
+          </div>
+        </div>
+        <div id="collapseMailConfiguration" class="collapse">
+          <div class="card card-body">
+            {{notify_form()}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr>
+{%  endif %}
 
     <center>
       <b>

@@ -1,3 +1,110 @@
+{% macro boat_form() %}
+<!-- boat fields -->
+<label class="boatymcboat form-label" for="name">Your Name</label>
+<input class="boatymcboat" autocomplete="off" type="text" id="name" name="name"
+       placeholder="Your fav boat name here">
+<!-- end -->
+{% endmacro %}
+
+{% macro notify_form(confirm_message='')%}
+<div class="row mb-3">
+  <label for="email_notify" class="col-sm-2 col-form-label">Your email address:</label>
+  <div class="col-sm-10">
+    <input type="email" class="form-control" name="email_notify" id="email_notify" placeholder="me@example.com">
+    <div class="alert alert-warning" role="info">
+        To get back in touch with you, if needed.
+    </div>
+  </div>
+  {{boat_form()}}
+</div>
+<div class="row mb-3">
+  <label for="comment_notify" class="col-sm-2 col-form-label">Comment:</label>
+  <div class="col-sm-10">
+    <textarea class="form-control" name="comment_notify" id="comment_notify" rows="3" placeholder="Why should we have a look?"></textarea>
+    <div class="alert alert-warning" role="info">
+        Reason you want to notify us about this URL.
+    </div>
+  </div>
+</div>
+{% if confirm_message %}
+<div class="row mb-3">
+    <label for="mail_notification_toc" class="col-sm-2 col-form-check-label">Agree to submit notification</label>
+    <div class="col-sm-10">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="confirm" id="mail_notification_toc" aria-describedby="agree_notification" required>
+        <div id="agree_notification" class="form-text">{{ confirm_message }}</div>
+      </div>
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro monitoring_form(settings, collections, confirm_message='')%}
+{% if settings["force_expire"] %}
+<div class="alert alert-warning" role="alert">
+  The monitoring will automatically expire either after <b>{{settings["max_captures"]}} captures</b>, or at the expiration time provided below,
+  whichever comes first.
+</div>
+{% endif %}
+<div class="row mb-3">
+  <label for="frequency" class="col-sm-2 col-form-label">Frequency:</label>
+  <div class="col-sm-10">
+    <select name="frequency" id="frequency" class="form-select" aria-label="Select a frequency for the monitoring" required>
+      <option value="hourly" selected>Hourly</option>
+      <option value="daily">Daily</option>
+    </select>
+    <div class="alert alert-warning" role="alert">
+      The minimal frequency is <b>{{settings["min_frequency"]}} seconds</b>, any value below that will be ignored.
+    </div>
+  </div>
+  {{boat_form()}}
+</div>
+<div class="row mb-3">
+  <label for="expire_at" class="col-sm-2 col-form-label">Expiration:</label>
+  <div class="col-sm-10">
+    <input type="date" class="form-control" name="expire_at" id="expire_at" value=""/>
+    {% if settings["force_expire"] %}
+    <div class="alert alert-warning" role="alert">
+      The expire date will be ignored if the max amount of captures ({{settings["max_captures"]}}) is reached first.
+    </div>
+    {% endif %}
+  </div>
+</div>
+<div class="row mb-3">
+  {% if collections %}
+  <label for="collection" class="col-sm-2 col-form-label">Pick a collection:</label>
+  <div class="col-sm-10">
+      <input type="text" class="form-control" list="collections" id="collection" name="collection" placeholder="Type a collection name, or select an existing one (arrow down to see them)">
+      <datalist id="collections">
+        {% for name in collections %}
+        <option value="{{name}}">{{name}}</option>
+        {% endfor %}
+      </datalist>
+      {%else%}
+      <label for=collection" class="form-label">Add to a collection.</label>
+      <input type="text" class="form-control" name="collection" id="collection" placeholder="Name of the collection">
+      {% endif %}
+  </div>
+</div>
+<div class="row mb-3">
+  <label for="monitor_notification" class="col-sm-2 col-form-label">Notify on change</label>
+  <div class="col-sm-10">
+      <input type="email" class="form-control" name="monitor_notification" id="monitor_notification" placeholder="Email address to receive the notification">
+  </div>
+</div>
+{% if confirm_message %}
+<div class="row mb-3">
+    <label for="monitoring_toc" class="col-sm-2 col-form-check-label">Agree to submit for monitoring</label>
+    <div class="col-sm-10">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="confirm" id="monitoring_toc" aria-describedby="agree_monitoring" required>
+        <div id="agree_monitoring" class="form-text">{{ confirm_message }}</div>
+      </div>
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+
 {% macro known_content_details(details) %}
 {% if details %}
   <div>
