@@ -59,27 +59,30 @@ class Archiver(AbstractManager):
             self.s3fs_bucket = s3fs_config['config']['bucket_name']
 
     def _to_run_forever(self) -> None:
-        archiving_done = False
         if self.archive_on_s3fs:
             self.s3fs_client.clear_instance_cache()
             self.s3fs_client.clear_multipart_uploads(self.s3fs_bucket)
         # NOTE: When we archive a big directory, moving *a lot* of files, expecially to MinIO
         # can take a very long time. In order to avoid being stuck on the archiving, we break that in chunks
         # but we also want to keep archiving without waiting 1h between each run.
-        while not archiving_done:
+        while not self._archive():
+            # we have *not* archived everything we need to archive
             if self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 break
-            if self._archive():
-                self._load_indexes()
-            else:
-                self._update_all_capture_indexes(recent_only=True)
-                if self.archive_on_s3fs:
-                    self.s3fs_client.clear_instance_cache()
-                    self.s3fs_client.clear_multipart_uploads(self.s3fs_bucket)
-        if not self.shutdown_requested():
-            # This call takes a very long time on MinIO
-            self._update_all_capture_indexes()
+            # We have an archiving backlog, update the recent indexed only and keep going
+            self._update_all_capture_indexes(recent_only=True)
+            if self.archive_on_s3fs:
+                self.s3fs_client.clear_instance_cache()
+                self.s3fs_client.clear_multipart_uploads(self.s3fs_bucket)
+        if self.shutdown_requested():
+            return
+        # Quickly load all known indexes post-archiving
+        self._load_indexes()
+        # This call takes a very long time on MinIO
+        self._update_all_capture_indexes()
+        # Load known indexes post update
+        self._load_indexes()
 
     def _update_index(self, root_dir: Path, *, s3fs_parent_dir: str | None=None) -> Path | None:
         # returns a path to the index for the given directory
@@ -290,14 +293,15 @@ class Archiver(AbstractManager):
             if self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 break
+            # Updating the indexes can take a while, just run this call randomly on directories
+            if random.randrange(10) == 0:
+                continue
             year = directory_to_index.parent.name
             if self.archive_on_s3fs:
-                # Updating the indexes can take a while, just run this call once in N calls
-                if random.randrange(20) == 0:
-                    self._update_index(directory_to_index,
-                                       s3fs_parent_dir='/'.join([self.s3fs_bucket, year]))
-                    # They take a very long time, often more than one day, quitting after we got one
-                    break
+                self._update_index(directory_to_index,
+                                   s3fs_parent_dir='/'.join([self.s3fs_bucket, year]))
+                # They take a very long time, often more than one day, quitting after we got one
+                break
             else:
                 self._update_index(directory_to_index)
         self.logger.info('Archived indexes updated')
