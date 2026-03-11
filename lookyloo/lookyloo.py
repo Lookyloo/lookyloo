@@ -2164,7 +2164,7 @@ class Lookyloo():
                       potential_favicons: set[bytes] | None=None,
                       trusted_timestamps: dict[str, str] | None=None,
                       auto_report: bool | dict[str, str] | None = None,
-                      monitor_capture: dict[str, str] | None = None,
+                      monitor_capture: dict[str, str | bool] | None = None,
                       categories: list[str] | None=None
                       ) -> Path:
 

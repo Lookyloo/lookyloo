@@ -1630,11 +1630,13 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
     notification_email: str = request.form.get('notification', '')
     frequency: str = request.form.get('frequency', 'daily')
     expire_at: float | None = datetime.fromisoformat(request.form['expire_at']).timestamp() if request.form.get('expire_at') else None
+    never_expire: bool = bool(request.form.get('never_expire', False))
     if capture_settings := cache.capture_settings:
         capture_settings.listing = False
         try:
             monitoring_uuid = lookyloo.monitoring.monitor(capture_settings.dict(), frequency=frequency,
                                                           collection=collection, expire_at=expire_at,
+                                                          never_expire=never_expire,
                                                           notification={'email': notification_email})
             if monitoring_uuid:
                 cache.monitor_uuid = monitoring_uuid
@@ -2340,7 +2342,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
                 'expire_at': request.form.get('expire_at', ""),
                 'collection': request.form.get('collection', ""),
                 'notification': request.form.get('monitor_notification', ""),
-                'never_expire': request.form.get('never_expire', False)
+                'never_expire': bool(request.form.get('never_expire', False))
             }
 
         if flask_login.current_user.is_authenticated:

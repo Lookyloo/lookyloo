@@ -479,7 +479,7 @@ class CaptureSettings(LacuscoreCaptureSettings):
     listing: bool = get_config('generic', 'default_public')
     not_queued: bool = False
     auto_report: bool | dict[str, str] | None = None  # {'email': , 'comment':}
-    monitor_capture: dict[str, str] | None = None
+    monitor_capture: dict[str, str | bool] | None = None
     dnt: str | None = None  # Legacy, merged in the headers if present.
     parent: str | None = None
     remote_lacus_name: str | None = None
