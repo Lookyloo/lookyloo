@@ -127,6 +127,18 @@ function add_event_js_copy() {
     );
 };
 
+let never_expire = document.getElementById('never_expire')
+if (never_expire) {
+    never_expire.addEventListener('change', function() {
+        let disable_expire_at = document.getElementById('never_expire').checked;
+        if (disable_expire_at) {
+            document.getElementById("expire_at").disabled = true;
+        } else {
+            document.getElementById("expire_at").disabled = false;
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
   // trigger all the BS tooltips
@@ -140,6 +152,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".locateInTree").forEach(el => el.addEventListener('click', event => {
     window.opener.LocateNode(el.dataset.hostnode);
   }));
+
+  // Make sure the never expire checkbox is never checked by default (macro monitoring_form)
+  if (document.getElementById('never_expire')){
+    document.getElementById("never_expire").checked = false;
+  }
 
   add_event_js_copy();
 

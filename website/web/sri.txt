@@ -1,7 +1,7 @@
 {
   "static": {
     "bomb.svg": "Tro3+kCLzfBNBve2gPnsmXsl+tHUQVrFz77zfrWwnAuTraehZaoAfVJgGOYdG8zceXdGLEKzXVi3GdtEXw0sYQ==",
-    "capture.js": "/dKmahatG8NHGJHIOWZsqvuF66zP1Vkfrj/aTKgTStKKePNDaaJQ/gTMAgs4cz0aHUX/nKEt6OhsQ+e80CeZaA==",
+    "capture.js": "1eDtPnxlFPC9K096UHaVLIgftiJlsqFYAAzSHN+Eemciqq22uwWJa9q8GOcJe3KMcQM5QuC6/FVSNbSolzgwjw==",
     "check.svg": "CRqUAM/yXxgJwpfg3TeoKD+CIqQj62lxqS3zeCmdPaV3dKftk4jk5Mqc1TGxL7i61X1sgV0/f+KJLEOKTw01ww==",
     "cookie_in_url.png": "hs/oNPnrR2DkDX9Yp6Daug/QqpWJHemJE6lXpxNafjgOYooezp3DpbqKqADT7QcfcTxxUfe1iPDZJlHOrNMAcw==",
     "cookie_read.png": "mdXCeuNFPvshSwIXAJLoR1xFjXb+K2Mgu47Q1fnUAO8j1N2c/uJuE8sGuBHHbS8HOyr/CbOC6Uf3zsm9KvAs8Q==",
@@ -20,7 +20,7 @@
     "favicon.ico": "KOmrfwRbOQqhhwSeBkNpMRAxSVMmmLg+2kRMg9iSv7OWjE9spJc7x4MKB4AE/hi0knaV7UBVctAU6XZ7AC72ZA==",
     "font.png": "RwoQkj9dT9SLUL2F7cAA16Nat9t2hDb58eQlHF9ThUar829p0INUXG+5XuDaFOC8SsmCZK5vw2f+YAQ6mLC1Qw==",
     "generic.css": "zFqxRt1hs4S+fQQHBsHBzpy27gRv9dwqxsa9tawYkeOCBXxXMSy4/dhkfiGJsh3qoZsAV1usoIdCZBt5WWOD+w==",
-    "generic.js": "k/fGHdzTkK0sJY2HoCJfwU0Ahz/5ovBdWDooP2T8mK8S034X3OrQpK5eUePIWLHg5+4NeUdgMjEaRn66F+YlVQ==",
+    "generic.js": "dR04zGT7oRo0pXkZlhJjl/q4Mpzy6kVBVV8vXcFflMRuaRBAvIpvRA3q6ufYvBA+WgM2KzgWlO6IJGakvzjyuw==",
     "hostnode_modals.js": "CUC0bPQkcjNOorQL4KybaH/jp2ydQXtzcxptiK1fp+Tpmu/tJxqFicUodn9/EIcHuKJM4KQmNz0DSdFsTW/MnA==",
     "html.png": "T7pZrb8MMDsA/JV/51hu+TOglTqlxySuEVY0rpDjTuAEyhzk2v+W4kYrj7vX+Tp3n2d2lvVD08PwhCG62Yfbzg==",
     "ifr.png": "rI5YJypmz1QcULRf9UaOYSqV4tPUSxUdLAycoYzCwywt4Pw4eWzBg9SUr769VyIimoiIyJR+aNuoIA4p5WO2fQ==",

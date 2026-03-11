@@ -254,9 +254,8 @@ if (report_form) { // admin is logged in
     });
 }
 
-// admin-only monitoring
 let monitoring_form = document.getElementById("monitor_capture");
-if (monitoring_form) { // admin is logged in
+if (monitoring_form) {
     monitoring_form.addEventListener('change', function() {
         let show_form = document.getElementById("monitor_capture").checked;
         if(show_form) {

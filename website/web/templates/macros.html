@@ -39,13 +39,7 @@
 {% endif %}
 {% endmacro %}
 
-{% macro monitoring_form(settings, collections, confirm_message='')%}
-{% if settings["force_expire"] %}
-<div class="alert alert-warning" role="alert">
-  The monitoring will automatically expire either after <b>{{settings["max_captures"]}} captures</b>, or at the expiration time provided below,
-  whichever comes first.
-</div>
-{% endif %}
+{% macro monitoring_form(settings, collections, confirm_message='', auth=False)%}
 <div class="row mb-3">
   <label for="frequency" class="col-sm-2 col-form-label">Frequency:</label>
   <div class="col-sm-10">
@@ -53,19 +47,38 @@
       <option value="hourly" selected>Hourly</option>
       <option value="daily">Daily</option>
     </select>
+    <!--
     <div class="alert alert-warning" role="alert">
       The minimal frequency is <b>{{settings["min_frequency"]}} seconds</b>, any value below that will be ignored.
     </div>
+    -->
   </div>
   {{boat_form()}}
 </div>
+{% if auth %}
+<div class="row mb-3">
+    <label for="never_expire" class="col-sm-2 col-form-check-label">Monitor forever</label>
+    <div class="col-sm-10">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="confirm" id="never_expire" aria-describedby="never_expire">
+        <div id="never_expire" class="form-text">Never expire the capture, please use sparingly.</div>
+      </div>
+      {% if settings["force_expire"] %}
+      <div class="alert alert-warning" role="alert">
+        Ticking this box will ignore the max number of captures, and the expiration time.
+      </div>
+      {% endif %}
+    </div>
+</div>
+{% endif %}
 <div class="row mb-3">
   <label for="expire_at" class="col-sm-2 col-form-label">Expiration:</label>
   <div class="col-sm-10">
     <input type="date" class="form-control" name="expire_at" id="expire_at" value=""/>
     {% if settings["force_expire"] %}
     <div class="alert alert-warning" role="alert">
-      The expire date will be ignored if the max amount of captures ({{settings["max_captures"]}}) is reached first.
+      The monitoring will automatically expire either after <b>{{settings["max_captures"]}} captures</b>,
+      or at this expiration time, whichever comes first.
     </div>
     {% endif %}
   </div>

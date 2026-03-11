@@ -1184,7 +1184,7 @@
           </div>
           <div class="modal-body">
             <p>The capture will be submitted to the monitoring interface.</p>
-            {{monitoring_form(monitoring_settings, monitoring_collections, confirm_message="Yes, I want to submit this capture for monitoring.")}}
+            {{monitoring_form(monitoring_settings, monitoring_collections, confirm_message="Yes, I want to submit this capture for monitoring.", auth=current_user.is_authenticated)}}
           </div>
           <div class="modal-footer">
               <button type="submit" class="btn btn-success" id="btn-notification-monitoring">Send to monitoring</button>

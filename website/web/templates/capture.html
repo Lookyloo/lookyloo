@@ -641,40 +641,39 @@ window.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <hr>
+{% if enable_monitoring %}
+  <div>
+    <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMonitoring" aria-expanded="false" aria-controls="collapseMonitoring">
+      <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
+        <b>Monitoring</b>
+      </p>
+    </button>
+    <div class="help-tip" title="Configure monitoring for the capture"></div>
+  </div>
 
-{% if current_user.is_authenticated %}
-  <!-- admin only checkbox for auto monitoring -->
-  {% if enable_monitoring %}
-    <div>
-      <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMonitoring" aria-expanded="false" aria-controls="collapseMonitoring">
-        <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
-          <b>Monitoring</b>
-        </p>
-      </button>
-      <div class="help-tip" title="Configure monitoring for the capture"></div>
-    </div>
-
-    <div id="collapseMonitoring" class="collapse show">
-      <div class="card card-body">
-        <div class="row mb-3">
-          <label for="monitor_capture" class="col-sm-2 col-form-check-label">Monitor Capture:</label>
-          <div class="col-sm-10">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="monitor_capture" name="monitor_capture" aria-describedby="monitor_capture_help">
-              <div id="monitor_capture_help" class="form-text">If checked, the URL(s) will be monitored.</div>
-            </div>
-          </div>
-        </div>
-        <div id="collapseMonitoringConfiguration" class="collapse">
-          <div class="card card-body">
-            {{monitoring_form(monitoring_settings, monitoring_collections)}}
+  <div id="collapseMonitoring" class="collapse show">
+    <div class="card card-body">
+      <div class="row mb-3">
+        <label for="monitor_capture" class="col-sm-2 col-form-check-label">Monitor Capture:</label>
+        <div class="col-sm-10">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="monitor_capture" name="monitor_capture" aria-describedby="monitor_capture_help">
+            <div id="monitor_capture_help" class="form-text">If checked, the URL(s) will be monitored.</div>
           </div>
         </div>
       </div>
+      <div id="collapseMonitoringConfiguration" class="collapse">
+        <div class="card card-body">
+          {{monitoring_form(monitoring_settings, monitoring_collections, auth=current_user.is_authenticated)}}
+        </div>
+      </div>
     </div>
+  </div>
 
-    <hr>
-  {% endif %}
+  <hr>
+{% endif %}
+
+{% if current_user.is_authenticated %}
   <!-- admin only checkbox for autoreport -->
   <div>
     <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReporting" aria-expanded="false" aria-controls="collapseReporting">

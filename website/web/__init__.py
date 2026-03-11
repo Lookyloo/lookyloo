@@ -2333,20 +2333,22 @@ def capture_web() -> str | Response | WerkzeugResponse:
             else:
                 flash('Invalid proxy: Check that you entered a scheme, a hostname and a port.', 'error')
 
+        # auto monitoring
+        if request.form.get('monitor_capture'):
+            capture_query['monitor_capture'] = {
+                'frequency': request.form.get('frequency', ""),
+                'expire_at': request.form.get('expire_at', ""),
+                'collection': request.form.get('collection', ""),
+                'notification': request.form.get('monitor_notification', ""),
+                'never_expire': request.form.get('never_expire', False)
+            }
+
         if flask_login.current_user.is_authenticated:
             # auto report
             if request.form.get('auto-report'):
                 capture_query['auto_report'] = {
                     'email': request.form.get('email_notify', ""),
                     'comment': request.form.get('comment_notify', ""),
-                }
-            # auto monitoring
-            if request.form.get('monitor_capture'):
-                capture_query['monitor_capture'] = {
-                    'frequency': request.form.get('frequency', ""),
-                    'expire_at': request.form.get('expire_at', ""),
-                    'collection': request.form.get('collection', ""),
-                    'notification': request.form.get('monitor_notification', "")
                 }
 
         if request.form.get('url'):
