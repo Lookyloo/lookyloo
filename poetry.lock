@@ -1885,16 +1885,16 @@ files = [
 
 [[package]]
 name = "html-to-markdown"
-version = "2.28.1"
+version = "2.28.2"
 description = "High-performance HTML to Markdown converter powered by Rust with a clean Python API"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "html_to_markdown-2.28.1-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:6e68e283eac710b76b894d269ae4753b4d4d3f1cc1fdd1f2e8f3cc83838abcd8"},
-    {file = "html_to_markdown-2.28.1-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:75d4937c0ba795cd18dcc95f77956d8bbe73f8e3493f2c30ea5d76d25e77662a"},
-    {file = "html_to_markdown-2.28.1-cp310-abi3-win_amd64.whl", hash = "sha256:1e6f92271bff5d77bf13a4cdd9ea9e1979e8775ee42149cb3148b56d820bb6ef"},
-    {file = "html_to_markdown-2.28.1.tar.gz", hash = "sha256:e2dd0c2a6b4507dbe3a4ec2e815451c2bba35d28428f5340b44145e5ec8e8522"},
+    {file = "html_to_markdown-2.28.2-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:7bf29320dd50e69816b8a0bf6b4677e408262b6609612d639911d075c7834a74"},
+    {file = "html_to_markdown-2.28.2-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:57d45dc680c81654181719cf05aa9ac3c33a074c7b7a823cae62ed14130096b8"},
+    {file = "html_to_markdown-2.28.2-cp310-abi3-win_amd64.whl", hash = "sha256:67942aae9b1c5dd2442b9d7a45bccf2e8189c946c5ac3ec887934e9a3d465bb3"},
+    {file = "html_to_markdown-2.28.2.tar.gz", hash = "sha256:d3bd995d5d77ff3536454155d5b35504f0272181526650f3e8aa8351d8fd23b0"},
 ]
 
 [[package]]
@@ -4454,14 +4454,14 @@ examples = ["pylacus (>=1.21.3)"]
 
 [[package]]
 name = "pylookyloomonitoring"
-version = "1.2.1"
+version = "1.2.2"
 description = "Python API to connect to lookyloo monitoring"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pylookyloomonitoring-1.2.1-py3-none-any.whl", hash = "sha256:e7199f6fe634eaf3cfc19eb831124be76109e9f98198aa4ba84762cd1020796e"},
-    {file = "pylookyloomonitoring-1.2.1.tar.gz", hash = "sha256:8818a6dac34cbd3758e17d015024c69add32435e3a9deaf0bf70a7fc8ad59a63"},
+    {file = "pylookyloomonitoring-1.2.2-py3-none-any.whl", hash = "sha256:4facb95a96e6667925b455c91aa1f549d655f07e58dfb539ac58562c91415e01"},
+    {file = "pylookyloomonitoring-1.2.2.tar.gz", hash = "sha256:a7ae47c1d56f259fcdc300bd7f974c526c4039ed81f7a3f8709f5523b9584f4d"},
 ]
 
 [package.dependencies]
@@ -5439,14 +5439,14 @@ files = [
 
 [[package]]
 name = "speechrecognition"
-version = "3.14.6"
+version = "3.15.1"
 description = "Library for performing speech recognition, with support for several engines and APIs, online and offline."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "speechrecognition-3.14.6-py3-none-any.whl", hash = "sha256:177f2d2ea83c4d7952efd4a3c7e9beba56c792f84c1de0ac3274cd69df2d63ea"},
-    {file = "speechrecognition-3.14.6.tar.gz", hash = "sha256:ecd164bc881b85b58accc4f33e1b33b5414e95e437cc7afe6202ebcac1aa4603"},
+    {file = "speechrecognition-3.15.1-py3-none-any.whl", hash = "sha256:b2b046170e1dda3e921ae3e993c77dace6d3610025ce91773cfd0debf1675c2d"},
+    {file = "speechrecognition-3.15.1.tar.gz", hash = "sha256:cc5c8e040639a277c7586505c92b8d0d02b871daca57f3d175f8f678e82c3850"},
 ]
 
 [package.dependencies]
@@ -6316,4 +6316,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "047f53142dcee2ea9d6c8c47126df53aefac3e422c1e71174ecf48b8be845651"
+content-hash = "e47ec6400e265be504987dacf0f7fc0a7dae34f83b16c6de656916f641ce3d33"
