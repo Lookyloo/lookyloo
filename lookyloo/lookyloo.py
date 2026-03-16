@@ -75,7 +75,8 @@ from .helpers import (get_captures_dir, get_email_template, get_tt_template,
                       get_useragent_for_requests, load_takedown_filters,
                       global_proxy_for_requests,
                       CaptureSettings, load_user_config,
-                      get_indexing, get_error_screenshot
+                      get_indexing, get_error_screenshot,
+                      AutoReportSettings, MonitorCaptureSettings,
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -818,12 +819,12 @@ class Lookyloo():
                 cookies=query.cookies,
                 storage=query.storage,
                 headers=query.headers,
-                http_credentials=query.http_credentials,
-                viewport=query.viewport,
+                http_credentials=query.http_credentials.model_dump() if query.http_credentials else None,
+                viewport=query.viewport.model_dump() if query.viewport else None,
                 referer=query.referer,
                 timezone_id=query.timezone_id,
                 locale=query.locale,
-                geolocation=query.geolocation,
+                geolocation=query.geolocation.model_dump() if query.geolocation else None,
                 color_scheme=query.color_scheme,
                 rendered_hostname_only=query.rendered_hostname_only,
                 with_favicon=query.with_favicon,
@@ -2163,8 +2164,8 @@ class Lookyloo():
                       capture_settings: CaptureSettings | None=None,
                       potential_favicons: set[bytes] | None=None,
                       trusted_timestamps: dict[str, str] | None=None,
-                      auto_report: bool | dict[str, str] | None = None,
-                      monitor_capture: dict[str, str | bool] | None = None,
+                      auto_report: bool | AutoReportSettings | None = None,
+                      monitor_capture: MonitorCaptureSettings | None = None,
                       categories: list[str] | None=None
                       ) -> Path:
 
@@ -2268,13 +2269,13 @@ class Lookyloo():
             if isinstance(auto_report, bool):
                 (dirpath / 'auto_report').touch()
             else:
-                with (dirpath / 'auto_report').open('wb') as _ar:
-                    _ar.write(orjson.dumps(auto_report))
+                with (dirpath / 'auto_report').open('w') as _ar:
+                    _ar.write(auto_report.model_dump_json(exclude_none=True))
 
         if monitor_capture:
             # The monitoring needs to be trigered after the capture is done
-            with (dirpath / 'monitor_capture').open('wb') as _mc:
-                _mc.write(orjson.dumps(monitor_capture))
+            with (dirpath / 'monitor_capture').open('w') as _mc:
+                _mc.write(monitor_capture.model_dump_json(exclude_none=True))
 
         self.redis.hset('lookup_dirs', uuid, str(dirpath))
         return dirpath

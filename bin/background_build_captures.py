@@ -10,14 +10,14 @@ import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import orjson
-
+from pydantic_core import from_json
 from redis import Redis
 
 from lookyloo import Lookyloo
 from lookyloo.default import AbstractManager, get_config, get_socket_path, try_make_file
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, TreeNeedsRebuild
-from lookyloo.helpers import is_locked, get_sorted_captures_from_disk, make_dirs_list, get_captures_dir
+from lookyloo.helpers import (is_locked, get_sorted_captures_from_disk, make_dirs_list,
+                              get_captures_dir, AutoReportSettings, MonitorCaptureSettings)
 
 
 logging.config.dictConfig(get_config('logging'))
@@ -41,14 +41,15 @@ class BackgroundBuildCaptures(AbstractManager):
         with (path / 'uuid').open() as f:
             capture_uuid = f.read()
         self.logger.info(f'Triggering autoreport for {capture_uuid}...')
-        settings = {}
+        settings: None | AutoReportSettings = None
         with (path / 'auto_report').open('rb') as f:
             if ar := f.read():
-                # could be an empty file.
-                settings = orjson.loads(ar)
+                # could be an empty file, which means no settings, just notify
+                settings = AutoReportSettings.model_validate(from_json(ar))
         try:
-            self.lookyloo.send_mail(capture_uuid, as_admin=True, email=settings.get('email', ''),
-                                    comment=settings.get('comment'))
+            self.lookyloo.send_mail(capture_uuid, as_admin=True,
+                                    email=settings.email if settings else '',
+                                    comment=settings.comment if settings else '')
             (path / 'auto_report').unlink()
         except Exception as e:
             self.logger.warning(f'Unable to send auto report for {capture_uuid}: {e}')
@@ -63,11 +64,10 @@ class BackgroundBuildCaptures(AbstractManager):
             return
 
         self.logger.info(f'Starting monitoring for {capture_uuid}...')
-        monitor_settings = {}
+        monitor_settings: MonitorCaptureSettings | None = None
         with (path / 'monitor_capture').open('rb') as f:
             if m := f.read():
-                # could be an empty file.
-                monitor_settings = orjson.loads(m)
+                monitor_settings = MonitorCaptureSettings.model_validate(from_json(m))
         if not monitor_settings:
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing settings.')
             return
@@ -77,7 +77,7 @@ class BackgroundBuildCaptures(AbstractManager):
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing capture settings.')
             return
         try:
-            monitoring_uuid = self.lookyloo.monitoring.monitor(capture_settings.dict(), **monitor_settings)
+            monitoring_uuid = self.lookyloo.monitoring.monitor(capture_settings.dict(), **monitor_settings.dict())
             with (path / 'monitor_uuid').open('w') as f:
                 f.write(monitoring_uuid)
             (path / 'monitor_capture').unlink()

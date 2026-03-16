@@ -20,13 +20,13 @@ from importlib.metadata import version
 from io import BufferedIOBase
 from logging import Logger
 from pathlib import Path
-from pydantic import field_validator
-from pydantic_core import from_json
+from pydantic import field_validator, BaseModel
 from string import punctuation
 from typing import Any, TYPE_CHECKING
 from urllib.parse import urlparse, urlunparse
 
 import requests
+import dateparser
 
 from har2tree import CrawledTree, HostNode, URLNode
 from lacuscore import CaptureSettings as LacuscoreCaptureSettings
@@ -474,28 +474,39 @@ class ParsedUserAgent(UserAgent):
         return f'OS: {self.platform} - Browser: {self.browser} {self.version} - UA: {self.string}'
 
 
+class AutoReportSettings(BaseModel):
+    email: str | None = None
+    comment: str | None = None
+
+
+class MonitorCaptureSettings(BaseModel):
+    frequency: str
+    never_expire: bool = False
+    expire_at: float | None = None
+    collection: str | None = None
+
+    @field_validator('expire_at', mode='before')
+    @classmethod
+    def load_expire_at(cls, v: Any) -> float | None:
+        if not v:
+            return None
+        if isinstance(v, str):
+            # try to make it a timestamp
+            if d := dateparser.parse(v):
+                return d.timestamp()
+        return v
+
+
 class CaptureSettings(LacuscoreCaptureSettings):
     '''The capture settings that can be passed to Lookyloo'''
     listing: bool = get_config('generic', 'default_public')
     not_queued: bool = False
-    auto_report: bool | dict[str, str] | None = None  # {'email': , 'comment':}
-    monitor_capture: dict[str, str | bool] | None = None
+    auto_report: bool | AutoReportSettings | None = None  # {'email': , 'comment':}
     dnt: str | None = None  # Legacy, merged in the headers if present.
     parent: str | None = None
     remote_lacus_name: str | None = None
     categories: list[str] | None = None
-
-    @field_validator('auto_report', mode='before')
-    @classmethod
-    def load_auto_report_json(cls, v: Any) -> bool | dict[str, str] | None:
-        if isinstance(v, str):
-            if v.isdigit():
-                return bool(v)
-            elif v.startswith('{'):
-                return from_json(v)
-        elif isinstance(v, dict):
-            return v
-        return v
+    monitor_capture: MonitorCaptureSettings | None = None
 
     @field_validator('cookies', mode='before')
     @classmethod

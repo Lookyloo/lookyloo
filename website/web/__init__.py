@@ -2352,7 +2352,9 @@ def capture_web() -> str | Response | WerkzeugResponse:
                     'email': request.form.get('email_notify', ""),
                     'comment': request.form.get('comment_notify', ""),
                 }
-
+                if (not capture_query['auto_report']['email']
+                        and not capture_query['auto_report']['comment']):
+                    capture_query['auto_report'] = True
         if request.form.get('url'):
             capture_query['url'] = request.form['url']
             perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture_query), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
