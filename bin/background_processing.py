@@ -217,6 +217,7 @@ class Processing(AbstractManager):
                 continue
 
             # NOTE: categorization must be first as the tags could be submitted to MISP
+            # 2026-03-17: and they're optionally used for MISP autopush
             if self.auto_categorize.available and not self.lookyloo.redis.exists(f'auto_categorize|{cached.uuid}'):
                 self.lookyloo.redis.setex(f'auto_categorize|{cached.uuid}', redis_expire, 1)
                 self.auto_categorize.categorize(self.lookyloo, cached)
@@ -274,6 +275,12 @@ class Processing(AbstractManager):
                 if self.lookyloo.redis.exists(f'bg_processed_misp|{name}|{cached.uuid}'):
                     continue
                 self.lookyloo.redis.setex(f'bg_processed_misp|{name}|{cached.uuid}', redis_expire, 1)
+                # 2026-03-17: if auto_push_categories is None, push everything (historical config)
+                # if it is a list of categories, only auto push the captures with these categories
+                if connector.auto_push_categories is not None:
+                    if not connector.auto_push_categories.intersection(cached.categories):
+                        # no overlap, do not push
+                        continue
                 try:
                     # NOTE: is_public_instance set to True so we use the default distribution level
                     # from the instance

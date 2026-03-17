@@ -233,6 +233,9 @@ class MISP(AbstractModule):
         self.default_tags: list[str] = self.config.get('default_tags')  # type: ignore[assignment]
         self.auto_publish = bool(self.config.get('auto_publish', False))
         self.auto_push = bool(self.config.get('auto_push', False))
+        self.auto_push_categories: set[str] | None = self.config.get('auto_push_categories')
+        if self.auto_push_categories is not None:
+            self.auto_push_categories = set(self.auto_push_categories)
         self.storage_dir_misp = get_homedir() / 'misp'
         self.storage_dir_misp.mkdir(parents=True, exist_ok=True)
         return True

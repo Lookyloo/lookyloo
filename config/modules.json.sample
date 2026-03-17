@@ -67,6 +67,7 @@
         ],
         "auto_publish": false,
         "auto_push": false,
+        "auto_push_categories": null,
         "allow_auto_trigger": false,
         "admin_only": true
       }
