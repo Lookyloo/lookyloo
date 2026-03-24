@@ -20,10 +20,11 @@ from flask import request, send_file, Response, make_response
 from flask_restx import Namespace, Resource, fields, abort  # type: ignore[import-untyped]
 from werkzeug.security import check_password_hash
 
-from lacuscore import CaptureStatus as CaptureStatusCore, CaptureSettingsError, LacusCore
+from lacuscore import CaptureStatus as CaptureStatusCore, LacusCore
 from pylacus import CaptureStatus as CaptureStatusPy, PyLacus
+from lookyloo_models import CaptureSettingsError
 from lookyloo.comparator import Comparator
-from lookyloo import CaptureSettings, Lookyloo
+from lookyloo import Lookyloo
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, ModuleError
 from lookyloo.helpers import load_user_config
 
@@ -863,7 +864,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
         if request.args.get('proxy'):
             to_query['proxy'] = request.args['proxy']
 
-        perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**to_query), source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
+        perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
         return perma_uuid
 
     @api.doc(body=submit_fields_post)  # type: ignore[untyped-decorator]
@@ -874,7 +875,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
         else:
             user = src_request_ip(request)
         to_query: dict[str, Any] = request.get_json(force=True)
-        perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**to_query), source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
+        perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
         return perma_uuid
 
 

@@ -9,11 +9,12 @@ from collections import Counter
 from datetime import date, timedelta, datetime
 from typing import Any
 
-from lacuscore import CaptureStatus as CaptureStatusCore, CaptureSettingsError
+from lacuscore import CaptureStatus as CaptureStatusCore
 from lookyloo import Lookyloo
+from lookyloo_models import CaptureSettingsError, LookylooCaptureSettings
 from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
-from lookyloo.helpers import ParsedUserAgent, serialize_to_json, CaptureSettings
+from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 from lookyloo.modules import AIL, AssemblyLine, MISPs, MISP, AutoCategorize
 from pylacus import CaptureStatus as CaptureStatusPy
 
@@ -163,7 +164,7 @@ class Processing(AbstractManager):
             # This capture couldn't be queued and we created the uuid locally
             try:
                 if capture_settings := self.lookyloo.redis.hgetall(uuid):
-                    query = CaptureSettings(**capture_settings)
+                    query = LookylooCaptureSettings.model_validate(capture_settings)
                     # Make sure the UUID is set in the settings so we don't get a new one.
                     query.uuid = uuid
                     try:

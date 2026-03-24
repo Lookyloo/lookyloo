@@ -17,19 +17,15 @@ import time
 from datetime import datetime, timedelta, date
 from functools import lru_cache, cache
 from importlib.metadata import version
-from io import BufferedIOBase
 from logging import Logger
 from pathlib import Path
-from pydantic import field_validator, BaseModel
 from string import punctuation
 from typing import Any, TYPE_CHECKING
 from urllib.parse import urlparse, urlunparse
 
 import requests
-import dateparser
 
 from har2tree import CrawledTree, HostNode, URLNode
-from lacuscore import CaptureSettings as LacuscoreCaptureSettings
 from PIL import Image
 from playwrightcapture import get_devices
 from pytaxonomies import Taxonomies  # type: ignore[attr-defined]
@@ -311,55 +307,6 @@ def load_known_content(directory: str='known_content') -> dict[str, dict[str, An
     return to_return
 
 
-def load_cookies(cookie_pseudofile: BufferedIOBase | str | bytes | list[dict[str, str | bool]] | None=None) -> list[dict[str, str | bool]]:
-    cookies: list[dict[str, str | bool]]
-    if cookie_pseudofile:
-        if isinstance(cookie_pseudofile, (str, bytes)):
-            try:
-                cookies = json.loads(cookie_pseudofile)
-            except json.decoder.JSONDecodeError as e:
-                logger.warning(f'Unable to load json content ({e}): {cookie_pseudofile!r}')
-                return []
-        elif isinstance(cookie_pseudofile, BufferedIOBase):
-            # Note: we might have an empty BytesIO, which is not False.
-            try:
-                cookies = json.load(cookie_pseudofile)
-            except json.decoder.JSONDecodeError as e:
-                logger.warning(f'Unable to load json content ({e}): {cookie_pseudofile.read()!r}')
-                return []
-        else:
-            # Already a dict
-            cookies = cookie_pseudofile
-    else:
-        if not (get_homedir() / 'cookies.json').exists():
-            return []
-
-        with (get_homedir() / 'cookies.json').open() as f:
-            cookies = json.load(f)
-    to_return: list[dict[str, str | bool]] = []
-    try:
-        for cookie in cookies:
-            to_add: dict[str, str | bool]
-            if 'Host raw' in cookie and isinstance(cookie['Host raw'], str):
-                # Cookie export format for Cookie Quick Manager
-                u = urlparse(cookie['Host raw']).netloc.split(':', 1)[0]
-                to_add = {'path': cookie['Path raw'],
-                          'name': cookie['Name raw'],
-                          'httpOnly': cookie['HTTP only raw'] == 'true',
-                          'secure': cookie['Send for'] == 'Encrypted connections only',
-                          'expires': (datetime.now() + timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%S') + 'Z',
-                          'domain': u,
-                          'value': cookie['Content raw']
-                          }
-            else:
-                # Cookie from lookyloo/playwright
-                to_add = cookie
-            to_return.append(to_add)
-    except Exception as e:
-        logger.warning(f'Unable to load the cookie file: {e} - {cookies}')
-    return to_return
-
-
 def uniq_domains(uniq_urls: list[str]) -> set[str]:
     domains = set()
     for url in uniq_urls:
@@ -472,49 +419,6 @@ class ParsedUserAgent(UserAgent):
 
     def __str__(self) -> str:
         return f'OS: {self.platform} - Browser: {self.browser} {self.version} - UA: {self.string}'
-
-
-class AutoReportSettings(BaseModel):
-    email: str | None = None
-    comment: str | None = None
-
-
-class MonitorCaptureSettings(BaseModel):
-    frequency: str
-    never_expire: bool = False
-    expire_at: float | None = None
-    collection: str | None = None
-
-    @field_validator('expire_at', mode='before')
-    @classmethod
-    def load_expire_at(cls, v: Any) -> float | None:
-        if not v:
-            return None
-        if isinstance(v, str):
-            # try to make it a timestamp
-            if d := dateparser.parse(v):
-                return d.timestamp()
-        return v
-
-
-class CaptureSettings(LacuscoreCaptureSettings):
-    '''The capture settings that can be passed to Lookyloo'''
-    listing: bool = get_config('generic', 'default_public')
-    not_queued: bool = False
-    auto_report: bool | AutoReportSettings | None = None  # {'email': , 'comment':}
-    dnt: str | None = None  # Legacy, merged in the headers if present.
-    parent: str | None = None
-    remote_lacus_name: str | None = None
-    categories: list[str] | None = None
-    monitor_capture: MonitorCaptureSettings | None = None
-
-    @field_validator('cookies', mode='before')
-    @classmethod
-    def load_cookies(cls, v: Any) -> list[dict[str, Any]] | None:
-        # NOTE: Lookyloo can get the cookies in somewhat weird formats, mornalizing them
-        if v:
-            return load_cookies(v)
-        return None
 
 
 @lru_cache(64)

@@ -31,12 +31,14 @@ from har2tree import CrawledTree, Har2TreeError, HarFile
 from pyipasnhistory import IPASNHistory  # type: ignore[attr-defined]
 from redis import Redis
 
+from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError
+
 from .context import Context
 from .helpers import (get_captures_dir, is_locked, load_pickle_tree, get_pickle_path,
-                      remove_pickle_tree, get_indexing, mimetype_to_generic, CaptureSettings,
+                      remove_pickle_tree, get_indexing, mimetype_to_generic,
                       global_proxy_for_requests, get_useragent_for_requests)
 from .default import LookylooException, try_make_file, get_config
-from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild, InvalidCaptureSetting
+from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
 from .modules import Cloudflare
 
 
@@ -143,13 +145,13 @@ class CaptureCache():
             f.write('\n'.join(categories))
 
     @property
-    def capture_settings(self) -> CaptureSettings | None:
+    def capture_settings(self) -> LookylooCaptureSettings | None:
         capture_settings_file = self.capture_dir / 'capture_settings.json'
         if capture_settings_file.exists():
             try:
                 with capture_settings_file.open() as f:
-                    return CaptureSettings(**json.load(f))
-            except InvalidCaptureSetting as e:
+                    return LookylooCaptureSettings.model_validate_json(f.read())
+            except CaptureSettingsError as e:
                 self.logger.warning(f'[In file!] Invalid capture settings for {self.uuid}: {e}')
         return None
 

@@ -10,10 +10,11 @@ import signal
 from asyncio import Task
 from pathlib import Path
 
-from lacuscore import CaptureSettingsError, LacusCore, CaptureResponse as CaptureResponseCore
+from lacuscore import LacusCore, CaptureResponse as CaptureResponseCore
 from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 
-from lookyloo import Lookyloo, CaptureSettings
+from lookyloo import Lookyloo
+from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError
 from lookyloo.exceptions import LacusUnreachable, DuplicateUUID
 from lookyloo.default import AbstractManager, get_config, LookylooException
 from lookyloo.helpers import get_captures_dir
@@ -89,9 +90,11 @@ class AsyncCapture(AbstractManager):
 
             try:
                 self.lookyloo.redis.sadd('ongoing', uuid)
-                to_capture: CaptureSettings | None = self.lookyloo.get_capture_settings(uuid)
+                to_capture: LookylooCaptureSettings | None = self.lookyloo.get_capture_settings(uuid)
                 if (entries.get('error') is not None
-                        and entries['error'].startswith('No capture settings') and to_capture):  # type: ignore[union-attr]
+                        and not self.lookyloo.redis.hget(uuid, 'not_queued')  # Not already marked as not queued
+                        and (entries['error'] and entries['error'].startswith('No capture settings'))
+                        and to_capture):
                     # The settings were expired too early but we still have them in lookyloo. Re-add to queue.
                     self.lookyloo.redis.hset(uuid, 'not_queued', 1)
                     self.lookyloo.redis.zincrby('to_capture', -1, uuid)

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import fnmatch
 import logging
-import sys
 
 from typing import Any
 
 from har2tree import URLNode
 
+from lookyloo_models import CompareSettings
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
@@ -17,20 +17,6 @@ from .context import Context
 from .capturecache import CapturesIndex
 from .default import get_config, get_socket_path, LookylooException
 from .exceptions import MissingUUID, TreeNeedsRebuild
-
-if sys.version_info < (3, 12):
-    from typing_extensions import TypedDict
-else:
-    from typing import TypedDict
-
-
-class CompareSettings(TypedDict):
-    '''The settings that can be passed to the compare method to filter out some differences'''
-
-    ressources_ignore_domains: tuple[str, ...]
-    ressources_ignore_regexes: tuple[str, ...]
-
-    ignore_ips: bool
 
 
 class Comparator():
@@ -127,7 +113,7 @@ class Comparator():
             to_return = {'error': str(e)}
         return to_return
 
-    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: CompareSettings | None=None) -> tuple[bool, dict[str, Any]]:
+    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: CompareSettings | dict[str, Any] | None=None) -> tuple[bool, dict[str, Any]]:
         if capture_left not in self._captures_index:
             raise MissingUUID(f'{capture_left} does not exists.')
         if capture_right not in self._captures_index:
@@ -210,34 +196,28 @@ class Comparator():
                                                 'details': left['redirects']['length']}
 
         # Prepare settings
-        _settings: CompareSettings | None
+        _settings: CompareSettings | None = None
         if settings:
-            # cleanup the settings
-            _ignore_domains = set(settings['ressources_ignore_domains'] if settings.get('ressources_ignore_domains') else [])
-            _ignore_regexes = set(settings['ressources_ignore_regexes'] if settings.get('ressources_ignore_regexes') else [])
-            _settings = {
-                'ressources_ignore_domains': tuple(_ignore_domains),
-                'ressources_ignore_regexes': tuple(_ignore_regexes),
-                'ignore_ips': bool(settings.get('ignore_ips'))
-            }
-        else:
-            _settings = None
+            if isinstance(settings, dict):
+                _settings = CompareSettings(**settings)
+            else:
+                _settings = settings
 
         # Compare chain of redirects
         for redirect_left, redirect_right in zip(right['redirects']['nodes'], left['redirects']['nodes']):
             if isinstance(to_return['redirects']['nodes'], list):  # NOTE always true, but makes mypy happy.
-                different, node_compare = self._compare_nodes(redirect_left, redirect_right, different, _settings['ignore_ips'] if _settings is not None else False)
+                different, node_compare = self._compare_nodes(redirect_left, redirect_right, different, _settings.ignore_ips if _settings is not None else False)
                 to_return['redirects']['nodes'].append(node_compare)
 
         # Compare all ressources URLs
         ressources_left = {url for url, hostname in left['ressources']
                            if not _settings
-                           or (not hostname.endswith(_settings['ressources_ignore_domains'])
-                               and not any(fnmatch.fnmatch(url, regex) for regex in _settings['ressources_ignore_regexes']))}
+                           or (not hostname.endswith(_settings.ressources_ignore_domains)
+                               and not any(fnmatch.fnmatch(url, regex) for regex in _settings.ressources_ignore_regexes))}
         ressources_right = {url for url, hostname in right['ressources']
                             if not _settings
-                            or (not hostname.endswith(_settings['ressources_ignore_domains'])
-                                and not any(fnmatch.fnmatch(url, regex) for regex in _settings['ressources_ignore_regexes']))}
+                            or (not hostname.endswith(_settings.ressources_ignore_domains)
+                                and not any(fnmatch.fnmatch(url, regex) for regex in _settings.ressources_ignore_regexes))}
 
         to_return['ressources'] = {}
         if present_in_both := ressources_left & ressources_right:

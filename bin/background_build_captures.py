@@ -14,10 +14,11 @@ from pydantic_core import from_json
 from redis import Redis
 
 from lookyloo import Lookyloo
+from lookyloo_models import AutoReportSettings, MonitorCaptureSettings
 from lookyloo.default import AbstractManager, get_config, get_socket_path, try_make_file
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, TreeNeedsRebuild
 from lookyloo.helpers import (is_locked, get_sorted_captures_from_disk, make_dirs_list,
-                              get_captures_dir, AutoReportSettings, MonitorCaptureSettings)
+                              get_captures_dir)
 
 
 logging.config.dictConfig(get_config('logging'))
@@ -72,15 +73,20 @@ class BackgroundBuildCaptures(AbstractManager):
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing settings.')
             return
 
-        capture_settings = self.lookyloo.get_capture_settings(capture_uuid)
-        if not capture_settings:
+        if capture_settings := self.lookyloo.get_capture_settings(capture_uuid):
+            monitor_settings.capture_settings = capture_settings
+        else:
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing capture settings.')
             return
         try:
-            monitoring_uuid = self.lookyloo.monitoring.monitor(capture_settings.dict(), **monitor_settings.dict())
+            monitoring_uuid = self.lookyloo.monitoring.monitor(monitor_capture_settings=monitor_settings)
+            if isinstance(monitoring_uuid, dict):
+                # error message
+                self.logger.warning(f'Unable to trigger monitoring: {monitoring_uuid["message"]}')
+                (path / 'monitor_capture').unlink()
+                return
             with (path / 'monitor_uuid').open('w') as f:
                 f.write(monitoring_uuid)
-            (path / 'monitor_capture').unlink()
         except Exception as e:
             self.logger.warning(f'Unable to trigger monitoring for {capture_uuid}: {e}')
         else:

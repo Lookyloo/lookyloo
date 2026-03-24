@@ -38,17 +38,17 @@ from cryptography.hazmat.primitives.serialization import Encoding
 from defang import defang  # type: ignore[import-untyped]
 from har2tree import CrawledTree, HostNode, URLNode, Har2TreeError
 from html_to_markdown import convert
-from lacuscore import (LacusCore, CaptureSettingsError,
-                       CaptureStatus as CaptureStatusCore,
+from lacuscore import (LacusCore, CaptureStatus as CaptureStatusCore,
                        # CaptureResponse as CaptureResponseCore)
                        # CaptureResponseJson as CaptureResponseJsonCore,
                        # CaptureSettings as CaptureSettingsCore
                        )
+from lookyloo_models import CaptureSettingsError
 from PIL import Image, UnidentifiedImageError
 from playwrightcapture import get_devices
 from pure_magic_rs import MagicDb
-from pylacus import (PyLacus,
-                     CaptureStatus as CaptureStatusPy
+from pydantic import ValidationError
+from pylacus import (PyLacus, CaptureStatus as CaptureStatusPy
                      # CaptureResponse as CaptureResponsePy,
                      # CaptureResponseJson as CaptureResponseJsonPy,
                      # CaptureSettings as CaptureSettingsPy
@@ -62,6 +62,10 @@ from redis.connection import UnixDomainSocketConnection
 from requests.exceptions import Timeout as RequestsTimeout
 from rfc3161_client import (TimeStampResponse, VerifierBuilder, VerificationError,
                             decode_timestamp_response)
+from urllib.parse import urlsplit
+
+from lookyloo_models import (LookylooCaptureSettings, AutoReportSettings, MonitorCaptureSettings,
+                             Cookie, LookylooCaptureSettingsError)
 
 from .capturecache import CaptureCache, CapturesIndex, LookylooCacheLogAdapter
 from .context import Context
@@ -74,9 +78,8 @@ from .helpers import (get_captures_dir, get_email_template, get_tt_template,
                       uniq_domains, ParsedUserAgent, UserAgents,
                       get_useragent_for_requests, load_takedown_filters,
                       global_proxy_for_requests,
-                      CaptureSettings, load_user_config,
+                      load_user_config,
                       get_indexing, get_error_screenshot,
-                      AutoReportSettings, MonitorCaptureSettings,
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -85,10 +88,7 @@ from .modules import (MISPs, PhishingInitiative, UniversalWhois,
 
 if TYPE_CHECKING:
     from playwright.async_api import StorageState
-    from playwrightcapture import SetCookieParam as SetCookieParamPWC, Cookie as CookiePWC, FramesResponse
-    from pylacus.api import SetCookieParam as SetCookieParamPL, Cookie as CookiePL
-    SetCookieParams = list[SetCookieParamPWC] | list[SetCookieParamPL]
-    Cookies = list[CookiePWC] | list[CookiePL]
+    from playwrightcapture import FramesResponse
 
 
 class Lookyloo():
@@ -357,15 +357,18 @@ class Lookyloo():
             f.write(orjson.dumps(meta))
         return meta
 
-    def get_capture_settings(self, capture_uuid: str, /) -> CaptureSettings | None:
+    def get_capture_settings(self, capture_uuid: str, /) -> LookylooCaptureSettings | None:
         '''Get the capture settings from the cache or the disk.'''
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         try:
             if capture_settings := self.redis.hgetall(capture_uuid):
-                return CaptureSettings(**capture_settings)
+                return LookylooCaptureSettings.model_validate(capture_settings)
         except CaptureSettingsError as e:
             logger.warning(f'Invalid capture settings: {e}')
             raise e
+        except ValidationError as e:
+            logger.warning(f'Invalid capture settings: {e}')
+            raise LookylooCaptureSettingsError('Invalid capture settings', e)
         cache = self.capture_cache(capture_uuid)
         if not cache:
             return None
@@ -722,7 +725,7 @@ class Lookyloo():
             self._captures_index.reload_cache(capture_uuid)
             return self._captures_index[capture_uuid].tree
 
-    def _apply_user_config(self, query: CaptureSettings, user_config: dict[str, Any]) -> CaptureSettings:
+    def _apply_user_config(self, query: LookylooCaptureSettings, user_config: dict[str, Any]) -> LookylooCaptureSettings:
         def recursive_merge(dict1: dict[str, Any], dict2: dict[str, Any]) -> dict[str, Any]:
             # dict2 overwrites dict1
             for key, value in dict2.items():
@@ -737,9 +740,9 @@ class Lookyloo():
         # merge
         if user_config.get('overwrite'):
             # config from file takes priority
-            return CaptureSettings(**recursive_merge(query.model_dump(), user_config))
+            return LookylooCaptureSettings.model_validate(recursive_merge(query.model_dump(), user_config))
         else:
-            return CaptureSettings(**recursive_merge(user_config, query.model_dump()))
+            return LookylooCaptureSettings.model_validate(recursive_merge(user_config, query.model_dump()))
 
     def _valid_category(self, category: str) -> bool:
         '''For now, an authenticated user can submit anything they want.
@@ -748,7 +751,7 @@ class Lookyloo():
         # Use the public index
         return category in get_indexing().categories
 
-    def enqueue_capture(self, query: CaptureSettings, source: str, user: str, authenticated: bool) -> str:
+    def enqueue_capture(self, query: LookylooCaptureSettings | dict[str, Any], source: str, user: str, authenticated: bool) -> str:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
 
         def get_priority(source: str, user: str, authenticated: bool) -> int:
@@ -763,6 +766,17 @@ class Lookyloo():
             else:
                 usr_prio = self._priority['users'][user] if self._priority['users'].get(user) else self._priority['users']['_default_auth']
             return src_prio + usr_prio
+
+        if isinstance(query, dict):
+            _domain: str | None = None
+            if 'url' in query and query['url']:
+                # allows to pass the right context for cookies provided as {name: value}
+                try:
+                    _domain = urlsplit(query['url']).hostname
+                except Exception:
+                    # not capturing a url, ignore
+                    pass
+            query = LookylooCaptureSettings.model_validate(query, context={'domain': _domain})
 
         if query.categories and not authenticated:
             # remove from the list of categories the ones we don't know
@@ -840,7 +854,7 @@ class Lookyloo():
                 priority=priority
             )
         except Exception as e:
-            self.logger.critical(f'Unable to enqueue capture: {e}')
+            self.logger.exception(f'Unable to enqueue capture: {e}')
             if query.uuid:
                 perma_uuid = query.uuid
             else:
@@ -2047,9 +2061,9 @@ class Lookyloo():
         screenshot: bytes | None = None
         html: str | None = None
         last_redirected_url: str | None = None
-        cookies: Cookies | list[dict[str, str]] | None = None
+        cookies: list[Cookie] | list[dict[str, str]] | None = None
         storage: StorageState | None = None
-        capture_settings: CaptureSettings | None = None
+        capture_settings: LookylooCaptureSettings | None = None
         potential_favicons: set[bytes] | None = None
         trusted_timestamps: dict[str, str] | None = None
         categories: list[str] | None = None
@@ -2112,7 +2126,7 @@ class Lookyloo():
                 elif filename.endswith('capture_settings.json'):
                     _capture_settings = orjson.loads(lookyloo_capture.read(filename))
                     try:
-                        capture_settings = CaptureSettings(**_capture_settings)
+                        capture_settings = LookylooCaptureSettings.model_validate(_capture_settings)
                     except CaptureSettingsError as e:
                         unrecoverable_error = True
                         messages['errors'].append(f'Invalid Capture Settings: {e}')
@@ -2159,9 +2173,9 @@ class Lookyloo():
                       png: bytes | None=None, html: str | None=None,
                       frames: FramesResponse | str | None=None,
                       last_redirected_url: str | None=None,
-                      cookies: Cookies | list[dict[str, str]] | None=None,
+                      cookies: list[Cookie] | list[dict[str, str]] | None=None,
                       storage: StorageState | dict[str, Any] | None=None,
-                      capture_settings: CaptureSettings | None=None,
+                      capture_settings: LookylooCaptureSettings | None=None,
                       potential_favicons: set[bytes] | None=None,
                       trusted_timestamps: dict[str, str] | None=None,
                       auto_report: bool | AutoReportSettings | None = None,

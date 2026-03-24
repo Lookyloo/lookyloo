@@ -38,7 +38,7 @@ from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
-from lacuscore import CaptureStatus, CaptureSettingsError
+from lacuscore import CaptureStatus
 from markupsafe import Markup, escape
 from pyfaup import Host, Url
 from pylookyloo import PyLookylooError, Lookyloo as PyLookyloo
@@ -48,10 +48,11 @@ from werkzeug.routing import BaseConverter
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
-from lookyloo import Lookyloo, CaptureSettings, LookylooException
+from lookyloo import Lookyloo, LookylooException
+from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError
 from lookyloo.default import get_config, get_homedir, ConfigError
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild
-from lookyloo.helpers import (UserAgents, load_cookies,
+from lookyloo.helpers import (UserAgents,
                               load_user_config,
                               get_taxonomies,
                               mimetype_to_generic,
@@ -1538,7 +1539,7 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
         flash('Please provide URLs to capture, none were selected.', 'warning')
         return redirect(url_for('tree', tree_uuid=base_tree_uuid))
 
-    cookies: list[dict[str, str | bool]] = []
+    cookies: str | bytes | None = None
     storage_state: dict[str, Any] = {}
     success, storage_state_file = lookyloo.get_storage_state(base_tree_uuid)
     if success:
@@ -1548,7 +1549,7 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
         # Old way of doing it, the cookies are in the storage
         success, _cookies = lookyloo.get_cookies(base_tree_uuid)
         if success:
-            cookies = load_cookies(_cookies)
+            cookies = _cookies.read()
     original_capture_settings = lookyloo.get_capture_settings(base_tree_uuid)
     bulk_captures = []
     for url in urls_to_capture:
@@ -1573,7 +1574,7 @@ def bulk_captures(base_tree_uuid: str) -> WerkzeugResponse | str | Response:
                 'parent': base_tree_uuid,
                 'listing': False if cache and cache.no_index else True
             }
-            capture = CaptureSettings(**_capture)
+            capture = LookylooCaptureSettings.model_validate(_capture)
         new_capture_uuid = lookyloo.enqueue_capture(capture, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         bulk_captures.append((new_capture_uuid, url))
 
@@ -1634,7 +1635,8 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
     if capture_settings := cache.capture_settings:
         capture_settings.listing = False
         try:
-            monitoring_uuid = lookyloo.monitoring.monitor(capture_settings.dict(), frequency=frequency,
+            monitoring_uuid = lookyloo.monitoring.monitor(capture_settings=capture_settings,
+                                                          frequency=frequency,
                                                           collection=collection, expire_at=expire_at,
                                                           never_expire=never_expire,
                                                           notification={'email': notification_email})
@@ -2246,7 +2248,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
         capture_query: dict[str, Any] = {}
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
-            capture_query['cookies'] = load_cookies(request.files['cookies'].stream.read())
+            capture_query['cookies'] = request.files['cookies'].stream.read()
         if 'storage_state' in request.files and request.files['storage_state'].filename:
             if _storage := request.files['storage_state'].stream.read():
                 try:
@@ -2338,12 +2340,13 @@ def capture_web() -> str | Response | WerkzeugResponse:
         # auto monitoring
         if request.form.get('monitor_capture'):
             capture_query['monitor_capture'] = {
-                'frequency': request.form.get('frequency', ""),
-                'expire_at': request.form.get('expire_at', ""),
-                'collection': request.form.get('collection', ""),
-                'notification': request.form.get('monitor_notification', ""),
+                'frequency': request.form.get('frequency'),
+                'expire_at': request.form.get('expire_at'),
+                'collection': request.form.get('collection'),
                 'never_expire': bool(request.form.get('never_expire', False))
             }
+            if _n := request.form.get('monitor_notification'):
+                capture_query['monitor_capture']['notification'] = {'email': _n}
 
         if flask_login.current_user.is_authenticated:
             # auto report
@@ -2357,7 +2360,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
                     capture_query['auto_report'] = True
         if request.form.get('url'):
             capture_query['url'] = request.form['url']
-            perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture_query), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+            perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
             time.sleep(2)
             return redirect(url_for('tree', tree_uuid=perma_uuid))
         elif request.form.get('urls'):
@@ -2368,7 +2371,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
                     continue
                 query = capture_query.copy()
                 query['url'] = url
-                new_capture_uuid = lookyloo.enqueue_capture(CaptureSettings(**query), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+                new_capture_uuid = lookyloo.enqueue_capture(query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
                 bulk_captures.append((new_capture_uuid, url))
 
             return render_template('bulk_captures.html', bulk_captures=bulk_captures)
@@ -2379,7 +2382,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
                 capture_query['document_name'] = request.files['document'].filename
             else:
                 capture_query['document_name'] = 'unknown_name.bin'
-            perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture_query), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+            perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
             time.sleep(2)
             return redirect(url_for('tree', tree_uuid=perma_uuid))
         else:
@@ -2387,7 +2390,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
     elif request.method == 'GET' and request.args.get('url'):
         url = unquote_plus(request.args['url']).strip()
         capture_query = {'url': url}
-        perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture_query), source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
+        perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user, authenticated=flask_login.current_user.is_authenticated)
         return redirect(url_for('tree', tree_uuid=perma_uuid))
 
     # render template
@@ -2406,7 +2409,7 @@ def simple_capture() -> str | Response | WerkzeugResponse:
         capture_query: dict[str, Any] = {}
         if request.form.get('url'):
             capture_query['url'] = request.form['url']
-            perma_uuid = lookyloo.enqueue_capture(CaptureSettings(**capture_query), source='web', user=user,
+            perma_uuid = lookyloo.enqueue_capture(capture_query, source='web', user=user,
                                                   authenticated=flask_login.current_user.is_authenticated)
             time.sleep(2)
             if perma_uuid:
@@ -2418,7 +2421,7 @@ def simple_capture() -> str | Response | WerkzeugResponse:
                     continue
                 query = capture_query.copy()
                 query['url'] = url
-                new_capture_uuid = lookyloo.enqueue_capture(CaptureSettings(**query), source='web', user=user,
+                new_capture_uuid = lookyloo.enqueue_capture(query, source='web', user=user,
                                                             authenticated=flask_login.current_user.is_authenticated)
                 if new_capture_uuid:
                     flash('Recording is in progress and is reported automatically.', 'success')

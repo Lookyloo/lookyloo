@@ -93,11 +93,13 @@
         <option value="{{name}}">{{name}}</option>
         {% endfor %}
       </datalist>
-      {%else%}
-      <label for=collection" class="form-label">Add to a collection.</label>
-      <input type="text" class="form-control" name="collection" id="collection" placeholder="Name of the collection">
-      {% endif %}
   </div>
+  {%else%}
+  <label for=collection" class="col-sm-2 col-form-label">Add to a collection.</label>
+  <div class="col-sm-10">
+    <input type="text" class="form-control" name="collection" id="collection" placeholder="Name of the collection">
+  </div>
+  {% endif %}
 </div>
 <div class="row mb-3">
   <label for="monitor_notification" class="col-sm-2 col-form-label">Notify on change</label>
