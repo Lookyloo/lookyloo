@@ -69,6 +69,7 @@ class BackgroundBuildCaptures(AbstractManager):
         with (path / 'monitor_capture').open('rb') as f:
             if m := f.read():
                 monitor_settings = MonitorCaptureSettings.model_validate(from_json(m))
+        (path / 'monitor_capture').unlink()
         if not monitor_settings:
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing settings.')
             return
@@ -83,7 +84,6 @@ class BackgroundBuildCaptures(AbstractManager):
             if isinstance(monitoring_uuid, dict):
                 # error message
                 self.logger.warning(f'Unable to trigger monitoring: {monitoring_uuid["message"]}')
-                (path / 'monitor_capture').unlink()
                 return
             with (path / 'monitor_uuid').open('w') as f:
                 f.write(monitoring_uuid)
