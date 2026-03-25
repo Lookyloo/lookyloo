@@ -113,7 +113,7 @@ class Comparator():
             to_return = {'error': str(e)}
         return to_return
 
-    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: CompareSettings | dict[str, Any] | None=None) -> tuple[bool, dict[str, Any]]:
+    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: CompareSettings | dict[str, Any] | str | None=None) -> tuple[bool, dict[str, Any]]:
         if capture_left not in self._captures_index:
             raise MissingUUID(f'{capture_left} does not exists.')
         if capture_right not in self._captures_index:
@@ -199,7 +199,9 @@ class Comparator():
         _settings: CompareSettings | None = None
         if settings:
             if isinstance(settings, dict):
-                _settings = CompareSettings(**settings)
+                _settings = CompareSettings.model_validate(settings)
+            elif isinstance(settings, str):
+                _settings = CompareSettings.model_validate_json(settings)
             else:
                 _settings = settings
 
