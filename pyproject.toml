@@ -93,6 +93,7 @@ pyfaup-rs = "^0.4.3"
 pure-magic-rs = "^0.3.2"
 html-to-markdown = "^2.29.0"
 dateparser = "^1.3.0"
+lookyloo-models = "^0.1.6"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.19.1"
