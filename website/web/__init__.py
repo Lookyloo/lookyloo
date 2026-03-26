@@ -2241,6 +2241,11 @@ def capture_web() -> str | Response | WerkzeugResponse:
         user = src_request_ip(request)
 
     if request.method == 'POST':
+        if request.form.get('name') or not request.form.get('confirm'):
+            # got a bot.
+            app.logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
+            return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
+
         if not (request.form.get('url') or request.form.get('urls') or 'document' in request.files):
             flash('Invalid submission: please submit at least a URL or a document.', 'error')
             return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))

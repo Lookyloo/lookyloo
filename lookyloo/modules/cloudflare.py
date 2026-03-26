@@ -7,7 +7,7 @@ import json
 import logging
 
 from datetime import datetime, timedelta, timezone
-from dateutil.parser import parse
+from dateparser import parse
 
 from ..default import get_homedir, get_config, safe_create_dir, LookylooException
 from ..helpers import prepare_global_session
@@ -71,7 +71,8 @@ class Cloudflare():
             r.raise_for_status()
             ipv4_list = r.text
             if r.headers.get('Last-Modified'):
-                last_updates['ipv4'] = parse(r.headers['Last-Modified']).isoformat()
+                if lm := parse(r.headers['Last-Modified']):
+                    last_updates['ipv4'] = lm.isoformat()
         except Exception as e:
             self.logger.warning(f'Unable to get Cloudflare IPv4 list: {e}')
         with self.ipv4_path.open('w') as f:
@@ -83,7 +84,8 @@ class Cloudflare():
             r.raise_for_status()
             ipv6_list = r.text
             if r.headers.get('Last-Modified'):
-                last_updates['ipv6'] = parse(r.headers['Last-Modified']).isoformat()
+                if lm := parse(r.headers['Last-Modified']):
+                    last_updates['ipv6'] = lm.isoformat()
         except Exception as e:
             self.logger.warning(f'Unable to get Cloudflare IPv6 list: {e}')
         with self.ipv6_path.open('w') as f:

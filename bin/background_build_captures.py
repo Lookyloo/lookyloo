@@ -10,7 +10,6 @@ import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from pydantic_core import from_json
 from redis import Redis
 
 from lookyloo import Lookyloo
@@ -46,7 +45,7 @@ class BackgroundBuildCaptures(AbstractManager):
         with (path / 'auto_report').open('rb') as f:
             if ar := f.read():
                 # could be an empty file, which means no settings, just notify
-                settings = AutoReportSettings.model_validate(from_json(ar))
+                settings = AutoReportSettings.model_validate_json(ar)
         try:
             self.lookyloo.send_mail(capture_uuid, as_admin=True,
                                     email=settings.email if settings else '',
@@ -68,7 +67,7 @@ class BackgroundBuildCaptures(AbstractManager):
         monitor_settings: MonitorCaptureSettings | None = None
         with (path / 'monitor_capture').open('rb') as f:
             if m := f.read():
-                monitor_settings = MonitorCaptureSettings.model_validate(from_json(m))
+                monitor_settings = MonitorCaptureSettings.model_validate_json(m)
         (path / 'monitor_capture').unlink()
         if not monitor_settings:
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing settings.')
