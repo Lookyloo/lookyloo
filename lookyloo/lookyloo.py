@@ -62,7 +62,6 @@ from redis.connection import UnixDomainSocketConnection
 from requests.exceptions import Timeout as RequestsTimeout
 from rfc3161_client import (TimeStampResponse, VerifierBuilder, VerificationError,
                             decode_timestamp_response)
-from urllib.parse import urlsplit
 
 from lookyloo_models import (LookylooCaptureSettings, AutoReportSettings, MonitorCaptureSettings,
                              Cookie, LookylooCaptureSettingsError)
@@ -768,15 +767,7 @@ class Lookyloo():
             return src_prio + usr_prio
 
         if isinstance(query, dict):
-            _domain: str | None = None
-            if 'url' in query and query['url']:
-                # allows to pass the right context for cookies provided as {name: value}
-                try:
-                    _domain = urlsplit(query['url']).hostname
-                except Exception:
-                    # not capturing a url, ignore
-                    pass
-            query = LookylooCaptureSettings.model_validate(query, context={'domain': _domain})
+            query = LookylooCaptureSettings.model_validate(query)
 
         if query.categories and not authenticated:
             # remove from the list of categories the ones we don't know

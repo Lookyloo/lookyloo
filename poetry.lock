@@ -1205,14 +1205,14 @@ files = [
 
 [[package]]
 name = "dateparser"
-version = "1.3.0"
+version = "1.4.0"
 description = "Date parsing library designed to parse dates from HTML pages"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "dateparser-1.3.0-py3-none-any.whl", hash = "sha256:8dc678b0a526e103379f02ae44337d424bd366aac727d3c6cf52ce1b01efbb5a"},
-    {file = "dateparser-1.3.0.tar.gz", hash = "sha256:5bccf5d1ec6785e5be71cc7ec80f014575a09b4923e762f850e57443bddbf1a5"},
+    {file = "dateparser-1.4.0-py3-none-any.whl", hash = "sha256:7902b8e85d603494bf70a5a0b1decdddb2270b9c6e6b2bc8a57b93476c0df378"},
+    {file = "dateparser-1.4.0.tar.gz", hash = "sha256:97a21840d5ecdf7630c584f673338a5afac5dfe84f647baf4d7e8df98f9354a4"},
 ]
 
 [package.dependencies]
@@ -1754,33 +1754,34 @@ files = [
 
 [[package]]
 name = "har2tree"
-version = "1.37.0"
+version = "1.37.1"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.37.0-py3-none-any.whl", hash = "sha256:5a30c1b9e16c58dcbdfb095b8aa22e8d77a9ec0d748ee1c26f576c955b963a24"},
-    {file = "har2tree-1.37.0.tar.gz", hash = "sha256:3b64f089b9c6f1966df34af832bf1635a9d2a4199117bb8f9fbffa81bacf877d"},
+    {file = "har2tree-1.37.1-py3-none-any.whl", hash = "sha256:e1970e184cbb60c51ef92c362d8dc17c9762cb2f2b25b63cdeb408727a6282aa"},
+    {file = "har2tree-1.37.1.tar.gz", hash = "sha256:1ee9b95d12b229f631c85b6856d267c4032c24dd3dc0b249242a60e7437126a8"},
 ]
 
 [package.dependencies]
 amazon-ion = ">=0.13.0,<0.14.0"
 bbpb = ">=1.4.2,<2.0.0"
 beautifulsoup4 = {version = ">=4.14.3", extras = ["charset-normalizer", "lxml"]}
+charset-normalizer = ">=3.4.6,<4.0.0"
+dnspython = ">=2.8.0,<3.0.0"
 ete3 = ">=3.1.3"
 json-stream = ">=2.3.3,<3.0.0"
 legacy-cgi = {version = ">=2.6.4", markers = "python_version >= \"3.13\" and python_version < \"4.0\""}
-multipart = ">=1.3.0,<2.0.0"
 numpy = [
     {version = ">=2.2,<2.3", markers = "python_version == \"3.10\""},
-    {version = ">=2.4.2", markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
+    {version = ">=2.4.3", markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
 ]
 pure-magic-rs = ">=0.3.1,<0.4.0"
 pyfaup-rs = ">=0.4.0,<0.5"
 requests-toolbelt = ">=1.0.0,<2.0.0"
 tinycss2 = ">=1.5.1"
-w3lib = ">=2.4.0"
+w3lib = ">=2.4.1"
 
 [package.extras]
 docs = ["Sphinx (>=9.1.0) ; python_version >= \"3.12\"", "six (>=1.17.0)"]
@@ -2124,26 +2125,23 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "lacuscore"
-version = "1.22.3"
+version = "1.23.0"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.22.3-py3-none-any.whl", hash = "sha256:e3ac38c43a4e37f5b6cddc04561fb96919920ca8fbcbb2688dac719a07a46688"},
-    {file = "lacuscore-1.22.3.tar.gz", hash = "sha256:3bb74d7af27ac138893d8ea031efaf2661ebb4f4c182331f9293be5bded31e20"},
+    {file = "lacuscore-1.23.0-py3-none-any.whl", hash = "sha256:442095e1e608fb5db61efecec2f870f371d16256f3a0fa36274e4eb4a5ba252b"},
+    {file = "lacuscore-1.23.0.tar.gz", hash = "sha256:25db5bb326c67a5a44d24c80b966f3735e1f6bd8637d52ed0373ea049a82464c"},
 ]
 
 [package.dependencies]
 async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
-defang = ">=0.5.3"
 dnspython = ">=2.8.0"
-lookyloo-models = ">=0.1.0,<0.2.0"
-orjson = ">=3.11.3,<4.0.0"
-playwrightcapture = {version = ">=1.37.3", extras = ["recaptcha"]}
+lookyloo-models = ">=0.1.6,<0.2.0"
+playwrightcapture = {version = ">=1.38.0", extras = ["recaptcha"]}
 pydantic = ">=2.12.5"
 redis = {version = ">=5.3.0,<6.0.0", extras = ["hiredis"]}
-requests = ">=2.32.5"
 typing-extensions = {version = ">=4.12.2,<5.0.0", markers = "python_version < \"3.12\""}
 ua-parser = {version = ">=1.0.1", extras = ["regex"]}
 
@@ -2351,14 +2349,14 @@ files = [
 
 [[package]]
 name = "lookyloo-models"
-version = "0.1.6"
+version = "0.1.7"
 description = "All the Pydantic models used across Lookyloo"
 optional = false
 python-versions = "<4,>=3.10"
 groups = ["main"]
 files = [
-    {file = "lookyloo_models-0.1.6-py3-none-any.whl", hash = "sha256:fab880c85f6f96952b5329ac9853987438cbe89256f76df338b9bf5ce8ddb473"},
-    {file = "lookyloo_models-0.1.6.tar.gz", hash = "sha256:f8fe373569074ee47ed059d8210ee6bb65f91a432e279efaf4b47dbeb09e94d7"},
+    {file = "lookyloo_models-0.1.7-py3-none-any.whl", hash = "sha256:905799788a60ca36b3f03e2b6dc129caad2a5fd1c767a170a8dfd499049aac98"},
+    {file = "lookyloo_models-0.1.7.tar.gz", hash = "sha256:51fac34a635d473a9eb6e04562fc6b1a85fcfa5a71c87a239fdcc29fe57553b6"},
 ]
 
 [package.dependencies]
@@ -2971,22 +2969,6 @@ files = [
 typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.11\""}
 
 [[package]]
-name = "multipart"
-version = "1.3.1"
-description = "Parser for multipart/form-data"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "multipart-1.3.1-py3-none-any.whl", hash = "sha256:a82b59e1befe74d3d30b3d3f70efd5a2eba4d938f845dcff9faace968888ff29"},
-    {file = "multipart-1.3.1.tar.gz", hash = "sha256:211d7cfc1a7a43e75c4d24ee0e8e0f4f61d522f1a21575303ae85333dea687bf"},
-]
-
-[package.extras]
-dev = ["build", "pytest", "pytest-cov", "tox", "tox-uv", "twine"]
-docs = ["sphinx (>=8,<9)", "sphinx-autobuild"]
-
-[[package]]
 name = "mypy"
 version = "1.19.1"
 description = "Optional static typing for Python"
@@ -3486,14 +3468,14 @@ black = ["black (>=25.9.0)"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.37.3"
+version = "1.38.0"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "playwrightcapture-1.37.3-py3-none-any.whl", hash = "sha256:394c6238febda218e2066a1b444d0bd28106cf32331e5e20a52cb1706a6e0bc0"},
-    {file = "playwrightcapture-1.37.3.tar.gz", hash = "sha256:117245b95eb9a59984e9b60e70fd7e687f284d4c69a92a7731382acf3b2fad92"},
+    {file = "playwrightcapture-1.38.0-py3-none-any.whl", hash = "sha256:9207306533744134bb296a727e1b3132889a78c8661a4c1346bc1cd8caaac39e"},
+    {file = "playwrightcapture-1.38.0.tar.gz", hash = "sha256:e15e512b0252d572bcad8f2a744bdb1ef2dc80aab52b074784aaa261c823f404"},
 ]
 
 [package.dependencies]
@@ -3501,9 +3483,9 @@ aiohttp = {version = ">=3.13.3", extras = ["speedups"]}
 aiohttp-socks = ">=0.11.0"
 async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 beautifulsoup4 = {version = ">=4.14.3", extras = ["charset-normalizer", "lxml"]}
-dateparser = ">=1.3.0"
+charset-normalizer = ">=3.4.6,<4.0.0"
 dnspython = ">=2.7.0,<3.0.0"
-lookyloo-models = ">=0.1.4,<0.2.0"
+lookyloo-models = ">=0.1.6,<0.2.0"
 orjson = ">=3.11.4,<4.0.0"
 playwright = ">=1.58.0"
 playwright-stealth = ">=2.0.2"
@@ -3511,14 +3493,12 @@ pure-magic-rs = ">=0.3.2,<0.4.0"
 pydub-ng = {version = ">=0.2.0", optional = true, markers = "extra == \"recaptcha\""}
 python-socks = ">=2.7.1,<3.0.0"
 rfc3161-client = ">=1.0.4,<2.0.0"
-setuptools = ">=82.0.1"
-SpeechRecognition = {version = ">=3.15.1", optional = true, markers = "extra == \"recaptcha\""}
+SpeechRecognition = {version = ">=3.15.2", optional = true, markers = "extra == \"recaptcha\""}
 typing-extensions = {version = ">=4.12.2,<5.0.0", markers = "python_version < \"3.12\""}
-tzdata = ">=2025.3"
 w3lib = ">=2.4.1"
 
 [package.extras]
-recaptcha = ["SpeechRecognition (>=3.15.1)", "pydub-ng (>=0.2.0)"]
+recaptcha = ["SpeechRecognition (>=3.15.2)", "pydub-ng (>=0.2.0)"]
 
 [[package]]
 name = "pluggy"
@@ -4457,20 +4437,22 @@ tests = ["coverage[toml] (==7.10.7)", "pytest (>=8.4.2,<9.0.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.22.3"
+version = "1.23.0"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "pylacus-1.22.3-py3-none-any.whl", hash = "sha256:d66e1d42979a28e15817b233b4866bdff0e7117f06f9c7659aae7984dd8bc5a9"},
-    {file = "pylacus-1.22.3.tar.gz", hash = "sha256:ee559685f650bb40ce2051ab59a8d69efe61a9b0a845f43cccdf5613543599ef"},
+    {file = "pylacus-1.23.0-py3-none-any.whl", hash = "sha256:4a5fabc1432d27295f5b74e96e35d70bba65f4da87992293cce2b6cfd78cc412"},
+    {file = "pylacus-1.23.0.tar.gz", hash = "sha256:0864e9d233b08dcf591c67a4fb1f816d600f375bdff55779d692373f126427cc"},
 ]
 
 [package.dependencies]
 deprecated = {version = ">=1.3.1,<2.0.0", markers = "python_version < \"3.13\""}
 lookyloo-models = ">=0.1.2,<0.2.0"
-requests = ">=2.32.5"
+pydantic = ">=2.12.5,<3.0.0"
+requests = ">=2.33.0"
+urllib3 = ">=2.6.3,<3.0.0"
 
 [package.extras]
 docs = ["Sphinx (>=9.1.0) ; python_version >= \"3.12\""]
@@ -4498,20 +4480,20 @@ examples = ["pylacus (>=1.22.3)"]
 
 [[package]]
 name = "pylookyloomonitoring"
-version = "1.3.3"
+version = "1.3.4"
 description = "Python API to connect to lookyloo monitoring"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "pylookyloomonitoring-1.3.3-py3-none-any.whl", hash = "sha256:d7ca855838af40cb7020305a80f5d5ade2ea1a4c35a83448cc3ad9f3826a6a8f"},
-    {file = "pylookyloomonitoring-1.3.3.tar.gz", hash = "sha256:f8b7771c78afdb28fd67fa442d1b8914292644ddd07a2fa1a2ef955e8baa8273"},
+    {file = "pylookyloomonitoring-1.3.4-py3-none-any.whl", hash = "sha256:018c41b9b2e959869f0cdc06fb21f01a79d94e9aa710b9320bcad60f7ed362d6"},
+    {file = "pylookyloomonitoring-1.3.4.tar.gz", hash = "sha256:07c4e31c764e819325a2d719a44bc85e704c08592b344167ec81bbc15bb68184"},
 ]
 
 [package.dependencies]
-dateparser = ">=1.3.0"
-lookyloo-models = ">=0.1.0,<0.2.0"
-requests = ">=2.32.5"
+dateparser = ">=1.4.0"
+lookyloo-models = ">=0.1.7,<0.2.0"
+requests = ">=2.33.0"
 
 [package.extras]
 docs = ["Sphinx (>=9.1.0) ; python_version >= \"3.12\""]
@@ -5392,27 +5374,6 @@ files = [
 test = ["pytest"]
 
 [[package]]
-name = "setuptools"
-version = "82.0.1"
-description = "Most extensible Python build backend with support for C/C++ extension modules"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "setuptools-82.0.1-py3-none-any.whl", hash = "sha256:a59e362652f08dcd477c78bb6e7bd9d80a7995bc73ce773050228a348ce2e5bb"},
-    {file = "setuptools-82.0.1.tar.gz", hash = "sha256:7d872682c5d01cfde07da7bccc7b65469d3dca203318515ada1de5eda35efbf9"},
-]
-
-[package.extras]
-check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\"", "ruff (>=0.13.0) ; sys_platform != \"cygwin\""]
-core = ["importlib_metadata (>=6) ; python_version < \"3.10\"", "jaraco.functools (>=4)", "jaraco.text (>=3.7)", "more_itertools", "more_itertools (>=8.8)", "packaging (>=24.2)", "tomli (>=2.0.1) ; python_version < \"3.11\"", "wheel (>=0.43.0)"]
-cover = ["pytest-cov"]
-doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
-enabler = ["pytest-enabler (>=2.2)"]
-test = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21) ; python_version >= \"3.9\" and sys_platform != \"cygwin\"", "jaraco.envs (>=2.2)", "jaraco.path (>=3.7.2)", "jaraco.test (>=5.5)", "packaging (>=24.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.*)", "pytest-home (>=0.5)", "pytest-perf ; sys_platform != \"cygwin\"", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel (>=0.44.0)"]
-type = ["importlib_metadata (>=7.0.2) ; python_version < \"3.10\"", "jaraco.develop (>=7.21) ; sys_platform != \"cygwin\"", "mypy (==1.18.*)", "pytest-mypy"]
-
-[[package]]
 name = "simple-websocket"
 version = "1.1.0"
 description = "Simple WebSocket server and client for Python"
@@ -5875,6 +5836,7 @@ description = "Provider of IANA time zone data"
 optional = false
 python-versions = ">=2"
 groups = ["main"]
+markers = "platform_system == \"Windows\""
 files = [
     {file = "tzdata-2025.3-py2.py3-none-any.whl", hash = "sha256:06a47e5700f3081aab02b2e513160914ff0694bce9947d6b76ebd6bf57cfc5d1"},
     {file = "tzdata-2025.3.tar.gz", hash = "sha256:de39c2ca5dc7b0344f2eba86f49d614019d29f060fc4ebc8a417896a620b56a7"},
@@ -6374,4 +6336,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "4b1fa22648f2f7e34686ad6f8341f9e8f5351bb4f6312ae4fd8b680c06843ee1"
+content-hash = "41c20efed14e331dc17726dec3f72e17d97894fe5ccf6b7ed2d213a12f2b372a"
