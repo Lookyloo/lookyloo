@@ -294,7 +294,7 @@ class Archiver(AbstractManager):
                 self.logger.warning('Shutdown requested, breaking.')
                 break
             # Updating the indexes can take a while, just run this call randomly on directories
-            if random.randrange(10) == 0:
+            if random.randint(0, 2):
                 continue
             year = directory_to_index.parent.name
             if self.archive_on_s3fs:
@@ -331,7 +331,7 @@ class Archiver(AbstractManager):
             dest_dir.mkdir(parents=True, exist_ok=True)
             (capture_path / 'tree.pickle').unlink(missing_ok=True)
             (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
-            shutil.move(str(capture_path), str(dest_dir))
+            shutil.copytree(str(capture_path), str(dest_dir), copy_function=shutil.copy)
         # Update index in parent
         with (dest_dir / 'index').open('a') as _index:
             index_writer = csv.writer(_index)
