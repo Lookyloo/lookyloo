@@ -331,7 +331,7 @@ class Archiver(AbstractManager):
             dest_dir.mkdir(parents=True, exist_ok=True)
             (capture_path / 'tree.pickle').unlink(missing_ok=True)
             (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
-            shutil.copytree(str(capture_path), str(dest_dir), copy_function=shutil.copy)
+            shutil.move(str(capture_path), str(dest_dir), copy_function=shutil.copy)
         # Update index in parent
         with (dest_dir / 'index').open('a') as _index:
             index_writer = csv.writer(_index)
