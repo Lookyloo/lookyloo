@@ -2241,7 +2241,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
         user = src_request_ip(request)
 
     if request.method == 'POST':
-        if request.form.get('name') or not request.form.get('confirm'):
+        if request.form.get('name'):
             # got a bot.
             app.logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
             return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
