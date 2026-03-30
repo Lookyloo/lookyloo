@@ -79,7 +79,7 @@ mmh3 = "^5.2.1"
 psutil = "^7.2.2"
 flask-talisman = "^1.1.0"
 
-aiohttp = {extras = ["speedups"], version = "^3.13.3"}
+aiohttp = {extras = ["speedups"], version = "^3.13.4"}
 pyail = "^0.0.13"
 mastodon-py = "^2.1.4"
 rfc3161-client = "^1.0.5"
@@ -89,7 +89,7 @@ pyfaup-rs = "^0.4.3"
 pure-magic-rs = "^0.3.2"
 html-to-markdown = "^2.30.0"
 dateparser = "^1.4.0"
-lookyloo-models = "^0.1.8"
+lookyloo-models = "^0.1.9"
 lxml = "^6.0.2"
 playwrightcapture = "^1.38.0"
 cryptography = "^46.0.6"
