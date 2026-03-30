@@ -79,7 +79,7 @@ mmh3 = "^5.2.1"
 psutil = "^7.2.2"
 flask-talisman = "^1.1.0"
 
-aiohttp = {extras = ["speedups"], version = "^3.13.3"}
+aiohttp = {extras = ["speedups"], version = "^3.13.4"}
 pyail = "^0.0.13"
 mastodon-py = "^2.1.4"
 rfc3161-client = "^1.0.5"
