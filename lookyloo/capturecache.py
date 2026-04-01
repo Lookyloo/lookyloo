@@ -7,6 +7,7 @@ import contextlib
 import gzip
 import json
 import logging
+import lzma
 import os
 import pickle
 import pickletools
@@ -242,7 +243,8 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             cc = CaptureCache(cached)
             # NOTE: checking for pickle to exist may be a bad idea here.
             if (cc.capture_dir.exists()
-                    and ((cc.capture_dir / 'tree.pickle.gz').exists()
+                    and ((cc.capture_dir / 'tree.pickle.xz').exists()
+                         or (cc.capture_dir / 'tree.pickle.gz').exists()
                          or (cc.capture_dir / 'tree.pickle').exists())):
                 self.__cache[uuid] = cc
                 return self.__cache[uuid]
@@ -411,18 +413,18 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             # is discarded in the RecursionError above.
             sys.setrecursionlimit(int(default_recursion_limit * 10))
             try:
-                with gzip.open(capture_dir / 'tree.pickle.gz', 'wb') as _p:
+                with lzma.open(capture_dir / 'tree.pickle.xz', 'wb') as _p:
                     _p.write(pickletools.optimize(pickle.dumps(tree, protocol=5)))
             except RecursionError as e:
                 logger.exception('Unable to store pickle.')
                 # unable to use the HAR files, get them out of the way
                 for har_file in har_files:
                     har_file.rename(har_file.with_suffix('.broken'))
-                (capture_dir / 'tree.pickle.gz').unlink(missing_ok=True)
+                (capture_dir / 'tree.pickle.xz').unlink(missing_ok=True)
                 logger.debug(f'Tree too deep, probably a recursive refresh: {e}.')
                 raise NoValidHarFile(f'Tree too deep, probably a recursive refresh: {e}.\n Append /export to the URL to get the files.')
             except Exception:
-                (capture_dir / 'tree.pickle.gz').unlink(missing_ok=True)
+                (capture_dir / 'tree.pickle.xz').unlink(missing_ok=True)
                 logger.exception('Unable to store pickle.')
         finally:
             sys.setrecursionlimit(default_recursion_limit)

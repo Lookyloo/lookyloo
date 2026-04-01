@@ -325,12 +325,14 @@ class Archiver(AbstractManager):
             self.s3fs_client.makedirs(dest_dir_bucket, exist_ok=True)
             (capture_path / 'tree.pickle').unlink(missing_ok=True)
             (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
+            (capture_path / 'tree.pickle.xz').unlink(missing_ok=True)
             self.s3fs_client.put(str(capture_path), dest_dir_bucket, recursive=True)
             shutil.rmtree(str(capture_path))
         else:
             dest_dir.mkdir(parents=True, exist_ok=True)
             (capture_path / 'tree.pickle').unlink(missing_ok=True)
             (capture_path / 'tree.pickle.gz').unlink(missing_ok=True)
+            (capture_path / 'tree.pickle.xz').unlink(missing_ok=True)
             shutil.move(str(capture_path), str(dest_dir), copy_function=shutil.copy)
         # Update index in parent
         with (dest_dir / 'index').open('a') as _index:

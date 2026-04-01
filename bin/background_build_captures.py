@@ -127,7 +127,9 @@ class BackgroundBuildCaptures(AbstractManager):
                     self.logger.warning('Shutdown requested, breaking.')
                     return False
 
-                if ((path / 'tree.pickle.gz').exists() or (path / 'tree.pickle').exists()):
+                if ((path / 'tree.pickle.xz').exists()
+                        or (path / 'tree.pickle.gz').exists()
+                        or (path / 'tree.pickle').exists()):
                     # We already have a pickle file
                     self._auto_trigger(path)
                     continue

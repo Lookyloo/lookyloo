@@ -8,6 +8,7 @@ import gzip
 import hashlib
 import json
 import logging
+import lzma
 import os
 import pickle
 import random
@@ -444,6 +445,11 @@ def get_indexing(full: bool=False) -> Indexing:
 def get_pickle_path(capture_dir: Path | str) -> Path | None:
     if isinstance(capture_dir, str):
         capture_dir = Path(capture_dir)
+
+    pickle_file_xz = capture_dir / 'tree.pickle.xz'
+    if pickle_file_xz.exists():
+        return pickle_file_xz
+
     pickle_file_gz = capture_dir / 'tree.pickle.gz'
     if pickle_file_gz.exists():
         return pickle_file_gz
@@ -467,7 +473,10 @@ def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> C
     tree = None
     try:
         if pickle_path:
-            if pickle_path.suffix == '.gz':
+            if pickle_path.suffix == '.xz':
+                with lzma.open(pickle_path, 'rb') as _pg:
+                    tree = pickle.load(_pg)
+            elif pickle_path.suffix == '.gz':
                 with gzip.open(pickle_path, 'rb') as _pg:
                     tree = pickle.load(_pg)
             else:  # not a GZ pickle
