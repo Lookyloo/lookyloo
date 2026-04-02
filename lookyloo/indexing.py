@@ -140,7 +140,7 @@ class Indexing():
                 return False
 
             if not any((directory / pickle_name).exists()
-                       for pickle_name in ['tree.pickle.gz', 'tree.pickle']):
+                       for pickle_name in ['tree.pickle.xz', 'tree.pickle.gz', 'tree.pickle']):
                 self.logger.info(f'[{uuid_to_index}] No pickle in {directory}, skip.')
                 return False
 
