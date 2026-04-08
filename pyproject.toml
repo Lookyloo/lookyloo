@@ -82,7 +82,7 @@ flask-talisman = "^1.1.0"
 aiohttp = {extras = ["speedups"], version = "^3.13.3"}
 pyail = "^0.0.13"
 mastodon-py = "^2.1.4"
-rfc3161-client = "^1.0.5"
+rfc3161-client = "^1.0.6"
 orjson = "^3.11.7"
 esprima = "^4.0.1"
 pyfaup-rs = "^0.4.3"
