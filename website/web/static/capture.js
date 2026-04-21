@@ -52,6 +52,11 @@ document.getElementById('multipleCaptures').addEventListener('click', function (
 if ( document.getElementById("remote_lacus_name") ){
   document.getElementById("remote_lacus_name").addEventListener("change", function (e) {
     let lacus_name = this.options[this.selectedIndex].value;
+    document.getElementsByName("remote_lacus_settings").forEach(function (element) {
+        element.style.display = 'none';
+    });
+    document.getElementById(`settings_${lacus_name}`).style.display = 'block';
+
     document.getElementsByName("remote_lacus_proxies").forEach(function (element) {
         element.style.display = 'none';
     });

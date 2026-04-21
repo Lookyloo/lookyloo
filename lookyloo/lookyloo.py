@@ -605,6 +605,58 @@ class Lookyloo():
         all_cache.sort(key=operator.attrgetter('timestamp'), reverse=True)
         return all_cache
 
+    def get_lacus_info(self) -> dict[str, dict[str, Any]]:
+        to_return: dict[str, dict[str, Any]] = {}
+        if isinstance(self.lacus, dict):
+            # multiple remote
+            for remote_lacus_name, _lacus in self.lacus.items():
+                if not _lacus.is_up:
+                    self.logger.warning(f'Lacus "{remote_lacus_name}" is not up.')
+                    continue
+                to_return[remote_lacus_name] = {}
+                try:
+                    if proxies := _lacus.proxies():
+                        # We might have other settings in the future.
+                        to_return[remote_lacus_name]['proxies'] = proxies
+                    if devices := _lacus.playwright_devices():
+                        to_return[remote_lacus_name]['devices'] = devices
+                except Exception as e:
+                    # We cannot connect to Lacus, skip it.
+                    self.logger.warning(f'Unable to get infos from Lacus "{remote_lacus_name}": {e}.')
+                    continue
+                try:
+                    # settings is a new feature, it will fail on old versions of lacus
+                    if settings := _lacus.settings():
+                        to_return[remote_lacus_name]['settings'] = settings
+                except Exception as e:
+                    # cannot get settings
+                    self.logger.warning(f'Unable to get settings from Lacus "{remote_lacus_name}": {e}.')
+                    continue
+        elif isinstance(self.lacus, PyLacus):
+            # one, remote
+            to_return['default'] = {}
+            if self.lacus.is_up:
+                try:
+                    if proxies := self.lacus.proxies():
+                        # We might have other settings in the future.
+                        to_return['default']['proxies'] = proxies
+                    if settings := self.lacus.settings():
+                        to_return['default']['settings'] = settings
+                    if devices := self.lacus.playwright_devices():
+                        to_return[remote_lacus_name]['devices'] = devices
+                except Exception as e:
+                    # We cannot connect to Lacus, skip it.
+                    self.logger.warning(f'Unable to get infos from Lacus "default": {e}.')
+            else:
+                self.logger.warning('Lacus "default" is not up.')
+        elif isinstance(self.lacus, LacusCore):
+            # one, local, doesn't expose proxies.
+            to_return['default']['settings'] = self.lacus.settings()
+            to_return['default']['devices'] = self.lacus.playwright_devices()
+        if not to_return:
+            raise ConfigError('Unable to configure any lacus.')
+        return to_return
+
     def capture_ready_to_store(self, capture_uuid: str, /) -> bool:
         lacus_status: CaptureStatusCore | CaptureStatusPy
         try:
@@ -837,6 +889,7 @@ class Lookyloo():
                 allow_tracking=query.allow_tracking,
                 java_script_enabled=query.java_script_enabled,
                 headless=query.headless,
+                remote_headfull=query.remote_headfull,
                 init_script=query.init_script,
                 uuid=query.uuid,
                 final_wait=query.final_wait,
@@ -1421,7 +1474,10 @@ class Lookyloo():
         if success:
             try:
                 markdown = convert(html.getvalue().decode())
-                return True, BytesIO(markdown.encode())
+                if markdown.content:
+                    return True, BytesIO(markdown.content.encode())
+                else:
+                    return False, BytesIO(b"Unable to get markdown content (empty).")
             except Exception as e:
                 logger.warning(f'Unable to convert HTML to MD: {e}')
                 return False, BytesIO()
@@ -1961,7 +2017,7 @@ class Lookyloo():
             return {node.name for node in ct.root_hartree.url_tree.traverse()}
 
     def get_playwright_devices(self) -> dict[str, Any]:
-        """Get the preconfigured devices from Playwright"""
+        """Get the preconfigured devices from Playwright, fallback if pylacus and lacuscore failed"""
         return get_devices()
 
     def get_stats(self, public: bool=True) -> dict[str, list[Any]]:

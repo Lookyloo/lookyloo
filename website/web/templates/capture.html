@@ -2,6 +2,7 @@
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% from "macros.html" import monitoring_form %}
 {% from "macros.html" import notify_form %}
+{% from "macros.html" import lacus_info %}
 {% block title %}Capture{% endblock %}
 
 {% block card %}
@@ -126,6 +127,133 @@
     </div>
     <hr>
     <!-- End of Submission type -->
+
+    <!-- Start Lacus Selection -->
+    <div>
+      <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLacusSelection"
+            aria-expanded="false" aria-controls="collapseLacusSelection">
+        <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
+        <b>Lacus Selection</b>
+        </p>
+      </button>
+      <div class="help-tip" title="Lacus is the capturing interface, this section lists the capabilities available"></div>
+    </div>
+    <div id="collapseLacusselection" class="collapse show">
+      <div class="card card-body">
+        {% if multiple_remote_lacus is none %}
+        <!-- Unable to get lacus information, the capture will be queued and triggered whenever something is available -->
+        <div class="alert alert-warning" role="alert">
+            Unable to connect to a Lacus instance, the platform admin needs to fix it.
+            Any capture submitted now will be triggered as soon as Lacus is back.
+        </div>
+        {% else%}
+          {% if multiple_remote_lacus|length == 1  %}
+          <!-- Only one Lacus available, no need to have a dropdown -->
+          <div class="alert alert-info" role="alert">
+              There is only one Lacus instance available.
+          </div>
+          {% else %}
+          <div class="alert alert-info" role="alert">
+              Multiple Lacus instances available, you can select one below.
+          </div>
+          <!-- Multiple Lacus available -->
+          <div class="row mb-3">
+            <label for="remote_lacus_name" class="col-sm-2 col-form-label">Select the lacus instance to use:</label>
+            <div class="col-sm-10">
+              <select class="form-select" id="remote_lacus_name" name="remote_lacus_name" aria-label="Select the remote lacus instance to use for the capture">
+                {% for name in multiple_remote_lacus %}
+                <option value="{{name}}" {% if name == default_remote_lacus %}selected{% endif %}>{{name}}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          {%endif%}
+          {% for lacus_name, details in multiple_remote_lacus.items()%}
+            <div name="remote_lacus_settings" id="settings_{{lacus_name}}" {%if lacus_name != default_remote_lacus %}style="display: none;"{% endif %}>
+              {% if 'settings' in details %}
+                {{lacus_info(lacus_name, details['settings'])}}
+                <div class="row mb-3">
+                  <label for="headless" class="col-sm-2 col-form-check-label">Browser interface:</label>
+                  <div class="col-sm-10">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" value="headless" id="browser_graphical_mode_headless" name="browser_graphical_mode" aria-describedby="headless_help"
+                        {% if predefined_settings.get('headless', true) is true %}checked{% endif %}>
+                      <div id="headless_help" class="form-text">The browser will be launched in headless mode, you cannot interact with the browser and it uses the default instrumentation.</div>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" value="headfull" id="browser_graphical_mode_headfull" name="browser_graphical_mode" aria-describedby="headfull_help"
+                        {% if not details['settings']['headed_allowed'] %}disabled
+                        {% elif predefined_settings.get('headless') is false %}checked
+                        {%endif%}
+                        >
+                      <div id="headfull_help" class="form-text">
+                          {% if not details['settings']['headed_allowed'] %}<b>[Disabled]</b>{%endif%}
+                          The browser will be launched headed and you can interact with the page for some time, Lacus is installed somewhere with a graphical interface.
+                      </div>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" value="remote_headfull" id="browser_graphical_mode_remote_headfull" name="browser_graphical_mode" aria-describedby="remote_headfull_help"
+                        {% if not details['settings']['remote_headed_allowed'] %}disabled
+                        {% elif predefined_settings.get('remote_headfull') is true %}checked
+                        {% endif %}
+                        >
+                      <div id="remote_headfull_help" class="form-text">
+                        {% if not details['settings']['remote_headed_allowed'] %}<b>[Disabled]</b>{%endif%}
+                        The browser will be launched headed in a remote X server and you can interact with the capture via an URL you'll receive once it is triggered.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {%else%}
+                <div class="alert alert-warning" role="alert">
+                  Old Lacus instance, unable to get capabilities.
+                </div>
+              {% endif %}
+            </div>
+
+            <div name="remote_lacus_proxies" id="proxies_{{lacus_name}}"
+                  {%if lacus_name != default_remote_lacus %}style="display: none;"{% endif %}>
+              <div class="row mb-3">
+                <label for="remote_lacus_proxy_name_{{lacus_name}}" class="col-sm-2 col-form-label">Select the proxy to use on that lacus instance:</label>
+                {%if 'proxies' in details %}
+                  <div class="col-sm-4">
+                    <select class="form-select" id="remote_lacus_proxy_name_{{lacus_name}}" name="remote_lacus_proxy_name" aria-label="The name of the proxy.">
+                      <option value="" selected>No pre-defined Proxy</option>
+                      {% for proxy_name in details['proxies'].keys() %}
+                      <option value="{{proxy_name}}">{{proxy_name}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div name="proxy_details" id="{{lacus_name}}_no_proxy_details" class="col-sm-6">
+                      No predefined proxy selected.
+                  </div>
+                  {% for proxy_name, proxy_details in details['proxies'].items() %}
+                  <div name="proxy_details" id="{{lacus_name}}_{{proxy_name}}_details" class="col-sm-6" style="display: none;">
+                      <div class="card">
+                        <div class="card-body">
+                          <h5 class="card-title">{{ proxy_details['description']}}</h5>
+                          <p class="card-text">
+                            {%for key, value in proxy_details['meta'].items() %}
+                            <b>{{key}}:</b> {{ value }}<br>
+                            {%endfor%}
+                        </div>
+                      </div>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                <div class="col-sm-6">
+                  No predefined proxies for that Lacus instance.
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <hr>
+
+    <!-- End Lacus Selection -->
 
     <div>
       <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfigBrowser"
@@ -315,70 +443,6 @@
             </div>
           </div>
         </div>
-
-        {% if headed_allowed %}
-        <div class="row mb-3">
-          <label for="headless" class="col-sm-2 col-form-check-label">Use headless browser:</label>
-          <div class="col-sm-10">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="headless" name="headless" aria-describedby="headless_help"
-                {% if predefined_settings.get('headless', true) is true %}checked="checked"{% endif %}>
-              <div id="headless_help" class="form-text">If disabled, the browser will be launched headed and you can interact with the page for some time.</div>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-        {% if multiple_remote_lacus %}
-        <div class="row mb-3">
-          <label for="remote_lacus_name" class="col-sm-2 col-form-label">Select the lacus instance to use:</label>
-          <div class="col-sm-10">
-            <select class="form-select" id="remote_lacus_name" name="remote_lacus_name" aria-label="Select the remote lacus instance to use for the capture">
-              {% for name in multiple_remote_lacus %}
-              <option value="{{name}}" {% if name == default_remote_lacus %}selected{% endif %}>{{name}}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
-          {% for lacus_name, details in multiple_remote_lacus.items()%}
-            <div name="remote_lacus_proxies" id="proxies_{{lacus_name}}"
-                {%if lacus_name != default_remote_lacus %}style="display: none;"{% endif %}>
-              <div class="row mb-3">
-                <label for="remote_lacus_proxy_name_{{lacus_name}}" class="col-sm-2 col-form-label">Select the proxy to use on that lacus instance:</label>
-                {%if 'proxies' in details %}
-                <div class="col-sm-4">
-                  <select class="form-select" id="remote_lacus_proxy_name_{{lacus_name}}" name="remote_lacus_proxy_name" aria-label="The name of the proxy.">
-                    <option value="" selected>No pre-defined Proxy</option>
-                    {% for proxy_name in details['proxies'].keys() %}
-                    <option value="{{proxy_name}}">{{proxy_name}}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                <div name="proxy_details" id="{{lacus_name}}_no_proxy_details" class="col-sm-6">
-                    No predefined proxy selected.
-                </div>
-                {% for proxy_name, proxy_details in details['proxies'].items() %}
-                <div name="proxy_details" id="{{lacus_name}}_{{proxy_name}}_details" class="col-sm-6" style="display: none;">
-                    <div class="card">
-                      <div class="card-body">
-                        <h5 class="card-title">{{ proxy_details['description']}}</h5>
-                        <p class="card-text">
-                          {%for key, value in proxy_details['meta'].items() %}
-                          <b>{{key}}:</b> {{ value }}<br>
-                          {%endfor%}
-                      </div>
-                    </div>
-                </div>
-                {% endfor %}
-                {% else %}
-                <div class="col-sm-6">
-                  No predefined proxies for that Lacus instance.
-                </div>
-                {% endif %}
-              </div>
-            </div>
-          {% endfor %}
-        {%endif%}
 
         {% if not has_global_proxy %}
         <div class="row mb-3" id="user_defined_proxy">

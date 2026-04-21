@@ -17,6 +17,11 @@
     Please wait...
   </b>
 
+
+  {%if remote_headed_session and remote_headed_session.get('raw_status') == 1%}
+  <a href="{{remote_headed_session.get('view_url')}}" target="_blank">Open interactive capture</a>
+  {%endif%}
+
   </center>
 
 

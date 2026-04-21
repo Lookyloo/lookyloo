@@ -57,8 +57,6 @@ from lookyloo.helpers import (UserAgents,
                               get_taxonomies,
                               mimetype_to_generic,
                               )
-from pylacus import PyLacus
-
 from zoneinfo import available_timezones
 
 from .genericapi import api as generic_api
@@ -1706,7 +1704,15 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                 # If CaptureStatus.DONE, the capture finished between the query to the cache and
                 # the request for a status. Give it an extra few seconds.
                 message = "The capture is ongoing."
-            return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid)
+
+            remote_headed_session = {}
+            if capture_settings := lookyloo.get_capture_settings(tree_uuid):
+                print(capture_settings)
+                if capture_settings.remote_headfull:
+                    # get the URL
+                    remote_headed_session = lookyloo.lacus[capture_settings.remote_lacus_name].get_remote_headed_session(tree_uuid)
+
+            return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid, remote_headed_session=remote_headed_session)
     except LacusUnreachable:
         message = "Unable to connect to the Lacus backend, the capture will start as soon as the administrator wakes up."
         return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid)
@@ -2065,38 +2071,23 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
             tt_enabled_default = tt_settings.get('enable_default', False)
 
     try:
-        if isinstance(lookyloo.lacus, dict):
-            multiple_remote_lacus = {}
-            for remote_lacus_name, _lacus in lookyloo.lacus.items():
-                if not _lacus.is_up:
-                    app.logger.warning(f'Lacus "{remote_lacus_name}" is not up.')
-                    continue
-                multiple_remote_lacus[remote_lacus_name] = {}
-                try:
-                    if proxies := _lacus.proxies():
-                        # We might have other settings in the future.
-                        multiple_remote_lacus[remote_lacus_name]['proxies'] = proxies
-                except Exception as e:
-                    # We cannot connect to Lacus, skip it.
-                    app.logger.warning(f'Unable to get proxies from Lacus "{remote_lacus_name}": {e}.')
-                    continue
-
+        multiple_remote_lacus = lookyloo.get_lacus_info()
+        # NOTE: if multiple_remote_lacus is false (empty), an exception has been raised.
+        if len(multiple_remote_lacus) == 1:
+            default_remote_lacus = set(multiple_remote_lacus.keys())[0]
+        else:
             default_remote_lacus = get_config('generic', 'multiple_remote_lacus').get('default')
-        elif isinstance(lookyloo.lacus, PyLacus):
-            if not lookyloo.lacus.is_up:
-                app.logger.warning('Remote Lacus is not up.')
-            else:
-                multiple_remote_lacus = {'default': {}}
-                try:
-                    if proxies := lookyloo.lacus.proxies():
-                        # We might have other settings in the future.
-                        multiple_remote_lacus['default']['proxies'] = proxies
-                except Exception as e:
-                    app.logger.warning(f'Unable to get proxies from Lacus: {e}.')
-            default_remote_lacus = 'default'
+
     except ConfigError as e:
-        app.logger.warning(f'Unable to get remote lacus settings: {e}.')
+        app.logger.warning(f'Unable to get lacus settings: {e}.')
         flash('The capturing system is down, you can enqueue a capture and it will start ASAP.', 'error')
+
+    if multiple_remote_lacus is None:
+        # NOTE: Used as a fallback in case we cannot get anything from PyLacus/LacusCore
+        devices = lookyloo.get_playwright_devices()
+    else:
+        # FIXME: needs a bit more work
+        devices = lookyloo.get_playwright_devices()
 
     # NOTE: Inform user if none of the remote lacuses are up?
     enable_monitoring, monitoring_collections, monitoring_settings = prepare_monitoring()
@@ -2105,7 +2096,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            personal_ua=user_ua,
                            default_public=get_config('generic', 'default_public'),
                            public_domain=lookyloo.public_domain,
-                           devices=lookyloo.get_playwright_devices(),
+                           devices=devices,
                            predefined_settings=predefined_settings if predefined_settings else {},
                            user_config=user_config,
                            show_project_page=get_config('generic', 'show_project_page'),
@@ -2285,11 +2276,24 @@ def capture_web() -> str | Response | WerkzeugResponse:
             capture_query['viewport'] = {'width': int(request.form.get('width', 1280)),
                                          'height': int(request.form.get('height', 720))}
 
-        if lookyloo.headed_allowed:
-            capture_query['headless'] = True if request.form.get('headless') else False
+        capture_query['remote_lacus_name'] = request.form.get('remote_lacus_name')
+        # default to headless
+        capture_query['headless'] = True
+        multiple_remote_lacus = lookyloo.get_lacus_info()
+        remote_lacus_info = multiple_remote_lacus[capture_query.get('remote_lacus_name', 'default')]
+        # depending on the setting and the config lacus side, pass the browser graphical mode.
+        if browser_graphical_mode := request.form.get('browser_graphical_mode'):
+            if remote_lacus_info['settings']['headed_allowed'] and browser_graphical_mode == "headfull":
+                capture_query['headless'] = False
+            elif remote_lacus_info['settings']['remote_headed_allowed'] and browser_graphical_mode == "remote_headfull":
+                capture_query['remote_headfull'] = True
+                capture_query['headless'] = False
 
         if request.form.get('general_timeout_in_sec'):
             capture_query['general_timeout_in_sec'] = request.form['general_timeout_in_sec']
+        elif capture_query['headless'] is False or capture_query.get('remote_headfull') is True:
+            # force a long-ish capture time for interactive captures.
+            capture_query['general_timeout_in_sec'] = 90
 
         if request.form.get('final_wait'):
             capture_query['final_wait'] = request.form['final_wait']
@@ -2326,7 +2330,6 @@ def capture_web() -> str | Response | WerkzeugResponse:
         if request.form.get('categories'):
             capture_query['categories'] = request.form.getlist('categories')
 
-        capture_query['remote_lacus_name'] = request.form.get('remote_lacus_name')
         if _p_name := [n for n in request.form.getlist('remote_lacus_proxy_name') if n]:
             capture_query['proxy'] = _p_name[0]
         elif request.form.get('proxy'):
