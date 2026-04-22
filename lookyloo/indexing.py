@@ -157,6 +157,9 @@ class Indexing():
             new_entries = ['original_url']
             for entry in new_entries:
                 if not hasattr(ct.root_hartree.url_tree, entry):
+                    if ct.root_hartree.url_tree.file_on_disk:
+                        # 2026-04-22: if the capture is a file, we don't have an original_url
+                        continue
                     if force or not (indexed.count(False) == 1 and indexed.domains is False):
                         remove_pickle_tree(directory)
                     return False
