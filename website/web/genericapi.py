@@ -21,7 +21,7 @@ from flask_restx import Namespace, Resource, fields, abort  # type: ignore[impor
 from werkzeug.security import check_password_hash
 
 from lacuscore import CaptureStatus as CaptureStatusCore, LacusCore
-from pylacus import CaptureStatus as CaptureStatusPy, PyLacus
+from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo_models import CaptureSettingsError
 from lookyloo.comparator import Comparator
 from lookyloo import Lookyloo
@@ -628,19 +628,6 @@ class Devices(Resource):  # type: ignore[misc]
         return make_response(lookyloo.get_playwright_devices())
 
 
-def _prepare_lacus_details(lacus: PyLacus, name: str) -> dict[str, Any]:
-    if not lacus.is_up:
-        return {'name': name, 'is_up': False}
-    to_return = {'name': name, 'is_up': True}
-
-    try:
-        if proxies := lacus.proxies():
-            to_return['proxies'] = proxies
-    except Exception as e:
-        api.logger.error(f'Unable to get proxies from Lacus: {e}')
-    return to_return
-
-
 @api.route('/json/remote_lacuses')
 @api.doc(description='Get the list of lacus instances pre-configured on the platform')
 class RemoteLacuses(Resource):  # type: ignore[misc]
@@ -648,11 +635,11 @@ class RemoteLacuses(Resource):  # type: ignore[misc]
     def get(self) -> Response:
         if isinstance(lookyloo.lacus, LacusCore):
             return make_response({'error': 'Lacus is not configured to use remote Lacus instances.'}, 400)
-        if isinstance(lookyloo.lacus, PyLacus):
-            # only one lacus instance
-            return make_response(_prepare_lacus_details(lookyloo.lacus, 'default'))
 
-        to_return = [_prepare_lacus_details(lacus, name) for name, lacus in lookyloo.lacus.items()]
+        to_return = []
+        for name, info in lookyloo.get_lacus_info().items():
+            info['name'] = name
+            to_return.append(info)
 
         return make_response(to_return)
 

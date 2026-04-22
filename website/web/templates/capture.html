@@ -138,7 +138,7 @@
       </button>
       <div class="help-tip" title="Lacus is the capturing interface, this section lists the capabilities available"></div>
     </div>
-    <div id="collapseLacusselection" class="collapse show">
+    <div id="collapseLacusSelection" class="collapse">
       <div class="card card-body">
         {% if multiple_remote_lacus is none %}
         <!-- Unable to get lacus information, the capture will be queued and triggered whenever something is available -->
@@ -178,7 +178,9 @@
                     <div class="form-check">
                       <input class="form-check-input" type="radio" value="headless" id="browser_graphical_mode_headless" name="browser_graphical_mode" aria-describedby="headless_help"
                         {% if predefined_settings.get('headless', true) is true %}checked{% endif %}>
-                      <div id="headless_help" class="form-text">The browser will be launched in headless mode, you cannot interact with the browser and it uses the default instrumentation.</div>
+                      <div id="headless_help" class="form-text">
+                          <b>Headless</b>: no interaction with the browser and default instrumentation.
+                      </div>
                     </div>
                     <div class="form-check">
                       <input class="form-check-input" type="radio" value="headfull" id="browser_graphical_mode_headfull" name="browser_graphical_mode" aria-describedby="headfull_help"
@@ -188,7 +190,7 @@
                         >
                       <div id="headfull_help" class="form-text">
                           {% if not details['settings']['headed_allowed'] %}<b>[Disabled]</b>{%endif%}
-                          The browser will be launched headed and you can interact with the page for some time, Lacus is installed somewhere with a graphical interface.
+                          <b>Headfull</b>: a browser window will appear shortly after the capture is launched.
                       </div>
                     </div>
                     <div class="form-check">
@@ -199,7 +201,7 @@
                         >
                       <div id="remote_headfull_help" class="form-text">
                         {% if not details['settings']['remote_headed_allowed'] %}<b>[Disabled]</b>{%endif%}
-                        The browser will be launched headed in a remote X server and you can interact with the capture via an URL you'll receive once it is triggered.
+                        <b>Headfull (in a remote X server)</b>: click on the link in the page shown after the capture is launched.
                       </div>
                     </div>
                   </div>

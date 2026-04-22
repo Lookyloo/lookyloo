@@ -610,10 +610,12 @@ class Lookyloo():
         if isinstance(self.lacus, dict):
             # multiple remote
             for remote_lacus_name, _lacus in self.lacus.items():
+                to_return[remote_lacus_name] = {}
                 if not _lacus.is_up:
                     self.logger.warning(f'Lacus "{remote_lacus_name}" is not up.')
+                    to_return[remote_lacus_name]['is_up'] = False
                     continue
-                to_return[remote_lacus_name] = {}
+                to_return[remote_lacus_name]['is_up'] = True
                 try:
                     if proxies := _lacus.proxies():
                         # We might have other settings in the future.
