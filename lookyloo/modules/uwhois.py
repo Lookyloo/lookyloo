@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 # NOTE: Direct TCP connection, no proxy
 
+
 class UniversalWhois(AbstractModule):
 
     def module_init(self) -> bool:
@@ -48,7 +49,9 @@ class UniversalWhois(AbstractModule):
             cname: str
             for cname in hostnode.cnames:
                 self.whois(cname, contact_email_only=False)
-        self.whois(hostnode.name, contact_email_only=False)
+        if not hostnode.name.startswith('/'):
+            # otherwise, it was most probably a file capture.
+            self.whois(hostnode.name, contact_email_only=False)
 
     def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool,
                                 auto_trigger: bool, as_admin: bool) -> dict[str, str]:
