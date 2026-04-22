@@ -2280,7 +2280,11 @@ def capture_web() -> str | Response | WerkzeugResponse:
         # default to headless
         capture_query['headless'] = True
         multiple_remote_lacus = lookyloo.get_lacus_info()
-        remote_lacus_info = multiple_remote_lacus[capture_query.get('remote_lacus_name', 'default')]
+        remote_lacus_name = 'default'
+        if rln := capture_query.get('remote_lacus_name', 'default'):
+            # the setting might be exist, but be None. We don't want that.
+            remote_lacus_name = rln
+        remote_lacus_info = multiple_remote_lacus[remote_lacus_name]
         # depending on the setting and the config lacus side, pass the browser graphical mode.
         if browser_graphical_mode := request.form.get('browser_graphical_mode'):
             if remote_lacus_info['settings']['headed_allowed'] and browser_graphical_mode == "headfull":
