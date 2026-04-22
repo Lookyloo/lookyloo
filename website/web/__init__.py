@@ -57,6 +57,7 @@ from lookyloo.helpers import (UserAgents,
                               get_taxonomies,
                               mimetype_to_generic,
                               )
+from pylacus import RemoteHeadedSessionResponse
 from zoneinfo import available_timezones
 
 from .genericapi import api as generic_api
@@ -1705,10 +1706,9 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                 # the request for a status. Give it an extra few seconds.
                 message = "The capture is ongoing."
 
-            remote_headed_session = {}
+            remote_headed_session: RemoteHeadedSessionResponse = {}
             if capture_settings := lookyloo.get_capture_settings(tree_uuid):
-                print(capture_settings)
-                if capture_settings.remote_headfull:
+                if isinstance(lookyloo.lacus, dict) and capture_settings.remote_headfull and capture_settings.remote_lacus_name:
                     # get the URL
                     remote_headed_session = lookyloo.lacus[capture_settings.remote_lacus_name].get_remote_headed_session(tree_uuid)
 
@@ -2074,7 +2074,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
         multiple_remote_lacus = lookyloo.get_lacus_info()
         # NOTE: if multiple_remote_lacus is false (empty), an exception has been raised.
         if len(multiple_remote_lacus) == 1:
-            default_remote_lacus = set(multiple_remote_lacus.keys())[0]
+            default_remote_lacus = list(multiple_remote_lacus.keys())[0]
         else:
             default_remote_lacus = get_config('generic', 'multiple_remote_lacus').get('default')
 

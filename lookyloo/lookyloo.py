@@ -208,13 +208,14 @@ class Lookyloo():
         return lacus
 
     @cached_property
-    def lacus(self) -> PyLacus | LacusCore | dict[str, PyLacus]:
+    def lacus(self) -> LacusCore | dict[str, PyLacus]:
         has_remote_lacus = False
-        self._lacus: PyLacus | LacusCore | dict[str, PyLacus]
+        self._lacus: LacusCore | dict[str, PyLacus]
         if get_config('generic', 'remote_lacus'):
+            self._lacus = {}
             remote_lacus_config = get_config('generic', 'remote_lacus')
             if remote_lacus_config.get('enable'):
-                self._lacus = self.__enable_remote_lacus(remote_lacus_config.get('url'))
+                self._lacus['default'] = self.__enable_remote_lacus(remote_lacus_config.get('url'))
                 has_remote_lacus = True
 
         if remote_lacus_config := get_config('generic', 'multiple_remote_lacus'):
