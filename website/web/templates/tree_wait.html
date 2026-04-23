@@ -22,7 +22,9 @@
     <br>
     {% if remote_headed_session.get('raw_status') == 1%}
       <a href="{{remote_headed_session.get('view_url')}}" target="_blank">Open interactive capture</a>
-    {% else %}
+    {% elif remote_headed_session.get('raw_status') in [2, 3, 4] %}
+      The capture terminated, please wait a little bit longer for the tree to be generated.
+    {% elif remote_headed_session.get('raw_status') in [-1, 0, 5] %}
       The URL to access the remote headed session isn't available yet.
     {%endif%}
   {%endif%}

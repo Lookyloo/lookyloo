@@ -860,16 +860,16 @@ class Lookyloo():
         lacus: LacusCore | PyLacus
         if isinstance(self.lacus, dict):
             # Multiple remote lacus enabled, we need a name to identify the lacus
-            if query.remote_lacus_name is None:
-                if len(self.lacus) == 1:
-                    # only one remote lacus, pick that.
-                    lacus = list(self.lacus.values())[0]
-                else:
-                    query.remote_lacus_name = get_config('generic', 'multiple_remote_lacus').get('default')
-                    lacus = self.lacus[query.remote_lacus_name]
+            if query.remote_lacus_name and self.lacus.get(query.remote_lacus_name):
+                lacus = self.lacus[query.remote_lacus_name]
+            elif len(self.lacus) == 1:
+                # only one remote lacus, pick that.
+                lacus = list(self.lacus.values())[0]
             else:
+                query.remote_lacus_name = get_config('generic', 'multiple_remote_lacus').get('default')
                 lacus = self.lacus[query.remote_lacus_name]
         else:
+            # Should be a LacusCore
             lacus = self.lacus
         try:
             perma_uuid = lacus.enqueue(
