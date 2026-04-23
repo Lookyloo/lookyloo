@@ -1894,36 +1894,27 @@ files = [
 
 [[package]]
 name = "html-to-markdown"
-version = "3.2.6"
+version = "3.3.2"
 description = "High-performance HTML to Markdown converter"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "html_to_markdown-3.2.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c7a34ad75a10ac18ccbb341bcfeb1aecebf1505971b3acbc8b6fe2c1378d4b28"},
-    {file = "html_to_markdown-3.2.6-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:f066f8bfa6efdefe8ae88cce3b9d19033f91ad2f3d2b0b46c380fcc2bf467d30"},
-    {file = "html_to_markdown-3.2.6-cp310-cp310-win_amd64.whl", hash = "sha256:b8c63e3768ac72c91c89dafababea65bf0696dfadcc0b0549e1a7cd92603d043"},
-    {file = "html_to_markdown-3.2.6-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:57b09cc7102cd8c29d5ab403af404c92ae4cfc03a88ac4c527a2a93f7d3ef0a9"},
-    {file = "html_to_markdown-3.2.6-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:a7667cd44a836b64833b8803e486d66473cca8bd3487d93cee3f8f81a37a64a2"},
-    {file = "html_to_markdown-3.2.6-cp311-cp311-win_amd64.whl", hash = "sha256:ce64e025c1696664cd300f9077dfca10a282aeb0b83c793356e127252a21583d"},
-    {file = "html_to_markdown-3.2.6-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:9832b9afca4eef0e2270ca6b672c5cc8d743a278b9c54ad2a2d19d3f5796a729"},
-    {file = "html_to_markdown-3.2.6-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:9e7e934e5e4caaf19bd399068d8435e127aec557e040ba78c8faaed79e9ce51e"},
-    {file = "html_to_markdown-3.2.6-cp312-cp312-win_amd64.whl", hash = "sha256:54e1e2b30c428b2f1eb9f5b3443ee14127dc71a5f625402d0bf750e37a853b8b"},
-    {file = "html_to_markdown-3.2.6-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:7c3c2365f074d08d08a4f368d0ca5a5887bccae5b6104ac37c66c24d61f3e571"},
-    {file = "html_to_markdown-3.2.6-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:f8fcc36e1bbec4da7dc25fe690c23de45f813c1867ca37f34f3276551324e1e8"},
-    {file = "html_to_markdown-3.2.6-cp313-cp313-win_amd64.whl", hash = "sha256:4b32d8287abc1eefb1aa27d6eebbb8a50b4b2bc33411dec1ef71075bb898e5c2"},
+    {file = "html_to_markdown-3.3.2-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:4d733a4d554017b5d4d69ba6db6855208902abea5058d445d5b4fe9a78902f16"},
+    {file = "html_to_markdown-3.3.2-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:48b43bcd87cb1615cf34e94569a2c8ba2d56c76f15aa4dcc1f3f20180183ed69"},
+    {file = "html_to_markdown-3.3.2-cp310-abi3-win_amd64.whl", hash = "sha256:10ad565f427c3aa4f2b66bb6cb548302d8b221256b1517aa94ea1d5864a0777f"},
 ]
 
 [[package]]
 name = "idna"
-version = "3.12"
+version = "3.13"
 description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "idna-3.12-py3-none-any.whl", hash = "sha256:60ffaa1858fac94c9c124728c24fcde8160f3fb4a7f79aa8cdd33a9d1af60a67"},
-    {file = "idna-3.12.tar.gz", hash = "sha256:724e9952cc9e2bd7550ea784adb098d837ab5267ef67a1ab9cf7846bdbdd8254"},
+    {file = "idna-3.13-py3-none-any.whl", hash = "sha256:892ea0cde124a99ce773decba204c5552b69c3c67ffd5f232eb7696135bc8bb3"},
+    {file = "idna-3.13.tar.gz", hash = "sha256:585ea8fe5d69b9181ec1afba340451fba6ba764af97026f92a91d4eef164a242"},
 ]
 
 [package.extras]
@@ -2340,14 +2331,14 @@ files = [
 
 [[package]]
 name = "lookyloo-models"
-version = "0.2.2"
+version = "0.2.3"
 description = "All the Pydantic models used across Lookyloo"
 optional = false
 python-versions = "<4,>=3.10"
 groups = ["main"]
 files = [
-    {file = "lookyloo_models-0.2.2-py3-none-any.whl", hash = "sha256:a907eae1db0ee04e36352f76ad3a621c8766de7e3b8a0f769889298c998da73b"},
-    {file = "lookyloo_models-0.2.2.tar.gz", hash = "sha256:57d4c43a9b36d25cda01eb1b6b822f77d4f9c7505c4b5ebe3be80e4b71d95d2a"},
+    {file = "lookyloo_models-0.2.3-py3-none-any.whl", hash = "sha256:6db03aeb090de0b009f1f4d9d4cb312f5cee8c45f197160910ed79f12e872810"},
+    {file = "lookyloo_models-0.2.3.tar.gz", hash = "sha256:fee468b5e7725cd6194e6e8da06fe2c80d0764a7ac3f0c53405f9bd25345064a"},
 ]
 
 [package.dependencies]
@@ -3279,21 +3270,20 @@ files = [
 
 [[package]]
 name = "pathspec"
-version = "1.0.4"
+version = "1.1.0"
 description = "Utility library for gitignore style pattern matching of file paths."
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "pathspec-1.0.4-py3-none-any.whl", hash = "sha256:fb6ae2fd4e7c921a165808a552060e722767cfa526f99ca5156ed2ce45a5c723"},
-    {file = "pathspec-1.0.4.tar.gz", hash = "sha256:0210e2ae8a21a9137c0d470578cb0e595af87edaa6ebf12ff176f14a02e0e645"},
+    {file = "pathspec-1.1.0-py3-none-any.whl", hash = "sha256:574b128f7456bd899045ccd142dd446af7e6cfd0072d63ad73fbc55fbb4aaa42"},
+    {file = "pathspec-1.1.0.tar.gz", hash = "sha256:f5d7c555da02fd8dde3e4a2354b6aba817a89112fa8f333f7917a2a4834dd080"},
 ]
 
 [package.extras]
 hyperscan = ["hyperscan (>=0.7)"]
 optional = ["typing-extensions (>=4)"]
 re2 = ["google-re2 (>=1.1)"]
-tests = ["pytest (>=9)", "typing-extensions (>=4.15)"]
 
 [[package]]
 name = "pillow"
@@ -6314,4 +6304,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "72c8807d90c562b5f98d8d23d96c29581a9c16a2ce8f24462fd4f0d0c842830c"
+content-hash = "c47cf17e1699e5f13ed9b2774394579333b86bbe6cb35206797b66fd3f1d93e1"
