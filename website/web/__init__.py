@@ -1638,7 +1638,7 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
                                                           frequency=frequency,
                                                           collection=collection, expire_at=expire_at,
                                                           never_expire=never_expire,
-                                                          notification={'email': notification_email})
+                                                          notification={'email': notification_email} if notification_email else None)
             if monitoring_uuid:
                 cache.monitor_uuid = monitoring_uuid
                 flash(f"Sent to monitoring ({monitoring_uuid}).", 'success')
@@ -1650,6 +1650,7 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
                 flash("Got no UUID from the monitoring interface.", 'error')
         except Exception as e:
             flash(f"Unable to monitor capture: {e}", 'error')
+            app.logger.exception('Unable to trigger monitoring')
     else:
         flash("Unable to get capture settings, cannot monitor.", 'error')
     return redirect(url_for('tree', tree_uuid=tree_uuid))
@@ -2263,6 +2264,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
             capture_query['user_agent'] = request.form['user_agent']
             capture_query['os'] = request.form['os']
             browser = request.form['browser']
+            print('wb', browser)
             if browser in ['chromium', 'firefox', 'webkit']:
                 # Will be guessed otherwise.
                 capture_query['browser'] = browser

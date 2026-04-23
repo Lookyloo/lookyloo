@@ -867,6 +867,8 @@ class Lookyloo():
                 else:
                     query.remote_lacus_name = get_config('generic', 'multiple_remote_lacus').get('default')
                     lacus = self.lacus[query.remote_lacus_name]
+            else:
+                lacus = self.lacus[query.remote_lacus_name]
         else:
             lacus = self.lacus
         try:
