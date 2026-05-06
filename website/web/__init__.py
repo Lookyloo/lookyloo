@@ -2264,7 +2264,6 @@ def capture_web() -> str | Response | WerkzeugResponse:
             capture_query['user_agent'] = request.form['user_agent']
             capture_query['os'] = request.form['os']
             browser = request.form['browser']
-            print('wb', browser)
             if browser in ['chromium', 'firefox', 'webkit']:
                 # Will be guessed otherwise.
                 capture_query['browser'] = browser
