@@ -4443,26 +4443,26 @@ docs = ["sphinx (>=9.1.0) ; python_version >= \"3.12\""]
 
 [[package]]
 name = "pylookyloo"
-version = "1.39.0"
+version = "1.39.1"
 description = "Python CLI and module for Lookyloo"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "pylookyloo-1.39.0-py3-none-any.whl", hash = "sha256:5a45220f76fca500eb9700b62427c8d95c8152d07cde53677918fd168606e0b8"},
-    {file = "pylookyloo-1.39.0.tar.gz", hash = "sha256:ceb0534785256d4e4c026d3fec71e021095d54c60f8d9c0caa8297c070eeb98a"},
+    {file = "pylookyloo-1.39.1-py3-none-any.whl", hash = "sha256:9141ac4e79624b7b4d447e71336eefaee60747e9d92ccf3117d128ba31a064f8"},
+    {file = "pylookyloo-1.39.1.tar.gz", hash = "sha256:e02019c5126f06ea73abd2da2f01f2266cf763941b44872c9c25bfe134ce9927"},
 ]
 
 [package.dependencies]
 deprecated = {version = ">=1.3.1,<2.0.0", markers = "python_version < \"3.13\""}
-lookyloo-models = ">=0.2.1"
+lookyloo-models = ">=0.2.7"
 pydantic = ">=2.12.5,<3.0.0"
 requests = ">=2.33.1"
 urllib3 = ">=2.6.3,<3.0.0"
 
 [package.extras]
 docs = ["sphinx (>=9.1.0) ; python_version >= \"3.12\""]
-examples = ["pylacus (>=1.24.0)"]
+examples = ["pylacus (>=1.24.4)"]
 
 [[package]]
 name = "pylookyloomonitoring"
@@ -6309,4 +6309,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "747be89fa6cd7848b07a84864fb58becbd1cc2e7bcd39652424cd3d168e34b11"
+content-hash = "410367600bbb5c5b222babe3130d8f8bdd1f5ae095d8eaab8ed2eaf957548f67"

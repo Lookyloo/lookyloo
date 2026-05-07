@@ -173,14 +173,14 @@
               {% if 'settings' in details %}
                 {{lacus_info(lacus_name, details['settings'])}}
                 <div class="row mb-3">
-                  <label for="headless" class="col-sm-2 col-form-check-label">Browser interface:</label>
+                  <div class="col-sm-2 col-form">Browser interface:</div>
                   <div class="col-sm-10">
                     <div class="form-check">
                       <input class="form-check-input" type="radio" value="headless" id="browser_graphical_mode_headless" name="browser_graphical_mode" aria-describedby="headless_help"
                         {% if predefined_settings.get('headless', true) is true %}checked{% endif %}>
-                      <div id="headless_help" class="form-text">
+                      <label id="headless_help" class="form-check-label" for="browser_graphical_mode_headless">
                           <b>Headless</b>: no interaction with the browser and default instrumentation.
-                      </div>
+                      </label>
                     </div>
                     <div class="form-check">
                       <input class="form-check-input" type="radio" value="headfull" id="browser_graphical_mode_headfull" name="browser_graphical_mode" aria-describedby="headfull_help"
@@ -188,10 +188,10 @@
                         {% elif predefined_settings.get('headless') is false %}checked
                         {%endif%}
                         >
-                      <div id="headfull_help" class="form-text">
+                      <label id="headfull_help" class="form-check-label" for="browser_graphical_mode_headfull">
                           {% if not details['settings']['headed_allowed'] %}<b>[Disabled]</b>{%endif%}
                           <b>Headfull</b>: a browser window will appear shortly after the capture is launched.
-                      </div>
+                      </label>
                     </div>
                     <div class="form-check">
                       <input class="form-check-input" type="radio" value="remote_headfull" id="browser_graphical_mode_remote_headfull" name="browser_graphical_mode" aria-describedby="remote_headfull_help"
@@ -199,10 +199,10 @@
                         {% elif predefined_settings.get('remote_headfull') is true %}checked
                         {% endif %}
                         >
-                      <div id="remote_headfull_help" class="form-text">
+                      <label id="remote_headfull_help" class="form-check-label" for="browser_graphical_mode_remote_headfull">
                         {% if not details['settings']['remote_headed_allowed'] %}<b>[Disabled]</b>{%endif%}
                         <b>Headfull (in a remote X server)</b>: click on the link in the page shown after the capture is launched.
-                      </div>
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -417,7 +417,7 @@
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="allow_tracking" name="allow_tracking" aria-describedby="allow_tracking_help"
                 {% if predefined_settings.get('allow_tracking') is true %}checked="checked"{% endif %}>
-              <div id="allow_tracking_help" class="form-text">We'll attempt to click on the button allowing the website captured to violate your privacy.</div>
+              <label id="allow_tracking_help" class="form-check-label" for="allow_tracking">We'll attempt to click on the button allowing the website captured to violate your privacy.</label>
             </div>
           </div>
         </div>
@@ -429,7 +429,7 @@
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="with_trusted_timestamps" name="with_trusted_timestamps" aria-describedby="with_trusted_timestamps_help"
                 {% if predefined_settings.get('with_trusted_timestamps') is true or tt_enabled_default%}checked="checked"{% endif %}>
-              <div id="with_trusted_timestamps_help" class="form-text">Once the capture is done, we trigger a request to get Trusted Timestamps from a pre-defined provider.</div>
+              <label id="with_trusted_timestamps_help" class="form-check-label" for="with_trusted_timestamps">Once the capture is done, we trigger a request to get Trusted Timestamps from a pre-defined provider.</label>
             </div>
           </div>
         </div>
@@ -441,7 +441,7 @@
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="java_script_enabled" name="java_script_enabled" aria-describedby="java_script_enabled_help"
                 {% if predefined_settings.get('java_script_enabled', true) is true %}checked="checked"{% endif %}>
-              <div id="java_script_enabled_help" class="form-text">If disabled, the browser will not run any JavaScript when rendering the page.</div>
+              <label id="java_script_enabled_help" class="form-check-label" for="java_script_enabled">If disabled, the browser will not run any JavaScript when rendering the page.</label>
             </div>
           </div>
         </div>
@@ -724,7 +724,7 @@ window.addEventListener('DOMContentLoaded', () => {
         <div class="col-sm-10">
           <div class="form-check">
             <input class="form-check-input" type="checkbox" id="monitor_capture" name="monitor_capture" aria-describedby="monitor_capture_help">
-            <div id="monitor_capture_help" class="form-text">If checked, the URL(s) will be monitored.</div>
+            <label id="monitor_capture_help" class="form-check-label" for="monitor_capture">If checked, the URL(s) will be monitored.</label>
           </div>
         </div>
       </div>
@@ -757,7 +757,7 @@ window.addEventListener('DOMContentLoaded', () => {
         <div class="col-sm-10">
           <div class="form-check">
             <input class="form-check-input" type="checkbox"  id="auto-report" name="auto-report" aria-describedby="auto_report_help">
-            <div id="auto_report_help" class="form-text">Automatically submit to investigation team</div>
+            <label id="auto_report_help" class="form-check-label" for="auto-report">Automatically submit to investigation team</label>
           </div>
         </div>
         <div id="collapseMailConfiguration" class="collapse">
