@@ -2281,7 +2281,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
         # default to headless
         capture_query['headless'] = True
         multiple_remote_lacus = lookyloo.get_lacus_info()
-        remote_lacus_name = 'default'
+        remote_lacus_name = list(multiple_remote_lacus.keys())[0]
         if rln := capture_query.get('remote_lacus_name', 'default'):
             # the setting might be exist, but be None. We don't want that.
             remote_lacus_name = rln

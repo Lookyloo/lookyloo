@@ -866,7 +866,7 @@ class Lookyloo():
                 # only one remote lacus, pick that.
                 lacus = list(self.lacus.values())[0]
                 # the name is set to default in the "lacus" getter
-                query.remote_lacus_name = 'default'
+                query.remote_lacus_name = list(self.lacus.keys())[0]
             else:
                 query.remote_lacus_name = get_config('generic', 'multiple_remote_lacus').get('default')
                 lacus = self.lacus[query.remote_lacus_name]
