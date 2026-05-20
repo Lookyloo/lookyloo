@@ -53,7 +53,7 @@ class LookylooMastobotListener(StreamListener):
                     if proxies := remote_lacuses.get('proxies'):
                         self.proxies = proxies.keys()
         if not self.proxies:
-            self.mastobot.logger.info("No proxies available")
+            self.mastobot.logger.debug("No proxies available")
             return
 
         note = "Message me one or more URL(s), and I'll capture the page for you. \n \
