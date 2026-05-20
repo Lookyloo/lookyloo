@@ -896,50 +896,49 @@ class Lookyloo():
             else:
                 perma_uuid = str(uuid4())
             query.not_queued = True
-            return perma_uuid
-
-        try:
-            perma_uuid = lacus.enqueue(
-                url=query.url,
-                document_name=query.document_name,
-                document=query.document,
-                # depth=query.depth,
-                browser=query.browser,
-                device_name=query.device_name,
-                user_agent=query.user_agent,
-                proxy=self.global_proxy if self.global_proxy else query.proxy,
-                general_timeout_in_sec=query.general_timeout_in_sec,
-                cookies=query.cookies,
-                storage=query.storage,
-                headers=query.headers,
-                http_credentials=query.http_credentials.model_dump() if query.http_credentials else None,
-                viewport=query.viewport.model_dump() if query.viewport else None,
-                referer=query.referer,
-                timezone_id=query.timezone_id,
-                locale=query.locale,
-                geolocation=query.geolocation.model_dump() if query.geolocation else None,
-                color_scheme=query.color_scheme,
-                rendered_hostname_only=query.rendered_hostname_only,
-                with_favicon=query.with_favicon,
-                with_trusted_timestamps=True if self.force_trusted_timestamp else query.with_trusted_timestamps,
-                allow_tracking=query.allow_tracking,
-                java_script_enabled=query.java_script_enabled,
-                headless=query.headless,
-                remote_headfull=query.remote_headfull,
-                init_script=query.init_script,
-                uuid=query.uuid,
-                final_wait=query.final_wait,
-                # force=query.force,
-                # recapture_interval=query.recapture_interval,
-                priority=priority
-            )
-        except Exception as e:
-            self.logger.exception(f'Unable to enqueue capture: {e}')
-            if query.uuid:
-                perma_uuid = query.uuid
-            else:
-                perma_uuid = str(uuid4())
-            query.not_queued = True
+        else:
+            try:
+                perma_uuid = lacus.enqueue(
+                    url=query.url,
+                    document_name=query.document_name,
+                    document=query.document,
+                    # depth=query.depth,
+                    browser=query.browser,
+                    device_name=query.device_name,
+                    user_agent=query.user_agent,
+                    proxy=self.global_proxy if self.global_proxy else query.proxy,
+                    general_timeout_in_sec=query.general_timeout_in_sec,
+                    cookies=query.cookies,
+                    storage=query.storage,
+                    headers=query.headers,
+                    http_credentials=query.http_credentials.model_dump() if query.http_credentials else None,
+                    viewport=query.viewport.model_dump() if query.viewport else None,
+                    referer=query.referer,
+                    timezone_id=query.timezone_id,
+                    locale=query.locale,
+                    geolocation=query.geolocation.model_dump() if query.geolocation else None,
+                    color_scheme=query.color_scheme,
+                    rendered_hostname_only=query.rendered_hostname_only,
+                    with_favicon=query.with_favicon,
+                    with_trusted_timestamps=True if self.force_trusted_timestamp else query.with_trusted_timestamps,
+                    allow_tracking=query.allow_tracking,
+                    java_script_enabled=query.java_script_enabled,
+                    headless=query.headless,
+                    remote_headfull=query.remote_headfull,
+                    init_script=query.init_script,
+                    uuid=query.uuid,
+                    final_wait=query.final_wait,
+                    # force=query.force,
+                    # recapture_interval=query.recapture_interval,
+                    priority=priority
+                )
+            except Exception as e:
+                self.logger.exception(f'Unable to enqueue capture: {e}')
+                if query.uuid:
+                    perma_uuid = query.uuid
+                else:
+                    perma_uuid = str(uuid4())
+                query.not_queued = True
         finally:
             if not self.redis.hexists('lookup_dirs', perma_uuid):  # already captured
                 p = self.redis.pipeline()
