@@ -25,7 +25,7 @@ from pylacus import CaptureStatus as CaptureStatusPy
 from lookyloo_models import CaptureSettingsError
 from lookyloo.comparator import Comparator
 from lookyloo import Lookyloo
-from lookyloo.exceptions import MissingUUID, NoValidHarFile, ModuleError
+from lookyloo.exceptions import MissingUUID, NoValidHarFile, ModuleError, LacusUnreachable
 from lookyloo.helpers import load_user_config
 
 from .helpers import (build_users_table, load_user_from_request, src_request_ip,
@@ -62,6 +62,12 @@ def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Respons
         return make_response({'message': 'Unable to validate capture settings.',
                               'details': error.pydantic_validation_errors.errors()}, 400)
     return make_response({'message': str(error)}, 400)
+
+
+@api.errorhandler(LacusUnreachable)  # type: ignore[untyped-decorator]
+def handle_lacus_unreachable(error: Any) -> Response:
+    '''Lacus in unreachable.'''
+    return make_response({'message': 'Lacus in unreachable, pelase try again later.'}, 400)
 
 
 @api.route('/json/get_user_config')
