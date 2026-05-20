@@ -50,24 +50,24 @@ token_request_fields = api.model('AuthTokenFields', {
 
 
 @api.errorhandler(NoValidHarFile)  # type: ignore[untyped-decorator]
-def handle_no_HAR_file_exception(error: Any) -> Response:
+def handle_no_HAR_file_exception(error: Any) -> tuple[dict[str, str], int]:
     '''The capture has no HAR file, it failed for some reason.'''
-    return make_response({'message': str(error)}, 400)
+    return {'message': str(error)}, 400
 
 
 @api.errorhandler(CaptureSettingsError)  # type: ignore[untyped-decorator]
-def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Response:
+def handle_pydandic_validation_exception(error: CaptureSettingsError) -> tuple[dict[str, Any], int]:
     '''Return the validation error message and 400 status code'''
     if error.pydantic_validation_errors:
-        return make_response({'message': 'Unable to validate capture settings.',
-                              'details': error.pydantic_validation_errors.errors()}, 400)
-    return make_response({'message': str(error)}, 400)
+        return {'message': 'Unable to validate capture settings.',
+                'details': error.pydantic_validation_errors.errors()}, 400
+    return {'message': str(error)}, 400
 
 
 @api.errorhandler(LacusUnreachable)  # type: ignore[untyped-decorator]
-def handle_lacus_unreachable(error: Any) -> Response:
+def handle_lacus_unreachable(error: Any) -> tuple[dict[str, str], int]:
     '''Lacus in unreachable.'''
-    return make_response({'message': 'Lacus in unreachable, pelase try again later.'}, 400)
+    return {'message': 'Lacus in unreachable, pelase try again later.'}, 400
 
 
 @api.route('/json/get_user_config')
