@@ -2,11 +2,14 @@
 
 import pytest
 import re
+
+from collections.abc import Generator
+
 from playwright.sync_api import Page, expect
 
 
 @pytest.fixture(scope="function", autouse=True)
-def before_each_after_each(page: Page):
+def before_each_after_each(page: Page) -> Generator[None, None, None]:
 
     print("before the test runs")
 
