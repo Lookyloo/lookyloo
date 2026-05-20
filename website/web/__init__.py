@@ -2280,19 +2280,24 @@ def capture_web() -> str | Response | WerkzeugResponse:
         capture_query['remote_lacus_name'] = request.form.get('remote_lacus_name')
         # default to headless
         capture_query['headless'] = True
-        multiple_remote_lacus = lookyloo.get_lacus_info()
-        remote_lacus_name = list(multiple_remote_lacus.keys())[0]
-        if rln := capture_query.get('remote_lacus_name', 'default'):
-            # the setting might be exist, but be None. We don't want that.
-            remote_lacus_name = rln
-        remote_lacus_info = multiple_remote_lacus[remote_lacus_name]
-        # depending on the setting and the config lacus side, pass the browser graphical mode.
-        if browser_graphical_mode := request.form.get('browser_graphical_mode'):
-            if remote_lacus_info['settings']['headed_allowed'] and browser_graphical_mode == "headfull":
-                capture_query['headless'] = False
-            elif remote_lacus_info['settings']['remote_headed_allowed'] and browser_graphical_mode == "remote_headfull":
-                capture_query['remote_headfull'] = True
-                capture_query['headless'] = False
+
+        if multiple_remote_lacus := lookyloo.get_lacus_info():
+            if capture_query['remote_lacus_name']:
+                remote_lacus_info = multiple_remote_lacus[capture_query['remote_lacus_name']]
+            else:
+                # fallback to the first one in the dict
+                remote_lacus_info = list(multiple_remote_lacus.values())[0]
+
+            # depending on the setting and the config lacus side, pass the browser graphical mode.
+            if browser_graphical_mode := request.form.get('browser_graphical_mode'):
+                if remote_lacus_info['settings']['headed_allowed'] and browser_graphical_mode == "headfull":
+                    capture_query['headless'] = False
+                elif remote_lacus_info['settings']['remote_headed_allowed'] and browser_graphical_mode == "remote_headfull":
+                    capture_query['remote_headfull'] = True
+                    capture_query['headless'] = False
+        else:
+            # most probably lacus unreachable.
+            pass
 
         if request.form.get('general_timeout_in_sec'):
             capture_query['general_timeout_in_sec'] = request.form['general_timeout_in_sec']
