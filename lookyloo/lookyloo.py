@@ -669,8 +669,8 @@ class Lookyloo():
                 self.logger.warning('Lacus "default" is not up.')
         elif isinstance(self.lacus, LacusCore):
             # one, local, doesn't expose proxies.
-            to_return['default']['settings'] = self.lacus.settings()
-            to_return['default']['devices'] = self.lacus.playwright_devices()
+            to_return['default'] = {'settings': self.lacus.settings(),
+                                    'devices': self.lacus.playwright_devices()}
         if not to_return:
             raise ConfigError('Unable to configure any lacus.')
         return to_return
