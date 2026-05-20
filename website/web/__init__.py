@@ -2079,7 +2079,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
         else:
             default_remote_lacus = get_config('generic', 'multiple_remote_lacus').get('default')
 
-    except ConfigError as e:
+    except (ConfigError, LacusUnreachable) as e:
         app.logger.warning(f'Unable to get lacus settings: {e}.')
         flash('The capturing system is down, you can enqueue a capture and it will start ASAP.', 'error')
 
