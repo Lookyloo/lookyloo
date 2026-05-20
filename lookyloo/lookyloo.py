@@ -121,6 +121,12 @@ class Lookyloo():
         self.headed_allowed = get_config('generic', 'allow_headed')
         self.force_trusted_timestamp = get_config('generic', 'force_trusted_timestamp')
 
+        # When we have absolutely no lacuses available for a while, everything is super slow
+        # set it to None by default, and add a retry timer
+        self._lacus: LacusCore | dict[str, PyLacus]
+        self.__lacus_retry_at: datetime | None = None
+        self.__lacus_retry_interval: timedelta = timedelta(minutes=5)
+
         # Initialize 3rd party components
         # ## Initialize MISP(s)
         try_old_config = False
@@ -192,30 +198,37 @@ class Lookyloo():
     def __enable_remote_lacus(self, lacus_url: str) -> PyLacus:
         '''Enable remote lacus'''
         self.logger.info("Remote lacus enabled, trying to set it up...")
-        lacus_retries = 2
+        lacus_retries = 1
         while lacus_retries > 0:
-            remote_lacus_url = lacus_url
-            lacus = PyLacus(remote_lacus_url, useragent=get_useragent_for_requests(),
+            lacus = PyLacus(lacus_url, useragent=get_useragent_for_requests(),
                             proxies=global_proxy_for_requests())
             if lacus.is_up:
-                self.logger.info(f"Remote lacus enabled to {remote_lacus_url}.")
+                self.logger.info(f"Remote lacus enabled to {lacus_url}.")
                 break
             lacus_retries -= 1
-            self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}, trying again {lacus_retries} more time(s).")
-            time.sleep(1)
+            self.logger.warning(f"Unable to setup remote lacus to {lacus_url}, trying again {lacus_retries} more time(s).")
+            time.sleep(.5)
         else:
-            raise LacusUnreachable(f'Remote lacus ({remote_lacus_url}) is enabled but unreachable.')
+            raise LacusUnreachable(f'Remote lacus ({lacus_url}) is enabled but unreachable.')
         return lacus
 
     @cached_property
     def lacus(self) -> LacusCore | dict[str, PyLacus]:
+        if self.__lacus_retry_at and self.__lacus_retry_at > datetime.now():
+            raise LacusUnreachable(f'Remote lacus is enabled was unreachable. Retry at {self.__lacus_retry_at.isoformat()}')
+        self.__lacus_retry_at = None
+
         has_remote_lacus = False
-        self._lacus: LacusCore | dict[str, PyLacus]
         if get_config('generic', 'remote_lacus'):
             self._lacus = {}
             remote_lacus_config = get_config('generic', 'remote_lacus')
             if remote_lacus_config.get('enable'):
-                self._lacus['default'] = self.__enable_remote_lacus(remote_lacus_config.get('url'))
+                try:
+                    self._lacus['default'] = self.__enable_remote_lacus(remote_lacus_config.get('url'))
+                except LacusUnreachable as e:
+                    self.logger.warning(f'Unable to setup remote lacus: {e}')
+                    self.__lacus_retry_at = datetime.now() + self.__lacus_retry_interval
+                    raise LacusUnreachable('Remote lacus is enabled but unreachable.')
                 has_remote_lacus = True
 
         if remote_lacus_config := get_config('generic', 'multiple_remote_lacus'):
@@ -230,7 +243,9 @@ class Lookyloo():
                     except LacusUnreachable as e:
                         self.logger.warning(f'Unable to setup remote lacus {lacus_config["name"]}: {e}')
                 if not self._lacus:
-                    raise LacusUnreachable('Unable to setup any remote lacus.')
+                    self.__lacus_retry_at = datetime.now() + self.__lacus_retry_interval
+                    raise LacusUnreachable('Unable to connect to any of the lacuses in the config.')
+
                 # Check default lacus is valid
                 default_remote_lacus_name = remote_lacus_config.get('default')
                 if default_remote_lacus_name not in self._lacus:
