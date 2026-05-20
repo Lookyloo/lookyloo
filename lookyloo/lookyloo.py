@@ -202,7 +202,7 @@ class Lookyloo():
                 break
             lacus_retries -= 1
             self.logger.warning(f"Unable to setup remote lacus to {remote_lacus_url}, trying again {lacus_retries} more time(s).")
-            time.sleep(3)
+            time.sleep(1)
         else:
             raise LacusUnreachable(f'Remote lacus ({remote_lacus_url}) is enabled but unreachable.')
         return lacus
@@ -857,22 +857,32 @@ class Lookyloo():
             # Shouldn't be needed, but just in case, force headless
             query.headless = True
 
-        lacus: LacusCore | PyLacus
-        if isinstance(self.lacus, dict):
-            # Multiple remote lacus enabled, we need a name to identify the lacus
-            if query.remote_lacus_name and self.lacus.get(query.remote_lacus_name):
-                lacus = self.lacus[query.remote_lacus_name]
-            elif len(self.lacus) == 1:
-                # only one remote lacus, pick that.
-                lacus = list(self.lacus.values())[0]
-                # the name is set to default in the "lacus" getter
-                query.remote_lacus_name = list(self.lacus.keys())[0]
+        try:
+            lacus: LacusCore | PyLacus
+            if isinstance(self.lacus, dict):
+                # Multiple remote lacus enabled, we need a name to identify the lacus
+                if query.remote_lacus_name and self.lacus.get(query.remote_lacus_name):
+                    lacus = self.lacus[query.remote_lacus_name]
+                elif len(self.lacus) == 1:
+                    # only one remote lacus, pick that.
+                    lacus = list(self.lacus.values())[0]
+                    # the name is set to default in the "lacus" getter
+                    query.remote_lacus_name = list(self.lacus.keys())[0]
+                else:
+                    query.remote_lacus_name = get_config('generic', 'multiple_remote_lacus').get('default')
+                    lacus = self.lacus[query.remote_lacus_name]
             else:
-                query.remote_lacus_name = get_config('generic', 'multiple_remote_lacus').get('default')
-                lacus = self.lacus[query.remote_lacus_name]
-        else:
-            # Should be a LacusCore
-            lacus = self.lacus
+                # Should be a LacusCore
+                lacus = self.lacus
+        except LacusUnreachable as e:
+            self.logger.warning(f'Unable to enqueue capture: {e}')
+            if query.uuid:
+                perma_uuid = query.uuid
+            else:
+                perma_uuid = str(uuid4())
+            query.not_queued = True
+            return perma_uuid
+
         try:
             perma_uuid = lacus.enqueue(
                 url=query.url,
