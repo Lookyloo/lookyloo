@@ -140,7 +140,7 @@
     </div>
     <div id="collapseLacusSelection" class="collapse">
       <div class="card card-body">
-        {% if multiple_remote_lacus is none %}
+        {% if not multiple_remote_lacus %}
         <!-- Unable to get lacus information, the capture will be queued and triggered whenever something is available -->
         <div class="alert alert-warning" role="alert">
             Unable to connect to a Lacus instance, the platform admin needs to fix it.
