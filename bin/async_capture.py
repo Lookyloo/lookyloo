@@ -153,6 +153,7 @@ class AsyncCapture(AbstractManager):
             self.process_capture_queue()
         except LacusUnreachable:
             self.logger.error('Lacus is unreachable, retrying later.')
+            await asyncio.sleep(120)
 
     async def _wait_to_finish_async(self) -> None:
         try:
