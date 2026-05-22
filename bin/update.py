@@ -37,7 +37,7 @@ def keep_going(ignore: bool=False) -> None:
         sys.exit()
 
 
-def run_command(command: str, expect_fail: bool=False, capture_output: bool=True) -> None:
+def run_command(command: str, expect_fail: bool=False, capture_output: bool=True) -> int:
     args = shlex.split(command)
     homedir = get_homedir()
     process = subprocess.run(args, cwd=homedir, capture_output=capture_output)
@@ -46,6 +46,7 @@ def run_command(command: str, expect_fail: bool=False, capture_output: bool=True
     if process.returncode and not expect_fail:
         print(process.stderr.decode())
         sys.exit()
+    return process.returncode
 
 
 def check_poetry_version() -> None:
@@ -94,7 +95,27 @@ def main() -> None:
 
     print('* Install or make sure the playwright browsers are installed.')
     keep_going(args.yes or args.init)
-    run_command('poetry run playwright install')
+    return_code = run_command('poetry run playwright install', expect_fail=True)
+    if return_code != 0:
+        print('[WARNING] Unable to install browsers. If you are using Ubuntu 26.04, re-run the update script this way:')
+        print()
+        print('\t PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 update')
+        print()
+        print('It will be fixed in the next playwright release (v1.61)')
+        sys.exit()
+
+    print('* Check if all the system dependencies required by Playwright are installed:')
+    keep_going(args.yes or args.init)
+    return_code = run_command('poetry run playwright install-deps --dry-run', expect_fail=True)
+    if return_code != 0:
+        print('[WARNING] Some system dependencies are missing to run Playwright properly.')
+        print('[WARNING] It may still work but you might encourter crashes at runtime.')
+        print('[WARNING] Run the command below (will ask for your sudo password) to fix it: ')
+        print()
+        print('\t poetry run playwright install-deps')
+        print()
+        print('[NOTE] If you are using Ubuntu 26.04, you will have missing packages, it will be fixed in the next playwright release (v1.61)')
+        print()
 
     print('* Validate configuration files.')
     keep_going(args.yes or args.init)
