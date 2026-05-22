@@ -7,7 +7,7 @@ on:
     branches: [ "main", "develop" ]
 
 jobs:
-  splash-container:
+  test_instance:
      runs-on: ubuntu-latest
 
      strategy:
