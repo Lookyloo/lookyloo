@@ -1920,18 +1920,18 @@ files = [
 
 [[package]]
 name = "html-to-markdown"
-version = "3.4.0"
+version = "3.5.0"
 description = "High-performance HTML to Markdown converter"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "html_to_markdown-3.4.0-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:58c98e3fe34b81c767096567ba91992e6ae4e66e272c490d308467ea0a1778d6"},
-    {file = "html_to_markdown-3.4.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:4f8e444a9f47ff25fcfe1dde42a9123a8e7619b556c22e99d3c9ddb06236b4e7"},
-    {file = "html_to_markdown-3.4.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:7679a0815688bd86326d73760d653e6ed53d43bf4312c3fc71992f62e4427832"},
-    {file = "html_to_markdown-3.4.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:57090642966c1ec67ccb851387c63c9c500153d23f0b9bf81e64ff01c46ca1d1"},
-    {file = "html_to_markdown-3.4.0-cp310-cp310-win_amd64.whl", hash = "sha256:85ef60342922074227936ece6f6746836d50a17fc38ec6cb4bba6a12810b38c5"},
-    {file = "html_to_markdown-3.4.0.tar.gz", hash = "sha256:3e7e0813cc871c7abe2d5ea927e9038374bea339e8dd72f3b4c2f1c0b8e51672"},
+    {file = "html_to_markdown-3.5.0-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:d101fc4c57191a411d241069c9dc8603e2045923ccc8f0fe2f675082d67282a7"},
+    {file = "html_to_markdown-3.5.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:b00eb81201827cad3243bcd2c3a847468635c564848cf49e215bc1a63138cb27"},
+    {file = "html_to_markdown-3.5.0-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:fdf1df98a2c873c80c8b92a02b6c78dfe01ad3dc85d23711bf1626e71c5e17a6"},
+    {file = "html_to_markdown-3.5.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:2c446382923d7bc80b40ac82296a9826ec88656488d545b18f235bc99da5baf3"},
+    {file = "html_to_markdown-3.5.0-cp310-abi3-win_amd64.whl", hash = "sha256:3df70b1bbde67b6f7ce921b215f0a7023f9beb7459963157eaa04dc84d509e8f"},
+    {file = "html_to_markdown-3.5.0.tar.gz", hash = "sha256:28b4944649581c8e5e1bb2bd97a1b5adf42d6ef364fbdc8e0df5c057699f3141"},
 ]
 
 [[package]]
@@ -6310,4 +6310,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "21ae2adbebb2be084c906f83a09d9a73f254f44d61252e0a9c14572b00a2b971"
+content-hash = "8fc51236899e448fde00d01b9581b236d7ab5cd86cf9a1678b3ba9c90395b729"
