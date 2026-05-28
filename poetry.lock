@@ -6170,22 +6170,22 @@ email = ["email-validator (>=2.0)"]
 
 [[package]]
 name = "yara-x"
-version = "1.16.0"
+version = "1.17.0"
 description = "Python bindings for YARA-X"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "yara_x-1.16.0-cp38-abi3-macosx_14_0_arm64.whl", hash = "sha256:ca2ccda6baf8a68a1d077e3a5f0be826051a6cf37a157d2c928f5a7f6a531dd4"},
-    {file = "yara_x-1.16.0-cp38-abi3-macosx_14_0_x86_64.whl", hash = "sha256:49b6c84d18475f815c28bfc6ba18db71de17eb806203db4298c6a4cd290420c1"},
-    {file = "yara_x-1.16.0-cp38-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:7f86d64d1f2403726edfda7ddb98a03a9cbeddd36d319bd270b1c7f2ce862428"},
-    {file = "yara_x-1.16.0-cp38-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:62b666c239afe247bd62e52c4fa5e5b67d44cda1b871cd084679cfd48be019db"},
-    {file = "yara_x-1.16.0-cp38-abi3-win_amd64.whl", hash = "sha256:97cd125f6b8c5c2302206d81b1c41d0b12e3424bd9e7d717a28dcd00c45b7b52"},
-    {file = "yara_x-1.16.0-pp311-pypy311_pp73-macosx_14_0_arm64.whl", hash = "sha256:9b18cb3931bc528d61978d55ec249c1f9f70598f484e676b2821fcb6d68fc011"},
-    {file = "yara_x-1.16.0-pp311-pypy311_pp73-macosx_14_0_x86_64.whl", hash = "sha256:d3e2935108e993eabb4037e72c55779de9248d6aa6cd5c4897c9b25d87514b60"},
-    {file = "yara_x-1.16.0-pp311-pypy311_pp73-manylinux_2_28_aarch64.whl", hash = "sha256:19408d1dbb7161343c8503a574445e9cf48834595cf1d9140b4798846926768a"},
-    {file = "yara_x-1.16.0-pp311-pypy311_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:d39de355b23ae4cbe0f96bebedb597201116071b715dc366946f20316a26529d"},
-    {file = "yara_x-1.16.0-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:0d6c1376a0f71762f76dcaa08c21d1ba0e649956415b0a492493e18f0f321adc"},
+    {file = "yara_x-1.17.0-cp38-abi3-macosx_14_0_arm64.whl", hash = "sha256:fa400efe8816473c25daaef54ba44d8ffb91120e2e252f3c89086bbdaba61265"},
+    {file = "yara_x-1.17.0-cp38-abi3-macosx_14_0_x86_64.whl", hash = "sha256:572006fb388e42cb46edba51199ea1660f2e839e27702093463cb874346e3080"},
+    {file = "yara_x-1.17.0-cp38-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:d99f99519973c524ed280a430e990e85f0f5adb545be9e656df480777c3d7d4c"},
+    {file = "yara_x-1.17.0-cp38-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:ec20beff0a963bf5ca8aa2a46f376c4a38fe995c358832e61b7746af9a7f4da2"},
+    {file = "yara_x-1.17.0-cp38-abi3-win_amd64.whl", hash = "sha256:136dccc370df7c9dfc8a48d0500c10c7251017289d3fef92ecd5fa299598e450"},
+    {file = "yara_x-1.17.0-pp311-pypy311_pp73-macosx_14_0_arm64.whl", hash = "sha256:3b2da5e791c33199bbb42c39ac4e9a9d8b3f2d129a1391cfd7489353ee370b46"},
+    {file = "yara_x-1.17.0-pp311-pypy311_pp73-macosx_14_0_x86_64.whl", hash = "sha256:6fe8bb23d9589891d59959abf8ff046edd589e1853c03fec07e864264a2fab85"},
+    {file = "yara_x-1.17.0-pp311-pypy311_pp73-manylinux_2_28_aarch64.whl", hash = "sha256:e66b70e0fd17db068a9cc4d7fa7e6b75961d9c96ed83c34c4ff33ba750ccfe75"},
+    {file = "yara_x-1.17.0-pp311-pypy311_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:d0e02ec1e914304336814ceefb51fa649606d1ca66e5f2d996a07e03ce86e419"},
+    {file = "yara_x-1.17.0-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:9ef3e5e6999d8187c5228500fab6e22df9ca8dca5e17a6b59bda6eddfea48e49"},
 ]
 
 [[package]]
@@ -6310,4 +6310,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "21ae2adbebb2be084c906f83a09d9a73f254f44d61252e0a9c14572b00a2b971"
+content-hash = "9300a0c47c98c7f5832a7f3a7139231847373184a62efbf8b8e646329339c7a4"
