@@ -35,6 +35,7 @@ import orjson
 
 from cryptography import x509
 from cryptography.hazmat.primitives.serialization import Encoding
+from dateparser import parse
 from defang import defang  # type: ignore[import-untyped]
 from har2tree import CrawledTree, HostNode, URLNode, Har2TreeError
 from html_to_markdown import convert
@@ -563,22 +564,35 @@ class Lookyloo():
                             before: datetime | float | str | None=None) -> list[str]:
         '''Get the captures that were done between two dates
 
-        :param since: the oldest date to get captures from, None will start from the oldest capture
+        :param since: the oldest date to get captures from, None will start from 1 day prior to the before value
         :param before: the newest date to get captures from, None will end on the newest capture
         '''
-        if not since:
-            since = '-Inf'
-        elif isinstance(since, datetime):
-            since = since.timestamp()
-
         if not before:
-            before = '+Inf'
+            _before = datetime.now().timestamp()
         elif isinstance(before, datetime):
-            before = before.timestamp()
-        if public:
-            return self.redis.zrevrangebyscore('recent_captures_public', before, since)
+            _before = before.timestamp()
+        elif isinstance(before, str):
+            # try to parse that
+            if b := parse(before):
+                _before = b.timestamp()
         else:
-            return self.redis.zrevrangebyscore('recent_captures', before, since)
+            _before = before
+
+        if not since:
+            _since = (datetime.fromtimestamp(_before) - timedelta(days=1)).timestamp()
+        elif isinstance(since, datetime):
+            _since = since.timestamp()
+        elif isinstance(since, str):
+            # try to parse that
+            if s := parse(since):
+                _since = s.timestamp()
+        else:
+            _since = since
+
+        if public:
+            return self.redis.zrevrangebyscore('recent_captures_public', _before, _since)
+        else:
+            return self.redis.zrevrangebyscore('recent_captures', _before, _since)
 
     def sorted_capture_cache(self, capture_uuids: Iterable[str] | None=None,
                              cached_captures_only: bool=True,
@@ -1731,7 +1745,14 @@ class Lookyloo():
         cache = self.capture_cache(capture_uuid)
         if not cache:
             return {'error': 'Unable to get cache'}
-        to_return = {'redirects': {'type': 'text', 'text': ' -> '.join(cache.redirects)}}
+        # get info from the nodes in the redirect chain
+        chain = []
+        for node in list(reversed(cache.tree.root_hartree.rendered_node.get_ancestors())) + [cache.tree.root_hartree.rendered_node]:
+            entry = {'url': node.name}
+            if hasattr(node, 'ip_address'):
+                entry['ip_address'] = str(node.ip_address)
+            chain.append(entry)
+        to_return = {'redirects': {'type': 'text', 'text': str(chain)}}
 
         success, md = self.get_html_as_md(capture_uuid)
         if success:
