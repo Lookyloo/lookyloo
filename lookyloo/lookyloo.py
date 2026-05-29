@@ -1722,6 +1722,29 @@ class Lookyloo():
                 return attribute
         return None
 
+    def ai_export(self, capture_uuid: str) -> dict[str, str | dict[str, str | dict[str, str]]]:
+        '''Export a capture so you can shove it to an agent and it does things with it.
+        This feature is beta and there is 0 control on what you're getting, use at your own risks.
+        Also, whatever you get back from this method is (for now) as stable as a vibecoded project.
+        '''
+        to_return: dict[str, str | dict[str, str | dict[str, str]]]
+        cache = self.capture_cache(capture_uuid)
+        if not cache:
+            return {'error': 'Unable to get cache'}
+        to_return = {'redirects': {'type': 'text', 'text': ' -> '.join(cache.redirects)}}
+
+        success, md = self.get_html_as_md(capture_uuid)
+        if success:
+            to_return['html_as_markdown'] = {'type': 'text', 'text': md.read().decode()}
+        success, screenshot = self.get_screenshot(capture_uuid)
+        if success:
+            s_bin = screenshot.read()
+            m = self.magicdb.best_magic_buffer(s_bin)
+            image_data = b64encode(s_bin).decode()
+            to_return['screenshot'] = {"type": "image_url",
+                                       "image_url": {"url": f"data:{m.mime_type};base64,{image_data}"}}
+        return to_return
+
     def misp_export(self, capture_uuid: str, /, with_parent: bool=False, *, as_admin: bool=False) -> list[MISPEvent] | dict[str, str]:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''

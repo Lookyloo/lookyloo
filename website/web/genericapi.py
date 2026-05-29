@@ -202,6 +202,17 @@ class CaptureURLs(Resource):  # type: ignore[misc]
             return make_response({'error': f'No HAR file available: {e}'}, 400)
 
 
+@api.route('/json/<uuid:capture_uuid>/ai_export')
+@api.doc(description='Get an export you can feed to an agent',
+         params={'capture_uuid': 'The UUID of the capture'})
+class AIExport(Resource):  # type: ignore[misc]
+    def get(self, capture_uuid: str) -> Response:
+        export = lookyloo.ai_export(capture_uuid)
+        if 'error' in export:
+            return make_response({'error': f'Unable to generate export: {export["error"]}'}, 400)
+        return make_response({'response': export})
+
+
 @api.route('/json/<uuid:capture_uuid>/hashes')
 @api.doc(description='Get all the hashes of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
