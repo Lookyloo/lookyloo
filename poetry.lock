@@ -1920,18 +1920,18 @@ files = [
 
 [[package]]
 name = "html-to-markdown"
-version = "3.5.4"
+version = "3.5.7"
 description = "High-performance HTML to Markdown converter"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "html_to_markdown-3.5.4-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:d7d1ca639922645ac961cf1c94f7bcfcb567714202d5bdcb50fd6e9bf39974ce"},
-    {file = "html_to_markdown-3.5.4-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:2c0e0ed158bed04f4baf6e2ea36e93810dca478a31427094eba530df60fc5cde"},
-    {file = "html_to_markdown-3.5.4-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:28ca62cfa59a07b2e06ed929feb47fc744970988fd18361a3b6191b9db94e541"},
-    {file = "html_to_markdown-3.5.4-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:484eb1b7f64c9c880b03d31dede6c99e4a6d9e8ec2bc0ccd3d2aa979a9f55b6a"},
-    {file = "html_to_markdown-3.5.4-cp310-abi3-win_amd64.whl", hash = "sha256:98fec954f05a1a94cade6b857c84d4a846953c7821eb3e599fe17a9f32522755"},
-    {file = "html_to_markdown-3.5.4.tar.gz", hash = "sha256:64525d9d04ab7bed7a16640b428c46c96b075cbd939634c10fe535f9e0e4d0a9"},
+    {file = "html_to_markdown-3.5.7-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:4641c566abff4a5faa5a49d2dc4b21b1bf73480f53f45eb9b45b1983fb0dea5d"},
+    {file = "html_to_markdown-3.5.7-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:0c253e440864a01519031073a534b3838393f6aea6f88957bdf3546f3ee97325"},
+    {file = "html_to_markdown-3.5.7-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:f7c9f67c84abb1b86858743b6caed4e714dc32cc4e0ed28bd31aa17ed74eb30e"},
+    {file = "html_to_markdown-3.5.7-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:0b35cd7e8d0b7687f2c974f8fcaf962c3965248bcfcee740858a2a33833fb67b"},
+    {file = "html_to_markdown-3.5.7-cp310-abi3-win_amd64.whl", hash = "sha256:a0eaa429bd3a5b5301a60fde594288c9624ab7791a2f356af4f7b5495b756094"},
+    {file = "html_to_markdown-3.5.7.tar.gz", hash = "sha256:f2eb59a614830da827e6dcac0aa253d2613735cd104429323682751ecd79b0da"},
 ]
 
 [[package]]
@@ -6449,4 +6449,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "f5859d349ef4bb1d43ce5d3a48230c02add5f90d13578be83ff1253b0d6ac3b1"
+content-hash = "4be58393bc1137b3cdab122ebf365e652702948e8a74eebef9428882d245f125"
