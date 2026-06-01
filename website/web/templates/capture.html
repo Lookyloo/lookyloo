@@ -176,30 +176,30 @@
                   <div class="col-sm-2 col-form">Browser interface:</div>
                   <div class="col-sm-10">
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" value="headless" id="browser_graphical_mode_headless" name="browser_graphical_mode" aria-describedby="headless_help"
+                      <input class="form-check-input" type="radio" value="headless" id="browser_graphical_mode_headless_{{lacus_name}}" name="browser_graphical_mode_{{lacus_name}}" aria-describedby="headless_help"
                         {% if predefined_settings.get('headless', true) is true %}checked{% endif %}>
-                      <label id="headless_help" class="form-check-label" for="browser_graphical_mode_headless">
+                      <label id="headless_help" class="form-check-label" for="browser_graphical_mode_headless_{{lacus_name}}">
                           <b>Headless</b>: no interaction with the browser and default instrumentation.
                       </label>
                     </div>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" value="headfull" id="browser_graphical_mode_headfull" name="browser_graphical_mode" aria-describedby="headfull_help"
+                      <input class="form-check-input" type="radio" value="headfull" id="browser_graphical_mode_headfull_{{lacus_name}}" name="browser_graphical_mode_{{lacus_name}}" aria-describedby="headfull_help"
                         {% if not details['settings']['headed_allowed'] %}disabled
                         {% elif predefined_settings.get('headless') is false %}checked
                         {%endif%}
                         >
-                      <label id="headfull_help" class="form-check-label" for="browser_graphical_mode_headfull">
+                      <label id="headfull_help" class="form-check-label" for="browser_graphical_mode_headfull_{{lacus_name}}">
                           {% if not details['settings']['headed_allowed'] %}<b>[Disabled]</b>{%endif%}
                           <b>Headfull</b>: a browser window will appear shortly after the capture is launched.
                       </label>
                     </div>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" value="remote_headfull" id="browser_graphical_mode_remote_headfull" name="browser_graphical_mode" aria-describedby="remote_headfull_help"
+                      <input class="form-check-input" type="radio" value="remote_headfull" id="browser_graphical_mode_remote_headfull_{{lacus_name}}" name="browser_graphical_mode_{{lacus_name}}" aria-describedby="remote_headfull_help"
                         {% if not details['settings']['remote_headed_allowed'] %}disabled
                         {% elif predefined_settings.get('remote_headfull') is true %}checked
                         {% endif %}
                         >
-                      <label id="remote_headfull_help" class="form-check-label" for="browser_graphical_mode_remote_headfull">
+                      <label id="remote_headfull_help" class="form-check-label" for="browser_graphical_mode_remote_headfull_{{lacus_name}}">
                         {% if not details['settings']['remote_headed_allowed'] %}<b>[Disabled]</b>{%endif%}
                         <b>Headfull (in a remote X server)</b>: click on the link in the page shown after the capture is launched.
                       </label>

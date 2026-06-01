@@ -2290,7 +2290,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
                     remote_lacus_info = list(multiple_remote_lacus.values())[0]
 
                 # depending on the setting and the config lacus side, pass the browser graphical mode.
-                if browser_graphical_mode := request.form.get('browser_graphical_mode'):
+                if browser_graphical_mode := request.form.get(f'browser_graphical_mode_{capture_query.get("remote_lacus_name")}'):
                     if remote_lacus_info['settings']['headed_allowed'] and browser_graphical_mode == "headfull":
                         capture_query['headless'] = False
                     elif remote_lacus_info['settings']['remote_headed_allowed'] and browser_graphical_mode == "remote_headfull":
