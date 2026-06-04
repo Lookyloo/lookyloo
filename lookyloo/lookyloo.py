@@ -411,13 +411,13 @@ class Lookyloo():
             return set(), set()
 
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
-        # Make sure the category is mappable to the dark-web taxonomy
+        # Make sure the category is mappable to the content-classification taxonomy
         valid_categories = set()
         invalid_categories = set()
         for category in categories:
             try:
                 taxonomy, predicate, name = self.taxonomies.revert_machinetag(category)  # type: ignore[misc]
-                if not taxonomy or not predicate or not name and taxonomy.name != 'dark-web':
+                if not taxonomy or not predicate or not name and taxonomy.name != 'content-classification':
                     logger.warning(f'Invalid category: {category}')
                     invalid_categories.add(category)
                 else:
@@ -427,8 +427,8 @@ class Lookyloo():
                 invalid_categories.add(category)
 
         if as_admin:
-            # Keep categories that aren't a part of the dark-web taxonomy, force the rest
-            current_categories = {c for c in self._captures_index[capture_uuid].categories if not c.startswith('dark-web')}
+            # Keep categories that aren't a part of the content-classification taxonomy, force the rest
+            current_categories = {c for c in self._captures_index[capture_uuid].categories if not c.startswith('content-classification')}
             current_categories |= valid_categories
             current_categories |= invalid_categories
         else:

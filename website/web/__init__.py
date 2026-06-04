@@ -1016,7 +1016,7 @@ def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
         return render_template('categories_view.html', tree_uuid=tree_uuid,
                                current_categories=current_categories,
                                can_categorize=can_categorize,
-                               taxonomy=taxonomies.get('dark-web'))
+                               taxonomy=taxonomies.get('content-classification'))
 
     # Got a POST
     # If admin, we can remove categories, otherwise, we only add new ones.
