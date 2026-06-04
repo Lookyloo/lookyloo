@@ -37,6 +37,10 @@
     "allow_auto_trigger": false,
     "admin_only": false
   },
+  "Ollama": {
+    "url": null,
+    "model": ""
+  },
   "AIL": {
     "enabled": false,
     "url": "http://MyAIL:7000",

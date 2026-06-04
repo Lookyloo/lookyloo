@@ -15,6 +15,7 @@ import os
 import time
 
 import filetype  # type: ignore[import-untyped]
+import markdown
 import orjson
 
 from collections import defaultdict
@@ -38,6 +39,7 @@ from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_cors import CORS  # type: ignore[import-untyped]
 from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
+from justhtml import JustHTML
 from lacuscore import CaptureStatus
 from markupsafe import Markup, escape
 from pyfaup import Host, Url
@@ -64,6 +66,7 @@ from .genericapi import api as generic_api
 from .helpers import (User, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load,
                       get_lookyloo_instance, get_indexing, build_keys_table)
+from lookyloo.modules.ollama_report import OllamaReport
 from .proxied import ReverseProxied
 
 logging.config.dictConfig(get_config('logging_web'))
@@ -424,6 +427,13 @@ app.jinja_env.globals.update(
      'load_custom_js': load_custom_js
      }
 )
+
+
+@app.template_filter('markdown')
+def markdown_filter(blob: str) -> str:
+    md = markdown.markdown(blob)
+    html = JustHTML(md, fragment=True).to_html(pretty=False)
+    return Markup(html)
 
 
 @app.template_filter('b64encode')
@@ -1605,6 +1615,19 @@ def rebuild_tree(tree_uuid: str) -> WerkzeugResponse:
         return redirect(url_for('tree', tree_uuid=tree_uuid))
     except Exception:
         return redirect(url_for('index'))
+
+
+@app.route('/tree/<uuid:tree_uuid>/ollama_report', methods=['GET'])
+@flask_login.login_required  # type: ignore[untyped-decorator]
+def tree_ollama_report(tree_uuid: str) -> str:
+    try:
+        olr = OllamaReport()
+        ai_export = lookyloo.ai_export(tree_uuid)
+        report = olr.get_report(ai_export)
+    except Exception as e:
+        report = 'Unable to get the Ollama report'
+        app.logger.warning(f'Unable to get the Ollama report: {e}')
+    return render_template('ollama_report.html', tree_uuid=tree_uuid, report=report)
 
 
 @app.route('/tree/<uuid:tree_uuid>/cache', methods=['GET'])

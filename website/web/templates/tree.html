@@ -388,6 +388,11 @@
                 <li>
                 <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" class="dropdown-item" role="button" id="removeCapture">Remove capture</a>
                 </li>
+                <a href="#ollamaModal" data-remote="{{ url_for('tree_ollama_report', tree_uuid=tree_uuid) }}"
+                   class="dropdown-item"
+                   data-bs-toggle="modal" data-bs-target="#ollamaModal" role="button"
+                   title="Thrown the capture in Ollama and hope">Ollama Report</a>
+                </li>
               </ul>
             </div>
           {% endif %}
@@ -1132,6 +1137,26 @@
   </div>
 </div>
 
+<div class="modal fade" id="ollamaModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="ollamaModalLabel">
+                  Ollama Report
+              </h4>
+              <br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <br>
+          <div class="modal-body">
+              ... loading report from ollama ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
 
 <div class="modal fade" id="hashlookupModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">

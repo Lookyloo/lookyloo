@@ -27,6 +27,7 @@ from lookyloo.comparator import Comparator
 from lookyloo import Lookyloo
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, ModuleError, LacusUnreachable
 from lookyloo.helpers import load_user_config
+from lookyloo.modules.ollama_report import OllamaReport
 
 from .helpers import (build_users_table, load_user_from_request, src_request_ip,
                       get_lookyloo_instance, get_indexing)
@@ -211,6 +212,24 @@ class AIExport(Resource):  # type: ignore[misc]
         if 'error' in export:
             return make_response({'error': f'Unable to generate export: {export["error"]}'}, 400)
         return make_response({'response': export})
+
+
+@api.route('/json/<uuid:capture_uuid>/ollama_report')
+@api.doc(description='Submit the capture to an ollama instance and hope fr the best.',
+         params={'capture_uuid': 'The UUID of the capture'},
+         security='apikey')
+class CaptureOllamaReport(Resource):  # type: ignore[misc]
+    method_decorators = [api_auth_check]
+
+    def post(self, capture_uuid: str) -> Response:
+        try:
+            olr = OllamaReport()
+            ai_export = lookyloo.ai_export(capture_uuid)
+            report = olr.get_report(ai_export)
+            return make_response({'report': report})
+        except Exception as e:
+            api.logger.warning(f'Unable to get the Ollama report for {capture_uuid}: {e}')
+            return make_response({'error': 'Unable to generate the report'}, 400)
 
 
 @api.route('/json/<uuid:capture_uuid>/hashes')
