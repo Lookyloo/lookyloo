@@ -4627,19 +4627,19 @@ docs = ["Sphinx (>=8.1.3) ; python_version >= \"3.10\""]
 
 [[package]]
 name = "pytaxonomies"
-version = "2.1.0"
+version = "2.1.1"
 description = "Python API for the taxonomies."
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pytaxonomies-2.1.0-py3-none-any.whl", hash = "sha256:682a7ef953f7ba7db1cf13f414cfc156f54ec36f272cbfb11e795a1a5c411533"},
-    {file = "pytaxonomies-2.1.0.tar.gz", hash = "sha256:ad4bf5a9ad94fa23c663240358587fa46e55559db5cfc2e24b74d892c926a4d7"},
+    {file = "pytaxonomies-2.1.1-py3-none-any.whl", hash = "sha256:c96ed540d459c3c59287f9aeb9ad68076dd9beecb1263161014aac96a2b85d21"},
+    {file = "pytaxonomies-2.1.1.tar.gz", hash = "sha256:677e1d1b17ad9c601dada0b387a2900a0879e1acc8961eca97124134e5fc2f40"},
 ]
 
 [package.extras]
-remote = ["requests (>=2.32.3)"]
-webui = ["Flask (>=3.1.0)", "Flask-Bootstrap (>=3.3.7.1)", "Flask-WTF (>=1.2.2)", "flask-nav (>=0.6)"]
+remote = ["requests (>=2.34.2)"]
+webui = ["Flask (>=3.1.3)", "Flask-Bootstrap (>=3.3.7.1)", "Flask-WTF (>=1.3.0)", "flask-nav (>=0.6)"]
 
 [[package]]
 name = "pytest"
@@ -6449,4 +6449,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "4be58393bc1137b3cdab122ebf365e652702948e8a74eebef9428882d245f125"
+content-hash = "cbbd271ec67ae2878a30eab91809665394b733458a7efd15a6f1a4629e43db26"
