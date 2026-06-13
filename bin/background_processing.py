@@ -172,6 +172,10 @@ class Processing(AbstractManager):
                         if new_uuid != uuid:
                             # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
                             self.logger.warning(f'Had to change the capture UUID (duplicate). Old: {uuid} / New: {new_uuid}')
+                            # also need to clear up the old capture settings, as it won't be processed
+                            self.lookyloo.redis.zrem('to_capture', uuid)
+                            self.lookyloo.redis.delete(uuid)
+                            continue
                     except LacusUnreachable:
                         self.logger.warning('Lacus still unreachable.')
                         break

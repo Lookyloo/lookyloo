@@ -689,27 +689,6 @@ class Lookyloo():
             raise ConfigError('Unable to configure any lacus.')
         return to_return
 
-    def capture_ready_to_store(self, capture_uuid: str, /) -> bool:
-        lacus_status: CaptureStatusCore | CaptureStatusPy
-        try:
-            if isinstance(self.lacus, dict):
-                for lacus in self.lacus.values():
-                    lacus_status = lacus.get_capture_status(capture_uuid)
-                    if lacus_status != CaptureStatusPy.UNKNOWN:
-                        return lacus_status == CaptureStatusPy.DONE
-            elif isinstance(self.lacus, PyLacus):
-                lacus_status = self.lacus.get_capture_status(capture_uuid)
-                return lacus_status == CaptureStatusPy.DONE
-            else:
-                lacus_status = self.lacus.get_capture_status(capture_uuid)
-                return lacus_status == CaptureStatusCore.DONE
-        except LacusUnreachable as e:
-            self.logger.warning(f'Unable to connect to lacus: {e}')
-            raise e
-        except Exception as e:
-            self.logger.warning(f'Unable to get the status for {capture_uuid} from lacus: {e}')
-        return False
-
     def _get_lacus_capture_status(self, capture_uuid: str, /) -> CaptureStatusCore | CaptureStatusPy:
         lacus_status: CaptureStatusCore | CaptureStatusPy = CaptureStatusPy.UNKNOWN
         try:
@@ -946,15 +925,17 @@ class Lookyloo():
                     # recapture_interval=query.recapture_interval,
                     priority=priority
                 )
+                query.not_queued = False
             except Exception as e:
                 self.logger.exception(f'Unable to enqueue capture: {e}')
                 if query.uuid:
+                    # if it failed, and we have a uuid in the query, perma_uuid doesn't matter
                     perma_uuid = query.uuid
                 else:
                     perma_uuid = str(uuid4())
                 query.not_queued = True
         finally:
-            if not self.redis.hexists('lookup_dirs', perma_uuid):  # already captured
+            if not self.redis.hexists('lookup_dirs', perma_uuid):  # if true, already captured
                 p = self.redis.pipeline()
                 p.zadd('to_capture', {perma_uuid: priority})
                 p.hset(perma_uuid, mapping=query.redis_dump())

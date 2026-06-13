@@ -9,8 +9,9 @@ import signal
 
 from asyncio import Task
 from pathlib import Path
+from collections.abc import Generator
 
-from lacuscore import LacusCore, CaptureResponse as CaptureResponseCore
+from lacuscore import LacusCore, CaptureStatus as CaptureStatusCore, CaptureResponse as CaptureResponseCore
 from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse as CaptureResponsePy
 
 from lookyloo import Lookyloo
@@ -58,27 +59,68 @@ class AsyncCapture(AbstractManager):
             self.set_running()
             capture_task.add_done_callback(clear_list_callback)
 
-    def uuids_ready(self) -> list[str]:
+    def _capture_ready_to_store(self, capture_uuid: str, /) -> LacusCore | PyLacus | None:
+        lacus_status: CaptureStatusCore | CaptureStatusPy
+        try:
+            lookyloo_lacus = self.lookyloo.lacus
+            if isinstance(lookyloo_lacus, dict):
+                for name, lacus in lookyloo_lacus.items():
+                    try:
+                        lacus_status = lacus.get_capture_status(capture_uuid)
+                    except Exception as e:
+                        self.logger.warning(f'Unable to get capture status from lacus "{name}": {e}')
+                        continue
+                    if lacus_status == CaptureStatusPy.UNKNOWN:
+                        # NOTE: unknown means not in this instance, need to check the next one.
+                        continue
+                    if lacus_status == CaptureStatusPy.DONE:
+                        return lacus
+                    else:
+                        # Found it, but not ready.
+                        break
+                else:
+                    self.logger.warning(f'Unable to find the UUID "{capture_uuid}" anywhere. Is the processing script running?')
+            elif isinstance(lookyloo_lacus, LacusCore):
+                lacus_status = lookyloo_lacus.get_capture_status(capture_uuid)
+                if lacus_status == CaptureStatusCore.DONE:
+                    return lookyloo_lacus
+            else:
+                # Should never happen, self.lacus is supposed to be either a dict, or LacusCore
+                raise LookylooException(f'Got unexpected type for self.lacus: {type(self.lacus)}')
+        except LacusUnreachable as e:
+            # raised from self.lacus
+            self.logger.warning(f'Unable to connect to any lacus: {e}')
+            raise e
+        except Exception as e:
+            self.logger.warning(f'Unable to get the status for {capture_uuid} from lacus: {e}')
+        return None
+
+    def uuids_ready(self) -> Generator[tuple[LacusCore | PyLacus, str]]:
         '''Get the list of captures ready to be processed'''
-        # Only check if the top 50 in the priority list are done, as they are the most likely ones to be
-        # and if the list it very very long, iterating over it takes a very long time.
-        return [uuid for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf', start=0, num=500)
-                if uuid and self.lookyloo.capture_ready_to_store(uuid)]
+        # Only check if the top 100 in the priority list are done, as they are the most likely ones to be ready
+        # and if the list is very very long, iterating over it takes a very long time.
+        for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', '+inf', '-inf', start=0, num=100):
+            if not uuid:
+                # not possible? was there before refactoring, not sure why
+                continue
+            if not self.lookyloo.redis.exists(uuid):
+                self.logger.info(f'UUID "{uuid}" has no settings, clearing it up.')
+                self.lookyloo.redis.zrem('to_capture', uuid)
+                continue
+            if self.lookyloo.redis.hget(uuid, 'not_queued') == '1':
+                self.logger.info(f'UUID "{uuid}" is not queued, not ready for sure.')
+                continue
+            if lacus := self._capture_ready_to_store(uuid):
+                yield lacus, uuid
 
     def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
         entries: CaptureResponseCore | CaptureResponsePy
-        for uuid in self.uuids_ready():
-            if isinstance(self.lookyloo.lacus, LacusCore):
-                entries = self.lookyloo.lacus.get_capture(uuid, decode=True)
-            elif isinstance(self.lookyloo.lacus, PyLacus):
-                entries = self.lookyloo.lacus.get_capture(uuid)
-            elif isinstance(self.lookyloo.lacus, dict):
-                for lacus in self.lookyloo.lacus.values():
-                    entries = lacus.get_capture(uuid)
-                    if entries.get('status') != CaptureStatusPy.UNKNOWN:
-                        # Found it.
-                        break
+        for lacus, uuid in self.uuids_ready():
+            if isinstance(lacus, LacusCore):
+                entries = lacus.get_capture(uuid, decode=True)
+            elif isinstance(lacus, PyLacus):
+                entries = lacus.get_capture(uuid)
             else:
                 raise LookylooException(f'lacus must be LacusCore or PyLacus, not {type(self.lookyloo.lacus)}.')
             log = f'Got the capture for {uuid} from Lacus'
