@@ -8,6 +8,7 @@ import gzip
 import hashlib
 import ipaddress
 import json
+import re
 
 from datetime import datetime
 from io import BytesIO
@@ -35,6 +36,11 @@ api = Namespace('GenericAPI', description='Generic Lookyloo API', path='/')
 
 lookyloo: Lookyloo = get_lookyloo_instance()
 comparator: Comparator = Comparator()
+
+# Standard HTML5 email validation pattern (same as the WHATWG <input type="email"> spec).
+# \A and \Z anchors (rather than ^/$) reject any embedded or trailing newline, blocking
+# Reply-To header injection.
+EMAIL_RE = re.compile(r"\A[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\Z")
 
 
 def api_auth_check(method):  # type: ignore[no-untyped-def]
@@ -710,7 +716,14 @@ class CaptureReport(Resource):  # type: ignore[misc]
     @api.param('comment', 'Description of the URL, will be given to the analyst.')  # type: ignore[untyped-decorator]
     def post(self, capture_uuid: str) -> Response:
         parameters: dict[str, Any] = request.get_json(force=True)
-        mail_sent = lookyloo.send_mail(capture_uuid, parameters.get('email', ''), parameters.get('comment'))
+        email: str = parameters['email'] if parameters.get('email') else ''
+        if not EMAIL_RE.match(email):
+            # skip clearly incorrect emails (also avoids Reply-To header injection)
+            email = ''
+        mail_sent = lookyloo.send_mail(capture_uuid,
+                                       as_admin=flask_login.current_user.is_authenticated,
+                                       email=email,
+                                       comment=parameters.get('comment'))
         if isinstance(mail_sent, bool):
             # Success
             mail_sent = {'info': 'Report sent succesfully'}
