@@ -40,11 +40,8 @@ class AsyncCapture(AbstractManager):
         if not self.fox.available:
             self.logger.warning('Unable to setup the FOX module')
 
-    async def _trigger_captures(self) -> None:
+    async def _trigger_captures(self, lacus: LacusCore) -> None:
         # Can only be called if LacusCore is used
-        if not isinstance(self.lookyloo.lacus, LacusCore):
-            raise LookylooException('This function can only be called if LacusCore is used.')
-
         def clear_list_callback(task: Task[None]) -> None:
             self.captures.discard(task)
             self.unset_running()
@@ -54,64 +51,43 @@ class AsyncCapture(AbstractManager):
         if max_new_captures <= 0:
             self.logger.info(f'Max amount of captures in parallel reached ({len(self.captures)})')
             return None
-        async for capture_task in self.lookyloo.lacus.consume_queue(max_new_captures):
+        async for capture_task in lacus.consume_queue(max_new_captures):
             self.captures.add(capture_task)
             self.set_running()
             capture_task.add_done_callback(clear_list_callback)
-
-    def _capture_ready_to_store(self, capture_uuid: str, /) -> LacusCore | PyLacus | None:
-        lacus_status: CaptureStatusCore | CaptureStatusPy
-        try:
-            lookyloo_lacus = self.lookyloo.lacus
-            if isinstance(lookyloo_lacus, dict):
-                for name, lacus in lookyloo_lacus.items():
-                    try:
-                        lacus_status = lacus.get_capture_status(capture_uuid)
-                    except Exception as e:
-                        self.logger.warning(f'Unable to get capture status from lacus "{name}": {e}')
-                        continue
-                    if lacus_status == CaptureStatusPy.UNKNOWN:
-                        # NOTE: unknown means not in this instance, need to check the next one.
-                        continue
-                    if lacus_status == CaptureStatusPy.DONE:
-                        return lacus
-                    else:
-                        # Found it, but not ready.
-                        break
-                else:
-                    self.logger.warning(f'Unable to find the UUID "{capture_uuid}" anywhere. Is the processing script running?')
-            elif isinstance(lookyloo_lacus, LacusCore):
-                lacus_status = lookyloo_lacus.get_capture_status(capture_uuid)
-                if lacus_status == CaptureStatusCore.DONE:
-                    return lookyloo_lacus
-            else:
-                # Should never happen, self.lacus is supposed to be either a dict, or LacusCore
-                raise LookylooException(f'Got unexpected type for self.lacus: {type(self.lacus)}')
-        except LacusUnreachable as e:
-            # raised from self.lacus
-            self.logger.warning(f'Unable to connect to any lacus: {e}')
-            raise e
-        except Exception as e:
-            self.logger.warning(f'Unable to get the status for {capture_uuid} from lacus: {e}')
-        return None
 
     def uuids_ready(self) -> Generator[tuple[LacusCore | PyLacus, str]]:
         '''Get the list of captures ready to be processed'''
         # Only check if the top 100 in the priority list are done, as they are the most likely ones to be ready
         # and if the list is very very long, iterating over it takes a very long time.
         for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', '+inf', '-inf', start=0, num=100):
-            if not uuid:
-                # not possible? was there before refactoring, not sure why
-                continue
             if not self.lookyloo.redis.exists(uuid):
                 self.logger.info(f'UUID "{uuid}" has no settings, clearing it up.')
                 self.lookyloo.redis.zrem('to_capture', uuid)
                 continue
-            if self.lookyloo.redis.hget(uuid, 'not_queued') == '1':
+            try:
+                capture_settings = self.lookyloo.get_settings_to_capture(uuid)
+            except Exception as e:
+                self.logger.warning(f'[{uuid}] Settings are broken, clearing them up: {e}.')
+                self.lookyloo.redis.delete(uuid)
+
+            if not capture_settings:
+                self.logger.warning('Unable to get settings, should have been caught before.')
+                continue
+
+            if capture_settings.not_queued:
                 self.logger.info(f'UUID "{uuid}" is not queued, not ready for sure.')
                 continue
-            if lacus := self._capture_ready_to_store(uuid):
-                yield lacus, uuid
+            try:
+                lacus_status = self.lookyloo.get_lacus_capture_status(capture_settings)
+                if lacus_status in [CaptureStatusPy.DONE, CaptureStatusCore.DONE]:
+                    if capture_settings.remote_lacus_name:
+                        yield self.lookyloo.lacus[capture_settings.remote_lacus_name], uuid
+                    else:
+                        # It should not happen at this stage, the value has been set i fit was missing
+                        self.logger.warning(f'[{uuid}] Missing remote_lacus_name.')
+            except Exception as e:
+                self.logger.warning(f'[{uuid}] Something went poorly when getting the status: {e}')
 
     def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
@@ -122,7 +98,7 @@ class AsyncCapture(AbstractManager):
             elif isinstance(lacus, PyLacus):
                 entries = lacus.get_capture(uuid)
             else:
-                raise LookylooException(f'lacus must be LacusCore or PyLacus, not {type(self.lookyloo.lacus)}.')
+                raise LookylooException(f'lacus must be LacusCore or PyLacus, not {type(lacus)}.')
             log = f'Got the capture for {uuid} from Lacus'
             if runtime := entries.get('runtime'):
                 log = f'{log} - Runtime: {runtime}'
@@ -190,8 +166,9 @@ class AsyncCapture(AbstractManager):
             return None
 
         try:
-            if isinstance(self.lookyloo.lacus, LacusCore):
-                await self._trigger_captures()
+            if _l := self.lookyloo.lacus.get(self.lookyloo.default_lacus):
+                if isinstance(_l, LacusCore):
+                    await self._trigger_captures(_l)
             self.process_capture_queue()
         except LacusUnreachable:
             self.logger.error('Lacus is unreachable, retrying later.')
@@ -199,7 +176,7 @@ class AsyncCapture(AbstractManager):
 
     async def _wait_to_finish_async(self) -> None:
         try:
-            if isinstance(self.lookyloo.lacus, LacusCore):
+            if isinstance(self.lookyloo.lacus[self.lookyloo.default_lacus], LacusCore):
                 while self.captures:
                     self.logger.info(f'Waiting for {len(self.captures)} capture(s) to finish...')
                     await asyncio.sleep(5)

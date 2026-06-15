@@ -10,6 +10,7 @@ import itertools
 import logging
 import operator
 import shutil
+import random
 import re
 import smtplib
 import ssl
@@ -124,9 +125,44 @@ class Lookyloo():
 
         # When we have absolutely no lacuses available for a while, everything is super slow
         # set it to None by default, and add a retry timer
-        self._lacus: LacusCore | dict[str, PyLacus]
         self.__lacus_retry_at: datetime | None = None
         self.__lacus_retry_interval: timedelta = timedelta(minutes=5)
+        self.default_lacus: str = '_auto_default'
+        self._lacus: dict[str, PyLacus | LacusCore] = {}
+
+        self._lacuses_config: dict[str, dict[str, str]] = defaultdict(dict)
+        self._lacuses_groups: dict[str, list[str]] = defaultdict(list)
+        if remote_lacus_config := get_config('generic', 'remote_lacus'):
+            if remote_lacus_config.get('enable'):
+                # No groups, as we have one remote instance
+                self._lacuses_config[self.default_lacus] = {'url': remote_lacus_config['url'],
+                                                            # Just to normalze the settings
+                                                            'name': self.default_lacus}
+
+        # if both are enabled, the config is wrong => exception
+        if remote_lacus_config := get_config('generic', 'multiple_remote_lacus'):
+            if remote_lacus_config.get('enable'):
+                if self._lacuses_config:
+                    raise ConfigError('You cannot use both remote_lacus and multiple_remote_lacus at the same time.')
+
+                for lacus_config in remote_lacus_config.get('remote_lacus'):
+                    if lacus_config['name'] in self._lacuses_config:
+                        raise ConfigError(f'Duplicate name "{lacus_config["name"]}" in multiple_remote_lacus config.')
+                    self._lacuses_config[lacus_config['name']] = lacus_config
+
+                    if group := lacus_config.get('group'):
+                        if group in self._lacuses_config:
+                            raise ConfigError(f'A group name ({group}) cannot also be the name of a specific lacus name in multiple_remote_lacus config')
+                        self._lacuses_groups[group].append(lacus_config['name'])
+
+                remote_default = remote_lacus_config.get('default')
+                if remote_default not in self._lacuses_config and remote_default not in self._lacuses_groups:
+                    raise ConfigError(f'Default remote lacus ({remote_lacus_config.get("default")}) unknown in the lacuses, and is not a group either.')
+                self.default_lacus = remote_lacus_config.get('default')
+
+        if not self._lacuses_config:
+            # Not using a remote instance
+            self._lacuses_config[self.default_lacus] = {'name': self.default_lacus}
 
         # Initialize 3rd party components
         # ## Initialize MISP(s)
@@ -192,6 +228,21 @@ class Lookyloo():
             return self._monitoring
         return None
 
+    def _get_lacus_from_group(self, group: str) -> str:
+        lacuses_up = []
+        for name in self._lacuses_groups[group]:
+            _l = self.lacus.get(name)
+            # NOTE: It cannot be a LacusCore anyway
+            if isinstance(_l, PyLacus):
+                if _l.is_up:
+                    lacuses_up.append(name)
+        if lacuses_up:
+            # choose from a lacus instance that is up
+            return random.choice(lacuses_up)
+        else:
+            # none of them are up, get the first one in the list
+            return self._lacuses_groups[group][0]
+
     @property
     def redis(self) -> Redis:  # type: ignore[type-arg]
         return Redis(connection_pool=self.redis_pool)
@@ -214,55 +265,32 @@ class Lookyloo():
         return lacus
 
     @cached_property
-    def lacus(self) -> LacusCore | dict[str, PyLacus]:
+    def lacus(self) -> dict[str, PyLacus | LacusCore]:
         if self.__lacus_retry_at and self.__lacus_retry_at > datetime.now():
             raise LacusUnreachable(f'Remote lacus is enabled was unreachable. Retry at {self.__lacus_retry_at.isoformat()}')
         self.__lacus_retry_at = None
-
-        has_remote_lacus = False
-        if get_config('generic', 'remote_lacus'):
-            self._lacus = {}
-            remote_lacus_config = get_config('generic', 'remote_lacus')
-            if remote_lacus_config.get('enable'):
+        for name, config in self._lacuses_config.items():
+            if 'url' in config:
                 try:
-                    self._lacus['default'] = self.__enable_remote_lacus(remote_lacus_config.get('url'))
+                    self._lacus[name] = self.__enable_remote_lacus(config['url'])
                 except LacusUnreachable as e:
-                    self.logger.warning(f'Unable to setup remote lacus: {e}')
-                    self.__lacus_retry_at = datetime.now() + self.__lacus_retry_interval
-                    raise LacusUnreachable('Remote lacus is enabled but unreachable.')
-                has_remote_lacus = True
+                    self.logger.warning(f'Unable to setup remote lacus {config["name"]}: {e}')
+            else:
+                # use LacusCore
+                # We need a redis connector that doesn't decode.
+                redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))  # type: ignore[type-arg]
+                self._lacus[name] = LacusCore(redis, tor_proxy=get_config('generic', 'tor_proxy'),
+                                              i2p_proxy=get_config('generic', 'i2p_proxy'),
+                                              tt_settings=get_config('generic', 'trusted_timestamp_settings'),
+                                              max_capture_time=get_config('generic', 'max_capture_time'),
+                                              only_global_lookups=get_config('generic', 'only_global_lookups'),
+                                              headed_allowed=self.headed_allowed,
+                                              loglevel=get_config('generic', 'loglevel'))
 
-        if remote_lacus_config := get_config('generic', 'multiple_remote_lacus'):
-            # Multiple remote lacus enabled
-            if remote_lacus_config.get('enable') and has_remote_lacus:
-                raise ConfigError('You cannot use both remote_lacus and multiple_remote_lacus at the same time.')
-            if remote_lacus_config.get('enable'):
-                self._lacus = {}
-                for lacus_config in remote_lacus_config.get('remote_lacus'):
-                    try:
-                        self._lacus[lacus_config['name']] = self.__enable_remote_lacus(lacus_config['url'])
-                    except LacusUnreachable as e:
-                        self.logger.warning(f'Unable to setup remote lacus {lacus_config["name"]}: {e}')
-                if not self._lacus:
-                    self.__lacus_retry_at = datetime.now() + self.__lacus_retry_interval
-                    raise LacusUnreachable('Unable to connect to any of the lacuses in the config.')
+        if not self._lacus:
+            self.__lacus_retry_at = datetime.now() + self.__lacus_retry_interval
+            raise LacusUnreachable('Unable to connect to any of the lacuses in the config.')
 
-                # Check default lacus is valid
-                default_remote_lacus_name = remote_lacus_config.get('default')
-                if default_remote_lacus_name not in self._lacus:
-                    raise ConfigError(f'Invalid or unreachable default remote lacus: {default_remote_lacus_name}')
-                has_remote_lacus = True
-
-        if not has_remote_lacus:
-            # We need a redis connector that doesn't decode.
-            redis: Redis = Redis(unix_socket_path=get_socket_path('cache'))  # type: ignore[type-arg]
-            self._lacus = LacusCore(redis, tor_proxy=get_config('generic', 'tor_proxy'),
-                                    i2p_proxy=get_config('generic', 'i2p_proxy'),
-                                    tt_settings=get_config('generic', 'trusted_timestamp_settings'),
-                                    max_capture_time=get_config('generic', 'max_capture_time'),
-                                    only_global_lookups=get_config('generic', 'only_global_lookups'),
-                                    headed_allowed=self.headed_allowed,
-                                    loglevel=get_config('generic', 'loglevel'))
         return self._lacus
 
     def add_context(self, capture_uuid: str, /, urlnode_uuid: str, *, ressource_hash: str,
@@ -637,77 +665,91 @@ class Lookyloo():
 
     def get_lacus_info(self) -> dict[str, dict[str, Any]]:
         to_return: dict[str, dict[str, Any]] = {}
-        if isinstance(self.lacus, dict):
-            # multiple remote
-            for remote_lacus_name, _lacus in self.lacus.items():
-                to_return[remote_lacus_name] = {}
-                if not _lacus.is_up:
-                    self.logger.warning(f'Lacus "{remote_lacus_name}" is not up.')
-                    to_return[remote_lacus_name]['is_up'] = False
+        for remote_lacus_name, _lacus in self.lacus.items():
+            if isinstance(_lacus, LacusCore):
+                # one, local, doesn't expose proxies.
+                to_return[self.default_lacus] = {'settings': _lacus.settings(),
+                                                 'devices': _lacus.playwright_devices(),
+                                                 'is_up': True}
+                break
+
+            # if the lacus instance is part of a group, use the group name
+            if group := self._lacuses_config[remote_lacus_name].get('group'):
+                if to_return.get(group) and to_return[group]['is_up']:
+                    # already got that group
                     continue
-                to_return[remote_lacus_name]['is_up'] = True
-                try:
-                    if proxies := _lacus.proxies():
-                        # We might have other settings in the future.
-                        to_return[remote_lacus_name]['proxies'] = proxies
-                    if devices := _lacus.playwright_devices():
-                        to_return[remote_lacus_name]['devices'] = devices
-                except Exception as e:
-                    # We cannot connect to Lacus, skip it.
-                    self.logger.warning(f'Unable to get infos from Lacus "{remote_lacus_name}": {e}.')
-                    continue
-                try:
-                    # settings is a new feature, it will fail on old versions of lacus
-                    if settings := _lacus.settings():
-                        to_return[remote_lacus_name]['settings'] = settings
-                except Exception as e:
-                    # cannot get settings
-                    self.logger.warning(f'Unable to get settings from Lacus "{remote_lacus_name}": {e}.')
-                    continue
-        elif isinstance(self.lacus, PyLacus):
-            # one, remote
-            to_return['default'] = {}
-            if self.lacus.is_up:
-                try:
-                    if proxies := self.lacus.proxies():
-                        # We might have other settings in the future.
-                        to_return['default']['proxies'] = proxies
-                    if settings := self.lacus.settings():
-                        to_return['default']['settings'] = settings
-                    if devices := self.lacus.playwright_devices():
-                        to_return[remote_lacus_name]['devices'] = devices
-                except Exception as e:
-                    # We cannot connect to Lacus, skip it.
-                    self.logger.warning(f'Unable to get infos from Lacus "default": {e}.')
+                public_name = group
             else:
-                self.logger.warning('Lacus "default" is not up.')
-        elif isinstance(self.lacus, LacusCore):
-            # one, local, doesn't expose proxies.
-            to_return['default'] = {'settings': self.lacus.settings(),
-                                    'devices': self.lacus.playwright_devices()}
+                public_name = remote_lacus_name
+
+            to_return[public_name] = {}
+            if not _lacus.is_up:
+                self.logger.warning(f'Lacus "{remote_lacus_name}" is not up.')
+                to_return[public_name]['is_up'] = False
+                continue
+            to_return[public_name]['is_up'] = True
+            try:
+                if proxies := _lacus.proxies():
+                    # We might have other settings in the future.
+                    to_return[public_name]['proxies'] = proxies
+                if devices := _lacus.playwright_devices():
+                    to_return[public_name]['devices'] = devices
+            except Exception as e:
+                # We cannot connect to Lacus, skip it.
+                self.logger.warning(f'Unable to get infos from Lacus "{remote_lacus_name}": {e}.')
+                continue
+            try:
+                # settings is a new feature, it will fail on old versions of lacus
+                if settings := _lacus.settings():
+                    to_return[public_name]['settings'] = settings
+            except Exception as e:
+                # cannot get settings
+                self.logger.warning(f'Unable to get settings from Lacus "{remote_lacus_name}": {e}.')
+                continue
         if not to_return:
             raise ConfigError('Unable to configure any lacus.')
         return to_return
 
-    def _get_lacus_capture_status(self, capture_uuid: str, /) -> CaptureStatusCore | CaptureStatusPy:
-        lacus_status: CaptureStatusCore | CaptureStatusPy = CaptureStatusPy.UNKNOWN
+    def get_settings_to_capture(self, capture_uuid: str, /) -> LookylooCaptureSettings | None:
+        """Try to get settings, but only from redis (capture not finished)"""
         try:
-            if isinstance(self.lacus, dict):
-                for lacus in self.lacus.values():
-                    lacus_status = lacus.get_capture_status(capture_uuid)
-                    if lacus_status != CaptureStatusPy.UNKNOWN:
-                        break
-            elif isinstance(self.lacus, PyLacus):
-                lacus_status = self.lacus.get_capture_status(capture_uuid)
+            if _cs := self.redis.hgetall(capture_uuid):
+                return LookylooCaptureSettings.model_validate(_cs)
             else:
-                # Use lacuscore directly
-                lacus_status = self.lacus.get_capture_status(capture_uuid)
+                self.logger.warning(f'[{capture_uuid}] Unable to get settings, from redis.')
+                return None
+        except CaptureSettingsError as e:
+            self.logger.warning(f'[{capture_uuid}] Invalid capture settings: {e}')
+            raise LookylooCaptureSettingsError('Invalid capture settings') from e
+        except ValidationError as e:
+            self.logger.warning(f'[{capture_uuid}] Invalid capture settings: {e}')
+            raise LookylooCaptureSettingsError('Invalid capture settings') from e
+
+    def get_lacus_capture_status(self, capture_settings: LookylooCaptureSettings, /) -> CaptureStatusCore | CaptureStatusPy:
+        """This mehod is meant to check if the capture is done on Lacus side, **not** if it exists in lookyloo
+        If the settings aren't there as-is in redis, the call is irrelevant."""
+
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_settings.uuid})
+        if not capture_settings.remote_lacus_name:
+            logger.info('The capture was stored without a lacus name, fallback to default.')
+            capture_settings.remote_lacus_name = self.default_lacus
+        lacus = self.lacus.get(capture_settings.remote_lacus_name)
+        if not lacus:
+            logger.warning(f'Lacus named "{capture_settings.remote_lacus_name}" in unknown. Should not happen (?).')
+            raise LookylooException('Attempted to connect to an unknown Lacus instance.')
+
+        if not capture_settings.uuid:
+            # Should not happen
+            raise LookylooException('UUID is missing, cannot get the status.')
+
+        try:
+            return lacus.get_capture_status(capture_settings.uuid)
         except LacusUnreachable as e:
-            self.logger.warning(f'Unable to connect to lacus: {e}')
+            logger.warning(f'Unable to connect to lacus: {e}')
             raise e
         except Exception as e:
-            self.logger.warning(f'Unable to get the status for {capture_uuid} from lacus: {e}')
-        return lacus_status
+            logger.warning(f'Unable to get the status from lacus: {e}')
+            raise LookylooException(f'Unexpected error while getting status from Lacus: {e}')
 
     def get_capture_status(self, capture_uuid: str, /) -> CaptureStatusCore | CaptureStatusPy:
         '''Returns the status (queued, ongoing, done, or UUID unknown)'''
@@ -717,7 +759,15 @@ class Lookyloo():
             # Post-processing on lookyloo's side
             return CaptureStatusCore.ONGOING
 
-        lacus_status = self._get_lacus_capture_status(capture_uuid)
+        try:
+            if capture_settings := self.get_settings_to_capture(capture_uuid):
+                lacus_status = self.get_lacus_capture_status(capture_settings)
+            else:
+                lacus_status = CaptureStatusCore.UNKNOWN
+        except Exception as e:
+            self.logger.error(f'Unable to get the status for {capture_uuid}: {e}')
+            return CaptureStatusCore.UNKNOWN
+
         if (lacus_status in [CaptureStatusCore.UNKNOWN, CaptureStatusPy.UNKNOWN]
                 and self.redis.zscore('to_capture', capture_uuid) is not None):
             # Lacus doesn't know it, but it is in to_capture. Happens if we check before it's picked up by Lacus.
@@ -867,21 +917,18 @@ class Lookyloo():
 
         try:
             lacus: LacusCore | PyLacus
-            if isinstance(self.lacus, dict):
-                # Multiple remote lacus enabled, we need a name to identify the lacus
-                if query.remote_lacus_name and self.lacus.get(query.remote_lacus_name):
-                    lacus = self.lacus[query.remote_lacus_name]
-                elif len(self.lacus) == 1:
-                    # only one remote lacus, pick that.
-                    lacus = list(self.lacus.values())[0]
-                    # the name is set to default in the "lacus" getter
-                    query.remote_lacus_name = list(self.lacus.keys())[0]
-                else:
-                    query.remote_lacus_name = get_config('generic', 'multiple_remote_lacus').get('default')
-                    lacus = self.lacus[query.remote_lacus_name]
-            else:
-                # Should be a LacusCore
-                lacus = self.lacus
+            # 1. do we have a name?
+            if not query.remote_lacus_name:
+                # => fallback to default (can be a group)
+                query.remote_lacus_name = self.default_lacus
+
+            # 2. is it a group name?
+            if query.remote_lacus_name in self._lacuses_groups:
+                # => get a name from the lacuses in that group
+                query.remote_lacus_name = self._get_lacus_from_group(query.remote_lacus_name)
+
+            # 3. Get the connector
+            lacus = self.lacus[query.remote_lacus_name]
         except LacusUnreachable as e:
             self.logger.warning(f'Unable to enqueue capture: {e}')
             if query.uuid:
@@ -889,6 +936,7 @@ class Lookyloo():
             else:
                 perma_uuid = str(uuid4())
             query.not_queued = True
+            query.remote_lacus_name = self.default_lacus
         else:
             try:
                 perma_uuid = lacus.enqueue(
@@ -938,6 +986,7 @@ class Lookyloo():
             if not self.redis.hexists('lookup_dirs', perma_uuid):  # if true, already captured
                 p = self.redis.pipeline()
                 p.zadd('to_capture', {perma_uuid: priority})
+                query.uuid = perma_uuid
                 p.hset(perma_uuid, mapping=query.redis_dump())
                 p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
                 p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')

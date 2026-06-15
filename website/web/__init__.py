@@ -59,7 +59,7 @@ from lookyloo.helpers import (UserAgents,
                               get_taxonomies,
                               mimetype_to_generic,
                               )
-from pylacus import RemoteHeadedSessionResponse
+from pylacus import RemoteHeadedSessionResponse, PyLacus
 from zoneinfo import available_timezones
 
 from .genericapi import api as generic_api
@@ -1732,9 +1732,15 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
 
             remote_headed_session: RemoteHeadedSessionResponse = {}
             if capture_settings := lookyloo.get_capture_settings(tree_uuid):
-                if isinstance(lookyloo.lacus, dict) and capture_settings.remote_headfull and capture_settings.remote_lacus_name:
-                    # get the URL
-                    remote_headed_session = lookyloo.lacus[capture_settings.remote_lacus_name].get_remote_headed_session(tree_uuid)
+                if capture_settings.remote_lacus_name and capture_settings.remote_headfull:
+                    if _l := lookyloo.lacus.get(capture_settings.remote_lacus_name):
+                        if isinstance(_l, PyLacus):
+                            # get the URL
+                            remote_headed_session = _l.get_remote_headed_session(tree_uuid)
+                        else:
+                            app.logger.error('Cannot get remote headfull URL from LacusCore')
+                    else:
+                        app.logger.warning(f'Unknown remote lacus name ({capture_settings.remote_lacus_name})')
 
             return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid, remote_headed_session=remote_headed_session)
     except LacusUnreachable:
@@ -2078,7 +2084,6 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                               user_config: dict[str, Any] | None=None) -> str:
     # if we have multiple remote lacus, get the list of names
     multiple_remote_lacus: dict[str, dict[str, Any]] = {}
-    default_remote_lacus = None
     mastodon_domain = None
     mastodon_botname = None
     if get_config('mastobot', 'enable'):
@@ -2096,12 +2101,6 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
 
     try:
         multiple_remote_lacus = lookyloo.get_lacus_info()
-        # NOTE: if multiple_remote_lacus is false (empty), an exception has been raised.
-        if len(multiple_remote_lacus) == 1:
-            default_remote_lacus = list(multiple_remote_lacus.keys())[0]
-        else:
-            default_remote_lacus = get_config('generic', 'multiple_remote_lacus').get('default')
-
     except (ConfigError, LacusUnreachable) as e:
         app.logger.warning(f'Unable to get lacus settings: {e}.')
         flash('The capturing system is down, you can enqueue a capture and it will start ASAP.', 'error')
@@ -2110,7 +2109,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
         # NOTE: Used as a fallback in case we cannot get anything from PyLacus/LacusCore
         devices = lookyloo.get_playwright_devices()
     else:
-        # FIXME: needs a bit more work
+        # FIXME: needs a bit more work to use the one from lacus itself
         devices = lookyloo.get_playwright_devices()
 
     # NOTE: Inform user if none of the remote lacuses are up?
@@ -2129,7 +2128,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            tt_enabled_default=tt_enabled_default,
                            hide_tt_checkbox=hide_tt_checkbox,
                            multiple_remote_lacus=multiple_remote_lacus,
-                           default_remote_lacus=default_remote_lacus,
+                           default_remote_lacus=lookyloo.default_lacus,
                            mastobot_enabled=get_config('mastobot', 'enable'),
                            mastodon_domain=mastodon_domain,
                            mastodon_botname=mastodon_botname,
@@ -2300,18 +2299,13 @@ def capture_web() -> str | Response | WerkzeugResponse:
             capture_query['viewport'] = {'width': int(request.form.get('width', 1280)),
                                          'height': int(request.form.get('height', 720))}
 
-        capture_query['remote_lacus_name'] = request.form.get('remote_lacus_name')
+        capture_query['remote_lacus_name'] = request.form.get('remote_lacus_name', lookyloo.default_lacus)
         # default to headless
         capture_query['headless'] = True
 
         try:
             if multiple_remote_lacus := lookyloo.get_lacus_info():
-                if capture_query['remote_lacus_name']:
-                    remote_lacus_info = multiple_remote_lacus[capture_query['remote_lacus_name']]
-                else:
-                    # fallback to the first one in the dict
-                    remote_lacus_info = list(multiple_remote_lacus.values())[0]
-
+                remote_lacus_info = multiple_remote_lacus[capture_query['remote_lacus_name']]
                 # depending on the setting and the config lacus side, pass the browser graphical mode.
                 if browser_graphical_mode := request.form.get(f'browser_graphical_mode_{capture_query.get("remote_lacus_name")}'):
                     if remote_lacus_info['settings']['headed_allowed'] and browser_graphical_mode == "headfull":

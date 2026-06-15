@@ -669,7 +669,7 @@ class Devices(Resource):  # type: ignore[misc]
 class RemoteLacuses(Resource):  # type: ignore[misc]
 
     def get(self) -> Response:
-        if isinstance(lookyloo.lacus, LacusCore):
+        if isinstance(lookyloo.lacus[lookyloo.default_lacus], LacusCore):
             return make_response({'error': 'Lacus is not configured to use remote Lacus instances.'}, 400)
 
         to_return = []

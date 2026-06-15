@@ -9,7 +9,11 @@
 {% macro lacus_info(lacus_name, settings) %}
 
 <div class="alert alert-info" role="alert" id="lacus_info_{{lacus_name}}">
-  The Lacus instance called "<b>{{lacus_name}}</b>" has the following capabilities:
+  {% if lacus_name != "_auto_default" %}
+      The Lacus instance called "<b>{{lacus_name}}</b>" has the following capabilities:
+  {% else %}
+    The Lacus instance has the following capabilities:
+  {% endif%}
   <ul>
     <li>
       {% if settings['headed_allowed'] %}

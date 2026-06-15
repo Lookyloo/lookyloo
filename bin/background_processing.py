@@ -11,7 +11,7 @@ from typing import Any
 
 from lacuscore import CaptureStatus as CaptureStatusCore
 from lookyloo import Lookyloo
-from lookyloo_models import CaptureSettingsError, LookylooCaptureSettings
+from lookyloo_models import LookylooCaptureSettings
 from lookyloo.exceptions import LacusUnreachable
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
@@ -128,7 +128,7 @@ class Processing(AbstractManager):
 
     def _retry_failed_enqueue(self) -> None:
         '''If enqueuing failed, the settings are added, with a UUID in the 'to_capture key', and they have a UUID'''
-        to_requeue: list[str] = []
+        to_requeue: list[LookylooCaptureSettings] = []
         try:
             for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', 'Inf', '-Inf', start=0, num=500):
                 if not self.lookyloo.redis.exists(uuid):
@@ -139,11 +139,21 @@ class Processing(AbstractManager):
                     # Finishing up on lookyloo side, ignore.
                     continue
 
-                if self.lookyloo._get_lacus_capture_status(uuid) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                try:
+                    capture_settings = self.lookyloo.get_settings_to_capture(uuid)
+                except Exception as e:
+                    self.logger.warning(f'[{uuid}] Settings are broken, clearing them up: {e}.')
+                    self.lookyloo.redis.delete(uuid)
+
+                if not capture_settings:
+                    self.logger.warning('Unable to get settings, should have been caught before.')
+                    continue
+
+                if self.lookyloo.get_lacus_capture_status(capture_settings) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
                     # The capture is unknown on lacus side, but we have it in the to_capture queue *and* we still have the settings on lookyloo side
-                    if self.lookyloo.redis.hget(uuid, 'not_queued') == '1':
+                    if capture_settings.not_queued:
                         # The capture has already been marked as not queued
-                        to_requeue.append(uuid)
+                        to_requeue.append(capture_settings)
                     else:
                         # It might be a race condition so we don't add it in the requeue immediately, just flag it at not_queued.
                         self.lookyloo.redis.hset(uuid, 'not_queued', 1)
@@ -156,42 +166,32 @@ class Processing(AbstractManager):
             self.logger.warning('Lacus still unreachable, trying again later')
             return None
 
-        for uuid in to_requeue:
-            if self.lookyloo.redis.zscore('to_capture', uuid) is None:
+        for capture_settings in to_requeue:
+            if not capture_settings.uuid:
+                self.logger.warning('Missing UUID, should not happen there.')
+                continue
+            if self.lookyloo.redis.zscore('to_capture', capture_settings.uuid) is None:
                 # The capture has been captured in the meantime.
                 continue
-            self.logger.info(f'Found a non-queued capture ({uuid}), retrying now.')
-            # This capture couldn't be queued and we created the uuid locally
+            self.logger.info(f'Found a non-queued capture ({capture_settings.uuid}), retrying now.')
             try:
-                if capture_settings := self.lookyloo.redis.hgetall(uuid):
-                    query = LookylooCaptureSettings.model_validate(capture_settings)
-                    # Make sure the UUID is set in the settings so we don't get a new one.
-                    query.uuid = uuid
-                    try:
-                        new_uuid = self.lookyloo.enqueue_capture(query, 'api', 'background_processing', False)
-                        if new_uuid != uuid:
-                            # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
-                            self.logger.warning(f'Had to change the capture UUID (duplicate). Old: {uuid} / New: {new_uuid}')
-                            # also need to clear up the old capture settings, as it won't be processed
-                            self.lookyloo.redis.zrem('to_capture', uuid)
-                            self.lookyloo.redis.delete(uuid)
-                            continue
-                    except LacusUnreachable:
-                        self.logger.warning('Lacus still unreachable.')
-                        break
-                    except Exception as e:
-                        self.logger.warning(f'Still unable to enqueue capture: {e}')
-                        break
-                    else:
-                        self.lookyloo.redis.hdel(uuid, 'not_queued')
-                        self.logger.info(f'{uuid} enqueued.')
-            except CaptureSettingsError as e:
-                self.logger.error(f'Broken settings for {uuid} made their way in the cache, removing them: {e}')
-                self.lookyloo.redis.zrem('to_capture', uuid)
-                self.lookyloo.redis.delete(uuid)
-
+                new_uuid = self.lookyloo.enqueue_capture(capture_settings, 'api', 'background_processing', False)
+                if new_uuid != capture_settings.uuid:
+                    # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
+                    self.logger.warning(f'Had to change the capture UUID (duplicate). Old: {capture_settings.uuid} / New: {new_uuid}')
+                    # also need to clear up the old capture settings, as it won't be processed
+                    self.lookyloo.redis.zrem('to_capture', capture_settings.uuid)
+                    self.lookyloo.redis.delete(capture_settings.uuid)
+                    continue
+            except LacusUnreachable:
+                self.logger.warning('Lacus still unreachable.')
+                break
             except Exception as e:
-                self.logger.error(f'Unable to requeue {uuid}: {e}')
+                self.logger.warning(f'Still unable to enqueue capture: {e}')
+                break
+            else:
+                self.lookyloo.redis.hdel(capture_settings.uuid, 'not_queued')
+                self.logger.info(f'{capture_settings.uuid} enqueued.')
 
     def _process_built_captures(self) -> None:
         """This method triggers some post processing on recent built captures.
