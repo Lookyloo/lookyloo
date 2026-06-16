@@ -747,7 +747,7 @@ class Lookyloo():
 
         if not capture_settings.uuid:
             # Should not happen
-            raise LookylooException('UUID is missing, cannot get the status.')
+            raise MissingUUID('UUID is missing, cannot get the status.')
 
         try:
             return lacus.get_capture_status(capture_settings.uuid)
@@ -771,6 +771,10 @@ class Lookyloo():
                 lacus_status = self.get_lacus_capture_status(capture_settings)
             else:
                 lacus_status = CaptureStatusCore.UNKNOWN
+        except MissingUUID:
+            # new format, just set it
+            self.redis.hset(capture_uuid, 'uuid', capture_uuid)
+            return CaptureStatusCore.QUEUED
         except Exception as e:
             self.logger.error(f'Unable to get the status for {capture_uuid}: {e}')
             return CaptureStatusCore.UNKNOWN

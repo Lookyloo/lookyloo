@@ -12,7 +12,7 @@ from typing import Any
 from lacuscore import CaptureStatus as CaptureStatusCore
 from lookyloo import Lookyloo
 from lookyloo_models import LookylooCaptureSettings
-from lookyloo.exceptions import LacusUnreachable, LacusUnknown
+from lookyloo.exceptions import LacusUnreachable, LacusUnknown, MissingUUID
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 from lookyloo.modules import AIL, AssemblyLine, MISPs, MISP, AutoCategorize
@@ -162,9 +162,13 @@ class Processing(AbstractManager):
                     # Enough stuff to requeue
                     self.logger.info('Got enough captures to requeue.')
                     break
+        except MissingUUID:
+            self.lookyloo.redis.hset(uuid, 'uuid', uuid)
+            return None
         except LacusUnknown as e:
             self.logger.warning(f'[{uuid}] Unknown lacus, revert to default: {e}')
             self.lookyloo.redis.hset(uuid, 'remote_lacus_name', self.lookyloo.default_lacus)
+            return None
         except LacusUnreachable:
             self.logger.warning('Lacus still unreachable, trying again later')
             return None
