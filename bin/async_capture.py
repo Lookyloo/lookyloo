@@ -87,6 +87,7 @@ class AsyncCapture(AbstractManager):
                         # It should not happen at this stage, the value has been set i fit was missing
                         self.logger.warning(f'[{uuid}] Missing remote_lacus_name.')
             except MissingUUID:
+                # old format, hset didn't contain the uuid
                 self.lookyloo.redis.hset(uuid, 'uuid', uuid)
             except LacusUnknown as e:
                 # fallback to default lacus

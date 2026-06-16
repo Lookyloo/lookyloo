@@ -148,23 +148,24 @@ class Processing(AbstractManager):
                 if not capture_settings:
                     self.logger.warning('Unable to get settings, should have been caught before.')
                     continue
-
-                if self.lookyloo.get_lacus_capture_status(capture_settings) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
-                    # The capture is unknown on lacus side, but we have it in the to_capture queue *and* we still have the settings on lookyloo side
-                    if capture_settings.not_queued:
-                        # The capture has already been marked as not queued
-                        to_requeue.append(capture_settings)
-                    else:
-                        # It might be a race condition so we don't add it in the requeue immediately, just flag it at not_queued.
-                        self.lookyloo.redis.hset(uuid, 'not_queued', 1)
+                try:
+                    if self.lookyloo.get_lacus_capture_status(capture_settings) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                        # The capture is unknown on lacus side, but we have it in the to_capture queue *and* we still have the settings on lookyloo side
+                        if capture_settings.not_queued:
+                            # The capture has already been marked as not queued
+                            to_requeue.append(capture_settings)
+                        else:
+                            # It might be a race condition so we don't add it in the requeue immediately, just flag it at not_queued.
+                            self.lookyloo.redis.hset(uuid, 'not_queued', 1)
+                except MissingUUID:
+                    # old format, hset didn't contain the uuid
+                    self.lookyloo.redis.hset(uuid, 'uuid', uuid)
+                    continue
 
                 if len(to_requeue) > 100:
                     # Enough stuff to requeue
                     self.logger.info('Got enough captures to requeue.')
                     break
-        except MissingUUID:
-            self.lookyloo.redis.hset(uuid, 'uuid', uuid)
-            return None
         except LacusUnknown as e:
             self.logger.warning(f'[{uuid}] Unknown lacus, revert to default: {e}')
             self.lookyloo.redis.hset(uuid, 'remote_lacus_name', self.lookyloo.default_lacus)
