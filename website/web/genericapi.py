@@ -729,7 +729,10 @@ class CaptureReport(Resource):  # type: ignore[misc]
     @api.param('comment', 'Description of the URL, will be given to the analyst.')  # type: ignore[untyped-decorator]
     def post(self, capture_uuid: str) -> Response:
         parameters: dict[str, Any] = request.get_json(force=True)
-        mail_sent = lookyloo.send_mail(capture_uuid, parameters.get('email', ''), parameters.get('comment'))
+        mail_sent = lookyloo.send_mail(capture_uuid,
+                                       as_admin=flask_login.current_user.is_authenticated,
+                                       email=parameters.get('email', ''),
+                                       comment=parameters.get('comment'))
         if isinstance(mail_sent, bool):
             # Success
             mail_sent = {'info': 'Report sent succesfully'}

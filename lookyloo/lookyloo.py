@@ -92,6 +92,12 @@ if TYPE_CHECKING:
     from playwrightcapture import FramesResponse
 
 
+# Standard HTML5 email validation pattern (same as the WHATWG <input type="email"> spec).
+# \A and \Z anchors (rather than ^/$) reject any embedded or trailing newline, blocking
+# Reply-To header injection.
+EMAIL_RE = re.compile(r"\A[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\Z")
+
+
 class Lookyloo():
 
     def __init__(self, cache_max_size: int | None=None) -> None:
@@ -1239,7 +1245,8 @@ class Lookyloo():
         modules = self.modules_filtered(capture_uuid)
         msg = EmailMessage()
         msg['From'] = email_config['from']
-        if email:
+        if email and EMAIL_RE.match(email):
+            # skip clearly incorrect emails (also avoids Reply-To header injection, if that's possible there?)
             msg['Reply-To'] = email
         msg['To'] = email_config['to']
         msg['Subject'] = email_config['subject']
