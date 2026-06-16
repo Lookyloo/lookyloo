@@ -2127,6 +2127,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
                            headed_allowed=lookyloo.headed_allowed,
                            tt_enabled_default=tt_enabled_default,
                            hide_tt_checkbox=hide_tt_checkbox,
+                           default_lacus_name=lookyloo.default_lacus,
                            multiple_remote_lacus=multiple_remote_lacus,
                            default_remote_lacus=lookyloo.default_lacus,
                            mastobot_enabled=get_config('mastobot', 'enable'),

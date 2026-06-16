@@ -682,7 +682,7 @@ class Lookyloo():
             # if the lacus instance is part of a group, use the group name
             if group := self._lacuses_config[remote_lacus_name].get('group'):
                 if to_return.get(group) and to_return[group]['is_up']:
-                    # already got that group
+                    # already got that group, all the entries should have the same settings.
                     continue
                 public_name = group
             else:
@@ -942,6 +942,7 @@ class Lookyloo():
             else:
                 perma_uuid = str(uuid4())
             query.not_queued = True
+            # None of the lacuses are reachable, falling back to the default one
             query.remote_lacus_name = self.default_lacus
         else:
             try:

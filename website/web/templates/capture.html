@@ -171,7 +171,7 @@
           {% for lacus_name, details in multiple_remote_lacus.items()%}
             <div name="remote_lacus_settings" id="settings_{{lacus_name}}" {%if lacus_name != default_remote_lacus %}style="display: none;"{% endif %}>
               {% if 'settings' in details %}
-                {{lacus_info(lacus_name, details['settings'])}}
+                {{lacus_info(lacus_name, details['settings'], default_lacus_name)}}
                 <div class="row mb-3">
                   <div class="col-sm-2 col-form">Browser interface:</div>
                   <div class="col-sm-10">

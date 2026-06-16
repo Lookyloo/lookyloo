@@ -98,6 +98,7 @@ class AsyncCapture(AbstractManager):
             elif isinstance(lacus, PyLacus):
                 entries = lacus.get_capture(uuid)
             else:
+                # Should not happen
                 raise LookylooException(f'lacus must be LacusCore or PyLacus, not {type(lacus)}.')
             log = f'Got the capture for {uuid} from Lacus'
             if runtime := entries.get('runtime'):
