@@ -73,7 +73,8 @@ from .context import Context
 from .default import (LookylooException, get_homedir, get_config, get_socket_path,
                       ConfigError, safe_create_dir)
 from .exceptions import (MissingCaptureDirectory, DuplicateUUID,
-                         MissingUUID, TreeNeedsRebuild, NoValidHarFile, LacusUnreachable)
+                         MissingUUID, TreeNeedsRebuild, NoValidHarFile,
+                         LacusUnreachable, LacusUnknown)
 from .helpers import (get_captures_dir, get_email_template, get_tt_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, UserAgents,
@@ -742,7 +743,7 @@ class Lookyloo():
         lacus = self.lacus.get(capture_settings.remote_lacus_name)
         if not lacus:
             logger.warning(f'Lacus named "{capture_settings.remote_lacus_name}" in unknown. Should not happen (?).')
-            raise LookylooException('Attempted to connect to an unknown Lacus instance.')
+            raise LacusUnknown('Attempted to connect to an unknown Lacus instance.')
 
         if not capture_settings.uuid:
             # Should not happen

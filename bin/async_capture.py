@@ -16,7 +16,7 @@ from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse a
 
 from lookyloo import Lookyloo
 from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError
-from lookyloo.exceptions import LacusUnreachable, DuplicateUUID
+from lookyloo.exceptions import LacusUnreachable, DuplicateUUID, LacusUnknown
 from lookyloo.default import AbstractManager, get_config, LookylooException
 from lookyloo.helpers import get_captures_dir
 
@@ -86,6 +86,10 @@ class AsyncCapture(AbstractManager):
                     else:
                         # It should not happen at this stage, the value has been set i fit was missing
                         self.logger.warning(f'[{uuid}] Missing remote_lacus_name.')
+            except LacusUnknown as e:
+                # fallback to default lacus
+                self.logger.warning(f'[{uuid}] Unknown lacus, revert to default: {e}')
+                self.lookyloo.redis.hset(uuid, 'remote_lacus_name', self.lookyloo.default_lacus)
             except Exception as e:
                 self.logger.warning(f'[{uuid}] Something went poorly when getting the status: {e}')
 
