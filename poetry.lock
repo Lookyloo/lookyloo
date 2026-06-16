@@ -6095,21 +6095,22 @@ files = [
 
 [[package]]
 name = "tzlocal"
-version = "5.3.1"
+version = "5.4"
 description = "tzinfo object for the local timezone"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "tzlocal-5.3.1-py3-none-any.whl", hash = "sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d"},
-    {file = "tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd"},
+    {file = "tzlocal-5.4-py3-none-any.whl", hash = "sha256:024d11221ff83453eae1f608f09b145b9779e1345d08c15404ce8ff7917cf629"},
+    {file = "tzlocal-5.4.tar.gz", hash = "sha256:41e1293f80d4b5ff38dff222601a8fbd06b4fdcaf25e224704047ad26a39af54"},
 ]
 
 [package.dependencies]
 tzdata = {version = "*", markers = "platform_system == \"Windows\""}
 
 [package.extras]
-devenv = ["check-manifest", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)", "zest.releaser"]
+devenv = ["zest.releaser"]
+testing = ["check_manifest", "pyroma", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)", "ruff"]
 
 [[package]]
 name = "ua-parser"
@@ -6436,22 +6437,22 @@ email = ["email-validator (>=2.0)"]
 
 [[package]]
 name = "yara-x"
-version = "1.17.0"
+version = "1.18.0"
 description = "Python bindings for YARA-X"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "yara_x-1.17.0-cp38-abi3-macosx_14_0_arm64.whl", hash = "sha256:fa400efe8816473c25daaef54ba44d8ffb91120e2e252f3c89086bbdaba61265"},
-    {file = "yara_x-1.17.0-cp38-abi3-macosx_14_0_x86_64.whl", hash = "sha256:572006fb388e42cb46edba51199ea1660f2e839e27702093463cb874346e3080"},
-    {file = "yara_x-1.17.0-cp38-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:d99f99519973c524ed280a430e990e85f0f5adb545be9e656df480777c3d7d4c"},
-    {file = "yara_x-1.17.0-cp38-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:ec20beff0a963bf5ca8aa2a46f376c4a38fe995c358832e61b7746af9a7f4da2"},
-    {file = "yara_x-1.17.0-cp38-abi3-win_amd64.whl", hash = "sha256:136dccc370df7c9dfc8a48d0500c10c7251017289d3fef92ecd5fa299598e450"},
-    {file = "yara_x-1.17.0-pp311-pypy311_pp73-macosx_14_0_arm64.whl", hash = "sha256:3b2da5e791c33199bbb42c39ac4e9a9d8b3f2d129a1391cfd7489353ee370b46"},
-    {file = "yara_x-1.17.0-pp311-pypy311_pp73-macosx_14_0_x86_64.whl", hash = "sha256:6fe8bb23d9589891d59959abf8ff046edd589e1853c03fec07e864264a2fab85"},
-    {file = "yara_x-1.17.0-pp311-pypy311_pp73-manylinux_2_28_aarch64.whl", hash = "sha256:e66b70e0fd17db068a9cc4d7fa7e6b75961d9c96ed83c34c4ff33ba750ccfe75"},
-    {file = "yara_x-1.17.0-pp311-pypy311_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:d0e02ec1e914304336814ceefb51fa649606d1ca66e5f2d996a07e03ce86e419"},
-    {file = "yara_x-1.17.0-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:9ef3e5e6999d8187c5228500fab6e22df9ca8dca5e17a6b59bda6eddfea48e49"},
+    {file = "yara_x-1.18.0-cp38-abi3-macosx_14_0_arm64.whl", hash = "sha256:acce98637bb599141ec620f2f8d9423ee65a5e2839f9cefbb4be46e4038cf594"},
+    {file = "yara_x-1.18.0-cp38-abi3-macosx_14_0_x86_64.whl", hash = "sha256:5a9579c5e173a082a59c79f379024d115525923808df439f5dac48d137a2efcd"},
+    {file = "yara_x-1.18.0-cp38-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:7ce986ef0b747926fd21f974527cc8dde642d606b6911d64ff735676af6d750e"},
+    {file = "yara_x-1.18.0-cp38-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:10927461340d0bf808e96212689af0d7fe4d436429166af9cd302dad2cbbbdd0"},
+    {file = "yara_x-1.18.0-cp38-abi3-win_amd64.whl", hash = "sha256:d4e298068d7bc6a27eb57bb1226f4b1da124fadb3978ae707fb7de474839619b"},
+    {file = "yara_x-1.18.0-pp311-pypy311_pp73-macosx_14_0_arm64.whl", hash = "sha256:120f0b0d0819049d98d8d266f172cb36fbd38dd7ff3cae22f2ee6d7fb9b5e530"},
+    {file = "yara_x-1.18.0-pp311-pypy311_pp73-macosx_14_0_x86_64.whl", hash = "sha256:3e7e164113df45bb798a3e1ab9577db8bf7a0bb622f78bf8f4e7f32cd59bc458"},
+    {file = "yara_x-1.18.0-pp311-pypy311_pp73-manylinux_2_28_aarch64.whl", hash = "sha256:d74730245f54e1bc859be40e8f3d98edd586d012f9219660fdcd72e15b03395c"},
+    {file = "yara_x-1.18.0-pp311-pypy311_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:80cae2b5627b2f753619294b7bacc9a16f6e69c5ec96e0424646d7d0aac1d752"},
+    {file = "yara_x-1.18.0-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:d891cc9b252b32fb6896d9f8607fb9484b566aa1753aa10c5aea80e4fd5e8641"},
 ]
 
 [[package]]
@@ -6576,4 +6577,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "0b15c0ba6de1c3a6748125112f955fe1479c00441e4e7ec2f94d30656e8051c0"
+content-hash = "b3f243d6ee639ec77f0b405840d4157737c09e7cfa5b61f99143df122b6caff9"
