@@ -35,7 +35,7 @@ import flask_login  # type: ignore[import-untyped]
 from flask import (Flask, Response, Request, flash, jsonify, redirect, render_template,
                    request, send_file, url_for, make_response, send_from_directory)
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
-from flask_cors import CORS  # type: ignore[import-untyped]
+from flask_cors import CORS
 from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
 from lacuscore import CaptureStatus
