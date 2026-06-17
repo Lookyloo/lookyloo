@@ -96,7 +96,7 @@ cryptography = "^49.0.0"
 certifi = "^2026.5.20"
 pydantic = "^2.13.4"
 markupsafe = "^3.0.3"
-yara-x = "^1.17.0"
+yara-x = "^1.18.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^2.1.0"
