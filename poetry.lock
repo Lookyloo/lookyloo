@@ -1789,20 +1789,20 @@ files = [
 
 [[package]]
 name = "har2tree"
-version = "1.39.1"
+version = "1.40.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.39.1-py3-none-any.whl", hash = "sha256:666189a838aa52e385f331eb5e49a3fce5d1b4fd9ec38e947eae1011c9ebf865"},
-    {file = "har2tree-1.39.1.tar.gz", hash = "sha256:172d4ed42877bbd5930bbabcc229ad1ce9178870da228c7d0d631888e4ff0ac2"},
+    {file = "har2tree-1.40.0-py3-none-any.whl", hash = "sha256:cc14a877640972e3019a3cb8e4917aeb2d292aab640bfc42c9bc48e33105a4b0"},
+    {file = "har2tree-1.40.0.tar.gz", hash = "sha256:ebeaca7163c341f65b0245645e90ad39d37e818e84278bf5d5a314b7fef46a7a"},
 ]
 
 [package.dependencies]
 amazon-ion = ">=0.13.0,<0.14.0"
 bbpb = ">=1.4.2,<2.0.0"
-beautifulsoup4 = {version = ">=4.14.3", extras = ["charset-normalizer", "lxml"]}
+beautifulsoup4 = {version = ">=4.15.0", extras = ["charset-normalizer", "lxml"]}
 charset-normalizer = ">=3.4.6,<4.0.0"
 dnspython = ">=2.8.0,<3.0.0"
 ete3 = ">=3.1.3"
@@ -1812,7 +1812,7 @@ numpy = [
     {version = ">=2.2,<2.3", markers = "python_version == \"3.10\""},
     {version = ">=2.4.6", markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
 ]
-pure-magic-rs = ">=0.4.0"
+pure-magic-rs = ">=0.4.3"
 pyfaup-rs = ">=0.4.0,<0.5"
 requests-toolbelt = ">=1.0.0,<2.0.0"
 tinycss2 = ">=1.5.1"
@@ -2225,22 +2225,22 @@ dev = ["build", "coverage", "mypy (>=1.0) ; platform_python_implementation != \"
 
 [[package]]
 name = "lacuscore"
-version = "1.24.7"
+version = "1.25.0"
 description = "Core of Lacus, usable as a module"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "lacuscore-1.24.7-py3-none-any.whl", hash = "sha256:94305eec562f776ef360927f9ab37e59666660c2192dedad455fcde6facab637"},
-    {file = "lacuscore-1.24.7.tar.gz", hash = "sha256:87c2cacd36e4e22fdcd9d506fe2c9204e64e42c499d870ad66d3564c6b506e35"},
+    {file = "lacuscore-1.25.0-py3-none-any.whl", hash = "sha256:27625fd609c27f01120d272be9182b7cfcd3851ce401cda42b3d228f4d959e4a"},
+    {file = "lacuscore-1.25.0.tar.gz", hash = "sha256:22c1a9b7ba60eeb7396ef31f4c929365fb6adde4b6dfdbffcb0fec08f041b3fd"},
 ]
 
 [package.dependencies]
 async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 dnspython = ">=2.8.0"
-lookyloo-models = ">=0.2.5"
-playwrightcapture = {version = ">=1.39.7", extras = ["recaptcha"]}
-pydantic = ">=2.13.3"
+lookyloo-models = ">=0.2.9"
+playwrightcapture = {version = ">=1.40.0", extras = ["recaptcha"]}
+pydantic = ">=2.13.4"
 redis = {version = ">=5.3.0,<6.0.0", extras = ["hiredis"]}
 typing-extensions = {version = ">=4.12.2,<5.0.0", markers = "python_version < \"3.12\""}
 
@@ -3597,38 +3597,38 @@ black = ["black (>=25.9.0)"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.39.12"
+version = "1.40.0"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "playwrightcapture-1.39.12-py3-none-any.whl", hash = "sha256:7a66362539dd04892940f7d9c1c44199dfa56e23109b0e7f26901bfea07ce321"},
-    {file = "playwrightcapture-1.39.12.tar.gz", hash = "sha256:ba663716dc73d88898f0a381e764d78494f900ad351a637ef8537b86fff0413a"},
+    {file = "playwrightcapture-1.40.0-py3-none-any.whl", hash = "sha256:5e105656ea1ffeba49b3cfd24e067cb2c759db79b92568d6ba71918b698f6f49"},
+    {file = "playwrightcapture-1.40.0.tar.gz", hash = "sha256:2bef4e5af4d4538e59102ff83ea5eba9a6a49fd22d4d7196107a2bb0c98098a6"},
 ]
 
 [package.dependencies]
-aiohttp = {version = ">=3.13.5", extras = ["speedups"]}
+aiohttp = {version = ">=3.14.1", extras = ["speedups"]}
 aiohttp-socks = ">=0.11.0"
 async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
-beautifulsoup4 = {version = ">=4.14.3", extras = ["charset-normalizer", "lxml"]}
+beautifulsoup4 = {version = ">=4.15.0", extras = ["charset-normalizer", "lxml"]}
 charset-normalizer = ">=3.4.6,<4.0.0"
 dnspython = ">=2.7.0,<3.0.0"
-lookyloo-models = ">=0.2.7"
+lookyloo-models = ">=0.2.9"
 orjson = ">=3.11.4,<4.0.0"
 playwright = ">=1.60.0"
 playwright-stealth = ">=2.0.3"
-pure-magic-rs = ">=0.4.0"
+pure-magic-rs = ">=0.4.3"
 pydub-ng = {version = ">=0.2.0", optional = true, markers = "extra == \"recaptcha\""}
 pyfaup-rs = ">=0.4.6,<0.5.0"
 python-socks = ">=2.7.1,<3.0.0"
 rfc3161-client = ">=1.0.4,<2.0.0"
-SpeechRecognition = {version = ">=3.16.1", optional = true, markers = "extra == \"recaptcha\""}
+SpeechRecognition = {version = ">=3.17.0", optional = true, markers = "extra == \"recaptcha\""}
 typing-extensions = {version = ">=4.12.2,<5.0.0", markers = "python_version < \"3.12\""}
 w3lib = ">=2.4.1"
 
 [package.extras]
-recaptcha = ["SpeechRecognition (>=3.16.1)", "pydub-ng (>=0.2.0)"]
+recaptcha = ["SpeechRecognition (>=3.17.0)", "pydub-ng (>=0.2.0)"]
 
 [[package]]
 name = "pluggy"
@@ -4558,21 +4558,21 @@ crypto = ["cryptography (>=3.4.0)"]
 
 [[package]]
 name = "pylacus"
-version = "1.24.4"
+version = "1.25.0"
 description = "Python CLI and module for lacus"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "pylacus-1.24.4-py3-none-any.whl", hash = "sha256:6ddc6f8bb1c3c6a5fc4286b84d8a665c07c1061f9824fd7ab34c1e85d7e725fa"},
-    {file = "pylacus-1.24.4.tar.gz", hash = "sha256:efa5dcb35f450594a1e8e59b6aaab4364f988801ecc17bfd7f1df90c795153c0"},
+    {file = "pylacus-1.25.0-py3-none-any.whl", hash = "sha256:b9458fd0701ce24f81c21e9beefb3ae8c8715ee0ab1b987df8ab7bc51132d709"},
+    {file = "pylacus-1.25.0.tar.gz", hash = "sha256:d6e40d8e9de46f31e009d79a54fdb90188ba953724f4e916d9b02a9dabefe53e"},
 ]
 
 [package.dependencies]
 deprecated = {version = ">=1.3.1,<2.0.0", markers = "python_version < \"3.13\""}
-lookyloo-models = ">=0.2.7"
+lookyloo-models = ">=0.2.9"
 pydantic = ">=2.12.5,<3.0.0"
-requests = ">=2.33.1"
+requests = ">=2.34.2"
 urllib3 = ">=2.6.3,<3.0.0"
 
 [package.extras]
@@ -4580,19 +4580,19 @@ docs = ["sphinx (>=9.1.0) ; python_version >= \"3.12\""]
 
 [[package]]
 name = "pylookyloo"
-version = "1.39.2"
+version = "1.40.0"
 description = "Python CLI and module for Lookyloo"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "pylookyloo-1.39.2-py3-none-any.whl", hash = "sha256:eff57f74e2a34400da609566a2f9e35a8147fabe3a6bc365da99957b8ae50c2a"},
-    {file = "pylookyloo-1.39.2.tar.gz", hash = "sha256:7ba0fd8f16e5cad0796ec11f49ff041ab55fdccae4da1e20fbe1a17600f5b46f"},
+    {file = "pylookyloo-1.40.0-py3-none-any.whl", hash = "sha256:262b3ca821c661d33ec63e5b8ecd0cc38fe861ac7979b7d0e9e614d49f6a1376"},
+    {file = "pylookyloo-1.40.0.tar.gz", hash = "sha256:433cdeea9cdb53c4b1c536e31d5c67af4517cdcd7cf2454b46168c60ce77c780"},
 ]
 
 [package.dependencies]
 deprecated = {version = ">=1.3.1,<2.0.0", markers = "python_version < \"3.13\""}
-lookyloo-models = ">=0.2.7"
+lookyloo-models = ">=0.2.9"
 pydantic = ">=2.12.5,<3.0.0"
 requests = ">=2.34.2"
 urllib3 = ">=2.6.3,<3.0.0"
@@ -6578,4 +6578,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "5882834871ebdc3f5bc41ae76cf041d117d21f42554fc0dfb72c32a6d06206d2"
+content-hash = "244fa50929ea42c082a00347a599244b18b71be6934d18ff94b7a2bb4e22bebc"
