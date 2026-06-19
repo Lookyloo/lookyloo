@@ -37,6 +37,10 @@
     "allow_auto_trigger": false,
     "admin_only": false
   },
+  "Ollama": {
+    "url": null,
+    "model": ""
+  },
   "AIL": {
     "enabled": false,
     "url": "http://MyAIL:7000",
@@ -150,6 +154,7 @@
     "AIL": "Module to submit URLs to AIL Framework (https://github.com/CIRCL/AIL-framework)",
     "IPASNHistory": "Module to query IPASN History (https://ipasnhistory.circl.lu/)",
     "Cloudflare": "Module to check if an IP is on Cloudflare infrastructure",
-    "AutoCategorize": "Module that runs after the capture is done and assign categories to captures based on rules."
+    "AutoCategorize": "Module that runs after the capture is done and assign categories to captures based on rules.",
+    "Ollama": "Send the capture to a local Ollama server and generate a report."
   }
 }

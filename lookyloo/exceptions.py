@@ -29,3 +29,7 @@ class ModuleError(LookylooException):
 
 class LacusUnreachable(LookylooException):
     pass
+
+
+class LacusUnknown(LookylooException):
+    pass

@@ -31,11 +31,17 @@
   },
   "multiple_remote_lacus": {
     "enable": false,
-    "default": "Lacus local",
+    "default": "Local",
     "remote_lacus": [
       {
-        "name": "Lacus local",
-        "url": "http://127.0.0.1:7100"
+        "name": "Lacus local 1",
+        "url": "http://127.0.0.1:7100",
+        "group": "Local"
+      },
+      {
+        "name": "Lacus local 2",
+        "url": "http://127.0.0.1:7100",
+        "group": "Local"
       },
       {
         "name": "Other Lacus",
