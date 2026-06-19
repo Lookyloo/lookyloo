@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, TYPE_CHECKING, overload, Literal
 from collections.abc import Iterable
 from urllib.parse import urlparse, urljoin, parse_qs, urlencode
-from uuid import uuid4
+from uuid import uuid4, UUID
 from zipfile import ZipFile, ZIP_DEFLATED
 
 import certifi
@@ -1096,6 +1096,8 @@ class Lookyloo():
         return final_mails
 
     def contacts_filtered(self, capture_uuid: str, /) -> set[str]:
+        if not self.uuid_exists(capture_uuid):
+            raise MissingUUID(f'Unknown UUID: {capture_uuid}')
         capture = self.get_crawled_tree(capture_uuid)
         rendered_hostnode = self.get_hostnode_from_tree(capture_uuid, capture.root_hartree.rendered_node.hostnode_uuid)
         result: set[str] = set()
@@ -1107,6 +1109,8 @@ class Lookyloo():
         return result
 
     def contacts(self, capture_uuid: str, /) -> list[dict[str, Any]]:
+        if not self.uuid_exists(capture_uuid):
+            raise MissingUUID(f'Unknown UUID: {capture_uuid}')
         capture = self.get_crawled_tree(capture_uuid)
         rendered_hostnode = self.get_hostnode_from_tree(capture_uuid, capture.root_hartree.rendered_node.hostnode_uuid)
         result = []
@@ -2267,6 +2271,11 @@ class Lookyloo():
                     potential_favicons.add(lookyloo_capture.read(filename))
                 elif filename.endswith('uuid'):
                     uuid = lookyloo_capture.read(filename).decode()
+                    try:
+                        UUID(uuid)
+                    except Exception:
+                        raise LookylooException(f'Attempted to unpack an invalid UUID: {uuid}')
+
                     if self.uuid_exists(uuid):
                         messages['warnings'].append(f'UUID {uuid} already exists, set a new one.')
                         uuid = str(uuid4())
@@ -2351,11 +2360,17 @@ class Lookyloo():
                       categories: list[str] | None=None
                       ) -> Path:
 
+        # make sure the UUID is a UUID
+        try:
+            UUID(uuid)
+        except Exception:
+            raise LookylooException(f'Attempted to store an invalid UUID: {uuid}')
+
         if self.uuid_exists(uuid):
             # NOTE If we reach this place and the UUID exists for any reason, we need to stop everyting
             # How to handle the duplicate UUID must be handled by the caller.
             uuid_dir = self._captures_index._get_capture_dir(uuid)
-            raise DuplicateUUID(f'This UUID ({uuid}) anready exists in {uuid_dir}')
+            raise DuplicateUUID(f'This UUID ({uuid}) already exists in {uuid_dir}')
 
         now = datetime.now()
         dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / f'{now.day:02}' / now.isoformat()

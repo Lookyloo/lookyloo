@@ -1050,6 +1050,8 @@ class Takedown(Resource):  # type: ignore[misc]
                 return make_response(list(lookyloo.contacts_filtered(capture_uuid)))
             else:
                 return make_response(lookyloo.contacts(capture_uuid))
+        except MissingUUID:
+            return make_response({'error': 'Unable to get contacts, the UUID does not exist.'}, 400)
         except Exception as e:
             return make_response({'error': f'Unable to get contacts: {e}'}, 400)
 
