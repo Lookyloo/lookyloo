@@ -1,6 +1,6 @@
 [project]
 name = "lookyloo"
-version = "1.39.4"
+version = "1.40.0"
 description = "Web interface to track the trackers."
 authors = [{name="Raphaël Vinot", email="raphael.vinot@circl.lu"}]
 license = "BSD-3-Clause"
