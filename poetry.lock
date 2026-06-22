@@ -2209,14 +2209,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "justhtml"
-version = "2.3.0"
+version = "3.0.0"
 description = "A pure Python HTML5 parser that just works."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "justhtml-2.3.0-py3-none-any.whl", hash = "sha256:f374e98f5554eb6f37b1e51a5a921efbaf6a298934d182b5de97302676ae2a88"},
-    {file = "justhtml-2.3.0.tar.gz", hash = "sha256:1fbd6b53bbd19b3f968e44713970272c0b755e048926cddbf110ddf30fdda7d0"},
+    {file = "justhtml-3.0.0-py3-none-any.whl", hash = "sha256:ef8e8b6e94cf5aeeaf3c52b9b24f7e81daec1654cb71d70e1974d2024c8dc39b"},
+    {file = "justhtml-3.0.0.tar.gz", hash = "sha256:422a0c234d65079d816328a6a2b5e40473a250983f5401229d2854a531523c21"},
 ]
 
 [package.extras]
@@ -6578,4 +6578,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "244fa50929ea42c082a00347a599244b18b71be6934d18ff94b7a2bb4e22bebc"
+content-hash = "95819cce0daf4a3b31aba2a6e36e7fdad05b5db9cbcfdd1ca20f81069e730d52"
