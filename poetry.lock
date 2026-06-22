@@ -3938,14 +3938,14 @@ files = [
 
 [[package]]
 name = "pyail"
-version = "0.0.13"
+version = "0.0.16"
 description = "Python API for AIL"
 optional = false
 python-versions = "<4.0,>=3.8"
 groups = ["main"]
 files = [
-    {file = "pyail-0.0.13-py3-none-any.whl", hash = "sha256:c7f0a71e4c495a7c1e11470c9936deefb60e801e7c9a838feedaa2080d273ec8"},
-    {file = "pyail-0.0.13.tar.gz", hash = "sha256:6516c2c9af06ad5806a4edfaa20e44b0bfb224256efd03f5fa518a6999e64bfe"},
+    {file = "pyail-0.0.16-py3-none-any.whl", hash = "sha256:716d17ad6481aea8c3f16b0736f3956481568407ce269f20e83c5fee6eb059ad"},
+    {file = "pyail-0.0.16.tar.gz", hash = "sha256:9308d0f22bdf26f90eb71057dc4460eb1d7ad9705debb8c477c684599cba04b9"},
 ]
 
 [package.dependencies]
@@ -6578,4 +6578,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "244fa50929ea42c082a00347a599244b18b71be6934d18ff94b7a2bb4e22bebc"
+content-hash = "f0ade2791f10852c6ebea55d0231d2fc4f1fed7499c425d751378fadd6a01480"
