@@ -146,7 +146,7 @@ class Processing(AbstractManager):
                     self.lookyloo.redis.delete(uuid)
 
                 if not capture_settings:
-                    self.logger.warning('Unable to get settings, should have been caught before.')
+                    self.logger.warning(f'Unable to get settings from redis, skip {uuid}.')
                     continue
                 try:
                     if self.lookyloo.get_lacus_capture_status(capture_settings) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:

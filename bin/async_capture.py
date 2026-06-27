@@ -72,7 +72,7 @@ class AsyncCapture(AbstractManager):
                 self.lookyloo.redis.delete(uuid)
 
             if not capture_settings:
-                self.logger.warning('Unable to get settings, should have been caught before.')
+                self.logger.warning(f'Unable to get settings from redis, skip {uuid}.')
                 continue
 
             if capture_settings.not_queued:

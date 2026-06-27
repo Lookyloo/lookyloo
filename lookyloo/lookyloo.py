@@ -723,7 +723,7 @@ class Lookyloo():
             if _cs := self.redis.hgetall(capture_uuid):
                 return LookylooCaptureSettings.model_validate(_cs)
             else:
-                self.logger.warning(f'[{capture_uuid}] Unable to get settings, from redis.')
+                self.logger.debug(f'[{capture_uuid}] Unable to get settings (from redis).')
                 return None
         except CaptureSettingsError as e:
             self.logger.warning(f'[{capture_uuid}] Invalid capture settings: {e}')
@@ -761,15 +761,19 @@ class Lookyloo():
     def get_capture_status(self, capture_uuid: str, /) -> CaptureStatusCore | CaptureStatusPy:
         '''Returns the status (queued, ongoing, done, or UUID unknown)'''
         if self.redis.hexists('lookup_dirs', capture_uuid) or self.redis.hexists('lookup_dirs_archived', capture_uuid):
+            # capture done and stored
             return CaptureStatusCore.DONE
-        elif self.redis.sismember('ongoing', capture_uuid):
+
+        if self.redis.sismember('ongoing', capture_uuid):
             # Post-processing on lookyloo's side
             return CaptureStatusCore.ONGOING
 
         try:
+            # check if the capture is known in lacus
             if capture_settings := self.get_settings_to_capture(capture_uuid):
                 lacus_status = self.get_lacus_capture_status(capture_settings)
             else:
+                # The capture settings don't exist
                 lacus_status = CaptureStatusCore.UNKNOWN
         except MissingUUID:
             # new format, just set it
