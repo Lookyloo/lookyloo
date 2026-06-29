@@ -64,7 +64,7 @@ Flask-Cors = "^6.0.5"
 pyhashlookup = "^1.2.8"
 ua-parser = {extras = ["regex"], version = "^1.0.2"}
 Flask-Login = "^0.6.3"
-har2tree = "^1.40.0"
+har2tree = "^1.40.1"
 werkzeug = "^3.1.8"
 filetype = "^1.2.0"
 pypandora = "^1.12.0"
