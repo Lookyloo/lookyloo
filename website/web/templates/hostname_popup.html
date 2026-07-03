@@ -402,6 +402,30 @@
                 </div>
               </div>
             </div>
+            {% if url['url_object']['websocket_messages'] %}
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionWSmessages_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseWSmessages">
+                  WebSocket messages
+                </button>
+              </h2>
+              <div id="accordionWSmessages_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionResponse_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                    <!-- WS messages timeline from https://www.w3schools.com/howto/howto_css_timeline.asp -->
+                    <div class="timeline">
+                      {% for entry in url['url_object'].websocket_messages %}
+                      <div class="tl-container {% if entry['type'] == 'receive' %} tl-right {%else%} tl-left {%endif%}">
+                        <div class="tl-content">
+                          <h2 class="tl-timestamp">{{entry['time']}}</h2>
+                          <p>{{entry['data']}}</p>
+                        </div>
+                      </div>
+                      {% endfor %}
+                    </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
             {% if url['cookies_received'] %}
             <div class="accordion-item">
               <h2 class="accordion-header">

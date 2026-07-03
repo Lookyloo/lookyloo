@@ -338,7 +338,8 @@ def get_icon(icon_id: str) -> Icon | None:
         'response_cookie': {'icon': "cookie_received.png", 'tooltip': 'There are cookies in the response'},
         'request_cookie': {'icon': "cookie_read.png", 'tooltip': 'There are cookies in the request'},
         'redirect': {'icon': "redirect.png", 'tooltip': 'The request is redirected'},
-        'redirect_to_nothing': {'icon': "cookie_in_url.png", 'tooltip': 'The request is redirected to an URL we do not have in the capture'}
+        'redirect_to_nothing': {'icon': "cookie_in_url.png", 'tooltip': 'The request is redirected to an URL we do not have in the capture'},
+        'websocket': {'icon': "websocket.svg", 'tooltip': 'The request contains a websocket session'}
     }
     return available_icons.get(icon_id)
 

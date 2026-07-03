@@ -313,6 +313,7 @@ function icon_list(relative_x_pos, relative_y_pos, d) {
         ['redirect_to_nothing', {path: "/static/cookie_in_url.png", tooltip: "redirect(s) to URL(s) missing in the capture"}],
         ['empty', {path: "/static/empty.svg", tooltip: "URL(s) returning no content"}],
         ['downloaded_filename', {path: "/static/download.png", tooltip: "contains a downloaded file."}],
+        ['websocket_session', {path: "/static/websocket.svg", tooltip: "contains a websocket session."}],
         ['posted_data', {path: "/static/send-arrow-up.svg", tooltip: "POSTs content."}]
     ]);
 

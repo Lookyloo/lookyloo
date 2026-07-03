@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         })
     });
+    document.querySelectorAll('.tl-timestamp').forEach((item, index) => {
+        let d = new Date(parseFloat(item.innerText));
+        item.textContent = d.toString();
+    });
 });
 
 
