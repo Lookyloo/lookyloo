@@ -47,7 +47,7 @@
     "up.jpg": "d1ljZJ9f5JekyM6RLFFH2Ua44j6neiQBdUIXOenRTjGppQr3JaeglpQIH6BjPCJL177+TH52U3UIRNS5YAyKIg==",
     "up_right.jpg": "OMmz+n+MxR34P8/fn5t4DkqKqdJRzQbXQ7fAi2lhkZIJGhVs2vIyY1f2hpYoBxDAX1OcYsSE2lqIR2vXNDGZsA==",
     "video.png": "gJtmkfr8I1Kw43pYEKjg6CAjgmhl1vIBKBQ3ZkxCu3wvxQm+6kf93iLrrFiY2WuiXzxEn2Leu52GJzmVN5id0g==",
-    "websocket.svg": "umaWKoJC5juycKoURZs5wKX2HIPuA1wVeXvVIY7bFIiOjWv4ys8M3x4CdarTjku1bbA8TkOe2smadxWtE2Y1ew==",
+    "websocket.svg": "RlyPvy5lv81VrUnQYujUTSU7u75vbl9wMdkhOyDchH4qgrFPC/ehNvQHZWEP0Edq5Aj3bJVghH2BZgz+4WelMA==",
     "wtf.png": "5iUj4m5G3tJN3wQvR1jD/hF4OKFrboVeuFejd+6ZUvdll3zjkLeewJQ+zptO9ckzktsMPC2+bKM3zM3CXXWoCw=="
   }
 }
