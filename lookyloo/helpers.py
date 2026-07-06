@@ -103,6 +103,13 @@ def get_captures_dir() -> Path:
 
 
 @lru_cache
+def get_archived_captures_dir() -> Path:
+    capture_dir = get_homedir() / 'archived_captures'
+    safe_create_dir(capture_dir)
+    return capture_dir
+
+
+@lru_cache
 def get_email_template() -> str:
     with (get_homedir() / 'config' / 'email.tmpl').open() as f:
         return f.read()

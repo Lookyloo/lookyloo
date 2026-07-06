@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-import gzip
 import json
 import logging
 import lzma
@@ -17,7 +16,7 @@ import time
 
 from collections import OrderedDict
 from collections.abc import Mapping
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import _CacheInfo as CacheInfo
 from logging import LoggerAdapter
 from pathlib import Path
@@ -388,7 +387,11 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             with self._timeout_context():
                 tree = CrawledTree(har_files, uuid)
                 self._prepare_hostnode_tree_for_icons(tree)
-            await self.__resolve_dns(tree, logger)
+            if tree.start_time > datetime.now(timezone.utc) - timedelta(days=1):
+                # If the capture is more than 1d old, skip DNS resolutions:
+                # they will most probably be wrong.
+                # Also skips it when the pickle we build is for an archive.
+                await self.__resolve_dns(tree, logger)
             if self.contextualizer:
                 self.contextualizer.contextualize_tree(tree)
         except Har2TreeError as e:
@@ -556,8 +559,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
                 cache['parent'] = f.read().strip()
 
         p = self.redis.pipeline()
-        # if capture_dir.is_relative_to(get_captures_dir()):  # Requires python 3.9
-        if capture_dir_str.startswith(str(get_captures_dir())):
+        if capture_dir.is_relative_to(get_captures_dir()):
             p.hset('lookup_dirs', uuid, capture_dir_str)
         else:
             p.hset('lookup_dirs_archived', uuid, capture_dir_str)

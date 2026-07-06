@@ -21,7 +21,7 @@ from redis import Redis
 import s3fs  # type: ignore[import-untyped]
 
 from lookyloo.default import AbstractManager, get_config, get_homedir, get_socket_path, try_make_file
-from lookyloo.helpers import get_captures_dir, is_locked, make_ts_from_dirname, make_dirs_list
+from lookyloo.helpers import get_captures_dir, is_locked, make_ts_from_dirname, make_dirs_list, get_archived_captures_dir
 
 logging.config.dictConfig(get_config('logging'))
 
@@ -34,7 +34,7 @@ class Archiver(AbstractManager):
         self.redis = Redis(unix_socket_path=get_socket_path('cache'))
 
         # make sure archived captures dir exists
-        self.archived_captures_dir = get_homedir() / 'archived_captures'
+        self.archived_captures_dir = get_archived_captures_dir()
         self.archived_captures_dir.mkdir(parents=True, exist_ok=True)
 
         self._load_indexes()

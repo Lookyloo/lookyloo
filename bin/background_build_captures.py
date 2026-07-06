@@ -14,10 +14,10 @@ from redis import Redis
 
 from lookyloo import Lookyloo
 from lookyloo_models import AutoReportSettings, MonitorCaptureSettings
-from lookyloo.default import AbstractManager, get_config, get_socket_path, try_make_file
+from lookyloo.default import AbstractManager, get_config, get_socket_path, try_make_file, LookylooException
 from lookyloo.exceptions import MissingUUID, NoValidHarFile, TreeNeedsRebuild
 from lookyloo.helpers import (is_locked, get_sorted_captures_from_disk, make_dirs_list,
-                              get_captures_dir)
+                              get_captures_dir, get_archived_captures_dir)
 
 
 logging.config.dictConfig(get_config('logging'))
@@ -25,12 +25,27 @@ logging.config.dictConfig(get_config('logging'))
 
 class BackgroundBuildCaptures(AbstractManager):
 
-    def __init__(self, loglevel: int | None=None):
+    def __init__(self, recent_only: bool=True, loglevel: int | None=None):
         super().__init__(loglevel)
         self.lookyloo = Lookyloo(cache_max_size=1)
-        self.script_name = 'background_build_captures'
+        if recent_only:
+            self.script_name = 'background_build_captures'
+            self.captures_dir = get_captures_dir()
+            self.build_recent = True
+            self.max_captures = 50
+            self.lookup_dirs = 'lookup_dirs'
+        else:
+            # we're building trees for archived captures.
+            # if they are on s3, disable, it is way too slow
+            if s3fs_config := get_config('generic', 's3fs'):
+                if s3fs_config.get('archive_on_s3fs'):
+                    raise LookylooException('s3fs is too slow to build archives on')
+            self.script_name = 'background_build_captures_archives'
+            self.captures_dir = get_archived_captures_dir()
+            self.build_recent = False
+            self.max_captures = 500
+            self.lookup_dirs = 'lookup_dirs_archived'
         # make sure discarded captures dir exists
-        self.captures_dir = get_captures_dir()
         self.discarded_captures_dir = self.captures_dir.parent / 'discarded_captures'
         self.discarded_captures_dir.mkdir(parents=True, exist_ok=True)
 
@@ -112,7 +127,6 @@ class BackgroundBuildCaptures(AbstractManager):
         self.logger.debug('Build missing pickles...')
         # Sometimes, we have a huge backlog and the process might get stuck on old captures for a very long time
         # This value makes sure we break out of the loop and build pickles of the most recent captures
-        max_captures = 50
         got_new_captures = False
 
         # Initialize time where we do not want to build the pickles anymore.
@@ -121,7 +135,9 @@ class BackgroundBuildCaptures(AbstractManager):
         for month_dir in make_dirs_list(self.captures_dir):
             __counter_shutdown = 0
             __counter_shutdown_force = 0
-            for capture_time, path in sorted(get_sorted_captures_from_disk(month_dir, cut_time=cut_time, keep_more_recent=True), reverse=True):
+            for capture_time, path in sorted(get_sorted_captures_from_disk(month_dir, cut_time=cut_time,
+                                                                           keep_more_recent=self.build_recent),
+                                             reverse=True):
                 __counter_shutdown_force += 1
                 if __counter_shutdown_force % 1000 == 0 and self.shutdown_requested():
                     self.logger.warning('Shutdown requested, breaking.')
@@ -152,11 +168,11 @@ class BackgroundBuildCaptures(AbstractManager):
                 with (path / 'uuid').open() as f:
                     uuid = f.read()
 
-                if not self.redis.hexists('lookup_dirs', uuid):
+                if not self.redis.hexists(self.lookup_dirs, uuid):
                     # The capture with this UUID exists, but it is for some reason missing in lookup_dirs
-                    self.redis.hset('lookup_dirs', uuid, str(path))
+                    self.redis.hset(self.lookup_dirs, uuid, str(path))
                 else:
-                    cached_path = Path(self.redis.hget('lookup_dirs', uuid))  # type: ignore[arg-type]
+                    cached_path = Path(self.redis.hget(self.lookup_dirs, uuid))  # type: ignore[arg-type]
                     if cached_path != path:
                         # we have a duplicate UUID, it is proably related to some bad copy/paste
                         if cached_path.exists():
@@ -169,26 +185,31 @@ class BackgroundBuildCaptures(AbstractManager):
                             continue
                         else:
                             # The path in lookup_dirs for that UUID doesn't exists, just update it.
-                            self.redis.hset('lookup_dirs', uuid, str(path))
+                            self.redis.hset(self.lookup_dirs, uuid, str(path))
 
                 try:
                     __counter_shutdown += 1
                     self.logger.info(f'Build pickle for {uuid}: {path.name}')
                     ct = self.lookyloo.get_crawled_tree(uuid)
-                    try:
-                        self.lookyloo.trigger_modules(uuid, auto_trigger=True, force=False, as_admin=False)
-                    except Exception as e:
-                        self.logger.warning(f'Unable to trigger modules for {uuid}: {e}')
-                    # Trigger whois request on all nodes
-                    for node in ct.root_hartree.hostname_tree.traverse():
+
+                    if self.build_recent:
+                        # only trigger modules for new captures
                         try:
-                            self.lookyloo.uwhois.query_whois_hostnode(node)
+                            self.lookyloo.trigger_modules(uuid, auto_trigger=True, force=False, as_admin=False)
                         except Exception as e:
-                            self.logger.info(f'Unable to query whois for {node.name}: {e}')
+                            self.logger.warning(f'Unable to trigger modules for {uuid}: {e}')
+                        # Trigger whois request on all nodes
+                        for node in ct.root_hartree.hostname_tree.traverse():
+                            try:
+                                self.lookyloo.uwhois.query_whois_hostnode(node)
+                            except Exception as e:
+                                self.logger.info(f'Unable to query whois for {node.name}: {e}')
+                        # Monitor auto report, to that last.
+                        self._auto_trigger(path)
+
                     self.logger.info(f'Pickle for {uuid} built.')
                     got_new_captures = True
-                    max_captures -= 1
-                    self._auto_trigger(path)
+                    self.max_captures -= 1
                 except MissingUUID:
                     self.logger.warning(f'Unable to find {uuid}. That should not happen.')
                 except NoValidHarFile as e:
@@ -202,7 +223,7 @@ class BackgroundBuildCaptures(AbstractManager):
                     # The capture is not working, moving it away.
                     try:
                         shutil.move(str(path), str(self.discarded_captures_dir / path.name))
-                        self.redis.hdel('lookup_dirs', uuid)
+                        self.redis.hdel(self.lookup_dirs, uuid)
                     except FileNotFoundError as e:
                         self.logger.warning(f'Unable to move capture: {e}')
                         continue
@@ -212,7 +233,7 @@ class BackgroundBuildCaptures(AbstractManager):
                 if __counter_shutdown % 10 == 0 and self.shutdown_requested():
                     self.logger.warning('Shutdown requested, breaking.')
                     return False
-                if max_captures <= 0:
+                if self.max_captures <= 0:
                     self.logger.info('Too many captures in the backlog, start from the beginning.')
                     return False
             if self.shutdown_requested():
@@ -227,6 +248,11 @@ class BackgroundBuildCaptures(AbstractManager):
 
 def main() -> None:
     i = BackgroundBuildCaptures()
+    i.run(sleep_in_sec=60)
+
+
+def main_archives() -> None:
+    i = BackgroundBuildCaptures(recent_only=False)
     i.run(sleep_in_sec=60)
 
 
