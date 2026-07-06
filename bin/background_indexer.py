@@ -18,7 +18,7 @@ logging.config.dictConfig(get_config('logging'))
 
 class BackgroundIndexer(AbstractManager):
 
-    def __init__(self, full: bool=False, loglevel: int | None=None):
+    def __init__(self, full: bool=False, archives: bool=False, loglevel: int | None=None):
         super().__init__(loglevel)
         self.full_indexer = full
         self.indexing = Indexing(full_index=self.full_indexer)
@@ -26,6 +26,13 @@ class BackgroundIndexer(AbstractManager):
             self.script_name = 'background_full_indexer'
         else:
             self.script_name = 'background_indexer'
+
+        self.index_archives = archives
+        if self.index_archives:
+            self.lookup_dirs = 'lookup_dirs_archived'
+            self.script_name += '_archived'
+        else:
+            self.lookup_dirs = 'lookup_dirs'
 
         # Redis connector so we don't use the one from Lookyloo
         self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
@@ -42,7 +49,7 @@ class BackgroundIndexer(AbstractManager):
         # NOTE: only get the non-archived captures for now.
         __counter_shutdown = 0
         __counter_shutdown_force = 0
-        for uuid, d in self.redis.hscan_iter('lookup_dirs'):
+        for uuid, d in self.redis.hscan_iter(self.lookup_dirs):
             __counter_shutdown_force += 1
             if __counter_shutdown_force % 10000 == 0 and self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
@@ -71,12 +78,26 @@ def main() -> None:
     i.run(sleep_in_sec=60)
 
 
+def main_archives() -> None:
+    i = BackgroundIndexer(archives=True)
+    i.run(sleep_in_sec=60)
+
+
 def main_full_indexer() -> None:
     if not get_config('generic', 'index_everything'):
         raise Exception('Full indexer is disabled.')
     # NOTE: for now, it only indexes the captures that aren't archived.
     #       we will change that later, but for now, it's a good start.
     i = BackgroundIndexer(full=True)
+    i.run(sleep_in_sec=60)
+
+
+def main_full_indexer_archives() -> None:
+    if not get_config('generic', 'index_everything'):
+        raise Exception('Full indexer is disabled.')
+    # NOTE: for now, it only indexes the captures that aren't archived.
+    #       we will change that later, but for now, it's a good start.
+    i = BackgroundIndexer(full=True, archives=True)
     i.run(sleep_in_sec=60)
 
 
