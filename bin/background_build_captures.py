@@ -32,7 +32,6 @@ class BackgroundBuildCaptures(AbstractManager):
             self.script_name = 'background_build_captures'
             self.captures_dir = get_captures_dir()
             self.build_recent = True
-            self.max_captures = 50
             self.lookup_dirs = 'lookup_dirs'
         else:
             # we're building trees for archived captures.
@@ -43,7 +42,6 @@ class BackgroundBuildCaptures(AbstractManager):
             self.script_name = 'background_build_captures_archives'
             self.captures_dir = get_archived_captures_dir()
             self.build_recent = False
-            self.max_captures = 500
             self.lookup_dirs = 'lookup_dirs_archived'
         # make sure discarded captures dir exists
         self.discarded_captures_dir = self.captures_dir.parent / 'discarded_captures'
@@ -128,6 +126,11 @@ class BackgroundBuildCaptures(AbstractManager):
         # Sometimes, we have a huge backlog and the process might get stuck on old captures for a very long time
         # This value makes sure we break out of the loop and build pickles of the most recent captures
         got_new_captures = False
+
+        if self.build_recent:
+            self.max_captures = 50
+        else:
+            self.max_captures = 500
 
         # Initialize time where we do not want to build the pickles anymore.
         archive_interval = timedelta(days=get_config('generic', 'archive'))
