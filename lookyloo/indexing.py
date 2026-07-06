@@ -28,12 +28,13 @@ Indexed = namedtuple('Indexed', ['urls', 'body_hashes', 'cookies', 'hhhashes', '
 
 class Indexing():
 
-    def __init__(self, full_index: bool=False) -> None:
+    def __init__(self, full_index: bool=False, archives: bool=False) -> None:
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
         self.logger.setLevel(get_config('generic', 'loglevel'))
         self.__redis_pool_bytes: ConnectionPool
         self.__redis_pool: ConnectionPool
         self.time_delta_on_index = timedelta(**get_config('generic', 'time_delta_on_index'))
+        self.archives = archives
         if full_index:
             self.__redis_pool_bytes = ConnectionPool(connection_class=UnixDomainSocketConnection,
                                                      path=get_socket_path('full_index'))
@@ -60,13 +61,19 @@ class Indexing():
         if capture_uuid:
             return bool(self.redis.set(f'ongoing_indexing|{capture_uuid}', 1, ex=360, nx=True))
 
-        return bool(self.redis.set('ongoing_indexing', 1, ex=3600, nx=True))
+        if self.archives:
+            return bool(self.redis.set('ongoing_indexing_archives', 1, ex=3600, nx=True))
+        else:
+            return bool(self.redis.set('ongoing_indexing', 1, ex=3600, nx=True))
 
     def indexing_done(self, capture_uuid: str | None=None) -> None:
         if capture_uuid:
             self.redis.delete(f'ongoing_indexing|{capture_uuid}')
         else:
-            self.redis.delete('ongoing_indexing')
+            if self.archives:
+                self.redis.delete('ongoing_indexing_archives')
+            else:
+                self.redis.delete('ongoing_indexing')
 
     def force_reindex(self, capture_uuid: str) -> None:
         p = self.redis.pipeline()
