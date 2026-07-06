@@ -21,16 +21,16 @@ class BackgroundIndexer(AbstractManager):
     def __init__(self, full: bool=False, archives: bool=False, loglevel: int | None=None):
         super().__init__(loglevel)
         self.full_indexer = full
-        self.indexing = Indexing(full_index=self.full_indexer)
+        self.index_archives = archives
+        self.indexing = Indexing(full_index=self.full_indexer, archives=self.index_archives)
         if self.full_indexer:
             self.script_name = 'background_full_indexer'
         else:
             self.script_name = 'background_indexer'
 
-        self.index_archives = archives
         if self.index_archives:
             self.lookup_dirs = 'lookup_dirs_archived'
-            self.script_name += '_archived'
+            self.script_name += '_archives'
         else:
             self.lookup_dirs = 'lookup_dirs'
 
