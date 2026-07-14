@@ -55,9 +55,12 @@ class BackgroundIndexer(AbstractManager):
                 self.logger.warning('Shutdown requested, breaking.')
                 break
 
-            if not self.full_indexer and self.redis.hexists(d, 'no_index'):
+            if not self.full_indexer:
                 # If we're not running the full indexer, check if the capture should be indexed.
-                continue
+                if (self.redis.exists(d)  # the cache exits (not expired)
+                        and (self.redis.hexists(d, 'no_index')  # non-indexed capture
+                             or self.redis.hexists(d, 'private'))):  # private capture
+                    continue
             path = Path(d)
             try:
                 if self.indexing.index_capture(uuid, path):

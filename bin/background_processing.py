@@ -12,7 +12,7 @@ from typing import Any
 from lacuscore import CaptureStatus as CaptureStatusCore
 from lookyloo import Lookyloo
 from lookyloo_models import LookylooCaptureSettings
-from lookyloo.exceptions import LacusUnreachable, LacusUnknown, MissingUUID
+from lookyloo.exceptions import LacusUnreachable, LacusUnknown
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 from lookyloo.modules import AIL, AssemblyLine, MISPs, MISP, AutoCategorize
@@ -68,7 +68,7 @@ class Processing(AbstractManager):
                 # the UUID is already in the recent captures
                 continue
 
-            if cache := self.lookyloo.capture_cache(uuid, quick=True):
+            if cache := self.lookyloo.capture_cache(uuid, quick=True, as_admin=True):
                 # we do not want this method to build the pickle, **but** if the pickle exists
                 # AND the capture isn't in the cache, we want to add it
                 if not hasattr(cache, 'timestamp') or not cache.timestamp:
@@ -148,19 +148,19 @@ class Processing(AbstractManager):
                 if not capture_settings:
                     self.logger.warning(f'Unable to get settings from redis, skip {uuid}.')
                     continue
-                try:
-                    if self.lookyloo.get_lacus_capture_status(capture_settings) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
-                        # The capture is unknown on lacus side, but we have it in the to_capture queue *and* we still have the settings on lookyloo side
-                        if capture_settings.not_queued:
-                            # The capture has already been marked as not queued
-                            to_requeue.append(capture_settings)
-                        else:
-                            # It might be a race condition so we don't add it in the requeue immediately, just flag it at not_queued.
-                            self.lookyloo.redis.hset(uuid, 'not_queued', 1)
-                except MissingUUID:
+
+                if not self.lookyloo.redis.hexists(uuid, 'uuid'):
                     # old format, hset didn't contain the uuid
                     self.lookyloo.redis.hset(uuid, 'uuid', uuid)
-                    continue
+
+                if self.lookyloo.get_lacus_capture_status(capture_settings) in [CaptureStatusPy.UNKNOWN, CaptureStatusCore.UNKNOWN]:
+                    # The capture is unknown on lacus side, but we have it in the to_capture queue *and* we still have the settings on lookyloo side
+                    if capture_settings.not_queued:
+                        # The capture has already been marked as not queued
+                        to_requeue.append(capture_settings)
+                    else:
+                        # It might be a race condition so we don't add it in the requeue immediately, just flag it at not_queued.
+                        self.lookyloo.redis.hset(uuid, 'not_queued', 1)
 
                 if len(to_requeue) > 100:
                     # Enough stuff to requeue
@@ -219,13 +219,13 @@ class Processing(AbstractManager):
         if self.assemblyline.available:
             for entry in self.assemblyline.get_notification_queue():
                 if current_uuid := entry['submission']['metadata'].get('lookyloo_uuid'):
-                    if cached := self.lookyloo.capture_cache(current_uuid):
+                    if cached := self.lookyloo.capture_cache(current_uuid, as_admin=True):
                         self.logger.debug(f'Found AssemblyLine response for {cached.uuid}: {entry}')
                         self.logger.debug(f'Ingest ID: {entry["ingest_id"]}, UUID: {entry["submission"]["metadata"]["lookyloo_uuid"]}')
                         with (cached.capture_dir / 'assemblyline_ingest.json').open('w') as f:
                             f.write(json.dumps(entry, indent=2, default=serialize_to_json))
 
-        for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time, public=False):
+        for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time, public=False, as_admin=True):
             if cached.error:
                 continue
 

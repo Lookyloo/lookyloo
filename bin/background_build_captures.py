@@ -15,7 +15,7 @@ from redis import Redis
 from lookyloo import Lookyloo
 from lookyloo_models import AutoReportSettings, MonitorCaptureSettings
 from lookyloo.default import AbstractManager, get_config, get_socket_path, try_make_file, LookylooException
-from lookyloo.exceptions import MissingUUID, NoValidHarFile, TreeNeedsRebuild
+from lookyloo.exceptions import UUIDMissingInCache, NoValidHarFile, TreeNeedsRebuild
 from lookyloo.helpers import (is_locked, get_sorted_captures_from_disk, make_dirs_list,
                               get_captures_dir, get_archived_captures_dir)
 
@@ -86,7 +86,7 @@ class BackgroundBuildCaptures(AbstractManager):
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing settings.')
             return
 
-        if capture_settings := self.lookyloo.get_capture_settings(capture_uuid):
+        if capture_settings := self.lookyloo.get_capture_settings(capture_uuid, as_admin=True):
             monitor_settings.capture_settings = capture_settings
         else:
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing capture settings.')
@@ -193,7 +193,7 @@ class BackgroundBuildCaptures(AbstractManager):
                 try:
                     __counter_shutdown += 1
                     self.logger.info(f'Build pickle for {uuid}: {path.name}')
-                    ct = self.lookyloo.get_crawled_tree(uuid)
+                    cache = self.lookyloo.capture_cache(uuid, as_admin=True)
 
                     if self.build_recent:
                         # only trigger modules for new captures
@@ -202,7 +202,7 @@ class BackgroundBuildCaptures(AbstractManager):
                         except Exception as e:
                             self.logger.warning(f'Unable to trigger modules for {uuid}: {e}')
                         # Trigger whois request on all nodes
-                        for node in ct.root_hartree.hostname_tree.traverse():
+                        for node in cache.tree.root_hartree.hostname_tree.traverse():
                             try:
                                 self.lookyloo.uwhois.query_whois_hostnode(node)
                             except Exception as e:
@@ -213,8 +213,8 @@ class BackgroundBuildCaptures(AbstractManager):
                     self.logger.info(f'Pickle for {uuid} built.')
                     got_new_captures = True
                     self.max_captures -= 1
-                except MissingUUID:
-                    self.logger.warning(f'Unable to find {uuid}. That should not happen.')
+                except UUIDMissingInCache:
+                    self.logger.warning(f'Unable to find {uuid} in the cache. That should not happen.')
                 except NoValidHarFile as e:
                     self.logger.critical(f'There are no HAR files in the capture {uuid}: {path.name} - {e}')
                 except TreeNeedsRebuild as e:

@@ -15,7 +15,6 @@ import sys
 import time
 
 from collections import OrderedDict
-from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
 from functools import _CacheInfo as CacheInfo
 from logging import LoggerAdapter
@@ -38,7 +37,7 @@ from .helpers import (get_captures_dir, is_locked, load_pickle_tree, get_pickle_
                       remove_pickle_tree, get_indexing, mimetype_to_generic,
                       global_proxy_for_requests, get_useragent_for_requests)
 from .default import LookylooException, try_make_file, get_config
-from .exceptions import MissingCaptureDirectory, NoValidHarFile, MissingUUID, TreeNeedsRebuild
+from .exceptions import MissingCaptureDirectory, NoValidHarFile, UUIDMissingInCache, TreeNeedsRebuild, LookylooPrivateCapture
 from .modules import Cloudflare
 
 
@@ -62,7 +61,7 @@ def safe_make_datetime(dt: str) -> datetime:
 
 class CaptureCache():
     __slots__ = ('uuid', 'title', 'timestamp', 'url', 'redirects', 'capture_dir',
-                 'error', 'no_index', 'parent',
+                 'error', 'no_index', 'private', 'parent',
                  'user_agent', 'referer', 'logger')
 
     def __init__(self, cache_entry: dict[str, Any]):
@@ -103,6 +102,7 @@ class CaptureCache():
         # if the keys in __default_cache_keys are present, it was an HTTP error and we still need to pass the error along
         self.error: str | None = cache_entry.get('error')
         self.no_index: bool = True if cache_entry.get('no_index') in [1, '1'] else False
+        self.private: bool = True if cache_entry.get('private') in [1, '1'] else False
         self.parent: str | None = cache_entry.get('parent')
         self.user_agent: str | None = cache_entry.get('user_agent')
         self.referer: str | None = cache_entry.get('referer')
@@ -182,7 +182,7 @@ def serialize_sets(obj: Any) -> Any:
     return obj
 
 
-class CapturesIndex(Mapping):  # type: ignore[type-arg]
+class CapturesIndex():
 
     def __init__(self, redis: Redis, contextualizer: Context | None=None, maxsize: int | None=None) -> None:  # type: ignore[type-arg]
         self.logger = logging.getLogger(f'{self.__class__.__name__}')
@@ -229,33 +229,6 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
     def cached_captures(self) -> set[str]:
         return set(self.__cache.keys())
 
-    def __getitem__(self, uuid: str) -> CaptureCache:
-        if self.__cache_max_size is not None and len(self.__cache) > self.__cache_max_size:
-            self.__cache.popitem()
-        if uuid in self.__cache:
-            if self.__cache[uuid].capture_dir.exists():
-                return self.__cache[uuid]
-            del self.__cache[uuid]
-        capture_dir = self._get_capture_dir(uuid)
-        cached = self.redis.hgetall(capture_dir)
-        if cached:
-            cc = CaptureCache(cached)
-            # NOTE: checking for pickle to exist may be a bad idea here.
-            if (cc.capture_dir.exists()
-                    and ((cc.capture_dir / 'tree.pickle.xz').exists()
-                         or (cc.capture_dir / 'tree.pickle.gz').exists()
-                         or (cc.capture_dir / 'tree.pickle').exists())):
-                self.__cache[uuid] = cc
-                return self.__cache[uuid]
-        self.__cache[uuid] = asyncio.run(self._set_capture_cache(capture_dir))
-        return self.__cache[uuid]
-
-    def __iter__(self) -> Iterator[dict[str, CaptureCache]]:
-        return iter(self.__cache)  # type: ignore[arg-type]
-
-    def __len__(self) -> int:
-        return len(self.__cache)
-
     def reload_cache(self, uuid: str) -> None:
         if uuid in self.__cache:
             self.redis.delete(str(self.__cache[uuid].capture_dir))
@@ -265,10 +238,23 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             self.redis.delete(capture_dir)
 
     def remove_pickle(self, uuid: str) -> None:
-        if cache := self.get_capture_cache_quick(uuid):
-            remove_pickle_tree(cache.capture_dir)
+        if capture_dir := self._get_capture_dir(uuid):
+            remove_pickle_tree(Path(capture_dir))
         if uuid in self.__cache:
             del self.__cache[uuid]
+
+    def hide(self, uuid: str, make_private: bool=False) -> bool:
+        to_set = 'no_index'
+        if make_private:
+            to_set = 'private'
+        capture_dir = self._get_capture_dir(uuid)
+        self.redis.hset(capture_dir, to_set, 1)
+        self.redis.zrem('recent_captures_public', uuid)
+        (Path(capture_dir) / to_set).touch()
+        self.reload_cache(uuid)
+        # remove from the public index
+        get_indexing().force_reindex(uuid)
+        return True
 
     def rebuild_all(self) -> None:
         for uuid, cache in self.__cache.items():
@@ -282,31 +268,64 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
     def lru_cache_clear(self) -> None:
         load_pickle_tree.cache_clear()
 
-    def get_capture_cache_quick(self, uuid: str) -> CaptureCache | None:
+    def get_capture_cache(self, uuid: str, *, as_admin: bool=False) -> CaptureCache:
         """Get the CaptureCache for the UUID if it exists in redis,
-        WARNING: it doesn't check if the path exists, nor if the pickle is there
+        WARNING: check if the pickle is there, build it if not
+        """
+        if cache := self.get_capture_cache_quick(uuid, as_admin=as_admin):
+            if cache.tree_ready:
+                return cache
+            # Pickle is missing, rebuild what needs to be rebuilt
+
+        if self.__cache_max_size is not None and len(self.__cache) > self.__cache_max_size:
+            # Make sure the cache doesn't grow forever
+            self.__cache.popitem()
+
+        capture_dir = self._get_capture_dir(uuid)
+        self.__cache[uuid] = asyncio.run(self._set_capture_cache(capture_dir))
+        if not as_admin and self.__cache[uuid].private:
+            raise LookylooPrivateCapture(f'Cannot get capture {uuid} as user.')
+        return self.__cache[uuid]
+
+    def get_capture_cache_quick(self, uuid: str, *, as_admin: bool=False) -> CaptureCache | None:
+        """Get the CaptureCache for the UUID if it exists in redis,
+        WARNING: it doesn't check if the pickle is there
         """
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
-        if uuid in self.cached_captures:
-            self.redis.expire(str(self.__cache[uuid].capture_dir), self.expire_cache_sec)
-            return self.__cache[uuid]
         try:
             capture_dir = self._get_capture_dir(uuid)
+        except UUIDMissingInCache:
+            logger.warning('Unable to get CaptureCache (unknown UUID)')
+            return None
+        except MissingCaptureDirectory:
+            logger.warning('Unable to get CaptureCache (missing capture directory)')
+            return None
+
+        if uuid not in self.__cache:
+            # try to initialize it in the dict from redis but *not* from disk
+            try:
+                if cached := self.redis.hgetall(capture_dir):
+                    self.__cache[uuid] = CaptureCache(cached)
+            except LookylooException as e:
+                logger.error(f'Capture broken: {e}')
+            except Exception as e:
+                logger.error(f'Unable to get CaptureCache (unexpected exception): {e}')
+
+        if c := self.__cache.get(uuid):
             self.redis.expire(capture_dir, self.expire_cache_sec)
-            if cached := self.redis.hgetall(capture_dir):
-                return CaptureCache(cached)
-        except MissingUUID as e:
-            logger.warning(f'Unable to get CaptureCache: {e}')
-        except Exception as e:
-            logger.error(f'Unable to get CaptureCache: {e}')
+            if not as_admin and c.private:
+                raise LookylooPrivateCapture(f'Cannot get capture {uuid} as user.')
+            return c
         return None
 
     def _get_capture_dir(self, uuid: str) -> str:
         # Try to get from the recent captures cache in redis
-        capture_dir = self.redis.hget('lookup_dirs', uuid)
-        if capture_dir:
+        if capture_dir := self.redis.hget('lookup_dirs', uuid):
             if os.path.exists(capture_dir):
                 return capture_dir
+            else:
+                # if it is in the cache, pop it out, it needs to be re-cached (best case, it's archived)
+                del self.__cache[uuid]
             # The capture was either removed or archived, cleaning up
             p = self.redis.pipeline()
             p.hdel('lookup_dirs', uuid)
@@ -316,16 +335,18 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             p.execute()
 
         # Try to get from the archived captures cache in redis
-        capture_dir = self.redis.hget('lookup_dirs_archived', uuid)
-        if capture_dir:
+        if capture_dir := self.redis.hget('lookup_dirs_archived', uuid):
             if os.path.exists(capture_dir):
                 return capture_dir
+            else:
+                # if it is in the cache, pop it out
+                del self.__cache[uuid]
             # The capture was removed, remove the UUID
             self.redis.hdel('lookup_dirs_archived', uuid)
             self.redis.delete(capture_dir)
             self.logger.warning(f'UUID ({uuid}) linked to a missing directory ({capture_dir}).')
             raise MissingCaptureDirectory(f'UUID ({uuid}) linked to a missing directory ({capture_dir}).')
-        raise MissingUUID(f'Unable to find UUID "{uuid}".')
+        raise UUIDMissingInCache(f'Unable to find UUID "{uuid}".')
 
     def _prepare_hostnode_tree_for_icons(self, tree: CrawledTree) -> None:
         for node in tree.root_hartree.hostname_tree.traverse():
@@ -550,8 +571,12 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
             logger.info(cache['error'])
 
         if (capture_dir / 'no_index').exists():
-            # If the folders claims anonymity
+            # The capture isn't on the public index, but anyone with the UUID can view it.
             cache['no_index'] = 1
+
+        if (capture_dir / 'private').exists():
+            # The capture can only be viewed by admins or with a seed
+            cache['private'] = 1
 
         if (capture_dir / 'parent').exists():
             # The capture was initiated from an other one
@@ -573,7 +598,7 @@ class CapturesIndex(Mapping):  # type: ignore[type-arg]
         to_return = CaptureCache(cache)
         if hasattr(to_return, 'timestamp') and to_return.timestamp:
             p.zadd('recent_captures', {uuid: to_return.timestamp.timestamp()})
-            if not to_return.no_index:
+            if not to_return.no_index and not to_return.private:
                 # public capture
                 p.zadd('recent_captures_public', {uuid: to_return.timestamp.timestamp()})
 

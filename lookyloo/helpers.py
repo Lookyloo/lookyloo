@@ -13,6 +13,7 @@ import os
 import pickle
 import random
 import re
+import secrets
 import time
 
 from datetime import datetime, timedelta, date
@@ -30,11 +31,12 @@ from har2tree import CrawledTree, HostNode, URLNode
 from PIL import Image
 from playwrightcapture import get_devices
 from pytaxonomies import Taxonomies  # type: ignore[attr-defined]
+from redis import Redis
 import ua_parser
 from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
-from .default import get_homedir, safe_create_dir, get_config, LookylooException
+from .default import get_homedir, safe_create_dir, get_config, LookylooException, get_socket_path
 from .exceptions import NoValidHarFile, TreeNeedsRebuild
 
 if TYPE_CHECKING:

@@ -16,7 +16,7 @@ from pylacus import PyLacus, CaptureStatus as CaptureStatusPy, CaptureResponse a
 
 from lookyloo import Lookyloo
 from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError
-from lookyloo.exceptions import LacusUnreachable, DuplicateUUID, LacusUnknown, MissingUUID
+from lookyloo.exceptions import LacusUnreachable, DuplicateUUID, LacusUnknown
 from lookyloo.default import AbstractManager, get_config, LookylooException
 from lookyloo.helpers import get_captures_dir
 
@@ -78,6 +78,10 @@ class AsyncCapture(AbstractManager):
             if capture_settings.not_queued:
                 self.logger.info(f'UUID "{uuid}" is not queued, not ready for sure.')
                 continue
+
+            if not self.lookyloo.redis.hexists(uuid, 'uuid'):
+                # old format, hset didn't contain the uuid
+                self.lookyloo.redis.hset(uuid, 'uuid', uuid)
             try:
                 lacus_status = self.lookyloo.get_lacus_capture_status(capture_settings)
                 if lacus_status in [CaptureStatusPy.DONE, CaptureStatusCore.DONE]:
@@ -86,9 +90,6 @@ class AsyncCapture(AbstractManager):
                     else:
                         # It should not happen at this stage, the value has been set i fit was missing
                         self.logger.warning(f'[{uuid}] Missing remote_lacus_name.')
-            except MissingUUID:
-                # old format, hset didn't contain the uuid
-                self.lookyloo.redis.hset(uuid, 'uuid', uuid)
             except LacusUnknown as e:
                 # fallback to default lacus
                 self.logger.warning(f'[{uuid}] Unknown lacus, revert to default: {e}')
@@ -116,7 +117,7 @@ class AsyncCapture(AbstractManager):
 
             try:
                 self.lookyloo.redis.sadd('ongoing', uuid)
-                to_capture: LookylooCaptureSettings | None = self.lookyloo.get_capture_settings(uuid)
+                to_capture: LookylooCaptureSettings | None = self.lookyloo.get_capture_settings(uuid, as_admin=True)
                 if (entries.get('error') is not None
                         and not self.lookyloo.redis.hget(uuid, 'not_queued')  # Not already marked as not queued
                         and (entries['error'] and entries['error'].startswith('No capture settings'))
@@ -129,6 +130,7 @@ class AsyncCapture(AbstractManager):
                 if to_capture:
                     self.lookyloo.store_capture(
                         uuid, to_capture.listing,
+                        private=to_capture.private,
                         browser=to_capture.browser,
                         parent=to_capture.parent,
                         categories=to_capture.categories,

@@ -16,7 +16,7 @@ from redis.connection import UnixDomainSocketConnection
 from .context import Context
 from .capturecache import CapturesIndex
 from .default import get_config, get_socket_path, LookylooException
-from .exceptions import MissingUUID, TreeNeedsRebuild
+from .exceptions import TreeNeedsRebuild
 
 
 class Comparator():
@@ -72,11 +72,8 @@ class Comparator():
         # IPs in hostnode + ASNs
         return different, to_return
 
-    def get_comparables_capture(self, capture_uuid: str) -> dict[str, Any]:
-        if capture_uuid not in self._captures_index:
-            raise MissingUUID(f'{capture_uuid} does not exists.')
-
-        capture = self._captures_index[capture_uuid]
+    def get_comparables_capture(self, capture_uuid: str, *, as_admin: bool=False) -> dict[str, Any]:
+        capture = self._captures_index.get_capture_cache(capture_uuid, as_admin=as_admin)
 
         # Makes sure the tree is built and valid, force a rebuild otherwise
         try:
@@ -84,7 +81,7 @@ class Comparator():
         except TreeNeedsRebuild:
             self.logger.warning(f"The tree for {capture_uuid} has to be rebuilt.")
             self._captures_index.remove_pickle(capture_uuid)
-            capture = self._captures_index[capture_uuid]
+            capture = self._captures_index.get_capture_cache(capture_uuid, as_admin=as_admin)
         except LookylooException as e:
             return {'error': str(e)}
 
@@ -113,20 +110,15 @@ class Comparator():
             to_return = {'error': str(e)}
         return to_return
 
-    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: CompareSettings | dict[str, Any] | str | None=None) -> tuple[bool, dict[str, Any]]:
-        if capture_left not in self._captures_index:
-            raise MissingUUID(f'{capture_left} does not exists.')
-        if capture_right not in self._captures_index:
-            raise MissingUUID(f'{capture_right} does not exists.')
-
+    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: CompareSettings | dict[str, Any] | str | None=None, as_admin: bool=False) -> tuple[bool, dict[str, Any]]:
         different: bool = False
         to_return: dict[str, dict[str,
                                   (str | list[str | dict[str, Any]]
                                    | dict[str, (int | str | list[int | str | dict[str, Any]])])]] = {}
         to_return['lookyloo_urls'] = {'left': f'https://{self.public_domain}/tree/{capture_left}',
                                       'right': f'https://{self.public_domain}/tree/{capture_right}'}
-        left = self.get_comparables_capture(capture_left)
-        right = self.get_comparables_capture(capture_right)
+        left = self.get_comparables_capture(capture_left, as_admin=as_admin)
+        right = self.get_comparables_capture(capture_right, as_admin=as_admin)
         if 'error' in left and 'error' in right:
             # both captures failed
             if left['error'] == right['error']:

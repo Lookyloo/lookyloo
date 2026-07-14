@@ -6,16 +6,16 @@ from typing import Dict, Any, Union, Set, List
 
 lookyloo = Lookyloo()
 
-stats: Dict[Union[str, int], Any] = {}
+stats: dict[str | int, Any] = {}
 
 today = datetime.date.today()
 calendar_week = today.isocalendar()[1]
-weeks_stats: Dict[int, Dict[str, Union[int, Set[str]]]] = \
+weeks_stats: dict[int, dict[str, int | set[str]]] = \
     {calendar_week - 1: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()},
      calendar_week: {'analysis': 0, 'analysis_with_redirects': 0, 'redirects': 0, 'uniq_urls': set()}}
 
 
-def uniq_domains(uniq_urls: List[str]) -> Set[str]:
+def uniq_domains(uniq_urls: list[str]) -> set[str]:
     domains = set()
     for url in uniq_urls:
         splitted = urlparse(url)
@@ -24,7 +24,7 @@ def uniq_domains(uniq_urls: List[str]) -> Set[str]:
     return domains
 
 
-for cache in lookyloo.sorted_capture_cache():
+for cache in lookyloo.sorted_capture_cache(as_admin=True):
     date = cache.timestamp
     if date.year not in stats:
         stats[date.year] = {}

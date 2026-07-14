@@ -245,13 +245,21 @@
             </button>
             <ul class="dropdown-menu" aria-labelledby="tools-menu-btn">
               {% if not capture_indexed %}
-              <li>
-                <center>
-                <a href="{{ url_for('trigger_indexing', tree_uuid=tree_uuid) }}" role="button"
-                   class="dropdown-item alert alert-warning"
-                   title="The capture isn't (fully) indexed, index now.">Index capture</a>
-                </center>
-              </li>
+                {% if not current_user.is_authenticated and info.cache.private %}
+                <li>
+                  <center>
+                    <div role="alert" class="alert alert-danger">Cannot index private capture without being logged in.</div>
+                  </center>
+                </li>
+                {% else %}
+                <li>
+                  <center>
+                  <a href="{{ url_for('trigger_indexing', tree_uuid=tree_uuid) }}" role="button"
+                     class="dropdown-item alert alert-warning"
+                     title="The capture isn't (fully) indexed, index now.">Index capture</a>
+                  </center>
+                </li>
+                {% endif %}
               {% endif %}
               {% if misp_lookup%}
               <li>
