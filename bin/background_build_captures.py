@@ -78,9 +78,13 @@ class BackgroundBuildCaptures(AbstractManager):
 
         self.logger.info(f'Starting monitoring for {capture_uuid}...')
         monitor_settings: MonitorCaptureSettings | None = None
-        with (path / 'monitor_capture').open('rb') as f:
-            if m := f.read():
-                monitor_settings = MonitorCaptureSettings.model_validate_json(m)
+        try:
+            with (path / 'monitor_capture').open('rb') as f:
+                if m := f.read():
+                    monitor_settings = MonitorCaptureSettings.model_validate_json(m)
+        except FileNotFoundError:
+            # processed by another script.
+            return
         (path / 'monitor_capture').unlink()
         if not monitor_settings:
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing settings.')
