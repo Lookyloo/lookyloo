@@ -701,10 +701,10 @@ class CaptureStats(Resource):  # type: ignore[misc]
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureInfo(Resource):  # type: ignore[misc]
     def get(self, capture_uuid: str) -> Response:
-        success, info = lookyloo.get_info(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
-        if success:
-            return make_response(info)
-        return make_response(info, 404)
+        try:
+            return make_response(lookyloo.get_info(capture_uuid, as_admin=flask_login.current_user.is_authenticated))
+        except UUIDMissingInCache:
+            return make_response({'error': f'Unable to find UUID {capture_uuid} in the cache.'}, 404)
 
 
 @api.route('/json/<uuid:capture_uuid>/cookies')

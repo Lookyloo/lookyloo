@@ -350,7 +350,7 @@ class Lookyloo():
         cache = self.capture_cache(capture_uuid, as_admin=as_admin)
         return cache.tree.root_hartree.stats
 
-    def get_info(self, capture_uuid: str, /, *, as_admin: bool) -> tuple[bool, dict[str, Any]]:
+    def get_info(self, capture_uuid: str, /, *, as_admin: bool) -> dict[str, Any]:
         '''Get basic information about the capture.'''
         cache = self.capture_cache(capture_uuid, as_admin=as_admin)
 
@@ -366,7 +366,7 @@ class Lookyloo():
             to_return['user_agent'] = cache.user_agent
         if hasattr(cache, 'referer'):
             to_return['referer'] = cache.referer if cache.referer else ''
-        return True, to_return
+        return to_return
 
     def get_meta(self, capture_uuid: str, /, as_admin: bool) -> dict[str, str]:
         '''Get the meta informations from a capture (mostly, details about the User Agent used.)'''
