@@ -12,7 +12,7 @@ from typing import Any
 from lacuscore import CaptureStatus as CaptureStatusCore
 from lookyloo import Lookyloo
 from lookyloo_models import LookylooCaptureSettings
-from lookyloo.exceptions import LacusUnreachable, LacusUnknown
+from lookyloo.exceptions import LacusUnreachable, LacusUnknown, NotCached
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
 from lookyloo.modules import AIL, AssemblyLine, MISPs, MISP, AutoCategorize
@@ -68,15 +68,19 @@ class Processing(AbstractManager):
                 # the UUID is already in the recent captures
                 continue
 
-            if cache := self.lookyloo.capture_cache(uuid, quick=True, as_admin=True):
-                # we do not want this method to build the pickle, **but** if the pickle exists
-                # AND the capture isn't in the cache, we want to add it
-                if not hasattr(cache, 'timestamp') or not cache.timestamp:
-                    continue
-                i += 1
-                p.zadd('recent_captures', mapping={uuid: cache.timestamp.timestamp()})
-                if not cache.no_index:
-                    p.zadd('recent_captures_public', mapping={uuid: cache.timestamp.timestamp()})
+            try:
+                cache = self.lookyloo.capture_cache(uuid, quick=True, as_admin=True)
+            except NotCached:
+                continue
+            # we do not want this method to build the pickle, **but** if the pickle exists
+            # AND the capture isn't in the cache, we want to add it
+            if not hasattr(cache, 'timestamp') or not cache.timestamp:
+                continue
+            i += 1
+            p.zadd('recent_captures', mapping={uuid: cache.timestamp.timestamp()})
+            if not cache.no_index and not cache.private:
+                p.zadd('recent_captures_public', mapping={uuid: cache.timestamp.timestamp()})
+
             if i % 100 == 0:
                 # Avoid huge pipeline on initialization
                 p.execute()
