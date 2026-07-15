@@ -325,7 +325,7 @@ class CapturesIndex():
                 return capture_dir
             else:
                 # if it is in the cache, pop it out, it needs to be re-cached (best case, it's archived)
-                del self.__cache[uuid]
+                self.__cache.pop(uuid, None)
             # The capture was either removed or archived, cleaning up
             p = self.redis.pipeline()
             p.hdel('lookup_dirs', uuid)
@@ -340,7 +340,7 @@ class CapturesIndex():
                 return capture_dir
             else:
                 # if it is in the cache, pop it out
-                del self.__cache[uuid]
+                self.__cache.pop(uuid, None)
             # The capture was removed, remove the UUID
             self.redis.hdel('lookup_dirs_archived', uuid)
             self.redis.delete(capture_dir)
