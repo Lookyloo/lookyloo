@@ -40,7 +40,7 @@ class OllamaReport():
         if not self.available:
             raise LookylooException('Ollama not available, probably not able to reach the server.')
 
-        messages = [{"role": "system", "content": "You are an infosec analyst investigating websites. Describe your reasonning."}]
+        messages = [{"role": "system", "content": "You are an infosec analyst investigating websites. Describe your reasoning."}]
         if redirects := ai_export.get('redirects'):
             messages.append({"role": "user", "content": f"A chain of redirects to the screenshot submited next {redirects}"})
         if md := ai_export.get('html_as_markdown'):
