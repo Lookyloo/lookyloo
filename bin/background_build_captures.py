@@ -150,13 +150,15 @@ class BackgroundBuildCaptures(AbstractManager):
                     self.logger.warning('Shutdown requested, breaking.')
                     return False
 
-                if ((path / 'tree.pickle.xz').exists()
+                if (path / 'auto_report').exists() or (path / 'monitor_capture').exists():
+                    # if either auto_report or monitor_capture exist, process the capture
+                    pass
+                elif ((path / 'tree.pickle.xz').exists()
                         or (path / 'tree.pickle.gz').exists()
                         or (path / 'tree.pickle').exists()):
                     # We already have a pickle file
-                    self._auto_trigger(path)
                     continue
-                if not list(path.rglob('*.har.gz')) and not list(path.rglob('*.har')):
+                elif not list(path.rglob('*.har.gz')) and not list(path.rglob('*.har')):
                     # No HAR file
                     self.logger.debug(f'{path} has no HAR file.')
                     continue
@@ -211,7 +213,7 @@ class BackgroundBuildCaptures(AbstractManager):
                                 self.lookyloo.uwhois.query_whois_hostnode(node)
                             except Exception as e:
                                 self.logger.info(f'Unable to query whois for {node.name}: {e}')
-                        # Monitor auto report, to that last.
+                        # Monitor & auto report, to that last.
                         self._auto_trigger(path)
 
                     self.logger.info(f'Pickle for {uuid} built.')
