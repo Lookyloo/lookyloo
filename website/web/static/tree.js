@@ -54,111 +54,124 @@ pattern.append('rect')
 let node_container = main_svg.append("g")
                              .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-// Assigns parent, children, height, depth
-let root = d3.hierarchy(treeData);
-root.x0 = min_height / 2;
-root.y0 = 0;
-
 // declares a tree layout
 let tree = d3.tree();
-update(root);
 
-if (parent_uuid != null) {
+try {
+  const treeDumpURL = document.getElementById('tree_js').dataset.remote;
+  const response = await fetch(treeDumpURL);
+  if (!response.ok) {
+    throw new Error(`Response status: ${response.status}`);
+  }
 
-    let parent_box_y = root.y - 70;
-    let parent_box_x = root.x - 150;
+  const treeData = await response.json();
 
-    let parent_rect = node_container.append('rect')
-      .attr("rx", 6)
-      .attr("ry", 6)
-      .attr("transform", `translate(${parent_box_y}, ${parent_box_x})`)
-      .style("opacity", "0.5")
-      .attr("stroke", 'black')
-      .attr('stroke-opacity', "0.8")
-      .attr("stroke-width", "2")
-      .attr("stroke-linecap", "round")
-      .attr("fill", "white")
+  // Assigns parent, children, height, depth
+  let root = d3.hierarchy(treeData);
+  root.x0 = min_height / 2;
+  root.y0 = 0;
 
-    let text = node_container
-        .data([
-            {
-                "line1": 'This capture was triggered',
-                "line2": 'from a previous capture.',
-                "line3": 'See the parent',
-                "parent_uuid": parent_uuid
-            }
-        ])
-        .append('text')
-        .attr("dy", 0)
-        .style("font-size", "12px")
-        .style('text-align', 'center')
-        .attr("transform", `translate(${parent_box_y + 3}, ${parent_box_x + 15})`);
+  update(root);
 
-    text
-        .append('tspan')
-        .text(d => d.line1);
+  if (parent_uuid != null) {
 
-    text
-        .append('tspan')
-        .attr("x", 8)
-        .attr("dy", 18)
-        .text(d => d.line2);
+      let parent_box_y = root.y - 70;
+      let parent_box_x = root.x - 150;
 
-    text
-        .append('tspan')
-        .attr("x", 30)
-        .attr("dy", 20)
-        .text(d => d.line3)
-        .style('fill', '#0000EE')
-        .attr('cursor', 'pointer')
-        .on('click', (event, d) => { openTreeInNewTab(d.parent_uuid) } );
-
-    parent_rect
-        .attr('width', text.node().getBBox().width + 6)
-        .attr('height', text.node().getBBox().height + 10)
-
-    let line_arrow = node_container
-                       .append('g');
-                       //.attr("transform", `translate(${root.y}, ${root.x})`);
-
-    let line = d3.line()
-                    // Other options: http://bl.ocks.org/d3indepth/raw/b6d4845973089bc1012dec1674d3aff8/
-                    //.curve(d3.curveCardinal)
-                    .curve(d3.curveBundle)
-                    .x(point => point.lx)
-                    .y(point => point.ly);
-
-    let line_tip = d3.symbol()
-                    .type(d3.symbolTriangle)
-                    .size(200);
-
-    line_arrow
-        .append("path")
-        .attr('stroke-opacity', "0.7")
-        .attr("stroke-width", "2")
-        .attr("stroke", "black")
-        .attr("fill", "none")
-        .data([{
-            source: {x: 0, y: parent_box_x + parent_rect.node().getBBox().height},
-            target: {x: 50, y: parent_box_x + parent_rect.node().getBBox().height + 42}
-        }])
-        .attr("class", "line")
-        .attr("d", d => line(
-            [{lx: d.source.x, ly: d.source.y},
-             {lx: d.target.x, ly: d.source.y},
-             {lx: d.target.x, ly: d.target.y}
-            ])
-        );
-
-    line_arrow
-        .append("path")
-        .attr("d", line_tip)
+      let parent_rect = node_container.append('rect')
+        .attr("rx", 6)
+        .attr("ry", 6)
+        .attr("transform", `translate(${parent_box_y}, ${parent_box_x})`)
+        .style("opacity", "0.5")
         .attr("stroke", 'black')
         .attr('stroke-opacity', "0.8")
-        .style('stroke-width', '1.5')
-        .attr("fill-opacity", '0')
-        .attr("transform", `translate(50, ${parent_box_x + parent_rect.node().getBBox().height + 48}) rotate(60)`);
-};
+        .attr("stroke-width", "2")
+        .attr("stroke-linecap", "round")
+        .attr("fill", "white")
+
+      let text = node_container
+          .data([
+              {
+                  "line1": 'This capture was triggered',
+                  "line2": 'from a previous capture.',
+                  "line3": 'See the parent',
+                  "parent_uuid": parent_uuid
+              }
+          ])
+          .append('text')
+          .attr("dy", 0)
+          .style("font-size", "12px")
+          .style('text-align', 'center')
+          .attr("transform", `translate(${parent_box_y + 3}, ${parent_box_x + 15})`);
+
+      text
+          .append('tspan')
+          .text(d => d.line1);
+
+      text
+          .append('tspan')
+          .attr("x", 8)
+          .attr("dy", 18)
+          .text(d => d.line2);
+
+      text
+          .append('tspan')
+          .attr("x", 30)
+          .attr("dy", 20)
+          .text(d => d.line3)
+          .style('fill', '#0000EE')
+          .attr('cursor', 'pointer')
+          .on('click', (event, d) => { openTreeInNewTab(d.parent_uuid) } );
+
+      parent_rect
+          .attr('width', text.node().getBBox().width + 6)
+          .attr('height', text.node().getBBox().height + 10)
+
+      let line_arrow = node_container
+                         .append('g');
+                         //.attr("transform", `translate(${root.y}, ${root.x})`);
+
+      let line = d3.line()
+                      // Other options: http://bl.ocks.org/d3indepth/raw/b6d4845973089bc1012dec1674d3aff8/
+                      //.curve(d3.curveCardinal)
+                      .curve(d3.curveBundle)
+                      .x(point => point.lx)
+                      .y(point => point.ly);
+
+      let line_tip = d3.symbol()
+                      .type(d3.symbolTriangle)
+                      .size(200);
+
+      line_arrow
+          .append("path")
+          .attr('stroke-opacity', "0.7")
+          .attr("stroke-width", "2")
+          .attr("stroke", "black")
+          .attr("fill", "none")
+          .data([{
+              source: {x: 0, y: parent_box_x + parent_rect.node().getBBox().height},
+              target: {x: 50, y: parent_box_x + parent_rect.node().getBBox().height + 42}
+          }])
+          .attr("class", "line")
+          .attr("d", d => line(
+              [{lx: d.source.x, ly: d.source.y},
+               {lx: d.target.x, ly: d.source.y},
+               {lx: d.target.x, ly: d.target.y}
+              ])
+          );
+
+      line_arrow
+          .append("path")
+          .attr("d", line_tip)
+          .attr("stroke", 'black')
+          .attr('stroke-opacity', "0.8")
+          .style('stroke-width', '1.5')
+          .attr("fill-opacity", '0')
+          .attr("transform", `translate(50, ${parent_box_x + parent_rect.node().getBBox().height + 48}) rotate(60)`);
+  };
+} catch (error) {
+  console.error(error.message);
+}
 
 
 function open_hostnode_popup(hostnode_uuid) {

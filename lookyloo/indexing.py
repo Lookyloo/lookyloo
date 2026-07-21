@@ -220,7 +220,7 @@ class Indexing():
             remove_pickle_tree(directory)
         finally:
             self.indexing_done(uuid_to_index)
-            return True
+        return True
 
     def __limit_failsafe(self, oldest_capture: datetime | None=None, limit: int | None=None) -> float | str:
         if limit and not oldest_capture:

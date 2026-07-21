@@ -36,7 +36,9 @@
   <script src='{{ url_for('static', filename='tree.js') }}'
           {{get_sri('static', 'tree.js')}}
           nonce="{{ csp_nonce() }}"
-          crossorigin="anonymous"></script>
+          crossorigin="anonymous" type="module"
+          id="tree_js" data-remote="{{url_for('GenericAPI_tree_dump', capture_uuid=tree_uuid)}}">
+  </script>
   <script src='{{ url_for('static', filename='tree_modals.js') }}'
           {{get_sri('static', 'tree_modals.js')}}
           nonce="{{ csp_nonce() }}"
@@ -122,7 +124,7 @@
   var favicon = "{{ favicon }}";
   var mime_favicon = "{{ mime_favicon }}";
   var enable_bookmark = {{ enable_bookmark|tojson }};
-  var treeData = {{ tree_json|safe }};
+
   var parent_uuid = {{ parent_uuid|tojson }};
   var capture_starttime = new Date(Date.parse("{{ info.timestamp.isoformat() }}"));
   window.addEventListener('DOMContentLoaded', (event) => {
