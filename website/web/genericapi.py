@@ -343,6 +343,7 @@ class MISPPush(Resource):  # type: ignore[misc]
     def get(self, capture_uuid: str, instance_name: str | None=None) -> Response:
         with_parents = True if request.args.get('with_parents') else False
         allow_duplicates = True if request.args.get('allow_duplicates') else False
+        as_admin = flask_login.current_user.is_authenticated
 
         if instance_name is None:
             misp = lookyloo.misps.default_misp
@@ -361,7 +362,7 @@ class MISPPush(Resource):  # type: ignore[misc]
             if isinstance(event, dict):
                 to_return['error'] = event
             else:
-                new_events = misp.push(event, allow_duplicates)
+                new_events = misp.push(event, as_admin, allow_duplicates=allow_duplicates)
                 if isinstance(new_events, dict):
                     to_return['error'] = new_events
                 else:
