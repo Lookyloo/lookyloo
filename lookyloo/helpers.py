@@ -578,3 +578,47 @@ def mimetype_to_generic(mimetype: str | None) -> str:
         return 'empty'
     else:
         return 'unknown_mimetype'
+
+# ##################### Seed stuff
+
+
+def expire_in_sec(time: str | int | None) -> int:
+    """
+    Try to parse time value and return the amount of seconds.
+    :param time: time value to parse
+    :return: seconds until expire
+    """
+    if not time:
+        return 0
+    t_match = re.fullmatch(r'(\d+)([smhd]?)', str(time))
+    if t_match is None:
+        raise Exception(f"impossible to parse cache '{time}'")
+    if not t_match.group(2) or t_match.group(2) == 's':
+        return int(timedelta(seconds=int(t_match.group(1))).total_seconds())
+    if t_match.group(2) == 'm':
+        return int(timedelta(minutes=int(t_match.group(1))).total_seconds())
+    if t_match.group(2) == 'h':
+        return int(timedelta(hours=int(t_match.group(1))).total_seconds())
+    if t_match.group(2) == 'd':
+        return int(timedelta(days=int(t_match.group(1))).total_seconds())
+    return 0
+
+
+class Seed():
+
+    def __init__(self) -> None:
+        self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
+
+    def get_task_uuid(self, seed: str) -> str | None:
+        return self.redis.get(f'seed:{seed}')
+
+    def add(self, task_uuid: str, time: str | int | None=None, seed: str | None=None) -> tuple[str, int]:
+        expire = expire_in_sec(time)
+        if not seed:
+            seed = secrets.token_urlsafe()
+        if expire:
+            self.redis.setex(name=f'seed:{seed}', time=expire, value=task_uuid)
+        else:
+            # When seed is False (0, None)
+            self.redis.set(name=f'seed:{seed}', value=task_uuid)
+        return seed, expire

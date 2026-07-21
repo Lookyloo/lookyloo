@@ -187,7 +187,8 @@ class Processing(AbstractManager):
                 continue
             self.logger.info(f'Found a non-queued capture ({capture_settings.uuid}), retrying now.')
             try:
-                new_uuid = self.lookyloo.enqueue_capture(capture_settings, 'api', 'background_processing', False)
+                new_uuid, _, _ = self.lookyloo.enqueue_capture(capture_settings, source='api', user='background_processing',
+                                                               authenticated=False, seed_expire=None)
                 if new_uuid != capture_settings.uuid:
                     # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
                     self.logger.warning(f'Had to change the capture UUID (duplicate). Old: {capture_settings.uuid} / New: {new_uuid}')

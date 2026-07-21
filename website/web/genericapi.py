@@ -870,7 +870,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
     @api.param('referer', 'Referer to pass to the capture')  # type: ignore[untyped-decorator]
     @api.param('proxy', 'Proxy to use for the the capture')  # type: ignore[untyped-decorator]
     @api.produces(['text/text'])  # type: ignore[untyped-decorator]
-    def get(self) -> str | Response:
+    def get(self) -> str | tuple[str, str | None, datetime | None] | Response:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
         else:
@@ -898,18 +898,26 @@ class SubmitCapture(Resource):  # type: ignore[misc]
         if request.args.get('proxy'):
             to_query['proxy'] = request.args['proxy']
 
-        perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
+        perma_uuid, seed, expire_at = lookyloo.enqueue_capture(to_query, source='api', user=user,
+                                                               authenticated=flask_login.current_user.is_authenticated,
+                                                               seed_expire=request.args.get('seed_expire'))
+        if seed:
+            return perma_uuid, seed, expire_at
         return perma_uuid
 
     @api.doc(body=submit_fields_post)  # type: ignore[untyped-decorator]
     @api.produces(['text/text'])  # type: ignore[untyped-decorator]
-    def post(self) -> str:
+    def post(self) -> str | tuple[str, str | None, datetime | None]:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
         else:
             user = src_request_ip(request)
         to_query: dict[str, Any] = request.get_json(force=True)
-        perma_uuid = lookyloo.enqueue_capture(to_query, source='api', user=user, authenticated=flask_login.current_user.is_authenticated)
+        perma_uuid, seed, expire_at = lookyloo.enqueue_capture(to_query, source='api', user=user,
+                                                               authenticated=flask_login.current_user.is_authenticated,
+                                                               seed_expire=to_query.get('seed_expire'))
+        if seed:
+            return perma_uuid, seed, expire_at
         return perma_uuid
 
 

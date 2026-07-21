@@ -9,6 +9,7 @@ import ipaddress
 import itertools
 import logging
 import operator
+import secrets
 import shutil
 import random
 import re
@@ -129,6 +130,13 @@ class Lookyloo():
         self._priority = get_config('generic', 'priority')
         self.headed_allowed = get_config('generic', 'allow_headed')
         self.force_trusted_timestamp = get_config('generic', 'force_trusted_timestamp')
+
+        self.default_public = get_config('generic', 'default_public')
+        _p = get_config('generic', 'private_captures')
+        self.default_private = _p.get('default_private')
+        self.default_seed_expire = _p.get('default_seed_expire')
+        if self.default_public and self.default_private:
+            raise ConfigError('Cannot have default public and default private true in the settings.')
 
         # When we have absolutely no lacuses available for a while, everything is super slow
         # set it to None by default, and add a retry timer
@@ -253,6 +261,18 @@ class Lookyloo():
     @property
     def redis(self) -> Redis:  # type: ignore[type-arg]
         return Redis(connection_pool=self.redis_pool)
+
+    def add_seed(self, capture_uuid: str, expire: str | None) -> tuple[str, datetime | None]:
+        seed = secrets.token_urlsafe()
+        expire_at = None
+        if expire:
+            expire_at = parse(expire)
+        if not expire_at and self.default_seed_expire:
+            # expire_at will be None if it cannot figure out what the expire string meant
+            # self.default_seed_expire can be None
+            expire_at = parse(self.default_seed_expire)
+        self.redis.set(name=f'seed:{seed}', exat=int(expire_at.timestamp()) if expire_at else None, value=capture_uuid)
+        return seed, expire_at
 
     def __enable_remote_lacus(self, lacus_url: str) -> PyLacus:
         '''Enable remote lacus'''
@@ -412,7 +432,11 @@ class Lookyloo():
         return self.capture_cache(capture_uuid, as_admin=as_admin).capture_settings
 
     def index_capture(self, capture_uuid: str, /, *, force: bool=False, as_admin: bool) -> bool:
-        cache = self.capture_cache(capture_uuid, as_admin=as_admin)
+        try:
+            cache = self.capture_cache(capture_uuid, as_admin=as_admin)
+        except UUIDMissingInCache:
+            # the capture isn't ready yet, cannot index
+            return False
         if hasattr(cache, 'capture_dir'):
             try:
                 if not cache.private:
@@ -797,7 +821,7 @@ class Lookyloo():
             return True
         return False
 
-    def capture_cache(self, capture_uuid: str, /, *, force_update: bool = False, quick: bool=False, as_admin: bool) -> CaptureCache:
+    def capture_cache(self, capture_uuid: str, /, *, force_update: bool = False, quick: bool=False, as_admin: bool, seed: str | None=None) -> CaptureCache:
         """Get the cache from redis.
             * force_update: Reload the cache if needed (new format)
             * quick is True: Only return a cache **if** it is in valkey, doesn't try to build the tree.
@@ -806,14 +830,14 @@ class Lookyloo():
             raise UUIDMissingInCache(f'UUID {capture_uuid} does not exists in the cache (may be ongoing).')
 
         if quick:
-            cache = self._captures_index.get_capture_cache_quick(capture_uuid, as_admin=as_admin)
+            cache = self._captures_index.get_capture_cache_quick(capture_uuid, as_admin=as_admin, seed=seed)
             if not cache:
                 raise NotCached(f'{capture_uuid} is not in the cache.')
             return cache
 
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         try:
-            cache = self._captures_index.get_capture_cache(capture_uuid, as_admin=as_admin)
+            cache = self._captures_index.get_capture_cache(capture_uuid, as_admin=as_admin, seed=seed)
             if cache and force_update:
                 needs_update = False
                 if not cache.user_agent and not cache.error:
@@ -825,7 +849,7 @@ class Lookyloo():
                     needs_update = True
                 if needs_update:
                     self._captures_index.reload_cache(capture_uuid)
-                    cache = self._captures_index.get_capture_cache(capture_uuid, as_admin=as_admin)
+                    cache = self._captures_index.get_capture_cache(capture_uuid, as_admin=as_admin, seed=seed)
             return cache
         except NoValidHarFile as e:
             logger.debug('No HAR files, broken capture.')
@@ -870,7 +894,7 @@ class Lookyloo():
         # Use the public index
         return category in get_indexing().categories
 
-    def enqueue_capture(self, query: LookylooCaptureSettings | dict[str, Any], source: str, user: str, authenticated: bool) -> str:
+    def enqueue_capture(self, query: LookylooCaptureSettings | dict[str, Any], source: str, user: str, authenticated: bool, *, seed_expire: str | None) -> tuple[str, str | None, datetime | None]:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
 
         def get_priority(source: str, user: str, authenticated: bool) -> int:
@@ -889,6 +913,7 @@ class Lookyloo():
         if isinstance(query, dict):
             query = LookylooCaptureSettings.model_validate(query)
 
+        print(query)
         if query.categories and not authenticated:
             # remove from the list of categories the ones we don't know
             query.categories = [c for c in query.categories if self._valid_category(c)]
@@ -999,8 +1024,11 @@ class Lookyloo():
                 p.zincrby('queues', 1, f'{source}|{authenticated}|{user}')
                 p.set(f'{perma_uuid}_mgmt', f'{source}|{authenticated}|{user}')
                 p.execute()
-
-        return perma_uuid
+        if query.private:
+            seed, expire_at = self.add_seed(perma_uuid, expire=seed_expire if seed_expire else self.default_seed_expire)
+            return perma_uuid, seed, expire_at
+        else:
+            return perma_uuid, None, None
 
     def takedown_details(self, hostnode: HostNode) -> dict[str, Any]:
         if not self.uwhois.available:

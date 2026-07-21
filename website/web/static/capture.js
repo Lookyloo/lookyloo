@@ -292,3 +292,15 @@ window.addEventListener('DOMContentLoaded', (event) => {
         document.getElementById("auto-report").checked = false;
     }
 });
+
+// visibility settings
+
+document.getElementById('public').addEventListener('click', function (e) {
+    document.getElementById('seed_expire').disabled = true;
+})
+document.getElementById('unlisted').addEventListener('click', function (e) {
+    document.getElementById('seed_expire').disabled = true;
+})
+document.getElementById('private').addEventListener('click', function (e) {
+    document.getElementById('seed_expire').disabled = false;
+})

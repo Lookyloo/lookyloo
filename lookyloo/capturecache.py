@@ -243,6 +243,11 @@ class CapturesIndex():
         if uuid in self.__cache:
             del self.__cache[uuid]
 
+    def check_seed(self, uuid: str, seed: str | None) -> bool:
+        if self.redis.get(f'seed:{seed}') == uuid:
+            return True
+        return False
+
     def hide(self, uuid: str, make_private: bool=False) -> bool:
         to_set = 'no_index'
         if make_private:
@@ -268,7 +273,7 @@ class CapturesIndex():
     def lru_cache_clear(self) -> None:
         load_pickle_tree.cache_clear()
 
-    def get_capture_cache(self, uuid: str, *, as_admin: bool=False) -> CaptureCache:
+    def get_capture_cache(self, uuid: str, *, as_admin: bool=False, seed: str | None=None) -> CaptureCache:
         """Get the CaptureCache for the UUID if it exists in redis,
         WARNING: check if the pickle is there, build it if not
         """
@@ -283,11 +288,12 @@ class CapturesIndex():
 
         capture_dir = self._get_capture_dir(uuid)
         self.__cache[uuid] = asyncio.run(self._set_capture_cache(capture_dir))
-        if not as_admin and self.__cache[uuid].private:
-            raise LookylooPrivateCapture(f'Cannot get capture {uuid} as user.')
+        if self.__cache[uuid].private:
+            if not as_admin or not self.check_seed(uuid, seed):
+                raise LookylooPrivateCapture(f'Cannot get capture {uuid} as user.')
         return self.__cache[uuid]
 
-    def get_capture_cache_quick(self, uuid: str, *, as_admin: bool=False) -> CaptureCache | None:
+    def get_capture_cache_quick(self, uuid: str, *, as_admin: bool=False, seed: str | None=None) -> CaptureCache | None:
         """Get the CaptureCache for the UUID if it exists in redis,
         WARNING: it doesn't check if the pickle is there
         """
@@ -313,8 +319,9 @@ class CapturesIndex():
 
         if c := self.__cache.get(uuid):
             self.redis.expire(capture_dir, self.expire_cache_sec)
-            if not as_admin and c.private:
-                raise LookylooPrivateCapture(f'Cannot get capture {uuid} as user.')
+            if c.private:
+                if not as_admin or not self.check_seed(uuid, seed):
+                    raise LookylooPrivateCapture(f'Cannot get capture {uuid} as user.')
             return c
         return None
 
