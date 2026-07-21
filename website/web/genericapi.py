@@ -107,6 +107,21 @@ class AuthToken(Resource):  # type: ignore[misc]
         return make_response({'error': 'User/Password invalid.'}, 401)
 
 
+@api.route('/json/<uuid:capture_uuid>/tree_dump')
+@api.doc(description='Get the json export to render the tree',
+         params={'capture_uuid': 'The UUID of the capture'})
+class TreeDump(Resource):  # type: ignore[misc]
+    def get(self, capture_uuid: str) -> Response:
+        try:
+            cache = lookyloo.capture_cache(capture_uuid)
+            if cache:
+                return make_response(cache.tree.to_json())
+            else:
+                return make_response({'error': "Unable to get dump."}, 401)
+        except Exception:
+            return make_response({'error': "Unable to get dump."}, 401)
+
+
 @api.route('/json/<uuid:capture_uuid>/status')
 @api.doc(description='Get the status of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
