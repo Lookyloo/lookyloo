@@ -30,6 +30,7 @@ class SaneJavaScript():
         if not self.client.is_up:
             self.logger.warning('Not up.')
             self.available = False
+            return
 
         self.storage_dir = get_homedir() / 'sanejs'
         self.storage_dir.mkdir(parents=True, exist_ok=True)
