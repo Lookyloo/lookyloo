@@ -99,7 +99,7 @@ markupsafe = "^3.0.3"
 yara-x = "^1.19.0"
 ollama = "^0.6.2"
 markdown = "^3.10.2"
-justhtml = "^3.8.0"
+justhtml = "^3.9.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^2.3.0"
