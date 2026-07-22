@@ -307,10 +307,10 @@
 {% endif %}
 {% endmacro %}
 
-{% macro request_cookies_icon(urlnode, tree_uuid) %}
+{% macro request_cookies_icon(urlnode, tree_uuid, seed) %}
   {% if urlnode.request_cookie %}
     {% set icon_info = get_icon("request_cookie") %}
-    <a href="{{ url_for('urlnode_request_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}">
+    <a href="{{ url_for('urlnode_request_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid, seed=seed) }}">
        <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
          width="21" height="21"/
          title="Download all the cookies in the request to the server">
@@ -319,7 +319,7 @@
 {% endmacro %}
 
 
-{% macro pandora_submit(tree_uuid, node_uuid=node_uuid, ressource_hash=ressource_hash, index_in_zip=index_in_zip) %}
+{% macro pandora_submit(tree_uuid, node_uuid=node_uuid, ressource_hash=ressource_hash, index_in_zip=index_in_zip, seed=seed) %}
 <div class="col-sm-8">
   <button type="button" class="btn btn-primary btn-sm submitPandoraButton"
                         title="open a new tab with the pandora report"
@@ -332,16 +332,16 @@
                         {%if index_in_zip is not none %}
                         data-indexInZip="{{ index_in_zip }}"
                         {%endif%}
-                        data-pandorasubmit="{{ url_for('pandora_submit', tree_uuid=tree_uuid)}}">
+                        data-pandorasubmit="{{ url_for('pandora_submit', tree_uuid=tree_uuid, seed=seed)}}">
     Submit to Pandora
   </button>
 </div>
 {% endmacro %}
 
 {% macro hash_info(tree_uuid, urlnode_uuid, mimetype, hash, ressource_size,
-                   nb_occurrences, has_pandora, legitimacy, known_content)%}
+                   nb_occurrences, has_pandora, legitimacy, known_content, seed)%}
 
-{{ hash_icon(tree_uuid, urlnode_uuid, mimetype, hash) }}
+{{ hash_icon(tree_uuid=tree_uuid, urlnode_uuid=urlnode_uuid, mimetype=mimetype, h_ressource=hash, seed=seed) }}
 
 <b>Body size</b> (in the HTTP response): {{ sizeof_fmt(ressource_size) }}
 
@@ -359,15 +359,15 @@
 </div>
 {% endif %}
 {% if has_pandora %}
-  {{ pandora_submit(tree_uuid, node_uuid=urlnode_uuid, ressource_hash=hash) }}
+  {{ pandora_submit(tree_uuid, node_uuid=urlnode_uuid, ressource_hash=hash, seed=seed) }}
   <br>
 {% endif %}
 {% endmacro %}
 
-{% macro response_cookies_icon(urlnode, tree_uuid) %}
+{% macro response_cookies_icon(urlnode, tree_uuid, seed) %}
   {% if urlnode.response_cookie %}
     {% set icon_info = get_icon("response_cookie") %}
-    <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid) }}"
+    <a href="{{ url_for('urlnode_response_cookies', tree_uuid=tree_uuid, node_uuid=urlnode.uuid, seed=seed) }}"
        title="Download all the cookies in the response from the server">
       <img src="{{ url_for('static', filename=icon_info['icon']) }}" alt="{{ icon_info['tooltip'] }}"
            width="21" height="21"/>

@@ -26,7 +26,7 @@ from lookyloo_models import CaptureSettingsError
 from lookyloo.comparator import Comparator
 from lookyloo import Lookyloo
 from lookyloo.default import LookylooException
-from lookyloo.exceptions import UUIDMissingInCache, NoValidHarFile, ModuleError, LacusUnreachable
+from lookyloo.exceptions import UUIDMissingInCache, NoValidHarFile, ModuleError, LacusUnreachable, LookylooPrivateCapture
 from lookyloo.helpers import load_user_config
 from lookyloo.modules.ollama_report import OllamaReport
 
@@ -74,6 +74,12 @@ def handle_lacus_unreachable(error: Any) -> tuple[dict[str, str], int]:
     return {'message': 'Lacus in unreachable, pelase try again later.'}, 400
 
 
+@api.errorhandler(LookylooPrivateCapture)  # type: ignore[untyped-decorator]
+def handle_private_capture(error: Any) -> tuple[dict[str, str], int]:
+    '''The capture is private.'''
+    return {'message': str(error)}, 401
+
+
 @api.route('/json/get_user_config')
 @api.doc(description='Get the configuration of the user (if any)', security='apikey')
 class UserConfig(Resource):  # type: ignore[misc]
@@ -114,13 +120,12 @@ class AuthToken(Resource):  # type: ignore[misc]
 @api.doc(description='Get the json export to render the tree',
          params={'capture_uuid': 'The UUID of the capture'})
 class TreeDump(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         try:
             cache = lookyloo.capture_cache(capture_uuid)
-            if cache:
-                return make_response(cache.tree.to_json())
-            else:
-                return make_response({'error': "Unable to get dump."}, 401)
+            return make_response(cache.tree.to_json())
         except Exception:
             return make_response({'error': "Unable to get dump."}, 401)
 
@@ -131,12 +136,13 @@ class TreeDump(Resource):  # type: ignore[misc]
 class CaptureStatusQuery(Resource):  # type: ignore[misc]
 
     @api.param('with_error', 'Add the error message of the capture (if there is one)')  # type: ignore[untyped-decorator]
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         with_error: bool = True if request.args.get('with_error') else False
         status_code = lookyloo.get_capture_status(capture_uuid)
         to_return: dict[str, Any] = {'status_code': status_code}
         if status_code in [CaptureStatusCore.DONE, CaptureStatusPy.DONE] and with_error:
-            cache = lookyloo.capture_cache(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+            cache = lookyloo.capture_cache(capture_uuid)
             if cache.error:
                 to_return['error'] = cache.error
         return make_response(to_return)
@@ -146,11 +152,13 @@ class CaptureStatusQuery(Resource):  # type: ignore[misc]
 @api.doc(description='Get all the IPs of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureIPs(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         if not lookyloo.uuid_exists_in_cache(capture_uuid):
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
         try:
-            return make_response({'response': {'ips': list(lookyloo.get_ips(capture_uuid, as_admin=flask_login.current_user.is_authenticated))}})
+            return make_response({'response': {'ips': list(lookyloo.get_ips(capture_uuid))}})
         except LookylooException as e:
             return make_response({'error': f'Error while loading cache: {e}'}, 400)
 
@@ -159,13 +167,13 @@ class CaptureIPs(Resource):  # type: ignore[misc]
 @api.doc(description='Get all the potential favicons of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureFavicons(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         if not lookyloo.uuid_exists_in_cache(capture_uuid):
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
         try:
-            success, favicons_zip = lookyloo.get_potential_favicons(capture_uuid, all_favicons=True,
-                                                                    for_datauri=False,
-                                                                    as_admin=flask_login.current_user.is_authenticated)
+            success, favicons_zip = lookyloo.get_potential_favicons(capture_uuid, all_favicons=True, for_datauri=False)
             if not success:
                 return make_response({'error': 'Unable to get the favicons.'}, 400)
             to_return = {}
@@ -188,12 +196,13 @@ class CaptureFavicons(Resource):  # type: ignore[misc]
 @api.doc(description='Get all the hostnames of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureHostnames(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         if not lookyloo.uuid_exists_in_cache(capture_uuid):
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
         try:
-            return make_response({'response': {'hostnames': list(lookyloo.get_hostnames(capture_uuid,
-                                                                                        as_admin=flask_login.current_user.is_authenticated))}})
+            return make_response({'response': {'hostnames': list(lookyloo.get_hostnames(capture_uuid))}})
         except LookylooException as e:
             return make_response({'error': f'Error while loading cache: {e}'}, 400)
 
@@ -202,11 +211,13 @@ class CaptureHostnames(Resource):  # type: ignore[misc]
 @api.doc(description='Get all the URLs of all the resources of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureURLs(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         if not lookyloo.uuid_exists_in_cache(capture_uuid):
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
         try:
-            return make_response({'response': {'urls': list(lookyloo.get_urls(capture_uuid, as_admin=flask_login.current_user.is_authenticated))}})
+            return make_response({'response': {'urls': list(lookyloo.get_urls(capture_uuid))}})
         except LookylooException as e:
             return make_response({'error': f'Error while loading cache: {e}'}, 400)
 
@@ -215,11 +226,13 @@ class CaptureURLs(Resource):  # type: ignore[misc]
 @api.doc(description='Get an export you can feed to an agent',
          params={'capture_uuid': 'The UUID of the capture'})
 class AIExport(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         if not lookyloo.uuid_exists_in_cache(capture_uuid):
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
         try:
-            export = lookyloo.ai_export(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+            export = lookyloo.ai_export(capture_uuid)
             if 'error' in export:
                 return make_response({'error': f'Unable to generate export: {export["error"]}'}, 400)
             return make_response({'response': export})
@@ -239,7 +252,7 @@ class CaptureOllamaReport(Resource):  # type: ignore[misc]
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
         try:
             olr = OllamaReport()
-            ai_export = lookyloo.ai_export(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+            ai_export = lookyloo.ai_export(capture_uuid)
             report = olr.get_report(ai_export)
             return make_response({'report': report})
         except LookylooException as e:
@@ -261,6 +274,7 @@ class CaptureHashes(Resource):  # type: ignore[misc]
 
     @api.param('algorithm', default='sha512', description=f'Algorithm of the hashes (default: sha512). Supported options: {", ".join(supported_hash_algos)}')  # type: ignore[untyped-decorator]
     @api.param('hashes_only', default=1, description='If 1 (default), only returns a list hashes instead of a dictionary of hashes with their respective URLs..')  # type: ignore[untyped-decorator]
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         if not lookyloo.uuid_exists_in_cache(capture_uuid):
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
@@ -269,13 +283,13 @@ class CaptureHashes(Resource):  # type: ignore[misc]
         hashes_only = False if 'hashes_only' in request.args and request.args['hashes_only'] in [0, '0'] else True
         try:
             if algorithm == 'sha512' and hashes_only:
-                success, _hashes = lookyloo.get_hashes(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+                success, _hashes = lookyloo.get_hashes(capture_uuid)
                 if success:
                     to_return: dict[str, Any] = {'response': {'hashes': list(_hashes)}}
                 else:
                     return make_response({'error': 'Unable to get the hashes.'}, 400)
             else:
-                hashes = lookyloo.get_hashes_with_context(capture_uuid, algorithm=algorithm, urls_only=True, as_admin=flask_login.current_user.is_authenticated)
+                hashes = lookyloo.get_hashes_with_context(capture_uuid, algorithm=algorithm, urls_only=True)
                 to_return = {'response': {'hashes': list(hashes.keys())}}
                 if not hashes_only:
                     to_return['response']['hashes_with_urls'] = {h: list(urls) for h, urls in hashes.items()}
@@ -288,11 +302,13 @@ class CaptureHashes(Resource):  # type: ignore[misc]
 @api.doc(description='Get all the redirects of a capture',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureRedirects(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         if not lookyloo.uuid_exists_in_cache(capture_uuid):
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
         try:
-            cache = lookyloo.capture_cache(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+            cache = lookyloo.capture_cache(capture_uuid)
             to_return: dict[str, Any] = {}
             try:
                 to_return = {'response': {'url': cache.url,
@@ -313,6 +329,8 @@ class CaptureRedirects(Resource):  # type: ignore[misc]
 @api.doc(description='Get an export of the capture in MISP format',
          params={'capture_uuid': 'The UUID of the capture'})
 class MISPExport(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         with_parents = request.args.get('with_parents')
         try:
@@ -435,14 +453,16 @@ class TriggerModules(Resource):  # type: ignore[misc]
 @api.doc(description='Get responses from the 3rd party modules',
          params={'capture_uuid': 'The UUID of the capture'})
 class ModulesResponse(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
-        return make_response(lookyloo.get_modules_responses(capture_uuid, as_admin=flask_login.current_user.is_authenticated))
+        return make_response(lookyloo.get_modules_responses(capture_uuid))
 
 
 def get_body_hash_occurrences(body_hash: str, *, with_urls_occurrences: bool=False, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
     '''Get the most recent captures and URL nodes where the body hash has been seen.'''
     entries = get_indexing(flask_login.current_user.is_authenticated).get_captures_body_hash(body_hash, offset=offset, limit=limit)
-    captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only, as_admin=flask_login.current_user.is_authenticated)
+    captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only)
 
     meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user.is_authenticated).get_captures_body_hash_count(body_hash)}
     if len(captures) < limit and meta['total'] > offset + limit:
@@ -478,7 +498,7 @@ class HashInfo(Resource):  # type: ignore[misc]
         if uuids := get_indexing(flask_login.current_user.is_authenticated).get_hash_uuids(h):
             # got UUIDs for this hash
             capture_uuid, urlnode_uuid = uuids
-            if ressource := lookyloo.get_ressource(capture_uuid, urlnode_uuid, h, as_admin=flask_login.current_user.is_authenticated):
+            if ressource := lookyloo.get_ressource(capture_uuid, urlnode_uuid, h):
                 filename, body, mimetype = ressource
                 details = get_indexing(flask_login.current_user.is_authenticated).get_body_hash_urlnodes(h)
                 return make_response({'response': {'hash': h, 'details': details,
@@ -496,8 +516,7 @@ def get_favicon_occurrences(favicon: str, *, cached_captures_only: bool=True, li
     '''Get the most recent captures where the favicon has been seen.'''
     captures = lookyloo.sorted_capture_cache(
         get_indexing(flask_login.current_user.is_authenticated).get_captures_favicon(favicon, offset=offset, limit=limit),
-        cached_captures_only=cached_captures_only,
-        as_admin=flask_login.current_user.is_authenticated)
+        cached_captures_only=cached_captures_only)
 
     meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user.is_authenticated).get_captures_favicon_count(favicon)}
     if len(captures) < limit and meta['total'] > offset + limit:
@@ -534,8 +553,7 @@ def get_ip_occurrences(ip: str, *, with_urls_occurrences: bool=False, cached_cap
     '''Get the most recent captures and IP nodes where the IP has been seen.'''
     captures = lookyloo.sorted_capture_cache(
         get_indexing(flask_login.current_user.is_authenticated).get_captures_ip(ip, offset=offset, limit=limit),
-        cached_captures_only=cached_captures_only,
-        as_admin=flask_login.current_user.is_authenticated)
+        cached_captures_only=cached_captures_only)
 
     meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user.is_authenticated).get_captures_ip_count(ip)}
     if len(captures) < limit and meta['total'] > offset + limit:
@@ -575,8 +593,7 @@ def get_url_occurrences(url: str, *, with_urls_occurrences: bool=False, cached_c
     '''Get the most recent captures and URL nodes where the URL has been seen.'''
     captures = lookyloo.sorted_capture_cache(
         get_indexing(flask_login.current_user.is_authenticated).get_captures_url(url, offset=offset, limit=limit),
-        cached_captures_only=cached_captures_only,
-        as_admin=flask_login.current_user.is_authenticated)
+        cached_captures_only=cached_captures_only)
 
     meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user.is_authenticated).get_captures_url_count(url)}
     if len(captures) < limit and meta['total'] > offset + limit:
@@ -621,8 +638,7 @@ class URLInfo(Resource):  # type: ignore[misc]
 def get_hostname_occurrences(hostname: str, *, with_urls_occurrences: bool=False, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
     '''Get the most recent captures and URL nodes where the hostname has been seen.'''
     entries = get_indexing(flask_login.current_user.is_authenticated).get_captures_hostname(hostname, offset=offset, limit=limit)
-    captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only,
-                                             as_admin=flask_login.current_user.is_authenticated)
+    captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only)
 
     meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user.is_authenticated).get_captures_hostname_count(hostname)}
     if len(captures) < limit and meta['total'] > offset + limit:
@@ -676,7 +692,7 @@ class HostnameInfo(Resource):  # type: ignore[misc]
 @api.doc(description='Get the statistics of the lookyloo instance.')
 class InstanceStats(Resource):  # type: ignore[misc]
     def get(self) -> Response:
-        return make_response(lookyloo.get_stats(as_admin=flask_login.current_user.is_authenticated))
+        return make_response(lookyloo.get_stats(public=not flask_login.current_user.is_authenticated))
 
 
 @api.route('/json/devices')
@@ -707,17 +723,21 @@ class RemoteLacuses(Resource):  # type: ignore[misc]
 @api.doc(description='Get the statistics of the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureStats(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
-        return make_response(lookyloo.get_statistics(capture_uuid, as_admin=flask_login.current_user.is_authenticated))
+        return make_response(lookyloo.get_statistics(capture_uuid))
 
 
 @api.route('/json/<uuid:capture_uuid>/info')
 @api.doc(description='Get basic information about the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureInfo(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         try:
-            return make_response(lookyloo.get_info(capture_uuid, as_admin=flask_login.current_user.is_authenticated))
+            return make_response(lookyloo.get_info(capture_uuid))
         except UUIDMissingInCache:
             return make_response({'error': f'Unable to find UUID {capture_uuid} in the cache.'}, 404)
 
@@ -726,8 +746,10 @@ class CaptureInfo(Resource):  # type: ignore[misc]
 @api.doc(description='Get the complete cookie jar created during the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureCookies(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
-        success, cookies = lookyloo.get_cookies(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+        success, cookies = lookyloo.get_cookies(capture_uuid)
         if success and cookies.getvalue():
             return make_response(json.loads(cookies.getvalue()))
         return make_response({'error': 'No cookies'}, 404)
@@ -737,8 +759,10 @@ class CaptureCookies(Resource):  # type: ignore[misc]
 @api.doc(description='Get the complete storage state at the end of the capture.',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureStorageState(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
-        success, storage_file = lookyloo.get_storage_state(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+        success, storage_file = lookyloo.get_storage_state(capture_uuid)
         if success and storage_file and storage_file.getvalue():
             return make_response(json.loads(storage_file.getvalue()))
         return make_response({'error': 'No storage state'}, 404)
@@ -748,8 +772,10 @@ class CaptureStorageState(Resource):  # type: ignore[misc]
 @api.doc(description='Reports the url by sending an email to the investigation team',
          params={'capture_uuid': 'The UUID of the capture'})
 class CaptureReport(Resource):  # type: ignore[misc]
+
     @api.param('email', 'Email of the reporter, used by the analyst to get in touch.')  # type: ignore[untyped-decorator]
     @api.param('comment', 'Description of the URL, will be given to the analyst.')  # type: ignore[untyped-decorator]
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def post(self, capture_uuid: str) -> Response:
         parameters: dict[str, Any] = request.get_json(force=True)
         mail_sent = lookyloo.send_mail(capture_uuid,
@@ -885,7 +911,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
     @api.param('referer', 'Referer to pass to the capture')  # type: ignore[untyped-decorator]
     @api.param('proxy', 'Proxy to use for the the capture')  # type: ignore[untyped-decorator]
     @api.produces(['text/text'])  # type: ignore[untyped-decorator]
-    def get(self) -> str | tuple[str, str | None, datetime | None] | Response:
+    def get(self) -> str | tuple[str, str | None] | Response:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
         else:
@@ -913,26 +939,26 @@ class SubmitCapture(Resource):  # type: ignore[misc]
         if request.args.get('proxy'):
             to_query['proxy'] = request.args['proxy']
 
-        perma_uuid, seed, expire_at = lookyloo.enqueue_capture(to_query, source='api', user=user,
-                                                               authenticated=flask_login.current_user.is_authenticated,
-                                                               seed_expire=request.args.get('seed_expire'))
+        perma_uuid, seed = lookyloo.enqueue_capture(to_query, source='api', user=user,
+                                                    authenticated=flask_login.current_user.is_authenticated,
+                                                    seed_expire=request.args.get('seed_expire'))
         if seed:
-            return perma_uuid, seed, expire_at
+            return perma_uuid, seed
         return perma_uuid
 
     @api.doc(body=submit_fields_post)  # type: ignore[untyped-decorator]
     @api.produces(['text/text'])  # type: ignore[untyped-decorator]
-    def post(self) -> str | tuple[str, str | None, datetime | None]:
+    def post(self) -> str | tuple[str, str | None]:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
         else:
             user = src_request_ip(request)
         to_query: dict[str, Any] = request.get_json(force=True)
-        perma_uuid, seed, expire_at = lookyloo.enqueue_capture(to_query, source='api', user=user,
-                                                               authenticated=flask_login.current_user.is_authenticated,
-                                                               seed_expire=to_query.get('seed_expire'))
+        perma_uuid, seed = lookyloo.enqueue_capture(to_query, source='api', user=user,
+                                                    authenticated=flask_login.current_user.is_authenticated,
+                                                    seed_expire=to_query.get('seed_expire'))
         if seed:
-            return perma_uuid, seed, expire_at
+            return perma_uuid, seed
         return perma_uuid
 
 
@@ -944,8 +970,9 @@ class SubmitCapture(Resource):  # type: ignore[misc]
 class CaptureScreenshot(Resource):  # type: ignore[misc]
 
     @api.produces(['image/png'])  # type: ignore[untyped-decorator]
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
-        success, screenshot = lookyloo.get_screenshot(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+        success, screenshot = lookyloo.get_screenshot(capture_uuid)
         if success:
             return send_file(screenshot, mimetype='image/png')
         return make_response({'error': 'No screenshot available'}, 404)
@@ -957,8 +984,9 @@ class CaptureScreenshot(Resource):  # type: ignore[misc]
 class CaptureExport(Resource):  # type: ignore[misc]
 
     @api.produces(['application/zip'])  # type: ignore[untyped-decorator]
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
-        success, capture = lookyloo.get_capture(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+        success, capture = lookyloo.get_capture(capture_uuid)
         if success:
             return send_file(capture, mimetype='application/zip')
         return make_response({'error': 'No capture available'}, 404)
@@ -970,8 +998,9 @@ class CaptureExport(Resource):  # type: ignore[misc]
 class CaptureData(Resource):  # type: ignore[misc]
 
     @api.produces(['application/zip'])  # type: ignore[untyped-decorator]
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
-        success, filename, data = lookyloo.get_data(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+        success, filename, data = lookyloo.get_data(capture_uuid)
         if success:
             if filename == f'{capture_uuid}_multiple_downloads.zip':
                 # got multiple downloads, return as-is instead of double zipping
@@ -1012,8 +1041,7 @@ class CompareCaptures(Resource):  # type: ignore[misc]
                                   'details': f'Left: {left_uuid} / Right: {right_uuid}'}, 400)
         try:
             different, result = comparator.compare_captures(left_uuid, right_uuid,
-                                                            settings=parameters.get('compare_settings'),
-                                                            as_admin=flask_login.current_user.is_authenticated)
+                                                            settings=parameters.get('compare_settings'))
         except UUIDMissingInCache as e:
             # UUID non-existent, or capture still ongoing.
             if left_uuid and right_uuid:
@@ -1055,9 +1083,9 @@ comparables_model = api.model('ComparablesModel', {
 class Comparables(Resource):  # type: ignore[misc]
 
     @api.marshal_with(comparables_model)  # type: ignore[untyped-decorator]
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> dict[str, Any]:
-        return comparator.get_comparables_capture(capture_uuid,
-                                                  as_admin=flask_login.current_user.is_authenticated)
+        return comparator.get_comparables_capture(capture_uuid)
 
 
 # Get information for takedown
@@ -1081,9 +1109,9 @@ class Takedown(Resource):  # type: ignore[misc]
             return make_response({'error': f'Invalid request: {parameters}'}, 400)
         try:
             if parameters.get('filter'):
-                return make_response(list(lookyloo.contacts_filtered(capture_uuid, as_admin=flask_login.current_user.is_authenticated)))
+                return make_response(list(lookyloo.contacts_filtered(capture_uuid)))
             else:
-                return make_response(lookyloo.contacts(capture_uuid, as_admin=flask_login.current_user.is_authenticated))
+                return make_response(lookyloo.contacts(capture_uuid))
         except UUIDMissingInCache:
             return make_response({'error': 'Unable to get contacts, the UUID not in the cache yet.'}, 400)
         except Exception as e:
@@ -1132,7 +1160,7 @@ class CaptureRebuildTree(Resource):  # type: ignore[misc]
             return make_response({'error': 'UUID missing in cache, try again later and check the status first.'}, 400)
         try:
             lookyloo.remove_pickle(capture_uuid)
-            lookyloo.capture_cache(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+            lookyloo.capture_cache(capture_uuid)
         except Exception as e:
             return make_response({'error': f'Unable to rebuild tree: {e}'}, 400)
         return make_response({'info': f'Tree {capture_uuid} successfully rebuilt.'})
@@ -1162,7 +1190,7 @@ class CaptureRemove(Resource):  # type: ignore[misc]
 
     def post(self, capture_uuid: str) -> Response:
         try:
-            lookyloo.remove_capture(capture_uuid, as_admin=flask_login.current_user.is_authenticated)
+            lookyloo.remove_capture(capture_uuid)
         except Exception as e:
             return make_response({'error': f'Unable to remove the tree: {e}'}, 400)
         return make_response({'info': f'Capture {capture_uuid} successfully removed.'})
@@ -1238,8 +1266,7 @@ class TLDCaptures(Resource):  # type: ignore[misc]
         # get the capture, get the node uuids, get the names, make it a list
         to_return: set[str] = set()
         # Make sure to only get the captures with a pickle ready
-        cache = lookyloo.sorted_capture_cache(recent_captures_with_tld, cached_captures_only=True,
-                                              as_admin=flask_login.current_user.is_authenticated)
+        cache = lookyloo.sorted_capture_cache(recent_captures_with_tld, cached_captures_only=True)
         for c in cache:
             nodes_with_tld = get_indexing(flask_login.current_user.is_authenticated).get_capture_tld_nodes(c.uuid, tld)
             try:
@@ -1399,8 +1426,7 @@ class AdvancedSearch(Resource):  # type: ignore[misc]
 
             # Final result: include - exclude
             final_uuids = combined_include - combined_exclude  # Remove excluded UUIDs from included UUIDs
-            captures = lookyloo.sorted_capture_cache(final_uuids, cached_captures_only=True,
-                                                     as_admin=flask_login.current_user.is_authenticated)
+            captures = lookyloo.sorted_capture_cache(final_uuids, cached_captures_only=True)
             to_return: dict[str, Any] = {'response': []}
             for capture in captures:
                 to_append: dict[str, str] = {'capture_uuid': capture.uuid,

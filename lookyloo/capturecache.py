@@ -37,7 +37,7 @@ from .helpers import (get_captures_dir, is_locked, load_pickle_tree, get_pickle_
                       remove_pickle_tree, get_indexing, mimetype_to_generic,
                       global_proxy_for_requests, get_useragent_for_requests)
 from .default import LookylooException, try_make_file, get_config
-from .exceptions import MissingCaptureDirectory, NoValidHarFile, UUIDMissingInCache, TreeNeedsRebuild, LookylooPrivateCapture
+from .exceptions import MissingCaptureDirectory, NoValidHarFile, UUIDMissingInCache, TreeNeedsRebuild
 from .modules import Cloudflare
 
 
@@ -229,6 +229,14 @@ class CapturesIndex():
     def cached_captures(self) -> set[str]:
         return set(self.__cache.keys())
 
+    def capture_is_private(self, uuid: str) -> bool:
+        capture_dir = self._get_capture_dir(uuid)
+        if self.redis.exists(capture_dir):
+            # The capture is in the cache, if private is set, it is private
+            return self.redis.hexists(capture_dir, 'private')
+        # check if the file exists on the disk
+        return (Path(capture_dir) / 'private').exists()
+
     def reload_cache(self, uuid: str) -> None:
         if uuid in self.__cache:
             self.redis.delete(str(self.__cache[uuid].capture_dir))
@@ -244,7 +252,7 @@ class CapturesIndex():
             del self.__cache[uuid]
 
     def check_seed(self, uuid: str, seed: str | None) -> bool:
-        if self.redis.get(f'seed:{seed}') == uuid:
+        if seed and self.redis.get(f'seed:{seed}') == uuid:
             return True
         return False
 
@@ -273,11 +281,11 @@ class CapturesIndex():
     def lru_cache_clear(self) -> None:
         load_pickle_tree.cache_clear()
 
-    def get_capture_cache(self, uuid: str, *, as_admin: bool=False, seed: str | None=None) -> CaptureCache:
+    def get_capture_cache(self, uuid: str) -> CaptureCache:
         """Get the CaptureCache for the UUID if it exists in redis,
         WARNING: check if the pickle is there, build it if not
         """
-        if cache := self.get_capture_cache_quick(uuid, as_admin=as_admin):
+        if cache := self.get_capture_cache_quick(uuid):
             if cache.tree_ready:
                 return cache
             # Pickle is missing, rebuild what needs to be rebuilt
@@ -287,13 +295,9 @@ class CapturesIndex():
             self.__cache.popitem()
 
         capture_dir = self._get_capture_dir(uuid)
-        self.__cache[uuid] = asyncio.run(self._set_capture_cache(capture_dir))
-        if self.__cache[uuid].private:
-            if not as_admin or not self.check_seed(uuid, seed):
-                raise LookylooPrivateCapture(f'Cannot get capture {uuid} as user.')
-        return self.__cache[uuid]
+        return asyncio.run(self._set_capture_cache(capture_dir))
 
-    def get_capture_cache_quick(self, uuid: str, *, as_admin: bool=False, seed: str | None=None) -> CaptureCache | None:
+    def get_capture_cache_quick(self, uuid: str) -> CaptureCache | None:
         """Get the CaptureCache for the UUID if it exists in redis,
         WARNING: it doesn't check if the pickle is there
         """
@@ -319,9 +323,6 @@ class CapturesIndex():
 
         if c := self.__cache.get(uuid):
             self.redis.expire(capture_dir, self.expire_cache_sec)
-            if c.private:
-                if not as_admin or not self.check_seed(uuid, seed):
-                    raise LookylooPrivateCapture(f'Cannot get capture {uuid} as user.')
             return c
         return None
 

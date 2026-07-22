@@ -127,9 +127,8 @@ function add_event_js_copy() {
     );
 };
 
-let never_expire = document.getElementById('never_expire')
-if (never_expire) {
-    never_expire.addEventListener('change', function() {
+if (document.getElementById('never_expire')) {
+    document.getElementById('never_expire').addEventListener('change', function() {
         let disable_expire_at = document.getElementById('never_expire').checked;
         if (disable_expire_at) {
             document.getElementById("expire_at").disabled = true;

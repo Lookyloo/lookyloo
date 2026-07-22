@@ -69,7 +69,7 @@ class Processing(AbstractManager):
                 continue
 
             try:
-                cache = self.lookyloo.capture_cache(uuid, quick=True, as_admin=True)
+                cache = self.lookyloo.capture_cache(uuid, quick=True)
             except NotCached:
                 continue
             # we do not want this method to build the pickle, **but** if the pickle exists
@@ -187,8 +187,8 @@ class Processing(AbstractManager):
                 continue
             self.logger.info(f'Found a non-queued capture ({capture_settings.uuid}), retrying now.')
             try:
-                new_uuid, _, _ = self.lookyloo.enqueue_capture(capture_settings, source='api', user='background_processing',
-                                                               authenticated=False, seed_expire=None)
+                new_uuid, _ = self.lookyloo.enqueue_capture(capture_settings, source='api', user='background_processing',
+                                                            authenticated=False, seed_expire=None)
                 if new_uuid != capture_settings.uuid:
                     # somehow, between the check and queuing, the UUID isn't UNKNOWN anymore, just checking that
                     self.logger.warning(f'Had to change the capture UUID (duplicate). Old: {capture_settings.uuid} / New: {new_uuid}')
@@ -224,13 +224,13 @@ class Processing(AbstractManager):
         if self.assemblyline.available:
             for entry in self.assemblyline.get_notification_queue():
                 if current_uuid := entry['submission']['metadata'].get('lookyloo_uuid'):
-                    if cached := self.lookyloo.capture_cache(current_uuid, as_admin=True):
+                    if cached := self.lookyloo.capture_cache(current_uuid):
                         self.logger.debug(f'Found AssemblyLine response for {cached.uuid}: {entry}')
                         self.logger.debug(f'Ingest ID: {entry["ingest_id"]}, UUID: {entry["submission"]["metadata"]["lookyloo_uuid"]}')
                         with (cached.capture_dir / 'assemblyline_ingest.json').open('w') as f:
                             f.write(json.dumps(entry, indent=2, default=serialize_to_json))
 
-        for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time, public=False, as_admin=True):
+        for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time, public=False):
             if cached.error:
                 continue
 

@@ -24,7 +24,7 @@ Categorization not enabled.
 {% if can_categorize %}
 <div class="card" id="new_categories" style="display: none;">
   <div class="card-body">You selected <b id="categories_counter"></b> categories, please confirm you want to attach them to the capture:
-    <form action="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}" method=post enctype=multipart/form-data>
+    <form action="{{ url_for('categories_capture', tree_uuid=tree_uuid, seed=seed) }}" method=post enctype=multipart/form-data>
      <span id="categories_selected"></span>
      {% if current_user.is_authenticated %}
      <div class="alert alert-warning" role="alert">

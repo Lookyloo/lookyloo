@@ -117,7 +117,7 @@ class AsyncCapture(AbstractManager):
 
             try:
                 self.lookyloo.redis.sadd('ongoing', uuid)
-                to_capture: LookylooCaptureSettings | None = self.lookyloo.get_capture_settings(uuid, as_admin=True)
+                to_capture: LookylooCaptureSettings | None = self.lookyloo.get_capture_settings(uuid)
                 if (entries.get('error') is not None
                         and not self.lookyloo.redis.hget(uuid, 'not_queued')  # Not already marked as not queued
                         and (entries['error'] and entries['error'].startswith('No capture settings'))

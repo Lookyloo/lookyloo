@@ -33,7 +33,7 @@ def main() -> None:
             lookyloo.redis.hset('lookup_dirs', mapping=recent_uuids)  # type: ignore[arg-type]
 
     # This call will rebuild all the caches as needed.
-    lookyloo.sorted_capture_cache(as_admin=True)
+    lookyloo.sorted_capture_cache()
 
 
 if __name__ == '__main__':

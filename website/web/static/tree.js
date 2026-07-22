@@ -175,7 +175,8 @@ try {
 
 
 function open_hostnode_popup(hostnode_uuid) {
-    let win = window.open(`/tree/${treeUUID}/host/${hostnode_uuid}`, '_blank', 'width=1024,height=768,left=200,top=100');
+    // /tree is kept, append the paramaters (seed, if present)
+    let win = window.open(`${treeUUID}/host/${hostnode_uuid}${document.location.search}`, '_blank', 'width=1024,height=768,left=200,top=100');
     if (win == null) {
         alert("The browser didn't allow Lookyloo to open a pop-up. There should be an icon on the right of your URL bar to allow it.");
     }

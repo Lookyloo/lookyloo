@@ -18,68 +18,68 @@
     <tr>
       <th scope="row">Screenshot</th>
       <td>
-          <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a>
+          <a href="{{ url_for('image', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
       </td>
       <td>{{tt_entries.get('png', 'Unavailable')}}
         {% if tt_entries.get('png') %}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='png') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='png', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
         {% endif %}
       </td>
     </tr>
     <tr>
       <th scope="row">Storage (Cookies, Local Storage, Indexed DB)</th>
-      <td><a href="{{ url_for('storage_state_download', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('storage_state_download', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>{{tt_entries.get('storage', 'Unavailable')}}
         {% if tt_entries.get('storage') %}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='storage') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='storage', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
         {% endif %}
       </td>
     </tr>
     <tr>
       <th scope="row">Frames contents (if any)</th>
-      <td><a href="{{ url_for('frames_download', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('frames_download', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>{{tt_entries.get('frames', 'Unavailable')}}
         {% if tt_entries.get('frames') %}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='frames') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='frames', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
         {% endif %}
       </td>
     </tr>
     <tr>
       <th scope="row">HTTP Archive (HAR)</th>
-      <td><a href="{{ url_for('har_download', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('har_download', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>{{tt_entries.get('har', 'Unavailable')}}
        {% if tt_entries.get('har') %}
-       <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='har') }}" role="button">{{ render_icon('cloud-download') }}</a>
+       <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='har', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
        {% endif %}
        </td>
     </tr>
     <tr>
       <th scope="row">Rendered HTML page</th>
-      <td><a href="{{ url_for('html', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('html', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>{{tt_entries.get('html', 'Unavailable')}}
         {% if tt_entries.get('html') %}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='html') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='html', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
         {% endif %}
       </td>
     </tr>
     <tr>
       <th scope="row">Rendered HTML page, as Markdown</th>
-      <td><a href="{{ url_for('html_as_markdown', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('html_as_markdown', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
     </tr>
     {% if has_downloads %}
     <tr>
       <th scope="row">Downloaded files</th>
-      <td><a href="{{ url_for('data', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('data', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>
         Filename: {{tt_entries.get('downloaded_filename', 'Unavailable')}}
         {% if tt_entries.get('downloaded_filename') %}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='downloaded_filename') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='downloaded_filename', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
         {% endif %}
         <br>
         File content: {{tt_entries.get('downloaded_file', 'Unavailable')}}
         {% if tt_entries.get('downloaded_file') %}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='downloaded_file') }}" role="button">{{ render_icon('cloud-download') }}</a>
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='downloaded_file', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
         {% endif %}
       </td>
     </tr>
@@ -91,34 +91,34 @@
     </tr>
     <tr>
       <th scope="row">Cookie Jar</th>
-      <td><a href="{{ url_for('cookies', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('cookies', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
     </tr>
     <tr>
       <th scope="row">Hashes for all the ressources</th>
-      <td><a href="{{ url_for('hashes_tree', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('hashes_tree', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
     </tr>
     <tr>
       <th scope="row">Full capture</th>
-<td><a href="{{ url_for('export', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+<td><a href="{{ url_for('export', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
     </tr>
     <tr>
       <th scope="row">Capture as MISP event</th>
-      <td><a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
     </tr>
     {% if parent_uuid %}
     <tr>
       <th scope="row">... with the parents</th>
-      <td><a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, with_parents=True) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, with_parents=True, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
     </tr>
     {% endif %}
     <tr>
       <th scope="row">List of redirects</th>
-      <td><a href="{{ url_for('redirects', tree_uuid=tree_uuid) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td><a href="{{ url_for('redirects', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
     </tr>
   </tbody>
@@ -126,7 +126,7 @@
 
 {% if not error %}
 <div class="alert alert-info" role="alert">
-  <a href="{{url_for('all_trusted_timestamp', tree_uuid=tree_uuid)}}">Download</a> all the elements with trusted timestamps.
+  <a href="{{url_for('all_trusted_timestamp', tree_uuid=tree_uuid, seed=seed)}}">Download</a> all the elements with trusted timestamps.
 </div>
 <div class="alert alert-info" role="alert">
   Trusted timestamps were validated with <a href="data:application/x-pem-file;base64,{{b64_certificate}}" download="certificates.pem">this certificate(s)</a>.

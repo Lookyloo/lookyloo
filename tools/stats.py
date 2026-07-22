@@ -24,7 +24,7 @@ def uniq_domains(uniq_urls: list[str]) -> set[str]:
     return domains
 
 
-for cache in lookyloo.sorted_capture_cache(as_admin=True):
+for cache in lookyloo.sorted_capture_cache():
     date = cache.timestamp
     if date.year not in stats:
         stats[date.year] = {}

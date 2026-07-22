@@ -2,7 +2,7 @@
 {{error}}
 {%else%}
 <div>
-  <form role="form" action="{{ url_for('bulk_captures', base_tree_uuid=base_tree_uuid) }}" method=post enctype=multipart/form-data>
+  <form role="form" action="{{ url_for('bulk_captures', tree_uuid=base_tree_uuid, seed=seed) }}" method=post enctype=multipart/form-data>
     <div class="mb-3">
       <label for="user_urls" class="form-label">Arbitrary URLs to capture in current context (with cookies)</label>
       <textarea class="form-control" id="user_urls" name="user_urls" rows="3"></textarea>

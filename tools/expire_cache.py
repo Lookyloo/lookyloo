@@ -13,7 +13,7 @@ time_delta_on_index = timedelta(days=get_config('generic', 'archive'))
 
 lookyloo = Lookyloo()
 
-for cc in lookyloo.sorted_capture_cache(cached_captures_only=False, as_admin=True):
+for cc in lookyloo.sorted_capture_cache(cached_captures_only=False):
     redis_cache.expire(str(cc.capture_dir), int(time_delta_on_index.total_seconds()) * 2)
 
 

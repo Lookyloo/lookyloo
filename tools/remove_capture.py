@@ -15,7 +15,7 @@ def main() -> None:
     args = parser.parse_args()
 
     lookyloo = Lookyloo()
-    if capture_cache := lookyloo.capture_cache(args.capture_uuid, as_admin=True):
+    if capture_cache := lookyloo.capture_cache(args.capture_uuid):
         removed_captures_dir.mkdir(parents=True, exist_ok=True)
         print(f'Moving {capture_cache.capture_dir} to {removed_captures_dir / capture_cache.capture_dir.name}')
         shutil.move(str(capture_cache.capture_dir), str(removed_captures_dir / capture_cache.capture_dir.name))

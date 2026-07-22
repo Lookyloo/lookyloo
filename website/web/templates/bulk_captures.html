@@ -18,7 +18,7 @@
     let capture_error = document.getElementsByClassName('capture_error');
     let keep_going = false;
     for (let i = 0; i < capture_status.length; i++) {
-      await fetch(`/json/${capture_status[i].id}/status?with_error=1`)
+      await fetch(capture_status[i].dataset.remote)
         .then(response => response.json())
         .then(cs => {
           if ((cs.status_code == 0) || (cs.status_code == 2)) {
@@ -65,14 +65,14 @@
      </tr>
     </thead>
     <tbody>
-      {% for uuid, captured_url in bulk_captures %}
+      {% for uuid, captured_url, seed in bulk_captures %}
       <tr>
         <td>
           {{ shorten_string(captured_url, with_copy_button=True) }}
         </td>
-        <td><a href="{{ url_for('tree', tree_uuid=uuid) }}">Show capture</a></td>
-        <td id="{{uuid}}" class="capture_status">Please wait...</td>
-        <td id="{{uuid}}" class="capture_error"></td>
+        <td><a href="{{ url_for('tree', tree_uuid=uuid, seed=seed) }}">Show capture</a></td>
+        <td data-remote="{{ url_for('GenericAPI_capture_status_query', capture_uuid=uuid, with_error=1, seed=seed)}}" class="capture_status">Please wait...</td>
+        <td class="capture_error"></td>
       </tr>
       {% endfor %}
     </tbody>

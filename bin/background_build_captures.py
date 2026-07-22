@@ -90,7 +90,7 @@ class BackgroundBuildCaptures(AbstractManager):
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing settings.')
             return
 
-        if capture_settings := self.lookyloo.get_capture_settings(capture_uuid, as_admin=True):
+        if capture_settings := self.lookyloo.get_capture_settings(capture_uuid):
             monitor_settings.capture_settings = capture_settings
         else:
             self.logger.warning(f'Unable to monitor {capture_uuid}, missing capture settings.')
@@ -199,7 +199,7 @@ class BackgroundBuildCaptures(AbstractManager):
                 try:
                     __counter_shutdown += 1
                     self.logger.info(f'Build pickle for {uuid}: {path.name}')
-                    cache = self.lookyloo.capture_cache(uuid, as_admin=True)
+                    cache = self.lookyloo.capture_cache(uuid)
 
                     if self.build_recent:
                         # only trigger modules for new captures

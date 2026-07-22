@@ -68,7 +68,7 @@ class BackgroundIndexer(AbstractManager):
             except Exception as e:
                 self.logger.warning(f'Error while indexing {uuid}: {e}')
                 remove_pickle_tree(path)
-            if __counter_shutdown % 100 == 0:
+            if __counter_shutdown and __counter_shutdown % 100 == 0:
                 self.logger.info('Indexed many captures, periodic restart.')
                 break
         else:

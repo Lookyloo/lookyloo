@@ -14,15 +14,15 @@
 <center>
   This is the storage state at the end of the capture.
   <br>
-  <a href="{{ url_for('storage_state_download', tree_uuid=tree_uuid) }}" class="btn btn-info">
+  <a href="{{ url_for('storage_state_download', tree_uuid=tree_uuid, seed=seed) }}" class="btn btn-info">
     {{ render_icon('download', title="Download the full storage state") }}
   </a>
   {% if from_popup %}
-  <a href="{{ url_for('tree', tree_uuid=tree_uuid) }}" class="btn btn-info">
+  <a href="{{ url_for('tree', tree_uuid=tree_uuid, seed=seed) }}" class="btn btn-info">
     Open the capture.
   </a>
   {% else %}
-  <a href="{{ url_for('storage_state', tree_uuid=tree_uuid, from_popup=True) }}" class="btn btn-light">
+  <a href="{{ url_for('storage_state', tree_uuid=tree_uuid, from_popup=True, seed=seed) }}" class="btn btn-light">
     {{ render_icon('share') }}
   </a>
   {% endif %}

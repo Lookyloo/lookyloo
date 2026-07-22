@@ -16,13 +16,13 @@
 />
 <meta
   property="og:image"
-  content="https://{{public_domain}}{{ url_for('thumbnail', tree_uuid=tree_uuid, width=1200) }}"
+  content="https://{{public_domain}}{{ url_for('thumbnail', tree_uuid=tree_uuid, width=1200, seed=seed) }}"
 />
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
 <meta
   property="og:url"
-  content="https://{{public_domain}}{{ url_for('tree', tree_uuid=tree_uuid) }}"
+  content="https://{{public_domain}}{{ url_for('tree', tree_uuid=tree_uuid, seed=seed) }}"
 />
 <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
@@ -37,7 +37,7 @@
           {{get_sri('static', 'tree.js')}}
           nonce="{{ csp_nonce() }}"
           crossorigin="anonymous" type="module"
-          id="tree_js" data-remote="{{url_for('GenericAPI_tree_dump', capture_uuid=tree_uuid)}}">
+          id="tree_js" data-remote="{{url_for('GenericAPI_tree_dump', capture_uuid=tree_uuid, seed=seed)}}">
   </script>
   <script src='{{ url_for('static', filename='tree_modals.js') }}'
           {{get_sri('static', 'tree_modals.js')}}
@@ -47,7 +47,7 @@
   <script nonce="{{ csp_nonce() }}">
     $('.modulesForceRefresh').on('click',function(){
       $('#modulesModal .modal-body').text("Reloading modules, please wait...")
-      $('#modulesModal .modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True) }}", function(){
+      $('#modulesModal .modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True, seed=seed) }}", function(){
         $('#modulesModal').modal({show:true});
       });
     });
@@ -60,7 +60,7 @@
 
       $.ajax({
           type: 'POST',
-          url: '{{ url_for('categories_capture', tree_uuid=tree_uuid) }}',
+          url: '{{ url_for('categories_capture', tree_uuid=tree_uuid, seed=seed) }}',
           data: query,
           success: function(response) {
            $('#categoriesModal .modal-body').html(response);
@@ -91,7 +91,7 @@
 
   {% if auto_trigger_modules %}
   <script nonce="{{ csp_nonce() }}">
-    $.get("{{ url_for('trigger_modules', tree_uuid=tree_uuid, auto_trigger=True) }}")
+    $.get("{{ url_for('trigger_modules', tree_uuid=tree_uuid, seed=seed, auto_trigger=True) }}")
   </script>
   {% endif%}
   {% if enable_monitoring %}
@@ -127,8 +127,14 @@
 
   var parent_uuid = {{ parent_uuid|tojson }};
   var capture_starttime = new Date(Date.parse("{{ info.timestamp.isoformat() }}"));
+  {% if seed and seed_expire_at %}
+  var seed_expire = new Date(Date.parse("{{ seed_expire_at.isoformat() }}"));
+  {% endif %}
   window.addEventListener('DOMContentLoaded', (event) => {
       document.getElementById("start_time").textContent = capture_starttime.toString();
+      {% if seed and seed_expire_at %}
+      document.getElementById("seed_expire_at").textContent = seed_expire.toString();
+      {% endif %}
       document.getElementById("content").classList.remove('container');
       document.getElementById("content").classList.add('container-fluid');
   });
@@ -216,18 +222,18 @@
                    role="button" title="Details about the capture configuration">Capture Details</a>
                 </li>
                 <li>
-                <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
+                <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
                    class="dropdown-item"
                    data-bs-target="#statsModal" role="button" title="The capture in numbers">Statistics</a>
                 </li>
                 <li>
-                <a href="#storageStateModal" data-remote="{{ url_for('storage_state', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
+                <a href="#storageStateModal" data-remote="{{ url_for('storage_state', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
                     class="dropdown-item"
                     data-bs-target="#storageStateModal" role="button" title="The storage state at the end of the capture">Storage state</a>
                 </li>
                 <li>
                 {% if has_downloads %}
-                <a href="#downloadsModal" data-remote="{{ url_for('downloads', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
+                <a href="#downloadsModal" data-remote="{{ url_for('downloads', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
                     class="dropdown-item"
                     data-bs-target="#downloadsModal" role="button" title="The file(s) downloaded during the capture">Downloads</a>
                 </li>
@@ -256,7 +262,7 @@
                 {% else %}
                 <li>
                   <center>
-                  <a href="{{ url_for('trigger_indexing', tree_uuid=tree_uuid) }}" role="button"
+                  <a href="{{ url_for('trigger_indexing', tree_uuid=tree_uuid, seed=seed) }}" role="button"
                      class="dropdown-item alert alert-warning"
                      title="The capture isn't (fully) indexed, index now.">Index capture</a>
                   </center>
@@ -265,76 +271,76 @@
               {% endif %}
               {% if misp_lookup%}
               <li>
-                <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid) }}"
+                <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid, seed=seed) }}"
                   class="dropdown-item"
                   data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
               </li>
               {% endif %}
               <li>
-              <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False) }}"
+              <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False, seed=seed) }}"
                  class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#modulesModal" role="button"
                  title="Lookups from supported 3rd party services">Third Party Reports</a>
 
               </li>
               <li>
-              <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False) }}"
+              <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False, seed=seed) }}"
                  class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#historyModal" role="button"
                  title="Historical data and context about this capture ">Historical lookups</a>
 
               </li>
               <li>
-              <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid) }}"
+              <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid, seed=seed) }}"
                  class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button"
                  title="Hits in Hashlookup ">Hashlookup hits</a>
 
               </li>
               <li>
-              <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
+              <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid, seed=seed) }}"
                  class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button"
                  title="All resources contained in the tree">Resources</a>
 
               </li>
               <li>
-              <a href="#ipsModal" data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid) }}"
+              <a href="#ipsModal" data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid, seed=seed) }}"
                  class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#ipsModal" role="button"
                  title="All IPs contained in the tree">IP Addresses</a>
 
               </li>
               <li>
-              <a href="#hostnamesModal" data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
+              <a href="#hostnamesModal" data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid, seed=seed) }}"
                  class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button"
                  title="All hostnames contained in the tree">Hostnames</a>
 
               </li>
               <li>
-              <a href="#urlsModal" data-remote="{{ url_for('tree_urls', tree_uuid=tree_uuid) }}"
+              <a href="#urlsModal" data-remote="{{ url_for('tree_urls', tree_uuid=tree_uuid, seed=seed) }}"
                  class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#urlsModal" role="button"
                  title="All URLs contained in the tree">URLs</a>
 
               </li>
               <li>
-              <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
+              <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid, seed=seed) }}"
                  class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button"
                  title="Favicons found on the rendered page">Favicons</a>
 
               </li>
               <li>
-              <a href="#captureHashesTypesModal" data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid) }}"
+              <a href="#captureHashesTypesModal" data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid, seed=seed) }}"
                  class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button"
                  title="Compare hashes of the rendered page">(Fuzzy)Hashes types</a>
 
               </li>
               <li>
-              <a href="#identifiersModal" data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid) }}"
+              <a href="#identifiersModal" data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid, seed=seed) }}"
                  class="dropdown-item"
                  data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button"
                  title="Identifiers found on the rendered page">Other Identifiers</a>
@@ -349,27 +355,27 @@
             </button>
             <ul class="dropdown-menu" aria-labelledby="actions-menu-btn">
               <li>
-              <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid) }}"
+              <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button"
                  class="dropdown-item"
                  title="Start a capture from one of the URLs rendered in the page">Subsequent Captures</a>
 
               </li>
               <li>
-              <a href="{{ url_for('recapture', tree_uuid=tree_uuid) }}" role="button"
+              <a href="{{ url_for('recapture', tree_uuid=tree_uuid, seed=seed) }}" role="button"
                  class="dropdown-item"
                  title="Submit the URL again">Re-Capture</a>
 
               </li>
               <li>
-              <a href="#downloadModal" data-remote="{{ url_for('download_elements', tree_uuid=tree_uuid) }}" data-bs-toggle="modal"
+              <a href="#downloadModal" data-remote="{{ url_for('download_elements', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
                  class="dropdown-item"
                  data-bs-target="#downloadModal" role="button" title="Forensic Acquisition of the Web Capture">Get forensic acquisition</a>
 
               </li>
               {% if misp_push%}
                 <li>
-                <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid) }}"
+                <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid, seed=seed) }}"
                    class="dropdown-item"
                    data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
                 </li>
@@ -390,15 +396,15 @@
               </button>
               <ul class="dropdown-menu" aria-labelledby="admin-menu-btn">
                 <li>
-                <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid) }}" class="dropdown-item" role="button">Rebuild capture</a>
+                <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid, seed=seed) }}" class="dropdown-item" role="button">Rebuild capture</a>
                 </li>
                 <li>
-                <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid) }}" class="dropdown-item" role="button">Hide capture</a>
+                <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid, seed=seed) }}" class="dropdown-item" role="button">Hide capture</a>
                 </li>
                 <li>
-                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid) }}" class="dropdown-item" role="button" id="removeCapture">Remove capture</a>
+                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid, seed=seed) }}" class="dropdown-item" role="button" id="removeCapture">Remove capture</a>
                 </li>
-                <a href="#ollamaModal" data-remote="{{ url_for('tree_ollama_report', tree_uuid=tree_uuid) }}"
+                <a href="#ollamaModal" data-remote="{{ url_for('tree_ollama_report', tree_uuid=tree_uuid, seed=seed) }}"
                    class="dropdown-item"
                    data-bs-toggle="modal" data-bs-target="#ollamaModal" role="button"
                    title="Thrown the capture in Ollama and hope">Ollama Report</a>
@@ -416,7 +422,7 @@
               <ul class="dropdown-menu" aria-labelledby="extra-menu-btn">
                 {% if enable_categorization %}
                     <li>
-                    <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid) }}"
+                    <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid, seed=seed) }}"
                        class="dropdown-item"
                        data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
                     </li>
@@ -603,6 +609,10 @@
             <dd class="col-sm-10">{{ v }}</dd>
           {% endfor %}
         {%endif%}
+        {% if seed %}
+          <dt class="col-sm-2">Seed expire at</dt>
+          <dd class="col-sm-10" id="seed_expire_at"></dd>
+        {%endif%}
         {% if info.categories %}
           <dt class="col-sm-2">Categories</dt>
           <dd class="col-sm-10">
@@ -635,7 +645,7 @@
           </div>
           <div class="modal-footer">
               <a class="btn btn-primary" href="#storageStateModal"
-                 data-remote="{{ url_for('storage_state', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('storage_state', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#storageStateModal" role="button">Back to capture's storage</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -723,7 +733,7 @@
           </div>
           <div class="modal-footer">
               <a class="btn btn-primary" href="#identifiersModal"
-                 data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button">Back to capture's identifiers</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -760,7 +770,7 @@
           </div>
           <div class="modal-footer">
               <a class="btn btn-primary" href="#faviconsModal"
-                 data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Back to capture's favicons</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -797,7 +807,7 @@
           </div>
           <div class="modal-footer">
               <a class="btn btn-primary" href="#captureHashesTypesModal"
-                 data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button">Back to capture's hashes</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -817,7 +827,7 @@
           </div>
           <div class="modal-footer">
               <a class="btn btn-primary" href="#faviconsModal"
-                 data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Back to capture's favicons</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -854,7 +864,7 @@
           </div>
           <div class="modal-footer">
               <a class="btn btn-primary" href="#bodyHashesModal"
-                 data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button">Back to capture's resources</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -891,10 +901,10 @@
           </div>
           <div class="modal-footer">
               <a class="btn btn-primary" href="#HostnamesModal"
-                 data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button">Back to capture's hostnames</a>
               <a class="btn btn-primary" href="#ipsModal"
-                 data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#ipsModal" role="button">Back to capture's IPs</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -932,10 +942,10 @@
           </div>
           <div class="modal-footer">
               <a class="btn btn-primary" href="#ipsModal"
-                 data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#ipsModal" role="button">Back to capture's IPs</a>
               <a class="btn btn-primary" href="#HostnamesModal"
-                 data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button">Back to capture's hostnames</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -972,7 +982,7 @@
           </div>
           <div class="modal-footer">
               <a class="btn btn-primary" href="#HostnamesModal"
-                 data-remote="{{ url_for('tree_urls', tree_uuid=tree_uuid) }}"
+                 data-remote="{{ url_for('tree_urls', tree_uuid=tree_uuid, seed=seed) }}"
                  data-bs-toggle="modal" data-bs-target="#urlsModal" role="button">Back to capture's URLs</a>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -1031,10 +1041,10 @@
       {% if blur_screenshot %}
       <button type="button" class="btn btn-primary" id="blurScreenshot">Unblur</button>
       {% endif %}
-      <a href="{{ url_for('image', tree_uuid=tree_uuid) }}" role="button" class="btn btn-primary">Download</a>
+      <a href="{{ url_for('image', tree_uuid=tree_uuid, seed=seed) }}" role="button" class="btn btn-primary">Download</a>
       <br>
       <br>
-      <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '') }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
+      <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '', seed=seed) }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
       <br>
     </center>
     </div>
@@ -1141,7 +1151,7 @@
           </div>
           <br>
           <div class="modal-body">
-              <form role="form" action="{{ url_for('web_lookyloo_push_view', tree_uuid=tree_uuid) }}"
+              <form role="form" action="{{ url_for('web_lookyloo_push_view', tree_uuid=tree_uuid, seed=seed) }}"
                     method=post enctype=multipart/form-data>
                   <label for="remote_lookyloo_url" class="col-sm-2 col-form-label">Submit capture to:</label>
                   <input type="text" class="form-control" name="remote_lookyloo_url" id="remote_lookyloo_url" required>
@@ -1216,7 +1226,7 @@
 {% if enable_monitoring %}
 <div class="modal fade" id="monitoringModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
-    <form role="form" action="{{ tree_uuid }}/monitor" method=post enctype=multipart/form-data>
+    <form role="form" action="{{ url_for('monitor', tree_uuid=tree_uuid, seed=seed) }}" method=post enctype=multipart/form-data>
       <div class="modal-content">
           <div class="modal-header">
               <h5 class="modal-title" id="monitorModalLabel">Monitor capture</h5>
@@ -1239,7 +1249,7 @@
 {% if enable_mail_notification %}
 <div class="modal fade" id="emailModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
-    <form role="form" action="{{ tree_uuid }}/send_mail" method=post enctype=multipart/form-data>
+    <form role="form" action="{{ url_for('send_mail', tree_uuid=tree_uuid, seed=seed) }}" method=post enctype=multipart/form-data>
       <div class="modal-content">
           <div class="modal-header">
               <h5 class="modal-title" id="emailModalLabel">Notify by email</h5>

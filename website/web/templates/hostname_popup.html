@@ -230,7 +230,7 @@
       {% endif %}
       <ul class="list-group">
         <li class="list-group-item">
-          <p class="h4">Request ({{url['url_object'].request.get('method')}}) {{ request_cookies_icon(url['url_object'], tree_uuid) }}</p>
+          <p class="h4">Request ({{url['url_object'].request.get('method')}}) {{ request_cookies_icon(url['url_object'], tree_uuid, seed=seed) }}</p>
           <hr>
           <div class="accordion accordion" id="accordionRequest_{{url['url_object'].uuid}}">
             <div class="accordion-item">
@@ -268,7 +268,7 @@
           {% if url['url_object'].posted_data is defined %}
            <div>This is a POST request,
               {% if url['url_object'].posted_data %}
-                <a href="#JsonRenderModal" data-remote="{{  url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid, render_in_modal=True) }}"
+                <a href="#JsonRenderModal" data-remote="{{  url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid, render_in_modal=True, seed=seed) }}"
                   data-bs-toggle="modal" data-bs-target="#JsonRenderModal" role="button"
                   title="pretty print the JSON">show content</a>.
                 {% if url['url_object'].posted_data_info %}
@@ -298,7 +298,7 @@
                 </span>
                 -
                 <span>Load time: {{ url['url_object'].time.total_seconds() }}s</span>
-                <span>{{response_cookies_icon(url['url_object'], tree_uuid)}}</span>
+                <span>{{response_cookies_icon(url['url_object'], tree_uuid, seed=seed)}}</span>
             </small>
           </p>
           <hr>
@@ -331,7 +331,8 @@
                        url['url_object'].body_hash, url['url_object'].body.getbuffer().nbytes,
                        url.get('body_hash_freq', 0), has_pandora,
                        url.get('legitimacy'),
-                       url.get('known_content')) }}
+                       url.get('known_content'),
+                       seed=seed) }}
 
            {% if enable_context_by_users %}
             {{ context_form(tree_uuid, url['url_object'].uuid,
@@ -369,7 +370,8 @@
                                 details['body_size'], details.get('hash_freq', 0),
                                 has_pandora,
                                 details.get('legitimacy'),
-                                details.get('known_content')) }}<br>
+                                details.get('known_content'),
+                                seed=seed) }}<br>
                     {% if enable_context_by_users %}
                       {{ context_form(tree_uuid, url['url_object'].uuid, hash, 'hostnode_popup') }}
                     {% endif %}
