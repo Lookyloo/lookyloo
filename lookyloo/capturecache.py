@@ -79,6 +79,8 @@ class CaptureCache():
         if url := cache_entry.get('url'):
             # This entry *should* be present even if there is an error.
             self.url: str = url.strip()
+        else:
+            self.url = "[No URL]"
 
         # if the cache doesn't have the keys in __default_cache_keys, it must have an error.
         # if it has neither all the expected entries, nor error, we must raise an exception

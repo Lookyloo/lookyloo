@@ -126,7 +126,7 @@
   var enable_bookmark = {{ enable_bookmark|tojson }};
 
   var parent_uuid = {{ parent_uuid|tojson }};
-  var capture_starttime = new Date(Date.parse("{{ info.timestamp.isoformat() }}"));
+  var capture_starttime = new Date(Date.parse("{{ info.timestamp.isoformat() if info.timestamp else 0 }}"));
   {% if seed and seed_expire_at %}
   var seed_expire = new Date(Date.parse("{{ seed_expire_at.isoformat() }}"));
   {% endif %}
