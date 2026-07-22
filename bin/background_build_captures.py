@@ -158,9 +158,13 @@ class BackgroundBuildCaptures(AbstractManager):
                         or (path / 'tree.pickle').exists()):
                     # We already have a pickle file
                     continue
-                elif not list(path.rglob('*.har.gz')) and not list(path.rglob('*.har')):
+
+                if not list(path.rglob('*.har.gz')) and not list(path.rglob('*.har')):
                     # No HAR file
                     self.logger.debug(f'{path} has no HAR file.')
+                    # junt in case, clear up useless files and skip logging
+                    (path / 'auto_report').unlink(missing_ok=True)
+                    (path / 'monitor_capture').unlink(missing_ok=True)
                     continue
 
                 lock_file = path / 'lock'
