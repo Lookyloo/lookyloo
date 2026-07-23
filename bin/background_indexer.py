@@ -51,7 +51,7 @@ class BackgroundIndexer(AbstractManager):
         __counter_shutdown_force = 0
         for uuid, d in self.redis.hscan_iter(self.lookup_dirs):
             __counter_shutdown_force += 1
-            if __counter_shutdown_force % 10000 == 0 and self.shutdown_requested():
+            if __counter_shutdown_force % 1000 == 0 and self.shutdown_requested():
                 self.logger.warning('Shutdown requested, breaking.')
                 break
 
