@@ -1175,10 +1175,25 @@ class CaptureHide(Resource):  # type: ignore[misc]
 
     def post(self, capture_uuid: str) -> Response:
         try:
-            lookyloo.hide_capture(capture_uuid)
+            lookyloo.change_visibility(capture_uuid, visibility='unlisted')
         except Exception as e:
             return make_response({'error': f'Unable to hide the tree: {e}'}, 400)
         return make_response({'info': f'Capture {capture_uuid} successfully hidden.'})
+
+
+@api.route('/admin/<uuid:capture_uuid>/private')
+@api.doc(description='Make capture private.',
+         params={'capture_uuid': 'The UUID of the capture'},
+         security='apikey')
+class CapturePrivate(Resource):  # type: ignore[misc]
+    method_decorators = [api_auth_check]
+
+    def post(self, capture_uuid: str) -> Response:
+        try:
+            lookyloo.change_visibility(capture_uuid, visibility='private')
+        except Exception as e:
+            return make_response({'error': f'Unable to make capture private: {e}'}, 400)
+        return make_response({'info': f'Capture {capture_uuid} successfully made private.'})
 
 
 @api.route('/admin/<uuid:capture_uuid>/remove')

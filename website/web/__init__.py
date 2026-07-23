@@ -23,7 +23,7 @@ from datetime import date, datetime, timedelta, timezone
 from difflib import Differ
 from importlib.metadata import version
 from io import BytesIO, StringIO
-from typing import Any, TypedDict
+from typing import Any, TypedDict, Literal
 from collections.abc import Sequence
 from collections.abc import Iterable
 from urllib.parse import unquote_plus, urlparse
@@ -1662,12 +1662,50 @@ def bulk_captures(tree_uuid: str) -> WerkzeugResponse | str | Response:
     return render_template('bulk_captures.html', uuid=tree_uuid, bulk_captures=bulk_captures)
 
 
-@app.route('/tree/<uuid:tree_uuid>/hide', methods=['GET'])
-@flask_login.login_required  # type: ignore[untyped-decorator]
-def hide_capture(tree_uuid: str) -> WerkzeugResponse:
-    lookyloo.hide_capture(tree_uuid)
-    flash('Successfully hidden.', 'success')
-    return redirect(url_for('tree', tree_uuid=tree_uuid))
+@app.route('/tree/<uuid:tree_uuid>/visibility', methods=['POST'])
+def visibility(tree_uuid: str) -> WerkzeugResponse:
+    """Change the visibility of a capture.
+    Allow normal users to make a capture mode private (public -> unlisted -> private)
+    But do not allow a normal user to make it less private.
+    """
+    cache = lookyloo.capture_cache(tree_uuid)
+    seed = request.args.get('seed')
+
+    v: Literal['public', 'unlisted', 'private'] | None = request.form.get('visibility')  # type: ignore[assignment]
+    if not v or v not in ['public', 'unlisted', 'private']:
+        flash('Unexpected visibility, ignoring.', 'error')
+    else:
+        if v == 'private':
+            lookyloo.change_visibility(tree_uuid, visibility=v)
+            seed, seed_expire = lookyloo.add_seed(tree_uuid, expire=request.form.get('seed_expire'))
+            if seed_expire:
+                flash(f'Successfully made the capture private and/or created a new seed. It will expire at {seed_expire.isoformat()}.', 'success')
+            else:
+                flash('Successfully made the capture private, but failed to get a seed expiration time.', 'warning')
+        elif v == 'public':
+            if flask_login.current_user.is_authenticated:
+                lookyloo.change_visibility(tree_uuid, visibility=v)
+                flash('Successfully made the capture public.', 'success')
+            else:
+                if cache.private:
+                    flash('The capture is private, only an administrator can make it public.', 'error')
+                elif cache.no_index:
+                    flash('The capture is unlisted, only an administrator can make it public.', 'error')
+                else:
+                    flash('The capture was already public.', 'warning')
+        elif v == 'unlisted':
+            if flask_login.current_user.is_authenticated:
+                lookyloo.change_visibility(tree_uuid, visibility=v)
+                flash('Successfully unlisted the capture.', 'success')
+            else:
+                if cache.private:
+                    flash('The capture is private, only an administrator can change it to unlisted.', 'error')
+                elif cache.no_index:
+                    flash('The capture was already unlisted.', 'warning')
+                else:
+                    lookyloo.change_visibility(tree_uuid, visibility=v)
+                    flash('Successfully unlisted the capture.', 'success')
+    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=seed))
 
 
 @app.route('/tree/<uuid:tree_uuid>/remove', methods=['GET'])
@@ -1891,6 +1929,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
                                seed=seed, seed_expire_at=seed_expire_at,
                                info=cache,
+                               default_seed_expire=lookyloo.default_seed_expire,
                                screenshot_thumbnail=b64_thumbnail, page_title=cache.title if hasattr(cache, 'title') else '',
                                favicon=b64_potential_favicon,
                                mime_favicon=mime_favicon,

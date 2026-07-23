@@ -259,15 +259,34 @@ class CapturesIndex():
         return False
 
     def hide(self, uuid: str, make_private: bool=False) -> bool:
-        to_set = 'no_index'
-        if make_private:
-            to_set = 'private'
         capture_dir = self._get_capture_dir(uuid)
-        self.redis.hset(capture_dir, to_set, 1)
-        self.redis.zrem('recent_captures_public', uuid)
-        (Path(capture_dir) / to_set).touch()
+        p = self.redis.pipeline()
+        if make_private:
+            p.hset(capture_dir, 'private', 1)
+            p.hdel(capture_dir, 'no_index')
+            (Path(capture_dir) / 'private').touch()
+            (Path(capture_dir) / 'no_index').unlink(missing_ok=True)
+        else:
+            p.hdel(capture_dir, 'private')
+            p.hset(capture_dir, 'no_index', 1)
+            (Path(capture_dir) / 'no_index').touch()
+            (Path(capture_dir) / 'private').unlink(missing_ok=True)
+        p.zrem('recent_captures_public', uuid)
+        p.execute()
         self.reload_cache(uuid)
         # remove from the public index
+        get_indexing().force_reindex(uuid)
+        return True
+
+    def make_public(self, uuid: str) -> bool:
+        capture_dir = self._get_capture_dir(uuid)
+        p = self.redis.pipeline()
+        p.hdel(capture_dir, 'no_index')
+        p.hdel(capture_dir, 'private')
+        p.execute()
+        (Path(capture_dir) / 'no_index').unlink(missing_ok=True)
+        (Path(capture_dir) / 'private').unlink(missing_ok=True)
+        self.reload_cache(uuid)
         get_indexing().force_reindex(uuid)
         return True
 

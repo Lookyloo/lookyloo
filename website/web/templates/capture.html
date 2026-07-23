@@ -811,9 +811,11 @@ window.addEventListener('DOMContentLoaded', () => {
     <center>
       <b>
         {% if default_public %}
-          By default, the capture is public. If you do not want that, untick the box at the top of the form.
+          By default, the capture is public: listed on the index and accessible by anyone who knows the UUID.
+        {% elif default_private %}
+          By default, the capture is private: not listed on the index and you'll need a (time limited) seed to access it.
         {% else %}
-          By default, the capture is private (not visible on the index page). If you want it to be public tick the box at the top of the form.
+          By default, the capture is unlisted: not visible on the index page, but accessible by anyone who knows the UUID.
         {% endif %}
       </b>
       <br>

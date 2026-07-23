@@ -385,6 +385,11 @@
                  class="dropdown-item"
                  title="Push the capture to another Lookyloo Instance">Push to another Lookyloo</a>
               </li>
+              <li>
+              <a href="#visibilityModal" data-bs-toggle="modal" data-bs-target="#visibilityModal" role="button"
+                 class="dropdown-item"
+                 title="Change the visibility of the capture, get a new seed">Visibility and sharing</a>
+              </li>
             </ul>
           </div>
 
@@ -397,9 +402,6 @@
               <ul class="dropdown-menu" aria-labelledby="admin-menu-btn">
                 <li>
                 <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid, seed=seed) }}" class="dropdown-item" role="button">Rebuild capture</a>
-                </li>
-                <li>
-                <a href="{{ url_for('hide_capture', tree_uuid=tree_uuid, seed=seed) }}" class="dropdown-item" role="button">Hide capture</a>
                 </li>
                 <li>
                 <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid, seed=seed) }}" class="dropdown-item" role="button" id="removeCapture">Remove capture</a>
@@ -1134,6 +1136,74 @@
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="visibilityModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="visibilityModalLabel">
+                  Change the visibility of the capture
+              </h4>
+              <br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <br>
+          <div class="modal-body">
+              <div class="alert alert-info" role="alert">
+                The capture is currently
+                  {%if not info %}
+                    {% set visibility = 'public' %}
+                    <b>in an unknown state</b>, assuming public
+                  {%elif info.private is true %}
+                    {% set visibility = 'private' %}
+                    <b>private</b>
+                  {%elif info.no_index is true %}
+                    {% set visibility = 'unlisted' %}
+                    <b>unlisted</b>
+                  {%else%}
+                    {% set visibility = 'public' %}
+                    <b>public</b>
+                  {%endif%}
+                  .
+              </div>
+
+              <form role="form" action="{{ url_for('visibility', tree_uuid=tree_uuid, seed=seed) }}"
+                    method=post enctype=multipart/form-data>
+                  <div class="row mb-3">
+                    <div class="col-sm-2 col-form">New visibility level:</div>
+                    <div class="col-sm-10">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" id="public" name="visibility" value="public"
+                          {% if visibility == 'public' %}checked="checked"{% endif %}>
+                        <label for="public" class="form-check-label">Display capture on public index</label>
+                      </div>
+
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" id="unlisted" name="visibility" value="unlisted"
+                          {% if visibility == 'unlisted' %}checked="checked"{% endif %}>
+                        <label for="unlisted" class="form-check-label">Do not display capture on public index</label>
+                      </div>
+
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" id="private" name="visibility" value="private"
+                          {% if visibility == 'private' %}checked="checked"{% endif %}>
+                        <label for="private" class="form-check-label">Make capture private, only accessible with a seed. Keep this box selected if the capture is already private and you want a new seed.</label>
+                        <br>
+                        <label for="seed_expire" class="form-check-label">When should the seed expire?</label>
+                        <input type="text" id="seed_expire" name="seed_expire" value="{{default_seed_expire}}">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="alert alert-info" role="alert">
+                      All the captures are always visible by the platform administrators. If you want a truly
+                      private capture, you need to run your own instance of lookyloo.
+                  </div>
+                  <button type="submit" class="btn btn-primary">Change</button>
+              </form>
           </div>
       </div>
   </div>

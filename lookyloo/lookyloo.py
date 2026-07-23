@@ -592,10 +592,14 @@ class Lookyloo():
                     to_return['urlscan']['result'] = result
         return to_return
 
-    def hide_capture(self, capture_uuid: str, /) -> None:
-        """Add the capture in the hidden pool (not shown on the front page)
-        """
-        self._captures_index.hide(capture_uuid)
+    def change_visibility(self, capture_uuid: str, /, visibility: Literal['public', 'unlisted', 'private']) -> None:
+        """Change the visibility of the capture (public, unlisted, private)"""
+        if visibility == 'private':
+            self._captures_index.hide(capture_uuid, make_private=True)
+        elif visibility == 'unlisted':
+            self._captures_index.hide(capture_uuid, make_private=False)
+        else:
+            self._captures_index.make_public(capture_uuid)
 
     def remove_capture(self, capture_uuid: str) -> None:
         """Remove the capture, it won't be accessible anymore."""
