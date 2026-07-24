@@ -39,11 +39,9 @@ class VirusTotal(AbstractModule):
         if proxies:
             # we have a dist with 2 keys: http and https
             # and vt client uses aiohttp, which only accepts one string for the proxy
-            proxy = proxies.get('http')
+            self.proxy = proxies.get('http')
         else:
-            proxy = None
-        self.client = vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False),
-                                agent='Lookyloo', proxy=proxy)
+            self.proxy = None
 
         self.storage_dir_vt = get_homedir() / 'vt_url'
         self.storage_dir_vt.mkdir(parents=True, exist_ok=True)
@@ -80,11 +78,11 @@ class VirusTotal(AbstractModule):
 
     async def __get_object_vt(self, url: str) -> ClientResponse:
         url_id = vt.url_id(url)
-        async with vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False)) as client:
+        async with vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False), agent='Lookyloo', proxy=self.proxy) as client:
             return await client.get_object_async(f"/urls/{url_id}")
 
     async def __scan_url(self, url: str) -> None:
-        async with vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False)) as client:
+        async with vt.Client(self.config['apikey'], trust_env=self.config.get('trustenv', False), agent='Lookyloo', proxy=self.proxy) as client:
             await client.scan_url_async(url)
 
     def __url_lookup(self, url: str, force: bool=False) -> None:
