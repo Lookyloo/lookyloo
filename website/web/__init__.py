@@ -3145,7 +3145,7 @@ def post_table(table_name: str, value: str='') -> Response:
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
     if table_name == 'cookieNameTable':
-        cookie_name = value.strip()
+        cookie_name = unquote_plus(value.strip())
         total, captures = get_cookie_name_investigator(cookie_name, offset=start, limit=length, search=search)
         if search and start is not None and length is not None:
             total_filtered = len(captures)
@@ -3177,7 +3177,7 @@ def post_table(table_name: str, value: str='') -> Response:
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
     if table_name == 'identifierDetailsTable':
-        identifier_type, identifier = value.strip().split('|')
+        identifier_type, identifier = unquote_plus(value.strip()).split('|')
         total, captures = get_identifier_investigator(identifier_type, identifier, offset=start, limit=length, search=search)
         if search and start is not None and length is not None:
             total_filtered = len(captures)

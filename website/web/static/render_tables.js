@@ -101,7 +101,7 @@ function renderTables() {
   }
 
   if (document.getElementById('identifierDetailsTable')) {
-      let identifier_value = document.getElementById('identifierDetailsTable').dataset.identifier;
+      let identifier_value = encodeURIComponent(document.getElementById('identifierDetailsTable').dataset.identifier);
       new DataTable('#identifierDetailsTable', {
         processing: true,
         serverSide: true,
@@ -262,7 +262,7 @@ function renderTables() {
       })
   }
   if (document.getElementById('cookieNameTable')) {
-      let cookieName = document.getElementById('cookieNameTable').dataset.cookiename;
+      let cookieName = encodeURIComponent(document.getElementById('cookieNameTable').dataset.cookiename)
       new DataTable('#cookieNameTable', {
         processing: true,
         serverSide: true,
