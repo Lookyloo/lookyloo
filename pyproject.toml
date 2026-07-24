@@ -82,7 +82,7 @@ mmh3 = "^5.2.1"
 psutil = "^7.2.2"
 flask-talisman = "^1.1.0"
 
-aiohttp = {extras = ["speedups"], version = "^3.14.2"}
+aiohttp = {extras = ["speedups"], version = "^3.14.3"}
 pyail = "^0.0.16"
 mastodon-py = "^2.2.1"
 rfc3161-client = "^1.0.7"
@@ -117,7 +117,7 @@ types-Pillow = "^10.2.0.20240822"
 types-pytz = "^2026.2.0.20260518"
 types-psutil = "^7.2.2.20260518"
 types-lxml = "^2026.2.16"
-gitpython = "^3.1.54"
+gitpython = "^3.1.55"
 types-dateparser = "^1.4.1.20260617"
 
 [build-system]
