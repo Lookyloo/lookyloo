@@ -27,13 +27,13 @@ class SaneJavaScript():
         self.client = SaneJS(useragent=get_useragent_for_requests(),
                              proxies=global_proxy_for_requests())
 
-        if not self.client.is_up:
+        if self.client.is_up:
+            self.available = True
+            self.storage_dir = get_homedir() / 'sanejs'
+            self.storage_dir.mkdir(parents=True, exist_ok=True)
+        else:
             self.logger.warning('Not up.')
             self.available = False
-
-        self.storage_dir = get_homedir() / 'sanejs'
-        self.storage_dir.mkdir(parents=True, exist_ok=True)
-        self.available = True
 
     def hashes_lookup(self, sha512: Iterable[str] | str, force: bool=False) -> dict[str, list[str]]:
         if not self.available:

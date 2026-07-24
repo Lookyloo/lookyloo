@@ -252,7 +252,7 @@ class Archiver(AbstractManager):
         if not current_index and not current_sub_index:
             # The directory has been archived. It is probably safe to unlink, but
             # if it's not, we will lose a whole buch of captures. Moving instead for safety.
-            shutil.move(str(root_dir), str(get_homedir() / 'discarded_captures' / root_dir.parent / root_dir.name))
+            shutil.move(str(root_dir), str(get_homedir() / 'discarded_captures' / root_dir.parent.name / root_dir.name))
             self.logger.warning(f'Nothing to index in {root_dir}')
             return None
 
@@ -398,7 +398,8 @@ class Archiver(AbstractManager):
                 # The directory is locked because a pickle is being created, try again later
                 if is_locked(capture_path):
                     # call this method to remove dead locks
-                    continue
+                    pass
+                continue
 
             try:
                 start = time.time()

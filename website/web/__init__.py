@@ -2036,7 +2036,7 @@ def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
         # Submit a file from the zip
         _i = int(index_in_zip)
         success, filename, content = lookyloo.get_data(tree_uuid, index_in_zip=_i)
-        if not success or not filename or not content:
+        if not success or not filename or not content.getbuffer().nbytes:
             return {'error': f'Unable to find file {_i} in tree {tree_uuid}'}
     else:
         success, filename, content = lookyloo.get_data(tree_uuid)

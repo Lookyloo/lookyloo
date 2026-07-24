@@ -48,7 +48,7 @@ class URLhaus(AbstractModule):
 
     def __url_result(self, url: str) -> dict[str, Any]:
         data = {'url': url}
-        response = self.session.post(f'{self.url}/url/', data)
+        response = self.session.post(f'{self.url}/url/', data, timeout=10)
         response.raise_for_status()
         return response.json()
 

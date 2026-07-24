@@ -73,10 +73,10 @@ class Cloudflare():
             if r.headers.get('Last-Modified'):
                 if lm := parse(r.headers['Last-Modified']):
                     last_updates['ipv4'] = lm.isoformat()
+            with self.ipv4_path.open('w') as f:
+                f.write(ipv4_list + '\n')
         except Exception as e:
             self.logger.warning(f'Unable to get Cloudflare IPv4 list: {e}')
-        with self.ipv4_path.open('w') as f:
-            f.write(ipv4_list + '\n')
 
         # Get IPv6
         try:
@@ -86,10 +86,10 @@ class Cloudflare():
             if r.headers.get('Last-Modified'):
                 if lm := parse(r.headers['Last-Modified']):
                     last_updates['ipv6'] = lm.isoformat()
+            with self.ipv6_path.open('w') as f:
+                f.write(ipv6_list + '\n')
         except Exception as e:
             self.logger.warning(f'Unable to get Cloudflare IPv6 list: {e}')
-        with self.ipv6_path.open('w') as f:
-            f.write(ipv6_list + '\n')
 
         with last_updates_path.open('w') as f:
             json.dump(last_updates, f)

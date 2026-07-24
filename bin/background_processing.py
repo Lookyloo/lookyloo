@@ -148,6 +148,7 @@ class Processing(AbstractManager):
                 except Exception as e:
                     self.logger.warning(f'[{uuid}] Settings are broken, clearing them up: {e}.')
                     self.lookyloo.redis.delete(uuid)
+                    continue
 
                 if not capture_settings:
                     self.logger.warning(f'Unable to get settings from redis, skip {uuid}.')

@@ -125,7 +125,6 @@ class Indexing():
         hash_types_indexed = all(self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid) for hash_type in self.captures_hashes_types())
         to_return: list[bool] = p.execute()
         to_return.append(hash_types_indexed)
-        # This call for sure returns a tuple of 9 booleans
         return Indexed(*to_return)
 
     def index_capture(self, uuid_to_index: str, directory: Path, force: bool=False) -> bool:
@@ -937,7 +936,7 @@ class Indexing():
                 pipeline.sadd(f'{internal_index}|favicons', sha)  # Only used to delete index
                 pipeline.zadd(f'favicons|{sha}|captures',
                               mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
-                if not self.redis.sismember('favicon', sha):
+                if not self.redis.sismember('favicons', sha):
                     pipeline.sadd('favicons', sha)
                     # There is no easy access to the favicons unless we store them in redis
                     pipeline.set(f'favicons|{sha}', favicon)

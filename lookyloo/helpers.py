@@ -23,7 +23,7 @@ from logging import Logger
 from pathlib import Path
 from string import punctuation
 from typing import Any, TYPE_CHECKING
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse
 
 import requests
 
@@ -50,13 +50,14 @@ def global_proxy_for_requests() -> dict[str, str]:
         if global_proxy.get('enable'):
             if not global_proxy.get('server'):
                 raise LookylooException('Global proxy is enabled, but no server is set.')
-            parsed_url = urlparse(global_proxy['server'])
             if global_proxy.get('username') and global_proxy.get('password'):
-                parsed_url['username'] = global_proxy['username']
-                parsed_url['password'] = global_proxy['password']
+                parsed_url = urlparse(global_proxy['server'])
+                full_url = f"{parsed_url.scheme}://{global_proxy['username']}:{global_proxy['password']}@{parsed_url.hostname}:{parsed_url.port}{parsed_url.path}{parsed_url.query}"
+            else:
+                full_url = global_proxy['server']
             return {
-                'http': urlunparse(parsed_url),
-                'https': urlunparse(parsed_url)
+                'http': full_url,
+                'https': full_url
             }
     return {}
 

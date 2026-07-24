@@ -88,6 +88,7 @@ class UniversalWhois(AbstractModule):
 
         bytes_whois = b''
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(5)
             sock.connect((self.server, self.port))
             sock.sendall(f'{query}\n'.encode())
             while True:

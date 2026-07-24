@@ -83,7 +83,7 @@ class UrlScan(AbstractModule):
         else:
             # default to key config on urlscan.io website
             pass
-        response = self.client.post('https://urlscan.io/api/v1/scan/', json=data)
+        response = self.client.post('https://urlscan.io/api/v1/scan/', json=data, timeout=10)
         if response.status_code == 400:
             # Error, but we have details in the response
             return response.json()
@@ -91,7 +91,7 @@ class UrlScan(AbstractModule):
         return response.json()
 
     def __url_result(self, uuid: str) -> dict[str, Any]:
-        response = self.client.get(f'https://urlscan.io/api/v1/result/{uuid}')
+        response = self.client.get(f'https://urlscan.io/api/v1/result/{uuid}', timeout=10)
         response.raise_for_status()
         return response.json()
 

@@ -198,7 +198,7 @@ class Comparator():
                 _settings = settings
 
         # Compare chain of redirects
-        for redirect_left, redirect_right in zip(right['redirects']['nodes'], left['redirects']['nodes']):
+        for redirect_left, redirect_right in zip(left['redirects']['nodes'], right['redirects']['nodes']):
             if isinstance(to_return['redirects']['nodes'], list):  # NOTE always true, but makes mypy happy.
                 different, node_compare = self._compare_nodes(redirect_left, redirect_right, different, _settings.ignore_ips if _settings is not None else False)
                 to_return['redirects']['nodes'].append(node_compare)
