@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import base64
 import binascii
-import gzip
+import zlib
 import hashlib
 import ipaddress
 import json
@@ -26,8 +26,8 @@ from lookyloo_models import CaptureSettingsError
 from lookyloo.comparator import Comparator
 from lookyloo import Lookyloo
 from lookyloo.default import LookylooException
-from lookyloo.exceptions import UUIDMissingInCache, NoValidHarFile, ModuleError, LacusUnreachable, LookylooPrivateCapture
-from lookyloo.helpers import load_user_config
+from lookyloo.exceptions import UUIDMissingInCache, NoValidHarFile, ModuleError, LacusUnreachable, LookylooPrivateCapture, ZipBomb
+from lookyloo.helpers import load_user_config, safe_decompress
 from lookyloo.modules.ollama_report import OllamaReport
 
 from .helpers import (build_users_table,  # load_user_from_request,
@@ -812,8 +812,10 @@ class UploadCapture(Resource):  # type: ignore[misc]
                 har_decoded = base64.b64decode(parameters['har_file'])
                 try:
                     # new format
-                    har_uncompressed = gzip.decompress(har_decoded)
-                except gzip.BadGzipFile:
+                    har_uncompressed = safe_decompress(har_decoded)
+                except ZipBomb:
+                    return make_response({'error': 'HAR file too big, zipbomb?'}, 400)
+                except zlib.error:
                     # old format
                     har_uncompressed = har_decoded
 

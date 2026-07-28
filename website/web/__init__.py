@@ -55,7 +55,7 @@ from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError
 from lookyloo.default import get_config, get_homedir, ConfigError
 from lookyloo.exceptions import (UnknownUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild,
                                  LookylooPrivateCapture, UUIDMissingInCache, MissingCaptureDirectory,
-                                 TreeBuildFailed)
+                                 TreeBuildFailed, ZipBomb)
 from lookyloo.helpers import (UserAgents,
                               load_user_config,
                               get_taxonomies,
@@ -519,6 +519,13 @@ def file_response(func):  # type: ignore[no-untyped-def]
 def handle_missing_uuid(error: UnknownUUID) -> Response | str | WerkzeugResponse:
     '''Capture UUID cannot be found anywhere'''
     flash(escape(error), 'error')
+    return redirect(url_for('landing_page'))
+
+
+@app.errorhandler(ZipBomb)
+def handle_zip_bomb(error: ZipBomb) -> Response | str | WerkzeugResponse:
+    '''Attempted to decompress a file in memory, and it is too big. Probably a zip bomb?'''
+    flash("Attempted to unpack a too big file. Consider it a ZipBomb.", 'error')
     return redirect(url_for('landing_page'))
 
 

@@ -61,3 +61,8 @@ class NotCached(LookylooException):
 class TreeBuildFailed(LookylooException):
     """Building the tree failed"""
     pass
+
+
+class ZipBomb(LookylooException):
+    """The archived file file is too big and probably a zip bomb"""
+    pass

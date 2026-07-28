@@ -74,15 +74,14 @@ from .default import (LookylooException, get_homedir, get_config, get_socket_pat
                       ConfigError, safe_create_dir)
 from .exceptions import (MissingCaptureDirectory, DuplicateUUID, NoValidHarFile,
                          LacusUnreachable, LacusUnknown, LookylooPrivateCapture,
-                         UUIDMissingInCache, NotCached, UnknownUUID)
+                         UUIDMissingInCache, NotCached, UnknownUUID, ZipBomb)
 from .helpers import (get_captures_dir, get_email_template, get_tt_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, UserAgents,
                       get_useragent_for_requests, load_takedown_filters,
-                      global_proxy_for_requests,
-                      load_user_config,
+                      global_proxy_for_requests, load_user_config,
                       get_indexing, get_error_screenshot,
-                      trusted_store
+                      trusted_store, safe_decompress,
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -101,6 +100,8 @@ EMAIL_RE = re.compile(r"\A[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z
 
 
 class Lookyloo():
+    # The max uncompressed size for an compressed Lookyloo export we load on the instance.
+    MAX_TOTAL_UNCOMPRESSED_SIZE = 1000 * 1024 * 1024  # 1G
 
     def __init__(self, cache_max_size: int | None=None) -> None:
         '''Initialize lookyloo.
@@ -2282,11 +2283,14 @@ class Lookyloo():
                          'nameservers.json', 'soa.json', 'hashlookup.json']
 
         with ZipFile(archive, 'r') as lookyloo_capture:
+            total_size = sum(info.file_size for info in lookyloo_capture.infolist())
+            if total_size > self.MAX_TOTAL_UNCOMPRESSED_SIZE:
+                raise ZipBomb(f'Uncompressed size too large: {total_size} bytes')
             potential_favicons = set()
             for filename in lookyloo_capture.namelist():
                 if filename.endswith('0.har.gz'):
                     # new formal
-                    har = orjson.loads(gzip.decompress(lookyloo_capture.read(filename)))
+                    har = orjson.loads(safe_decompress(lookyloo_capture.read(filename)))
                 elif filename.endswith('0.har'):
                     # old format
                     har = orjson.loads(lookyloo_capture.read(filename))

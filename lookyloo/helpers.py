@@ -15,6 +15,7 @@ import random
 import re
 import secrets
 import time
+import zlib
 
 from datetime import datetime, timedelta, date
 from functools import lru_cache, cache
@@ -39,7 +40,7 @@ from werkzeug.user_agent import UserAgent
 from werkzeug.utils import cached_property
 
 from .default import get_homedir, safe_create_dir, get_config, LookylooException, get_socket_path
-from .exceptions import NoValidHarFile, TreeNeedsRebuild
+from .exceptions import NoValidHarFile, TreeNeedsRebuild, ZipBomb
 
 if TYPE_CHECKING:
     from .indexing import Indexing
@@ -635,3 +636,22 @@ class Seed():
             # When seed is False (0, None)
             self.redis.set(name=f'seed:{seed}', value=task_uuid)
         return seed, expire
+
+
+# copied from https://github.com/RyanDFIR/unfurl/blob/main/unfurl/utils.py
+def safe_decompress(data: bytes, max_size: int = 500_000_000) -> bytes:
+    """Decompress zlib or gzip data with a size limit to prevent zip bomb attacks.
+
+    Uses wbits=47 (32 + MAX_WBITS) to auto-detect zlib or gzip format.
+
+    :param data: Compressed bytes to decompress
+    :param max_size: Maximum allowed decompressed size in bytes (defaults to 500M)
+    :return: Decompressed bytes
+    :raises ZipBomb: If decompressed data exceeds max_size
+    :raises zlib.error: If decompression fails
+    """
+    decompressor = zlib.decompressobj(wbits=32 + zlib.MAX_WBITS)
+    result = decompressor.decompress(data, max_size)
+    if decompressor.unconsumed_tail:
+        raise ZipBomb("Decompressed data exceeds size limit")
+    return result
