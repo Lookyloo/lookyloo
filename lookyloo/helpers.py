@@ -25,8 +25,10 @@ from string import punctuation
 from typing import Any, TYPE_CHECKING
 from urllib.parse import urlparse
 
+import certifi
 import requests
 
+from cryptography.x509 import load_pem_x509_certificates, Certificate
 from har2tree import CrawledTree, HostNode, URLNode
 from PIL import Image
 from playwrightcapture import get_devices
@@ -442,6 +444,16 @@ def load_user_config(username: str) -> dict[str, Any] | None:
         return None
     with user_config_path.open() as _c:
         return json.load(_c)
+
+
+@cache
+def trusted_store() -> list[Certificate]:
+    try:
+        with open(certifi.where(), "rb") as pems:
+            return load_pem_x509_certificates(pems.read())
+    except Exception as e:
+        logger.warning(f'Unable to open certifi CA bundle: {e}')
+        raise e
 
 
 @cache

@@ -30,7 +30,6 @@ from urllib.parse import urlparse, urljoin, parse_qs, urlencode
 from uuid import uuid4, UUID
 from zipfile import ZipFile, ZIP_DEFLATED
 
-import certifi
 import cryptography.exceptions
 import mmh3
 import orjson
@@ -83,6 +82,7 @@ from .helpers import (get_captures_dir, get_email_template, get_tt_template,
                       global_proxy_for_requests,
                       load_user_config,
                       get_indexing, get_error_screenshot,
+                      trusted_store
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
@@ -1356,44 +1356,42 @@ class Lookyloo():
             return trusted_timestamps.get(name)
         return None
 
-    def _prepare_tsr_data(self, capture_uuid: str, *, logger: LookylooCacheLogAdapter) -> tuple[dict[str, tuple[TimeStampResponse, bytes]], list[cryptography.x509.Certificate]] | dict[str, str]:
+    def _prepare_tsr_data(self, capture_uuid: str, *, logger: LookylooCacheLogAdapter) -> tuple[dict[str, tuple[TimeStampResponse, bytes, bool]], list[cryptography.x509.Certificate]] | dict[str, str]:
 
-        def find_certificate(info: tuple[TimeStampResponse, bytes]) -> list[cryptography.x509.Certificate] | None:
-            tsr, data = info
-            certificates = [x509.load_der_x509_certificate(cert) for cert in tsr.signed_data.certificates]
-            verifier = VerifierBuilder(roots=certificates).build()
-            try:
-                verifier.verify_message(tsr, data)
-                return certificates
-            except VerificationError:
-                logger.warning('Unable to verify with certificates in TSR ?!')
-
-            with open(certifi.where(), "rb") as f:
-                try:
-                    cert_authorities = x509.load_pem_x509_certificates(f.read())
-                except Exception as e:
-                    logger.warning(f'Unable to read file {f}: {e}')
-
-            for certificate in cert_authorities:
+        def check_certificate(_tsr: TimeStampResponse, _data: bytes) -> tuple[bool, list[cryptography.x509.Certificate]] | None:
+            for certificate in trusted_store():
                 verifier = VerifierBuilder().add_root_certificate(certificate).build()
                 try:
-                    verifier.verify_message(tsr, data)
-                    return [certificate]
+                    verifier.verify_message(_tsr, _data)
+                    return True, [certificate]
                 except VerificationError:
                     continue
             else:
                 # unable to find certificate
-                logger.warning('Unable to verify with any known certificate either.')
+                logger.warning('Unable to verify with any certificate from certifi.')
+
+            # Attempt to verify with the bundled-in certificates, they may have been tempered with
+            certificates = [x509.load_der_x509_certificate(cert) for cert in _tsr.signed_data.certificates]
+            verifier = VerifierBuilder(roots=certificates).build()
+            try:
+                verifier.verify_message(_tsr, _data)
+                return False, certificates
+            except VerificationError:
+                logger.warning('Unable to verify with certificates in TSR ?!')
             return None
 
         trusted_timestamps = self._load_tt_file(capture_uuid)
         if not trusted_timestamps:
             return {'warning': "No trusted timestamps in the capture."}
 
-        to_check: dict[str, tuple[TimeStampResponse, bytes]] = {}
+        to_check: dict[str, tuple[TimeStampResponse, bytes, bool]] = {}
+        cert_to_return: list[cryptography.x509.Certificate] | None = None
         success: bool
         data: bytes
         d: str | bytes | BytesIO | None
+        if 'downloaded_filename' in trusted_timestamps and 'downloaded_file' in trusted_timestamps:
+            dl_success, filename, file_content = self.get_data(capture_uuid)
+
         for tsr_name, tst in trusted_timestamps.items():
             # turn the base64 encoded blobs back to bytes and TimeStampResponse for validation
             tsr = decode_timestamp_response(tst)
@@ -1420,59 +1418,70 @@ class Lookyloo():
                 success, d = self.get_screenshot(capture_uuid)
                 if success:
                     data = d.getvalue()
-            elif tsr_name in ['downloaded_filename', 'downloaded_file']:
-                # Get these values differently, see below
-                continue
+            elif tsr_name == 'downloaded_filename':
+                if dl_success:
+                    data = filename.encode()
+                else:
+                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+            elif tsr_name == 'downloaded_file':
+                if dl_success:
+                    data = file_content.getvalue()
+                else:
+                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
             else:
                 logger.warning(f'Unexpected entry in trusted timestamps: {tsr_name}')
                 continue
 
             if data:
-                to_check[tsr_name] = (tsr, data)
+                if _c := check_certificate(tsr, data):
+                    safe, certificates = _c
+                    if not safe:
+                        logger.warning(f'Unable to validate certificate for {tsr_name} with the trusted certificates in certify.')
+                    to_check[tsr_name] = (tsr, data, safe)
+                else:
+                    logger.warning(f'Unable to validate certificate for {tsr_name} (at least), cannot validate trusted timestamps.')
+                    return {'warning': 'Unable to find certificate, cannot validate trusted timestamps.'}
+                if not cert_to_return:
+                    # first loop
+                    cert_to_return = certificates
+                else:
+                    if cert_to_return != certificates:
+                        # got different certificates, this is not ok
+                        logger.warning('Got different certificates validating the data, big nope..')
+                        return {'warning': 'Multiple certificates validating the data.'}
             else:
-                logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+                logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation (old capture, most probably).')
+        if not cert_to_return:
+            logger.warning('Could not find any valid certificate for the TSR.')
+            return {'warning': 'Unable to find a valid certificate.'}
 
-        if 'downloaded_filename' in trusted_timestamps and 'downloaded_file' in trusted_timestamps:
-            success, filename, file_content = self.get_data(capture_uuid)
-            if success:
-                tsr_filename = decode_timestamp_response(trusted_timestamps['downloaded_filename'])
-                to_check['downloaded_filename'] = (tsr_filename, filename.encode())
-                tsr_file = decode_timestamp_response(trusted_timestamps['downloaded_file'])
-                to_check['downloaded_file'] = (tsr_file, file_content.getvalue())
-            else:
-                logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+        return to_check, cert_to_return
 
-        for v in to_check.values():
-            if certificates := find_certificate(v):
-                return to_check, certificates
-        else:
-            logger.warning('Unable to find certificate, cannot validate trusted timestamps.')
-            return {'warning': 'Unable to find certificate, cannot validate trusted timestamps.'}
-
-    def check_trusted_timestamps(self, capture_uuid: str) -> tuple[dict[str, datetime | str], str] | dict[str, str]:
+    def check_trusted_timestamps(self, capture_uuid: str) -> tuple[dict[str, tuple[datetime, str]], str] | dict[str, str]:
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         tsr_data = self._prepare_tsr_data(capture_uuid, logger=logger)
         if isinstance(tsr_data, dict):
+            # error
             return tsr_data
 
         to_check, certificates = tsr_data
 
-        verifier = VerifierBuilder(roots=certificates).build()
-        to_return: dict[str, datetime | str] = {}
+        to_return: dict[str, tuple[datetime, str]] = {}
         for tsr_name, entry in to_check.items():
-            tsr, data = entry
-            try:
-                verifier.verify_message(tsr, data)
-                to_return[tsr_name] = tsr.tst_info.gen_time
-            except VerificationError as e:
-                logger.warning(f'Unable to validate {tsr_name} : {e}')
-                to_return[tsr_name] = f'Unable to validate: {e}'
+            tsr, data, safe = entry
+            if safe:
+                to_return[tsr_name] = (tsr.tst_info.gen_time, 'Successfully validated with a trusted certificate.')
+            else:
+                # validation worked, but not with a trusted certificate
+                logger.warning(f'Unable to validate {tsr_name} with a trusted certificate')
+                to_return[tsr_name] = (tsr.tst_info.gen_time, 'Unable to validate with a trusted certificate.')
         return to_return, b64encode(b'\n'.join([certificate.public_bytes(Encoding.PEM) for certificate in certificates])).decode()
 
     def bundle_all_trusted_timestamps(self, capture_uuid: str) -> BytesIO | dict[str, str]:
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         tsr_data = self._prepare_tsr_data(capture_uuid, logger=logger)
         if isinstance(tsr_data, dict):
+            # error
             return tsr_data
 
         try:
@@ -1487,7 +1496,7 @@ class Lookyloo():
         with ZipFile(to_return, 'w', compression=ZIP_DEFLATED) as z:
             z.writestr('certificates.pem', certs_as_pem)
             for tsr_name, entry in to_check.items():
-                tsr, data = entry
+                tsr, data, safe = entry
                 if tsr_name == 'har':
                     filename = 'har.json'
                 elif tsr_name == 'html':
@@ -1507,6 +1516,11 @@ class Lookyloo():
                 z.writestr(f'{filename}.tsr', tsr.as_bytes())
                 z.writestr(filename, data)
                 validator_bash += f"echo ---------- {tsr_name} ----------\n"
+                if safe:
+                    validator_bash += "Successfull validation against a the local CA store.\n"
+                else:
+                    # The validation worked aginst the certificate bundled-in the TSR, not a trusted one
+                    validator_bash += "!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!\nThe validation worked against the bundled-in certificate, but not a public one. Either it is old, or something phishy is happening\n !!!! WARNING !!!!\n"
                 validator_bash += f"openssl ts -CAfile certificates.pem -verify -in {filename}.tsr -data {filename}\n"
                 validator_bash += f"openssl ts -reply -in {filename}.tsr -text\n"
                 validator_bash += "echo ---------------------------------\n\n"
@@ -1952,7 +1966,7 @@ class Lookyloo():
             to_check, certificates = tsr_data
             tsa_certificates_pem = b'\n'.join([certificate.public_bytes(Encoding.PEM) for certificate in certificates])
             for name, tsr_blob in to_check.items():
-                tsr, data = tsr_blob
+                tsr, data, safe = tsr_blob
                 imprint = tsr.tst_info.message_imprint
                 hash_algo = imprint.hash_algorithm
                 hash_value = imprint.message
@@ -1967,8 +1981,11 @@ class Lookyloo():
                     logger.warning(f'Unsupported hash algorithm: {str(hash_algo)}')
                     continue
                 misp_tsr.add_attribute('format', simple_value='RFC3161')
+                c_comment = 'The list of certificates used for signing'
+                if not safe:
+                    c_comment += "!!! They come from the TSR file itself, not a trusted source !!!"
                 misp_tsr.add_attribute('tsa-certificates', value='certficates.pem',
-                                       comment='The list of certificates used for signing',
+                                       comment=c_comment,
                                        data=tsa_certificates_pem)
                 misp_tsr.add_attribute('trusted-timestamp-response',
                                        value=f'{name}.tsr',

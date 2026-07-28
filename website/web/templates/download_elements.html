@@ -12,6 +12,7 @@
       <th scope="col">#</th>
       <th scope="col">Download</th>
       <th scope="col">Trusted Timestamp (RFC 3161)</th>
+      <th scope="col">Validation status</th>
     </tr>
   </thead>
   <tbody>
@@ -20,51 +21,82 @@
       <td>
           <a href="{{ url_for('image', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
       </td>
-      <td>{{tt_entries.get('png', 'Unavailable')}}
-        {% if tt_entries.get('png') %}
+      {% if tt_entries.get('png') %}
+       <td>{{tt_entries['png'][0]}}
         <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='png', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-        {% endif %}
-      </td>
+       </td>
+       <td>
+        {{tt_entries['png'][1]}}
+       </td>
+      {% else %}
+       <td>Unavailable<td>
+       <td></td>
+      {%endif%}
     </tr>
     <tr>
       <th scope="row">Storage (Cookies, Local Storage, Indexed DB)</th>
       <td><a href="{{ url_for('storage_state_download', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>{{tt_entries.get('storage', 'Unavailable')}}
-        {% if tt_entries.get('storage') %}
+      {% if tt_entries.get('storage') %}
+       <td>{{tt_entries['storage'][0]}}
         <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='storage', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-        {% endif %}
-      </td>
+       </td>
+       <td>
+        {{tt_entries['storage'][1]}}
+       </td>
+      {% else %}
+       <td>Unavailable<td>
+       <td></td>
+      {% endif %}
     </tr>
     <tr>
       <th scope="row">Frames contents (if any)</th>
       <td><a href="{{ url_for('frames_download', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>{{tt_entries.get('frames', 'Unavailable')}}
-        {% if tt_entries.get('frames') %}
+      {% if tt_entries.get('frames') %}
+       <td>{{tt_entries['frames'][0]}}
         <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='frames', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-        {% endif %}
-      </td>
+       </td>
+       <td>
+        {{tt_entries['frames'][1]}}
+       </td>
+      {% else %}
+       <td>Unavailable<td>
+       <td></td>
+      {% endif %}
     </tr>
     <tr>
       <th scope="row">HTTP Archive (HAR)</th>
       <td><a href="{{ url_for('har_download', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>{{tt_entries.get('har', 'Unavailable')}}
-       {% if tt_entries.get('har') %}
+      {% if tt_entries.get('har') %}
+      <td>{{tt_entries['har'][0]}}
        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='har', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
+      </td>
+      <td>
+       {{tt_entries['har'][1]}}
+      </td>
+       {% else %}
+        <td>Unavailable<td>
+        <td></td>
        {% endif %}
-       </td>
     </tr>
     <tr>
       <th scope="row">Rendered HTML page</th>
       <td><a href="{{ url_for('html', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>{{tt_entries.get('html', 'Unavailable')}}
-        {% if tt_entries.get('html') %}
+      {% if tt_entries.get('html') %}
+       <td>{{tt_entries['html'][0]}}
         <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='html', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-        {% endif %}
+       </td>
+       <td>
+       {{tt_entries['html'][1]}}
       </td>
+      {% else %}
+       <td>Unavailable<td>
+       <td></td>
+      {% endif %}
     </tr>
     <tr>
       <th scope="row">Rendered HTML page, as Markdown</th>
       <td><a href="{{ url_for('html_as_markdown', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
       <td>N/A</td>
     </tr>
     {% if has_downloads %}
@@ -88,15 +120,18 @@
       <th scope="row">Tree as PNG file</th>
       <td><a href="#" id="dlTreeAsSVG" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
+      <td>N/A</td>
     </tr>
     <tr>
       <th scope="row">Cookie Jar</th>
       <td><a href="{{ url_for('cookies', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
+      <td>N/A</td>
     </tr>
     <tr>
       <th scope="row">Hashes for all the ressources</th>
       <td><a href="{{ url_for('hashes_tree', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
       <td>N/A</td>
     </tr>
     <tr>
@@ -108,17 +143,20 @@
       <th scope="row">Capture as MISP event</th>
       <td><a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
+      <td>N/A</td>
     </tr>
     {% if parent_uuid %}
     <tr>
       <th scope="row">... with the parents</th>
       <td><a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, with_parents=True, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
       <td>N/A</td>
+      <td>N/A</td>
     </tr>
     {% endif %}
     <tr>
       <th scope="row">List of redirects</th>
       <td><a href="{{ url_for('redirects', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>N/A</td>
       <td>N/A</td>
     </tr>
   </tbody>
