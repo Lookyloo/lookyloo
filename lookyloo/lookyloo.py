@@ -437,26 +437,58 @@ class Lookyloo():
             raise LookylooCaptureSettingsError('Invalid capture settings', e)
         return self.capture_cache(capture_uuid).capture_settings
 
-    def index_capture(self, capture_uuid: str, /, *, force: bool=False) -> bool:
+    def index_capture(self, capture_uuid: str, /, *, authenticated: bool) -> tuple[bool, str]:
+        """This method is called from the web interface (trigger indexing).
+        If the index is slow, it is automatically added in the backlog and will be processed ASAP"""
         try:
             cache = self.capture_cache(capture_uuid)
         except UUIDMissingInCache:
             # the capture isn't ready yet, cannot index
-            return False
-        if hasattr(cache, 'capture_dir'):
-            try:
-                if not cache.private:
-                    # Do not index the private captures
-                    get_indexing().index_capture(capture_uuid, cache.capture_dir, force)
-                if get_config('generic', 'index_everything'):
-                    get_indexing(full=True).index_capture(capture_uuid, cache.capture_dir, force)
-                return True
-            except Exception as e:
-                self.logger.warning(f'Unable to index capture {capture_uuid}: {e}')
-                self.remove_pickle(capture_uuid)
+            return False, 'UUID Unknown, cannot index.'
+        if cache.private:
+            # private captures aren't in the public index, true means we skip it
+            # NOTE: the unlisted captures are still in the index on-demand from the user, it is expected.
+            public_index_done = True
         else:
-            self.logger.warning(f'Unable to index capture {capture_uuid}: No capture_dir in cache.')
-        return False
+            public_index_done = all(get_indexing().capture_indexed(capture_uuid))
+        if get_config('generic', 'index_everything'):
+            full_index_done = all(get_indexing(full=True).capture_indexed(capture_uuid))
+        else:
+            # full index not enabled, skip
+            full_index_done = True
+
+        # Check if the capture is already indexed (or skiped), break immediately if it is
+        if public_index_done and full_index_done:
+            return True, 'Indexing already done.'
+
+        try:
+            if not cache.private and not public_index_done:
+                # Do not index the private captures in public index
+                public_index_done = get_indexing().index_capture(capture_uuid, cache.capture_dir, force_manual=authenticated)
+            if get_config('generic', 'index_everything') and not full_index_done:
+                full_index_done = get_indexing(full=True).index_capture(capture_uuid, cache.capture_dir, force_manual=authenticated)
+
+            if authenticated:
+                if public_index_done and full_index_done:
+                    return True, 'Indexing in public and full index done.'
+                elif cache.private and not public_index_done:
+                    return True, 'Indexing in full index only (private capture).'
+                else:
+                    return False, f'One of the index failed: Public: {public_index_done} / Full: {full_index_done}.'
+            else:
+                if public_index_done:
+                    return True, 'Indexing done.'
+                elif cache.private:
+                    return False, 'Cannot index private capture.'
+                elif get_indexing().is_slow:
+                    return False, 'The capture will be indexed later.'
+                else:
+                    return False, 'Unable to index capture, retry later.'
+
+        except Exception as e:
+            self.logger.warning(f'Unable to index capture {capture_uuid}: {e}')
+            self.remove_pickle(capture_uuid)
+            return False, 'Unable to index capture, capture cache broken, retry later.'
 
     def categorize_capture(self, capture_uuid: str, /, categories: list[str], *, as_admin: bool) -> tuple[set[str], set[str]]:
         '''Add a category (MISP Taxonomy tag) to a capture.'''

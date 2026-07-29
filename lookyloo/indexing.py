@@ -57,6 +57,20 @@ class Indexing():
     def redis(self) -> Redis[str]:
         return Redis(connection_pool=self.__redis_pool)  # type: ignore[return-value]
 
+    def set_slow(self) -> None:
+        self.redis.set('is_slow', 1)
+
+    def unset_slow(self) -> None:
+        self.redis.delete('is_slow')
+
+    @property
+    def is_slow(self) -> bool:
+        return bool(self.redis.exists('is_slow'))
+
+    def lazy_index_add(self, uuid: str, capture_dir: str) -> None:
+        """Add a capture in the lazy index, used when the indexer is buzy and we just want to process it later"""
+        self.redis.hset('lazy_index', uuid, capture_dir)
+
     def can_index(self, capture_uuid: str | None=None) -> bool:
         if capture_uuid:
             return bool(self.redis.set(f'ongoing_indexing|{capture_uuid}', 1, ex=360, nx=True))
@@ -127,7 +141,13 @@ class Indexing():
         to_return.append(hash_types_indexed)
         return Indexed(*to_return)
 
-    def index_capture(self, uuid_to_index: str, directory: Path, force: bool=False) -> bool:
+    def index_capture(self, uuid_to_index: str, directory: Path, *, background: bool=False, force_manual: bool=False) -> bool:
+        if not force_manual and not background and self.is_slow:
+            # The indexing request was made by a normal user, from the web interface.
+            # indexer is currently slow, add it in the lazy queue
+            self.lazy_index_add(uuid_to_index, str(directory))
+            return False
+
         if self.redis.sismember('nothing_to_index', uuid_to_index):
             # No HAR file in the capture, break immediately.
             return False
@@ -158,15 +178,15 @@ class Indexing():
             #                 this field is required for tld and domain indexing. Domain is new and
             #                 we don't want to re-build *all the captures* just for that.
             #                 So we check if the only missing index is domains, and consder the
-            #                 capture indexed if it's the case. Only exception is if force is true
-            #                 which means it was triggered via the web interface.
+            #                 capture indexed if it's the case. Only exception is if force_manual is true
+            #                 which means it was triggered via the web interface *and* as admin.
             new_entries = ['original_url']
             for entry in new_entries:
                 if not hasattr(ct.root_hartree.url_tree, entry):
                     if hasattr(ct.root_hartree.url_tree, "file_on_disk"):
                         # 2026-04-22: if the capture is a file, we don't have an original_url
                         continue
-                    if force or not (indexed.count(False) == 1 and indexed.domains is False):
+                    if force_manual or not (indexed.count(False) == 1 and indexed.domains is False):
                         remove_pickle_tree(directory)
                     return False
 
