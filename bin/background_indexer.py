@@ -52,7 +52,7 @@ class BackgroundIndexer(AbstractManager):
             # There is no reason to run this method in multiple scripts.
             self.logger.info('Indexing already ongoing in another process.')
             return False
-        self.logger.info(f'Check {self.script_name}...')
+        self.logger.info(f'Check {self.script_name} ({key})...')
         # NOTE: only get the non-archived captures for now.
         __counter_shutdown = 0
         __counter_shutdown_force = 0
@@ -60,10 +60,15 @@ class BackgroundIndexer(AbstractManager):
 
         clock_last_check = time.monotonic()
 
-        for uuid, d in self.redis.hscan_iter(key):
+        if key == 'lazy_index':
+            _iterator = self.indexing.redis.hscan_iter
+        else:
+            _iterator = self.redis.hscan_iter
+
+        for uuid, d in _iterator(key):
             if key == 'lazy_index':
                 # remove uuid
-                self.redis.hdel(key, uuid)
+                self.indexing.redis.hdel(key, uuid)
 
             __counter_shutdown_force += 1
             if __counter_shutdown_force % 100 == 0:
