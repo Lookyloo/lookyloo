@@ -912,8 +912,8 @@ class SubmitCapture(Resource):  # type: ignore[misc]
     @api.param('device_name', 'Use the pre-configured settings for this device')  # type: ignore[untyped-decorator]
     @api.param('referer', 'Referer to pass to the capture')  # type: ignore[untyped-decorator]
     @api.param('proxy', 'Proxy to use for the the capture')  # type: ignore[untyped-decorator]
-    @api.produces(['text/text'])  # type: ignore[untyped-decorator]
-    def get(self) -> str | tuple[str, str | None] | Response:
+    @api.produces(['text/text', 'application/json'])  # type: ignore[untyped-decorator]
+    def get(self) -> str | dict[str, str] | Response:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
         else:
@@ -945,12 +945,12 @@ class SubmitCapture(Resource):  # type: ignore[misc]
                                                     authenticated=flask_login.current_user.is_authenticated,
                                                     seed_expire=request.args.get('seed_expire'))
         if seed:
-            return perma_uuid, seed
+            return {'uuid': perma_uuid, 'seed': seed}
         return perma_uuid
 
     @api.doc(body=submit_fields_post)  # type: ignore[untyped-decorator]
-    @api.produces(['text/text'])  # type: ignore[untyped-decorator]
-    def post(self) -> str | tuple[str, str | None]:
+    @api.produces(['text/text', 'application/json'])  # type: ignore[untyped-decorator]
+    def post(self) -> str | dict[str, str]:
         if flask_login.current_user.is_authenticated:
             user = flask_login.current_user.get_id()
         else:
@@ -960,7 +960,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
                                                     authenticated=flask_login.current_user.is_authenticated,
                                                     seed_expire=to_query.get('seed_expire'))
         if seed:
-            return perma_uuid, seed
+            return {'uuid': perma_uuid, 'seed': seed}
         return perma_uuid
 
 
