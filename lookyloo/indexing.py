@@ -45,6 +45,8 @@ class Indexing():
                                                      path=get_socket_path('indexing'))
             self.__redis_pool = ConnectionPool(connection_class=UnixDomainSocketConnection,
                                                path=get_socket_path('indexing'), decode_responses=True)
+        # Set slow by default, it will be removed by the BG indexer if relevant.
+        self.set_slow()
 
     def clear_indexes(self) -> None:
         self.redis.flushdb()
