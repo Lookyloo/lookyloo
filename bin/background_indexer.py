@@ -110,8 +110,7 @@ class BackgroundIndexer(AbstractManager):
                     continue
             path = Path(d)
             try:
-                if not self.indexing.index_capture(uuid, path, background=True):
-                    self.logger.warning(f'Failed on {uuid} / {path}.')
+                self.indexing.index_capture(uuid, path, background=True)
             except Exception as e:
                 self.logger.warning(f'Error while indexing {uuid}: {e}')
                 remove_pickle_tree(path)
