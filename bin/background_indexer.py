@@ -53,12 +53,11 @@ class BackgroundIndexer(AbstractManager):
             self.logger.info('Indexing already ongoing in another process.')
             return False
         self.logger.info(f'Check {self.script_name} ({key})...')
-        # NOTE: only get the non-archived captures for now.
-        __counter_shutdown = 0
         __counter_shutdown_force = 0
         indexed_all = False
 
         clock_last_check = time.monotonic()
+        clock_monitoring = time.monotonic()
 
         if key == 'lazy_index':
             _iterator = self.indexing.redis.hscan_iter
@@ -90,7 +89,13 @@ class BackgroundIndexer(AbstractManager):
                     # all good
                     if self.indexing.is_slow:
                         self.logger.info('Indexing is not slow anymore.')
-                    self.indexing.unset_slow()
+                        self.indexing.unset_slow()
+                    # log entry for monitoring purposes
+                    if __counter_shutdown_force % 50_000 == 0:
+                        new_time_monitoring = time.monotonic()
+                        _tdm = timedelta(seconds=new_time_monitoring - clock_monitoring)
+                        self.logger.info(f'Indexing processed 50.000 UUIDs in {_tdm}.')
+                        clock_monitoring = new_time_monitoring
 
                 clock_last_check = new_time
                 if self.shutdown_requested():
@@ -105,11 +110,12 @@ class BackgroundIndexer(AbstractManager):
                     continue
             path = Path(d)
             try:
-                if self.indexing.index_capture(uuid, path, background=True):
-                    __counter_shutdown += 1
+                if not self.indexing.index_capture(uuid, path, background=True):
+                    self.logger.warning(f'Failed on {uuid} / {path}.')
             except Exception as e:
                 self.logger.warning(f'Error while indexing {uuid}: {e}')
                 remove_pickle_tree(path)
+                self.indexing.indexing_done(uuid)
         else:
             self.logger.info('... done.')
             indexed_all = True
