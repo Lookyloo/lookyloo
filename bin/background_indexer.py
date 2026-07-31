@@ -41,9 +41,12 @@ class BackgroundIndexer(AbstractManager):
         self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
 
         # The timedelta that means the indexing is slow and it is time to disable it on the public interface
-        self.indexing_slow_delta = timedelta(minutes=10)
+        self.indexing_slow_delta = timedelta(minutes=1)
 
     def _to_run_forever(self) -> None:
+        if self.index_archives and self.indexing.is_slow:
+            self.logger.info('Indexing is slow, do not index archives.')
+            return
         if self._check_indexes(self.lookup_dirs) and not self.indexing.is_slow:
             self._check_indexes('lazy_index')
 
@@ -71,7 +74,7 @@ class BackgroundIndexer(AbstractManager):
 
             __counter_shutdown_force += 1
             if __counter_shutdown_force % 100 == 0:
-                # check the time, if it took more than 10 min to iterate over 100 hashes, it is slow
+                # check the time, if it took more than 1 min to iterate over 100 hashes, it is slow
                 new_time = time.monotonic()
                 _td = timedelta(seconds=new_time - clock_last_check)
                 if _td > self.indexing_slow_delta:
@@ -81,9 +84,9 @@ class BackgroundIndexer(AbstractManager):
                     else:
                         self.logger.warning(f'Indexing is slow ({_td} for 100 UUIDs).')
                         self.indexing.set_slow()
-                    if key == 'lazy_index':
+                    if key == 'lazy_index' or self.index_archives:
                         # stop the lazy index if slow
-                        self.logger.warning('Too slow, quit lazy index.')
+                        self.logger.warning('Too slow, quit lazy index / stop indexing archives.')
                         break
                 else:
                     # all good

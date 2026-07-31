@@ -696,6 +696,7 @@ class Lookyloo():
                 index_cut_time = cut_time
         else:
             index_cut_time = cut_time
+
         if capture_uuids is None:
             capture_uuids = self.get_recent_captures(public=public, since=index_cut_time)
             # NOTE: we absolutely have to respect the cached_captures_only setting and
@@ -703,9 +704,15 @@ class Lookyloo():
             #       and if we try to display everything, including the non-cached entries,
             #       the index can get stuck building a lot of captures
             # cached_captures_only = False
+        elif capture_uuids:
+            # someone requested a list of uuids. If the request was done with cached_captures_only=False
+            # they should be build below, but sometimes it takes too long for the UI and it fails
+            # adding them in lazy background build means they will be processed soon-ish
+            # and be ready for a subsequent request
+            self.redis.sadd('lazy_background_build', *capture_uuids)
 
         if not capture_uuids:
-            # No captures at all on the instance
+            # No recent captures on the instance
             return []
 
         all_cache: list[CaptureCache] = []
