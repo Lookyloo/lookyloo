@@ -66,3 +66,8 @@ class TreeBuildFailed(LookylooException):
 class ZipBomb(LookylooException):
     """The archived file file is too big and probably a zip bomb"""
     pass
+
+
+class CaptureLocked(LookylooException):
+    """Raise this exception when there is a lock file in the capture directory"""
+    pass
