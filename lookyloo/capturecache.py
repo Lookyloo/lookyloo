@@ -534,8 +534,10 @@ class CapturesIndex():
                 tree = await self._create_pickle(capture_dir, logger)
                 # Force the reindexing in the public and full index (if enabled)
                 get_indexing().force_reindex(uuid)
+                get_indexing().lazy_index_add(uuid, capture_dir_str)
                 if get_config('generic', 'index_everything'):
                     get_indexing(full=True).force_reindex(uuid)
+                    get_indexing(full=True).lazy_index_add(uuid, capture_dir_str)
             except NoValidHarFile as e:
                 logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are not usable: {e}.')
                 tree = None
