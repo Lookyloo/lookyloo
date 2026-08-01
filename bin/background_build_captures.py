@@ -135,7 +135,11 @@ class BackgroundBuildCaptures(AbstractManager):
 
     def __build_pickle(self, *, uuid: str | None = None, path: str | Path | None = None) -> bool:
         if uuid:
-            if s_path := self.redis.hget(self.lookup_dirs, uuid):
+            if s_path := self.redis.hget('lookup_dirs', uuid):
+                path = Path(s_path)
+                if not path.exists():
+                    raise MissingCaptureDirectory(f'Path {path} does not exists')
+            elif s_path := self.redis.hget('lookup_dirs_archived', uuid):
                 path = Path(s_path)
                 if not path.exists():
                     raise MissingCaptureDirectory(f'Path {path} does not exists')
