@@ -126,7 +126,7 @@ class BackgroundBuildCaptures(AbstractManager):
                 if not uuid:
                     break
                 try:
-                    self.__build_pickle(uuid=str(uuid))
+                    self.__build_pickle(uuid=str(uuid), trigger_modules=False)
                 except LookylooException as e:
                     self.logger.warning(e)
                 except Exception as e:
@@ -138,7 +138,7 @@ class BackgroundBuildCaptures(AbstractManager):
         self.redis.close()
         super()._wait_to_finish()
 
-    def __build_pickle(self, *, uuid: str | None = None, path: str | Path | None = None) -> bool:
+    def __build_pickle(self, *, uuid: str | None = None, path: str | Path | None = None, trigger_modules: bool = False) -> bool:
         if uuid:
             if s_path := self.redis.hget('lookup_dirs', uuid):
                 path = Path(s_path)
@@ -211,7 +211,7 @@ class BackgroundBuildCaptures(AbstractManager):
             self.logger.info(f'Build pickle for {uuid}: {path.name}')
             cache = self.lookyloo.capture_cache(uuid)
 
-            if self.build_recent:
+            if trigger_modules:
                 # only trigger modules for new captures
                 try:
                     self.lookyloo.trigger_modules(uuid, auto_trigger=True, force=False, as_admin=False)
@@ -275,7 +275,7 @@ class BackgroundBuildCaptures(AbstractManager):
                     return False
 
                 try:
-                    if self.__build_pickle(path=path):
+                    if self.__build_pickle(path=path, trigger_modules=self.build_recent):
                         __counter_shutdown += 1
                 except NoValidHarFile as e:
                     # Nothing to build
