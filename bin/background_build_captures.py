@@ -119,7 +119,12 @@ class BackgroundBuildCaptures(AbstractManager):
     def _to_run_forever(self) -> None:
         if self._build_missing_pickles():
             # done with the backlog, trigger a bunch from the lazy queue
-            for uuid in self.redis.spop('lazy_background_build', 50):
+            for i in range(25):
+                if self.shutdown_requested():
+                    break
+                uuid = self.redis.spop('lazy_background_build')
+                if not uuid:
+                    break
                 try:
                     self.__build_pickle(uuid=str(uuid))
                 except LookylooException as e:
