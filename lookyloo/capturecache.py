@@ -657,11 +657,14 @@ class CapturesIndex():
             return cnames
 
         async def _dns_query(hostname: str, domain: str, semaphore: asyncio.Semaphore) -> None:
+            if hostname in ['invalid']:
+                return
             async with semaphore:
                 for qt in self.query_types:
                     try:
                         await self.dnsresolver.resolve(hostname, qt, search=True, raise_on_no_answer=False)
-                        await self.dnsresolver.resolve(domain, qt, search=True, raise_on_no_answer=False)
+                        if domain != hostname:
+                            await self.dnsresolver.resolve(domain, qt, search=True, raise_on_no_answer=False)
                     except Exception as e:
                         logger.info(f'Unable to resolve DNS {hostname} - {qt}: {e}')
 
@@ -753,11 +756,13 @@ class CapturesIndex():
         all_requests = [_dns_query(hostname, domain, semaphore) for hostname, domain in _all_hostnames]
         # run all the requests, cache them and let the rest of the code deal.
         # And if a few fail due to network issues, we retry later.
-        await asyncio.gather(*all_requests)
+        await asyncio.gather(*all_requests, return_exceptions=True)
+
         logger.info('Done resolving DNS.')
         for node in ct.root_hartree.hostname_tree.traverse():
             if ('hostname_is_ip' in node.features and node.hostname_is_ip
-                    or (node.name and any([node.name.endswith('onion'), node.name.endswith('i2p')]))):
+                    or (node.name and any([node.name.endswith('onion'), node.name.endswith('i2p')]))
+                    or (node.name in ['invalid'])):
                 continue
 
             # A and AAAA records, they contain the CNAME responses, even if there are no A or AAAA records.
