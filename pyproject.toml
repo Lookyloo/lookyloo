@@ -101,7 +101,7 @@ pydantic = "^2.13.4"
 markupsafe = "^3.0.3"
 yara-x = "^1.19.0"
 ollama = "^0.6.2"
-markdown = "^3.10.2"
+markdown = "^3.10.3"
 justhtml = "^3.10.1"
 
 [tool.poetry.group.dev.dependencies]
