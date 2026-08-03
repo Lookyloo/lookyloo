@@ -117,20 +117,29 @@ class BackgroundBuildCaptures(AbstractManager):
             self.__auto_monitor(path)
 
     def _to_run_forever(self) -> None:
-        if self._build_missing_pickles():
-            # done with the backlog, trigger a bunch from the lazy queue
-            for i in range(25):
-                if self.shutdown_requested():
-                    break
-                uuid = self.redis.spop('lazy_background_build')
-                if not uuid:
-                    break
-                try:
-                    self.__build_pickle(uuid=str(uuid), trigger_modules=False)
-                except LookylooException as e:
-                    self.logger.warning(e)
-                except Exception as e:
-                    self.logger.error(e)
+        built_all_missing = self._build_missing_pickles()
+        if self.shutdown_requested() or (self.build_recent and not built_all_missing):
+            # if we're not done with recent, quit
+            return
+        # just process some of the entries in lazy_background_build
+        to_process = 25 if self.build_recent else 1000
+
+        # done with the backlog, trigger a bunch from the lazy queue
+        while self.redis.exists('lazy_background_build'):
+            if self.shutdown_requested():
+                break
+            uuid = self.redis.spop('lazy_background_build')
+            if not uuid:
+                break
+            to_process -= 1
+            try:
+                self.__build_pickle(uuid=str(uuid), trigger_modules=False)
+            except LookylooException as e:
+                self.logger.warning(e)
+            except Exception as e:
+                self.logger.error(e)
+            if to_process <= 0:
+                break
         # Don't need the cache in this class.
         self.lookyloo.clear_tree_cache()
 
