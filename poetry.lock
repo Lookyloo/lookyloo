@@ -2,20 +2,20 @@
 
 [[package]]
 name = "aiobotocore"
-version = "3.8.0"
+version = "3.9.0"
 description = "Async client for aws services using botocore and aiohttp"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "aiobotocore-3.8.0-py3-none-any.whl", hash = "sha256:8bc605132cadfe844a3f334635a0a64fa5e360a4a206e915d99d53db5b6deeba"},
-    {file = "aiobotocore-3.8.0.tar.gz", hash = "sha256:80a1eb64ea915f3af3c1518669975bae74a17b2f37c14eb0fa2f83b915974670"},
+    {file = "aiobotocore-3.9.0-py3-none-any.whl", hash = "sha256:7354659eac9ba6034675b3ea178330b7de97c45989d6fda1bf01d3da167b6135"},
+    {file = "aiobotocore-3.9.0.tar.gz", hash = "sha256:5d344e97c518b010bea167c7f7ba4f9e785f9d2b8ac7af4fd00846c62f2c0a10"},
 ]
 
 [package.dependencies]
-aiohttp = ">=3.12.0,<4.0.0"
+aiohttp = ">=3.14.0,<4.0.0"
 aioitertools = ">=0.5.1,<1.0.0"
-botocore = ">=1.43.3,<1.43.47"
+botocore = ">=1.43.3,<1.43.57"
 jmespath = ">=0.7.1,<2.0.0"
 multidict = ">=6.0.0,<7.0.0"
 python-dateutil = ">=2.1,<3.0.0"
@@ -23,7 +23,8 @@ typing-extensions = {version = ">=4.14.0,<5.0.0", markers = "python_version < \"
 wrapt = ">=1.10.10,<3.0.0"
 
 [package.extras]
-httpx = ["httpx (>=0.25.1,<0.29)"]
+httpx = ["anyio (>=4.11.0,<5)", "httpx (>=0.25.1,<0.29)"]
+httpx2 = ["anyio (>=4.11.0,<5)", "httpx2 (>=2.0,<3.0.0)"]
 
 [[package]]
 name = "aiodns"
@@ -699,14 +700,14 @@ WTForms = "*"
 
 [[package]]
 name = "botocore"
-version = "1.43.46"
+version = "1.43.56"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "botocore-1.43.46-py3-none-any.whl", hash = "sha256:cb673891e623ae6e6a1bf24d94ef169504f3eb02584adb5d5bee2f6aae819b60"},
-    {file = "botocore-1.43.46.tar.gz", hash = "sha256:59f2e1ac3cdc66d191cae91c0804bc41847ce817dc8147cf43eaada8f76a5533"},
+    {file = "botocore-1.43.56-py3-none-any.whl", hash = "sha256:aafc741f1b10f6fd63253eaf6ea029680c1ff436d87e1b8969d62aefa0c76976"},
+    {file = "botocore-1.43.56.tar.gz", hash = "sha256:6c01f85f0ff9863076f4c761e74ee3aa96c5ccc1ad09fc1efd62ef8f2d22bf57"},
 ]
 
 [package.dependencies]
@@ -715,7 +716,7 @@ python-dateutil = ">=2.1,<3.0.0"
 urllib3 = ">=1.25.4,<2.2.0 || >2.2.0,<3"
 
 [package.extras]
-crt = ["awscrt (==0.32.2)"]
+crt = ["awscrt (==0.36.0)"]
 
 [[package]]
 name = "brotli"
@@ -1953,18 +1954,18 @@ files = [
 
 [[package]]
 name = "html-to-markdown"
-version = "3.10.0"
+version = "3.10.2"
 description = "High-performance HTML to Markdown converter"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "html_to_markdown-3.10.0-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:2a7d1d106a9a5cd2c967b1b51d0cca445ac91f493a9655fa19301b295b8516d0"},
-    {file = "html_to_markdown-3.10.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:130b2bd0163cca4ef1a0f300604bcd2d94aa30e131fd7b471d81f24693fd87bb"},
-    {file = "html_to_markdown-3.10.0-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:ced44dc6e12cd59360ddaea045a0cab87d8aebc3ce083fcc2b21fa19d96f80bb"},
-    {file = "html_to_markdown-3.10.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:2617301819f4e51f51074b075f7f93e4d4f5901a2f4ea00e794095089925fe21"},
-    {file = "html_to_markdown-3.10.0-cp310-abi3-win_amd64.whl", hash = "sha256:44bf93877bcdf1a72f9977bb70e776a44436b73b9f067aada8e0394da8032794"},
-    {file = "html_to_markdown-3.10.0.tar.gz", hash = "sha256:f09f4c5763b5f59356b4d8cdfb30087f973783a4199f80274181800b63a892c0"},
+    {file = "html_to_markdown-3.10.2-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:6c3e245c32c7a79922b832eed937e1ce74a6456d5afdcdf4a5d3361efdf89cbe"},
+    {file = "html_to_markdown-3.10.2-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:5c0e5812bb78913b55012931a693fc777809db7b330ba74d190335495e964c42"},
+    {file = "html_to_markdown-3.10.2-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:383e1017f88d10f7d0756ee35aa00095d8b61a827cb8a3fd20b1e11e26cff8c5"},
+    {file = "html_to_markdown-3.10.2-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:3f87a011912fe0e068a1fb4f102c690cd66d6d974baad1c02ac03490092915f9"},
+    {file = "html_to_markdown-3.10.2-cp310-abi3-win_amd64.whl", hash = "sha256:79d0a1486c2ab398e38c92a0eccac53893da214cc4e0a3bc5c9fb730649c688f"},
+    {file = "html_to_markdown-3.10.2.tar.gz", hash = "sha256:79829f9cc4e523ce5735994e3e0c88e15c948f8adcbc6cc0ea8da4f28ac3feb8"},
 ]
 
 [[package]]
@@ -3638,20 +3639,20 @@ files = [
 
 [[package]]
 name = "playwright"
-version = "1.61.0"
+version = "1.62.0"
 description = "A high-level API to automate web browsers"
 optional = false
 python-versions = ">=3.10"
 groups = ["main", "dev"]
 files = [
-    {file = "playwright-1.61.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:ff138c3a604f69911e9d42fd036e55c2a171e5616edf04c1e7f60a2a285540b0"},
-    {file = "playwright-1.61.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:009588c2a7e499bc5a8b425b61fa65490968bbda9cd69e0cf2cff10f8304659a"},
-    {file = "playwright-1.61.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:9f7de4536088d12037c13a52b7ea34b59270b78926bb56935070597ffac6b1af"},
-    {file = "playwright-1.61.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:54f3b39f6eab832e33458c1dd7da0b5682aedab3b09ae731b5c59fa12fd2024e"},
-    {file = "playwright-1.61.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:93454322ade8c11d5d6c211bfd91bdfb9ffb4810e3e026371bcbc4bec1b7ee4c"},
-    {file = "playwright-1.61.0-py3-none-win32.whl", hash = "sha256:372d55a6f1248fa1dd47599686980cb8fb5bbe6fcda59eab793eb657c11d8a9b"},
-    {file = "playwright-1.61.0-py3-none-win_amd64.whl", hash = "sha256:35c6cc4589a5d00964a59d7b3e59641e0aac0c02f15479a7af77d20f6bc79597"},
-    {file = "playwright-1.61.0-py3-none-win_arm64.whl", hash = "sha256:e9fcbffcf557a8620fdedd92491eb59a32d18e23d6f3b4f6214b952be324fe51"},
+    {file = "playwright-1.62.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:d8da938f3748841a8754f2e1f0216902c1c8f8ae3720de8b32ccf8e6913a7c4f"},
+    {file = "playwright-1.62.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:db755ab27db21a04186f1fe8169888e42356086e439b1059b923ef417f0b6034"},
+    {file = "playwright-1.62.0-py3-none-macosx_11_0_universal2.whl", hash = "sha256:5108bd5b3e87169ddf269feee097da5893af7f8aea4634dfc840518d64c1f1da"},
+    {file = "playwright-1.62.0-py3-none-manylinux1_x86_64.whl", hash = "sha256:ba33bae6a13b3d9d354c751cb618af357d20fe1d57767cbcce52079bbef17ad3"},
+    {file = "playwright-1.62.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:db2d76613a57ad844362ce42f7d0c2fa26b19a4f7a46d4f76b891c631e6e5aff"},
+    {file = "playwright-1.62.0-py3-none-win32.whl", hash = "sha256:e5614fa89355d7081457680324bb219f79f69c423c5cb6fa250e30b0d8aebf1c"},
+    {file = "playwright-1.62.0-py3-none-win_amd64.whl", hash = "sha256:92c0d98ed04eb35af557b709875edba415b1f548bdb22ddb5bb3e1e6c835c2f1"},
+    {file = "playwright-1.62.0-py3-none-win_arm64.whl", hash = "sha256:ea8d3055aa9d5a9f1832ac82517bd8b42c78fac7ebcbebb0107116735c8cb6a1"},
 ]
 
 [package.dependencies]
@@ -3678,18 +3679,18 @@ black = ["black (>=25.9.0)"]
 
 [[package]]
 name = "playwrightcapture"
-version = "1.40.3"
+version = "1.40.4"
 description = "A simple library to capture websites using playwright"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "playwrightcapture-1.40.3-py3-none-any.whl", hash = "sha256:cfd9504a0e026dea24dd8290673e92530d4d64b9230498bc20eaaa417f550271"},
-    {file = "playwrightcapture-1.40.3.tar.gz", hash = "sha256:0796cca8e8247a8b172a6adfd91253edb20d4214e1a3956667fdf5e6acda2827"},
+    {file = "playwrightcapture-1.40.4-py3-none-any.whl", hash = "sha256:bb6295b22ed358f5ad4054c5fb80c74999ae77a386e84bdd48bba96bb2f7f5d1"},
+    {file = "playwrightcapture-1.40.4.tar.gz", hash = "sha256:7f685b09cc949d40c53b7e506d8782badf22faa4895b243b4982f4a8de77409d"},
 ]
 
 [package.dependencies]
-aiohttp = {version = ">=3.14.1", extras = ["speedups"]}
+aiohttp = {version = ">=3.14.3", extras = ["speedups"]}
 aiohttp-socks = ">=0.11.0"
 async-timeout = {version = ">=5.0.1", markers = "python_version < \"3.11\""}
 beautifulsoup4 = {version = ">=4.15.0", extras = ["charset-normalizer", "lxml"]}
@@ -3697,7 +3698,7 @@ charset-normalizer = ">=3.4.6,<4.0.0"
 dnspython = ">=2.7.0,<3.0.0"
 lookyloo-models = ">=0.3.0"
 orjson = ">=3.11.4,<4.0.0"
-playwright = ">=1.61.0"
+playwright = ">=1.62.0"
 playwright-stealth = ">=2.0.3"
 pure-magic-rs = ">=0.4.3"
 pydub-ng = {version = ">=0.2.0", optional = true, markers = "extra == \"recaptcha\""}
@@ -6639,4 +6640,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "f6be9b75e225f7f27a99c81421c60fb1593d9bf44a8cec36f1d3608da1d98188"
+content-hash = "0425486bf80d782087385416627fca93c15beccc8fe7f08e2d52865b4b3894fa"
