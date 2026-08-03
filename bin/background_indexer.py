@@ -84,9 +84,9 @@ class BackgroundIndexer(AbstractManager):
                     else:
                         self.logger.warning(f'Indexing is slow ({_td} for 100 UUIDs).')
                         self.indexing.set_slow()
-                    if key == 'lazy_index' or self.index_archives:
-                        # stop the lazy index if slow
-                        self.logger.warning('Too slow, quit lazy index / stop indexing archives.')
+                    if self.index_archives:
+                        # stop indexing archives if slow
+                        self.logger.warning('Too slow, stop indexing archives.')
                         break
                 else:
                     # all good
