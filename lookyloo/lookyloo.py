@@ -968,6 +968,11 @@ class Lookyloo():
         if isinstance(query, dict):
             query = LookylooCaptureSettings.model_validate(query)
 
+        if query.uuid and self.uuid_exists_in_cache(query.uuid):
+            # if get to this point and the UUID is known, drop it
+            self.logger.warning(f'[{query.uuid}] Attempted to enqueue a capture with an existing UUID, replace it.')
+            query.uuid = None
+
         if query.categories and not authenticated:
             # remove from the list of categories the ones we don't know
             query.categories = [c for c in query.categories if self._valid_category(c)]
