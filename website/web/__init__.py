@@ -1648,7 +1648,8 @@ def bulk_captures(tree_uuid: str) -> WerkzeugResponse | str | Response:
                     'referer': cache.redirects[-1] if cache.redirects else cache.url,
                     'user_agent': cache.user_agent,
                     'parent': tree_uuid,
-                    'listing': False if cache and cache.no_index else True
+                    'listing': False if cache and cache.no_index else True,
+                    'uuid': None
                 })
         else:
             _capture: dict[str, Any] = {
@@ -1658,7 +1659,8 @@ def bulk_captures(tree_uuid: str) -> WerkzeugResponse | str | Response:
                 'referer': cache.redirects[-1] if cache.redirects else cache.url,
                 'user_agent': cache.user_agent,
                 'parent': tree_uuid,
-                'listing': False if cache and cache.no_index else True
+                'listing': False if cache and cache.no_index else True,
+                'uuid': None
             }
             capture = LookylooCaptureSettings.model_validate(_capture)
         new_capture_uuid, seed = lookyloo.enqueue_capture(capture, source='web', user=user,

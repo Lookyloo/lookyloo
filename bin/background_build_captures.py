@@ -120,6 +120,7 @@ class BackgroundBuildCaptures(AbstractManager):
         built_all_missing = self._build_missing_pickles()
         if self.shutdown_requested() or (self.build_recent and not built_all_missing):
             # if we're not done with recent, quit
+            self.lookyloo.clear_tree_cache()
             return
         # just process some of the entries in lazy_background_build
         to_process = 25 if self.build_recent else 1000
