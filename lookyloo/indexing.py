@@ -6,6 +6,8 @@ import hashlib
 import ipaddress
 import logging
 import re
+import time
+
 from collections.abc import Iterator
 from collections import namedtuple
 
@@ -159,23 +161,28 @@ class Indexing():
 
         try:
             indexed = self.capture_indexed(uuid_to_index)
+            start_index = time.monotonic()
+            skipped = False
             if all(indexed):
+                skipped = True
                 return False
 
             if any(indexed):
                 # some were indexed already
-                self.logger.info(f'[{uuid_to_index}] Indexing (partial): {', '.join([name for name, value in indexed._asdict().items() if not value])}')
+                self.logger.info(f'[{uuid_to_index}] Partial: {", ".join([name for name, value in indexed._asdict().items() if not value])}')
             else:
-                self.logger.info(f'[{uuid_to_index}] Indexing (full)')
+                self.logger.debug(f'[{uuid_to_index}] Full')
 
             if not list(directory.rglob('*.har.gz')) and not list(directory.rglob('*.har')):
                 self.logger.debug(f'[{uuid_to_index}] No harfile in {directory}, nothing to index. ')
                 self.redis.sadd('nothing_to_index', uuid_to_index)
+                skipped = True
                 return False
 
             if not any((directory / pickle_name).exists()
                        for pickle_name in ['tree.pickle.xz', 'tree.pickle.gz', 'tree.pickle']):
                 self.logger.info(f'[{uuid_to_index}] No pickle in {directory}, skip.')
+                skipped = True
                 return False
 
             # do the indexing
@@ -196,6 +203,7 @@ class Indexing():
                         continue
                     if force_manual or not (indexed.count(False) == 1 and indexed.domains is False):
                         remove_pickle_tree(directory)
+                    skipped = True
                     return False
 
             if not indexed.urls:
@@ -247,7 +255,8 @@ class Indexing():
             remove_pickle_tree(directory)
         finally:
             self.indexing_done(uuid_to_index)
-            self.logger.info(f'[{uuid_to_index}] Indexing done.')
+            if not skipped:
+                self.logger.info(f'[{uuid_to_index}] Done in {round(time.monotonic() - start_index, 3)}.')
         return True
 
     def __limit_failsafe(self, oldest_capture: datetime | None=None, limit: int | None=None) -> float | str:
