@@ -47,7 +47,7 @@ class BackgroundIndexer(AbstractManager):
         if self.index_archives and self.indexing.is_slow:
             self.logger.info('Indexing is slow, do not index archives.')
             return
-        if self._check_indexes(self.lookup_dirs) and not self.indexing.is_slow:
+        if self._check_indexes(self.lookup_dirs):
             self._check_indexes('lazy_index')
 
     def _check_indexes(self, key: str) -> bool:

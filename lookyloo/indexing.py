@@ -162,6 +162,12 @@ class Indexing():
             if all(indexed):
                 return False
 
+            if any(indexed):
+                # some were indexed already
+                self.logger.info(f'[{uuid_to_index}] Indexing (partial): {', '.join([name for name, value in indexed._asdict().items() if not value])}')
+            else:
+                self.logger.info(f'[{uuid_to_index}] Indexing (full)')
+
             if not list(directory.rglob('*.har.gz')) and not list(directory.rglob('*.har')):
                 self.logger.debug(f'[{uuid_to_index}] No harfile in {directory}, nothing to index. ')
                 self.redis.sadd('nothing_to_index', uuid_to_index)
@@ -193,37 +199,37 @@ class Indexing():
                     return False
 
             if not indexed.urls:
-                self.logger.info(f'[{uuid_to_index}] Indexing urls')
+                self.logger.debug(f'[{uuid_to_index}] Indexing urls')
                 self.index_url_capture(ct)
             if not indexed.body_hashes:
-                self.logger.info(f'[{uuid_to_index}] Indexing resources')
+                self.logger.debug(f'[{uuid_to_index}] Indexing resources')
                 self.index_body_hashes_capture(ct)
             if not indexed.cookies:
-                self.logger.info(f'[{uuid_to_index}] Indexing cookies')
+                self.logger.debug(f'[{uuid_to_index}] Indexing cookies')
                 self.index_cookies_capture(ct)
             if not indexed.hhhashes:
-                self.logger.info(f'[{uuid_to_index}] Indexing HH Hashes')
+                self.logger.debug(f'[{uuid_to_index}] Indexing HH Hashes')
                 self.index_hhhashes_capture(ct)
             if not indexed.favicons:
-                self.logger.info(f'[{uuid_to_index}] Indexing favicons')
+                self.logger.debug(f'[{uuid_to_index}] Indexing favicons')
                 self.index_favicons_capture(ct, directory)
             if not indexed.identifiers:
-                self.logger.info(f'[{uuid_to_index}] Indexing identifiers')
+                self.logger.debug(f'[{uuid_to_index}] Indexing identifiers')
                 self.index_identifiers_capture(ct)
             if not indexed.categories:
-                self.logger.info(f'[{uuid_to_index}] Indexing categories')
+                self.logger.debug(f'[{uuid_to_index}] Indexing categories')
                 self.index_categories_capture(ct, directory)
             if not indexed.tlds:
-                self.logger.info(f'[{uuid_to_index}] Indexing TLDs')
+                self.logger.debug(f'[{uuid_to_index}] Indexing TLDs')
                 self.index_tld_capture(ct)
             if not indexed.domains:
-                self.logger.info(f'[{uuid_to_index}] Indexing domains')
+                self.logger.debug(f'[{uuid_to_index}] Indexing domains')
                 self.index_domain_capture(ct)
             if not indexed.ips:
-                self.logger.info(f'[{uuid_to_index}] Indexing IPs')
+                self.logger.debug(f'[{uuid_to_index}] Indexing IPs')
                 self.index_ips_capture(ct)
             if not indexed.hash_types:
-                self.logger.info(f'[{uuid_to_index}] Indexing hash types')
+                self.logger.debug(f'[{uuid_to_index}] Indexing hash types')
                 self.index_capture_hashes_types(ct)
 
         except (TreeNeedsRebuild, NoValidHarFile) as e:
@@ -241,6 +247,7 @@ class Indexing():
             remove_pickle_tree(directory)
         finally:
             self.indexing_done(uuid_to_index)
+            self.logger.info(f'[{uuid_to_index}] Indexing done.')
         return True
 
     def __limit_failsafe(self, oldest_capture: datetime | None=None, limit: int | None=None) -> float | str:
