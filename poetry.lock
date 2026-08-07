@@ -1223,14 +1223,14 @@ files = [
 
 [[package]]
 name = "dateparser"
-version = "1.4.1"
+version = "1.4.2"
 description = "Date parsing library designed to parse dates from HTML pages"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "dateparser-1.4.1-py3-none-any.whl", hash = "sha256:f25d4e051a84be27a35bd297e3e1dc59ff78373701b89be352ba80372d22d0d0"},
-    {file = "dateparser-1.4.1.tar.gz", hash = "sha256:f265df13c0380e2e07543ba74b67c0681aaa1096981ffcd35227e1aa0cb81c7c"},
+    {file = "dateparser-1.4.2-py3-none-any.whl", hash = "sha256:752f3d49d477cf7f60a7a9c8bcb19c882496ede0e377d5a3d80014cdfeca7050"},
+    {file = "dateparser-1.4.2.tar.gz", hash = "sha256:bed2a3fd9bad8f2fb2d72b57748bada260b3a9349a264c22ffc23c3249d7049a"},
 ]
 
 [package.dependencies]
@@ -1649,14 +1649,14 @@ smmap = ">=3.0.1,<6"
 
 [[package]]
 name = "gitpython"
-version = "3.1.57"
+version = "3.1.58"
 description = "GitPython is a Python library used to interact with Git repositories"
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
 files = [
-    {file = "gitpython-3.1.57-py3-none-any.whl", hash = "sha256:4ccf7d73c10f5c9e76043fbb2675ac5a1b3ff5b41e648f56bcbed5f63792ecaf"},
-    {file = "gitpython-3.1.57.tar.gz", hash = "sha256:c493ec57c0ef6b19743798b6a5af859c71814b524e7e6f97baa2f8e658961488"},
+    {file = "gitpython-3.1.58-py3-none-any.whl", hash = "sha256:d331e722577f0fd7fc1f857419b3ecc07af66282b933d2a4d95f84a042fdd50f"},
+    {file = "gitpython-3.1.58.tar.gz", hash = "sha256:621416df10ef3fd0e19fabf9172ddeed0fa704d353d04f194eec56a625a95b22"},
 ]
 
 [package.dependencies]
@@ -1954,18 +1954,18 @@ files = [
 
 [[package]]
 name = "html-to-markdown"
-version = "3.10.4"
+version = "3.10.6"
 description = "High-performance HTML to Markdown converter"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "html_to_markdown-3.10.4-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:434ef9be258a3a8e44c3782c859b377d9604ebc3bca7e757bb67a6064a243ff6"},
-    {file = "html_to_markdown-3.10.4-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:25106afcca49d38d15e4dcbc993954cd0a045a0acd934e524756aeb25ec29631"},
-    {file = "html_to_markdown-3.10.4-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:e90525cae6420bc4273ac91e56b4dff1d82fb48276ac73fbdefcd6a0166b22b7"},
-    {file = "html_to_markdown-3.10.4-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:f692b918caa4973c3e022746fdd2caea337afed2d2c9aa7baf42cf2764b6a901"},
-    {file = "html_to_markdown-3.10.4-cp310-abi3-win_amd64.whl", hash = "sha256:e08ad3ab4616dcb8d2482d9737558d896c956a681d132efcad4b1b4ff0cdc6d8"},
-    {file = "html_to_markdown-3.10.4.tar.gz", hash = "sha256:ac10578db2a2018413ae3ce6767d10e9d668bf8c4865cd8bab117a7e7e83329f"},
+    {file = "html_to_markdown-3.10.6-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:ab3781c67bbce7018ca2cd3aa56e4b6a492107d9362dfac3ee6986fd76e8ee1b"},
+    {file = "html_to_markdown-3.10.6-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:7603a3eb814d4be8e5e45ccad3d2461ba24a2ef60629fe500da3a030779d5c4b"},
+    {file = "html_to_markdown-3.10.6-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:2b7591fa0b4f5f6576dfcb03f9a19a61f93886d98ea35643f189c6bd1adbca15"},
+    {file = "html_to_markdown-3.10.6-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:9a8a5ee959bd220b29ed6a64d6299515e80a19625025c516340357e87e239a7b"},
+    {file = "html_to_markdown-3.10.6-cp310-abi3-win_amd64.whl", hash = "sha256:26e571aaa004c70987440b6e8724136e8f8b9b08f43620af4c1c6bec7fc29bf5"},
+    {file = "html_to_markdown-3.10.6.tar.gz", hash = "sha256:544b4739676cfd2bd45e564127d18559758e2d34d49aa2c0cef3688cb0200b07"},
 ]
 
 [[package]]
@@ -3493,14 +3493,14 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "26.2"
+version = "26.3"
 description = "Core utilities for Python packages"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "packaging-26.2-py3-none-any.whl", hash = "sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e"},
-    {file = "packaging-26.2.tar.gz", hash = "sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661"},
+    {file = "packaging-26.3-py3-none-any.whl", hash = "sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"},
+    {file = "packaging-26.3.tar.gz", hash = "sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79"},
 ]
 
 [[package]]
@@ -4735,14 +4735,14 @@ virustotal = ["validators (>=0.35.0)"]
 
 [[package]]
 name = "pypandora"
-version = "1.12.0"
+version = "1.12.5"
 description = "Python CLI and module for pandora"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pypandora-1.12.0-py3-none-any.whl", hash = "sha256:e320af7448f0ce45dab78108f6fbf636b358b887b83678e15efef086562133b7"},
-    {file = "pypandora-1.12.0.tar.gz", hash = "sha256:8e0d8229aca07bc329cafad17e93a3b420c2d4499f100c56e2a1a4406e01d91f"},
+    {file = "pypandora-1.12.5-py3-none-any.whl", hash = "sha256:91d16c0482b579d9169702128931beb7a124eb10f4d4f5fe062800ad17914816"},
+    {file = "pypandora-1.12.5.tar.gz", hash = "sha256:828d72560aeadfc0fa95c9d808cb4ef91c9f51f42d0d54bb8b10eb3856058f51"},
 ]
 
 [package.dependencies]
@@ -5926,14 +5926,14 @@ types-setuptools = "*"
 
 [[package]]
 name = "types-dateparser"
-version = "1.4.1.20260617"
+version = "1.4.1.20260806"
 description = "Typing stubs for dateparser"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "types_dateparser-1.4.1.20260617-py3-none-any.whl", hash = "sha256:af5619f005b56880898c54a9cb25bbc1c145751710d456be4f94c50751316ddb"},
-    {file = "types_dateparser-1.4.1.20260617.tar.gz", hash = "sha256:aaf1958a88e2bca849ff36b4696476c829c7b0ad06ff8d473635a8a985468346"},
+    {file = "types_dateparser-1.4.1.20260806-py3-none-any.whl", hash = "sha256:5e8fdd971c063d4f361a7fdd51a6d41d8e98d7d6675b167d05182f579944e22a"},
+    {file = "types_dateparser-1.4.1.20260806.tar.gz", hash = "sha256:47ba1f3b7bbf458c6e23f2e324621123c4fd6bd1d18111a9d4ceb572e9e6c837"},
 ]
 
 [[package]]
@@ -6640,4 +6640,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "964a7824391cc38b648e9bbf750ad0b927e54a8aceff6caa3bfd7b0ccf935512"
+content-hash = "4da8c5d9b954a1a8b5622091a0a8cd9adc248c0653d09654d729e6200fb01a58"
