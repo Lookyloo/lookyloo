@@ -323,17 +323,17 @@ class CapturesIndex():
         WARNING: it doesn't check if the pickle is there
         """
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
-        try:
-            capture_dir = self._get_capture_dir(uuid)
-        except UUIDMissingInCache:
-            logger.warning('Unable to get CaptureCache (unknown UUID)')
-            return None
-        except MissingCaptureDirectory:
-            logger.warning('Unable to get CaptureCache (missing capture directory)')
-            return None
-
         if uuid not in self.__cache:
             # try to initialize it in the dict from redis but *not* from disk
+            try:
+                capture_dir = self._get_capture_dir(uuid)
+            except UUIDMissingInCache:
+                logger.info('Unable to get CaptureCache (unknown UUID), not ready yet.')
+                return None
+            except MissingCaptureDirectory:
+                logger.warning('Unable to get CaptureCache (missing capture directory)')
+                return None
+
             try:
                 if cached := self.redis.hgetall(capture_dir):
                     self.__cache[uuid] = CaptureCache(cached)
@@ -343,7 +343,7 @@ class CapturesIndex():
                 logger.error(f'Unable to get CaptureCache (unexpected exception): {e}')
 
         if c := self.__cache.get(uuid):
-            self.redis.expire(capture_dir, self.expire_cache_sec)
+            self.redis.expire(str(c.capture_dir), self.expire_cache_sec)
             return c
         return None
 
