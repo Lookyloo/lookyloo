@@ -74,7 +74,7 @@ from .default import (LookylooException, get_homedir, get_config, get_socket_pat
                       ConfigError, safe_create_dir)
 from .exceptions import (MissingCaptureDirectory, DuplicateUUID, NoValidHarFile,
                          LacusUnreachable, LacusUnknown, LookylooPrivateCapture,
-                         UUIDMissingInCache, NotCached, UnknownUUID, ZipBomb)
+                         UUIDMissingInCache, NotCached, UnknownUUID, ZipBomb, TreeNeedsRebuild)
 from .helpers import (get_captures_dir, get_email_template, get_tt_template,
                       get_resources_hashes, get_taxonomies,
                       uniq_domains, ParsedUserAgent, UserAgents,
@@ -484,7 +484,10 @@ class Lookyloo():
                     return False, 'The capture will be indexed later.'
                 else:
                     return False, 'Unable to index capture, retry later.'
-
+        except TreeNeedsRebuild:
+            self.logger.info(f'Cannot index {capture_uuid}, need to rebuild the tree first.')
+            self.redis.sadd('lazy_background_build', capture_uuid)
+            return False, 'Unable to index capture, tree not built, retry later.'
         except Exception as e:
             self.logger.warning(f'Unable to index capture {capture_uuid}: {e}')
             self.remove_pickle(capture_uuid)
