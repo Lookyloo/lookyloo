@@ -429,13 +429,15 @@ class Lookyloo():
         try:
             if capture_settings := self.redis.hgetall(capture_uuid):
                 return LookylooCaptureSettings.model_validate(capture_settings)
+            return self.capture_cache(capture_uuid).capture_settings
         except CaptureSettingsError as e:
             logger.warning(f'Invalid capture settings: {e}')
+            raise e
+        except UUIDMissingInCache as e:
             raise e
         except ValidationError as e:
             logger.warning(f'Invalid capture settings: {e}')
             raise LookylooCaptureSettingsError('Invalid capture settings', e)
-        return self.capture_cache(capture_uuid).capture_settings
 
     def index_capture(self, capture_uuid: str, /, *, authenticated: bool) -> tuple[bool, str]:
         """This method is called from the web interface (trigger indexing).

@@ -515,6 +515,13 @@ def file_response(func):  # type: ignore[no-untyped-def]
     return wrapper
 
 
+@app.errorhandler(UUIDMissingInCache)
+def handle_missing_uuid_cache(error: UUIDMissingInCache) -> Response | str | WerkzeugResponse:
+    '''Unable to get UUID from cache, it ie either still ongoing, or really unknown'''
+    flash(escape(error), 'error')
+    return redirect(url_for('landing_page'))
+
+
 @app.errorhandler(UnknownUUID)
 def handle_missing_uuid(error: UnknownUUID) -> Response | str | WerkzeugResponse:
     '''Capture UUID cannot be found anywhere'''
