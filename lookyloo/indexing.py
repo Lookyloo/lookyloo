@@ -183,7 +183,7 @@ class Indexing():
                        for pickle_name in ['tree.pickle.xz', 'tree.pickle.gz', 'tree.pickle']):
                 self.logger.info(f'[{uuid_to_index}] No pickle in {directory}, skip.')
                 skipped = True
-                return False
+                raise TreeNeedsRebuild('No pickle available, cannot index')
 
             # do the indexing
             ct = load_pickle_tree(directory, directory.stat().st_mtime, self.logger)
@@ -240,7 +240,9 @@ class Indexing():
                 self.logger.debug(f'[{uuid_to_index}] Indexing hash types')
                 self.index_capture_hashes_types(ct)
 
-        except (TreeNeedsRebuild, NoValidHarFile) as e:
+        except TreeNeedsRebuild as e:
+            raise e
+        except NoValidHarFile as e:
             self.logger.warning(f'[{uuid_to_index}] Error loading the pickle: {e}')
         except AttributeError as e:
             # Happens when indexing the IPs, they were a list, and are now dict.
