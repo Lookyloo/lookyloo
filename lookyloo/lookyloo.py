@@ -788,10 +788,17 @@ class Lookyloo():
     def get_settings_to_capture(self, capture_uuid: str, /) -> LookylooCaptureSettings | None:
         """Try to get settings, but only from redis (capture not finished)"""
         try:
+            if not self.redis.exists(capture_uuid):
+                # avoids adding the uuid in an empty hash.
+                return None
             if not self.redis.hexists(capture_uuid, 'uuid'):
                 # old format, failsafe
                 self.redis.hset(capture_uuid, 'uuid', capture_uuid)
             if _cs := self.redis.hgetall(capture_uuid):
+                if len(_cs) == 1:
+                    # that that was an unknown UUID set in the hash by mistake, removing it
+                    self.redis.delete(capture_uuid)
+                    return None
                 return LookylooCaptureSettings.model_validate(_cs)
             else:
                 self.logger.debug(f'[{capture_uuid}] Unable to get settings (from redis).')
