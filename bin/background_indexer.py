@@ -14,6 +14,7 @@ from redis import Redis
 from lookyloo import Indexing
 from lookyloo.default import AbstractManager, get_config, get_socket_path
 from lookyloo.helpers import remove_pickle_tree
+from lookyloo.exceptions import TreeNeedsRebuild
 
 
 logging.config.dictConfig(get_config('logging'))
@@ -114,6 +115,9 @@ class BackgroundIndexer(AbstractManager):
             path = Path(d)
             try:
                 self.indexing.index_capture(uuid, path, background=True)
+            except TreeNeedsRebuild:
+                self.logger.info(f'Cannot index {uuid} need to rebuild the tree first.')
+                self.redis.sadd('lazy_background_build', uuid)
             except Exception as e:
                 self.logger.warning(f'Error while indexing {uuid}: {e}')
                 remove_pickle_tree(path)
