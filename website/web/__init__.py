@@ -515,6 +515,12 @@ def file_response(func):  # type: ignore[no-untyped-def]
     return wrapper
 
 
+@app.errorhandler(IndexError)
+def handle_index_error(error: IndexError) -> Response | str | WerkzeugResponse:
+    '''Tree was rebuild, page reload required'''
+    return render_template('error.html', error_message='Sorry, this one is on us. The tree was rebuild, please reload the tree and try again.')
+
+
 @app.errorhandler(UUIDMissingInCache)
 def handle_missing_uuid_cache(error: UUIDMissingInCache) -> Response | str | WerkzeugResponse:
     '''Unable to get UUID from cache, it ie either still ongoing, or really unknown'''
@@ -1026,10 +1032,7 @@ def urls_hostnode(tree_uuid: str, node_uuid: str) -> Response:
 
 @app.route('/tree/<uuid:tree_uuid>/host/<uuid:node_uuid>', methods=['GET'])
 def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | Response:
-    try:
-        hostnode, urls = get_hostnode_investigator(tree_uuid, node_uuid)
-    except IndexError:
-        return render_template('error.html', error_message='Sorry, this one is on us. The tree was rebuild, please reload the tree and try again.')
+    hostnode, urls = get_hostnode_investigator(tree_uuid, node_uuid)
 
     url_in_address_bar: str | None = None
     diff: str | None = None

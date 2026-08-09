@@ -64,9 +64,12 @@ class UniversalWhois(AbstractModule):
         except Har2TreeError as e:
             self.logger.warning(e)
         else:
-            self.query_whois_hostnode(hostnode)
-            for n in hostnode.get_ancestors():
-                self.query_whois_hostnode(n)
+            try:
+                self.query_whois_hostnode(hostnode)
+                for n in hostnode.get_ancestors():
+                    self.query_whois_hostnode(n)
+            except TimeoutError:
+                return {'error': 'Module timed out.'}
 
         return {'success': 'Module triggered'}
 

@@ -8,7 +8,7 @@ from datetime import date
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-from pypdns import PyPDNS, PDNSRecord, PDNSError, UnauthorizedError
+from pypdns import PyPDNS, PDNSRecord, PDNSError, UnauthorizedError, RateLimitError
 from requests.exceptions import Timeout as RequestsTimeout
 
 from ..default import ConfigError, get_homedir
@@ -42,6 +42,9 @@ class CIRCLPDNS(AbstractModule):
         # No cache, just get the records.
         try:
             return [entry for entry in self.pypdns.iter_query(query) if isinstance(entry, PDNSRecord)]
+        except RateLimitError:
+            self.logger.warning(f'CIRCL PDNS request hit ratelimit: {query}')
+            return None
         except RequestsTimeout:
             self.logger.warning(f'CIRCL PDNS request timed out: {query}')
             return None
