@@ -59,6 +59,12 @@ def handle_no_HAR_file_exception(error: Any) -> tuple[dict[str, str], int]:
     return {'message': str(error)}, 400
 
 
+@api.errorhandler(UUIDMissingInCache)  # type: ignore[untyped-decorator]
+def handle_uuid_not_in_cache(error: Any) -> tuple[dict[str, str], int]:
+    '''The capture UUID is not in the cache.'''
+    return {'message': str(error)}, 400
+
+
 @api.errorhandler(CaptureSettingsError)  # type: ignore[untyped-decorator]
 def handle_pydandic_validation_exception(error: CaptureSettingsError) -> tuple[dict[str, Any], int]:
     '''Return the validation error message and 400 status code'''
