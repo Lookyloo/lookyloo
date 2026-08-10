@@ -37,7 +37,8 @@
           {{get_sri('static', 'tree.js')}}
           nonce="{{ csp_nonce() }}"
           crossorigin="anonymous" type="module"
-          id="tree_js" data-remote="{{url_for('GenericAPI_tree_dump', capture_uuid=tree_uuid, seed=seed)}}">
+          id="tree_js" data-remote="{{url_for('GenericAPI_tree_dump', capture_uuid=tree_uuid, seed=seed)}}"
+                       {% if urlnode_uuid %}data-urlnode="{{urlnode_uuid}}" {%endif%}>
   </script>
   <script src='{{ url_for('static', filename='tree_modals.js') }}'
           {{get_sri('static', 'tree_modals.js')}}
@@ -71,22 +72,6 @@
           }
       });
     });
-  </script>
-
-  <script nonce="{{ csp_nonce() }}">
-  {% if urlnode_uuid %}
-  history.scrollRestoration = "manual";
-  window.addEventListener('DOMContentLoaded', (event) => {
-    LocateNode('{{urlnode_uuid}}');
-  });
-  {% else %}
-  window.addEventListener('DOMContentLoaded', (event) => {
-    if (document.getElementById('screenshot_thumbnail')) {
-      let thumbnail = document.getElementById('screenshot_thumbnail');
-      thumbnail.scrollIntoView({behavior: "smooth", block: "end", inline: "center"});
-    }
-  });
-  {% endif%}
   </script>
 
   {% if auto_trigger_modules %}
