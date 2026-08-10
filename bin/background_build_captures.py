@@ -290,6 +290,9 @@ class BackgroundBuildCaptures(AbstractManager):
                 except NoValidHarFile as e:
                     # Nothing to build
                     self.logger.debug(e)
+                except FileNotFoundError:
+                    # probably already archived
+                    self.logger.debug(f'{path} does not exist, already archived.')
                 except CaptureLocked as e:
                     self.logger.debug(e)
                 except UUIDMissingInCache as e:
