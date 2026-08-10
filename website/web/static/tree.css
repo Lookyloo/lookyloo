@@ -2,6 +2,12 @@
   position: relative;
 }
 
+#tree-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
 .node circle {
   fill: light-dark(white, black);
   stroke: steelblue;

@@ -72,6 +72,8 @@ try {
   root.y0 = 0;
 
   update(root);
+  document.getElementById("tree-loading").style.display = "none";
+
   if (document.getElementById('tree_js').dataset.urlnode != null){
     history.scrollRestoration = "manual";
     LocateNode(document.getElementById('tree_js').dataset.urlnode);
