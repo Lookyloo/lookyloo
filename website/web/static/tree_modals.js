@@ -62,6 +62,73 @@ const downloadSvg = () => {
     });
 };
 
+function LocateNode(hostnode_uuid) {
+    let element = document.getElementById(`node_${hostnode_uuid}`);
+    element.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+
+    let line_arrow = d3.select(`#node_${hostnode_uuid}`)
+                       .append('g')
+                        .attr('cursor', 'pointer')
+                        .on('click', (event, d) => { event.currentTarget.remove(); });
+
+    let line = d3.line()
+                    // Other options: http://bl.ocks.org/d3indepth/raw/b6d4845973089bc1012dec1674d3aff8/
+                    //.curve(d3.curveCardinal)
+                    .curve(d3.curveBundle)
+                    .x(point => point.lx)
+                    .y(point => point.ly);
+
+    let line_tip = d3.symbol()
+                    .type(d3.symbolTriangle)
+                    .size(200);
+
+
+    let path = line_arrow
+        .append("path")
+        .attr("stroke-width", "3")
+        .attr("stroke", "black")
+        .attr("fill", "none")
+        .data([{
+            source: {x: 100, y: -100},
+            target: {x: 50, y: -50}
+        }])
+        .attr("class", "line")
+        .attr("d", d => line(
+            [{lx: d.source.x, ly: d.source.y},
+             {lx: d.target.x, ly: d.source.y},
+             {lx: d.target.x, ly: d.target.y}
+            ])
+        );
+
+    let arrow = line_arrow
+        .append("path")
+        .attr("d", line_tip)
+        .attr("stroke", 'black')
+        .style('stroke-width', '3')
+        .attr("fill", 'white')
+        .attr("transform", `translate(50, -50) rotate(60)`);
+
+    let glow = () => {
+        line_arrow.selectAll('path')
+            .transition().duration(1000)  //Set transition
+            .style('stroke-width', '7')
+            .style('stroke', 'red')
+            .transition().duration(1000)  //Set transition
+            .style('stroke-width', '3')
+            .style('stroke', 'black')
+            .on("end", () => {
+                if (++i > 15) {
+                    line_arrow.remove();
+                } else {
+                    glow();
+                }
+            });
+    };
+
+    let i = 0;
+    glow();
+};
+
 // Modals
 document.addEventListener("DOMContentLoaded", () => {
     ["#hashlookupModal", "#modulesModal", "#historyModal", "#categoriesModal", "#statsModal", "#downloadModal",

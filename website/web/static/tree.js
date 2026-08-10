@@ -72,6 +72,14 @@ try {
   root.y0 = 0;
 
   update(root);
+  if (document.getElementById('tree_js').dataset.urlnode != null){
+    history.scrollRestoration = "manual";
+    LocateNode(document.getElementById('tree_js').dataset.urlnode);
+  }
+  else {
+    let rendered_node = document.getElementById('screenshot_thumbnail');
+    rendered_node.scrollIntoView({behavior: "smooth", block: "end", inline: "center"});
+  }
 
   if (parent_uuid != null) {
 
@@ -176,79 +184,12 @@ try {
 
 function open_hostnode_popup(hostnode_uuid) {
     // /tree is kept, append the paramaters (seed, if present)
-    let win = window.open(`${treeUUID}/host/${hostnode_uuid}${document.location.search}`, '_blank', 'width=1024,height=768,left=200,top=100');
+    let win = window.open(`/tree/${treeUUID}/host/${hostnode_uuid}${document.location.search}`, '_blank', 'width=1024,height=768,left=200,top=100');
     if (win == null) {
         alert("The browser didn't allow Lookyloo to open a pop-up. There should be an icon on the right of your URL bar to allow it.");
     }
     win.focus();
 }
-
-function LocateNode(hostnode_uuid) {
-    let element = document.getElementById(`node_${hostnode_uuid}`);
-    element.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
-
-    let line_arrow = d3.select(`#node_${hostnode_uuid}`)
-                       .append('g')
-                        .attr('cursor', 'pointer')
-                        .on('click', (event, d) => { event.currentTarget.remove(); });
-
-    let line = d3.line()
-                    // Other options: http://bl.ocks.org/d3indepth/raw/b6d4845973089bc1012dec1674d3aff8/
-                    //.curve(d3.curveCardinal)
-                    .curve(d3.curveBundle)
-                    .x(point => point.lx)
-                    .y(point => point.ly);
-
-    let line_tip = d3.symbol()
-                    .type(d3.symbolTriangle)
-                    .size(200);
-
-
-    let path = line_arrow
-        .append("path")
-        .attr("stroke-width", "3")
-        .attr("stroke", "black")
-        .attr("fill", "none")
-        .data([{
-            source: {x: node_width/2, y: -100},
-            target: {x: node_width/4, y: -node_height/2}
-        }])
-        .attr("class", "line")
-        .attr("d", d => line(
-            [{lx: d.source.x, ly: d.source.y},
-             {lx: d.target.x, ly: d.source.y},
-             {lx: d.target.x, ly: d.target.y}
-            ])
-        );
-
-    let arrow = line_arrow
-        .append("path")
-        .attr("d", line_tip)
-        .attr("stroke", 'black')
-        .style('stroke-width', '3')
-        .attr("fill", 'white')
-        .attr("transform", `translate(${node_width / 4}, ${-node_height / 1.5}) rotate(60)`);
-
-    let glow = () => {
-        line_arrow.selectAll('path')
-            .transition().duration(1000)  //Set transition
-            .style('stroke-width', '7')
-            .style('stroke', 'red')
-            .transition().duration(1000)  //Set transition
-            .style('stroke-width', '3')
-            .style('stroke', 'black')
-            .on("end", () => {
-                if (++i > 15) {
-                    line_arrow.remove();
-                } else {
-                    glow();
-                }
-            });
-    };
-
-    let i = 0;
-    glow();
-};
 
 function UnbookmarkAllNodes() {
     d3.selectAll('.node_data').select('rect').style('fill', 'white');
