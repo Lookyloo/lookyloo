@@ -298,7 +298,7 @@ class BackgroundBuildCaptures(AbstractManager):
                 except UUIDMissingInCache as e:
                     self.logger.info(e)
                 except MissingCaptureDirectory as e:
-                    self.logger.warning(e)
+                    self.logger.info(e)
                 except DuplicateUUID as e:
                     self.logger.error(e)
                 except TreeBuildFailed as e:
