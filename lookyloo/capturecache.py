@@ -345,6 +345,7 @@ class CapturesIndex():
         if c := self.__cache.get(uuid):
             self.redis.expire(str(c.capture_dir), self.expire_cache_sec)
             return c
+        self.redis.sadd('lazy_background_build', uuid)
         return None
 
     def _get_capture_dir(self, uuid: str) -> str:
