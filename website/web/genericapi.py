@@ -391,7 +391,7 @@ class MISPPush(Resource):  # type: ignore[misc]
             if isinstance(event, dict):
                 to_return['error'] = event
             else:
-                new_events = misp.push(event, allow_duplicates)
+                new_events = misp.push(event, as_admin=flask_login.current_user.is_authenticated, allow_duplicates=allow_duplicates)
                 if isinstance(new_events, dict):
                     to_return['error'] = new_events
                 else:
