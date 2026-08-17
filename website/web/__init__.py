@@ -1659,6 +1659,7 @@ def bulk_captures(tree_uuid: str) -> WerkzeugResponse | str | Response:
                     'user_agent': cache.user_agent,
                     'parent': tree_uuid,
                     'listing': False if cache and cache.no_index else True,
+                    'private': True if cache and cache.private else False,
                     'uuid': None
                 })
         else:
@@ -1670,6 +1671,7 @@ def bulk_captures(tree_uuid: str) -> WerkzeugResponse | str | Response:
                 'user_agent': cache.user_agent,
                 'parent': tree_uuid,
                 'listing': False if cache and cache.no_index else True,
+                'private': True if cache and cache.private else False,
                 'uuid': None
             }
             capture = LookylooCaptureSettings.model_validate(_capture)
