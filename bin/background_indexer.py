@@ -108,9 +108,14 @@ class BackgroundIndexer(AbstractManager):
 
             if not self.full_indexer:
                 # If we're not running the full indexer, check if the capture should be indexed.
-                if (self.redis.exists(d)  # the cache exits (not expired)
-                        and (self.redis.hexists(d, 'no_index')  # non-indexed capture
-                             or self.redis.hexists(d, 'private'))):  # private capture
+                if not self.redis.exists(d):
+                    # the entry isn't in the cache, flag as rebuild, skip index
+                    self.redis.sadd('lazy_background_build', uuid)
+                    continue
+
+                if (self.redis.hexists(d, 'no_index')  # non-indexed capture
+                        or self.redis.hexists(d, 'private')):  # private capture
+                    # capture isn't public, skip
                     continue
             path = Path(d)
             try:

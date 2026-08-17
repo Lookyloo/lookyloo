@@ -2489,13 +2489,12 @@ class Lookyloo():
         with (dirpath / 'uuid').open('w') as _uuid:
             _uuid.write(uuid)
 
-        # Write no_index marker (optional)
-        if not is_public:
-            (dirpath / 'no_index').touch()
-
         # Write private marker (optional) => not accessible for users without a seed
         if private:
             (dirpath / 'private').touch()
+        # Write no_index marker (optional)
+        elif not is_public:
+            (dirpath / 'no_index').touch()
 
         if categories:
             with (dirpath / 'categories').open('w') as _categories:
