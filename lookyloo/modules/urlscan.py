@@ -65,7 +65,12 @@ class UrlScan(AbstractModule):
         if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
             return error
 
-        visibility = 'unlisted' if cache.no_index else 'public'
+        if cache.private:
+            return {'error': 'The capture is private, do not send to 3rd party service.'}
+        elif cache.no_index:
+            visibility = 'unlisted'
+        else:
+            visibility = 'public'
         self.__url_submit(cache, visibility, force)
         return {'success': 'Module triggered'}
 
