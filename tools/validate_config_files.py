@@ -71,6 +71,7 @@ def validate_modules_config_file() -> bool:
 
 
 def update_user_configs() -> bool:
+    to_return = False
     for file_name in ['generic', 'modules']:
         with (get_homedir() / 'config' / f'{file_name}.json').open() as f:
             try:
@@ -96,9 +97,10 @@ def update_user_configs() -> bool:
                         generic_config[key][sub_key] = generic_config_sample[key][sub_key]
                         has_new_entry = True
         if has_new_entry:
+            to_return = True
             with (get_homedir() / 'config' / f'{file_name}.json').open('w') as fw:
                 json.dump(generic_config, fw, indent=2, sort_keys=True)
-    return has_new_entry
+    return to_return
 
 
 if __name__ == '__main__':
