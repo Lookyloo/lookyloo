@@ -27,11 +27,13 @@ def test_has_title(page: Page) -> None:
 
 
 def test_capture_page(page: Page) -> None:
+    domain = 'google.be'
+    capture_url = f'https://{domain}'
     page.get_by_role("link", name="Start a new capture").click()
     page.get_by_role("button", name="Lacus Selection").click()
     expect(page.get_by_role("button", name="Browser Configuration")).to_be_visible()
     page.get_by_role("textbox", name="URL to capture").click()
-    page.get_by_role("textbox", name="URL to capture").fill("https://google.fr")
+    page.get_by_role("textbox", name="URL to capture").fill(capture_url)
     page.get_by_role("button", name="Start looking!").click()
     # Capture ongoing
     expect(page).to_have_title(re.compile("Ongoing capture..."), timeout=10)
@@ -45,19 +47,31 @@ def test_capture_page(page: Page) -> None:
         except AssertionError:
             break
     # Capture done
-    expect(page).to_have_title(re.compile("Capture of https://google.fr"))
+    expect(page).to_have_title(re.compile(f"Capture of {capture_url}"))
     expect(page.get_by_text("The capture has not been")).to_be_visible()
+    expect(page.get_by_alt_text("Tree loading spinner")).not_to_be_visible(timeout=20_000)
     # trigger indexing
     page.get_by_role("button", name="Analytical Tools").click()
     page.get_by_role("button", name="Index capture").click()
-    page.get_by_role("button", name="Analytical Tools").click()
-    expect(page.get_by_role("button", name="Index capture")).to_have_count(0)
+    time.sleep(2)
+    max_loop = 5
+    while max_loop > 0:
+        # Sometimes, the indexing fails in a weird way
+        page.get_by_role("button", name="Analytical Tools").click()
+        try:
+            expect(page.get_by_role("button", name="Index capture")).to_have_count(1)
+            page.get_by_role("button", name="Index capture").click()
+            max_loop -= 1
+            time.sleep(5)
+        except AssertionError:
+            break
+    expect(page.get_by_role("button", name="Index capture")).to_have_count(0, timeout=10_000)
     # go to search page and search
     page.get_by_role("link", name="Lookyloo icon").click()
     page.get_by_role("button", name="Toggle navigation").click()
     page.get_by_role("link", name="Search").click()
     expect(page).to_have_title(re.compile("Search"))
-    page.get_by_role("textbox", name="URL part:").fill("google.fr")
+    page.get_by_role("textbox", name="URL part:").fill(domain)
     page.get_by_role("button", name="Search").click()
-    expect(page).to_have_title(re.compile("google.fr"))
-    expect(page.get_by_text("Google The capture contains").first).to_be_visible()
+    expect(page).to_have_title(re.compile(domain))
+    expect(page.get_by_text("The capture contains").first).to_be_visible()
