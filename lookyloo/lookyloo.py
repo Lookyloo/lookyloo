@@ -1445,12 +1445,12 @@ class Lookyloo():
         to_check: dict[str, tuple[TimeStampResponse, bytes, bool]] = {}
         cert_to_return: list[cryptography.x509.Certificate] | None = None
         success: bool
-        data: bytes
         d: str | bytes | BytesIO | None
         if 'downloaded_filename' in trusted_timestamps and 'downloaded_file' in trusted_timestamps:
             dl_success, filename, file_content = self.get_data(capture_uuid)
 
         for tsr_name, tst in trusted_timestamps.items():
+            data: bytes = b''
             # turn the base64 encoded blobs back to bytes and TimeStampResponse for validation
             tsr = decode_timestamp_response(tst)
             if tsr_name == 'last_redirected_url':
@@ -1696,7 +1696,7 @@ class Lookyloo():
             This method is only used if the capture downloaded multiple files'''
             with ZipFile(data) as downloaded_files:
                 files_info = downloaded_files.infolist()
-                if index_in_zip > len(files_info):
+                if index_in_zip < 0 or index_in_zip >= len(files_info):
                     logger.warning(f'Unable to get the file {index_in_zip} from the zip file (only {len(files_info)} entries).')
                     return False, 'Invalid index in zip', BytesIO()
                 with downloaded_files.open(files_info[index_in_zip]) as f:
@@ -2335,6 +2335,7 @@ class Lookyloo():
         trusted_timestamps: dict[str, str] | None = None
         categories: list[str] | None = None
         private: bool = False
+        uuid: str | None = None
 
         files_to_skip = ['cnames.json', 'ipasn.json', 'ips.json', 'mx.json',
                          'nameservers.json', 'soa.json', 'hashlookup.json']
@@ -2368,7 +2369,7 @@ class Lookyloo():
                 elif filename.endswith('potential_favicons.ico'):
                     # We may have more than one favicon
                     potential_favicons.add(lookyloo_capture.read(filename))
-                elif filename.endswith('uuid'):
+                elif filename == 'uuid':
                     uuid = lookyloo_capture.read(filename).decode()
                     try:
                         UUID(uuid)
@@ -2428,6 +2429,10 @@ class Lookyloo():
 
             if unrecoverable_error:
                 return '', messages
+
+            if not uuid:
+                # Allow to push a capture without UUID file, create a new one in that case.
+                uuid = str(uuid4())
 
             self.store_capture(uuid, is_public=listing,
                                private=private,
