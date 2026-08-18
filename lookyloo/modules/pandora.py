@@ -23,6 +23,7 @@ class Pandora():
         if not self.config.get('url'):
             self.logger.info('No URL in config.')
             self._enabled = False
+            return None
         self.client = PyPandora(root_url=self.config['url'], useragent=get_useragent_for_requests(),
                                 proxies=global_proxy_for_requests())
 
