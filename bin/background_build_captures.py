@@ -137,6 +137,9 @@ class BackgroundBuildCaptures(AbstractManager):
                 self.__build_pickle(uuid=str(uuid), trigger_modules=False)
                 # this call makes sure that the capture details are in the redis cache
                 self.lookyloo.capture_cache(str(uuid))
+            except NoValidHarFile as e:
+                # don't care in the lazy bg build.
+                self.logger.debug(e)
             except LookylooException as e:
                 self.logger.warning(e)
             except Exception as e:
