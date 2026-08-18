@@ -2059,7 +2059,8 @@ def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
             return {'error': 'Unable to find resource {h_request} in node {node_uuid} of tree {tree_uuid}'}
         else:
             return {'error': 'Unable to find resource in node {node_uuid} of tree {tree_uuid}'}
-    elif index_in_zip:
+    elif index_in_zip is not None:
+        # Can be 0
         # Submit a file from the zip
         _i = int(index_in_zip)
         success, filename, content = lookyloo.get_data(tree_uuid, index_in_zip=_i)
@@ -2642,11 +2643,10 @@ def simple_capture() -> str | Response | WerkzeugResponse:
                     continue
                 query = capture_query.copy()
                 query['url'] = url
-                new_capture_uuid = lookyloo.enqueue_capture(query, source='web', user=user,
-                                                            authenticated=flask_login.current_user.is_authenticated,
-                                                            seed_expire=None)
-                if new_capture_uuid:
-                    flash('Recording is in progress and is reported automatically.', 'success')
+                lookyloo.enqueue_capture(query, source='web', user=user,
+                                         authenticated=flask_login.current_user.is_authenticated,
+                                         seed_expire=None)
+                flash('Recording is in progress and is reported automatically.', 'success')
             return redirect(url_for('simple_capture'))
     # render template
     return render_template('simple_capture.html')
