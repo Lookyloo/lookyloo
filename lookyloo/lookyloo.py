@@ -2021,7 +2021,7 @@ class Lookyloo():
             logger.debug(f'Unable to set TSR data: {tsr_data.get("warning")}')
         else:
             to_check, certificates = tsr_data
-            tsa_certificates_pem = b'\n'.join([certificate.public_bytes(Encoding.PEM) for certificate in certificates])
+            tsa_certificates_pem = BytesIO(b'\n'.join([certificate.public_bytes(Encoding.PEM) for certificate in certificates]))
             for name, tsr_blob in to_check.items():
                 tsr, data, safe = tsr_blob
                 imprint = tsr.tst_info.message_imprint
