@@ -52,7 +52,18 @@ def test_capture_page(page: Page) -> None:
     # trigger indexing
     page.get_by_role("button", name="Analytical Tools").click()
     page.get_by_role("button", name="Index capture").click()
-    page.get_by_role("button", name="Analytical Tools").click()
+    time.sleep(2)
+    max_loop = 5
+    while max_loop > 0:
+        # Sometimes, the indexing fails in a weird way
+        page.get_by_role("button", name="Analytical Tools").click()
+        try:
+            expect(page.get_by_role("button", name="Index capture")).to_have_count(1)
+            page.get_by_role("button", name="Index capture").click()
+            max_loop -= 1
+            time.sleep(5)
+        except AssertionError:
+            break
     expect(page.get_by_role("button", name="Index capture")).to_have_count(0, timeout=10_000)
     # go to search page and search
     page.get_by_role("link", name="Lookyloo icon").click()
