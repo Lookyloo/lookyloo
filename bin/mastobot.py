@@ -83,10 +83,10 @@ class LookylooMastobotListener(StreamListener):
                         if proxies_str:
                             # Update the field with the list of proxies
                             fields_to_submit.append(("Proxies", proxies_str))
-            if not proxy_field_exists:
-                # Add the proxies field
-                proxies_changed = True
-                fields_to_submit.append(("Proxies", proxies_str))
+        if not proxy_field_exists:
+            # Add the proxies field
+            proxies_changed = True
+            fields_to_submit.append(("Proxies", proxies_str))
         if proxies_changed:
             self.mastobot.logger.info("Proxies have changed, update the account fields")
             fields_to_submit.insert(0, ("Website", self.mastobot.lookyloo.root_url))
@@ -237,10 +237,13 @@ class Mastobot(AbstractManager):
                 self.handler.close()
                 self.handler = None
             else:
-                if self.handler.is_alive():
-                    self.logger.debug("Stream is alive")
-                if self.handler.is_receiving():
-                    self.logger.debug("Stream is receiving")
+                if not self.handler.is_alive() or not self.handler.is_receiving():
+                    self.logger.warning('Stream is down, reconnecting.')
+                    try:
+                        self.handler.close()
+                    except Exception as e:
+                        self.logger.warning(f'Could not close stream: {e}')
+                    self.handler = None
 
     def _wait_to_finish(self) -> None:
         if self.handler:
