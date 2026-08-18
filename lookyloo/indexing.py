@@ -107,11 +107,16 @@ class Indexing():
         p.srem('indexed_ips', capture_uuid)
         for identifier_type in self.identifiers_types():
             p.srem(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
+
         for hash_type in self.captures_hashes_types():
             if hash_type == 'certpl_html_structure_hash':
                 self._rename_certpl_hash_domhash()
             else:
                 p.srem(f'indexed_hash_type|{hash_type}', capture_uuid)
+                if hash_to_index := self.redis.hget(f'capture_hash_types|{capture_uuid}', hash_type):
+                    p.delete(f'capture_hash_types|{capture_uuid}')
+                    p.zrem(f'capture_hash_types|{hash_type}|{hash_to_index}|captures', capture_uuid)
+
         for internal_index in self.redis.smembers(f'capture_indexes|{capture_uuid}'):
             # NOTE: these ones need to be removed because the node UUIDs are recreated on tree rebuild
             # internal_index can be "tlds" or "domains"
@@ -963,8 +968,9 @@ class Indexing():
             return
         self.redis.sadd('indexed_favicons', crawled_tree.uuid)
         self.logger.debug(f'Indexing favicons for {crawled_tree.uuid} ... ')
-        internal_index = f'capture_indexes|{crawled_tree.uuid}'
         pipeline = self.redis.pipeline()
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'favicons')
         for favicon_path in sorted(list(capture_dir.glob('*.potential_favicons.ico'))):
             with favicon_path.open('rb') as f:
                 favicon = f.read()
@@ -1229,10 +1235,11 @@ class Indexing():
         self.redis.sadd('indexed_categories', crawled_tree.uuid)
         self.logger.debug(f'Indexing captures for {crawled_tree.uuid} ... ')
 
-        internal_index = f'capture_indexes|{crawled_tree.uuid}'
         check_if_exists = set()
         # Remove all the old categories if any
         pipeline = self.redis.pipeline()
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'categories')
         for old_category in self.redis.smembers(f'{internal_index}|categories'):
             self._reindex_categories(old_category)
             pipeline.zrem(f'categories|{old_category}|captures', crawled_tree.uuid)
