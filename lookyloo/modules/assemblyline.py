@@ -38,6 +38,8 @@ class AssemblyLine(AbstractModule):
             return error
 
         response = self._submit(cache)
+        if 'error' in response:
+            return response
         self.logger.debug(f'Submitted {cache.url} to AssemblyLine: {response}')
         return {'success': response}
 
