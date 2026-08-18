@@ -1077,6 +1077,7 @@ class Lookyloo():
                     # recapture_interval=query.recapture_interval,
                     priority=priority
                 )
+                # it has been queued.
                 query.not_queued = False
             except Exception as e:
                 self.logger.exception(f'Unable to enqueue capture: {e}')
@@ -1087,7 +1088,7 @@ class Lookyloo():
                     perma_uuid = str(uuid4())
                 query.not_queued = True
         finally:
-            if not self.redis.hexists('lookup_dirs', perma_uuid):  # if true, already captured
+            if not self.uuid_exists_in_cache(perma_uuid):  # if true, already captured
                 p = self.redis.pipeline()
                 p.zadd('to_capture', {perma_uuid: priority})
                 query.uuid = perma_uuid
