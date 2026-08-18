@@ -507,7 +507,7 @@ class Lookyloo():
         for category in categories:
             try:
                 taxonomy, predicate, name = self.taxonomies.revert_machinetag(category)  # type: ignore[misc]
-                if not taxonomy or not predicate or not name and taxonomy.name != 'content-classification':
+                if not (taxonomy and predicate and name) or taxonomy.name != 'content-classification':
                     logger.warning(f'Invalid category: {category}')
                     invalid_categories.add(category)
                 else:
