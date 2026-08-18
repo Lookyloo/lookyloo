@@ -48,7 +48,7 @@ jobs:
 
       - name: Install kvrocks from deb
         run: |
-          wget https://github.com/Lookyloo/kvrocks-fpm/releases/download/2.14.0-2/kvrocks_2.14.0-1_amd64.deb -O kvrocks.deb
+          wget https://github.com/RocksLabs/kvrocks-fpm/releases/download/2.16.0-1/kvrocks_2.16.0-1_amd64.deb -O kvrocks.deb
           sudo dpkg -i kvrocks.deb
 
       - name: Clone uwhoisd
@@ -77,6 +77,7 @@ jobs:
           poetry run playwright install-deps
           poetry run playwright install
           cp config/generic.json.sample config/generic.json
+          cp config/logging_web.json.sample config/logging_web.json
           cp config/modules.json.sample config/modules.json
           poetry run update --init
           jq '.UniversalWhois.enabled = true' config/modules.json > temp.json && mv temp.json config/modules.json
