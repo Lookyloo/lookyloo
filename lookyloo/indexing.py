@@ -148,7 +148,8 @@ class Indexing():
         hash_types_indexed = all(self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid) for hash_type in self.captures_hashes_types())
         to_return: list[bool] = p.execute()
         to_return.append(hash_types_indexed)
-        return Indexed(*to_return)
+        # make sure we have bools
+        return Indexed(*[bool(r) for r in to_return])
 
     def index_capture(self, uuid_to_index: str, directory: Path, *, background: bool=False, force_manual: bool=False) -> bool:
         if not force_manual and not background and self.is_slow:
