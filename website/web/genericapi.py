@@ -467,10 +467,10 @@ class ModulesResponse(Resource):  # type: ignore[misc]
 
 def get_body_hash_occurrences(body_hash: str, *, with_urls_occurrences: bool=False, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
     '''Get the most recent captures and URL nodes where the body hash has been seen.'''
-    entries = get_indexing(flask_login.current_user.is_authenticated).get_captures_body_hash(body_hash, offset=offset, limit=limit)
+    entries = get_indexing(flask_login.current_user).get_captures_body_hash(body_hash, offset=offset, limit=limit)
     captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only)
 
-    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user.is_authenticated).get_captures_body_hash_count(body_hash)}
+    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_body_hash_count(body_hash)}
     if len(captures) < limit and meta['total'] > offset + limit:
         meta['warning'] = 'Some capture are missing, they are probably not cached. You can re-run the query with the `cached_captures_only` parameter set to `False`, but it can take a while.'
 
@@ -480,7 +480,7 @@ def get_body_hash_occurrences(body_hash: str, *, with_urls_occurrences: bool=Fal
                                                                   'start_timestamp': capture.timestamp.isoformat(),
                                                                   'title': capture.title}
         if with_urls_occurrences:
-            to_append['urlnodes'] = list(get_indexing(flask_login.current_user.is_authenticated).get_capture_body_hash_nodes(capture.uuid, body_hash))
+            to_append['urlnodes'] = list(get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture.uuid, body_hash))
         to_return['response'].append(to_append)
 
     return to_return
@@ -501,12 +501,12 @@ body_hash_info_fields = api.model('BodyHashInfoFields', {
 class HashInfo(Resource):  # type: ignore[misc]
 
     def get(self, h: str) -> Response:
-        if uuids := get_indexing(flask_login.current_user.is_authenticated).get_hash_uuids(h):
+        if uuids := get_indexing(flask_login.current_user).get_hash_uuids(h):
             # got UUIDs for this hash
             capture_uuid, urlnode_uuid = uuids
             if ressource := lookyloo.get_ressource(capture_uuid, urlnode_uuid, h):
                 filename, body, mimetype = ressource
-                details = get_indexing(flask_login.current_user.is_authenticated).get_body_hash_urlnodes(h)
+                details = get_indexing(flask_login.current_user).get_body_hash_urlnodes(h)
                 return make_response({'response': {'hash': h, 'details': details,
                                       'body': base64.b64encode(body.getvalue()).decode()}})
             return make_response({'error': 'Unable to get ressource'}, 400)
@@ -521,10 +521,10 @@ class HashInfo(Resource):  # type: ignore[misc]
 def get_favicon_occurrences(favicon: str, *, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, str]]]:
     '''Get the most recent captures where the favicon has been seen.'''
     captures = lookyloo.sorted_capture_cache(
-        get_indexing(flask_login.current_user.is_authenticated).get_captures_favicon(favicon, offset=offset, limit=limit),
+        get_indexing(flask_login.current_user).get_captures_favicon(favicon, offset=offset, limit=limit),
         cached_captures_only=cached_captures_only)
 
-    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user.is_authenticated).get_captures_favicon_count(favicon)}
+    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_favicon_count(favicon)}
     if len(captures) < limit and meta['total'] > offset + limit:
         meta['warning'] = 'Some capture are missing, they are probably not cached. You can re-run the query with the `cached_captures_only` parameter set to `False`, but it can take a while.'
 
@@ -558,10 +558,10 @@ class FaviconInfo(Resource):  # type: ignore[misc]
 def get_ip_occurrences(ip: str, *, with_urls_occurrences: bool=False, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
     '''Get the most recent captures and IP nodes where the IP has been seen.'''
     captures = lookyloo.sorted_capture_cache(
-        get_indexing(flask_login.current_user.is_authenticated).get_captures_ip(ip, offset=offset, limit=limit),
+        get_indexing(flask_login.current_user).get_captures_ip(ip, offset=offset, limit=limit),
         cached_captures_only=cached_captures_only)
 
-    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user.is_authenticated).get_captures_ip_count(ip)}
+    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_ip_count(ip)}
     if len(captures) < limit and meta['total'] > offset + limit:
         meta['warning'] = 'Some capture are missing, they are probably not cached. You can re-run the query with the `cached_captures_only` parameter set to `False`, but it can take a while.'
 
@@ -571,7 +571,7 @@ def get_ip_occurrences(ip: str, *, with_urls_occurrences: bool=False, cached_cap
                                                                   'start_timestamp': capture.timestamp.isoformat(),
                                                                   'title': capture.title}
         if with_urls_occurrences:
-            to_append['urlnodes'] = list(get_indexing(flask_login.current_user.is_authenticated).get_capture_ip_nodes(capture.uuid, ip))
+            to_append['urlnodes'] = list(get_indexing(flask_login.current_user).get_capture_ip_nodes(capture.uuid, ip))
         to_return['response'].append(to_append)
     return to_return
 
@@ -598,10 +598,10 @@ class IPInfo(Resource):  # type: ignore[misc]
 def get_url_occurrences(url: str, *, with_urls_occurrences: bool=False, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
     '''Get the most recent captures and URL nodes where the URL has been seen.'''
     captures = lookyloo.sorted_capture_cache(
-        get_indexing(flask_login.current_user.is_authenticated).get_captures_url(url, offset=offset, limit=limit),
+        get_indexing(flask_login.current_user).get_captures_url(url, offset=offset, limit=limit),
         cached_captures_only=cached_captures_only)
 
-    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user.is_authenticated).get_captures_url_count(url)}
+    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_url_count(url)}
     if len(captures) < limit and meta['total'] > offset + limit:
         meta['warning'] = 'Some capture are missing, they are probably not cached. You can re-run the query with the `cached_captures_only` parameter set to `False`, but it can take a while.'
 
@@ -643,10 +643,10 @@ class URLInfo(Resource):  # type: ignore[misc]
 
 def get_hostname_occurrences(hostname: str, *, with_urls_occurrences: bool=False, cached_captures_only: bool=True, limit: int=20, offset: int=0) -> dict[str, dict[str, Any] | list[dict[str, Any]]]:
     '''Get the most recent captures and URL nodes where the hostname has been seen.'''
-    entries = get_indexing(flask_login.current_user.is_authenticated).get_captures_hostname(hostname, offset=offset, limit=limit)
+    entries = get_indexing(flask_login.current_user).get_captures_hostname(hostname, offset=offset, limit=limit)
     captures = lookyloo.sorted_capture_cache(entries, cached_captures_only=cached_captures_only)
 
-    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user.is_authenticated).get_captures_hostname_count(hostname)}
+    meta: dict[str, Any] = {'limit': limit, 'offset': offset, 'total': get_indexing(flask_login.current_user).get_captures_hostname_count(hostname)}
     if len(captures) < limit and meta['total'] > offset + limit:
         meta['warning'] = 'Some capture are missing, they are probably not cached. You can re-run the query with the `cached_captures_only` parameter set to `False`, but it can take a while.'
 
@@ -1243,11 +1243,11 @@ class RecentCaptures(Resource):  # type: ignore[misc]
 class CategoriesCaptures(Resource):  # type: ignore[misc]
     def get(self, category: str | None=None) -> Response:
         if category:
-            entries = get_indexing(flask_login.current_user.is_authenticated).get_captures_category(category)
+            entries = get_indexing(flask_login.current_user).get_captures_category(category)
             return make_response(entries)
         to_return: dict[str, list[str]] = {}
-        for c in get_indexing(flask_login.current_user.is_authenticated).categories:
-            to_return[c] = get_indexing(flask_login.current_user.is_authenticated).get_captures_category(c)
+        for c in get_indexing(flask_login.current_user).categories:
+            to_return[c] = get_indexing(flask_login.current_user).get_captures_category(c)
         return make_response(to_return)
 
 
@@ -1263,7 +1263,7 @@ class TLDCaptures(Resource):  # type: ignore[misc]
     def get(self) -> Response:
         tld: str | None = request.args['tld'] if request.args.get('tld') else None
         if not tld:
-            return make_response(list(get_indexing(flask_login.current_user.is_authenticated).tlds))
+            return make_response(list(get_indexing(flask_login.current_user).tlds))
 
         urls_only: bool | None = True if request.args.get('urls_only') else None
         most_recent_capture: datetime | None
@@ -1281,7 +1281,7 @@ class TLDCaptures(Resource):  # type: ignore[misc]
             except Exception:
                 oldest_capture = None
 
-        recent_captures_with_tld = get_indexing(flask_login.current_user.is_authenticated).get_captures_tld(tld, most_recent_capture, oldest_capture)
+        recent_captures_with_tld = get_indexing(flask_login.current_user).get_captures_tld(tld, most_recent_capture, oldest_capture)
         if not recent_captures_with_tld:
             return make_response([])
         if not urls_only:
@@ -1291,14 +1291,14 @@ class TLDCaptures(Resource):  # type: ignore[misc]
         # Make sure to only get the captures with a pickle ready
         cache = lookyloo.sorted_capture_cache(recent_captures_with_tld, cached_captures_only=True)
         for c in cache:
-            nodes_with_tld = get_indexing(flask_login.current_user.is_authenticated).get_capture_tld_nodes(c.uuid, tld)
+            nodes_with_tld = get_indexing(flask_login.current_user).get_capture_tld_nodes(c.uuid, tld)
             try:
                 to_return.update(node.name for node in lookyloo.get_urlnodes_from_tree(c.tree, node_uuids=nodes_with_tld))
             except IndexError:
                 # The capture needs to be re-indexed
                 # NOTE: If this warning it printed on a loop for a capture, we have a problem with the index.
                 api.logger.warning(f'Capture {c.uuid} needs to be re-indexed.')
-                get_indexing(flask_login.current_user.is_authenticated).force_reindex(c.uuid)
+                get_indexing(flask_login.current_user).force_reindex(c.uuid)
         return make_response(list(to_return))
 
 # ###################### Advanced Search ############################
