@@ -2369,7 +2369,7 @@ class Lookyloo():
                 elif filename.endswith('potential_favicons.ico'):
                     # We may have more than one favicon
                     potential_favicons.add(lookyloo_capture.read(filename))
-                elif filename == 'uuid':
+                elif filename.endswith('uuid'):
                     uuid = lookyloo_capture.read(filename).decode()
                     try:
                         UUID(uuid)
