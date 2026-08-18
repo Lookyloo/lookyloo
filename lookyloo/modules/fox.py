@@ -61,6 +61,6 @@ class FOX(AbstractModule):
                 self.__submit_url(url)
             except requests.exceptions.HTTPError as e:
                 return {'error': e}
-            self.logger.info('URL submitted to FOX ({url})')
+            self.logger.info(f'URL submitted to FOX ({url})')
             return {'success': 'URL submitted successfully'}
         return {'error': 'Submitting is not allowed by the configuration'}
