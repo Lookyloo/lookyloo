@@ -1185,6 +1185,8 @@ def downloads(tree_uuid: str) -> str:
                     files.append((file_info.filename,))
         else:
             files = [(filename, )]
+    else:
+        files = [('Nothing there.', )]
 
     # TODO: add other info (like the mimetype)
     return render_template('downloads.html', tree_uuid=tree_uuid, files=files,
@@ -2041,6 +2043,7 @@ def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
     if not lookyloo.pandora.available:
         return {'error': 'Pandora not available.'}
     node_uuid = None
+    index_in_zip = None
     if request.method == 'POST':
         input_json = request.get_json(force=True)
         # Submit a ressource from the capture / rendering of the page
