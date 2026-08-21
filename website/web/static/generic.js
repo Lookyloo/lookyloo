@@ -121,7 +121,7 @@ function add_event_js_copy() {
           }, function(err) {
             el.setAttribute('data-bs-original-title', 'Could not copy text: ' + err);
           }).then(function() {
-            $(el).tooltip('dispose').tooltip().tooltip('show');
+            bootstrap.Tooltip.getInstance(el).show();
           });
         })
     );

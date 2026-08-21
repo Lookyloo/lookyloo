@@ -128,7 +128,6 @@ function renderTables() {
         searching: true,
         drawCallback: function (settings) {
             newTabClickListener(); add_event_js_copy();;
-            $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         },
         order: [[ 0, "desc" ]],
         ajax: {
@@ -190,7 +189,6 @@ function renderTables() {
         searching: true,
         drawCallback: function (settings) {
             newTabClickListener(); add_event_js_copy();;
-            $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         },
         order: [[ 0, "desc" ]],
         ajax: {
@@ -212,7 +210,6 @@ function renderTables() {
         searching: true,
         drawCallback: function (settings) {
             newTabClickListener(); add_event_js_copy();;
-            $('[data-bs-toggle="tooltip"]').tooltip({html: true});
         },
         order: [[ 0, "desc" ]],
         ajax: {

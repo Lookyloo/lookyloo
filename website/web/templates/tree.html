@@ -46,31 +46,19 @@
           crossorigin="anonymous"></script>
 
   <script nonce="{{ csp_nonce() }}">
-    $('.modulesForceRefresh').on('click',function(){
-      $('#modulesModal .modal-body').text("Reloading modules, please wait...")
-      $('#modulesModal .modal-body').load("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True, seed=seed) }}", function(){
-        $('#modulesModal').modal({show:true});
-      });
-    });
-  </script>
-
-  <script nonce="{{ csp_nonce() }}">
-    $('#fast-categories').submit(function(event){
-    event.preventDefault();
-      var query = $('#fast-categories').serialize(); // Serialize form data
-
-      $.ajax({
-          type: 'POST',
-          url: '{{ url_for('categories_capture', tree_uuid=tree_uuid, seed=seed) }}',
-          data: query,
-          success: function(response) {
-           $('#categoriesModal .modal-body').html(response);
-              $('#categoriesModal').modal({show:true});
-          },
-          error: function(error) {
-              console.log("An error occurred: ", error);
-          }
-      });
+    const buttonModulesRefresh = document.getElementById("modulesForceRefresh");
+    buttonModulesRefresh.addEventListener("click", (event) => {
+        document.getElementById("modulesBody").textContent = "Reloading modules, please wait...";
+        fetch("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True, seed=seed) }}", {
+            method: "GET"
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("modulesBody").innerHTML = data;
+        })
+        .catch((error) => {
+            document.getElementById("modulesBody").textContent = error;
+        });
     });
   </script>
 
@@ -1063,11 +1051,11 @@
           <center><h5>Note that if you get an error when you click on a
                   link below, it probably means the capture is still ongoing.
                   Try reloading the page after a few seconds.</h5></center>
-          <div class="modal-body">
+          <div class="modal-body" id="modulesBody">
               ... loading results from 3rd party modules ...
           </div>
           <div class="modal-footer">
-              <button type="button" class="btn btn-success modulesForceRefresh">Re-run all modules</button>
+              <button type="button" class="btn btn-success" id="modulesForceRefresh">Re-run all modules</button>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
       </div>

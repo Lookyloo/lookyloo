@@ -1,11 +1,25 @@
 "use strict";
 function mispSelector() {
-  $('#mispSelector button').on('click', function(e){
-      let thisBtn = $(this);
-      thisBtn.addClass('active').siblings().removeClass('active');
-      $(`#${thisBtn.val()}`).show().siblings().hide()
+  let mispSelectorButtons = document.querySelectorAll('#mispSelector button');
+  mispSelectorButtons.forEach((b) => {
+    b.addEventListener('click', (e) => {
+      e.currentTarget.parentNode.childNodes.forEach((s) => {
+        if (s.nodeType !== 3) {
+            // not text node
+            s.classList.remove("active");
+        }
+      });
+      document.getElementById(e.currentTarget.value).parentNode.childNodes.forEach((s) => {
+        if (s.nodeType !== 3) {
+          // not text node
+          s.style.display = 'none';
+        }
+      });
+      e.currentTarget.classList.add('active')
+      document.getElementById(e.currentTarget.value).style.display = 'block';
+    });
   });
-}
+};
 
 //download the tree as png file
 const downloadSvg = () => {
@@ -142,16 +156,18 @@ document.addEventListener("DOMContentLoaded", () => {
      "#urlsInPageModal", "#storageStateModal", "#downloadsModal",
      "#ipsModal", "#ipDetailsModal", "#cookieNameModal", "#ollamaModal",
      "#mispPushModal", "#mispLookupModal"].forEach(modal => {
-        $(modal).on('show.bs.modal', function(e) {
-          var button = $(e.relatedTarget);
-          var modal = $(this);
-          modal.find('.modal-body').load(button.data("remote"), function(result){
-            renderTables();
-            submitPandoraListener();
-            mispSelector();
-            document.getElementById("dlTreeAsSVG")?.addEventListener("click", downloadSvg);
-          });
-        })
+        document.querySelector(modal).addEventListener('show.bs.modal', function(e) {
+          var curTarget = e.currentTarget;
+          fetch(e.relatedTarget.dataset.remote)
+            .then(response => response.text())
+            .then(data => {
+                curTarget.querySelector('.modal-body').innerHTML = data;
+                renderTables();
+                submitPandoraListener();
+                mispSelector();
+                document.getElementById("dlTreeAsSVG")?.addEventListener("click", downloadSvg);
+            })
+        });
     });
 
     // OnClicks

@@ -7,7 +7,7 @@
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript" nonce="{{ csp_nonce() }}">
-    $('#table').DataTable( {
+    new DataTable('#table', {
         "order": [[ 1, "desc" ]],
         "pageLength": 500
     });

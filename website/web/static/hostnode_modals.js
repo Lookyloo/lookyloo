@@ -2,13 +2,14 @@
 // Modals
 document.addEventListener("DOMContentLoaded", () => {
     ["#JsonRenderModal"].forEach(modal => {
-        $(modal).on('show.bs.modal', function(e) {
-          var button = $(e.relatedTarget);
-          var modal = $(this);
-          modal.find('.modal-body').load(button.data("remote"), function(result){
-            console.log('done');
-          });
-        })
+        document.querySelector(modal).addEventListener('show.bs.modal', function(e) {
+          var curTarget = e.currentTarget;
+          fetch(e.relatedTarget.dataset.remote)
+            .then(response => response.text())
+            .then(data => {
+                curTarget.querySelector('.modal-body').innerHTML = data;
+            })
+        });
     });
     document.querySelectorAll('.tl-timestamp').forEach((item, index) => {
         let d = new Date(parseFloat(item.innerText));

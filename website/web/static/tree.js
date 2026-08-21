@@ -602,7 +602,8 @@ function update(root, computed_node_width=0) {
                           .text(d => d.data.downloaded_filename ? 'Contains the URL rendered in the browser. It also downloaded a file.': 'Contains the URL rendered in the browser.');
                     })
                     .on('click', (event, d) => {
-                        $("#screenshotModal").modal('toggle');
+                        new bootstrap.Modal('#screenshotModal')
+                            .show(document.getElementById('screenshotModal'));
                     })
                     .on('mouseout', (event, d) => {
                         d3.select('#tooltip').style('opacity', 0)
