@@ -1918,6 +1918,9 @@ class Lookyloo():
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         cache = self.capture_cache(capture_uuid)
 
+        # If this fails, no need to continue, the tree is broken.
+        cache.tree
+
         # ### NOTE: get all the relevant elements gathered during the capture:
         # * downloaded file(s)
 

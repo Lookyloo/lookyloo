@@ -343,6 +343,8 @@ class MISPExport(Resource):  # type: ignore[misc]
             event = lookyloo.misp_export(capture_uuid, True if with_parents else False, as_admin=flask_login.current_user.is_authenticated)
         except ModuleError as e:
             return make_response({'error': str(e)}, 500)
+        except LookylooException as e:
+            return make_response({'error': str(e)}, 500)
         if isinstance(event, dict):
             return make_response(event)
 
