@@ -44,6 +44,10 @@ class AbstractModule(ABC):
         self._allow_auto_trigger = bool(self.config.pop('allow_auto_trigger', False))
         try:
             self._available = self.module_init()
+            if self._available:
+                self.logger.info(f'{self.__class__.__name__} is ready.')
+            else:
+                self.logger.warning(f'{self.__class__.__name__} is not avilable.')
         except Exception as e:
             self.logger.warning(f'Unable to initialize module: {e}.')
 
