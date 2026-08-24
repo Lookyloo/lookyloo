@@ -8,6 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(response => response.text())
             .then(data => {
                 curTarget.querySelector('.modal-body').innerHTML = data;
+                if (document.getElementById("pretty_data")){
+                    getData(document.getElementById("pretty_data").dataset.urlcontent);
+                };
             })
         });
     });

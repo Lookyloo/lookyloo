@@ -15,10 +15,6 @@
 <center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
 {%endif%}
 
-<script type="module">
-    await getData("{{download_link}}")
-</script>
-
 <center>
   <a href="{{ download_link }}">
       Download content
@@ -30,6 +26,6 @@
 {%endif%}
 
 <div id="render_meta" class="alert" role="alert"></div>
-<pre id="pretty_data" style="text-wrap: wrap; word-break: break-word;"></pre>
+<pre id="pretty_data" style="text-wrap: wrap; word-break: break-word;" data-urlcontent="{{download_link}}"></pre>
 
 {% endblock %}
