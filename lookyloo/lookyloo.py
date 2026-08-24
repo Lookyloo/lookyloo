@@ -132,6 +132,11 @@ class Lookyloo():
         self.headed_allowed = get_config('generic', 'allow_headed')
         self.force_trusted_timestamp = get_config('generic', 'force_trusted_timestamp')
 
+        self.archive_in_days = get_config('generic', 'archive')
+        self.time_delta_on_index = timedelta(**get_config('generic', 'time_delta_on_index'))
+        if self.time_delta_on_index.days > self.archive_in_days:
+            raise ConfigError(f'Captures older than {self.archive_in_days} days are archived, but the most recent {self.time_delta_on_index.days} are supposed to be on the index.')
+
         self.default_public = get_config('generic', 'default_public')
         _p = get_config('generic', 'private_captures')
         self.default_private = _p.get('default_private')
@@ -695,7 +700,7 @@ class Lookyloo():
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''
         # Make sure we do not try to load archived captures that would still be in 'lookup_dirs'
-        cut_time = (datetime.now() - timedelta(days=get_config('generic', 'archive') - 1))
+        cut_time = (datetime.now() - timedelta(days=self.archive_in_days - 1))
         if index_cut_time:
             if index_cut_time < cut_time:
                 index_cut_time = cut_time

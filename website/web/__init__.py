@@ -199,7 +199,6 @@ def logout() -> WerkzeugResponse:
 
 lookyloo: Lookyloo = get_lookyloo_instance()
 
-time_delta_on_index = get_config('generic', 'time_delta_on_index')
 blur_screenshot = get_config('generic', 'enable_default_blur_screenshot')
 
 use_own_ua = get_config('generic', 'use_user_agents_users')
@@ -2159,7 +2158,7 @@ def ressources() -> str:
         freq = get_indexing(flask_login.current_user).get_captures_body_hash_count(h)
         context = lookyloo.context.find_known_content(h)
         # Only get the recent captures
-        _, entries = get_indexing(flask_login.current_user).get_captures_body_hash(h, oldest_capture=datetime.now() - timedelta(**time_delta_on_index))
+        _, entries = get_indexing(flask_login.current_user).get_captures_body_hash(h, oldest_capture=datetime.now() - lookyloo.time_delta_on_index)
         for capture_uuid in entries:
             url_nodes = get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, h)
             url_node = url_nodes.pop()
@@ -3086,10 +3085,8 @@ def get_index(offset: int, limit: int, public: bool=True, show_error: bool=False
                     limit=limit),
                 public=public, cached_captures_only=False)
     else:
-        cut_time: datetime | None = None
-        if time_delta_on_index:
-            # We want to filter the captures on the index
-            cut_time = (datetime.now() - timedelta(**time_delta_on_index))
+        # We want to filter the captures on the index
+        cut_time = (datetime.now() - lookyloo.time_delta_on_index)
         cached_captures = lookyloo.sorted_capture_cache(public=public, cached_captures_only=True, index_cut_time=cut_time)
         if not show_error:
             cached_captures = [cached for cached in cached_captures if not cached.error]
