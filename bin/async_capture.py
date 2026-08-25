@@ -146,6 +146,7 @@ class AsyncCapture(AbstractManager):
                         capture_settings=to_capture,
                         potential_favicons=entries.get('potential_favicons'),
                         trusted_timestamps=entries.get('trusted_timestamps'),
+                        console_messages=entries.get('console_messages'),
                         auto_report=to_capture.auto_report,
                         monitor_capture=to_capture.monitor_capture,
                     )

@@ -15,7 +15,7 @@ from lookyloo_models import LookylooCaptureSettings
 from lookyloo.exceptions import LacusUnreachable, LacusUnknown, NotCached
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json
-from lookyloo.modules import AIL, AssemblyLine, MISPs, MISP, AutoCategorize
+from lookyloo.modules import AIL, AssemblyLine, MISP, AutoCategorize
 from pylacus import CaptureStatus as CaptureStatusPy
 
 logging.config.dictConfig(get_config('logging'))
@@ -33,7 +33,7 @@ class Processing(AbstractManager):
         self.auto_categorize = AutoCategorize(config_name='AutoCategorize')
         self.ail = AIL(config_name='AIL')
         self.assemblyline = AssemblyLine(config_name='AssemblyLine')
-        self.misps = MISPs(config_name='MultipleMISPs')
+        self.misps = self.lookyloo.misps
         # prepare list of MISPs to auto-push to (if any)
         self.misps_auto_push: dict[str, MISP] = {}
         if self.misps.available:

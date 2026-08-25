@@ -1738,6 +1738,10 @@ class Lookyloo():
         '''Get the frames of the capture'''
         return self._get_raw(capture_uuid, 'frames.json', all_files=False)
 
+    def get_console_messages(self, capture_uuid: str) -> tuple[bool, BytesIO]:
+        '''Get the console entries of the capture'''
+        return self._get_raw(capture_uuid, 'console_messages.json', all_files=False)
+
     def get_last_url_in_address_bar(self, capture_uuid: str) -> str | None:
         '''Get the URL in the address bar at the end of the capture'''
         success, file = self._get_raw(capture_uuid, 'last_redirect.txt', all_files=False)
@@ -2341,6 +2345,7 @@ class Lookyloo():
         capture_settings: LookylooCaptureSettings | None = None
         potential_favicons: set[bytes] | None = None
         trusted_timestamps: dict[str, str] | None = None
+        console_messages: list[dict[str, str | int | float]] | None = None
         categories: list[str] | None = None
         private: bool = False
         uuid: str | None = None
@@ -2409,6 +2414,8 @@ class Lookyloo():
                     error = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('0.trusted_timestamps.json'):
                     trusted_timestamps = orjson.loads(lookyloo_capture.read(filename).decode())
+                elif filename.endswith('0.console_messages.json'):
+                    console_messages = orjson.loads(lookyloo_capture.read(filename).decode())
                 elif filename.endswith('capture_settings.json'):
                     _capture_settings = orjson.loads(lookyloo_capture.read(filename))
                     try:
@@ -2453,6 +2460,7 @@ class Lookyloo():
                                capture_settings=capture_settings if capture_settings else None,
                                potential_favicons=potential_favicons,
                                trusted_timestamps=trusted_timestamps if trusted_timestamps else None,
+                               console_messages=console_messages if console_messages else None,
                                categories=categories if categories else None)
             return uuid, messages
 
@@ -2469,6 +2477,7 @@ class Lookyloo():
                       capture_settings: LookylooCaptureSettings | None=None,
                       potential_favicons: set[bytes] | None=None,
                       trusted_timestamps: dict[str, str] | None=None,
+                      console_messages: list[dict[str, str | int | float]] | None=None,
                       auto_report: bool | AutoReportSettings | None = None,
                       monitor_capture: MonitorCaptureSettings | None = None,
                       categories: list[str] | None=None
@@ -2577,6 +2586,10 @@ class Lookyloo():
         if trusted_timestamps:
             with (dirpath / '0.trusted_timestamps.json').open('wb') as _tt:
                 _tt.write(orjson.dumps(trusted_timestamps))
+
+        if console_messages:
+            with (dirpath / '0.console_messages.json').open('wb') as _ce:
+                _ce.write(orjson.dumps(console_messages))
 
         if auto_report:
             # autoreport needs to be triggered once the tree is build

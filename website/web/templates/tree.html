@@ -205,6 +205,11 @@
                     data-bs-target="#storageStateModal" role="button" title="The storage state at the end of the capture">Storage state</a>
                 </li>
                 <li>
+                <a href="#consoleMessagesModal" data-remote="{{ url_for('console_messages', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
+                    class="dropdown-item"
+                    data-bs-target="#consoleMessagesModal" role="button" title="The messages in the debug console during the capture">Console messages</a>
+                </li>
+                <li>
                 {% if has_downloads %}
                 <a href="#downloadsModal" data-remote="{{ url_for('downloads', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
                     class="dropdown-item"
@@ -615,26 +620,6 @@
   </div>
 </div>
 
-<div class="modal fade" id="cookieNameModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-xl" role="document">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title" id="cookieNameModalLabel">Cookie Name</h5>
-              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-              ... loading cookie name ...
-          </div>
-          <div class="modal-footer">
-              <a class="btn btn-primary" href="#storageStateModal"
-                 data-remote="{{ url_for('storage_state', tree_uuid=tree_uuid, seed=seed) }}"
-                 data-bs-toggle="modal" data-bs-target="#storageStateModal" role="button">Back to capture's storage</a>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-      </div>
-  </div>
-</div>
-
 <div class="modal fade" id="statsModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
@@ -661,6 +646,23 @@
           </div>
           <div class="modal-body">
               ... loading storage state ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="consoleMessagesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="consoleMessagesModalLabel">Console Messages</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading console messages ...
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

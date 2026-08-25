@@ -452,6 +452,21 @@ function renderTables() {
         ]
       });
   }
+  if (document.getElementById('consoleMessagesTable')) {
+      let cm_table = new DataTable('#consoleMessagesTable', {
+        retrieve: true,
+        order: [[ 0, "desc" ]],
+        pageLength: 25,
+        columns: [
+            {width: '20%', render: DataTable.render.datetime_with_tz()},
+            {width: '10%'},
+            {width: '30%'},
+            {width: '25%'},
+            {width: '5%'},
+            {width: '10%'}
+        ]
+      });
+  }
   if (document.getElementsByName('localStorageTable').length > 0) {
     let localStorageTables = document.getElementsByName("localStorageTable");
     Array.from(localStorageTables).forEach(function (localStorageTable) {

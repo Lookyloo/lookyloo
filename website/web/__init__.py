@@ -1208,6 +1208,17 @@ def storage_state(tree_uuid: str) -> str:
                            storage=storage, from_popup=from_popup)
 
 
+@app.route('/tree/<uuid:tree_uuid>/console_messages', methods=['GET'])
+def console_messages(tree_uuid: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
+    messages = []
+    success, console_messages = lookyloo.get_console_messages(tree_uuid)
+    if success and console_messages and console_messages.getvalue():
+        messages = orjson.loads(console_messages.getvalue())
+    return render_template('console_messages.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
+                           messages=messages, from_popup=from_popup)
+
+
 @app.route('/tree/<uuid:tree_uuid>/misp_lookup', methods=['GET'])
 def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not lookyloo.misps.available:

@@ -152,9 +152,9 @@ document.addEventListener("DOMContentLoaded", () => {
      "#captureHashesTypesModal", "#captureHashesTypesDetailsModal",
      "#bodyHashesModal", "#bodyHashDetailsModal",
      "#hostnamesModal", "#hostnameDetailsModal",
-     "#urlsModal", "#urlDetailsModal",
+     "#urlsModal", "#urlDetailsModal", "#consoleMessagesModal",
      "#urlsInPageModal", "#storageStateModal", "#downloadsModal",
-     "#ipsModal", "#ipDetailsModal", "#cookieNameModal", "#ollamaModal",
+     "#ipsModal", "#ipDetailsModal", "#ollamaModal",
      "#mispPushModal", "#mispLookupModal"].forEach(modal => {
         document.querySelector(modal).addEventListener('show.bs.modal', function(e) {
           var curTarget = e.currentTarget;
