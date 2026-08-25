@@ -119,11 +119,12 @@ class BackgroundBuildCaptures(AbstractManager):
     def _to_run_forever(self) -> None:
         built_all_missing = self._build_missing_pickles()
         if self.shutdown_requested() or (self.build_recent and not built_all_missing):
+            self.logger.info('Not done with recent, ignore lazy.')
             # if we're not done with recent, quit
             self.lookyloo.clear_tree_cache()
             return
         # just process some of the entries in lazy_background_build
-        to_process = 25 if self.build_recent else 1000
+        to_process = 100 if self.build_recent else 1000
 
         # done with the backlog, trigger a bunch from the lazy queue
         while self.redis.exists('lazy_background_build'):
@@ -132,9 +133,9 @@ class BackgroundBuildCaptures(AbstractManager):
             uuid = self.redis.spop('lazy_background_build')
             if not uuid:
                 break
-            to_process -= 1
             try:
-                self.__build_pickle(uuid=str(uuid), trigger_modules=False)
+                if self.__build_pickle(uuid=str(uuid), trigger_modules=False):
+                    to_process -= 1
                 # this call makes sure that the capture details are in the redis cache
                 self.lookyloo.capture_cache(str(uuid))
             except NoValidHarFile as e:
