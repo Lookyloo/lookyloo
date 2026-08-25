@@ -776,6 +776,19 @@ class CaptureStorageState(Resource):  # type: ignore[misc]
         return make_response({'error': 'No storage state'}, 404)
 
 
+@api.route('/json/<uuid:capture_uuid>/console_messages')
+@api.doc(description='Get the messages printed in the console during the capture.',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureConsoleMessages(Resource):  # type: ignore[misc]
+
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
+    def get(self, capture_uuid: str) -> Response:
+        success, console_messages = lookyloo.get_console_messages(capture_uuid)
+        if success and console_messages and console_messages.getvalue():
+            return make_response(json.loads(console_messages.getvalue()))
+        return make_response({'error': 'No console messages'}, 404)
+
+
 @api.route('/json/<uuid:capture_uuid>/report')
 @api.doc(description='Reports the url by sending an email to the investigation team',
          params={'capture_uuid': 'The UUID of the capture'})
