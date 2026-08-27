@@ -1191,14 +1191,28 @@ class CaptureRebuildTree(Resource):  # type: ignore[misc]
 
 @api.route('/admin/<uuid:capture_uuid>/hide')
 @api.doc(description='Hide the capture from the index.',
-         params={'capture_uuid': 'The UUID of the capture'},
-         security='apikey')
+         params={'capture_uuid': 'The UUID of the capture'})
 class CaptureHide(Resource):  # type: ignore[misc]
-    method_decorators = [api_auth_check]
 
     def post(self, capture_uuid: str) -> Response:
+        '''If the capture is private, and no seed was provided, bounced already.
+        If a seed was provided, and we're not admin, block it.
+
+        If the capture is listed -> make ut unlisted, if it is already unlisted,
+        '''
         try:
-            lookyloo.change_visibility(capture_uuid, visibility='unlisted')
+            cache = lookyloo.capture_cache(capture_uuid)
+            if cache.private:
+                if not flask_login.current_user.is_authenticated:
+                    return make_response({'error': 'Only an admin can make a private capture unlisted.'}, 400)
+                else:
+                    # As admin, make capture unlisted instead of private is allowed
+                    lookyloo.change_visibility(capture_uuid, visibility='unlisted')
+            elif cache.no_index:
+                return make_response({'error': 'The capture is already unlisted.'}, 400)
+            else:
+                # public capture, make it unlisted
+                lookyloo.change_visibility(capture_uuid, visibility='unlisted')
         except Exception as e:
             return make_response({'error': f'Unable to hide the tree: {e}'}, 400)
         return make_response({'info': f'Capture {capture_uuid} successfully hidden.'})
@@ -1206,17 +1220,31 @@ class CaptureHide(Resource):  # type: ignore[misc]
 
 @api.route('/admin/<uuid:capture_uuid>/private')
 @api.doc(description='Make capture private.',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CapturePrivate(Resource):  # type: ignore[misc]
+
+    def post(self, capture_uuid: str) -> Response:
+        try:
+            success, seed = lookyloo.change_visibility(capture_uuid, visibility='private')
+        except Exception as e:
+            return make_response({'error': f'Unable to make capture private: {e}'}, 400)
+        return make_response({'info': f'Capture {capture_uuid} successfully made private.',
+                              'seed': seed})
+
+
+@api.route('/admin/<uuid:capture_uuid>/public')
+@api.doc(description='Make a capture public (from unlisted/private, admin only, not allowed even with seed).',
          params={'capture_uuid': 'The UUID of the capture'},
          security='apikey')
-class CapturePrivate(Resource):  # type: ignore[misc]
+class CapturePublic(Resource):  # type: ignore[misc]
     method_decorators = [api_auth_check]
 
     def post(self, capture_uuid: str) -> Response:
         try:
-            lookyloo.change_visibility(capture_uuid, visibility='private')
+            lookyloo.change_visibility(capture_uuid, visibility='public')
         except Exception as e:
-            return make_response({'error': f'Unable to make capture private: {e}'}, 400)
-        return make_response({'info': f'Capture {capture_uuid} successfully made private.'})
+            return make_response({'error': f'Unable to make capture public: {e}'}, 400)
+        return make_response({'info': f'Capture {capture_uuid} successfully made public.'})
 
 
 @api.route('/admin/<uuid:capture_uuid>/remove')

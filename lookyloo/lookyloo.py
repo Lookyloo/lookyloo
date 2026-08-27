@@ -635,14 +635,19 @@ class Lookyloo():
                     to_return['urlscan']['result'] = result
         return to_return
 
-    def change_visibility(self, capture_uuid: str, /, visibility: Literal['public', 'unlisted', 'private']) -> None:
+    def change_visibility(self, capture_uuid: str, /, visibility: Literal['public', 'unlisted', 'private'], *, expire: str | None=None) -> tuple[bool, str | None]:
         """Change the visibility of the capture (public, unlisted, private)"""
         if visibility == 'private':
-            self._captures_index.hide(capture_uuid, make_private=True)
+            if self._captures_index.hide(capture_uuid, make_private=True):
+                seed, _ = self.add_seed(capture_uuid, expire=expire)
+                return True, seed
         elif visibility == 'unlisted':
-            self._captures_index.hide(capture_uuid, make_private=False)
+            if self._captures_index.hide(capture_uuid, make_private=False):
+                return True, None
         else:
-            self._captures_index.make_public(capture_uuid)
+            if self._captures_index.make_public(capture_uuid):
+                return True, None
+        return False, None
 
     def remove_capture(self, capture_uuid: str) -> None:
         """Remove the capture, it won't be accessible anymore."""
