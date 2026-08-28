@@ -6,6 +6,7 @@ import logging
 import logging.config
 import os
 import shutil
+import time
 
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -225,6 +226,7 @@ class BackgroundBuildCaptures(AbstractManager):
 
         try:
             self.logger.info(f'Build pickle for {uuid}: {path.name}')
+            start_build = time.monotonic()
             cache = self.lookyloo.capture_cache(uuid)
 
             if trigger_modules:
@@ -242,7 +244,7 @@ class BackgroundBuildCaptures(AbstractManager):
                 # Monitor & auto report, to that last.
                 self._auto_trigger(path)
 
-            self.logger.info(f'Pickle for {uuid} built.')
+            self.logger.info(f'Pickle for {uuid} built in {round(time.monotonic() - start_build, 3)}.')
             self.max_captures -= 1
             return True
         except UUIDMissingInCache:
