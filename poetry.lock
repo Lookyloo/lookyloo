@@ -1912,14 +1912,14 @@ files = [
 
 [[package]]
 name = "har2tree"
-version = "1.40.4"
+version = "1.41.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.40.4-py3-none-any.whl", hash = "sha256:f261790a8c12aa7c91db2554be7221b863f2dbb37ceca5cfe79af8a6608300f9"},
-    {file = "har2tree-1.40.4.tar.gz", hash = "sha256:ef9bd211d06ab49e0538cd10d509f00d72c446cb50a1a729133362b84ce4e976"},
+    {file = "har2tree-1.41.0-py3-none-any.whl", hash = "sha256:1da26114a9024fcac0274663d84cbebe108fd84b3b6889f7ce153c85591f4202"},
+    {file = "har2tree-1.41.0.tar.gz", hash = "sha256:01b03dc3b01125800f6561acab0d7eb32cf700ad8e7d99139eaf5ad572fa456d"},
 ]
 
 [package.dependencies]
@@ -1940,6 +1940,7 @@ pure-magic-rs = ">=0.4.3"
 pyfaup-rs = ">=0.4.0,<0.5"
 requests-toolbelt = ">=1.0.0,<2.0.0"
 tinycss2 = ">=1.5.1"
+tinycss2-core-attributes = ">=1.5.1.0,<2.0.0.0"
 w3lib = ">=2.4.1"
 
 [package.extras]
@@ -6095,6 +6096,21 @@ doc = ["furo", "sphinx"]
 test = ["pytest", "ruff"]
 
 [[package]]
+name = "tinycss2-core-attributes"
+version = "1.5.1.0"
+description = "Provides the set of core attributes for each tinycss AST Node"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "tinycss2_core_attributes-1.5.1.0-py3-none-any.whl", hash = "sha256:3f8c74f1317df548955529994a3bd5ca3b909cfa8fcdcaf268064b6205a17e22"},
+    {file = "tinycss2_core_attributes-1.5.1.0.tar.gz", hash = "sha256:aa16d847c6934262d2ac6c06f38a66b13d7bfcb669a68274f1dbf11f5acbac69"},
+]
+
+[package.dependencies]
+tinycss2 = "1.5.1"
+
+[[package]]
 name = "tomli"
 version = "2.4.1"
 description = "A lil' TOML parser"
@@ -6169,14 +6185,14 @@ types-html5lib = "*"
 
 [[package]]
 name = "types-cffi"
-version = "2.0.0.20260518"
+version = "2.1.0.20260827"
 description = "Typing stubs for cffi"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "types_cffi-2.0.0.20260518-py3-none-any.whl", hash = "sha256:5b68a215a95d0eac4203b58e766ff7fe40c2e091b1fa1a9e54111f04cc560084"},
-    {file = "types_cffi-2.0.0.20260518.tar.gz", hash = "sha256:f9707e66c13454789a58f8843d1ded4a66f1e9c8b10bd24d5eb5e0f25c0c5472"},
+    {file = "types_cffi-2.1.0.20260827-py3-none-any.whl", hash = "sha256:851b6ffa5b962c577a2330b98ac0b60c56c904d086726276946388f58a0cffaf"},
+    {file = "types_cffi-2.1.0.20260827.tar.gz", hash = "sha256:53d1604771ad4ff09a1a90d6f6980ab36bebb6c39476dcc5bbf4896fa510d736"},
 ]
 
 [package.dependencies]
@@ -6269,14 +6285,14 @@ files = [
 
 [[package]]
 name = "types-psutil"
-version = "7.2.2.20260518"
+version = "7.2.2.20260827"
 description = "Typing stubs for psutil"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "types_psutil-7.2.2.20260518-py3-none-any.whl", hash = "sha256:6a3d697665754a60d7b5a41d5a2cff12b53f5e0676d77810cd28ba5e14cb4049"},
-    {file = "types_psutil-7.2.2.20260518.tar.gz", hash = "sha256:9f825f631463a5b4d26f19f63aebc9ec25f01140d655026f3ad8a67841f9b331"},
+    {file = "types_psutil-7.2.2.20260827-py3-none-any.whl", hash = "sha256:62364359cf85482aa698a62488e5420cae5c576e8acec450ce7fb3b91cdb3d96"},
+    {file = "types_psutil-7.2.2.20260827.tar.gz", hash = "sha256:3c6067dba47c700495ca493f07b11e866ba13de223aabb26da555f9c86ae0b1f"},
 ]
 
 [[package]]
@@ -6364,14 +6380,14 @@ files = [
 
 [[package]]
 name = "types-webencodings"
-version = "0.6.0.20260826"
+version = "0.6.0.20260827"
 description = "Typing stubs for webencodings"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "types_webencodings-0.6.0.20260826-py3-none-any.whl", hash = "sha256:f2fd1c5cb45fc196b6dcb9852ca5a5d1bce48802c1190c5dad0233983b699859"},
-    {file = "types_webencodings-0.6.0.20260826.tar.gz", hash = "sha256:55ad82cd1c10d0dd3824e2fc779666a44375c61348a7f0939825af79994c0d69"},
+    {file = "types_webencodings-0.6.0.20260827-py3-none-any.whl", hash = "sha256:10600b0833f6c2a565879df74f806df69659f6fd87857f11438b924c74587416"},
+    {file = "types_webencodings-0.6.0.20260827.tar.gz", hash = "sha256:b7a8ce68141ae0d318fbc479137f28dc245ba578ae07f6ec6ce35b294f04cf41"},
 ]
 
 [[package]]
@@ -6902,4 +6918,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "62f5547c9b4b28b7480e72345c396a40fa076357f415dcbdd2b9b0ef90286acc"
+content-hash = "20435a4924070542848f4911eaebfdc6d22a76d8baddd0c99f659d9b82820153"
