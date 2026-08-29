@@ -13,6 +13,7 @@ from pathlib import Path
 
 from redis import Redis
 
+from har2tree import Har2TreeError
 from lookyloo import Lookyloo
 from lookyloo_models import AutoReportSettings, MonitorCaptureSettings
 from lookyloo.default import AbstractManager, get_config, get_socket_path, try_make_file, LookylooException
@@ -160,11 +161,14 @@ class BackgroundBuildCaptures(AbstractManager):
             if s_path := self.redis.hget('lookup_dirs', uuid):
                 path = Path(s_path)
                 if not path.exists():
-                    raise MissingCaptureDirectory(f'Path {path} does not exists')
+                    # might have been archived.
+                    self.redis.hdel('lookup_dirs', uuid)
+                    raise MissingCaptureDirectory(f'Path {path} does not exists (recent)')
             elif s_path := self.redis.hget('lookup_dirs_archived', uuid):
                 path = Path(s_path)
                 if not path.exists():
-                    raise MissingCaptureDirectory(f'Path {path} does not exists')
+                    self.redis.hdel('lookup_dirs_archived', uuid)
+                    raise MissingCaptureDirectory(f'Path {path} does not exists (archives)')
             else:
                 raise UUIDMissingInCache(f'Unable to find UUID {uuid} in cache.')
         elif path:
@@ -255,6 +259,8 @@ class BackgroundBuildCaptures(AbstractManager):
             raise TreeBuildFailed(f'There are unusable HAR files in the capture {uuid}: {path.name}') from e
         except FileNotFoundError as e:
             raise TreeBuildFailed(f'Capture {uuid} disappeared during processing, probably archived.') from e
+        except Har2TreeError as e:
+            raise TreeBuildFailed(f'Could not build the tree: {e}') from e
         except Exception as e:
             self.logger.exception(f'Unable to build pickle for {uuid}: {path.name}')
             # The capture is not working, moving it away.
