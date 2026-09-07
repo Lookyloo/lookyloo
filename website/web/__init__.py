@@ -1895,9 +1895,8 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                             app.logger.error('Cannot get remote headfull URL from LacusCore')
                     else:
                         app.logger.warning(f'Unknown remote lacus name ({capture_settings.remote_lacus_name})')
-                    if remote_headed_session.get('view_url'):
-                        callback = urlencode({'callback': request.url})
-                        remote_headed_session['view_url'] += f"?{callback}"
+                    if view_url := remote_headed_session.get('view_url'):
+                        remote_headed_session['view_url'] = f"{view_url}?{urlencode({'callback': request.url})}"
             return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid, remote_headed_session=remote_headed_session, seed=seed)
         except LacusUnreachable:
             message = "Unable to connect to the Lacus backend, the capture will start as soon as the administrator wakes up."
