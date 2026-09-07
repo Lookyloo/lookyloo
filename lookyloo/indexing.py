@@ -21,7 +21,7 @@ from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
 from .exceptions import NoValidHarFile, TreeNeedsRebuild
-from .helpers import load_pickle_tree, remove_pickle_tree
+from .helpers import load_pickle_tree, remove_pickle_tree, LookylooCacheLogAdapter
 from .default import get_socket_path, get_config
 
 Indexed = namedtuple('Indexed', ['urls', 'body_hashes', 'cookies', 'hhhashes', 'favicons',
@@ -152,6 +152,7 @@ class Indexing():
         return Indexed(*[bool(r) for r in to_return])
 
     def index_capture(self, uuid_to_index: str, directory: Path, *, background: bool=False, force_manual: bool=False) -> bool:
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid_to_index})
         if not force_manual and not background and self.is_slow:
             # The indexing request was made by a normal user, from the web interface.
             # indexer is currently slow, add it in the lazy queue
@@ -162,7 +163,7 @@ class Indexing():
             # No HAR file in the capture, break immediately.
             return False
         if not self.can_index(uuid_to_index):
-            self.logger.info(f'[{uuid_to_index}] Indexing ongoing, skip.')
+            logger.info('Indexing ongoing, skip.')
             return False
 
         try:
@@ -175,24 +176,24 @@ class Indexing():
 
             if any(indexed):
                 # some were indexed already
-                self.logger.info(f'[{uuid_to_index}] Partial: {", ".join([name for name, value in indexed._asdict().items() if not value])}')
+                logger.info(f'Partial: {", ".join([name for name, value in indexed._asdict().items() if not value])}')
             else:
-                self.logger.debug(f'[{uuid_to_index}] Full')
+                logger.debug('Complete')
 
             if not list(directory.rglob('*.har.gz')) and not list(directory.rglob('*.har')):
-                self.logger.debug(f'[{uuid_to_index}] No harfile in {directory}, nothing to index. ')
+                logger.debug(f'No harfile in {directory}, nothing to index. ')
                 self.redis.sadd('nothing_to_index', uuid_to_index)
                 skipped = True
                 return False
 
             if not any((directory / pickle_name).exists()
                        for pickle_name in ['tree.pickle.xz', 'tree.pickle.gz', 'tree.pickle']):
-                self.logger.info(f'[{uuid_to_index}] No pickle in {directory}, skip.')
+                logger.info(f'No pickle in {directory}, skip.')
                 skipped = True
                 raise TreeNeedsRebuild('No pickle available, cannot index')
 
             # do the indexing
-            ct = load_pickle_tree(directory, directory.stat().st_mtime, self.logger)
+            ct = load_pickle_tree(directory, directory.stat().st_mtime, logger)
             # 2026-02-03: rebuild pickles if a new entry is missing
             # That's the place where we force that when har2tree adds a new feature we need for indexing
             # * original_url: added in v1.36.3 to allow cleaner indexing of tlds/domains with pyfaup-rs
@@ -213,58 +214,58 @@ class Indexing():
                     return False
 
             if not indexed.urls:
-                self.logger.debug(f'[{uuid_to_index}] Indexing urls')
+                logger.debug('Indexing urls')
                 self.index_url_capture(ct)
             if not indexed.body_hashes:
-                self.logger.debug(f'[{uuid_to_index}] Indexing resources')
+                logger.debug('Indexing resources')
                 self.index_body_hashes_capture(ct)
             if not indexed.cookies:
-                self.logger.debug(f'[{uuid_to_index}] Indexing cookies')
+                logger.debug('Indexing cookies')
                 self.index_cookies_capture(ct)
             if not indexed.hhhashes:
-                self.logger.debug(f'[{uuid_to_index}] Indexing HH Hashes')
+                logger.debug('Indexing HH Hashes')
                 self.index_hhhashes_capture(ct)
             if not indexed.favicons:
-                self.logger.debug(f'[{uuid_to_index}] Indexing favicons')
+                logger.debug('Indexing favicons')
                 self.index_favicons_capture(ct, directory)
             if not indexed.identifiers:
-                self.logger.debug(f'[{uuid_to_index}] Indexing identifiers')
+                logger.debug('Indexing identifiers')
                 self.index_identifiers_capture(ct)
             if not indexed.categories:
-                self.logger.debug(f'[{uuid_to_index}] Indexing categories')
+                logger.debug('Indexing categories')
                 self.index_categories_capture(ct, directory)
             if not indexed.tlds:
-                self.logger.debug(f'[{uuid_to_index}] Indexing TLDs')
+                logger.debug('Indexing TLDs')
                 self.index_tld_capture(ct)
             if not indexed.domains:
-                self.logger.debug(f'[{uuid_to_index}] Indexing domains')
+                logger.debug('Indexing domains')
                 self.index_domain_capture(ct)
             if not indexed.ips:
-                self.logger.debug(f'[{uuid_to_index}] Indexing IPs')
+                logger.debug('Indexing IPs')
                 self.index_ips_capture(ct)
             if not indexed.hash_types:
-                self.logger.debug(f'[{uuid_to_index}] Indexing hash types')
+                logger.debug('Indexing hash types')
                 self.index_capture_hashes_types(ct)
 
         except TreeNeedsRebuild as e:
             raise e
         except NoValidHarFile as e:
-            self.logger.warning(f'[{uuid_to_index}] Error loading the pickle: {e}')
+            logger.warning(f'Error loading the pickle: {e}')
         except AttributeError as e:
             # Happens when indexing the IPs, they were a list, and are now dict.
             # Skip from the the warning logs.
-            self.logger.info(f'[{uuid_to_index}] [Old format] Error during indexing, recreate pickle: {e}')
+            logger.info(f'[Old format] Error during indexing, recreate pickle: {e}')
             remove_pickle_tree(directory)
         except ValueError as e:
-            self.logger.exception(f'[{uuid_to_index}] [Faup] Error during indexing, recreate pickle: {e}')
+            logger.exception(f'[Faup] Error during indexing, recreate pickle: {e}')
             remove_pickle_tree(directory)
         except Exception as e:
-            self.logger.exception(f'[{uuid_to_index}] Error during indexing, recreate pickle: {e}')
+            logger.exception(f'Error during indexing, recreate pickle: {e}')
             remove_pickle_tree(directory)
         finally:
             self.indexing_done(uuid_to_index)
             if not skipped:
-                self.logger.info(f'[{uuid_to_index}] Done in {round(time.monotonic() - start_index, 3)}.')
+                logger.info(f'Done in {round(time.monotonic() - start_index, 3)}.')
         return True
 
     def __limit_failsafe(self, oldest_capture: datetime | None=None, limit: int | None=None) -> float | str:

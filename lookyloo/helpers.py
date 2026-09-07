@@ -17,10 +17,11 @@ import secrets
 import time
 import zlib
 
+from collections.abc import MutableMapping
 from datetime import datetime, timedelta, date
 from functools import lru_cache, cache
 from importlib.metadata import version
-from logging import Logger
+from logging import LoggerAdapter
 from pathlib import Path
 from string import punctuation
 from typing import Any, TYPE_CHECKING
@@ -46,6 +47,16 @@ if TYPE_CHECKING:
     from .indexing import Indexing
 
 logger = logging.getLogger('Lookyloo - Helpers')
+
+
+class LookylooCacheLogAdapter(LoggerAdapter):  # type: ignore[type-arg]
+    """
+    Prepend log entry with the UUID of the capture
+    """
+    def process(self, msg: str, kwargs: MutableMapping[str, Any]) -> tuple[str, MutableMapping[str, Any]]:
+        if self.extra:
+            return '[{}] {}'.format(self.extra['uuid'], msg), kwargs
+        return msg, kwargs
 
 
 def global_proxy_for_requests() -> dict[str, str]:
@@ -491,7 +502,7 @@ def remove_pickle_tree(capture_dir: Path) -> None:
 
 
 @lru_cache(maxsize=64)
-def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: Logger) -> CrawledTree:
+def load_pickle_tree(capture_dir: Path, last_mod_time: int, logger: LookylooCacheLogAdapter) -> CrawledTree:
     pickle_path = get_pickle_path(capture_dir)
     tree = None
     try:

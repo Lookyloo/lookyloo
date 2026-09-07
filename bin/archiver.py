@@ -21,7 +21,8 @@ from redis import Redis
 import s3fs  # type: ignore[import-untyped]
 
 from lookyloo.default import AbstractManager, get_config, get_homedir, get_socket_path, try_make_file
-from lookyloo.helpers import get_captures_dir, is_locked, make_ts_from_dirname, make_dirs_list, get_archived_captures_dir
+from lookyloo.helpers import (get_captures_dir, is_locked, make_ts_from_dirname, make_dirs_list,
+                              get_archived_captures_dir, LookylooCacheLogAdapter)
 
 logging.config.dictConfig(get_config('logging'))
 
@@ -374,10 +375,11 @@ class Archiver(AbstractManager):
             capture_time_isoformat = os.path.basename(path)
             if not capture_time_isoformat:
                 continue
+            logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
             try:
                 capture_time = make_ts_from_dirname(capture_time_isoformat)
             except ValueError:
-                self.logger.warning(f'Invalid capture time for {uuid}: {capture_time_isoformat}')
+                logger.warning(f'Invalid capture time: {capture_time_isoformat}')
                 self.redis.hdel('lookup_dirs', uuid)
                 continue
             if capture_time >= cut_time:
@@ -387,7 +389,7 @@ class Archiver(AbstractManager):
             if not capture_path.exists():
                 self.redis.hdel('lookup_dirs', uuid)
                 if not self.redis.hexists('lookup_dirs_archived', uuid):
-                    self.logger.warning(f'Missing capture directory for {uuid}, unable to archive {capture_path}')
+                    logger.warning(f'Missing capture directory, unable to archive {capture_path}')
                 continue
             lock_file = capture_path / 'lock'
             if try_make_file(lock_file):
@@ -405,22 +407,22 @@ class Archiver(AbstractManager):
                 start = time.time()
                 new_capture_path = self.__archive_single_capture(capture_path)
                 end = time.time()
-                self.logger.debug(f'[{uuid}] {round(end - start, 2)}s to archive ({capture_path})')
+                logger.debug(f'{round(end - start, 2)}s to archive ({capture_path})')
                 capture_breakpoint -= 1
             except OSError as e:
-                self.logger.warning(f'Unable to archive capture {capture_path}: {e}')
+                logger.warning(f'Unable to archive capture {capture_path}: {e}')
                 # copy failed, remove lock in original dir
                 lock_file.unlink(missing_ok=True)
                 archiving_done = False
                 break
             except aiohttp.client_exceptions.SocketTimeoutError:
-                self.logger.warning(f'Timeout error while archiving {capture_path}')
+                logger.warning(f'Timeout error while archiving {capture_path}')
                 # copy failed, remove lock in original dir
                 lock_file.unlink(missing_ok=True)
                 archiving_done = False
                 break
             except Exception as e:
-                self.logger.warning(f'Critical exception while archiving {capture_path}: {e}')
+                logger.warning(f'Critical exception while archiving {capture_path}: {e}')
                 # copy failed, remove lock in original dir
                 lock_file.unlink(missing_ok=True)
                 archiving_done = False

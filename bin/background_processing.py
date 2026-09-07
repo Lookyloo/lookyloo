@@ -14,7 +14,7 @@ from lookyloo import Lookyloo
 from lookyloo_models import LookylooCaptureSettings
 from lookyloo.exceptions import LacusUnreachable, LacusUnknown, NotCached
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
-from lookyloo.helpers import ParsedUserAgent, serialize_to_json
+from lookyloo.helpers import ParsedUserAgent, serialize_to_json, LookylooCacheLogAdapter
 from lookyloo.modules import AIL, AssemblyLine, MISP, AutoCategorize
 from pylacus import CaptureStatus as CaptureStatusPy
 
@@ -221,7 +221,7 @@ class Processing(AbstractManager):
         cut_time = datetime.now() - delta_to_process
         redis_expire = int(delta_to_process.total_seconds()) - 300
 
-        # AL notification queue is returnig all the entries in the queue
+        # AL notification queue is returning all the entries in the queue
         if self.assemblyline.available:
             for entry in self.assemblyline.get_notification_queue():
                 if current_uuid := entry['submission']['metadata'].get('lookyloo_uuid'):
@@ -234,13 +234,13 @@ class Processing(AbstractManager):
         for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time, public=False):
             if cached.error:
                 continue
-
+            logger = LookylooCacheLogAdapter(self.logger, {'uuid': cached.uuid})
             # NOTE: categorization must be first as the tags could be submitted to MISP
             # 2026-03-17: and they're optionally used for MISP autopush
             if self.auto_categorize.available and not self.lookyloo.redis.exists(f'auto_categorize|{cached.uuid}'):
                 self.lookyloo.redis.setex(f'auto_categorize|{cached.uuid}', redis_expire, 1)
                 self.auto_categorize.categorize(self.lookyloo, cached)
-                self.logger.debug(f'[{cached.uuid}] Auto categorize done.')
+                logger.debug('Auto categorize done.')
 
             if self.ail.available and not self.lookyloo.redis.exists(f'bg_processed_ail|{cached.uuid}'):
                 self.lookyloo.redis.setex(f'bg_processed_ail|{cached.uuid}', redis_expire, 1)
@@ -248,46 +248,46 @@ class Processing(AbstractManager):
                 ail_response = self.ail.capture_default_trigger(cached, force=False,
                                                                 auto_trigger=True, as_admin=True)
                 if not ail_response.get('error') and not ail_response.get('success'):
-                    self.logger.debug(f'[{cached.uuid}] Nothing to submit, skip')
+                    logger.debug('Nothing to submit, skip')
                 elif ail_response.get('error'):
                     if isinstance(ail_response['error'], str):
                         # general error, the module isn't available
-                        self.logger.error(f'Unable to submit capture to AIL: {ail_response["error"]}')
+                        logger.error(f'Unable to submit capture to AIL: {ail_response["error"]}')
                     elif isinstance(ail_response['error'], list):
                         # Errors when submitting individual URLs
                         for error in ail_response['error']:
-                            self.logger.warning(error)
+                            logger.warning(error)
                 elif ail_response.get('success'):
                     # if we have successful submissions, we may want to get the references later.
                     # Store in redis for now.
-                    self.logger.info(f'[{cached.uuid}] {len(ail_response["success"])} URLs submitted to AIL.')
+                    logger.info(f'{len(ail_response["success"])} URLs submitted to AIL.')
                     self.lookyloo.redis.hset(f'bg_processed_ail|{cached.uuid}|refs', mapping=ail_response['success'])
                     self.lookyloo.redis.expire(f'bg_processed_ail|{cached.uuid}|refs', redis_expire)
-                self.logger.debug(f'[{cached.uuid}] AIL processing done.')
+                logger.debug('AIL processing done.')
 
             if self.assemblyline.available and not self.lookyloo.redis.exists(f'bg_processed_assemblyline|{cached.uuid}'):
-                self.logger.debug(f'[{cached.uuid}] Processing AssemblyLine now. --- Available: {self.assemblyline.available}')
+                logger.debug(f'Processing AssemblyLine now. --- Available: {self.assemblyline.available}')
                 self.lookyloo.redis.setex(f'bg_processed_assemblyline|{cached.uuid}', redis_expire, 1)
 
                 # Submit URLs to AssemblyLine
                 al_response = self.assemblyline.capture_default_trigger(cached, force=False,
                                                                         auto_trigger=True, as_admin=True)
                 if not al_response.get('error') and not al_response.get('success'):
-                    self.logger.debug(f'[{cached.uuid}] Nothing to submit, skip')
+                    logger.debug('Nothing to submit, skip')
                 elif al_response.get('error'):
                     if isinstance(al_response['error'], str):
                         # general error, the module isn't available
-                        self.logger.error(f'Unable to submit capture to AssemblyLine: {al_response["error"]}')
+                        logger.error(f'Unable to submit capture to AssemblyLine: {al_response["error"]}')
                     elif isinstance(al_response['error'], list):
                         # Errors when submitting individual URLs
                         for error in al_response['error']:
-                            self.logger.warning(error)
+                            logger.warning(error)
                 elif al_response.get('success'):
                     # if we have successful submissions, save the response for later.
-                    self.logger.info(f'[{cached.uuid}] URLs submitted to AssemblyLine.')
-                    self.logger.debug(f'[{cached.uuid}] Response: {al_response["success"]}')
+                    logger.info('URLs submitted to AssemblyLine.')
+                    logger.debug(f'Response: {al_response["success"]}')
 
-                self.logger.info(f'[{cached.uuid}] AssemblyLine submission processing done.')
+                logger.info('AssemblyLine submission processing done.')
 
             # if one of the MISPs has autopush, and it hasn't been pushed yet, push it.
             for name, connector in self.misps_auto_push.items():
@@ -305,22 +305,22 @@ class Processing(AbstractManager):
                     # from the instance
                     misp_event = self.misps.export(cached, is_public_instance=True)
                 except Exception as e:
-                    self.logger.error(f'Unable to create the MISP Event: {e}')
+                    logger.error(f'Unable to create the MISP Event: {e}')
                     continue
                 try:
                     misp_response = connector.push(misp_event, as_admin=True)
                 except Exception as e:
-                    self.logger.critical(f'Unable to push the MISP Event: {e}')
+                    logger.critical(f'Unable to push the MISP Event: {e}')
                     continue
 
                 if isinstance(misp_response, dict):
                     if 'error' in misp_response:
-                        self.logger.error(f'Error while pushing the MISP Event: {misp_response["error"]}')
+                        logger.error(f'Error while pushing the MISP Event: {misp_response["error"]}')
                     else:
-                        self.logger.error(f'Unexpected error while pushing the MISP Event: {misp_response}')
+                        logger.error(f'Unexpected error while pushing the MISP Event: {misp_response}')
                 else:
                     for event in misp_response:
-                        self.logger.info(f'Successfully pushed event {event.uuid}')
+                        logger.info(f'Successfully pushed event {event.uuid}')
 
 
 def main() -> None:

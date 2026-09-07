@@ -68,7 +68,7 @@ from rfc3161_client import (TimeStampResponse, VerifierBuilder, VerificationErro
 from lookyloo_models import (LookylooCaptureSettings, AutoReportSettings, MonitorCaptureSettings,
                              Cookie, LookylooCaptureSettingsError)
 
-from .capturecache import CaptureCache, CapturesIndex, LookylooCacheLogAdapter
+from .capturecache import CaptureCache, CapturesIndex
 from .context import Context
 from .default import (LookylooException, get_homedir, get_config, get_socket_path,
                       ConfigError, safe_create_dir)
@@ -81,7 +81,7 @@ from .helpers import (get_captures_dir, get_email_template, get_tt_template,
                       get_useragent_for_requests, load_takedown_filters,
                       global_proxy_for_requests, load_user_config,
                       get_indexing, get_error_screenshot,
-                      trusted_store, safe_decompress,
+                      trusted_store, safe_decompress, LookylooCacheLogAdapter
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,

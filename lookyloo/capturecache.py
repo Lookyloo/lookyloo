@@ -17,10 +17,9 @@ import time
 from collections import OrderedDict
 from datetime import datetime, timedelta, timezone
 from functools import _CacheInfo as CacheInfo
-from logging import LoggerAdapter
 from pathlib import Path
 from typing import Any
-from collections.abc import MutableMapping, Iterator
+from collections.abc import Iterator
 
 import dns.rdatatype
 
@@ -35,20 +34,11 @@ from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError
 from .context import Context
 from .helpers import (get_captures_dir, is_locked, load_pickle_tree, get_pickle_path,
                       remove_pickle_tree, get_indexing, mimetype_to_generic,
-                      global_proxy_for_requests, get_useragent_for_requests)
+                      global_proxy_for_requests, get_useragent_for_requests,
+                      LookylooCacheLogAdapter)
 from .default import LookylooException, try_make_file, get_config
 from .exceptions import MissingCaptureDirectory, NoValidHarFile, UUIDMissingInCache, TreeNeedsRebuild
 from .modules import Cloudflare
-
-
-class LookylooCacheLogAdapter(LoggerAdapter):  # type: ignore[type-arg]
-    """
-    Prepend log entry with the UUID of the capture
-    """
-    def process(self, msg: str, kwargs: MutableMapping[str, Any]) -> tuple[str, MutableMapping[str, Any]]:
-        if self.extra:
-            return '[{}] {}'.format(self.extra['uuid'], msg), kwargs
-        return msg, kwargs
 
 
 def safe_make_datetime(dt: str) -> datetime:

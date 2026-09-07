@@ -18,7 +18,7 @@ from lookyloo import Lookyloo
 from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError
 from lookyloo.exceptions import LacusUnreachable, DuplicateUUID, LacusUnknown
 from lookyloo.default import AbstractManager, get_config, LookylooException
-from lookyloo.helpers import get_captures_dir
+from lookyloo.helpers import get_captures_dir, LookylooCacheLogAdapter
 
 from lookyloo.modules import FOX
 
@@ -56,28 +56,29 @@ class AsyncCapture(AbstractManager):
             self.set_running()
             capture_task.add_done_callback(clear_list_callback)
 
-    def uuids_ready(self) -> Generator[tuple[LacusCore | PyLacus, str]]:
+    def uuids_ready(self) -> Generator[tuple[LacusCore | PyLacus, str, LookylooCacheLogAdapter]]:
         '''Get the list of captures ready to be processed'''
         # Only check if the top 100 in the priority list are done, as they are the most likely ones to be ready
         # and if the list is very very long, iterating over it takes a very long time.
         for uuid in self.lookyloo.redis.zrevrangebyscore('to_capture', '+inf', '-inf', start=0, num=100):
+            logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
             if not self.lookyloo.redis.exists(uuid):
-                self.logger.info(f'UUID "{uuid}" has no settings, clearing it up.')
+                logger.info('No settings, clearing it up.')
                 self.lookyloo.redis.zrem('to_capture', uuid)
                 continue
             try:
                 capture_settings = self.lookyloo.get_settings_to_capture(uuid)
             except Exception as e:
-                self.logger.warning(f'[{uuid}] Settings are broken, clearing them up: {e}.')
+                logger.warning(f'Settings are broken, clearing them up: {e}.')
                 self.lookyloo.redis.delete(uuid)
                 continue
 
             if not capture_settings:
-                self.logger.warning(f'Unable to get settings from redis, skip {uuid}.')
+                logger.warning('Unable to get settings from redis, skip.')
                 continue
 
             if capture_settings.not_queued:
-                self.logger.info(f'UUID "{uuid}" is not queued, not ready for sure.')
+                logger.info('Not queued, not ready for sure.')
                 continue
 
             if not self.lookyloo.redis.hexists(uuid, 'uuid'):
@@ -87,21 +88,21 @@ class AsyncCapture(AbstractManager):
                 lacus_status = self.lookyloo.get_lacus_capture_status(capture_settings)
                 if lacus_status in [CaptureStatusPy.DONE, CaptureStatusCore.DONE]:
                     if capture_settings.remote_lacus_name:
-                        yield self.lookyloo.lacus[capture_settings.remote_lacus_name], uuid
+                        yield self.lookyloo.lacus[capture_settings.remote_lacus_name], uuid, logger
                     else:
                         # It should not happen at this stage, the value has been set i fit was missing
-                        self.logger.warning(f'[{uuid}] Missing remote_lacus_name.')
+                        logger.warning('Missing remote_lacus_name.')
             except LacusUnknown as e:
                 # fallback to default lacus
-                self.logger.warning(f'[{uuid}] Unknown lacus, revert to default: {e}')
+                logger.warning(f'Unknown lacus, revert to default: {e}')
                 self.lookyloo.redis.hset(uuid, 'remote_lacus_name', self.lookyloo.default_lacus)
             except Exception as e:
-                self.logger.warning(f'[{uuid}] Something went poorly when getting the status: {e}')
+                logger.warning(f'Something went poorly when getting the status: {e}')
 
     def process_capture_queue(self) -> None:
         '''Process a query from the capture queue'''
         entries: CaptureResponseCore | CaptureResponsePy
-        for lacus, uuid in self.uuids_ready():
+        for lacus, uuid, logger in self.uuids_ready():
             if isinstance(lacus, LacusCore):
                 entries = lacus.get_capture(uuid, decode=True)
             elif isinstance(lacus, PyLacus):
@@ -109,10 +110,10 @@ class AsyncCapture(AbstractManager):
             else:
                 # Should not happen
                 raise LookylooException(f'lacus must be LacusCore or PyLacus, not {type(lacus)}.')
-            log = f'Got the capture for {uuid} from Lacus'
+            log = 'Got the capture from Lacus'
             if runtime := entries.get('runtime'):
                 log = f'{log} - Runtime: {runtime}'
-            self.logger.info(log)
+            logger.info(log)
 
             queue: str | None = self.lookyloo.redis.getdel(f'{uuid}_mgmt')
 
@@ -126,7 +127,7 @@ class AsyncCapture(AbstractManager):
                     # The settings were expired too early but we still have them in lookyloo. Re-add to queue.
                     self.lookyloo.redis.hset(uuid, 'not_queued', 1)
                     self.lookyloo.redis.zincrby('to_capture', -1, uuid)
-                    self.logger.info(f'Capture settings for {uuid} were expired too early, re-adding to queue.')
+                    logger.info('Capture settings expired too early, re-adding to queue.')
                     continue
                 if to_capture:
                     self.lookyloo.store_capture(
@@ -151,15 +152,15 @@ class AsyncCapture(AbstractManager):
                         monitor_capture=to_capture.monitor_capture,
                     )
                 else:
-                    self.logger.warning(f'Unable to get capture settings for {uuid}, it expired.')
+                    logger.warning('Unable to get capture settings, it expired.')
                     self.lookyloo.redis.zrem('to_capture', uuid)
                     continue
 
             except CaptureSettingsError as e:
                 # We shouldn't have a broken capture at this stage, but here we are.
-                self.logger.error(f'Got a capture ({uuid}) with invalid settings: {e}.')
+                logger.error(f'Got a capture with invalid settings: {e}.')
             except DuplicateUUID as e:
-                self.logger.critical(f'Got a duplicate UUID ({uuid}) it should never happen, and deserves some investigation: {e}.')
+                logger.critical(f'Duplicate UUID it should never happen, and deserves some investigation: {e}.')
             finally:
                 self.lookyloo.redis.srem('ongoing', uuid)
 
@@ -171,7 +172,7 @@ class AsyncCapture(AbstractManager):
             # make sure to expire the key if nothing was processed for a while (= queues empty)
             lazy_cleanup.expire('queues', 600)
             lazy_cleanup.execute()
-            self.logger.info(f'Done with {uuid}')
+            logger.debug('Sucessfully stored.')
 
     async def _to_run_forever_async(self) -> None:
         if self.force_stop:
