@@ -15,6 +15,7 @@ from .urlhaus import URLhaus  # noqa
 from .cloudflare import Cloudflare  # noqa
 from .circlpdns import CIRCLPDNS  # noqa
 from .ail import AIL  # noqa
+from .onion_lookup import OnionLookup  # noqa
 from .auto_categorize import AutoCategorize  # noqa
 
 __all__ = [
@@ -34,5 +35,6 @@ __all__ = [
     'Cloudflare',
     'CIRCLPDNS',
     'AIL',
+    'OnionLookup',
     'AutoCategorize'
 ]

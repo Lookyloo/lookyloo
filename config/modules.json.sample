@@ -41,6 +41,9 @@
     "url": null,
     "model": ""
   },
+  "OnionLookup": {
+    "enabled": false
+  },
   "AIL": {
     "enabled": false,
     "url": "http://MyAIL:7000",

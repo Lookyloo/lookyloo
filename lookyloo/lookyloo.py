@@ -42,7 +42,7 @@ from har2tree import CrawledTree, HostNode, URLNode, Har2TreeError
 from html_to_markdown import convert
 from lacuscore import (LacusCore, CaptureStatus as CaptureStatusCore,
                        # CaptureResponse as CaptureResponseCore)
-                       # CaptureResponseJson as CaptureResponseJsonCore,
+                       CaptureResponseJson,
                        # CaptureSettings as CaptureSettingsCore
                        )
 from lookyloo_models import CaptureSettingsError
@@ -513,7 +513,7 @@ class Lookyloo():
             try:
                 taxonomy, predicate, name = self.taxonomies.revert_machinetag(category)  # type: ignore[misc]
                 if not (taxonomy and predicate and name) or taxonomy.name != 'content-classification':
-                    logger.warning(f'Invalid category: {category}')
+                    logger.warning(f'Unexpected category: {category}')
                     invalid_categories.add(category)
                 else:
                     valid_categories.add(category)
@@ -2101,6 +2101,43 @@ class Lookyloo():
             return parent
 
         return [event]
+
+    def lacus_export(self, capture_uuid: str) -> CaptureResponseJson:
+        """Recreate an export in the same format as the ones we get from Lacus."""
+        cache = self.capture_cache(capture_uuid)
+        to_return: CaptureResponseJson = {'status': CaptureStatusCore.DONE}
+        if last_redir := self.get_last_url_in_address_bar(capture_uuid):
+            to_return['last_redirected_url'] = last_redir
+        har_success, d = self.get_har(capture_uuid)
+        if har_success:
+            to_return['har'] = orjson.loads(gzip.decompress(d.getvalue()))
+        storage_success, d = self.get_storage_state(capture_uuid)
+        if storage_success:
+            to_return['storage'] = orjson.loads(d.getvalue())
+        if _e := cache.error:
+            to_return['error'] = _e
+        html_success, d = self.get_html(capture_uuid)
+        if html_success:
+            to_return['html'] = d.getvalue().decode()
+        frames_success, d = self.get_frames(capture_uuid)
+        if frames_success:
+            to_return['frames'] = orjson.loads(d.getvalue())
+        png_success, d = self.get_screenshot(capture_uuid)
+        if png_success:
+            to_return['png'] = base64.b64encode(d.getvalue()).decode()
+        data_success, filename, file_content = self.get_data(capture_uuid)
+        if data_success:
+            to_return['downloaded_filename'] = filename
+            to_return['downloaded_file'] = base64.b64encode(file_content.getvalue()).decode()
+        favicons_success, favicons = self.get_potential_favicons(capture_uuid, all_favicons=True, for_datauri=False)
+        if favicons_success:
+            to_return['potential_favicons'] = [base64.b64encode(fav).decode() for fav in favicons]
+        if tt := self._load_tt_file(capture_uuid):
+            to_return['trusted_timestamps'] = {name: b64encode(tst).decode() for name, tst in tt.items()}
+        cm_success, d = self.get_console_messages(capture_uuid)
+        if cm_success:
+            to_return['console_messages'] = orjson.loads(d.getvalue())
+        return to_return
 
     def get_misp_occurrences(self, capture_uuid: str, /, as_admin: bool,
                              *, instance_name: str | None=None) -> tuple[dict[int, set[tuple[str, datetime]]], str] | None:

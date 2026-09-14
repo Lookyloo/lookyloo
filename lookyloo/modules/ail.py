@@ -2,29 +2,33 @@
 
 from __future__ import annotations
 
+import logging
+
 from typing import Any, TYPE_CHECKING
-from urllib.parse import urlparse
 
-from pyail import PyAIL  # type: ignore[import-untyped]
+from pyail import PyAIL, PyAILError  # type: ignore[import-untyped]
 
-from ..default import ConfigError
+from ..default import get_config
 from ..helpers import global_proxy_for_requests
 
-from .abstractmodule import AbstractModule
-
 if TYPE_CHECKING:
-    from ..capturecache import CaptureCache
+    from lacuscore import CaptureResponseJson
 
 
-class AIL(AbstractModule):
+class AIL():
 
-    def module_init(self) -> bool:
-        if not self.config.get('url'):
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(f'{self.__class__.__name__}')
+        self.logger.setLevel(get_config('generic', 'loglevel'))
+        self.config = get_config('modules', 'AIL')
+        self.available = self.config.get('enabled')
+
+        if self.available and not self.config.get('url'):
             self.logger.info('No URL.')
-            return False
-        if not self.config.get('apikey'):
+            self.available = False
+        if self.available and not self.config.get('apikey'):
             self.logger.info('No API key.')
-            return False
+            self.available = False
 
         try:
             self.client = PyAIL(self.config['url'], self.config['apikey'],
@@ -34,44 +38,12 @@ class AIL(AbstractModule):
                                 tool='lookyloo')
         except Exception as e:
             self.logger.error(f'Could not connect to AIL: {e}')
-            return False
-        # self.client.headers['User-Agent'] = get_useragent_for_requests()  # Not supported
-        return True
+            self.available = False
 
-    def capture_default_trigger(self, cache: CaptureCache, /, *, force: bool,
-                                auto_trigger: bool, as_admin: bool) -> dict[str, Any]:
-        '''Run the module on the initial URL'''
-
-        if error := super().capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin):
-            return error
-
-        return self._submit(cache)
-
-    def _submit(self, cache: CaptureCache) -> dict[str, Any]:
-        '''Submit a URL to AIL Framework
+    def submit(self, capture: CaptureResponseJson) -> dict[str, Any]:
+        '''Submit a capture to AIL Framework
         '''
-        if not self.available:
-            raise ConfigError('AIL not available.')
-
-        success: dict[str, str] = {}
-        error: list[str] = []
-        # We only submit .onions URLs up to the landing page
-        for redirect in cache.redirects:
-            parsed = urlparse(redirect)
-            if parsed.hostname and parsed.hostname.endswith('.onion'):
-                try:
-                    response = self.client.onion_lookup(parsed.hostname)
-                    if 'error' in response:
-                        self.logger.info(f'[{parsed.hostname}]: {response.get("error")}')
-                    else:
-                        self.logger.info(f'[{parsed.hostname}]: Is already known.')
-                    if r := self.client.crawl_url(redirect):
-                        if 'error' in r:
-                            self.logger.error(f'Error submitting {redirect} to AIL: {r.get("error")}')
-                            error.append(f"Unable to submit {redirect}: {r.get('error')}")
-                        else:
-                            success[r.get('uuid')] = redirect
-                except Exception as e:
-                    self.logger.error(f'Error submitting URL to AIL: {e}')
-                    error.append(f"Unable to submit {redirect}: {e}")
-        return {'success': success, 'error': error}
+        try:
+            return self.client.import_crawler_capture(capture)
+        except PyAILError as e:
+            return {'error': e}

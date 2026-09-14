@@ -5,9 +5,11 @@ from __future__ import annotations
 import json
 import logging
 import logging.config
+
 from collections import Counter
 from datetime import date, timedelta, datetime
 from typing import Any
+from urllib.parse import urlparse
 
 from lacuscore import CaptureStatus as CaptureStatusCore
 from lookyloo import Lookyloo
@@ -15,7 +17,7 @@ from lookyloo_models import LookylooCaptureSettings
 from lookyloo.exceptions import LacusUnreachable, LacusUnknown, NotCached
 from lookyloo.default import AbstractManager, get_config, get_homedir, safe_create_dir
 from lookyloo.helpers import ParsedUserAgent, serialize_to_json, LookylooCacheLogAdapter
-from lookyloo.modules import AIL, AssemblyLine, MISP, AutoCategorize
+from lookyloo.modules import AIL, AssemblyLine, MISP, AutoCategorize, OnionLookup
 from pylacus import CaptureStatus as CaptureStatusPy
 
 logging.config.dictConfig(get_config('logging'))
@@ -31,7 +33,8 @@ class Processing(AbstractManager):
         self.use_own_ua = get_config('generic', 'use_user_agents_users')
 
         self.auto_categorize = AutoCategorize(config_name='AutoCategorize')
-        self.ail = AIL(config_name='AIL')
+        self.ail = AIL()
+        self.onion_lookup = OnionLookup()
         self.assemblyline = AssemblyLine(config_name='AssemblyLine')
         self.misps = self.lookyloo.misps
         # prepare list of MISPs to auto-push to (if any)
@@ -214,14 +217,15 @@ class Processing(AbstractManager):
         We do not want to duplicate the background build script here.
         """
 
-        if not any([self.ail.available, self.assemblyline.available,
+        if not any([self.onion_lookup.available, self.ail.available, self.assemblyline.available,
                     self.misps_auto_push, self.auto_categorize.available]):
             return
 
         # Just check the captures of the last day
         delta_to_process = timedelta(days=1)
         cut_time = datetime.now() - delta_to_process
-        redis_expire = int(delta_to_process.total_seconds()) - 300
+        # Just to make sure it expires after the delta
+        redis_expire = int(delta_to_process.total_seconds()) + 300
 
         # AL notification queue is returning all the entries in the queue
         if self.assemblyline.available:
@@ -244,14 +248,36 @@ class Processing(AbstractManager):
                 self.auto_categorize.categorize(self.lookyloo, cached)
                 logger.debug('Auto categorize done.')
 
+            # NOTE: onion lookup must be processed first as it might update the categories
+            if self.onion_lookup and not self.lookyloo.redis.exists(f'bg_processed_onion_lookup|{cached.uuid}'):
+                self.lookyloo.redis.setex(f'bg_processed_onion_lookup|{cached.uuid}', redis_expire, 1)
+                try:
+                    if lookups := self.onion_lookup.lookup(cached):
+                        self.lookyloo.change_visibility(cached.uuid, visibility='private')
+                        for hostname, lookup in lookups.items():
+                            if lookup and isinstance(lookup, dict) and 'tags' in lookup:
+                                tags_to_add = [tag for tag in lookup['tags'] if tag.startswith('dark-web:topic')]
+                                self.lookyloo.categorize_capture(cached.uuid, categories=tags_to_add, as_admin=True)
+                    else:
+                        # no onions in the redirects, do nothing
+                        pass
+                except Exception as e:
+                    logger.error(f'Unable to query onion lookup: {e}')
+
             if self.ail.available and not self.lookyloo.redis.exists(f'bg_processed_ail|{cached.uuid}'):
                 self.lookyloo.redis.setex(f'bg_processed_ail|{cached.uuid}', redis_expire, 1)
+                for redirect in cached.redirects:
+                    parsed = urlparse(redirect)
+                    if parsed.hostname and parsed.hostname.endswith('.onion'):
+                        try:
+                            ail_response = self.ail.submit(self.lookyloo.lacus_export(cached.uuid))
+                        except Exception as e:
+                            logger.error(f'Unable to submit capture to AIL: {e}')
+                        # got one, break
+                        break
+
                 # Submit onions captures to AIL
-                ail_response = self.ail.capture_default_trigger(cached, force=False,
-                                                                auto_trigger=True, as_admin=True)
-                if not ail_response.get('error') and not ail_response.get('success'):
-                    logger.debug('Nothing to submit, skip')
-                elif ail_response.get('error'):
+                if ail_response.get('error'):
                     if isinstance(ail_response['error'], str):
                         # general error, the module isn't available
                         logger.error(f'Unable to submit capture to AIL: {ail_response["error"]}')
