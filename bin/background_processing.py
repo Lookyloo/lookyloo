@@ -292,11 +292,11 @@ class Processing(AbstractManager):
                             # Errors when submitting individual URLs
                             for error in ail_response['error']:
                                 logger.warning(error)
-                    elif ail_response.get('success'):
+                    elif uuid := ail_response.get('uuid'):
                         # if we have successful submissions, we may want to get the references later.
                         # Store in redis for now.
-                        logger.info(f'{len(ail_response["success"])} URLs submitted to AIL.')
-                        self.lookyloo.redis.hset(f'bg_processed_ail|{cached.uuid}|refs', mapping=ail_response['success'])
+                        logger.info(f'Capture submitted to AIL ({uuid}).')
+                        self.lookyloo.redis.hset(f'bg_processed_ail|{cached.uuid}|refs', mapping=ail_response)
                         self.lookyloo.redis.expire(f'bg_processed_ail|{cached.uuid}|refs', redis_expire)
                     logger.debug('AIL processing done.')
 
