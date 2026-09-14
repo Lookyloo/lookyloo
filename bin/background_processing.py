@@ -237,9 +237,14 @@ class Processing(AbstractManager):
                         with (cached.capture_dir / 'assemblyline_ingest.json').open('w') as f:
                             f.write(json.dumps(entry, indent=2, default=serialize_to_json))
 
+        __counter_shutdown_force = 0
         for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time, public=False):
             if cached.error:
                 continue
+                __counter_shutdown_force += 1
+                if __counter_shutdown_force % 1000 == 0 and self.shutdown_requested():
+                    self.logger.warning('Shutdown requested, breaking.')
+                    break
             logger = LookylooCacheLogAdapter(self.logger, {'uuid': cached.uuid})
             # NOTE: categorization must be first as the tags could be submitted to MISP
             # 2026-03-17: and they're optionally used for MISP autopush
