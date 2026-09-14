@@ -271,6 +271,7 @@ class Processing(AbstractManager):
 
             if self.ail.available and not self.lookyloo.redis.exists(f'bg_processed_ail|{cached.uuid}'):
                 self.lookyloo.redis.setex(f'bg_processed_ail|{cached.uuid}', redis_expire, 1)
+                ail_response = {}
                 for redirect in cached.redirects:
                     parsed = urlparse(redirect)
                     if parsed.hostname and parsed.hostname.endswith('.onion'):
@@ -281,22 +282,23 @@ class Processing(AbstractManager):
                         # got one, break
                         break
 
-                # Submit onions captures to AIL
-                if ail_response.get('error'):
-                    if isinstance(ail_response['error'], str):
-                        # general error, the module isn't available
-                        logger.error(f'Unable to submit capture to AIL: {ail_response["error"]}')
-                    elif isinstance(ail_response['error'], list):
-                        # Errors when submitting individual URLs
-                        for error in ail_response['error']:
-                            logger.warning(error)
-                elif ail_response.get('success'):
-                    # if we have successful submissions, we may want to get the references later.
-                    # Store in redis for now.
-                    logger.info(f'{len(ail_response["success"])} URLs submitted to AIL.')
-                    self.lookyloo.redis.hset(f'bg_processed_ail|{cached.uuid}|refs', mapping=ail_response['success'])
-                    self.lookyloo.redis.expire(f'bg_processed_ail|{cached.uuid}|refs', redis_expire)
-                logger.debug('AIL processing done.')
+                if ail_response:
+                    # Submit onions captures to AIL
+                    if ail_response.get('error'):
+                        if isinstance(ail_response['error'], str):
+                            # general error, the module isn't available
+                            logger.error(f'Unable to submit capture to AIL: {ail_response["error"]}')
+                        elif isinstance(ail_response['error'], list):
+                            # Errors when submitting individual URLs
+                            for error in ail_response['error']:
+                                logger.warning(error)
+                    elif ail_response.get('success'):
+                        # if we have successful submissions, we may want to get the references later.
+                        # Store in redis for now.
+                        logger.info(f'{len(ail_response["success"])} URLs submitted to AIL.')
+                        self.lookyloo.redis.hset(f'bg_processed_ail|{cached.uuid}|refs', mapping=ail_response['success'])
+                        self.lookyloo.redis.expire(f'bg_processed_ail|{cached.uuid}|refs', redis_expire)
+                    logger.debug('AIL processing done.')
 
             if self.assemblyline.available and not self.lookyloo.redis.exists(f'bg_processed_assemblyline|{cached.uuid}'):
                 logger.debug(f'Processing AssemblyLine now. --- Available: {self.assemblyline.available}')
