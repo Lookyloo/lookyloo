@@ -271,7 +271,7 @@ class Processing(AbstractManager):
 
             if self.ail.available and not self.lookyloo.redis.exists(f'bg_processed_ail|{cached.uuid}'):
                 self.lookyloo.redis.setex(f'bg_processed_ail|{cached.uuid}', redis_expire, 1)
-                ail_response = {}
+                ail_response: dict[str, str] = {}
                 for redirect in cached.redirects:
                     parsed = urlparse(redirect)
                     if parsed.hostname and parsed.hostname.endswith('.onion'):
@@ -296,7 +296,7 @@ class Processing(AbstractManager):
                         # if we have successful submissions, we may want to get the references later.
                         # Store in redis for now.
                         logger.info(f'Capture submitted to AIL ({uuid}).')
-                        self.lookyloo.redis.hset(f'bg_processed_ail|{cached.uuid}|refs', mapping=ail_response)
+                        self.lookyloo.redis.hset(f'bg_processed_ail|{cached.uuid}|refs', mapping=ail_response)  # type: ignore[arg-type]
                         self.lookyloo.redis.expire(f'bg_processed_ail|{cached.uuid}|refs', redis_expire)
                     logger.debug('AIL processing done.')
 
