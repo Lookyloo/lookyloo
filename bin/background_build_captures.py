@@ -51,6 +51,7 @@ class BackgroundBuildCaptures(AbstractManager):
 
         # Redis connector so we don't use the one from Lookyloo
         self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
+        self.cur_pid = os.getpid()
 
     def __auto_report(self, path: Path, capture_uuid: str, logger: LookylooCacheLogAdapter) -> None:
         logger.info('Triggering autoreport...')
@@ -116,6 +117,10 @@ class BackgroundBuildCaptures(AbstractManager):
 
     def _to_run_forever(self) -> None:
         built_all_missing = self._build_missing_pickles()
+        if pid := self.redis.get('background_build_capture_oldish'):
+            if int(pid) == self.cur_pid:
+                self.logger.info('Clear oldish lock')
+                self.redis.delete('background_build_capture_oldish')
         if self.shutdown_requested() or (self.build_recent and not built_all_missing):
             self.logger.info('Not done with recent, ignore lazy.')
             # if we're not done with recent, quit
@@ -287,13 +292,22 @@ class BackgroundBuildCaptures(AbstractManager):
         for month_dir in make_dirs_list(self.captures_dir):
             __counter_shutdown = 0
             __counter_shutdown_force = 0
-            for _, path in sorted(get_sorted_captures_from_disk(month_dir, cut_time=cut_time,
-                                                                keep_more_recent=self.build_recent),
-                                  reverse=True):
+            for capture_time, path in sorted(get_sorted_captures_from_disk(month_dir, cut_time=cut_time,
+                                                                           keep_more_recent=self.build_recent),
+                                             reverse=True):
                 __counter_shutdown_force += 1
                 if __counter_shutdown_force % 1000 == 0 and self.shutdown_requested():
                     self.logger.warning('Shutdown requested, breaking.')
                     return False
+
+                # only keep one process building old captures after the time on index
+                if capture_time < (datetime.now() - self.lookyloo.time_delta_on_index):
+                    # check if another process is running
+                    if pid := self.redis.get('background_build_capture_oldish'):
+                        if int(pid) != self.cur_pid:
+                            self.logger.info(f'Other process ({pid}) already checking oldish captures')
+                            return True
+                    self.redis.set('background_build_capture_oldish', self.cur_pid, ex=3600)
 
                 try:
                     if self.__build_pickle(path=path, trigger_modules=self.build_recent):
