@@ -1663,7 +1663,7 @@ class Lookyloo():
                 if not favicon:
                     continue
                 try:
-                    m = self.magicdb.best_magic_buffer(favicon)
+                    m = self.magicdb.best_magic_buffer(favicon, None)
                     return m.mime_type, base64.b64encode(favicon).decode()
                 except Exception as e:
                     logger.info(f'Unable to get the mimetype of the favicon: {e}.')
@@ -1921,7 +1921,7 @@ class Lookyloo():
         success, screenshot = self.get_screenshot(capture_uuid)
         if success:
             s_bin = screenshot.read()
-            m = self.magicdb.best_magic_buffer(s_bin)
+            m = self.magicdb.best_magic_buffer(s_bin, None)
             image_data = b64encode(s_bin).decode()
             to_return['screenshot'] = f"data:{m.mime_type};base64,{image_data}"
         return to_return

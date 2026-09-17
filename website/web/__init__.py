@@ -2550,18 +2550,22 @@ def capture_web() -> str | Response | WerkzeugResponse:
 
         if _p_name := [n for n in request.form.getlist('remote_lacus_proxy_name') if n]:
             capture_query['proxy'] = _p_name[0]
-        elif request.form.get('proxy'):
-            parsed_proxy = urlparse(request.form['proxy'])
-            if parsed_proxy.scheme and parsed_proxy.hostname and parsed_proxy.port:
-                if parsed_proxy.scheme in ['http', 'https', 'socks5', 'socks5h']:
-                    if (parsed_proxy.username and parsed_proxy.password) or (not parsed_proxy.username and not parsed_proxy.password):
-                        capture_query['proxy'] = request.form['proxy']
-                    else:
-                        flash('You need to enter a username AND a password for your proxy.', 'error')
-                else:
-                    flash('Proxy scheme not supported: must be http(s) or socks5.', 'error')
+        elif proxy := request.form.get('proxy'):
+            if proxy == 'force_tor':
+                # legacy feature, use the tor configured in lacus
+                capture_query['proxy'] = proxy
             else:
-                flash('Invalid proxy: Check that you entered a scheme, a hostname and a port.', 'error')
+                parsed_proxy = urlparse(proxy)
+                if parsed_proxy.scheme and parsed_proxy.hostname and parsed_proxy.port:
+                    if parsed_proxy.scheme in ['http', 'https', 'socks5', 'socks5h']:
+                        if (parsed_proxy.username and parsed_proxy.password) or (not parsed_proxy.username and not parsed_proxy.password):
+                            capture_query['proxy'] = proxy
+                        else:
+                            flash('You need to enter a username AND a password for your proxy.', 'error')
+                    else:
+                        flash('Proxy scheme not supported: must be http(s) or socks5.', 'error')
+                else:
+                    flash('Invalid proxy: Check that you entered a scheme, a hostname and a port.', 'error')
 
         # auto monitoring
         if request.form.get('monitor_capture'):
@@ -2700,7 +2704,7 @@ def favicon_detail(favicon_sha512: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     favicon = get_indexing(flask_login.current_user).get_favicon(favicon_sha512)
     if favicon:
-        m = magicdb.best_magic_buffer(favicon)
+        m = magicdb.best_magic_buffer(favicon, None)
         mimetype = m.mime_type
         b64_favicon = base64.b64encode(favicon).decode()
         mmh3_shodan = lookyloo.compute_mmh3_shodan(favicon)
@@ -3416,7 +3420,7 @@ def post_table(table_name: str, value: str='') -> Response:
                 if not favicon:
                     continue
                 try:
-                    m = magicdb.best_magic_buffer(favicon)
+                    m = magicdb.best_magic_buffer(favicon, None)
                     mimetype = m.mime_type
                 except Exception as e:
                     # Not a valid image
