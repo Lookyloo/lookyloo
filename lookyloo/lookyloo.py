@@ -888,11 +888,15 @@ class Lookyloo():
         return False
 
     def capture_is_private(self, capture_uuid: str) -> bool:
-        if self.get_capture_status(capture_uuid) == CaptureStatusCore.DONE:
-            return self._captures_index.capture_is_private(capture_uuid)
-        # check if the settings say it's private
-        if _s := self.get_capture_settings(capture_uuid):
-            return _s.private
+        try:
+            if self.get_capture_status(capture_uuid) == CaptureStatusCore.DONE:
+                return self._captures_index.capture_is_private(capture_uuid)
+            # check if the settings say it's private
+            if _s := self.get_capture_settings(capture_uuid):
+                return _s.private
+        except UUIDMissingInCache as e:
+            # reraise the exception with a more helpfull error message
+            raise UUIDMissingInCache('Cannot find this UUID in the cache, unknown privacy status.') from e
         raise UnknownUUID('Cannot find the privacy status of this capture.')
 
     def capture_seed_valid(self, capture_uuid: str, seed: str) -> bool:
