@@ -368,7 +368,8 @@ class Indexing():
 
         if self.redis.type('body_hashes') == 'zset':  # type: ignore[no-untyped-call]
             pipeline.delete('body_hashes')
-        for h in {h for h in [urlnode.resources_hashes for urlnode in crawled_tree.root_hartree.url_tree.traverse()]}:
+        list_of_sets = [urlnode.resources_hashes for urlnode in crawled_tree.root_hartree.url_tree.traverse()]
+        for h in {h for hashes in list_of_sets for h in hashes}:
             if self.redis.type(f'bh|{h}|captures') == 'set':  # type: ignore[no-untyped-call]
                 uuids_to_reindex = self.redis.smembers(f'bh|{h}|captures')
                 pipeline.srem('indexed_body_hashes', *uuids_to_reindex)
