@@ -276,19 +276,21 @@ class Indexing():
 
     # ###### Cookies ######
 
-    def _reindex_cookies(self, cookie_name: str) -> None:
+    def _reindex_cookies(self, crawled_tree: CrawledTree) -> None:
         # We changed the format of the indexes, so we need to make sure they're re-triggered.
         pipeline = self.redis.pipeline()
-        if self.redis.type(f'cn|{cookie_name}|captures') == 'set':  # type: ignore[no-untyped-call]
-            pipeline.srem('indexed_cookies', *[entry.split('|')[0] for entry in self.redis.smembers(f'cn|{cookie_name}|captures')])
-            pipeline.delete(f'cn|{cookie_name}|captures')
-        if self.redis.type(f'cn|{cookie_name}') == 'zset':  # type: ignore[no-untyped-call]
-            for domain in self.redis.zrevrangebyscore(f'cn|{cookie_name}', '+inf', '-inf'):
-                pipeline.delete(f'cn|{cookie_name}|{domain}')
-                pipeline.delete(domain)
-            pipeline.delete(f'cn|{cookie_name}')
         if self.redis.type('cookies_names') == 'zset':  # type: ignore[no-untyped-call]
             pipeline.delete('cookies_names')
+        u_nodes_w_cookie = [urlnode for urlnode in crawled_tree.root_hartree.url_tree.traverse() if 'cookies_received' in urlnode.features]
+        for cookie_name in {cookie.split('=', 1)[0] for domain, cookie, _ in u_nodes_w_cookie}:
+            if self.redis.type(f'cn|{cookie_name}|captures') == 'set':  # type: ignore[no-untyped-call]
+                pipeline.srem('indexed_cookies', *[entry.split('|')[0] for entry in self.redis.smembers(f'cn|{cookie_name}|captures')])
+                pipeline.delete(f'cn|{cookie_name}|captures')
+            if self.redis.type(f'cn|{cookie_name}') == 'zset':  # type: ignore[no-untyped-call]
+                for domain in self.redis.zrevrangebyscore(f'cn|{cookie_name}', '+inf', '-inf'):
+                    pipeline.delete(f'cn|{cookie_name}|{domain}')
+                    pipeline.delete(domain)
+                pipeline.delete(f'cn|{cookie_name}')
         pipeline.execute()
 
     @property
@@ -299,6 +301,9 @@ class Indexing():
         if self.redis.sismember('indexed_cookies', crawled_tree.uuid):
             # Do not reindex
             return
+
+        self._reindex_cookies(crawled_tree)
+
         self.logger.debug(f'Indexing cookies for {crawled_tree.uuid} ... ')
         self.redis.sadd('indexed_cookies', crawled_tree.uuid)
         pipeline = self.redis.pipeline()
@@ -313,7 +318,6 @@ class Indexing():
                 continue
             for domain, cookie, _ in urlnode.cookies_received:
                 name, value = cookie.split('=', 1)
-                self._reindex_cookies(name)
                 if name not in already_indexed_global:
                     # The cookie hasn't been indexed in that run yet
                     already_indexed_global.add(name)
@@ -358,20 +362,22 @@ class Indexing():
 
     # ###### Body hashes ######
 
-    def _reindex_ressources(self, h: str) -> None:
+    def _reindex_ressources(self, crawled_tree: CrawledTree) -> None:
         # We changed the format of the indexes, so we need to make sure they're re-triggered.
         pipeline = self.redis.pipeline()
-        if self.redis.type(f'bh|{h}|captures') == 'set':  # type: ignore[no-untyped-call]
-            uuids_to_reindex = self.redis.smembers(f'bh|{h}|captures')
-            pipeline.srem('indexed_body_hashes', *uuids_to_reindex)
-            # deprecated index
-            pipeline.delete(*[f'bh|{h}|captures|{uuid}' for uuid in uuids_to_reindex])
-            pipeline.delete(f'bh|{h}|captures')
-        if self.redis.type(f'bh|{h}') == 'zset':  # type: ignore[no-untyped-call]
-            pipeline.delete(f'bh|{h}')
 
         if self.redis.type('body_hashes') == 'zset':  # type: ignore[no-untyped-call]
             pipeline.delete('body_hashes')
+        for h in {h for h in [urlnode.resources_hashes for urlnode in crawled_tree.root_hartree.url_tree.traverse()]}:
+            if self.redis.type(f'bh|{h}|captures') == 'set':  # type: ignore[no-untyped-call]
+                uuids_to_reindex = self.redis.smembers(f'bh|{h}|captures')
+                pipeline.srem('indexed_body_hashes', *uuids_to_reindex)
+                # deprecated index
+                pipeline.delete(*[f'bh|{h}|captures|{uuid}' for uuid in uuids_to_reindex])
+                pipeline.delete(f'bh|{h}|captures')
+            if self.redis.type(f'bh|{h}') == 'zset':  # type: ignore[no-untyped-call]
+                pipeline.delete(f'bh|{h}')
+
         pipeline.execute()
 
     @property
@@ -382,6 +388,9 @@ class Indexing():
         if self.redis.sismember('indexed_body_hashes', crawled_tree.uuid):
             # Do not reindex
             return
+
+        self._reindex_ressources(crawled_tree)
+
         self.redis.sadd('indexed_body_hashes', crawled_tree.uuid)
         self.logger.debug(f'Indexing body hashes for {crawled_tree.uuid} ... ')
         pipeline = self.redis.pipeline()
@@ -393,8 +402,6 @@ class Indexing():
         already_indexed_global: set[str] = set()
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             for h in urlnode.resources_hashes:
-
-                self._reindex_ressources(h)
 
                 if h not in already_indexed_global:
                     # The hash hasn't been indexed in that run yet
@@ -462,14 +469,15 @@ class Indexing():
 
     # ###### HTTP Headers Hashes ######
 
-    def _reindex_hhhashes(self, hhh: str) -> None:
+    def _reindex_hhhashes(self, crawled_tree: CrawledTree) -> None:
         # We changed the format of the indexes, so we need to make sure they're re-triggered.
         pipeline = self.redis.pipeline()
-        if self.redis.type(f'hhhashes|{hhh}|captures') == 'set':  # type: ignore[no-untyped-call]
-            pipeline.srem('indexed_hhhashes', *[entry.split('|')[0] for entry in self.redis.smembers(f'hhhashes|{hhh}|captures')])
-            pipeline.delete(f'hhhashes|{hhh}|captures')
         if self.redis.type('hhhashes') == 'zset':  # type: ignore[no-untyped-call]
             pipeline.delete('hhhashes')
+        for hhh in {urlnode.hhhash for urlnode in crawled_tree.root_hartree.url_tree.traverse() if 'hhhash' in urlnode.features}:
+            if self.redis.type(f'hhhashes|{hhh}|captures') == 'set':  # type: ignore[no-untyped-call]
+                pipeline.srem('indexed_hhhashes', *[entry.split('|')[0] for entry in self.redis.smembers(f'hhhashes|{hhh}|captures')])
+                pipeline.delete(f'hhhashes|{hhh}|captures')
         pipeline.execute()
 
     @property
@@ -480,6 +488,9 @@ class Indexing():
         if self.redis.sismember('indexed_hhhashes', crawled_tree.uuid):
             # Do not reindex
             return
+
+        self._reindex_hhhashes(crawled_tree)
+
         self.redis.sadd('indexed_hhhashes', crawled_tree.uuid)
         self.logger.debug(f'Indexing HHHashes for {crawled_tree.uuid} ... ')
         pipeline = self.redis.pipeline()
@@ -492,7 +503,6 @@ class Indexing():
         for urlnode in crawled_tree.root_hartree.url_tree.traverse():
             if 'hhhash' not in urlnode.features:
                 continue
-            self._reindex_hhhashes(urlnode.hhhash)
             if urlnode.hhhash not in already_indexed_global:
                 # HHH hasn't been indexed in that run yet
                 already_indexed_global.add(urlnode.hhhash)
@@ -644,19 +654,23 @@ class Indexing():
 
     # ###### URLs and Domains ######
 
-    def _reindex_urls_domains(self, hostname: str, md5_url: str) -> None:
+    def _reindex_urls_domains(self, crawled_tree: CrawledTree) -> None:
         # We changed the format of the indexes, so we need to make sure they're re-triggered.
         pipeline = self.redis.pipeline()
-        if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]
-            pipeline.srem('indexed_urls', *self.redis.smembers(f'hostnames|{hostname}|captures'))
-            pipeline.delete(f'hostnames|{hostname}|captures')
-        if self.redis.type(f'urls|{md5_url}|captures') == 'set':  # type: ignore[no-untyped-call]
-            pipeline.srem('indexed_urls', *self.redis.smembers(f'urls|{md5_url}|captures'))
-            pipeline.delete(f'urls|{md5_url}|captures')
         if self.redis.type('hostnames') == 'zset':  # type: ignore[no-untyped-call]
             pipeline.delete('hostnames')
         if self.redis.type('urls') == 'zset':  # type: ignore[no-untyped-call]
             pipeline.delete('urls')
+        hostnames = {urlnode.hostname for urlnode in crawled_tree.root_hartree.url_tree.traverse() if urlnode.hostname}
+        urls = {hashlib.md5(urlnode.name.encode()).hexdigest() for urlnode in crawled_tree.root_hartree.url_tree.traverse() if urlnode.name}
+        for hostname in hostnames:
+            if self.redis.type(f'hostnames|{hostname}|captures') == 'set':  # type: ignore[no-untyped-call]
+                pipeline.srem('indexed_urls', *self.redis.smembers(f'hostnames|{hostname}|captures'))
+                pipeline.delete(f'hostnames|{hostname}|captures')
+        for md5_url in urls:
+            if self.redis.type(f'urls|{md5_url}|captures') == 'set':  # type: ignore[no-untyped-call]
+                pipeline.srem('indexed_urls', *self.redis.smembers(f'urls|{md5_url}|captures'))
+                pipeline.delete(f'urls|{md5_url}|captures')
         pipeline.execute()
 
     @property
@@ -671,6 +685,9 @@ class Indexing():
         if self.redis.sismember('indexed_urls', crawled_tree.uuid):
             # Do not reindex
             return
+
+        self._reindex_urls_domains(crawled_tree)
+
         self.redis.sadd('indexed_urls', crawled_tree.uuid)
         self.logger.debug(f'Indexing URLs for {crawled_tree.uuid} ... ')
         pipeline = self.redis.pipeline()
@@ -687,7 +704,6 @@ class Indexing():
                 continue
 
             md5_url = hashlib.md5(urlnode.name.encode()).hexdigest()
-            self._reindex_urls_domains(urlnode.hostname, md5_url)
 
             if md5_url not in already_indexed_global:
                 # The URL hasn't been indexed in that run yet
