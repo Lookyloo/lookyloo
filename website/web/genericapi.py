@@ -145,7 +145,10 @@ class CaptureStatusQuery(Resource):  # type: ignore[misc]
     @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
     def get(self, capture_uuid: str) -> Response:
         with_error: bool = True if request.args.get('with_error') else False
-        status_code = lookyloo.get_capture_status(capture_uuid)
+        try:
+            status_code = lookyloo.get_capture_status(capture_uuid)
+        except UUIDMissingInCache:
+            status_code = CaptureStatusPy.UNKNOWN
         to_return: dict[str, Any] = {'status_code': status_code}
         if status_code in [CaptureStatusCore.DONE, CaptureStatusPy.DONE] and with_error:
             cache = lookyloo.capture_cache(capture_uuid)
