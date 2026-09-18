@@ -1525,7 +1525,7 @@ class Lookyloo():
 
         return to_check, cert_to_return
 
-    def check_trusted_timestamps(self, capture_uuid: str) -> tuple[dict[str, tuple[datetime, str]], str] | dict[str, str]:
+    def check_trusted_timestamps(self, capture_uuid: str) -> tuple[dict[str, tuple[datetime, str, bool]], str] | dict[str, str]:
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         tsr_data = self._prepare_tsr_data(capture_uuid, logger=logger)
         if isinstance(tsr_data, dict):
@@ -1534,15 +1534,15 @@ class Lookyloo():
 
         to_check, certificates = tsr_data
 
-        to_return: dict[str, tuple[datetime, str]] = {}
+        to_return: dict[str, tuple[datetime, str, bool]] = {}
         for tsr_name, entry in to_check.items():
             tsr, data, safe = entry
             if safe:
-                to_return[tsr_name] = (tsr.tst_info.gen_time, 'Successfully validated with a trusted certificate.')
+                to_return[tsr_name] = (tsr.tst_info.gen_time, 'Successfully validated with a trusted certificate.', safe)
             else:
                 # validation worked, but not with a trusted certificate
                 logger.warning(f'Unable to validate {tsr_name} with a trusted certificate')
-                to_return[tsr_name] = (tsr.tst_info.gen_time, 'Unable to validate with a trusted certificate.')
+                to_return[tsr_name] = (tsr.tst_info.gen_time, 'Unable to validate with a trusted certificate.', safe)
         return to_return, b64encode(b'\n'.join([certificate.public_bytes(Encoding.PEM) for certificate in certificates])).decode()
 
     def bundle_all_trusted_timestamps(self, capture_uuid: str) -> BytesIO | dict[str, str]:
@@ -1585,10 +1585,12 @@ class Lookyloo():
                 z.writestr(filename, data)
                 validator_bash += f"echo ---------- {tsr_name} ----------\n"
                 if safe:
-                    validator_bash += "Successfull validation against a the local CA store.\n"
+                    validator_bash += "# Successfull validation against a the local CA store.\n"
                 else:
                     # The validation worked aginst the certificate bundled-in the TSR, not a trusted one
-                    validator_bash += "!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!\nThe validation worked against the bundled-in certificate, but not a public one. Either it is old, or something phishy is happening\n !!!! WARNING !!!!\n"
+                    validator_bash += "# !!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!\n"
+                    validator_bash += "The validation worked against the bundled-in certificate, but not a public one. Either it is old, or something phishy is happening\n"
+                    validator_bash += "!!!! WARNING !!!!\n"
                 validator_bash += f"openssl ts -CAfile certificates.pem -verify -in {filename}.tsr -data {filename}\n"
                 validator_bash += f"openssl ts -reply -in {filename}.tsr -text\n"
                 validator_bash += "echo ---------------------------------\n\n"

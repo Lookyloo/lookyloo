@@ -1141,7 +1141,7 @@ def all_trusted_timestamp(tree_uuid: str) -> Response:
 def download_elements(tree_uuid: str) -> str:
     error: str | None
     tts = lookyloo.check_trusted_timestamps(tree_uuid)
-    tt_entries: dict[str, tuple[datetime, str]]
+    tt_entries: dict[str, tuple[datetime, str, bool]]
     if isinstance(tts, dict):
         error = list(tts.values())[0]
         tt_entries = {}
