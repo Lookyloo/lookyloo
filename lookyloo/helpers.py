@@ -460,12 +460,23 @@ def load_user_config(username: str) -> dict[str, Any] | None:
 
 @cache
 def trusted_store() -> list[Certificate]:
+    to_return: list[Certificate] = []
     try:
         with open(certifi.where(), "rb") as pems:
-            return load_pem_x509_certificates(pems.read())
+            to_return += load_pem_x509_certificates(pems.read())
     except Exception as e:
         logger.warning(f'Unable to open certifi CA bundle: {e}')
         raise e
+    try:
+        local_tsa_certs = get_homedir() / 'data' / 'tsa-certs'
+        for cert_file in local_tsa_certs.glob('*.pem'):
+            with cert_file.open('rb') as c:
+                to_return += load_pem_x509_certificates(c.read())
+
+    except Exception as e:
+        logger.warning(f'Unable to open certifi CA bundle: {e}')
+        raise e
+    return to_return
 
 
 @cache
