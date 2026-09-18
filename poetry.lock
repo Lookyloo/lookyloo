@@ -2637,14 +2637,14 @@ files = [
 
 [[package]]
 name = "lookyloo-models"
-version = "0.4.1"
+version = "0.4.3"
 description = "All the Pydantic models used across Lookyloo"
 optional = false
 python-versions = "<4,>=3.10"
 groups = ["main"]
 files = [
-    {file = "lookyloo_models-0.4.1-py3-none-any.whl", hash = "sha256:02e5ed17d8939b06005f7ee0e6104aaffd3c6ea65b3102131008c4fc064ae6cc"},
-    {file = "lookyloo_models-0.4.1.tar.gz", hash = "sha256:d16941c8d897a0e5a1044ace0b68015b6b1145802c94d2d036dc8ebbfa038a53"},
+    {file = "lookyloo_models-0.4.3-py3-none-any.whl", hash = "sha256:d4178641f053e703f748d29b0b6548db3d384df3ab81bb18048ab9f67e2dd709"},
+    {file = "lookyloo_models-0.4.3.tar.gz", hash = "sha256:6f5c48f3b777c51ff62713faeaa900edc191468c2f1c07de4b77346d3f289207"},
 ]
 
 [package.dependencies]
@@ -5029,30 +5029,30 @@ docs = ["sphinx (>=9.1.0) ; python_version >= \"3.12\""]
 
 [[package]]
 name = "pymisp"
-version = "2.5.34.3"
+version = "2.5.34.4"
 description = "Python API for MISP."
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "pymisp-2.5.34.3-py3-none-any.whl", hash = "sha256:b7fa62210a5ca5090d2c8cfc455b0abc2ac62e6d31583f244bc0fb775540db95"},
-    {file = "pymisp-2.5.34.3.tar.gz", hash = "sha256:16026f36c785e2bc32c378e8475f1cede099cbf66f16dfeeec80a2bbd91e5f5b"},
+    {file = "pymisp-2.5.34.4-py3-none-any.whl", hash = "sha256:4bb3e22a9db99093da96de9bcd286769aabba721a3e720ce7c34ddad471bc0ed"},
+    {file = "pymisp-2.5.34.4.tar.gz", hash = "sha256:0e5563d4fb1d5850f808c4e53d0ea8cd4e2c7877453034d966e7b2b70c32cdd9"},
 ]
 
 [package.dependencies]
 deprecated = ">=1.3.1"
 lief = {version = ">=1.0.0", optional = true, markers = "extra == \"fileobjects\""}
-pure-magic-rs = {version = ">=0.4.3", optional = true, markers = "extra == \"fileobjects\""}
+pure-magic-rs = {version = ">=0.5.0", optional = true, markers = "extra == \"fileobjects\""}
 pydeep2 = {version = ">=0.5.1", optional = true, markers = "extra == \"fileobjects\""}
 python-dateutil = ">=2.9.0.post0"
 requests = ">=2.34.2"
 
 [package.extras]
-brotli = ["urllib3[broti] (>=2.7.0)"]
+brotli = ["urllib3[broti] (>=2.8.0)"]
 docs = ["docutils (<0.23) ; python_version >= \"3.12\"", "myst-parser (>=5.1.0) ; python_version >= \"3.12\"", "sphinx (>=9.1.0) ; python_version >= \"3.12\"", "sphinx-autodoc-typehints (>=3.13.6) ; python_version >= \"3.12\""]
 email = ["RTFDE (>=0.1.2.2) ; python_version <= \"3.10\"", "extract_msg (>=0.56.1)", "oletools (>=0.60.2)"]
-fileobjects = ["lief (>=1.0.0)", "pure-magic-rs (>=0.4.3)", "pydeep2 (>=0.5.1)"]
-neo4j = ["neo4j (>=6.3.0)"]
+fileobjects = ["lief (>=1.0.0)", "pure-magic-rs (>=0.5.0)", "pydeep2 (>=0.5.1)"]
+neo4j = ["neo4j (>=6.3.1)"]
 openioc = ["beautifulsoup4 (>=4.15.0)"]
 pdfexport = ["reportlab (>=5.0.1)"]
 url = ["pyfaup-rs (>=0.4,<0.5)"]
@@ -7044,4 +7044,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "1bde199b780dd312c29b1d6bdf42b2a6466e0d466a02ba1de326a805946dfb68"
+content-hash = "26a8287407199b37f697ebe334769e1b2e0799c34b2158048ba1e5a15a999dbf"
