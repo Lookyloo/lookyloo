@@ -281,8 +281,11 @@ class Indexing():
         pipeline = self.redis.pipeline()
         if self.redis.type('cookies_names') == 'zset':  # type: ignore[no-untyped-call]
             pipeline.delete('cookies_names')
-        cookies = [urlnode.cookies_received for urlnode in crawled_tree.root_hartree.url_tree.traverse() if 'cookies_received' in urlnode.features]
-        for cookie_name in {cookie.split('=', 1)[0] for domain, cookie, _ in cookies}:
+        cookies = set()
+        for urlnode in crawled_tree.root_hartree.url_tree.traverse():
+            if 'cookies_received' in urlnode.features:
+                cookies.update(urlnode.cookies_received)
+        for cookie_name in {cookie.split('=', 1)[0] for _, cookie, _ in cookies}:
             if self.redis.type(f'cn|{cookie_name}|captures') == 'set':  # type: ignore[no-untyped-call]
                 pipeline.srem('indexed_cookies', *[entry.split('|')[0] for entry in self.redis.smembers(f'cn|{cookie_name}|captures')])
                 pipeline.delete(f'cn|{cookie_name}|captures')
