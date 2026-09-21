@@ -1,0 +1,1219 @@
+################################ GENERAL #####################################
+
+# By default kvrocks listens for connections from localhost interface.
+# It is possible to listen to just one or multiple interfaces using
+# the "bind" configuration directive, followed by one or more IP addresses.
+#
+# Examples:
+#
+# bind 192.168.1.100 10.0.0.1
+# bind 127.0.0.1 ::1
+# bind 0.0.0.0
+# bind 127.0.0.1
+
+# Unix socket.
+#
+# Specify the path for the unix socket that will be used to listen for
+# incoming connections. There is no default, so kvrocks will not listen
+# on a unix socket when not specified.
+#
+# unixsocket /tmp/kvrocks.sock
+# unixsocketperm 777
+unixsocket full_index.sock
+unixsocketperm 777
+
+
+# Allows a parent process to open a socket and pass its FD down to kvrocks as a child
+# process. Useful to reserve a port and prevent race conditions.
+#
+# PLEASE NOTE:
+# If this is overridden to a value other than -1, the bind and tls* directives will be
+# ignored.
+#
+# Default: -1 (not overridden, defer to creating a connection to the specified port)
+socket-fd -1
+
+# Accept connections on the specified port, default is 6666.
+# port 6666
+
+# Close the connection after a client is idle for N seconds (0 to disable)
+timeout 0
+
+# The number of worker's threads, increase or decrease would affect the performance.
+workers 8
+
+# By default, kvrocks does not run as a daemon. Use 'yes' if you need it.
+# It will create a PID file when daemonize is enabled, and its path is specified by pidfile.
+daemonize yes
+
+# Kvrocks implements the cluster solution that is similar to the Redis cluster solution.
+# You can get cluster information by CLUSTER NODES|SLOTS|INFO command, it also is
+# adapted to redis-cli, redis-benchmark, Redis cluster SDK, and Redis cluster proxy.
+# But kvrocks doesn't support communicating with each other, so you must set
+# cluster topology by CLUSTER SETNODES|SETNODEID commands, more details: #219.
+#
+# PLEASE NOTE:
+# If you enable cluster, kvrocks will encode key with its slot id calculated by
+# CRC16 and modulo 16384, encoding key with its slot id makes it efficient to
+# migrate keys based on the slot. So if you enabled at first time, cluster mode must
+# not be disabled after restarting, and vice versa. That is to say, data is not
+# compatible between standalone mode with cluster mode, you must migrate data
+# if you want to change mode, otherwise, kvrocks will make data corrupt.
+#
+# Default: no
+
+cluster-enabled no
+
+# By default, namespaces are stored in the configuration file and won't be replicated
+# to replicas. This option allows to change this behavior, so that namespaces are also
+# propagated to slaves. Note that:
+# 1) it won't replicate the 'masterauth' to prevent breaking master/replica replication
+# 2) it will overwrite replica's namespace with master's namespace, so be careful of in-using namespaces
+# 3) cannot switch off the namespace replication once it's enabled
+#
+# Default: no
+repl-namespace-enabled no
+
+# By default, the max length of bulk string is limited to 512MB. If you want to
+# change this limit to a different value(must >= 1MiB), you can use the following configuration.
+# It can be just an integer (e.g. 10000000), or an integer followed by a unit (e.g. 12M, 7G, 2T).
+#
+# proto-max-bulk-len 536870912
+
+# Persist the cluster nodes topology in local file($dir/nodes.conf). This configuration
+# takes effect only if the cluster mode was enabled.
+#
+# If yes, it will try to load the cluster topology from the local file when starting,
+# and dump the cluster nodes into the file if it was changed.
+#
+# Default: yes
+persist-cluster-nodes-enabled yes
+
+# Set the max number of connected clients at the same time. By default
+# this limit is set to 10000 clients. However, if the server is not
+# able to configure the process file limit to allow for the specified limit
+# the max number of allowed clients is set to the current file limit
+#
+# Once the limit is reached the server will close all the new connections sending
+# an error 'max number of clients reached'.
+#
+maxclients 10000
+
+# Require clients to issue AUTH <PASSWORD> before processing any other
+# commands.  This might be useful in environments in which you do not trust
+# others with access to the host running kvrocks.
+#
+# This should stay commented out for backward compatibility and because most
+# people do not need auth (e.g. they run their own servers).
+#
+# Warning: since kvrocks is pretty fast an outside user can try up to
+# 150k passwords per second against a good box. This means that you should
+# use a very strong password otherwise it will be very easy to break.
+#
+# requirepass foobared
+
+# If the master is password protected (using the "masterauth" configuration
+# directive below) it is possible to tell the slave to authenticate before
+# starting the replication synchronization process. Otherwise, the master will
+# refuse the slave request.
+#
+# masterauth foobared
+
+# Master-Salve replication would check db name is matched. if not, the slave should
+# refuse to sync the db from master. Don't use the default value, set the db-name to identify
+# the cluster.
+db-name change.me.db
+
+# The working directory
+#
+# The DB will be written inside this directory
+# Note that you must specify a directory here, not a file name.
+dir ./
+
+# You can configure where to store your server logs by the log-dir.
+# If you don't specify one, we will use the above `dir` and
+# also stdout as our default log directory, e.g. `/tmp/kvrocks,stdout`.
+# `log-dir` can contain multiple destinations, separated by comma (,).
+# And every destination can be optionally followed by a corresponding log level,
+# separated by colon (:), e.g. `/tmp/my-log-dir:info,stdout:warning,stderr:error`.
+# If no log level attached with a destination,
+# the config option `log-level` will be used.
+#
+# log-dir /tmp/kvrocks,stdout
+log-dir stdout
+
+# Log level
+# Possible values: debug, info, warning, error, fatal
+# Default: info
+log-level info
+
+# You can configure log-retention-days to control whether to enable the log cleaner
+# and the maximum retention days that the INFO level logs will be kept.
+#
+# if set to negative or 0, that means to disable the log cleaner.
+# if set to between 1 to INT_MAX,
+# that means it will retent latest N(log-retention-days) day logs.
+
+# By default the log-retention-days is -1.
+log-retention-days 15
+
+# When running in daemonize mode, kvrocks writes a PID file in ${CONFIG_DIR}/kvrocks.pid by
+# default. You can specify a custom pid file location here.
+# pidfile /var/run/kvrocks.pid
+
+# You can configure a slave instance to accept writes or not. Writing against
+# a slave instance may be useful to store some ephemeral data (because data
+# written on a slave will be easily deleted after resync with the master) but
+# may also cause problems if clients are writing to it because of a
+# misconfiguration.
+slave-read-only yes
+
+# The slave priority is an integer number published by Kvrocks in the INFO output.
+# It is used by Redis Sentinel in order to select a slave to promote into a
+# master if the master is no longer working correctly.
+#
+# A slave with a low priority number is considered better for promotion, so
+# for instance if there are three slave with priority 10, 100, 25 Sentinel will
+# pick the one with priority 10, that is the lowest.
+#
+# However a special priority of 0 marks the replica as not able to perform the
+# role of master, so a slave with priority of 0 will never be selected by
+# Redis Sentinel for promotion.
+#
+# By default the priority is 100.
+slave-priority 100
+
+# Change the default timeout in milliseconds for socket connect during replication.
+# The default value is 3100, and 0 means no timeout.
+#
+# If the master is unreachable before connecting, not having a timeout may block future
+# 'clusterx setnodes' commands because the replication thread is blocked on connect.
+replication-connect-timeout-ms 3100
+
+# Change the default timeout in milliseconds for socket recv during fullsync.
+# The default value is 3200, and 0 means no timeout.
+#
+# If the master is unreachable when fetching SST files, not having a timeout may block
+# future 'clusterx setnodes' commands because the replication thread is blocked on recv.
+replication-recv-timeout-ms 3200
+
+# Ignored when rocksdb.write_options.sync is no.
+# When rocksdb.write_options.sync is yes, the replica will:
+# 1) Pull the latest changes from master
+# 2) Write the changes to replica's local storage. Each write would be called with rocksdb.write_options.sync = true. And the write would be synced to disk.
+# 3) Send acknowledgment to the master
+# If replication-group-sync is enabled, the replica will:
+# 1) Pull the latest changes from master
+# 2) Write the changes to replica's local storage. Each write would be called withrocksdb.write_options.sync = false
+# 3) Sync the changes to disk once.
+# 4) Send acknowledgment to the master
+# This option should provide better replication throughput when rocksdb.write_options.sync is true.
+# It would still guarantee replica would not lose any data with machine failure once it has acked the change.
+# Default: no
+replication-group-sync no
+
+# Control whether rocksdb.write_options.no_slowdown is applied to replication writes.
+# This option is only effective when rocksdb.write_options.no_slowdown is enabled.
+# If rocksdb.write_options.no_slowdown is enabled globally, this option determines
+# whether replication writes should also use no_slowdown. This allows fine-grained
+# control to prevent replication from being affected by global no_slowdown setting.
+# One possible issue of using no-slowdown in replication is that it can cause replication
+# to error and restart the replication process continuously.
+# Default to yes to keep current behavior.
+# Default: yes
+replication-no-slowdown yes
+
+# Maximum bytes to buffer before sending replication data to replicas.
+# The master will pack multiple write batches into one bulk to reduce network overhead,
+# but will send immediately if the bulk size exceeds this limit.
+# Default: 16KB (16384 bytes)
+replication-delay-bytes 16384
+
+# Maximum number of updates to buffer before sending replication data to replicas.
+# The master will pack multiple write batches into one bulk to reduce network overhead,
+# but will send immediately if the number of updates exceeds this limit.
+# Default: 16 updates
+replication-delay-updates 16
+
+# Maximum sequence lag allowed before disconnecting a slow replica.
+# If a replica falls behind by more than this many sequences, the master will
+# disconnect it to prevent WAL exhaustion. The replica can then reconnect and
+# attempt partial sync (psync) if the sequence is still available.
+# Set to 0 to disable this check (default).
+# Default: 0 (disabled)
+max-replication-lag 0
+
+# Timeout in milliseconds for socket send operations to replicas.
+# If sending data to a replica blocks for longer than this timeout,
+# the connection will be dropped. This prevents the replication feed thread
+# from blocking indefinitely on slow consumers.
+# Default: 30000 (30 seconds)
+replication-send-timeout-ms 30000
+
+# TCP listen() backlog.
+#
+# In high requests-per-second environments you need an high backlog in order
+# to avoid slow clients connections issues. Note that the Linux kernel
+# will silently truncate it to the value of /proc/sys/net/core/somaxconn so
+# make sure to raise both the value of somaxconn and tcp_max_syn_backlog
+# in order to Get the desired effect.
+tcp-backlog 511
+
+# If the master is an old version, it may have specified replication threads
+# that use 'port + 1' as listening port, but in new versions, we don't use
+# extra port to implement replication. In order to allow the new replicas to
+# copy old masters, you should indicate that the master uses replication port
+# or not.
+# If yes, that indicates master uses replication port and replicas will connect
+# to 'master's listening port + 1' when synchronization.
+# If no, that indicates master doesn't use replication port and replicas will
+# connect 'master's listening port' when synchronization.
+master-use-repl-port no
+
+# Currently, master only checks sequence number when replica asks for PSYNC,
+# that is not enough since they may have different replication histories even
+# the replica asking sequence is in the range of the master current WAL.
+#
+# We design 'Replication Sequence ID' PSYNC, we add unique replication id for
+# every write batch (the operation of each command on the storage engine), so
+# the combination of replication id and sequence is unique for write batch.
+# The master can identify whether the replica has the same replication history
+# by checking replication id and sequence.
+#
+# By default, it is not enabled since this stricter check may easily lead to
+# full synchronization.
+use-rsid-psync no
+
+# Master-Slave replication. Use slaveof to make a kvrocks instance a copy of
+# another kvrocks server. A few things to understand ASAP about kvrocks replication.
+#
+# 1) Kvrocks replication is asynchronous, but you can configure a master to
+#    stop accepting writes if it appears to be not connected with at least
+#    a given number of slaves.
+# 2) Kvrocks slaves are able to perform a partial resynchronization with the
+#    master if the replication link is lost for a relatively small amount of
+#    time. You may want to configure the replication backlog size (see the next
+#    sections of this file) with a sensible value depending on your needs.
+# 3) Replication is automatic and does not need user intervention. After a
+#    network partition slaves automatically try to reconnect to masters
+#    and resynchronize with them.
+#
+# slaveof <masterip> <masterport>
+# slaveof 127.0.0.1 6379
+
+# When a slave loses its connection with the master, or when the replication
+# is still in progress, the slave can act in two different ways:
+#
+# 1) if slave-serve-stale-data is set to 'yes' (the default) the slave will
+#    still reply to client requests, possibly with out-of-date data, or the
+#    data set may just be empty if this is the first synchronization.
+#
+# 2) if slave-serve-stale-data is set to 'no' the slave will reply with
+#    an error "SYNC with master in progress" to all kinds of commands
+#    but to INFO and SLAVEOF.
+#
+slave-serve-stale-data yes
+
+# To guarantee slave's data safe and serve when it is in full synchronization
+# state, slave still keep itself data. But this way needs to occupy much disk
+# space, so we provide a way to reduce disk occupation, slave will delete itself
+# entire database before fetching files from master during full synchronization.
+# If you want to enable this way, you can set 'slave-delete-db-before-fullsync'
+# to yes, but you must know that database will be lost if master is down during
+# full synchronization, unless you have a backup of database.
+#
+# This option is similar redis replicas RDB diskless load option:
+#       repl-diskless-load on-empty-db
+#
+# Default: no
+slave-empty-db-before-fullsync no
+
+# A Kvrocks master is able to list the address and port of the attached
+# replicas in different ways. For example the "INFO replication" section
+# offers this information, which is used, among other tools, by
+# Redis Sentinel in order to discover replica instances.
+# Another place where this info is available is in the output of the
+# "ROLE" command of a master.
+#
+# The listed IP address and port normally reported by a replica is
+# obtained in the following way:
+#
+#   IP: The address is auto detected by checking the peer address
+#   of the socket used by the replica to connect with the master.
+#
+#   Port: The port is communicated by the replica during the replication
+#   handshake, and is normally the port that the replica is using to
+#   listen for connections.
+#
+# However when port forwarding or Network Address Translation (NAT) is
+# used, the replica may actually be reachable via different IP and port
+# pairs. The following two options can be used by a replica in order to
+# report to its master a specific set of IP and port, so that both INFO
+# and ROLE will report those values.
+#
+# There is no need to use both the options if you need to override just
+# the port or the IP address.
+#
+# replica-announce-ip 5.5.5.5
+# replica-announce-port 1234
+
+# If replicas need full synchronization with master, master need to create
+# checkpoint for feeding replicas, and replicas also stage a checkpoint of
+# the master. If we also keep the backup, it maybe occupy extra disk space.
+# You can enable 'purge-backup-on-fullsync' if disk is not sufficient, but
+# that may cause remote backup copy failing.
+#
+# Default: no
+purge-backup-on-fullsync no
+
+# The maximum allowed rate (in MB/s) that should be used by replication.
+# If the rate exceeds max-replication-mb, replication will slow down.
+# Default: 0 (i.e. no limit)
+max-replication-mb 0
+
+# The maximum allowed aggregated write rate of flush and compaction (in MB/s).
+# If the rate exceeds max-io-mb, io will slow down.
+# 0 is no limit
+# Default: 0
+max-io-mb 0
+
+# Whether to cache blob files within the block cache.
+# Default: no
+enable-blob-cache no
+
+# The maximum allowed space (in GB) that should be used by RocksDB.
+# If the total size of the SST files exceeds max_allowed_space, writes to RocksDB will fail.
+# Please see: https://github.com/facebook/rocksdb/wiki/Managing-Disk-Space-Utilization
+# Default: 0 (i.e. no limit)
+max-db-size 0
+
+# The maximum backup to keep, server cron would run every minutes to check the num of current
+# backup, and purge the old backup if exceed the max backup num to keep. If max-backup-to-keep
+# is 0, no backup would be kept. But now, we only support 0 or 1.
+max-backup-to-keep 1
+
+# The maximum hours to keep the backup. If max-backup-keep-hours is 0, wouldn't purge any backup.
+# default: 1 day
+max-backup-keep-hours 24
+
+# max-bitmap-to-string-mb use to limit the max size of bitmap to string transformation(MB).
+#
+# Default: 16
+max-bitmap-to-string-mb 16
+
+# Whether to enable SCAN-like cursor compatible with Redis.
+# If enabled, the cursor will be unsigned 64-bit integers.
+# If disabled, the cursor will be a string.
+# Default: yes
+redis-cursor-compatible yes
+
+# Number of Redis-compatible databases.
+# When set to 0 (default), SELECT command acts like a no-op i.e. Redis-compatible databases are disabled.
+# When set to a positive value, SELECT command is Redis-compatible and the namespace feature is disabled.
+#
+# For example, if you set redis-databases to 16, then SELECT 0 through SELECT 15 are available.
+# Note that SELECT 0 maps to the default namespace even when this feature is enabled.
+#
+# Default: 0
+redis-databases 0
+
+# Whether to enable the RESP3 protocol.
+#
+# Default: yes
+# resp3-enabled yes
+
+# Maximum nesting depth allowed when parsing and serializing
+# JSON documents while using JSON commands like JSON.SET.
+# Default: 1024
+json-max-nesting-depth 1024
+
+# The underlying storage format of JSON data type
+# NOTE: This option only affects newly written/updated key-values
+# The CBOR format may reduce the storage size and speed up JSON commands
+# Available values: json, cbor
+# Default: json
+json-storage-format json
+
+# Whether to enable transactional mode engine::Context.
+#
+# If enabled, is_txn_mode in engine::Context will be set properly,
+# which is expected to improve the consistency of commands.
+# If disabled, is_txn_mode in engine::Context will be set to false,
+# making engine::Context equivalent to engine::Storage.
+#
+# NOTE: This is an experimental feature. If you find errors, performance degradation,
+# excessive memory usage, excessive disk I/O, etc. after enabling it, please try disabling it.
+# At the same time, we welcome feedback on related issues to help iterative improvements.
+#
+# Default: no
+txn-context-enabled no
+
+# Define the histogram bucket values.
+#
+# If enabled, those values will be used to store the command execution latency values
+# in buckets defined below. The values should be integers and must be sorted.
+# An implicit bucket (+Inf in prometheus jargon) will be added to track the highest values
+# that are beyond the bucket limits.
+
+# NOTE: This is an experimental feature. There might be some performance overhead when using this
+# feature, please be aware.
+# Default: disabled
+# histogram-bucket-boundaries  10,20,40,60,80,100,150,250,350,500,750,1000,1500,2000,4000,8000
+
+# Whether the strict key-accessing mode of lua scripting is enabled.
+#
+# If enabled, the lua script will abort and report errors
+# if it tries to access keys that are not declared in
+# the script's `KEYS` table or the function's `keys` argument.
+#
+# Note that if this option is disabled, EVAL and FCALL will be
+# executed exclusively with a global lock to prevent
+# data inconsistency caused by concurrent access to undecalred keys.
+# And if it is enabled, EVAL and FCALL can be executed concurrently
+# in multiple worker threads,
+# which can improve scripting performance greatly.
+#
+# Default: no
+lua-strict-key-accessing no
+
+################################## TLS ###################################
+
+# By default, TLS/SSL is disabled, i.e. `tls-port` is set to 0.
+# To enable it, `tls-port` can be used to define TLS-listening ports.
+# tls-port 0
+
+# Configure a X.509 certificate and private key to use for authenticating the
+# server to connected clients, masters or cluster peers.
+# These files should be PEM formatted.
+#
+# tls-cert-file kvrocks.crt
+# tls-key-file kvrocks.key
+
+# If the key file is encrypted using a passphrase, it can be included here
+# as well.
+#
+# tls-key-file-pass secret
+
+# Configure a CA certificate(s) bundle or directory to authenticate TLS/SSL
+# clients and peers.  Kvrocks requires an explicit configuration of at least one
+# of these, and will not implicitly use the system wide configuration.
+#
+# tls-ca-cert-file ca.crt
+# tls-ca-cert-dir /etc/ssl/certs
+
+# By default, clients on a TLS port are required
+# to authenticate using valid client side certificates.
+#
+# If "no" is specified, client certificates are not required and not accepted.
+# If "optional" is specified, client certificates are accepted and must be
+# valid if provided, but are not required.
+#
+# tls-auth-clients no
+# tls-auth-clients optional
+
+# By default, only TLSv1.2 and TLSv1.3 are enabled and it is highly recommended
+# that older formally deprecated versions are kept disabled to reduce the attack surface.
+# You can explicitly specify TLS versions to support.
+# Allowed values are case insensitive and include "TLSv1", "TLSv1.1", "TLSv1.2",
+# "TLSv1.3" (OpenSSL >= 1.1.1) or any combination.
+# To enable only TLSv1.2 and TLSv1.3, use:
+#
+# tls-protocols "TLSv1.2 TLSv1.3"
+
+# Configure allowed ciphers.  See the ciphers(1ssl) manpage for more information
+# about the syntax of this string.
+#
+# Note: this configuration applies only to <= TLSv1.2.
+#
+# tls-ciphers DEFAULT:!MEDIUM
+
+# Configure allowed TLSv1.3 ciphersuites.  See the ciphers(1ssl) manpage for more
+# information about the syntax of this string, and specifically for TLSv1.3
+# ciphersuites.
+#
+# tls-ciphersuites TLS_CHACHA20_POLY1305_SHA256
+
+# When choosing a cipher, use the server's preference instead of the client
+# preference. By default, the server follows the client's preference.
+#
+# tls-prefer-server-ciphers yes
+
+# By default, TLS session caching is enabled to allow faster and less expensive
+# reconnections by clients that support it. Use the following directive to disable
+# caching.
+#
+# tls-session-caching no
+
+# Change the default number of TLS sessions cached. A zero value sets the cache
+# to unlimited size. The default size is 20480.
+#
+# tls-session-cache-size 5000
+
+# Change the default timeout of cached TLS sessions. The default timeout is 300
+# seconds.
+#
+# tls-session-cache-timeout 60
+
+# By default, a replica does not attempt to establish a TLS connection
+# with its master.
+#
+# Use the following directive to enable TLS on replication links.
+#
+# tls-replication yes
+
+################################## SLOW LOG ###################################
+
+# The Kvrocks Slow Log is a mechanism to log queries that exceeded a specified
+# execution time. The execution time does not include the I/O operations
+# like talking with the client, sending the reply and so forth,
+# but just the time needed to actually execute the command (this is the only
+# stage of command execution where the thread is blocked and can not serve
+# other requests in the meantime).
+#
+# You can configure the slow log with two parameters: one tells Kvrocks
+# what is the execution time, in microseconds, to exceed in order for the
+# command to get logged, and the other parameter is the length of the
+# slow log. When a new command is logged the oldest one is removed from the
+# queue of logged commands.
+
+# The following time is expressed in microseconds, so 1000000 is equivalent
+# to one second. Note that -1 value disables the slow log, while
+# a value of zero forces the logging of every command.
+slowlog-log-slower-than 100000
+
+# There is no limit to this length. Just be aware that it will consume memory.
+# You can reclaim memory used by the slow log with SLOWLOG RESET.
+slowlog-max-len 128
+
+# Dump slow logs to logfiles with this level, off means don't dump.
+# Possible values: info, warning, off
+# Default: off
+slowlog-dump-logfile-level off
+
+# If you run kvrocks from upstart or systemd, kvrocks can interact with your
+# supervision tree. Options:
+#   supervised no      - no supervision interaction
+#   supervised upstart - signal upstart by putting kvrocks into SIGSTOP mode
+#   supervised systemd - signal systemd by writing READY=1 to $NOTIFY_SOCKET
+#   supervised auto    - detect upstart or systemd method based on
+#                        UPSTART_JOB or NOTIFY_SOCKET environment variables
+# Note: these supervision methods only signal "process is ready."
+#       They do not enable continuous liveness pings back to your supervisor.
+supervised no
+
+################################## PERF LOG ###################################
+
+# The Kvrocks Perf Log is a mechanism to log queries' performance context that
+# exceeded a specified execution time. This mechanism uses rocksdb's
+# Perf Context and IO Stats Context, Please see:
+# https://github.com/facebook/rocksdb/wiki/Perf-Context-and-IO-Stats-Context
+#
+# This mechanism is enabled when profiling-sample-commands is not empty and
+# profiling-sample-ratio greater than 0.
+# It is important to note that this mechanism affects performance, but it is
+# useful for troubleshooting performance bottlenecks, so it should only be
+# enabled when performance problems occur.
+
+# The name of the commands you want to record. Must be original name of
+# commands supported by Kvrocks. Use ',' to separate multiple commands and
+# use '*' to record all commands supported by Kvrocks.
+# Example:
+#   - Single command: profiling-sample-commands get
+#   - Multiple commands: profiling-sample-commands get,mget,hget
+#
+# Default: empty
+# profiling-sample-commands ""
+
+# Ratio of the samples would be recorded. It is a number between 0 and 100.
+# We simply use the rand to determine whether to record the sample or not.
+#
+# Default: 0
+profiling-sample-ratio 0
+
+# There is no limit to this length. Just be aware that it will consume memory.
+# You can reclaim memory used by the perf log with PERFLOG RESET.
+#
+# Default: 256
+profiling-sample-record-max-len 256
+
+# profiling-sample-record-threshold-ms use to tell the kvrocks when to record.
+#
+# Default: 100 millisecond
+profiling-sample-record-threshold-ms 100
+
+################################## CRON ###################################
+
+# Compact Scheduler, auto compact at schedule time
+# Time expression format is the same as crontab (supported cron syntax: *, n, */n, `1,3-6,9,11`)
+# e.g. compact-cron 0 3,4 * * *
+# would compact the db at 3am and 4am everyday
+# compact-cron 0 3 * * *
+
+# The hour range that compaction checker would be active
+# e.g. compaction-checker-range 0-7 means compaction checker would be worker between
+# 0-7am every day.
+# WARNING: this config option is deprecated and will be removed,
+# please use compaction-checker-cron instead
+# compaction-checker-range 0-7
+
+# The time pattern that compaction checker would be active
+# Time expression format is the same as crontab (supported cron syntax: *, n, */n, `1,3-6,9,11`)
+# e.g. compaction-checker-cron * 0-7 * * * means compaction checker would be worker between
+# 0-7am every day.
+compaction-checker-cron * 19-23 * * *
+
+# When the compaction checker is triggered, the db will periodically pick the SST file
+# with the highest "deleted percentage" (i.e. the percentage of deleted keys in the SST
+# file) to compact, in order to free disk space.
+# However, if a specific SST file was created more than "force-compact-file-age" seconds
+# ago, and its percentage of deleted keys is higher than
+# "force-compact-file-min-deleted-percentage", it will be forcibly compacted as well.
+
+# Default: 172800 seconds; Range: [60, INT64_MAX];
+# force-compact-file-age 172800
+# Default: 10 %; Range: [1, 100];
+# force-compact-file-min-deleted-percentage 10
+
+# Bgsave scheduler, auto bgsave at scheduled time
+# Time expression format is the same as crontab (supported cron syntax: *, n, */n, `1,3-6,9,11`)
+# e.g. bgsave-cron 0 3,4 * * *
+# would bgsave the db at 3am and 4am every day
+
+# Kvrocks doesn't store the key number directly. It needs to scan the DB and
+# then retrieve the key number by using the dbsize scan command.
+# The Dbsize scan scheduler auto-recalculates the estimated keys at scheduled time.
+# Time expression format is the same as crontab (supported cron syntax: *, n, */n, `1,3-6,9,11`)
+# e.g. dbsize-scan-cron 0 * * * *
+# would recalculate the keyspace infos of the db every hour.
+
+# Command renaming.
+#
+# It is possible to change the name of dangerous commands in a shared
+# environment. For instance, the KEYS command may be renamed into something
+# hard to guess so that it will still be available for internal-use tools
+# but not available for general clients.
+#
+# Example:
+#
+# rename-command KEYS b840fc02d524045429941cc15f59e41cb7be6c52
+#
+# It is also possible to completely kill a command by renaming it into
+# an empty string:
+#
+# rename-command KEYS ""
+
+################################ MIGRATE #####################################
+# Slot migration supports two ways:
+# - redis-command: Migrate data by redis serialization protocol(RESP).
+# - raw-key-value: Migrate the raw key value data of the storage engine directly.
+#                  This way eliminates the overhead of converting to the redis
+#                  command, reduces resource consumption, improves migration
+#                  efficiency, and can implement a finer rate limit.
+#
+# Default: raw-key-value
+migrate-type raw-key-value
+
+# If the network bandwidth is completely consumed by the migration task,
+# it will affect the availability of kvrocks. To avoid this situation,
+# migrate-speed is adopted to limit the migrating speed.
+# Migrating speed is limited by controlling the duration between sending data,
+# the duration is calculated by: 1000000 * migrate-pipeline-size / migrate-speed (us).
+# Value: [0,INT_MAX], 0 means no limit
+#
+# Default: 4096
+migrate-speed 4096
+
+# In order to reduce data transmission times and improve the efficiency of data migration,
+# pipeline is adopted to send multiple data at once. Pipeline size can be set by this option.
+# Value: [1, INT_MAX], it can't be 0
+#
+# Default: 16
+migrate-pipeline-size 16
+
+# In order to reduce the write forbidden time during migrating slot, we will migrate the incremental
+# data several times to reduce the amount of incremental data. Until the quantity of incremental
+# data is reduced to a certain threshold, slot will be forbidden write. The threshold is set by
+# this option.
+# Value: [1, INT_MAX], it can't be 0
+#
+# Default: 10000
+migrate-sequence-gap 10000
+
+# The raw-key-value migration way uses batch for migration. This option sets the batch size
+# for each migration.
+#
+# Default: 16kb
+migrate-batch-size-kb 16
+
+# Rate limit for migration based on raw-key-value, representing the maximum number of data
+# that can be migrated per second.
+# Value: [1, INT_MAX]
+#
+# Default: 16M
+migrate-batch-rate-limit-mb 16
+
+
+# If it is set to yes, kvrocks will skip the deallocation of block cache
+# while closing the database to speed up the shutdown
+#
+# Default: no
+skip-block-cache-deallocation-on-close yes
+
+################################ ROCKSDB #####################################
+
+# Specify the capacity of column family block cache. A larger block cache
+# may make requests faster while more keys would be cached. Max Size is 400*1024.
+# Default: 4096MB
+rocksdb.block_cache_size 16384
+
+# Specify the type of cache used in the block cache.
+# Accept value: "lru", "hcc"
+# "lru" stands for the cache with the LRU(Least Recently Used) replacement policy.
+#
+# "hcc" stands for the Hyper Clock Cache, a lock-free cache alternative
+# that offers much improved CPU efficiency vs. LRU cache under high parallel
+# load or high contention.
+#
+# Default: hcc
+rocksdb.block_cache_type hcc
+
+# Number of open files that can be used by the DB.  You may need to
+# increase this if your database has a large working set. Value -1 means
+# files opened are always kept open. You can estimate number of files based
+# on target_file_size_base and target_file_size_multiplier for level-based
+# compaction. For universal-style compaction, you can usually set it to -1.
+# Default: 8096
+rocksdb.max_open_files 8096
+
+# Amount of data to build up in memory (backed by an unsorted log
+# on disk) before converting to a sorted on-disk file.
+#
+# Larger values increase performance, especially during bulk loads.
+# Up to max_write_buffer_number write buffers may be held in memory
+# at the same time,
+# so you may wish to adjust this parameter to control memory usage.
+# Also, a larger write buffer will result in a longer recovery time
+# the next time the database is opened.
+#
+# Note that write_buffer_size is enforced per column family.
+# See db_write_buffer_size for sharing memory across column families.
+
+# default is 64MB
+rocksdb.write_buffer_size 512
+
+# Target file size for compaction, target file size for Level N can be calculated
+# by target_file_size_base * (target_file_size_multiplier ^ (L-1))
+#
+# Default: 128MB
+rocksdb.target_file_size_base 1024
+
+# The maximum number of write buffers that are built up in memory.
+# The default and the minimum number is 2, so that when 1 write buffer
+# is being flushed to storage, new writes can continue to the other
+# write buffer.
+# If max_write_buffer_number > 3, writing will be slowed down to
+# options.delayed_write_rate if we are writing to the last write buffer
+# allowed.
+rocksdb.max_write_buffer_number 6
+
+# The minimum number of write buffers that will be merged together
+# during compaction.
+#
+# Default: 1
+rocksdb.min_write_buffer_number_to_merge 4
+
+
+# Maximum number of concurrent background jobs (compactions and flushes).
+# By default, rocksdb will set max_background_flushes to floor(max_background_jobs / 4),
+# and allocate the rest to compactions.
+rocksdb.max_background_jobs 15
+
+# This value represents the maximum number of threads that will
+# concurrently perform a compaction job by breaking it into multiple,
+# smaller ones that are run simultaneously.
+# Default: 2
+rocksdb.max_subcompactions 5
+
+# If enabled WAL records will be compressed before they are written. Only
+# ZSTD (= kZSTD) is supported (until streaming support is adapted for other
+# compression types). Compressed WAL records will be read in supported
+# versions (>= RocksDB 7.4.0 for ZSTD) regardless of this setting when
+# the WAL is read.
+#
+# Accept value: "no", "zstd"
+# Default is no
+rocksdb.wal_compression no
+
+# In order to limit the size of WALs, RocksDB uses DBOptions::max_total_wal_size
+# as the trigger of column family flush. Once WALs exceed this size, RocksDB
+# will start forcing the flush of column families to allow deletion of some
+# oldest WALs. This config can be useful when column families are updated at
+# non-uniform frequencies. If there's no size limit, users may need to keep
+# really old WALs when the infrequently-updated column families hasn't flushed
+# for a while.
+#
+# In kvrocks, we use multiple column families to store metadata, subkeys, etc.
+# If users always use string type, but use list, hash and other complex data types
+# infrequently, there will be a lot of old WALs if we don't set size limit
+# (0 by default in rocksdb), because rocksdb will dynamically choose the WAL size
+# limit to be [sum of all write_buffer_size * max_write_buffer_number] * 4 if set to 0.
+#
+# Moreover, you should increase this value if you already set rocksdb.write_buffer_size
+# to a big value, to avoid influencing the effect of rocksdb.write_buffer_size and
+# rocksdb.max_write_buffer_number.
+#
+# default is 512MB
+rocksdb.max_total_wal_size 2048
+
+# Whether to print malloc stats together with rocksdb.stats when printing to LOG.
+#
+# Accepted values: "yes", "no"
+# Default: yes
+rocksdb.dump_malloc_stats yes
+
+# We implement the replication with rocksdb WAL, it would trigger full sync when the seq was out of range.
+# wal_ttl_seconds and wal_size_limit_mb would affect how archived logs will be deleted.
+# If WAL_ttl_seconds is not 0, then WAL files will be checked every WAL_ttl_seconds / 2 and those that
+# are older than WAL_ttl_seconds will be deleted#
+#
+# Default: 3 Hours
+rocksdb.wal_ttl_seconds 10800
+
+# If WAL_ttl_seconds is 0 and WAL_size_limit_MB is not 0,
+# WAL files will be checked every 10 min and if total size is greater
+# then WAL_size_limit_MB, they will be deleted starting with the
+# earliest until size_limit is met. All empty files will be deleted
+# Default: 16GB
+rocksdb.wal_size_limit_mb 16384
+
+# Approximate size of user data packed per block.  Note that the
+# block size specified here corresponds to uncompressed data. The
+# actual size of the unit read from disk may be smaller if
+# compression is enabled.
+#
+# Default: 16KB
+rocksdb.block_size 262144
+
+# Indicating if we'd put index/filter blocks to the block cache
+#
+# Default: yes
+rocksdb.cache_index_and_filter_blocks yes
+
+# Specify the compression to use.
+# Accept value: "no", "snappy", "lz4", "zstd", "zlib"
+# default snappy
+rocksdb.compression snappy
+
+# Specify the compression level to use. It trades compression speed
+#   and ratio, might be useful when tuning for disk space.
+#   See details: https://github.com/facebook/rocksdb/wiki/Space-Tuning
+# For zstd: valid range is from 1 (fastest) to 19 (best ratio),
+# For zlib: valid range is from 1 (fastest) to 9 (best ratio),
+# For lz4: adjusting the level influences the 'acceleration'.
+#   RocksDB sets a negative level to indicate acceleration directly,
+#   with more negative values indicating higher speed and less compression.
+# Note: This setting is ignored for compression algorithms like Snappy that
+#   do not support variable compression levels.
+#
+# RocksDB Default:
+#   - zstd: 3
+#   - zlib: Z_DEFAULT_COMPRESSION (currently -1)
+#   - kLZ4: -1 (i.e., `acceleration=1`; see `CompressionOptions::level` doc)
+# For all others, RocksDB does not specify a compression level.
+# If the compression type doesn't support the setting, it will be a no-op.
+#
+# Default: 32767 (RocksDB's generic default compression level. Internally
+#   it'll be translated to the default compression level specific to the
+#   compression library as mentioned above)
+rocksdb.compression_level 32767
+
+# Maximum per-SST dictionary size for block compression. Set to 0 to disable
+# dictionary compression.
+#
+# Default: 0
+rocksdb.compression_max_dict_bytes 0
+
+# Maximum amount of training data used by the ZSTD dictionary trainer. This is
+# most useful when rocksdb.compression is set to zstd and rocksdb.compression_max_dict_bytes
+# is non-zero.
+#
+# Default: 0
+rocksdb.compression_zstd_max_train_bytes 0
+
+# If non-zero, we perform bigger reads when doing compaction. If you're
+# running RocksDB on spinning disks, you should set this to at least 2MB.
+# That way RocksDB's compaction is doing sequential instead of random reads.
+# When non-zero, we also force new_table_reader_for_compaction_inputs to
+# true.
+#
+# Default: 2 MB
+rocksdb.compaction_readahead_size 2097152
+
+# Enable compression from n levels of LSM-tree.
+# By default compression is disabled for the first two levels (L0 and L1),
+# because it may contain the frequently accessed data, so it'd be better
+# to use uncompressed data to save the CPU.
+# Value: [0, 7) (upper boundary is kvrocks maximum levels number)
+#
+# Default: 2
+rocksdb.compression_start_level 2
+
+# he limited write rate to DB if soft_pending_compaction_bytes_limit or
+# level0_slowdown_writes_trigger is triggered.
+
+# If the value is 0, we will infer a value from `rater_limiter` value
+# if it is not empty, or 16MB if `rater_limiter` is empty. Note that
+# if users change the rate in `rate_limiter` after DB is opened,
+# `delayed_write_rate` won't be adjusted.
+#
+rocksdb.delayed_write_rate 0
+# If enable_pipelined_write is true, separate write thread queue is
+#  maintained for WAL write and memtable write.
+#
+#  Default: no
+rocksdb.enable_pipelined_write no
+
+# Soft limit on number of level-0 files. We slow down writes at this point.
+# A value of 0 means that no writing slowdown will be triggered by number
+# of files in level-0. If this value is smaller than
+# rocksdb.level0_file_num_compaction_trigger, this will be set to
+# rocksdb.level0_file_num_compaction_trigger instead.
+#
+# Default: 20
+rocksdb.level0_slowdown_writes_trigger 20
+
+# Maximum number of level-0 files. We stop writes at this point. If this value
+# is smaller than rocksdb.level0_slowdown_writes_trigger, this will be set to
+# rocksdb.level0_slowdown_writes_trigger instead.
+#
+# Default: 40
+rocksdb.level0_stop_writes_trigger 40
+
+# Number of files to trigger level-0 compaction.
+#
+# Default: 4
+rocksdb.level0_file_num_compaction_trigger 4
+
+# if not zero, dump rocksdb.stats to LOG every stats_dump_period_sec
+#
+# Default: 0
+rocksdb.stats_dump_period_sec 0
+
+# if yes, the auto compaction would be disabled, but the manual compaction remain works
+#
+# Default: no
+rocksdb.disable_auto_compactions no
+
+# BlobDB(key-value separation) is essentially RocksDB for large-value use cases.
+# Since 6.18.0, The new implementation is integrated into the RocksDB core.
+# When set, large values (blobs) are written to separate blob files, and only
+# pointers to them are stored in SST files. This can reduce write amplification
+# for large-value use cases at the cost of introducing a level of indirection
+# for reads. Please see: https://github.com/facebook/rocksdb/wiki/BlobDB.
+#
+# Note that when enable_blob_files is set to yes, BlobDB-related configuration
+# items will take effect.
+#
+# Default: no
+rocksdb.enable_blob_files no
+
+# The size of the smallest value to be stored separately in a blob file. Values
+# which have an uncompressed size smaller than this threshold are stored alongside
+# the keys in SST files in the usual fashion.
+#
+# Default: 4096 byte, 0 means that all values are stored in blob files
+rocksdb.min_blob_size 4096
+
+# The size limit for blob files. When writing blob files, a new file is
+# opened once this limit is reached.
+#
+# Default: 268435456 bytes
+rocksdb.blob_file_size 268435456
+
+# Enables garbage collection of blobs. Valid blobs residing in blob files
+# older than a cutoff get relocated to new files as they are encountered
+# during compaction, which makes it possible to clean up blob files once
+# they contain nothing but obsolete/garbage blobs.
+# See also rocksdb.blob_garbage_collection_age_cutoff below.
+#
+# Default: yes
+rocksdb.enable_blob_garbage_collection yes
+
+# The percentage cutoff in terms of blob file age for garbage collection.
+# Blobs in the oldest N blob files will be relocated when encountered during
+# compaction, where N = (garbage_collection_cutoff/100) * number_of_blob_files.
+# Note that this value must belong to [0, 100].
+#
+# Default: 25
+rocksdb.blob_garbage_collection_age_cutoff 25
+
+
+# The purpose of the following three options are to dynamically adjust the upper limit of
+# the data that each layer can store according to the size of the different
+# layers of the LSM. Enabling this option will bring some improvements in
+# deletion efficiency and space amplification, but it will lose a certain
+# amount of read performance.
+# If you want to know more details about Levels' Target Size, you can read RocksDB wiki:
+# https://github.com/facebook/rocksdb/wiki/Leveled-Compaction#levels-target-size
+#
+# Default: yes
+rocksdb.level_compaction_dynamic_level_bytes yes
+
+# The total file size of level-1 sst.
+#
+# Default: 268435456 bytes
+rocksdb.max_bytes_for_level_base 268435456
+
+# Multiplication factor for the total file size of L(n+1) layers.
+# This option is a double type number in RocksDB, but kvrocks is
+# not support the double data type number yet, so we use integer
+# number instead of double currently.
+#
+# Default: 10
+rocksdb.max_bytes_for_level_multiplier 10
+
+# This feature only takes effect in Iterators and MultiGet.
+# If yes, RocksDB will try to read asynchronously and in parallel as much as possible to hide IO latency.
+# In iterators, it will prefetch data asynchronously in the background for each file being iterated on.
+# In MultiGet, it will read the necessary data blocks from those files in parallel as much as possible.
+
+# Default yes
+rocksdb.read_options.async_io yes
+
+# If yes, the write will be flushed from the operating system
+# buffer cache before the write is considered complete.
+# If this flag is enabled, writes will be slower.
+# If this flag is disabled, and the machine crashes, some recent
+# writes may be lost.  Note that if it is just the process that
+# crashes (i.e., the machine does not reboot), no writes will be
+# lost even if sync==false.
+#
+# Default: no
+rocksdb.write_options.sync no
+
+# If yes, writes will not first go to the write ahead log,
+# and the write may get lost after a crash.
+# You must keep wal enabled if you use replication.
+#
+# Default: no
+rocksdb.write_options.disable_wal no
+
+# If enabled and we need to wait or sleep for the write request, fails
+# immediately.
+#
+# Default: no
+rocksdb.write_options.no_slowdown no
+
+# If enabled, write requests are of lower priority if compaction is
+# behind. In this case, no_slowdown = true, the request will be canceled
+# immediately. Otherwise, it will be slowed down.
+# The slowdown value is determined by RocksDB to guarantee
+# it introduces minimum impacts to high priority writes.
+#
+# Default: no
+rocksdb.write_options.low_pri no
+
+# If enabled, this writebatch will maintain the last insert positions of each
+# memtable as hints in concurrent write. It can improve write performance
+# in concurrent writes if keys in one writebatch are sequential.
+#
+# Default: no
+rocksdb.write_options.memtable_insert_hint_per_batch no
+
+
+# Support RocksDB auto-tune rate limiter for the background IO
+# if enabled, Rate limiter will limit the compaction write if flush write is high
+# Please see https://rocksdb.org/blog/2017/12/18/17-auto-tuned-rate-limiter.html
+#
+# Default: yes
+rocksdb.rate_limiter_auto_tuned yes
+
+# If enabled, rocksdb will use partitioned full filters for each SST file.
+#
+# Default: yes
+rocksdb.partition_filters yes
+
+# Enable this option will schedule the deletion of obsolete files in a background thread
+# on iterator destruction. It can reduce the latency if there are many files to be removed.
+# see https://github.com/facebook/rocksdb/wiki/IO#avoid-blocking-io
+#
+# Default: yes
+# rocksdb.avoid_unnecessary_blocking_io yes
+
+# Specifies the maximum size in bytes for a write batch in RocksDB.
+# If set to 0, there is no size limit for write batches.
+# This option can help control memory usage and manage large WriteBatch operations more effectively.
+#
+# Default: 0
+# rocksdb.write_options.write_batch_max_bytes 0
+
+# RocksDB will try to limit number of bytes in one compaction to be lower than this threshold.
+# If set to 0, it will be sanitized to [25 * target_file_size_base]
+#
+# Default: 0
+rocksdb.max_compaction_bytes 0
+
+# Set the delete rate limit in bytes per second for SST files deletion.
+# zero means disable delete rate limiting and delete files immediately.
+# In scenarios involving frequent database iterations (e.g., HGETALL, SCAN) obsolete WAL files
+# may be deleted synchronously, causing latency spikes. Enabling this option activates a
+# controlled slow deletion mechanism, which also resolves WAL deletion latency issues when
+# an iterator is released.
+# see https://github.com/facebook/rocksdb/wiki/Slow-Deletion
+#
+# Default: 0
+rocksdb.sst_file_delete_rate_bytes_per_sec 0
+
+# Enable RocksDB periodic compaction to force full compaction of SST files older than the specified time (in seconds).
+# If a compaction filter is registered, it will be applied during these compactions.
+# Set to 0 to disable this feature.
+#
+# Default: 18446744073709551614 (0xFFFFFFFFFFFFFFFE, UINT64_MAX - 1), a special value indicating RocksDB-controlled behavior.
+# Currently, RocksDB interprets this default as 30 days (2592000 seconds).
+#
+# Typical use cases:
+# - Enforcing data cleanup via compaction filters (e.g., TTL expiration)
+# - Automatically refreshing data encoding/compression formats without manual intervention
+#
+# Reference: https://github.com/facebook/rocksdb/wiki/Leveled-Compaction#periodic-compaction
+#
+# rocksdb.periodic_compaction_seconds 2592000
+
+# Enable RocksDB Time-to-Live (TTL) to automatically schedule compaction for SST files containing expired data.
+# - Files containing data older than the TTL (in seconds) will be prioritized for background compaction.
+# - Requires a registered compaction filter (e.g., TTL filter) to identify and remove expired entries.
+# - Set to 0 to disable TTL-based compaction.
+#
+# Default: 18446744073709551614 (0xFFFFFFFFFFFFFFFE, UINT64_MAX - 1), delegating control to RocksDB.
+# Current RocksDB behavior interprets this default as 30 days (2592000 seconds).
+#
+# Use cases:
+# - Automatic expiration of ephemeral data (e.g., session tokens, temporary logs)
+# - Lifecycle management for time-series datasets
+#
+# Reference: https://github.com/facebook/rocksdb/wiki/Leveled-Compaction#ttl
+#
+# rocksdb.ttl 2592000
+
+# Schedule RocksDB periodic compactions during daily off-peak windows to reduce operational impact.
+#
+# Requirements:
+# - Periodic compaction must be enabled (`periodic-compaction-seconds > 0`)
+# - Time format: "HH:MM-HH:MM" in UTC (e.g., "02:00-04:30" for a 2.5-hour window)
+# - Empty string disables off-peak scheduling
+#
+# Behavior:
+# - RocksDB proactively triggers periodic compactions during the specified off-peak window
+# - Compactions are optimized to complete before the next peak period begins
+#
+# Default: "" (disabled)
+#
+# Typical use cases:
+# - Minimize compaction I/O during business hours for latency-sensitive workloads
+# - Align resource-heavy operations with maintenance windows
+#
+# Reference: https://github.com/facebook/rocksdb/wiki/Daily-Off%E2%80%90peak-Time-Option
+rocksdb.daily_offpeak_time_utc ""
+
+################################ NAMESPACE #####################################
+# namespace.test change.me
