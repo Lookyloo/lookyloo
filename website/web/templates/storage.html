@@ -33,7 +33,7 @@
 <div class="card text-center">
   <div class="card-body">
     <h5 class="card-title">No storage or cookies found</h5>
-    <p class="card-text">The capture didn't have any cookie, local storage or IndexedDB</p>
+    <p class="card-text">The capture didn't have any cookie, local storage, IndexedDB, WebAuth Credentials or OPFS</p>
   </div>
 </div>
 {%else%}
@@ -42,6 +42,9 @@
     <button class="nav-link active" id="nav-cookies-tab" data-bs-toggle="tab" data-bs-target="#nav-cookies" type="button" role="tab" aria-controls="nav-cookies" aria-selected="true">Cookies</button>
     {% if storage['origins']%}
     <button class="nav-link" id="nav-storage-tab" data-bs-toggle="tab" data-bs-target="#nav-storage" type="button" role="tab" aria-controls="nav-storage" aria-selected="false">Storage</button>
+    {% endif %}
+    {% if storage['credentials']%}
+    <button class="nav-link" id="nav-credentials-tab" data-bs-toggle="tab" data-bs-target="#nav-credentials" type="button" role="tab" aria-controls="nav-credentials" aria-selected="false">Webauth Credentials</button>
     {% endif %}
   </div>
 </nav>
@@ -124,84 +127,135 @@
                 aria-selected="{% if loop.index == 1 %}true{%else%}false{%endif%}">{{origin['origin']}}</button>
         {% endfor%}
       </div>
-      <div class="tab-content" id="v-pills-tabContent">
+      <div class="tab-content" id="v-pills-tabContent-origins">
         {% for origin in storage['origins'] %}
          <div class="tab-pane fade {% if loop.index == 1 %}show active{%endif%}" id="v-pills-origin_{{loop.index}}" role="tabpanel" aria-labelledby="v-pills-origin_{{loop.index}}-tab" tabindex="0">
+           <nav>
+             <div class="nav nav-tabs" id="nav-tab-storage-origin-{{loop.index}}" role="tablist">
+               {% if origin['localStorage'] %}
+               <button class="nav-link active" id="nav-local-storage-tab-{{loop.index}}" data-bs-toggle="tab" data-bs-target="#nav-local-storage-{{loop.index}}" type="button" role="tab" aria-controls="nav-local-storage-{{loop.index}}" aria-selected="true">Local Storage</button>
+               {% endif %}
+               {% if origin['indexedDB']%}
+               <button class="nav-link" id="nav-indexed-db-tab-{{loop.index}}" data-bs-toggle="tab" data-bs-target="#nav-indexed-db-{{loop.index}}" type="button" role="tab" aria-controls="nav-indexed-db-{{loop.index}}" aria-selected="false">IndexedDB</button>
+               {% endif %}
+               {% if origin['opfs']%}
+               <button class="nav-link" id="nav-opfs-tab-{{loop.index}}" data-bs-toggle="tab" data-bs-target="#nav-opfs-{{loop.index}}" type="button" role="tab" aria-controls="nav-opfs-{{loop.index}}" aria-selected="false">OPFS</button>
+               {% endif %}
+             </div>
+           </nav>
+
+          <div class="tab-content" id="nav-tab-storage-origins-{{loop.index}}">
           {% if origin['localStorage'] %}
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Local Storage</h5>
+            <div class="tab-pane fade show active" id="nav-local-storage-{{loop.index}}" role="tabpanel" aria-labelledby="nav-local-storage-tab-{{loop.index}}" tabindex="0">
+              <table id="localStorageTable_{{loop.index}}" name="localStorageTable" class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for local_storage in origin['localStorage'] %}
+                  <tr>
+                    <td class="text-break">{{ local_storage['name'] }}</td>
+                    <td class="text-break">{{ local_storage['value'] }}</td>
+                  </tr>
+                {% endfor%}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+          {% if origin['indexedDB']%}
+          <div class="tab-pane fade {%if not origin['localStorage']%}show active{%endif%}" id="nav-indexed-db-{{loop.index}}" role="tabpanel" aria-labelledby="nav-indexed-db-tab-{{loop.index}}" tabindex="0">
+              {% for db in origin['indexedDB'] %}
+                <h6 class="card-subtitle mb-2 text-body-secondary">
+                  Database: {{db['name']}} (v{{db['version']}})
+                </h6>
+                {% for store in db['stores'] %}
                 <p class="card-text">
-                  <table id="localStorageTable_{{loop.index}}" name="localStorageTable" class="table table-striped">
+                  <p class="lead">Store name: {{store['name']}}</p>
+                  {% if store['records'] %}
+                  <table id="indexedDB-{{db['name']}}-{{store['name']}}" class="table table-striped">
                     <thead>
                       <tr>
-                        <th>Name</th>
-                        <th>Value</th>
+                        <th width="20%">Store key</th>
+                        <th>Store Value</th>
                       </tr>
                     </thead>
                     <tbody>
-                    {% for local_storage in origin['localStorage'] %}
+                    {% for record in store['records'] %}
+                      {% for k, v in record.items() %}
                       <tr>
-                        <td class="text-break">{{ local_storage['name'] }}</td>
-                        <td class="text-break">{{ local_storage['value'] }}</td>
+                        <td class="text-break">{{k}}</td>
+                        <td class="text-break">
+                          <pre style="text-align: left;">{{v | tojson(2)}}</pre>
+                        </td>
                       </tr>
-                    {% endfor%}
+                      {% endfor %}
+                    {% endfor %}
                     </tbody>
                   </table>
+                  {% else %}
+                  <p>No records</p>
+                  {% endif %}
                 </p>
-              </div>
-            </div>
-          {% else %}
-            <p>Empty local storage for this origin</p>
-          {% endif %}
-
-          {% if origin['indexedDB']%}
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">IndexedDB</h5>
-                {% for db in origin['indexedDB'] %}
-                  <h6 class="card-subtitle mb-2 text-body-secondary">
-                    Database: {{db['name']}} (v{{db['version']}})
-                  </h6>
-                  {% for store in db['stores'] %}
-                  <p class="card-text">
-                    <p class="lead">Store name: {{store['name']}}</p>
-                    {% if store['records'] %}
-                    <table id="indexedDB-{{db['name']}}-{{store['name']}}" class="table table-striped">
-                      <thead>
-                        <tr>
-                          <th width="20%">Store key</th>
-                          <th>Store Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                      {% for record in store['records'] %}
-                        {% for k, v in record.items() %}
-                        <tr>
-                          <td class="text-break">{{k}}</td>
-                          <td class="text-break">
-                            <pre style="text-align: left;">{{v | tojson(2)}}</pre>
-                          </td>
-                        </tr>
-                        {% endfor %}
-                      {% endfor %}
-                      </tbody>
-                    </table>
-                    {% else %}
-                    <p>No records</p>
-                    {% endif %}
-                  </p>
-                  {% endfor%}
                 {% endfor%}
-              </div>
+              {% endfor%}
             </div>
-          {% else %}
-          <p>No IndexedDB</p>
           {% endif %}
+          {% if origin['opfs']%}
+            <div class="tab-pane fade {%if not origin['localStorage'] and not origin['indexedDB']%}show active{%endif%}" id="nav-opfs-{{loop.index}}" role="tabpanel" aria-labelledby="nav-opfs-tab-{{loop.index}}" tabindex="0">
+            <table id="opfsTable_{{loop.index}}" name="opfsTable" class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Path</th>
+                  <th>Type</th>
+                  <th>Download</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for entry in origin['opfs'] %}
+                <tr>
+                  <td class="text-break">{{ entry['path'] }}</td>
+                  <td>{{ entry['type'] }}</td>
+                  <td class="text-break">{{ entry['base64'] }}</td>
+                </tr>
+              {% endfor%}
+              </tbody>
+            </table>
+            </div>
+          {% endif %}
+          </div>
          </div>
         {% endfor%}
       </div>
     </div>
+  </div>
+  {% endif %}
+  {% if storage['credentials'] %}
+  <div class="tab-pane fade" id="nav-credentials" role="tabpanel" aria-labelledby="nav-credentials-tab" tabindex="0">
+    <table id="storageStateCredentialsTable" class="table table-bordered table-sm table-striped small">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Relying Party ID (rpID)</th>
+          <th>User Handle</th>
+          <th>Private Key</th>
+          <th>Public Key</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for credential in storage['credentials'] %}
+        <tr>
+          <td class="text-break">{{ credential['id']}}</td>
+          <td class="text-break">{{ credential['rpId']}}</td>
+          <td class="text-break">{{ credential['userHandle']}}</td>
+          <td class="text-break">{{ credential['privateKey']}}</td>
+          <td class="text-break">{{ credential['publicKey']}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
   {% endif %}
 </div>

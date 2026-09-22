@@ -452,6 +452,20 @@ function renderTables() {
         ]
       });
   }
+  if (document.getElementById('storageStateCookiesTable')) {
+      let cat_table = new DataTable('#storageStateCookiesTable', {
+        retrieve: true,
+        order: [[ 0, "desc" ]],
+        pageLength: 25,
+        columns: [
+            {width: '15%'},
+            {width: '20%'},
+            {width: '15%'},
+            {width: '25%'},
+            {width: '25%'}
+        ]
+      });
+  }
   if (document.getElementById('consoleMessagesTable')) {
       let cm_table = new DataTable('#consoleMessagesTable', {
         retrieve: true,
