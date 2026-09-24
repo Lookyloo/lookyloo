@@ -75,6 +75,12 @@ function downloadFaviconListener() {
   }))
 };
 
+function downloadOpfsFileListener() {
+  document.querySelectorAll(".downloadOpfsFileButton").forEach(el => el.addEventListener('click', event => {
+    downloadBase64File(el.dataset.mimetype, el.dataset.b64, el.dataset.filename);
+  }))
+};
+
 function submitPandoraListener() {
   document.querySelectorAll('.submitPandoraButton').forEach(
       el => el.addEventListener('click', event => {

@@ -23,6 +23,7 @@ from datetime import date, datetime, timedelta, timezone
 from difflib import Differ
 from importlib.metadata import version
 from io import BytesIO, StringIO
+from pathlib import PurePath
 from typing import Any, TypedDict, Literal
 from collections.abc import Sequence
 from collections.abc import Iterable
@@ -1204,6 +1205,15 @@ def storage_state(tree_uuid: str) -> str:
             # insert the frequency
             for cookie in storage['cookies']:
                 cookie['frequency'] = get_indexing(flask_login.current_user).get_captures_cookie_name_count(cookie['name'])
+        if 'origins' in storage:
+            for origin in storage['origins']:
+                if 'opfs' in origin:
+                    for opfs in origin['opfs']:
+                        if opfs.get('base64'):
+                            m = magicdb.best_magic_buffer(base64.b64decode(opfs['base64']), None)
+                            opfs['mimetype'] = m.mime_type
+                            opfs['filename'] = PurePath(opfs['path']).name
+
     return render_template('storage.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
                            storage=storage, from_popup=from_popup)
 
