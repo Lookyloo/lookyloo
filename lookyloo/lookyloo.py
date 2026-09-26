@@ -977,7 +977,6 @@ class Lookyloo():
 
     def enqueue_capture(self, query: LookylooCaptureSettings | dict[str, Any], source: str, user: str, authenticated: bool, *, seed_expire: str | None) -> tuple[str, str | None]:
         '''Enqueue a query in the capture queue (used by the UI and the API for asynchronous processing)'''
-
         def get_priority(source: str, user: str, authenticated: bool) -> int:
             src_prio: int = self._priority['sources'][source] if source in self._priority['sources'] else -1
             if not authenticated:

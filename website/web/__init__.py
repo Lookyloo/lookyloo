@@ -52,7 +52,7 @@ from werkzeug.security import check_password_hash
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from lookyloo import Lookyloo, LookylooException
-from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError
+from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError, StorageStateSettings
 from lookyloo.default import get_config, get_homedir, ConfigError
 from lookyloo.exceptions import (UnknownUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild,
                                  LookylooPrivateCapture, UUIDMissingInCache, MissingCaptureDirectory,
@@ -1657,17 +1657,11 @@ def bulk_captures(tree_uuid: str) -> WerkzeugResponse | str | Response:
         flash('Please provide URLs to capture, none were selected.', 'warning')
         return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
 
-    cookies: str | bytes | None = None
-    storage_state: dict[str, Any] = {}
+    storage_state: StorageStateSettings | None = None
     success, storage_state_file = lookyloo.get_storage_state(tree_uuid)
     if success:
         if storage_state_content := storage_state_file.getvalue():
-            storage_state = orjson.loads(storage_state_content)
-    if not storage_state:
-        # Old way of doing it, the cookies are in the storage
-        success, _cookies = lookyloo.get_cookies(tree_uuid)
-        if success:
-            cookies = _cookies.read()
+            storage_state = StorageStateSettings.model_validate(orjson.loads(storage_state_content))
     original_capture_settings = lookyloo.get_capture_settings(tree_uuid)
     bulk_captures = []
     for url in urls_to_capture:
@@ -1675,7 +1669,6 @@ def bulk_captures(tree_uuid: str) -> WerkzeugResponse | str | Response:
             capture = original_capture_settings.model_copy(
                 update={
                     'url': url,
-                    'cookies': cookies,
                     'storage': storage_state,
                     'referer': cache.redirects[-1] if cache.redirects else cache.url,
                     'user_agent': cache.user_agent,
@@ -1687,7 +1680,6 @@ def bulk_captures(tree_uuid: str) -> WerkzeugResponse | str | Response:
         else:
             _capture: dict[str, Any] = {
                 'url': url,
-                'cookies': cookies,
                 'storage': storage_state,
                 'referer': cache.redirects[-1] if cache.redirects else cache.url,
                 'user_agent': cache.user_agent,
@@ -2457,7 +2449,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
         if 'storage_state' in request.files and request.files['storage_state'].filename:
             if _storage := request.files['storage_state'].stream.read():
                 try:
-                    capture_query['storage'] = orjson.loads(_storage)
+                    capture_query['storage'] = StorageStateSettings.model_validate(orjson.loads(_storage))
                 except orjson.JSONDecodeError:
                     flash(Markup('Invalid storage state: must be a JSON: {}.').format(_storage.decode()), 'error')
                     app.logger.info(f'Invalid storage state: must be a JSON: {_storage.decode()}.')
