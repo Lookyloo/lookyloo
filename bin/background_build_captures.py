@@ -73,6 +73,7 @@ class BackgroundBuildCaptures(AbstractManager):
     def __auto_monitor(self, path: Path, capture_uuid: str, logger: LookylooCacheLogAdapter) -> None:
         if not self.lookyloo.monitoring:
             logger.warning('Unable to monitor, not enabled on the instance.')
+            (path / 'monitor_capture').unlink()
             return
 
         logger.info('Starting monitoring...')
