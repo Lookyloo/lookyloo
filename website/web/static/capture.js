@@ -200,7 +200,7 @@ function enable_mobile() {
         document.getElementById('device-name-mobile').value = default_device.default_device_name;
     }
     else {
-        // just have the first in the list ?
+        document.getElementById('device-name-mobile').value = default_device.default_mobile_device_name;
     }
 };
 

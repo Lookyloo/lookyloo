@@ -294,6 +294,8 @@ class UserAgents:
         '''The default useragent for desktop firefox from playwright'''
         # 2025-12-26: New feature default device picked from the known devices in Playwright.
         default_device_name = get_config('generic', 'default_device_name')
+        # 2026-09-27: The list of mobile devices is very long, and the first one is Blackberry, scrolling is annoying.
+        default_mobile_device_name = get_config('generic', 'default_mobile_device_name')
         # check if the device name exists, ignore and warn if not.
         if default_device_name in self.playwright_devices['desktop']['default']:
             default_ua = self.playwright_devices['desktop']['default'][default_device_name]['user_agent']
@@ -321,7 +323,8 @@ class UserAgents:
                 'browser': browser_key,
                 'useragent': parsed_ua.string,
                 'default_device_type': default_device_type,
-                'default_device_name': default_device_name}
+                'default_device_name': default_device_name,
+                'default_mobile_device_name': default_mobile_device_name}
 
 
 def load_known_content(directory: str='known_content') -> dict[str, dict[str, Any]]:
