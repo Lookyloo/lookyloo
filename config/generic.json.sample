@@ -169,7 +169,7 @@
     "ignore_sri": "If true, the sri values are ignored and not calculated so that there are no problems while developing and testing.",
     "enable_takedown_form": "If true, a form for simplified takedown will be enabled.",
     "allow_headed": "Allow users to use the headed version of the browser. It requires a graphical environment.",
-    "default_device_name": "The default device to use for captures. Must be a device known by Playwright, see what is available by running the script: 'tools/show_known_devices.py'."
+    "default_device_name": "The default device to use for captures. Must be a device known by Playwright, see what is available by running the script: 'tools/show_known_devices.py'.",
     "default_mobile_device_name": "The default mobile device name for mobile captures. Must be a device known by Playwright, see what is available by running the script: 'tools/show_known_devices.py'."
   }
 }
