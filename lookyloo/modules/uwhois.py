@@ -9,6 +9,7 @@ from typing import overload, Literal, TYPE_CHECKING
 
 from har2tree import Har2TreeError, HostNode
 
+from ..exceptions import NoValidHarFile
 from .abstractmodule import AbstractModule
 
 if TYPE_CHECKING:
@@ -62,7 +63,9 @@ class UniversalWhois(AbstractModule):
         try:
             hostnode = cache.tree.root_hartree.get_host_node_by_uuid(cache.tree.root_hartree.rendered_node.hostnode_uuid)
         except Har2TreeError as e:
-            self.logger.warning(e)
+            self.logger.warning(f'Error in HAR: {e}')
+        except NoValidHarFile as e:
+            self.logger.warning(f'No HAR file: {e}')
         else:
             try:
                 self.query_whois_hostnode(hostnode)

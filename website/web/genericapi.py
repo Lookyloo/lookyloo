@@ -520,6 +520,9 @@ class HashInfo(Resource):  # type: ignore[misc]
     @api.doc(body=body_hash_info_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         to_query: dict[str, Any] = request.get_json(force=True)
+        if 'body_hash' not in to_query:
+            return make_response({'error': 'No hash provided.'}, 401)
+
         return make_response(get_body_hash_occurrences(to_query.pop('body_hash'), **to_query))
 
 
@@ -557,6 +560,9 @@ class FaviconInfo(Resource):  # type: ignore[misc]
     @api.doc(body=favicon_info_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         to_query: dict[str, Any] = request.get_json(force=True)
+        if 'favicon' not in to_query:
+            return make_response({'error': 'No favicon provided.'}, 401)
+
         return make_response(get_favicon_occurrences(to_query.pop('favicon'), **to_query))
 
 
@@ -597,6 +603,9 @@ class IPInfo(Resource):  # type: ignore[misc]
     @api.doc(body=ip_info_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         to_query: dict[str, Any] = request.get_json(force=True)
+        if 'ip' not in to_query:
+            return make_response({'error': 'No IP provided.'}, 401)
+
         return make_response(get_ip_occurrences(to_query.pop('ip'), **to_query))
 
 
@@ -643,6 +652,9 @@ class URLInfo(Resource):  # type: ignore[misc]
     @api.doc(body=url_info_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         to_query: dict[str, Any] = request.get_json(force=True)
+        if 'url' not in to_query:
+            return make_response({'error': 'No URL provided.'}, 401)
+
         return make_response(get_url_occurrences(to_query.pop('url'), **to_query))
 
 
@@ -696,6 +708,9 @@ class HostnameInfo(Resource):  # type: ignore[misc]
     @api.doc(body=hostname_info_fields)  # type: ignore[untyped-decorator]
     def post(self) -> Response:
         to_query: dict[str, Any] = request.get_json(force=True)
+        if 'hostname' not in to_query:
+            return make_response({'error': 'No hostname provided.'}, 401)
+
         return make_response(get_hostname_occurrences(to_query.pop('hostname'), **to_query))
 
 
