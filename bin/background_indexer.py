@@ -52,7 +52,7 @@ class BackgroundIndexer(AbstractManager):
             self._check_indexes('lazy_index')
         to_force_reindex = self.indexing.redis.scard('lazy_force_reindex')
         if to_force_reindex > 0:
-            self.logger.info('{to_force_reindex} to force reindex.')
+            self.logger.info(f'{to_force_reindex} to force reindex.')
             for uuid in self.indexing.redis.smembers('lazy_force_reindex'):
                 self.indexing.force_reindex(uuid, background=True)
             self.logger.info('Done with force reindexing.')

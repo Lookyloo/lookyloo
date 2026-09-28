@@ -97,6 +97,9 @@ class Indexing():
         except TimeoutException:
             self.logger.info('Indexer is to slow to check the is_slow key.')
             return True
+        except Exception as e:
+            self.logger.info(f'Indexer is to slow to check the is_slow key: {e}')
+            return True
 
     def lazy_index_add(self, uuid: str, capture_dir: str) -> None:
         """Add a capture in the lazy index, used when the indexer is buzy and we just want to process it later"""
