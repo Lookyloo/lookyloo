@@ -75,6 +75,10 @@ class Indexing():
         """Add a capture in the lazy index, used when the indexer is buzy and we just want to process it later"""
         self.redis.hset('lazy_index', uuid, capture_dir)
 
+    def lazy_force_reindex_add(self, uuid: str) -> None:
+        """Trigget a force reindex at some point in the future"""
+        self.redis.sadd('lazy_force_reindex', uuid)
+
     def can_index(self, capture_uuid: str | None=None) -> bool:
         if capture_uuid:
             return bool(self.redis.set(f'ongoing_indexing|{capture_uuid}', 1, ex=360, nx=True))
@@ -93,7 +97,11 @@ class Indexing():
             else:
                 self.redis.delete('ongoing_indexing')
 
-    def force_reindex(self, capture_uuid: str) -> None:
+    def force_reindex(self, capture_uuid: str, *, background: bool=False) -> None:
+        if not background and self.is_slow:
+            # just flag it as needs to be reindexed
+            self.lazy_force_reindex_add(capture_uuid)
+            return
         p = self.redis.pipeline()
         p.srem('indexed_urls', capture_uuid)
         p.srem('indexed_body_hashes', capture_uuid)

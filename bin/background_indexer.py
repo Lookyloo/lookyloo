@@ -50,6 +50,8 @@ class BackgroundIndexer(AbstractManager):
             return
         if self._check_indexes(self.lookup_dirs):
             self._check_indexes('lazy_index')
+        for uuid in self.indexing.redis.smembers('lazy_force_reindex'):
+            self.indexing.force_reindex(uuid, background=True)
 
     def _check_indexes(self, key: str) -> bool:
         if not self.indexing.can_index():
@@ -69,6 +71,8 @@ class BackgroundIndexer(AbstractManager):
             _iterator = self.redis.hscan_iter
 
         for uuid, d in _iterator(key):
+            if self.indexing.redis.srem('lazy_force_reindex', uuid):
+                self.indexing.force_reindex(uuid, background=True)
             if key == 'lazy_index':
                 # remove uuid
                 self.indexing.redis.hdel(key, uuid)
