@@ -648,7 +648,10 @@ class Indexing():
         """
         max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
         min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
-        return self.redis.zrevrangebyscore(f'ipv{ipaddress.ip_address(ip).version}|{ip}|captures', max_score, min_score, start=offset, num=limit)
+        try:
+            return self.redis.zrevrangebyscore(f'ipv{ipaddress.ip_address(ip).version}|{ip}|captures', max_score, min_score, start=offset, num=limit)
+        except ValueError as e:
+            return [f'Not an IP ({ip}): {e}']
 
     def scan_captures_ip(self, ip: str) -> Iterator[tuple[str, float]]:
         yield from self.redis.zscan_iter(f'ipv{ipaddress.ip_address(ip).version}|{ip}|captures')
