@@ -6,10 +6,12 @@ import hashlib
 import ipaddress
 import logging
 import re
+import signal
 import time
 
 from collections.abc import Iterator
 from collections import namedtuple
+from contextlib import contextmanager
 
 from datetime import datetime, timedelta
 from ipaddress import IPv4Address, IPv6Address
@@ -26,6 +28,10 @@ from .default import get_socket_path, get_config
 
 Indexed = namedtuple('Indexed', ['urls', 'body_hashes', 'cookies', 'hhhashes', 'favicons',
                                  'identifiers', 'categories', 'tlds', 'domains', 'ips', 'hash_types'])
+
+
+class TimeoutException(Exception):
+    pass
 
 
 class Indexing():
@@ -67,9 +73,30 @@ class Indexing():
     def unset_slow(self) -> None:
         self.redis.delete('is_slow')
 
+    @staticmethod
+    def _raise_timeout(_, __) -> None:  # type: ignore[no-untyped-def]
+        raise TimeoutError
+
+    @contextmanager
+    def _timeout_context(self, timeout: int) -> Iterator[None]:
+        # Register a function to raise a TimeoutError on the signal.
+        signal.signal(signal.SIGALRM, self._raise_timeout)
+        signal.alarm(timeout)
+        try:
+            yield
+        except TimeoutError as e:
+            raise e
+        finally:
+            signal.signal(signal.SIGALRM, signal.SIG_IGN)
+
     @property
     def is_slow(self) -> bool:
-        return bool(self.redis.exists('is_slow'))
+        try:
+            with self._timeout_context(1):
+                return bool(self.redis.exists('is_slow'))
+        except TimeoutException:
+            self.logger.info('Indexer is to slow to check the is_slow key.')
+            return True
 
     def lazy_index_add(self, uuid: str, capture_dir: str) -> None:
         """Add a capture in the lazy index, used when the indexer is buzy and we just want to process it later"""
