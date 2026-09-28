@@ -50,8 +50,12 @@ class BackgroundIndexer(AbstractManager):
             return
         if self._check_indexes(self.lookup_dirs):
             self._check_indexes('lazy_index')
-        for uuid in self.indexing.redis.smembers('lazy_force_reindex'):
-            self.indexing.force_reindex(uuid, background=True)
+        to_force_reindex = self.indexing.redis.scard('lazy_force_reindex')
+        if to_force_reindex > 0:
+            self.logger.info('{to_force_reindex} to force reindex.')
+            for uuid in self.indexing.redis.smembers('lazy_force_reindex'):
+                self.indexing.force_reindex(uuid, background=True)
+            self.logger.info('Done with force reindexing.')
 
     def _check_indexes(self, key: str) -> bool:
         if not self.indexing.can_index():
