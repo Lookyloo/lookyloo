@@ -14,7 +14,6 @@ import logging.config
 import os
 import time
 
-import filetype  # type: ignore[import-untyped]
 import markdown
 import orjson
 
@@ -1153,11 +1152,13 @@ def download_elements(tree_uuid: str) -> str:
     cache = lookyloo.capture_cache(tree_uuid)
     parent_uuid = True if cache.parent else False
     has_downloads, _, _ = lookyloo.get_data(tree_uuid)
+    has_video, _, _ = lookyloo.get_video(tree_uuid)
     return render_template('download_elements.html', tree_uuid=tree_uuid,
                            seed=request.args.get('seed'),
                            tt_entries=tt_entries, parent_uuid=parent_uuid,
                            b64_certificate=cert, error=error,
-                           has_downloads=has_downloads)
+                           has_downloads=has_downloads,
+                           has_video=has_video)
 
 
 @app.route('/tree/<uuid:tree_uuid>/get_downloaded_file', methods=['GET'])
@@ -1194,6 +1195,43 @@ def downloads(tree_uuid: str) -> str:
                            has_pandora=lookyloo.pandora.available, from_popup=from_popup)
 
 
+@app.route('/tree/<uuid:tree_uuid>/get_video', methods=['GET'])
+def get_video(tree_uuid: str) -> Response:
+    # NOTE: it can be 0
+    index_in_zip = int(request.args['index_in_zip']) if 'index_in_zip' in request.args else None
+    play_in_browser = bool(request.args['play_in_browser']) if 'play_in_browser' in request.args else False
+    success, filename, file = lookyloo.get_video(tree_uuid, index_in_zip=index_in_zip)
+    if success:
+        if play_in_browser:
+            return send_file(file, as_attachment=False, mimetype='video/webm')
+        else:
+            return send_file(file, as_attachment=True, download_name=f'{tree_uuid}_{filename}')
+    return make_response('Unable to get the video.', 404)
+
+
+@app.route('/tree/<uuid:tree_uuid>/videos', methods=['GET'])
+def videos(tree_uuid: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
+    success, filename, file = lookyloo.get_video(tree_uuid)
+    if not success:
+        return render_template('video.html', uuid=tree_uuid, files=None, seed=request.args.get('seed'))
+    if filename and file:
+        if filename.strip() == f'{tree_uuid}_multiple_videos.zip':
+            # We have a zipfile containing all the videos generated during the capture
+            with ZipFile(file) as downloaded_files:
+                files = []
+                for file_info in downloaded_files.infolist():
+                    files.append((file_info.filename,))
+        else:
+            files = [(filename, )]
+    else:
+        files = [('Nothing there.', )]
+
+    return render_template('video.html', tree_uuid=tree_uuid, files=files,
+                           seed=request.args.get('seed'), from_popup=from_popup)
+
+
+@app.route('/tree/<uuid:tree_uuid>/storage_state', methods=['GET'])
 @app.route('/tree/<uuid:tree_uuid>/storage_state', methods=['GET'])
 def storage_state(tree_uuid: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
@@ -1508,10 +1546,27 @@ def data(tree_uuid: str) -> Response:
     if not success:
         return make_response(Response('No files.', mimetype='text/text'), 404)
 
-    if filetype.guess_mime(data.getvalue()) is None:
+    m = magicdb.best_magic_buffer(data.getvalue(), None)
+    if m.mime_type is None:
         mime = 'application/octet-stream'
     else:
-        mime = filetype.guess_mime(data.getvalue())
+        mime = m.mime_type
+    return send_file(data, mimetype=mime,
+                     as_attachment=True, download_name=f'{tree_uuid}_{filename}')
+
+
+@app.route('/tree/<uuid:tree_uuid>/video', methods=['GET'])
+@file_response  # type: ignore[untyped-decorator]
+def video(tree_uuid: str) -> Response:
+    success, filename, data = lookyloo.get_video(tree_uuid)
+    if not success:
+        return make_response(Response('No videos.', mimetype='text/text'), 404)
+
+    m = magicdb.best_magic_buffer(data.getvalue(), None)
+    if m.mime_type is None:
+        mime = 'application/octet-stream'
+    else:
+        mime = m.mime_type
     return send_file(data, mimetype=mime,
                      as_attachment=True, download_name=f'{tree_uuid}_{filename}')
 
@@ -1955,16 +2010,23 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
             monitoring_url = ''
 
         # Check if the capture has been indexed yet. Print a warning if not.
-        capture_indexed = all(get_indexing(flask_login.current_user).capture_indexed(tree_uuid))
-        if not capture_indexed:
-            if not flask_login.current_user.is_authenticated and cache.private:
-                flash('The capture is private and cannot be indexed. Some correlations will be missing.', 'info')
-            else:
-                flash('The capture has not been indexed yet. Some correlations will be missing.', 'warning')
+        if get_indexing(flask_login.current_user).is_slow:
+            flash('The indexing db is slow, cannot say if the capture is indexed or not.', 'warning')
+            capture_indexed = False
+        else:
+            capture_indexed = all(get_indexing(flask_login.current_user).capture_indexed(tree_uuid))
+            if not capture_indexed:
+                if not flask_login.current_user.is_authenticated and cache.private:
+                    flash('The capture is private and cannot be indexed. Some correlations will be missing.', 'info')
+                else:
+                    flash('The capture has not been indexed yet. Some correlations will be missing.', 'warning')
 
         has_downloads, _, _ = lookyloo.get_data(tree_uuid)
         if has_downloads:
             flash('Download(s) have been triggered during the capture. View them in Capture > Downloads.', 'info')
+        has_video, _, _ = lookyloo.get_video(tree_uuid)
+        if has_video:
+            flash('Video(s) have been triggered during the capture. View them in Capture > Videos.', 'info')
         return render_template('tree.html',
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
                                seed=seed, seed_expire_at=seed_expire_at,
@@ -1991,6 +2053,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                parent_uuid=cache.parent,
                                has_redirects=True if cache.redirects else False,
                                has_downloads=has_downloads,
+                               has_videos=has_video,
                                capture_indexed=capture_indexed,
                                capture_settings=cache.capture_settings.model_dump(exclude_none=True) if cache.capture_settings else {})
 
@@ -2590,6 +2653,9 @@ def capture_web() -> str | Response | WerkzeugResponse:
                 if (not capture_query['auto_report']['email']
                         and not capture_query['auto_report']['comment']):
                     capture_query['auto_report'] = True
+            # Video recoring, admin only.
+            capture_query['with_video'] = True if request.form.get('with_video') else False
+
         if request.form.get('url'):
             capture_query['url'] = request.form['url']
             perma_uuid, seed = lookyloo.enqueue_capture(capture_query, source='web', user=user,

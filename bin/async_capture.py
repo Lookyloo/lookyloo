@@ -138,6 +138,8 @@ class AsyncCapture(AbstractManager):
                         categories=to_capture.categories,
                         downloaded_filename=entries.get('downloaded_filename'),
                         downloaded_file=entries.get('downloaded_file'),
+                        video_filename=entries.get('video_filename'),
+                        video_file=entries.get('video_file'),
                         error=entries.get('error'), har=entries.get('har'),
                         png=entries.get('png'), html=entries.get('html'),
                         frames=entries.get('frames'),

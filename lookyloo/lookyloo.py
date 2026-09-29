@@ -1002,6 +1002,11 @@ class Lookyloo():
             # remove from the list of categories the ones we don't know
             query.categories = [c for c in query.categories if self._valid_category(c)]
 
+        if query.with_video and not authenticated:
+            # for now, only admin users can trigger a video recording.
+            self.logger.warning(f'Attempt to trigger a video recording as user "{user}"')
+            query.with_video = False
+
         # NOTE: Make sure we have a useragent
         if not query.user_agent:
             # Catch case where the UA is broken on the UI, and the async submission.
@@ -1078,6 +1083,7 @@ class Lookyloo():
                     color_scheme=query.color_scheme,
                     rendered_hostname_only=query.rendered_hostname_only,
                     with_favicon=query.with_favicon,
+                    with_video=query.with_video,
                     with_trusted_timestamps=True if self.force_trusted_timestamp else query.with_trusted_timestamps,
                     allow_tracking=query.allow_tracking,
                     java_script_enabled=query.java_script_enabled,
@@ -1460,7 +1466,9 @@ class Lookyloo():
         success: bool
         d: str | bytes | BytesIO | None
         if 'downloaded_filename' in trusted_timestamps and 'downloaded_file' in trusted_timestamps:
-            dl_success, filename, file_content = self.get_data(capture_uuid)
+            dl_success, dl_filename, dl_file_content = self.get_data(capture_uuid)
+        if 'video_filename' in trusted_timestamps and 'video_file' in trusted_timestamps:
+            video_success, video_filename, video_content = self.get_video(capture_uuid)
 
         for tsr_name, tst in trusted_timestamps.items():
             data: bytes = b''
@@ -1491,12 +1499,22 @@ class Lookyloo():
                     data = d.getvalue()
             elif tsr_name == 'downloaded_filename':
                 if dl_success:
-                    data = filename.encode()
+                    data = dl_filename.encode()
                 else:
                     logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
             elif tsr_name == 'downloaded_file':
                 if dl_success:
-                    data = file_content.getvalue()
+                    data = dl_file_content.getvalue()
+                else:
+                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+            elif tsr_name == 'video_filename':
+                if video_success:
+                    data = video_filename.encode()
+                else:
+                    logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
+            elif tsr_name == 'video_file':
+                if dl_success:
+                    data = video_content.getvalue()
                 else:
                     logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
             else:
@@ -1584,6 +1602,10 @@ class Lookyloo():
                     filename = 'downloaded_filename.txt'
                 elif tsr_name == 'downloaded_file':
                     filename = 'downloaded_file.bin'
+                elif tsr_name == 'video_filename':
+                    filename = 'video_filename.txt'
+                elif tsr_name == 'video_file':
+                    filename = 'video_file.bin'
                 z.writestr(f'{filename}.tsr', tsr.as_bytes())
                 z.writestr(filename, data)
                 validator_bash += f"echo ---------- {tsr_name} ----------\n"
@@ -1701,6 +1723,36 @@ class Lookyloo():
     def get_har(self, capture_uuid: str, /, all_har: bool=False) -> tuple[bool, BytesIO]:
         '''Get rendered HAR'''
         return self._get_raw(capture_uuid, 'har.gz', all_har)
+
+    def get_video(self, capture_uuid: str, /, *, index_in_zip: int | None=None) -> tuple[bool, str, BytesIO]:
+        '''Get the video'''
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+
+        def _get_video_file_by_id_from_zip(data: BytesIO, index_in_zip: int) -> tuple[bool, str, BytesIO]:
+            '''Get the a video file by index.
+            This method is only used if the capture has multiple video files'''
+            with ZipFile(data) as video_files:
+                files_info = video_files.infolist()
+                if index_in_zip < 0 or index_in_zip >= len(files_info):
+                    logger.warning(f'Unable to get the file {index_in_zip} from the zip file (only {len(files_info)} entries).')
+                    return False, 'Invalid index in zip', BytesIO()
+                with video_files.open(files_info[index_in_zip]) as f:
+                    return True, files_info[index_in_zip].filename, BytesIO(f.read())
+
+        success, video_filename = self._get_raw(capture_uuid, 'video.filename', False)
+        if success:
+            filename = video_filename.getvalue().decode().strip()
+            success, video = self._get_raw(capture_uuid, 'video', False)
+            if success:
+                if filename == f'{capture_uuid}_multiple_videos.zip' and index_in_zip is not None:
+                    # We have a zip file with multiple files in it
+                    success, filename, video = _get_video_file_by_id_from_zip(video, index_in_zip)
+                    if success:
+                        # We found the file in the zip
+                        return True, filename, video
+                return True, filename, video
+            return False, filename, video
+        return False, 'Unable to get the file name', BytesIO()
 
     def get_data(self, capture_uuid: str, /, *, index_in_zip: int | None=None) -> tuple[bool, str, BytesIO]:
         '''Get the data'''
@@ -2130,10 +2182,14 @@ class Lookyloo():
         png_success, d = self.get_screenshot(capture_uuid)
         if png_success:
             to_return['png'] = base64.b64encode(d.getvalue()).decode()
-        data_success, filename, file_content = self.get_data(capture_uuid)
+        data_success, dl_filename, dl_file_content = self.get_data(capture_uuid)
         if data_success:
-            to_return['downloaded_filename'] = filename
-            to_return['downloaded_file'] = base64.b64encode(file_content.getvalue()).decode()
+            to_return['downloaded_filename'] = dl_filename
+            to_return['downloaded_file'] = base64.b64encode(dl_file_content.getvalue()).decode()
+        video_success, video_filename, video_content = self.get_data(capture_uuid)
+        if video_success:
+            to_return['video_filename'] = video_filename
+            to_return['video_file'] = base64.b64encode(video_content.getvalue()).decode()
         favicons_success, favicons = self.get_potential_favicons(capture_uuid, all_favicons=True, for_datauri=False)
         if favicons_success:
             to_return['potential_favicons'] = [base64.b64encode(fav).decode() for fav in favicons]
@@ -2381,6 +2437,8 @@ class Lookyloo():
         parent: str | None = None
         downloaded_filename: str | None = None
         downloaded_file: bytes | None = None
+        video_filename: str | None = None
+        video_file: bytes | None = None
         error: str | None = None
         har: dict[str, Any] | None = None
         frames: FramesResponse | None = None
@@ -2457,6 +2515,10 @@ class Lookyloo():
                     downloaded_filename = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('0.data'):
                     downloaded_file = lookyloo_capture.read(filename)
+                elif filename.endswith('0.video.filename'):
+                    video_filename = lookyloo_capture.read(filename).decode()
+                elif filename.endswith('0.video'):
+                    video_file = lookyloo_capture.read(filename)
                 elif filename.endswith('error.txt'):
                     error = lookyloo_capture.read(filename).decode()
                 elif filename.endswith('0.trusted_timestamps.json'):
@@ -2500,6 +2562,7 @@ class Lookyloo():
                                private=private,
                                os=os, browser=browser, parent=parent,
                                downloaded_filename=downloaded_filename, downloaded_file=downloaded_file,
+                               video_filename=video_filename, video_file=video_file,
                                error=error, har=har, png=screenshot, html=html,
                                frames=frames,
                                last_redirected_url=last_redirected_url,
@@ -2515,6 +2578,7 @@ class Lookyloo():
                       os: str | None=None, browser: str | None=None,
                       parent: str | None=None,
                       downloaded_filename: str | None=None, downloaded_file: bytes | None=None,
+                      video_filename: str | None=None, video_file: bytes | None=None,
                       error: str | None=None, har: dict[str, Any] | None=None,
                       png: bytes | None=None, html: str | None=None,
                       frames: FramesResponse | str | None=None,
@@ -2542,6 +2606,7 @@ class Lookyloo():
             uuid_dir = self._captures_index._get_capture_dir(uuid)
             raise DuplicateUUID(f'This UUID ({uuid}) already exists in {uuid_dir}')
 
+        # logger = LookylooCacheLogAdapter(self.logger, {'uuid': uuid})
         now = datetime.now()
         dirpath = self.capture_dir / str(now.year) / f'{now.month:02}' / f'{now.day:02}' / now.isoformat()
         safe_create_dir(dirpath)
@@ -2582,6 +2647,14 @@ class Lookyloo():
         if downloaded_file:
             with (dirpath / '0.data').open('wb') as _downloaded_file:
                 _downloaded_file.write(downloaded_file)
+
+        if video_filename:
+            with (dirpath / '0.video.filename').open('w') as _video_filename:
+                _video_filename.write(video_filename)
+
+        if video_file:
+            with (dirpath / '0.video').open('wb') as _video_file:
+                _video_file.write(video_file)
 
         if error:
             with (dirpath / 'error.txt').open('wb') as _error:

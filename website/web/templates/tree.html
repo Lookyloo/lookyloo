@@ -209,11 +209,18 @@
                     class="dropdown-item"
                     data-bs-target="#consoleMessagesModal" role="button" title="The messages in the debug console during the capture">Console messages</a>
                 </li>
-                <li>
                 {% if has_downloads %}
+                <li>
                 <a href="#downloadsModal" data-remote="{{ url_for('downloads', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
                     class="dropdown-item"
                     data-bs-target="#downloadsModal" role="button" title="The file(s) downloaded during the capture">Downloads</a>
+                </li>
+                {% endif %}
+                {% if has_videos %}
+                <li>
+                <a href="#videoModal" data-remote="{{ url_for('videos', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
+                    class="dropdown-item"
+                    data-bs-target="#videoModal" role="button" title="The video generated during the capture">Video</a>
                 </li>
                 {% endif %}
                 <li>
@@ -680,6 +687,23 @@
           </div>
           <div class="modal-body">
               ... loading downloads ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="videoModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="videoModalLabel">Video</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading video ...
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

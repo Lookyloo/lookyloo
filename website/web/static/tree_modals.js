@@ -145,7 +145,8 @@ function LocateNode(hostnode_uuid) {
 
 // Modals
 document.addEventListener("DOMContentLoaded", () => {
-    ["#hashlookupModal", "#modulesModal", "#historyModal", "#categoriesModal", "#statsModal", "#downloadModal",
+    ["#hashlookupModal", "#modulesModal", "#historyModal", "#categoriesModal", "#statsModal",
+     "#downloadModal", "#videoModal",
      "#identifiersModal", "#identifierDetailsModal",
      "#faviconsModal", "#faviconDetailsModal",
      "#faviconDetailsProbabilisticHashModal",

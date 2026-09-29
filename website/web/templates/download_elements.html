@@ -126,6 +126,23 @@
       </td>
     </tr>
     {% endif %}
+    {% if has_videos %}
+    <tr>
+      <th scope="row">Videos</th>
+      <td><a href="{{ url_for('video', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+      <td>
+        Filename: {{tt_entries.get('video_filename', 'Unavailable')}}
+        {% if tt_entries.get('video_filename') %}
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='video_filename', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
+        {% endif %}
+        <br>
+        File content: {{tt_entries.get('video_file', 'Unavailable')}}
+        {% if tt_entries.get('video_file') %}
+        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='video_file', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% endif %}
     <tr>
       <th scope="row">Tree as PNG file</th>
       <td><a href="#" id="dlTreeAsSVG" role="button">{{ render_icon('cloud-download') }}</a></td>

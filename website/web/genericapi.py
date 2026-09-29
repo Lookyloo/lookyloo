@@ -889,6 +889,8 @@ class UploadCapture(Resource):  # type: ignore[misc]
                         parameters['png'] = base64.b64decode(parameters['png'])
                     if 'downloaded_file' in parameters and parameters['downloaded_file']:
                         parameters['downloaded_file'] = base64.b64decode(parameters['downloaded_file'])
+                    if 'video_file' in parameters and parameters['video_file']:
+                        parameters['video_file'] = base64.b64decode(parameters['video_file'])
                     if 'potential_favicons' in parameters and parameters['potential_favicons']:
                         parameters['potential_favicons'] = {base64.b64decode(f) for f in parameters['potential_favicons']}
 
@@ -896,6 +898,8 @@ class UploadCapture(Resource):  # type: ignore[misc]
                         uuid, is_public=listing,
                         downloaded_filename=parameters.get('downloaded_filename'),
                         downloaded_file=parameters.get('downloaded_file'),
+                        video_filename=parameters.get('video_filename'),
+                        video_file=parameters.get('video_file'),
                         error=parameters.get('error'), har=parameters.get('har'),
                         png=parameters.get('png'), html=parameters.get('html'),
                         frames=parameters.get('frames'),
@@ -1053,6 +1057,28 @@ class CaptureData(Resource):  # type: ignore[misc]
             to_return.seek(0)
             return send_file(to_return, mimetype='application/zip')
         return make_response({'error': "This capture didn't trigger a download"}, 404)
+
+
+@api.route('/bin/<uuid:capture_uuid>/video')
+@api.doc(description='Get the video of the capture.',
+         params={'capture_uuid': 'The UUID of the capture'})
+class CaptureCideo(Resource):  # type: ignore[misc]
+
+    @api.produces(['application/zip'])  # type: ignore[untyped-decorator]
+    @api.param('seed', '[Private Capture] The seed allowing to access the capture')  # type: ignore[untyped-decorator]
+    def get(self, capture_uuid: str) -> Response:
+        success, filename, data = lookyloo.get_data(capture_uuid)
+        if success:
+            if filename == f'{capture_uuid}_multiple_videos.zip':
+                # got multiple videos, return as-is instead of double zipping
+                return send_file(data, mimetype='application/zip')
+
+            to_return = BytesIO()
+            with ZipFile(to_return, 'w') as z:
+                z.writestr(filename, data.getvalue())
+            to_return.seek(0)
+            return send_file(to_return, mimetype='application/zip')
+        return make_response({'error': "This capture didn't trigger a video"}, 404)
 
 
 # Compare captures (WiP)

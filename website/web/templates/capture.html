@@ -482,6 +482,17 @@
             </div>
           </div>
         </div>
+        {% if current_user.is_authenticated %}
+        <div class="row mb-3">
+          <label for="with_video" class="col-sm-2 col-form-label">Record a video of the capture</label>
+          <div class="col-sm-10">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="with_video" name="with_video" aria-describedby="with_video_help">
+                <label id="with_video_help" class="form-check-label" for="with_video">If selected, a video of the capture will be recorded. It might be pretty big.</label>
+            </div>
+          </div>
+        </div>
+        {%endif%}
 
         {% if not has_global_proxy %}
         <div class="row mb-3" id="user_defined_proxy">

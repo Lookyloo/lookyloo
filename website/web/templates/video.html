@@ -1,0 +1,68 @@
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% if from_popup %}
+
+{% extends "main.html" %}
+{% from 'bootstrap5/utils.html' import render_messages %}
+{% block title %}Video{% endblock %}
+
+{%endif%}
+
+{% block content %}
+
+<center>
+  The video generated during the capture.
+  <br>
+  {% if from_popup %}
+  <a href="{{ url_for('tree', tree_uuid=tree_uuid, seed=seed) }}" class="btn btn-info">
+    Open the capture.
+  </a>
+  {% else %}
+  <a href="{{ url_for('videos', tree_uuid=tree_uuid, from_popup=True, seed=seed) }}" class="btn btn-light">
+    {{ render_icon('share') }}
+  </a>
+  {% endif %}
+</center>
+
+
+{% if not files %}
+<div class="card text-center">
+  <div class="card-body">
+    <h5 class="card-title">No videos were generated</h5>
+  </div>
+</div>
+{%else%}
+<table id="videoTable" class="table table-striped">
+  <thead>
+    <tr>
+      <th width="10%">#</th>
+      <th width="20%">File Name</th>
+      <th width="60%">Video</th>
+      <th width="10%">Download</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for file in files %}
+    <tr>
+      <th scope="row">{{loop.index}}</th>
+      <td class="text-break">
+          {{file[0]}}
+      </td>
+      <td>
+        <video width="600" controls>
+            <source src="{{ url_for('get_video', tree_uuid=tree_uuid, play_in_browser=True, index_in_zip=loop.index - 1, seed=seed) }}" type="video/webm">
+        </video>
+      </td>
+      <td>
+        <a href="{{ url_for('get_video', tree_uuid=tree_uuid, index_in_zip=loop.index - 1, seed=seed) }}" type="button" class="btn btn-light">
+          {{ render_icon('cloud-download', title="Download the video") }}
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+</div>
+
+{% endblock %}
