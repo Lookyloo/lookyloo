@@ -1513,7 +1513,7 @@ class Lookyloo():
                 else:
                     logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
             elif tsr_name == 'video_file':
-                if dl_success:
+                if video_success:
                     data = video_content.getvalue()
                 else:
                     logger.warning(f'Unable to get {tsr_name} for trusted timestamp validation.')
