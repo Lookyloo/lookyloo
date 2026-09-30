@@ -452,33 +452,24 @@ class Lookyloo():
         except UUIDMissingInCache:
             # the capture isn't ready yet, cannot index
             return False, 'UUID Unknown, cannot index.'
-        if cache.private:
-            # private captures aren't in the public index, true means we skip it
-            # NOTE: the unlisted captures are still in the index on-demand from the user, it is expected.
-            public_index_done = True
-        else:
-            public_index_done = all(get_indexing().capture_indexed(capture_uuid))
-        if get_config('generic', 'index_everything'):
-            full_index_done = all(get_indexing(full=True).capture_indexed(capture_uuid))
-        else:
-            # full index not enabled, skip
-            full_index_done = True
-
-        # Check if the capture is already indexed (or skiped), break immediately if it is
-        if public_index_done and full_index_done:
-            return True, 'Indexing already done.'
 
         try:
-            if not cache.private and not public_index_done:
+            if cache.private:
                 # Do not index the private captures in public index
+                # NOTE: the unlisted captures are still in the index on-demand from the user, it is expected.
+                public_index_done = False
+            else:
                 public_index_done = get_indexing().index_capture(capture_uuid, cache.capture_dir, force_manual=authenticated)
-            if get_config('generic', 'index_everything') and not full_index_done:
+            if get_config('generic', 'index_everything'):
                 full_index_done = get_indexing(full=True).index_capture(capture_uuid, cache.capture_dir, force_manual=authenticated)
+            else:
+                # quietly ignore it
+                full_index_done = True
 
             if authenticated:
                 if public_index_done and full_index_done:
                     return True, 'Indexing in public and full index done.'
-                elif cache.private and not public_index_done:
+                elif cache.private and full_index_done:
                     return True, 'Indexing in full index only (private capture).'
                 else:
                     return False, f'One of the index failed: Public: {public_index_done} / Full: {full_index_done}.'
@@ -488,7 +479,7 @@ class Lookyloo():
                 elif cache.private:
                     return False, 'Cannot index private capture.'
                 elif get_indexing().is_slow:
-                    return False, 'The capture will be indexed later.'
+                    return False, 'The capture will be indexed later (slow).'
                 else:
                     return False, 'Unable to index capture, retry later.'
         except TreeNeedsRebuild:

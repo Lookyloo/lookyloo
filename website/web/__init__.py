@@ -2010,11 +2010,12 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
             monitoring_url = ''
 
         # Check if the capture has been indexed yet. Print a warning if not.
-        if get_indexing(flask_login.current_user).is_slow:
+        indexed = get_indexing(flask_login.current_user).capture_indexed(tree_uuid, authenticated=flask_login.current_user.is_authenticated)
+        if indexed is None:
             flash('The indexing db is slow, cannot say if the capture is indexed or not.', 'warning')
             capture_indexed = False
         else:
-            capture_indexed = all(get_indexing(flask_login.current_user).capture_indexed(tree_uuid))
+            capture_indexed = all(indexed)
             if not capture_indexed:
                 if not flask_login.current_user.is_authenticated and cache.private:
                     flash('The capture is private and cannot be indexed. Some correlations will be missing.', 'info')

@@ -265,7 +265,7 @@ class CapturesIndex():
         p.execute()
         self.reload_cache(uuid)
         # remove from the public index
-        get_indexing().force_reindex(uuid)
+        get_indexing().force_reindex(uuid, capture_dir_str=capture_dir)
         return True
 
     def make_public(self, uuid: str) -> bool:
@@ -277,7 +277,7 @@ class CapturesIndex():
         (Path(capture_dir) / 'no_index').unlink(missing_ok=True)
         (Path(capture_dir) / 'private').unlink(missing_ok=True)
         self.reload_cache(uuid)
-        get_indexing().force_reindex(uuid)
+        get_indexing().force_reindex(uuid, capture_dir_str=capture_dir)
         return True
 
     def rebuild_all(self) -> None:
@@ -524,11 +524,9 @@ class CapturesIndex():
                 logger.debug('The tree needs to be rebuilt.')
                 tree = await self._create_pickle(capture_dir, logger)
                 # Force the reindexing in the public and full index (if enabled)
-                get_indexing().force_reindex(uuid)
-                get_indexing().lazy_index_add(uuid, capture_dir_str)
+                get_indexing().force_reindex(uuid, capture_dir_str=capture_dir_str)
                 if get_config('generic', 'index_everything'):
-                    get_indexing(full=True).force_reindex(uuid)
-                    get_indexing(full=True).lazy_index_add(uuid, capture_dir_str)
+                    get_indexing(full=True).force_reindex(uuid, capture_dir_str=capture_dir_str)
             except NoValidHarFile as e:
                 logger.warning(f'Unable to rebuild the tree for {capture_dir}, the HAR files are not usable: {e}.')
                 tree = None

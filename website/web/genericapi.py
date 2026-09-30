@@ -1385,7 +1385,7 @@ class TLDCaptures(Resource):  # type: ignore[misc]
                 # The capture needs to be re-indexed
                 # NOTE: If this warning it printed on a loop for a capture, we have a problem with the index.
                 api.logger.warning(f'Capture {c.uuid} needs to be re-indexed.')
-                get_indexing(flask_login.current_user).force_reindex(c.uuid)
+                get_indexing(flask_login.current_user).force_reindex(c.uuid, capture_dir_str=str(c.capture_dir))
         return make_response(list(to_return))
 
 # ###################### Advanced Search ############################

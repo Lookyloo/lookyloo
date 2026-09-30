@@ -17,6 +17,7 @@ from datetime import datetime, timedelta
 from ipaddress import IPv4Address, IPv6Address
 
 from pathlib import Path
+from typing import overload, Literal
 
 from har2tree import CrawledTree
 from redis import ConnectionPool, Redis
@@ -97,17 +98,17 @@ class Indexing():
         except TimeoutException:
             self.logger.info('Indexer is to slow to check the is_slow key.')
             return True
-        except Exception as e:
-            self.logger.info(f'Indexer is to slow to check the is_slow key: {e}')
+        except Exception:
+            self.logger.info('Indexer is to slow to check the is_slow key')
             return True
 
-    def lazy_index_add(self, uuid: str, capture_dir: str) -> None:
+    def _lazy_index_add(self, uuid: str, capture_dir: str) -> None:
         """Add a capture in the lazy index, used when the indexer is buzy and we just want to process it later"""
         self.redis.hset('lazy_index', uuid, capture_dir)
 
-    def lazy_force_reindex_add(self, uuid: str) -> None:
-        """Trigget a force reindex at some point in the future"""
-        self.redis.sadd('lazy_force_reindex', uuid)
+    def _lazy_force_reindex_add(self, uuid: str, capture_dir: str) -> None:
+        """Trigger a force reindex at some point in the future"""
+        self.redis.hset('lazy_force_reindex', uuid, capture_dir)
 
     def can_index(self, capture_uuid: str | None=None) -> bool:
         if capture_uuid:
@@ -127,12 +128,13 @@ class Indexing():
             else:
                 self.redis.delete('ongoing_indexing')
 
-    def force_reindex(self, capture_uuid: str, *, background: bool=False) -> None:
+    def force_reindex(self, capture_uuid: str, *, capture_dir_str: str, background: bool=False) -> None:
         if not background and self.is_slow:
             # just flag it as needs to be reindexed
-            self.lazy_force_reindex_add(capture_uuid)
+            self._lazy_force_reindex_add(capture_uuid, capture_dir_str)
             return
         p = self.redis.pipeline()
+        p.hdel('lazy_force_reindex', capture_uuid)
         p.srem('indexed_urls', capture_uuid)
         p.srem('indexed_body_hashes', capture_uuid)
         p.srem('indexed_cookies', capture_uuid)
@@ -169,8 +171,23 @@ class Indexing():
             p.delete(f'capture_indexes|{capture_uuid}|{internal_index}')
         p.delete(f'capture_indexes|{capture_uuid}')
         p.execute()
+        self._lazy_index_add(capture_uuid, capture_dir_str)
 
-    def capture_indexed(self, capture_uuid: str) -> Indexed:
+    @overload
+    def capture_indexed(self, capture_uuid: str, authenticated: Literal[True]) -> Indexed:
+        ...
+
+    @overload
+    def capture_indexed(self, capture_uuid: str, authenticated: Literal[False]) -> Indexed | None:
+        ...
+
+    @overload
+    def capture_indexed(self, capture_uuid: str, authenticated: bool) -> Indexed | None:
+        ...
+
+    def capture_indexed(self, capture_uuid: str, authenticated: bool=False) -> Indexed | None:
+        if not authenticated and self.is_slow:
+            return None
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
@@ -194,7 +211,7 @@ class Indexing():
         if not force_manual and not background and self.is_slow:
             # The indexing request was made by a normal user, from the web interface.
             # indexer is currently slow, add it in the lazy queue
-            self.lazy_index_add(uuid_to_index, str(directory))
+            self._lazy_index_add(uuid_to_index, str(directory))
             return False
 
         if self.redis.sismember('nothing_to_index', uuid_to_index):
@@ -205,7 +222,9 @@ class Indexing():
             return False
 
         try:
-            indexed = self.capture_indexed(uuid_to_index)
+            indexed = self.capture_indexed(uuid_to_index, force_manual)
+            if indexed is None:
+                return False
             start_index = time.monotonic()
             skipped = False
             if all(indexed):

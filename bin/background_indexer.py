@@ -50,12 +50,11 @@ class BackgroundIndexer(AbstractManager):
             return
         if self._check_indexes(self.lookup_dirs):
             self._check_indexes('lazy_index')
-        to_force_reindex = self.indexing.redis.scard('lazy_force_reindex')
+        to_force_reindex = self.indexing.redis.hlen('lazy_force_reindex')
         if to_force_reindex > 0:
             self.logger.info(f'{to_force_reindex} to force reindex.')
-            while self.indexing.redis.exists('lazy_force_reindex'):
-                if uuid := self.indexing.redis.spop('lazy_force_reindex'):
-                    self.indexing.force_reindex(str(uuid), background=True)
+            for uuid, capture_dir in self.indexing.redis.hscan_iter('lazy_force_reindex'):
+                self.indexing.force_reindex(str(uuid), capture_dir_str=capture_dir, background=True)
             self.logger.info('Done with force reindexing.')
 
     def _check_indexes(self, key: str) -> bool:
@@ -75,9 +74,9 @@ class BackgroundIndexer(AbstractManager):
         else:
             _iterator = self.redis.hscan_iter
 
-        for uuid, d in _iterator(key):
+        for uuid, capture_dir in _iterator(key):
             if self.indexing.redis.srem('lazy_force_reindex', uuid):
-                self.indexing.force_reindex(uuid, background=True)
+                self.indexing.force_reindex(uuid, capture_dir_str=capture_dir, background=True)
             if key == 'lazy_index':
                 # remove uuid
                 self.indexing.redis.hdel(key, uuid)
@@ -117,16 +116,16 @@ class BackgroundIndexer(AbstractManager):
 
             if not self.full_indexer:
                 # If we're not running the full indexer, check if the capture should be indexed.
-                if not self.redis.exists(d):
+                if not self.redis.exists(capture_dir):
                     # the entry isn't in the cache, flag as rebuild, skip index
                     self.redis.sadd('lazy_background_build', uuid)
                     continue
 
-                if (self.redis.hexists(d, 'no_index')  # non-indexed capture
-                        or self.redis.hexists(d, 'private')):  # private capture
+                if (self.redis.hexists(capture_dir, 'no_index')  # non-indexed capture
+                        or self.redis.hexists(capture_dir, 'private')):  # private capture
                     # capture isn't public, skip
                     continue
-            path = Path(d)
+            path = Path(capture_dir)
             try:
                 self.indexing.index_capture(uuid, path, background=True)
             except TreeNeedsRebuild:
