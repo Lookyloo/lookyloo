@@ -75,7 +75,7 @@ class BackgroundIndexer(AbstractManager):
             _iterator = self.redis.hscan_iter
 
         for uuid, capture_dir in _iterator(key):
-            if self.indexing.redis.srem('lazy_force_reindex', uuid):
+            if self.indexing.redis.hdel('lazy_force_reindex', uuid):
                 self.indexing.force_reindex(uuid, capture_dir_str=capture_dir, background=True)
             if key == 'lazy_index':
                 # remove uuid
