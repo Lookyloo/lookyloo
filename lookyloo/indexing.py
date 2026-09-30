@@ -96,10 +96,10 @@ class Indexing():
             with self._timeout_context(1):
                 return bool(self.redis.exists('is_slow'))
         except TimeoutException:
-            self.logger.info('Indexer is to slow to check the is_slow key.')
+            self.logger.info('Indexer is too slow to check the is_slow key.')
             return True
         except Exception:
-            self.logger.info('Indexer is to slow to check the is_slow key')
+            self.logger.info('Indexer is too slow to check the is_slow key')
             return True
 
     def _lazy_index_add(self, uuid: str, capture_dir: str) -> None:
@@ -222,7 +222,7 @@ class Indexing():
             return False
 
         try:
-            indexed = self.capture_indexed(uuid_to_index, force_manual)
+            indexed = self.capture_indexed(uuid_to_index, authenticated=any([force_manual, background]))
             if indexed is None:
                 skipped = True
                 return False
