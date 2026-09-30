@@ -224,6 +224,7 @@ class Indexing():
         try:
             indexed = self.capture_indexed(uuid_to_index, force_manual)
             if indexed is None:
+                skipped = True
                 return False
             start_index = time.monotonic()
             skipped = False
