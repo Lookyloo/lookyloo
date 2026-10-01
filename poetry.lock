@@ -6311,14 +6311,14 @@ files = [
 
 [[package]]
 name = "types-deprecated"
-version = "1.3.1.20260728"
+version = "1.3.1.20260928"
 description = "Typing stubs for Deprecated"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "types_deprecated-1.3.1.20260728-py3-none-any.whl", hash = "sha256:d94b3e1db08db6a63ad0e8519e2da2b2d22843f015efa7bd83baef6aa99f7403"},
-    {file = "types_deprecated-1.3.1.20260728.tar.gz", hash = "sha256:cab836fdcf6b57d3e277e62d9d76d8a4c556a2639fd0e90cb555fa0e8300d164"},
+    {file = "types_deprecated-1.3.1.20260928-py3-none-any.whl", hash = "sha256:97d6816bbe822bb7b52c9a1ad035ed10ff916e7dfe8652c4c406f950d8f72694"},
+    {file = "types_deprecated-1.3.1.20260928.tar.gz", hash = "sha256:baa950d1a8125c015e4614eedc16fb5401a6d418075a81aea8330cc26b3d4ff6"},
 ]
 
 [[package]]
@@ -7062,4 +7062,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "0b2a12356f6bb972958edb813dbcf979104cebacedef87ecba62b51c5ffdb008"
+content-hash = "c0bfcff5b921984493694252c33be62caada2e68f674de96f0bf89efe9c13fc4"
