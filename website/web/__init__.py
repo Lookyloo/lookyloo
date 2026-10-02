@@ -390,7 +390,7 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
 
 
 def details_modal_button(target_modal_id: str, data_remote: str, button_string: Markup, search: str | None=None) -> dict[str, Markup]:
-    return {'display': Markup('<a href="{target_modal_id}" data-remote="{data_remote}" data-bs-toggle="modal" data-bs-target="{target_modal_id}" role="button"> {button_string} </a>').format(target_modal_id=target_modal_id, data_remote=data_remote, button_string=button_string),
+    return {'display': Markup('<button type="button" class="btn btn-link btn-sm col-10" data-remote="{data_remote}" data-bs-toggle="modal" data-bs-target="{target_modal_id}"> {button_string} </button>').format(target_modal_id=target_modal_id, data_remote=data_remote, button_string=button_string),
             'filter': escape(search) if search else button_string}
 
 
@@ -3417,7 +3417,7 @@ def post_table(table_name: str, value: str='') -> Response:
                 'total_captures': _info['total_captures'],
                 'url': details_modal_button(target_modal_id='#urlDetailsModal',
                                             data_remote=url_for('url_details', url=_info['quoted_url']),
-                                            button_string=shorten_string(url),
+                                            button_string=shorten_string(url, with_copy_button=True),
                                             search=url)
             }
             prepared_captures.append(to_append)
@@ -3433,7 +3433,7 @@ def post_table(table_name: str, value: str='') -> Response:
                     'total_captures': nb_captures,
                     'identifier': details_modal_button(target_modal_id='#identifierDetailsModal',
                                                        data_remote=url_for('identifier_details', identifier_type=id_type, identifier=identifier),
-                                                       button_string=shorten_string(identifier),
+                                                       button_string=shorten_string(identifier, with_copy_button=True),
                                                        search=identifier),
                     'identifier_type': id_type
                 }
@@ -3449,11 +3449,11 @@ def post_table(table_name: str, value: str='') -> Response:
                 'total_captures': _info['total_captures'],
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_hostname),
-                                                 button_string=shorten_string(_hostname),
+                                                 button_string=shorten_string(_hostname, with_copy_button=True),
                                                  search=_hostname),
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
                                            data_remote=url_for('ip_details', ip=_info['ip']),
-                                           button_string=shorten_string(_info['ip']),
+                                           button_string=shorten_string(_info['ip'], with_copy_button=True),
                                            search=_info['ip']),  # type: ignore[arg-type]
                 'urls': __prepare_node_view(tree_uuid, h_nodes, from_popup)
             }
@@ -3468,7 +3468,7 @@ def post_table(table_name: str, value: str='') -> Response:
                 'total_captures': get_indexing(flask_login.current_user).get_captures_hash_type_count(hash_type, h),
                 'capture_hash': details_modal_button(target_modal_id='#captureHashesTypesDetailsModal',
                                                      data_remote=url_for('capture_hash_details', hash_type=hash_type, h=h),
-                                                     button_string=shorten_string(h),
+                                                     button_string=shorten_string(h, with_copy_button=True),
                                                      search=h),
                 'hash_type': hash_type
             }
@@ -3522,11 +3522,11 @@ def post_table(table_name: str, value: str='') -> Response:
                 'total_captures': _info['total_captures'],
                 'ip': details_modal_button(target_modal_id='#ipDetailsModal',
                                            data_remote=url_for('ip_details', ip=_ip),
-                                           button_string=shorten_string(_ip),
+                                           button_string=shorten_string(_ip, with_copy_button=True),
                                            search=_ip),
                 'hostname': details_modal_button(target_modal_id='#hostnameDetailsModal',
                                                  data_remote=url_for('hostname_details', hostname=_info['hostname']),
-                                                 button_string=shorten_string(_info['hostname']),
+                                                 button_string=shorten_string(_info['hostname'], with_copy_button=True),
                                                  search=_info['hostname']),
                 'urls': __prepare_node_view(tree_uuid, ip_nodes, from_popup)
             }
@@ -3546,7 +3546,7 @@ def post_table(table_name: str, value: str='') -> Response:
                 'urls': __prepare_node_view(tree_uuid, bh_nodes, from_popup),
                 'sha512': details_modal_button(target_modal_id='#bodyHashDetailsModal',
                                                data_remote=url_for('body_hash_details', body_hash=body_hash),
-                                               button_string=shorten_string(body_hash),
+                                               button_string=shorten_string(body_hash, with_copy_button=True),
                                                search=body_hash)
             }
             prepared_captures.append(to_append)

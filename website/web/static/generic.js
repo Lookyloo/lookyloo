@@ -121,6 +121,7 @@ function add_event_js_copy() {
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     document.querySelectorAll('.js-copy').forEach(
         el => el.addEventListener('click', function(e) {
+          e.stopImmediatePropagation();
           e.preventDefault();
           navigator.clipboard.writeText(el.dataset.copy).then(function() {
             el.setAttribute('data-bs-original-title', 'Copying to clipboard was successful!');

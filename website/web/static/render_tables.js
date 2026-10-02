@@ -183,7 +183,7 @@ function renderTables() {
   }
   if (document.getElementById('hostnamesTable')) {
       let treeUUID = document.getElementById('hostnamesTable').dataset.treeuuid;
-      new DataTable('#hostnamesTable', {
+      let hostname_table = new DataTable('#hostnamesTable', {
         processing: true,
         retrieve: true,
         searching: true,
@@ -198,8 +198,8 @@ function renderTables() {
         },
         columns: [{ data: 'total_captures', width: '10%' },
                   { data: {_: 'hostname.display', filter: 'hostname.filter'}, width: '30%', orderable: false },
-                  { data: {_: 'ip.display', filter: 'ip.filter'}, width: '20%', orderable: false },
-                  { data: {_: 'urls.display', filter: 'urls.filter'}, width: '40%', orderable: false }],
+                  { data: {_: 'ip.display', filter: 'ip.filter'}, width: '25%', orderable: false },
+                  { data: {_: 'urls.display', filter: 'urls.filter'}, width: '35%', orderable: false }],
       });
   }
   if (document.getElementById('ipsTable')) {
@@ -218,9 +218,9 @@ function renderTables() {
             dataSrc: ""
         },
         columns: [{ data: 'total_captures', width: '10%' },
-                  { data: {_: 'ip.display', filter: 'ip.filter'}, width: '20%', orderable: false },
+                  { data: {_: 'ip.display', filter: 'ip.filter'}, width: '25%', orderable: false },
                   { data: {_: 'hostname.display', filter: 'hostname.filter'}, width: '30%', orderable: false },
-                  { data: {_: 'urls.display', filter: 'urls.filter'}, width: '40%', orderable: false }],
+                  { data: {_: 'urls.display', filter: 'urls.filter'}, width: '35%', orderable: false }],
       });
   }
   if (document.getElementById('identifiersTable')) {

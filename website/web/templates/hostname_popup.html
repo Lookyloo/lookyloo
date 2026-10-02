@@ -43,14 +43,17 @@
     <br>
     <button type="button" class="btn btn-primary locateInTree" data-hostnode="{{ hostnode_uuid }}">Locate in tree</button>
     {% if uwhois_available %}
-    <a href="{{ url_for('whois', query=hostnode.name) }}" class="btn btn-primary" role="button">
+    <a href="{{ url_for('whois', query=hostnode.name) }}" class="btn btn-primary" role="button"
+       data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Once clicked, it will be in the download interface of your browser">
         Download whois entry
     </a>
     {% endif %}
-    <a href="{{ url_for('urls_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-primary" role="button">
+    <a href="{{ url_for('urls_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-primary" role="button"
+       data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Once clicked, it will be in the download interface of your browser">
         Download all URLs as text
     </a>
-    <a href="{{ url_for('hashes_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-primary" role="button">
+    <a href="{{ url_for('hashes_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-primary" role="button"
+       data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Once clicked, it will be in the download interface of your browser">
         Download all Hashes as text
     </a>
   </center>
