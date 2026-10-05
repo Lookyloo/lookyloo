@@ -652,7 +652,7 @@ class Lookyloo():
         self.redis.hset('tree_cache', f'{process_id}|{classname}', str(self._captures_index.lru_cache_status()))
 
     def clear_tree_cache(self) -> None:
-        self._captures_index.lru_cache_clear()
+        self._captures_index.cache_clear()
 
     def get_recent_captures(self, /, public: bool = True, *, since: datetime | str | float | None=None,
                             before: datetime | float | str | None=None) -> list[str]:

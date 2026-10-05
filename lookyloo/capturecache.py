@@ -289,7 +289,8 @@ class CapturesIndex():
     def lru_cache_status(self) -> CacheInfo:
         return load_pickle_tree.cache_info()
 
-    def lru_cache_clear(self) -> None:
+    def cache_clear(self) -> None:
+        self.__cache.clear()
         load_pickle_tree.cache_clear()
 
     def get_capture_cache(self, uuid: str) -> CaptureCache:
