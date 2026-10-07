@@ -1040,6 +1040,8 @@ class Lookyloo():
                 query.remote_lacus_name = self._get_lacus_from_group(query.remote_lacus_name)
 
             # 3. Get the connector
+            if query.remote_lacus_name not in self.lacus:
+                query.remote_lacus_name = self.default_lacus
             lacus = self.lacus[query.remote_lacus_name]
         except LacusUnreachable as e:
             self.logger.warning(f'Unable to enqueue capture: {e}')
