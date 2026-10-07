@@ -60,13 +60,16 @@ class URLhaus(AbstractModule):
             return error
 
         # Check URLs up to the redirect
-        if cache.redirects:
-            for redirect in cache.redirects:
-                self.__url_lookup(redirect)
-        else:
-            self.__url_lookup(cache.url)
+        try:
+            if cache.redirects:
+                for redirect in cache.redirects:
+                    self.__url_lookup(redirect)
+            else:
+                self.__url_lookup(cache.url)
 
-        return {'success': 'Module triggered'}
+            return {'success': 'Module triggered'}
+        except TimeoutError:
+            return {'error': 'Unable to trigger module, timeout.'}
 
     def __url_lookup(self, url: str) -> None:
         '''Lookup an URL on URL haus
