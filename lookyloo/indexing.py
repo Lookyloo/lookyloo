@@ -129,10 +129,13 @@ class Indexing():
                 self.redis.delete('ongoing_indexing')
 
     def force_reindex(self, capture_uuid: str, *, capture_dir_str: str, background: bool=False) -> None:
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         if not background and self.is_slow:
             # just flag it as needs to be reindexed
             self._lazy_force_reindex_add(capture_uuid, capture_dir_str)
             return
+
+        start_index = time.monotonic()
         p = self.redis.pipeline()
         p.hdel('lazy_force_reindex', capture_uuid)
         p.srem('indexed_urls', capture_uuid)
@@ -172,6 +175,7 @@ class Indexing():
         p.delete(f'capture_indexes|{capture_uuid}')
         p.execute()
         self._lazy_index_add(capture_uuid, capture_dir_str)
+        logger.info(f'Cleared in {round(time.monotonic() - start_index, 3)}.')
 
     @overload
     def capture_indexed(self, capture_uuid: str, authenticated: Literal[True]) -> Indexed:

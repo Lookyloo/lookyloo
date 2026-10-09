@@ -50,12 +50,26 @@ class BackgroundIndexer(AbstractManager):
             return
         if self._check_indexes(self.lookup_dirs):
             self._check_indexes('lazy_index')
+        self._force_reindex()
+
+    def _force_reindex(self) -> None:
         to_force_reindex = self.indexing.redis.hlen('lazy_force_reindex')
-        if to_force_reindex > 0:
-            self.logger.info(f'{to_force_reindex} to force reindex.')
-            for uuid, capture_dir in self.indexing.redis.hscan_iter('lazy_force_reindex'):
-                self.indexing.force_reindex(str(uuid), capture_dir_str=capture_dir, background=True)
-            self.logger.info('Done with force reindexing.')
+        if not to_force_reindex:
+            self.logger.info('Nothing to force reindex.')
+
+        __counter_shutdown_force = 0
+        self.logger.info(f'{to_force_reindex} to force reindex.')
+        for uuid, capture_dir in self.indexing.redis.hscan_iter('lazy_force_reindex'):
+            if __counter_shutdown_force % 10 == 0:
+                if self.shutdown_requested():
+                    self.logger.warning('Shutdown requested, breaking.')
+                    break
+            if __counter_shutdown_force >= 1000:
+                self.logger.warning('Too many captures to reindex, breaking.')
+                break
+            __counter_shutdown_force += 1
+            self.indexing.force_reindex(str(uuid), capture_dir_str=capture_dir, background=True)
+        self.logger.info('Done with force reindexing.')
 
     def _check_indexes(self, key: str) -> bool:
         if not self.indexing.can_index():
