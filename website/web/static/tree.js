@@ -181,6 +181,7 @@ try {
   };
 } catch (error) {
   console.error(error.message);
+  document.getElementById("tree-loading").style.display = "none";
 }
 
 
