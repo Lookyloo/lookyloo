@@ -760,11 +760,13 @@ def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, Any]]:
             ip = ipaddress.ip_address(node.hostname)
         elif 'ip_address' in node.features:
             ip = node.ip_address
-
         captures_count = get_indexing(flask_login.current_user).get_captures_hostname_count(node.hostname)
-        # Note for future: mayeb get url, capture title, something better than just the hash to show to the user
+        # Note for future: maybe get url, capture title, something better than just the hash to show to the user
         if node.hostname not in to_return:
             to_return[node.hostname] = {'total_captures': captures_count, 'nodes': [], 'ip': ip.compressed if ip else "N/A"}
+        elif to_return[node.hostname]['ip'] == 'N/A' and ip:
+            # nome nodes don't have an IP set, try to find one with the IP
+            to_return[node.hostname]['ip'] = ip.compressed
         to_return[node.hostname]['nodes'].append(node)  # type: ignore[union-attr]
     return to_return
 
