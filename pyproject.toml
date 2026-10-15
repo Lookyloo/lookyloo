@@ -56,7 +56,10 @@ vt-py = "^0.22.0"
 pyeupi = "^1.3.0"
 pysanejs = "^2.0.5"
 pylookyloo = "^1.42.0"
-dnspython = "^2.8.0"
+dnspython = [
+    { version = "<2.9", python = "<3.11" },
+    { version = "^2.9", python = ">=3.11" }
+]
 pytaxonomies = "^2.1.2"
 pymisp = {version = "^2.5.34.4", extras = ["fileobjects"]}
 Pillow = "^12.3.0"
@@ -70,7 +73,7 @@ Flask-Login = "^0.6.3"
 har2tree = "^1.41.2"
 werkzeug = "^3.1.9"
 pypandora = "^1.12.5"
-lacuscore = "^1.26.4"
+lacuscore = "^1.27.0"
 pylacus = "^1.27.0"
 pyipasnhistory = "^2.1.5"
 pysecuritytxt = "^1.3.3"
@@ -81,22 +84,22 @@ mmh3 = "^5.3.1"
 psutil = "^7.2.2"
 flask-talisman = "^1.1.0"
 
-aiohttp = {extras = ["speedups"], version = "^3.14.4"}
+aiohttp = {extras = ["speedups"], version = "^3.14.5"}
 pyail = "^0.0.19"
 mastodon-py = "^2.2.2"
 rfc3161-client = "^1.0.9"
 orjson = "^3.13.0"
 esprima = "^4.0.1"
-pyfaup-rs = "^0.4.23"
+pyfaup-rs = "^0.4.24"
 pure-magic-rs = "^0.5.1"
 html-to-markdown = "^3.17.2"
 dateparser = "^1.4.3"
 lookyloo-models = "^0.4.7"
 lxml = "^6.1.3"
-playwrightcapture = "^1.42.0"
+playwrightcapture = "^1.42.4"
 cryptography = "^50.0.2"
 certifi = "^2026.7.22"
-pydantic = "^2.13.5"
+pydantic = "^2.14.1"
 markupsafe = "^3.0.4"
 yara-x = "^1.21.0"
 ollama = "^0.6.3"
@@ -104,11 +107,11 @@ markdown = [
     { version = "<3.11", python = "<3.11" },
     { version = "^3.11", python = ">=3.11" }
 ]
-justhtml = "^3.13.0"
+justhtml = "^3.13.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^2.4.0"
-pytest-playwright = "^0.9.0"
+pytest-playwright = "^0.10.0"
 types-requests = "^2.33.0.20261006"
 types-redis = {version = "^4.6.0.20241004"}
 types-Deprecated = "^1.3.1.20260928"
@@ -119,7 +122,7 @@ types-Pillow = "^10.2.0.20240822"
 types-pytz = "^2026.5.0.20261006"
 types-psutil = "^7.2.2.20260906"
 types-lxml = "^2026.2.16"
-gitpython = "^3.2.0"
+gitpython = "^3.2.1"
 types-dateparser = "^1.4.3.20260907"
 
 [build-system]
