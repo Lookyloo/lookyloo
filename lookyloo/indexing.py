@@ -218,6 +218,9 @@ class Indexing():
             self._lazy_index_add(uuid_to_index, str(directory))
             return False
 
+        if self.redis.hexists('lazy_force_reindex', uuid_to_index):
+            self.force_reindex(uuid_to_index, capture_dir_str=str(directory), background=background)
+
         if self.redis.sismember('nothing_to_index', uuid_to_index):
             # No HAR file in the capture, break immediately.
             return False

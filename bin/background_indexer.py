@@ -56,9 +56,10 @@ class BackgroundIndexer(AbstractManager):
         to_force_reindex = self.indexing.redis.hlen('lazy_force_reindex')
         if not to_force_reindex:
             self.logger.info('Nothing to force reindex.')
+            return
 
-        __counter_shutdown_force = 0
         self.logger.info(f'{to_force_reindex} to force reindex.')
+        __counter_shutdown_force = 0
         for uuid, capture_dir in self.indexing.redis.hscan_iter('lazy_force_reindex'):
             if __counter_shutdown_force % 10 == 0:
                 if self.shutdown_requested():
@@ -89,8 +90,6 @@ class BackgroundIndexer(AbstractManager):
             _iterator = self.redis.hscan_iter
 
         for uuid, capture_dir in _iterator(key):
-            if self.indexing.redis.hdel('lazy_force_reindex', uuid):
-                self.indexing.force_reindex(uuid, capture_dir_str=capture_dir, background=True)
             if key == 'lazy_index':
                 # remove uuid
                 self.indexing.redis.hdel(key, uuid)
