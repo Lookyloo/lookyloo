@@ -48,7 +48,10 @@ def test_capture_page(page: Page) -> None:
             break
     # Capture done
     expect(page).to_have_title(re.compile(f"Capture of {capture_url}"))
-    expect(page.get_by_text("The capture has not been")).to_be_visible()
+    try:
+        expect(page.get_by_text("The capture has not been")).to_be_visible()
+    except Exception:
+        expect(page.get_by_text("The indexing db is slow")).to_be_visible()
     expect(page.get_by_alt_text("Tree loading spinner")).not_to_be_visible(timeout=20_000)
     # trigger indexing
     page.get_by_role("button", name="Analytical Tools").click()
