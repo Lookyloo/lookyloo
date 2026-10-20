@@ -3206,7 +3206,7 @@ def post_table(table_name: str, value: str='') -> Response:
             app.logger.info(f'Missing start {start} or length {length}.')
             return jsonify({'error': f'Missing start {start} or length {length}.'})
 
-        total, total_filtered, captures = get_index(public=show_hidden is False, category=category, offset=start, limit=length, search=search)
+        total, total_filtered, captures = get_index(public=show_hidden is False, show_error=show_error, category=category, offset=start, limit=length, search=search)
         prepared_captures = []
         for capture_uuid, title, redirects, capture_time in captures:
             to_append = {
