@@ -2014,14 +2014,14 @@ files = [
 
 [[package]]
 name = "har2tree"
-version = "1.41.2"
+version = "1.42.0"
 description = "HTTP Archive (HAR) to ETE Toolkit generator"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "har2tree-1.41.2-py3-none-any.whl", hash = "sha256:ff253c860d3b11ddcffbf0638755b7c9fb31564e60b5f7b5c715d64aa5fc6756"},
-    {file = "har2tree-1.41.2.tar.gz", hash = "sha256:ba9ed8916617cf36bfd681991946de2297b6d2ffdc6fb3e0ad8201a48e35ef82"},
+    {file = "har2tree-1.42.0-py3-none-any.whl", hash = "sha256:7bc84a3149b6b5f58ca226fae08de5e8e1494ed65920e195527c9429b3258632"},
+    {file = "har2tree-1.42.0.tar.gz", hash = "sha256:f75204fba4f8c637080056e43c895e3a3ee14ccbb8cef4d2e037c15aff0b2ef3"},
 ]
 
 [package.dependencies]
@@ -2046,7 +2046,7 @@ tinycss2-core-attributes = ">=1.5.1.0,<2.0.0.0"
 w3lib = ">=2.4.1"
 
 [package.extras]
-docs = ["six (>=1.17.0)", "sphinx (>=9.1.0) ; python_version >= \"3.12\""]
+docs = ["six (>=1.17.0)", "sphinx (>=9.2.0) ; python_version >= \"3.13\""]
 
 [[package]]
 name = "hiredis"
@@ -7536,4 +7536,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "66909dd3038f16f01bba4498203c4897029a08f8c1b4df2b886b49c3b9244ea8"
+content-hash = "3cdb47fe98e3b5412bd525774bd284c979eb481f1176ad3c68d5a863c5e63882"
