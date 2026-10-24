@@ -7,7 +7,7 @@ license = "BSD-3-Clause"
 repository = "https://github.com/Lookyloo/lookyloo"
 homepage = "https://www.lookyloo.eu"
 documentation = "https://www.lookyloo.eu/docs/main/"
-requires-python = ">=3.10,<3.15"
+requires-python = ">=3.11,<3.16"
 
 readme = "README.md"
 
@@ -55,32 +55,26 @@ defang = "^0.5.3"
 vt-py = "^0.22.0"
 pyeupi = "^1.3.0"
 pysanejs = "^2.0.5"
-pylookyloo = "^1.42.0"
-dnspython = [
-    { version = "<2.9", python = "<3.11" },
-    { version = "^2.9", python = ">=3.11" }
-]
+pylookyloo = "^1.43.0"
+dnspython = "^2.9.0"
 pytaxonomies = "^2.1.2"
 pymisp = {version = "^2.5.34.4", extras = ["fileobjects"]}
-Pillow = [
-    { version = "<13", python = "<3.11" },
-    { version = "^13", python = ">=3.11" }
-]
+Pillow = "^13.0.0"
 flask-restx = "^1.3.2"
 rich = "^15.0.0"
-pyphishtanklookup = "^1.5.2"
+pyphishtanklookup = "^1.6.0"
 Flask-Cors = "^6.0.5"
 pyhashlookup = "^1.2.8"
 ua-parser = {extras = ["regex"], version = "^1.0.2"}
 Flask-Login = "^0.6.3"
-har2tree = "^1.42.0"
+har2tree = "^1.43.0"
 werkzeug = "^3.1.9"
 pypandora = "^1.12.5"
-lacuscore = "^1.27.0"
-pylacus = "^1.27.0"
+lacuscore = "^1.28.1"
+pylacus = "^1.28.0"
 pyipasnhistory = "^2.1.5"
 pysecuritytxt = "^1.3.3"
-pylookyloomonitoring = "^1.3.5"
+pylookyloomonitoring = "^1.4.0"
 s3fs = "^2026.9.0"
 pypdns = "^2.3.2"
 mmh3 = "^5.3.1"
@@ -93,24 +87,21 @@ mastodon-py = "^2.3.3"
 rfc3161-client = "^1.0.9"
 orjson = "^3.13.0"
 esprima = "^4.0.1"
-pyfaup-rs = "^0.4.25"
+pyfaup-rs = "^0.4.26"
 pure-magic-rs = "^0.5.1"
-html-to-markdown = "^3.18.5"
+html-to-markdown = "^3.18.6"
 dateparser = "^1.4.3"
-lookyloo-models = "^0.4.7"
+lookyloo-models = "^0.5.0"
 lxml = "^6.1.3"
-playwrightcapture = "^1.42.4"
+playwrightcapture = "^1.43.1"
 cryptography = "^50.0.2"
-certifi = "^2026.10.19"
+certifi = "^2026.10.23"
 pydantic = "^2.14.1"
 markupsafe = "^3.0.4"
 yara-x = "^1.22.0"
 ollama = "^0.6.3"
-markdown = [
-    { version = "<3.11", python = "<3.11" },
-    { version = "^3.11", python = ">=3.11" }
-]
-justhtml = "^3.13.1"
+markdown = "^3.11.2"
+justhtml = "^3.14.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^2.4.0"
