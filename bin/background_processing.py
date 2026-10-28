@@ -254,7 +254,7 @@ class Processing(AbstractManager):
                 logger.debug('Auto categorize done.')
 
             # NOTE: onion lookup must be processed first as it might update the categories
-            if self.onion_lookup and not self.lookyloo.redis.exists(f'bg_processed_onion_lookup|{cached.uuid}'):
+            if self.onion_lookup.available and not self.lookyloo.redis.exists(f'bg_processed_onion_lookup|{cached.uuid}'):
                 self.lookyloo.redis.setex(f'bg_processed_onion_lookup|{cached.uuid}', redis_expire, 1)
                 try:
                     if lookups := self.onion_lookup.lookup(cached):
