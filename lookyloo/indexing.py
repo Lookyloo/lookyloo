@@ -192,6 +192,9 @@ class Indexing():
     def capture_indexed(self, capture_uuid: str, authenticated: bool=False) -> Indexed | None:
         if not authenticated and self.is_slow:
             return None
+        if self.redis.hexists('lazy_force_reindex', capture_uuid):
+            # the capture needs to be reindexed, it is irrelevant to check.
+            return None
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
