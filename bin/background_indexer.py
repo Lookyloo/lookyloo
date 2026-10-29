@@ -50,9 +50,9 @@ class BackgroundIndexer(AbstractManager):
             return
         if self._check_indexes(self.lookup_dirs):
             self._check_indexes('lazy_index')
-        self._force_reindex()
+        self.force_reindex(quick=True)
 
-    def _force_reindex(self) -> None:
+    def force_reindex(self, quick: bool=True) -> None:
         to_force_reindex = self.indexing.redis.hlen('lazy_force_reindex')
         if not to_force_reindex:
             self.logger.info('Nothing to force reindex.')
@@ -60,15 +60,20 @@ class BackgroundIndexer(AbstractManager):
 
         self.logger.info(f'{to_force_reindex} to force reindex.')
         __counter_shutdown_force = 0
-        for uuid, capture_dir in self.indexing.redis.hscan_iter('lazy_force_reindex'):
+        for uuid in self.indexing.redis.hrandfield('lazy_force_reindex', 1000):
             if __counter_shutdown_force % 10 == 0:
                 if self.shutdown_requested():
                     self.logger.warning('Shutdown requested, breaking.')
                     break
             if __counter_shutdown_force >= 1000:
-                self.logger.warning('Too many captures to reindex, breaking.')
-                break
+                if quick:
+                    self.logger.warning('Too many captures to reindex, breaking.')
+                    break
+                else:
+                    to_force_reindex = self.indexing.redis.hlen('lazy_force_reindex')
+                    self.logger.info(f'Reindexed {__counter_shutdown_force}, {to_force_reindex} to go.')
             __counter_shutdown_force += 1
+            capture_dir = self.indexing.redis.hget('lazy_force_reindex', uuid)
             self.indexing.force_reindex(str(uuid), capture_dir_str=capture_dir, background=True)
         self.logger.info('Done with force reindexing.')
 
@@ -181,6 +186,16 @@ def main_full_indexer_archives() -> None:
     #       we will change that later, but for now, it's a good start.
     i = BackgroundIndexer(full=True, archives=True)
     i.run(sleep_in_sec=60)
+
+
+def main_reindex() -> None:
+    i = BackgroundIndexer()
+    i.force_reindex(quick=False)
+
+
+def main_reindex_full() -> None:
+    i = BackgroundIndexer(full=True)
+    i.force_reindex(quick=False)
 
 
 if __name__ == '__main__':
