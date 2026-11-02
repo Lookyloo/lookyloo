@@ -1,0 +1,477 @@
+{% extends "layouts/main.html" %}
+
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% from "macros/macros.html" import known_content_details %}
+{% from "macros/macros.html" import ressource_legitimacy_details %}
+{% from "macros/macros.html" import indexed_cookies %}
+{% from "macros/macros.html" import request_cookies_icon %}
+{% from "macros/macros.html" import response_cookies_icon %}
+{% from "macros/macros.html" import hash_info%}
+{% from "macros/macros.html" import redirect_response %}
+{% from "macros/macros.html" import other_captures_table %}
+{% from "macros/macros.html" import context_form %}
+{% from "macros/macros.html" import pandora_submit %}
+
+{% block title %}Details for {% if hostnode.idna %}{{hostnode.idna}} {%else%} {{ hostnode.name }} {%endif%}{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+
+  <script src='{{ url_for('static', filename='js/hostnode_modals.js') }}'
+        {{get_sri('static', 'js/hostnode_modals.js')}}
+        nonce="{{ csp_nonce() }}"
+        crossorigin="anonymous"></script>
+
+{% endblock %}
+
+{% block content %}
+  {# Headers #}
+  <center>
+    <p class="lead">
+    {% if hostnode.idna %}
+      <b>{{hostnode.idna}}</b>
+      <br><small class="text-body-secondary">{{hostnode.name}}</small>
+    {% else %}
+     <b>{{hostnode.name}}</b>
+    {% endif %}
+     <br>
+     <a href="{{ url_for('hostname_details', hostname=hostnode.name, from_popup=True) }}" class="btn btn-light">
+      See captures with this hostname
+     </a>
+    </p>
+    <br>
+    <button type="button" class="btn btn-primary locateInTree" data-hostnode="{{ hostnode_uuid }}">Locate in tree</button>
+    {% if uwhois_available %}
+    <a href="{{ url_for('whois', query=hostnode.name) }}" class="btn btn-primary" role="button"
+       data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Once clicked, it will be in the download interface of your browser">
+        Download whois entry
+    </a>
+    {% endif %}
+    <a href="{{ url_for('urls_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-primary" role="button"
+       data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Once clicked, it will be in the download interface of your browser">
+        Download all URLs as text
+    </a>
+    <a href="{{ url_for('hashes_hostnode', tree_uuid=tree_uuid, node_uuid=hostnode_uuid) }}" class="btn btn-primary" role="button"
+       data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Once clicked, it will be in the download interface of your browser">
+        Download all Hashes as text
+    </a>
+  </center>
+  <br>
+  <div class="accordion" id="accordionHostnode">
+   {% if circl_pdns_available %}
+   <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePDNS" aria-expanded="false" aria-controls="collapsePDNS">
+        CIRCL Passive DNS details for this hostname
+      </button>
+    </h2>
+    <div id="collapsePDNS" class="accordion-collapse collapse" data-bs-parent="#accordionHostnode">
+      <div class="accordion-body">
+          <table id="CIRCL_pdns_table" name="CIRCL_pdns_table"
+               class="table table-striped"
+               style="width:100%" data-query="{{hostnode.name}}"
+               data-live=true>
+           <thead>
+            <tr>
+              <th>First seen</th>
+              <th>Last seen</th>
+              <th>RR Type</th>
+              <th class="text-break">R Data</th>
+              <th class="text-break">RR Name</th>
+            </tr>
+           </thead>
+          </table>
+      </div>
+    </div>
+   </div>
+   {% endif %}
+   <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDNS" aria-expanded="false" aria-controls="collapseDNS">
+        DNS details from standalone queries
+      </button>
+    </h2>
+    <div id="collapseDNS" class="accordion-collapse collapse" data-bs-parent="#accordionHostnode">
+      <div class="accordion-body">
+      {% if hostnode.cname %}
+        <h5>Chain of CNAME(s) for this domain:</h5>
+        <ul>
+        {% for cname in hostnode.cname %}
+          <li>{{ cname }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=cname)}}">whois</a>){% endif %}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+      {% if hostnode.resolved_ips %}
+      <div>
+        <h5>Domain IPs from a standalone DNS lookup:</h5>
+        {% if 'v4' in hostnode.resolved_ips and 'v6' in hostnode.resolved_ips%}
+        <ul>
+            {% for ip in hostnode.resolved_ips['v4'] %}
+              <li>
+                  {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
+                  {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
+                  {% if 'cloudflare' in hostnode.features and hostnode.cloudflare.get(ip) %} - Known Cloudflare IP{% endif %}
+              </li>
+            {% endfor %}
+            {% for ip in hostnode.resolved_ips['v6'] %}
+              <li>
+                  {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
+                  {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
+                  {% if 'cloudflare' in hostnode.features and hostnode.cloudflare.get(ip) %} - Known Cloudflare IP{% endif %}
+              </li>
+            {% endfor %}
+        </ul>
+        {%else%}
+        <ul>
+        {% for ip in hostnode.resolved_ips %}
+          <li>
+              {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
+              {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
+          </li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if hostnode.soa %}
+      <div>
+        <h5>SOA record for {{hostnode.soa[0]}}:</h5>
+        <ul>
+          <li>{{ hostnode.soa[1] }}</li>
+        </ul>
+      </div>
+      {% endif %}
+      {% if hostnode.mx %}
+      <div>
+        <h5>MX record for {{hostnode.mx[0]}}:</h5>
+        <ul>
+          {% for record in hostnode.mx[1] %}
+          <li>{{ record }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      {% if hostnode.ns %}
+      <div>
+        <h5>NS record for {{hostnode.ns[0]}}:</h5>
+        <ul>
+          {% for record in hostnode.ns[1] %}
+          <li>{{ record }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      </div>
+    </div>
+   </div>
+  </div>
+  <br>
+  {# Start list of URLs #}
+  <ul class="list-group list-group-flush">
+    {% for url in urls %}
+    {# URL Display #}
+    <li class="list-group-item">
+      <div class="h3 row" title="{{ url['url_object'].name }}">
+        <div class="col-1 text-end">
+          {# HTTPs or not #}
+          {% if url['encrypted'] %}
+          {{ render_icon('lock-fill') }}
+          {% else %}
+          {{ render_icon('unlock-fill') }}
+          {%endif%}
+        </div>
+        {# URL #}
+        <div class="col-1 g-0 text-end">..&nbsp;/</div>
+        <div class="col-8 g-0">{{ shorten_string(url['url_path'], with_copy_button=True,
+                                                 copy_content=url['url_object'].name)}}</div>
+      </div>
+      {% if last_url_in_address_bar %}
+        {# This is the node of the rendered page #}
+        {% if url['url_object'].name != last_url_in_address_bar %}
+        <div>
+            This node should represent the page rendered in the browser at the end of the capture.
+            However, the URL in the node differs from the one in the address bar of the browser.
+            <ul>
+                <li title="{{url['url_object'].name}}"><b>Node</b>: {{url['url_object'].name}}</li>
+                <li title="{{last_url_in_address_bar}}"><b>Address bar</b>: {{last_url_in_address_bar}}</li>
+                <li><b>Diff</b>: <pre>{{last_url_diff}}</pre>
+            </ul>
+        </div>
+        {%endif%}
+      {%endif%}
+
+      {% if url['url_object'].ip_address %}
+      <div>
+        {% if url['url_object'].ip_address.is_loopback %}
+          IP from HAR: <b>{{ url['url_object'].ip_address }}</b> (loopback address, capture via proxy)
+        {% else %}
+          IP from HAR: <b>{{ url['url_object'].ip_address }}</b> (<a href="{{ url_for('ip_details', ip=url['url_object'].ip_address, from_popup=True) }}">see other captures</a>)
+          {% if uwhois_available %}(<a href="{{ url_for('whois', query=url['url_object'].ip_address)}}">whois</a>){% endif %}
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if url['url_object'].security_details %}
+      <div class="accordion accordion" id="accordionTLS_{{url['url_object'].uuid}}">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTLS_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseTLS">
+            TLS certificate
+          </button>
+        </h2>
+        <div id="collapseTLS_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionTLS_{{url['url_object'].uuid}}">
+          <div class="accordion-body">
+            <ul>
+            {% for k, v in url['url_object'].security_details.items() %}
+              <li><b>{{k}}</b>: {{v}}</li>
+            {% endfor%}
+            </ul>
+          </div>
+        </div>
+      </div>
+      </div>
+      {% endif %}
+      <ul class="list-group">
+        <li class="list-group-item">
+          <p class="h4">Request ({{url['url_object'].request.get('method')}}) {{ request_cookies_icon(url['url_object'], tree_uuid, seed=seed) }}</p>
+          <hr>
+          <div class="accordion accordion" id="accordionRequest_{{url['url_object'].uuid}}">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseRequestHeaders_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseRequestHeaders">
+                  HTTP Headers
+                </button>
+              </h2>
+              <div id="collapseRequestHeaders_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionRequest_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                  <ul>
+                  {% for h in url['url_object'].request['headers'] %}
+                    <li><b>{{h['name']}}</b>: {{h['value']}}</li>
+                  {% endfor%}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            {% if url['cookies_sent'] %}
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionRequestCookies_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseRequestCookies">
+                  Cookies sent
+                </button>
+              </h2>
+              <div id="accordionRequestCookies_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionRequest_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                  {{ indexed_cookies("List of cookies sent in the request", "Node setting this cookie", url['cookies_sent']) }}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if url['url_object'].posted_data is defined %}
+           <div>This is a POST request,
+              {% if url['url_object'].posted_data %}
+                <a href="#JsonRenderModal" data-remote="{{  url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid, render_in_modal=True, seed=seed) }}"
+                  data-bs-toggle="modal" data-bs-target="#JsonRenderModal" role="button"
+                  title="pretty print the JSON">show content</a>.
+                {% if url['url_object'].posted_data_info %}
+                <br/><small><b>Info</b>: {{ url['url_object'].posted_data_info }}</small>
+                {% endif %}
+
+                {% if url['url_object'].posted_data_size is defined %}
+                <br/><small>Posted data size: <b>{{ sizeof_fmt(url['url_object'].posted_data_size) }}</b></small>
+                {% endif %}
+                {% if url['url_object'].posted_data_mimetype %}
+                <br/><small>Mimetype: <b>{{ url['url_object'].posted_data_mimetype }}</b></small>
+                {% endif %}
+              {% else %}
+                it is empty.
+              {% endif %}
+
+           </div>
+          {% endif %}
+        </li>
+
+        <li class="list-group-item">
+          {# Details of the response #}
+          <p class="h4">Response
+            <small>(Status code:
+                <span title="{{ http_status_description(url['url_object'].response['status']) }}">
+                    {{ url['url_object'].response['status'] }})
+                </span>
+                -
+                <span>Load time: {{ url['url_object'].time.total_seconds() }}s</span>
+                <span>{{response_cookies_icon(url['url_object'], tree_uuid, seed=seed)}}</span>
+            </small>
+          </p>
+          <hr>
+          {% if url['url_object'].rendered_html %}
+          <div>
+            <a href="{{ url_for('urlnode_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
+                Download rendered HTML page
+            </a>({{ sizeof_fmt(url['url_object'].rendered_html.getbuffer().nbytes)}})
+            <br>
+            <a href="{{ url_for('urlnode_urls_in_rendered_content', tree_uuid=tree_uuid, node_uuid=url['url_object'].uuid) }}">
+                Download URLs in rendered HTML page
+            </a>
+          </div>
+          {% endif %}
+          {% if url['url_object'].rendered_frame %}
+          This URL response contains iFrames, or is an iFrame itself, download the rendered contents below:
+          <ul>
+              {% for rendered_content in url['url_object'].rendered_frame %}
+              <li><a href="data:text/html;base64,{{rendered_content|b64encode}}" download="{{url['url_object'].uuid}}_iframe.txt">Download rendered iFrame</a></li>
+              {% endfor %}
+          </ul>
+
+          {% endif %}
+
+          {{ redirect_response(url['url_object'], tree_uuid) }}
+          {% if url['url_object'].empty_response %}
+            Empty HTML body.
+          {% else %}
+          {{ hash_info(tree_uuid, url['url_object'].uuid, url['url_object'].mimetype,
+                       url['url_object'].body_hash, url['url_object'].body.getbuffer().nbytes,
+                       url.get('body_hash_freq', 0), has_pandora,
+                       url.get('legitimacy'),
+                       url.get('known_content'),
+                       seed=seed) }}
+
+           {% if enable_context_by_users %}
+            {{ context_form(tree_uuid, url['url_object'].uuid,
+                            url['url_object'].body_hash, 'hostnode_popup') }}
+           {% endif %}
+          {% endif %}
+
+          {% if url['url_object'].downloaded_filename %}
+          <div>
+            {% if has_pandora %}
+              <div> Downloaded file: <b>{{url['url_object'].downloaded_filename}}</b> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})</div>
+              {{ pandora_submit(tree_uuid) }}
+            {% else %}
+              <a href="{{ url_for('data', tree_uuid=tree_uuid)}}">
+                Download {{url['url_object'].downloaded_filename}}
+              </a> ({{sizeof_fmt(url['url_object'].downloaded_file.getbuffer().nbytes)}})
+            {% endif%}
+          </div>
+          {% endif%}
+
+          <div class="accordion accordion" id="accordionResponse_{{url['url_object'].uuid}}">
+            {% if url['embedded_ressources'] %}
+            {# Details on embedded resources #}
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionEmbedded_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseEmbedded">
+                  Embedded resources
+                </button>
+              </h2>
+              <div id="accordionEmbedded_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionResponse_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                  {% for hash, details in url['embedded_ressources'].items() %}
+                  <div>
+                    {{hash_info(tree_uuid, url['url_object'].uuid, details['type'], hash,
+                                details['body_size'], details.get('hash_freq', 0),
+                                has_pandora,
+                                details.get('legitimacy'),
+                                details.get('known_content'),
+                                seed=seed) }}<br>
+                    {% if enable_context_by_users %}
+                      {{ context_form(tree_uuid, url['url_object'].uuid, hash, 'hostnode_popup') }}
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseResponseHeaders_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseResponseHeaders">
+                  HTTP Headers
+                </button>
+              </h2>
+              <div id="collapseResponseHeaders_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionResponse_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                  {% if url['url_object'].hhhash %}
+                      <p>
+                        <a href="{{ url_for('hhh_detail', hhh=url['url_object'].hhhash, from_popup=True) }}">
+                        Show other captures with the same HTTP Headers Hash
+                        </a>
+                      </p>
+                  {% endif %}
+                  <ul>
+                  {% for h in url['url_object'].response['headers'] %}
+                    <li><b>{{h['name']}}</b>: {{h['value']}}</li>
+                  {% endfor%}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            {% if url['url_object']['websocket_messages'] %}
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionWSmessages_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseWSmessages">
+                  WebSocket messages
+                </button>
+              </h2>
+              <div id="accordionWSmessages_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionResponse_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                    <!-- WS messages timeline from https://www.w3schools.com/howto/howto_css_timeline.asp -->
+                    <div class="timeline">
+                      {% for entry in url['url_object'].websocket_messages %}
+                      <div class="tl-container {% if entry['type'] == 'receive' %} tl-right {%else%} tl-left {%endif%}">
+                        <div class="tl-content">
+                          <h2 class="tl-timestamp">{{entry['time']}}</h2>
+                          <p>{{entry['data']}}</p>
+                        </div>
+                      </div>
+                      {% endfor %}
+                    </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% if url['cookies_received'] %}
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordionResponseCookies_{{url['url_object'].uuid}}" aria-expanded="false" aria-controls="collapseResponseCookies">
+                  Cookies received
+                </button>
+              </h2>
+              <div id="accordionResponseCookies_{{url['url_object'].uuid}}" class="accordion-collapse collapse" data-bs-parent="#accordionResponse_{{url['url_object'].uuid}}">
+                <div class="accordion-body">
+                  {{ indexed_cookies("This response contains 3rd party cookies:", "Node sending this cookie", url['cookies_received']['3rd_party']) }}
+                  {{ indexed_cookies("Cookies, sent somewhere in the capture", "Node sending this cookie", url['cookies_received']['sent']) }}
+                  {{ indexed_cookies("Cookies, never sent", "", url['cookies_received']['not_sent']) }}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </li>
+      </ul>
+    </li>
+    {% endfor %}
+  </ul>
+
+<!-- Modals -->
+
+
+<div class="modal fade" id="JsonRenderModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="JsonRenderModalLabel">JSON Pretty Print</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading JSON ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+{% endblock %}

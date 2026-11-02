@@ -13,13 +13,17 @@ if __name__ == '__main__':
 
     to_save: dict[str, Any] = {'static': {}}
 
-    for resource in (dest_dir / 'static').glob('*'):
+    static_dir = dest_dir / 'static'
+    for resource in static_dir.rglob('*'):
         if not resource.is_file():
             continue
         if resource.name[0] == '.':
             continue
+        if resource.stem == 'overrides':
+            # Instance specific overrides (css/overrides.css, js/overrides.js), SRI computed on the fly
+            continue
         with resource.open('rb') as f:
-            to_save['static'][resource.name] = base64.b64encode(hashlib.sha512(f.read()).digest()).decode('utf-8')
+            to_save['static'][resource.relative_to(static_dir).as_posix()] = base64.b64encode(hashlib.sha512(f.read()).digest()).decode('utf-8')
 
     with (dest_dir / 'sri.txt').open('w') as fw:
         json.dump(to_save, fw, indent=2, sort_keys=True)

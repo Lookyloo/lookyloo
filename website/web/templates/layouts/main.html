@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    {% block head %}
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    {% block styles %}
+    <!-- Bootstrap CSS -->
+    {{ bootstrap.load_css() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/generic.css') }}"
+          {{get_sri('static', 'css/generic.css')}}
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/datatables.min.css') }}"
+          {{get_sri('static', 'vendor/datatables.min.css')}}
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/jquery.json-viewer.css') }}"
+          {{get_sri('static', 'vendor/jquery.json-viewer.css')}}
+          crossorigin="anonymous">
+
+    {% set overrides_css = load_custom_css('overrides.css') %}
+    {% if overrides_css %}
+    <link rel="stylesheet" href="{{ overrides_css[0] }}"
+          integrity="{{ overrides_css[1] }}"
+          crossorigin="anonymous">
+    {% endif %}
+
+    {% endblock %}
+
+    <title>{% block title %}{% endblock%}</title>
+
+    {% block card %}{% endblock %}
+
+    {% block identity %}{% endblock %}
+
+    {% endblock %}
+  </head>
+  <body>
+    {% include "custom_header.html" ignore missing %}
+    <!-- Your page content -->
+    <div id="content" class="container">
+      {% block content %}{% endblock%}
+    </div>
+    {% include "custom_footer.html" ignore missing %}
+
+    {% block scripts %}
+    <!-- Optional JavaScript -->
+    {{ bootstrap.load_js(nonce=csp_nonce()) }}
+    <script src='{{ url_for('static', filename='vendor/jquery.min.js') }}'
+            {{get_sri('static', 'vendor/jquery.min.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    <script src='{{ url_for('static', filename='vendor/datatables.min.js') }}'
+            {{get_sri('static', 'vendor/datatables.min.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    <script src='{{ url_for('static', filename='js/render_tables.js') }}'
+            {{get_sri('static', 'js/render_tables.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    <script src='{{ url_for('static', filename='js/generic.js') }}'
+            {{get_sri('static', 'js/generic.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    <script src='{{ url_for('static', filename='vendor/jquery.json-viewer.js') }}'
+            {{get_sri('static', 'vendor/jquery.json-viewer.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    <script src='{{ url_for('static', filename='js/theme_toggle.js') }}'
+            {{get_sri('static', 'js/theme_toggle.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    {% set overrides_js = load_custom_js('overrides.js') %}
+    {% if overrides_js %}
+    <script src="{{  overrides_js[0] }}"
+            integrity="{{ overrides_js[1] }}"
+            crossorigin="anonymous"></script>
+    {% endif %}
+    {% endblock %}
+  </body>
+</html>

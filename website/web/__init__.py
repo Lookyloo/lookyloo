@@ -382,7 +382,7 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
             url_get_ressource = url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, render_in_modal={render_in_modal}, seed=seed)
             link_url = Markup('<a href="{}">').format(url_get_ressource)
 
-        url_img = url_for('static', filename=icon_info['icon'])
+        url_img = url_for('static', filename=f"{icon_info['icon']}")
         # NOTE: the title contains ", so we absolutely must wrap it in '
         return Markup('{link_url} <img src="{url_img}" alt="{alt_tooltip}" width="21" height="21" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title=\'{title}\'/></a><br><small>Mimetype: <b>{mimetype}</b></small><br>').format(link_url=link_url, url_img=url_img, alt_tooltip=icon_info['tooltip'], title=title, mimetype=mimetype)
     else:
@@ -517,7 +517,7 @@ def file_response(func):  # type: ignore[no-untyped-def]
 @app.errorhandler(IndexError)
 def handle_index_error(error: IndexError) -> Response | str | WerkzeugResponse:
     '''Tree was rebuild, page reload required'''
-    return render_template('error.html', error_message='Sorry, this one is on us. The tree was rebuild, please reload the tree and try again.')
+    return render_template('errors/error.html', error_message='Sorry, this one is on us. The tree was rebuild, please reload the tree and try again.')
 
 
 @app.errorhandler(UUIDMissingInCache)
@@ -567,8 +567,8 @@ def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Respons
 
 @app.route('/favicon.ico')
 def favicon() -> WerkzeugResponse:
-    """Load either the default favicon from static/images/favicons/favicon.ico
-    or static/images/favicons/custom-favicon.ico (if it exists)"""
+    """Load either the default favicon from static/favicon.ico
+    or static/custom-favicon.ico (if it exists)"""
 
     favicon_path = get_homedir() / 'website' / 'web' / 'static'
     if (favicon_path / 'custom-favicon.ico').exists():
@@ -1070,7 +1070,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | R
         if url_in_address_bar and url_in_address_bar != urls[0]['url_object'].name:
             d = Differ()
             diff = '\n'.join(d.compare([urls[0]['url_object'].name], [url_in_address_bar]))
-    return render_template('hostname_popup.html',
+    return render_template('tree/hostname_popup.html',
                            tree_uuid=tree_uuid,
                            seed=request.args.get('seed'),
                            hostnode_uuid=node_uuid,
@@ -1106,13 +1106,13 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
         flash(Markup('Unable to trigger the historical lookup: {}').format(triggered["error"]), 'error')
     else:
         circl_pdns_queries = {urlparse(url).hostname for url in cache.redirects if urlparse(url).scheme in ['http', 'https'] and urlparse(url).hostname is not None}
-    return render_template('historical_lookups.html', circl_pdns_queries=circl_pdns_queries)
+    return render_template('tree/modals/historical_lookups.html', circl_pdns_queries=circl_pdns_queries)
 
 
 @app.route('/tree/<uuid:tree_uuid>/categories_capture', methods=['GET', 'POST'])
 def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not enable_categorization:
-        return render_template('categories_view.html', not_enabled=True)
+        return render_template('tree/modals/categories_view.html', not_enabled=True)
 
     if request.method == 'GET':
         taxonomies = get_taxonomies()
@@ -1125,7 +1125,7 @@ def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
         # only allow categorizing as user if the capture is less than 24h old
         if not flask_login.current_user.is_authenticated and cache.timestamp >= datetime.now().astimezone() - timedelta(days=1):
             can_categorize = True
-        return render_template('categories_view.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
+        return render_template('tree/modals/categories_view.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
                                current_categories=current_categories,
                                can_categorize=can_categorize,
                                taxonomy=taxonomies.get('content-classification'))
@@ -1145,7 +1145,7 @@ def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
 @app.route('/tree/<uuid:tree_uuid>/stats', methods=['GET'])
 def stats(tree_uuid: str) -> str:
     stats = lookyloo.get_statistics(tree_uuid)
-    return render_template('statistics.html', uuid=tree_uuid, stats=stats)
+    return render_template('tree/modals/statistics.html', uuid=tree_uuid, stats=stats)
 
 
 @app.route('/tree/<uuid:tree_uuid>/trusted_timestamp/<string:name>', methods=['GET'])
@@ -1179,7 +1179,7 @@ def download_elements(tree_uuid: str) -> str:
     parent_uuid = True if cache.parent else False
     has_downloads, _, _ = lookyloo.get_data(tree_uuid)
     has_video, _, _ = lookyloo.get_video(tree_uuid)
-    return render_template('download_elements.html', tree_uuid=tree_uuid,
+    return render_template('tree/modals/download_elements.html', tree_uuid=tree_uuid,
                            seed=request.args.get('seed'),
                            tt_entries=tt_entries, parent_uuid=parent_uuid,
                            b64_certificate=cert, error=error,
@@ -1202,7 +1202,7 @@ def downloads(tree_uuid: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     success, filename, file = lookyloo.get_data(tree_uuid)
     if not success:
-        return render_template('downloads.html', uuid=tree_uuid, files=None, seed=request.args.get('seed'))
+        return render_template('tree/modals/downloads.html', uuid=tree_uuid, files=None, seed=request.args.get('seed'))
     if filename and file:
         if filename.strip() == f'{tree_uuid}_multiple_downloads.zip':
             # We have a zipfile containing all the files downloaded during the capture
@@ -1216,7 +1216,7 @@ def downloads(tree_uuid: str) -> str:
         files = [('Nothing there.', )]
 
     # TODO: add other info (like the mimetype)
-    return render_template('downloads.html', tree_uuid=tree_uuid, files=files,
+    return render_template('tree/modals/downloads.html', tree_uuid=tree_uuid, files=files,
                            seed=request.args.get('seed'),
                            has_pandora=lookyloo.pandora.available, from_popup=from_popup)
 
@@ -1240,7 +1240,7 @@ def videos(tree_uuid: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     success, filename, file = lookyloo.get_video(tree_uuid)
     if not success:
-        return render_template('video.html', uuid=tree_uuid, files=None, seed=request.args.get('seed'))
+        return render_template('tree/modals/video.html', uuid=tree_uuid, files=None, seed=request.args.get('seed'))
     if filename and file:
         if filename.strip() == f'{tree_uuid}_multiple_videos.zip':
             # We have a zipfile containing all the videos generated during the capture
@@ -1253,7 +1253,7 @@ def videos(tree_uuid: str) -> str:
     else:
         files = [('Nothing there.', )]
 
-    return render_template('video.html', tree_uuid=tree_uuid, files=files,
+    return render_template('tree/modals/video.html', tree_uuid=tree_uuid, files=files,
                            seed=request.args.get('seed'), from_popup=from_popup)
 
 
@@ -1278,7 +1278,7 @@ def storage_state(tree_uuid: str) -> str:
                             opfs['mimetype'] = m.mime_type
                             opfs['filename'] = PurePath(opfs['path']).name
 
-    return render_template('storage.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
+    return render_template('tree/modals/storage.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
                            storage=storage, from_popup=from_popup)
 
 
@@ -1289,7 +1289,7 @@ def console_messages(tree_uuid: str) -> str:
     success, console_messages = lookyloo.get_console_messages(tree_uuid)
     if success and console_messages and console_messages.getvalue():
         messages = orjson.loads(console_messages.getvalue())
-    return render_template('console_messages.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
+    return render_template('tree/modals/console_messages.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
                            messages=messages, from_popup=from_popup)
 
 
@@ -1297,11 +1297,11 @@ def console_messages(tree_uuid: str) -> str:
 def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not lookyloo.misps.available:
         flash('There are no MISP instances available.', 'error')
-        return render_template('misp_lookup.html', nothing_to_see=True)
+        return render_template('tree/modals/misp_lookup.html', nothing_to_see=True)
     as_admin = flask_login.current_user.is_authenticated
     if not as_admin and not lookyloo.misps.has_public_misp:
         flash('You need to be authenticated to search on MISP.', 'error')
-        return render_template('misp_lookup.html', nothing_to_see=True)
+        return render_template('tree/modals/misp_lookup.html', nothing_to_see=True)
 
     if not as_admin and lookyloo.misps.default_misp.admin_only:
         current_misp = None
@@ -1319,7 +1319,7 @@ def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
                                                         as_admin=as_admin,
                                                         instance_name=instance_name):
             misps_occurrences[instance_name] = occurrences
-    return render_template('misp_lookup.html', uuid=tree_uuid,
+    return render_template('tree/modals/misp_lookup.html', uuid=tree_uuid,
                            current_misp=current_misp,
                            misps_occurrences=misps_occurrences)
 
@@ -1353,17 +1353,17 @@ def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
 def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not lookyloo.misps.available:
         flash('There are no MISP instances available.', 'error')
-        return render_template('misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
+        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
 
     as_admin = flask_login.current_user.is_authenticated
     if not as_admin and not lookyloo.misps.has_public_misp:
         flash('You need to be authenticated to push to MISP.', 'error')
-        return render_template('misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
+        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
 
     event = lookyloo.misp_export(tree_uuid, as_admin=as_admin)
     if isinstance(event, dict):
         flash(Markup('Unable to generate the MISP export: {}').format(event), 'error')
-        return render_template('misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
+        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
 
     if request.method == 'GET':
         # Initialize settings that will be displayed on the template
@@ -1390,7 +1390,7 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
                 misp_instances_settings[name]['existing_event'] = existing_misp_url
 
         cache = lookyloo.capture_cache(tree_uuid)
-        return render_template('misp_push_view.html',
+        return render_template('tree/modals/misp_push_view.html',
                                current_misp=current_misp,
                                tree_uuid=tree_uuid,
                                seed=request.args.get('seed'),
@@ -1453,7 +1453,7 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
 def modules(tree_uuid: str) -> str | WerkzeugResponse | Response:
     modules_responses = lookyloo.get_modules_responses(tree_uuid)
     if not modules_responses:
-        return render_template('modules.html', nothing_found=True)
+        return render_template('tree/modals/modules.html', nothing_found=True)
 
     vt_short_result: dict[str, dict[str, Any]] = {}
     if 'vt' in modules_responses:
@@ -1527,7 +1527,7 @@ def modules(tree_uuid: str) -> str | WerkzeugResponse | Response:
             else:
                 # unable to run the query, probably an invalid key
                 pass
-    return render_template('modules.html', uuid=tree_uuid, vt=vt_short_result,
+    return render_template('tree/modals/modules.html', uuid=tree_uuid, vt=vt_short_result,
                            pi=pi_short_result, urlscan=urlscan_to_display,
                            phishtank=phishtank_short_result,
                            urlhaus=urlhaus_short_result)
@@ -1558,7 +1558,7 @@ def image(tree_uuid: str) -> Response:
     else:
         success, to_return = lookyloo.get_screenshot(tree_uuid)
         if not success:
-            error_img = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
+            error_img = get_homedir() / 'website' / 'web' / 'static' / 'images' / 'ui' / 'error_screenshot.png'
             with open(error_img, 'rb') as f:
                 to_return = BytesIO(f.read())
     return send_file(to_return, mimetype='image/png',
@@ -1691,16 +1691,16 @@ def urls_rendered_page(tree_uuid: str) -> WerkzeugResponse | str | Response:
     try:
         urls = lookyloo.get_urls_rendered_page(tree_uuid)
         guessed_urls = lookyloo.get_guessed_urls(tree_uuid)
-        return render_template('urls_rendered.html', base_tree_uuid=tree_uuid,
+        return render_template('tree/modals/urls_rendered.html', base_tree_uuid=tree_uuid,
                                seed=request.args.get('seed'),
                                urls=urls, guessed_urls=guessed_urls)
     except LookylooException:
         flash('Unable to find the rendered node in this capture, cannot get the URLs.', 'error')
-        return render_template('urls_rendered.html', error='Unable to find the rendered node in this capture.', seed=request.args.get('seed'))
+        return render_template('tree/modals/urls_rendered.html', error='Unable to find the rendered node in this capture.', seed=request.args.get('seed'))
     except Exception as e:
         app.logger.warning(f'Unable to get URLs: {e}')
         flash('Unable to find the rendered node in this capture.', 'error')
-        return render_template('urls_rendered.html', error='Unable to find the rendered node in this capture.', seed=request.args.get('seed'))
+        return render_template('tree/modals/urls_rendered.html', error='Unable to find the rendered node in this capture.', seed=request.args.get('seed'))
 
 
 @app.route('/tree/<uuid:tree_uuid>/hashlookup', methods=['GET'])
@@ -1713,7 +1713,7 @@ def hashlookup(tree_uuid: str) -> str | WerkzeugResponse | Response:
     except Exception:  # error or module not enabled
         merged = {}
         total_ressources = 0
-    return render_template('hashlookup.html', merged=merged, total_ressources=total_ressources)
+    return render_template('tree/modals/hashlookup.html', merged=merged, total_ressources=total_ressources)
 
 
 @app.route('/bulk_captures/<uuid:tree_uuid>', methods=['POST'])
@@ -1775,7 +1775,7 @@ def bulk_captures(tree_uuid: str) -> WerkzeugResponse | str | Response:
                                                           seed_expire=lookyloo.default_seed_expire)
         bulk_captures.append((new_capture_uuid, url, seed))
 
-    return render_template('bulk_captures.html', uuid=tree_uuid, bulk_captures=bulk_captures)
+    return render_template('capture/bulk_captures.html', uuid=tree_uuid, bulk_captures=bulk_captures)
 
 
 @app.route('/tree/<uuid:tree_uuid>/visibility', methods=['POST'])
@@ -1853,7 +1853,7 @@ def tree_ollama_report(tree_uuid: str) -> str:
     except Exception as e:
         report = 'Unable to get the Ollama report'
         app.logger.warning(f'Unable to get the Ollama report: {e}')
-    return render_template('ollama_report.html', tree_uuid=tree_uuid, report=report)
+    return render_template('tree/modals/ollama_report.html', tree_uuid=tree_uuid, report=report)
 
 
 @app.route('/tree/<uuid:tree_uuid>/cache', methods=['GET'])
@@ -1980,14 +1980,14 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                         app.logger.warning(f'Unknown remote lacus name ({capture_settings.remote_lacus_name})')
                     if view_url := remote_headed_session.get('view_url'):
                         remote_headed_session['view_url'] = f"{view_url}?{urlencode({'callback': request.url})}"
-            return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid, remote_headed_session=remote_headed_session, seed=seed)
+            return render_template('tree/tree_wait.html', message=message, tree_uuid=tree_uuid, remote_headed_session=remote_headed_session, seed=seed)
         except LacusUnreachable:
             message = "Unable to connect to the Lacus backend, the capture will start as soon as the administrator wakes up."
-            return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid, seed=seed)
+            return render_template('tree/tree_wait.html', message=message, tree_uuid=tree_uuid, seed=seed)
         except Exception as e:
             app.logger.info(f'Unexpected error with {tree_uuid} when getting status: {e}')
             message = "Unexpected error, please wait."
-            return render_template('tree_wait.html', message=message, tree_uuid=tree_uuid, seed=seed)
+            return render_template('tree/tree_wait.html', message=message, tree_uuid=tree_uuid, seed=seed)
     except (NoValidHarFile, MissingCaptureDirectory) as e:
         # Cannot build the pickle, nothing we can do
         app.logger.info(f'Unable to build tree for {tree_uuid}: {e}')
@@ -2054,7 +2054,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
         has_video, _, _ = lookyloo.get_video(tree_uuid)
         if has_video:
             flash('Video(s) have been triggered during the capture. View them in Capture > Videos.', 'info')
-        return render_template('tree.html',
+        return render_template('tree/tree.html',
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
                                seed=seed, seed_expire_at=seed_expire_at,
                                info=cache,
@@ -2105,22 +2105,22 @@ def mark_as_legitimate(tree_uuid: str) -> Response:
 
 @app.route('/tree/<uuid:tree_uuid>/identifiers', methods=['GET'])
 def tree_identifiers(tree_uuid: str) -> str:
-    return render_template('tree_identifiers.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_identifiers.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<uuid:tree_uuid>/favicons', methods=['GET'])
 def tree_favicons(tree_uuid: str) -> str:
-    return render_template('tree_favicons.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_favicons.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<uuid:tree_uuid>/hashes_types', methods=['GET'])
 def tree_capture_hashes_types(tree_uuid: str) -> str:
-    return render_template('tree_hashes_types.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_hashes_types.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<uuid:tree_uuid>/body_hashes', methods=['GET'])
 def tree_body_hashes(tree_uuid: str) -> str:
-    return render_template('tree_body_hashes.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_body_hashes.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<uuid:tree_uuid>/ips', methods=['GET'])
@@ -2129,17 +2129,17 @@ def tree_ips(tree_uuid: str) -> str:
     cache = lookyloo.capture_cache(tree_uuid)
     if cache.capture_settings and cache.capture_settings.proxy:
         proxified = True
-    return render_template('tree_ips.html', tree_uuid=tree_uuid, proxified=proxified)
+    return render_template('tree/modals/tree_ips.html', tree_uuid=tree_uuid, proxified=proxified)
 
 
 @app.route('/tree/<uuid:tree_uuid>/hostnames', methods=['GET'])
 def tree_hostnames(tree_uuid: str) -> str:
-    return render_template('tree_hostnames.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_hostnames.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<uuid:tree_uuid>/urls', methods=['GET'])
 def tree_urls(tree_uuid: str) -> str:
-    return render_template('tree_urls.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_urls.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<uuid:tree_uuid>/cloudflare_ns', methods=['GET'])
@@ -2195,7 +2195,7 @@ def index_generic(show_hidden: bool=False, show_error: bool=True, category: str 
     if get_config('mastobot', 'enable'):
         mastodon_domain = get_config('mastobot', 'domain')
         mastodon_botname = get_config('mastobot', 'botname')
-    return render_template('index.html', public_domain=lookyloo.public_domain,
+    return render_template('home/index.html', public_domain=lookyloo.public_domain,
                            show_hidden=show_hidden,
                            category=category,
                            show_project_page=get_config('generic', 'show_project_page'),
@@ -2237,7 +2237,7 @@ def cookies_lookup() -> str:
     cookies_names = []
     for name in get_indexing(flask_login.current_user).cookies_names:
         cookies_names.append((name, get_indexing(flask_login.current_user).get_captures_cookie_name_count(name)))
-    return render_template('cookies.html', cookies_names=cookies_names)
+    return render_template('explore/cookies.html', cookies_names=cookies_names)
 
 
 @app.route('/hhhashes', methods=['GET'])
@@ -2245,7 +2245,7 @@ def hhhashes_lookup() -> str:
     hhhashes = []
     for hhh in get_indexing(flask_login.current_user).http_headers_hashes:
         hhhashes.append((hhh, get_indexing(flask_login.current_user).get_captures_hhhash_count(hhh)))
-    return render_template('hhhashes.html', hhhashes=hhhashes)
+    return render_template('explore/hhhashes.html', hhhashes=hhhashes)
 
 
 @app.route('/favicons', methods=['GET'])
@@ -2258,7 +2258,7 @@ def favicons_lookup() -> str:
         favicon_b64 = base64.b64encode(favicon).decode()
         nb_captures = get_indexing(flask_login.current_user).get_captures_favicon_count(sha512)
         favicons.append((sha512, nb_captures, favicon_b64))
-    return render_template('favicons.html', favicons=favicons)
+    return render_template('explore/favicons.html', favicons=favicons)
 
 
 @app.route('/ressources', methods=['GET'])
@@ -2276,7 +2276,7 @@ def ressources() -> str:
             if not ressource:
                 continue
             ressources.append((h, freq, context.get(h), capture_uuid, url_node, ressource[0], ressource[2]))
-    return render_template('ressources.html', ressources=ressources)
+    return render_template('explore/ressources.html', ressources=ressources)
 
 
 @app.route('/categories', methods=['GET'])
@@ -2284,7 +2284,7 @@ def categories() -> str:
     categories: list[tuple[str, int]] = []
     for c in get_indexing(flask_login.current_user).categories:
         categories.append((c, get_indexing(flask_login.current_user).get_captures_category_count(c)))
-    return render_template('categories.html', categories=categories)
+    return render_template('explore/categories.html', categories=categories)
 
 
 @app.route('/rebuild_all')
@@ -2349,7 +2349,7 @@ def search() -> str | Response | WerkzeugResponse:
         favicon = request.files['favicon_file'].stream.read()
         favicon_sha512 = hashlib.sha512(favicon).hexdigest()
         return redirect(url_for('favicon_detail', from_popup=True, favicon_sha512=favicon_sha512))
-    return render_template('search.html', version=pkg_version)
+    return render_template('home/search.html', version=pkg_version)
 
 
 def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str, Any] | None=None, *,
@@ -2386,7 +2386,7 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
 
     # NOTE: Inform user if none of the remote lacuses are up?
     enable_monitoring, monitoring_collections, monitoring_settings = prepare_monitoring()
-    return render_template('capture.html', user_agents=user_agents.user_agents,
+    return render_template('capture/capture.html', user_agents=user_agents.user_agents,
                            default=user_agents.default,
                            personal_ua=user_ua,
                            default_public=lookyloo.default_public,
@@ -2511,7 +2511,7 @@ def submit_capture() -> str | Response | WerkzeugResponse:
                 # Got a new capture
                 return redirect(url_for('tree', tree_uuid=new_uuid))
 
-    return render_template('submit_capture.html',
+    return render_template('capture/submit_capture.html',
                            default_public=lookyloo.default_public,
                            public_domain=lookyloo.public_domain)
 
@@ -2708,7 +2708,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
                                                                   seed_expire=seed_expire)
                 bulk_captures.append((new_capture_uuid, url, seed))
 
-            return render_template('bulk_captures.html', bulk_captures=bulk_captures)
+            return render_template('capture/bulk_captures.html', bulk_captures=bulk_captures)
         elif 'document' in request.files:
             # File upload
             capture_query['document'] = base64.b64encode(request.files['document'].stream.read()).decode()
@@ -2742,7 +2742,7 @@ def simple_capture() -> str | Response | WerkzeugResponse:
     if request.method == 'POST':
         if not (request.form.get('url') or request.form.get('urls')):
             flash('Invalid submission: please submit at least a URL.', 'error')
-            return render_template('simple_capture.html')
+            return render_template('capture/simple_capture.html')
         capture_query: dict[str, Any] = {}
         if request.form.get('url'):
             capture_query['url'] = request.form['url']
@@ -2765,13 +2765,13 @@ def simple_capture() -> str | Response | WerkzeugResponse:
                 flash('Recording is in progress and is reported automatically.', 'success')
             return redirect(url_for('simple_capture'))
     # render template
-    return render_template('simple_capture.html')
+    return render_template('capture/simple_capture.html')
 
 
 @app.route('/cookies/<string:cookie_name>', methods=['GET'])
 def cookies_name_detail(cookie_name: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('cookie_name.html', cookie_name=cookie_name, from_popup=from_popup)
+    return render_template('investigate/cookie_name.html', cookie_name=cookie_name, from_popup=from_popup)
 
 
 @app.route('/hhhdetails/<string:hhh>', methods=['GET'])
@@ -2783,20 +2783,20 @@ def hhh_detail(hhh: str) -> str:
         cache = lookyloo.capture_cache(capture_uuid)
         if urlnode := lookyloo.get_urlnode_from_tree(cache.tree, node_uuid):
             headers = [(header["name"], header["value"]) for header in urlnode.response['headers']]
-    return render_template('hhh_details.html', hhh=hhh, headers=headers, from_popup=from_popup)
+    return render_template('investigate/hhh_details.html', hhh=hhh, headers=headers, from_popup=from_popup)
 
 
 @app.route('/identifier_details/<string:identifier_type>/<string:identifier>', methods=['GET'])
 def identifier_details(identifier_type: str, identifier: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('identifier_details.html', identifier_type=identifier_type,
+    return render_template('investigate/identifier_details.html', identifier_type=identifier_type,
                            identifier=identifier, from_popup=from_popup)
 
 
 @app.route('/capture_hash_details/<string:hash_type>/<string:h>', methods=['GET'])
 def capture_hash_details(hash_type: str, h: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('hash_type_details.html', hash_type=hash_type, h=h, from_popup=from_popup)
+    return render_template('investigate/hash_type_details.html', hash_type=hash_type, h=h, from_popup=from_popup)
 
 
 @app.route('/favicon_details/<sha512:favicon_sha512>', methods=['GET'])
@@ -2812,7 +2812,7 @@ def favicon_detail(favicon_sha512: str) -> str:
         mimetype = ''
         b64_favicon = ''
         mmh3_shodan = ''
-    return render_template('favicon_details.html',
+    return render_template('investigate/favicon_details.html',
                            mimetype=mimetype, b64_favicon=b64_favicon,
                            mmh3_shodan=mmh3_shodan,
                            favicon_sha512=favicon_sha512,
@@ -2836,7 +2836,7 @@ def body_hash_details(body_hash: str) -> str:
             ressource_size = body.getbuffer().nbytes
             if mimetype_to_generic(mimetype) == 'image':
                 b64 = base64.b64encode(body.read()).decode()
-    return render_template('body_hash.html', body_hash=body_hash, from_popup=from_popup,
+    return render_template('investigate/body_hash.html', body_hash=body_hash, from_popup=from_popup,
                            filename=filename, ressource_size=ressource_size, mimetype=mimetype, b64=b64,
                            has_pandora=lookyloo.pandora.available,
                            sample_tree_uuid=capture_uuid, sample_node_uuid=urlnode_uuid)
@@ -2846,31 +2846,31 @@ def body_hash_details(body_hash: str) -> str:
 def url_details(url: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     url_unquoted = base64.urlsafe_b64decode(url.strip()).decode()
-    return render_template('url.html', url=url_unquoted, url_quoted=url, from_popup=from_popup)
+    return render_template('investigate/url.html', url=url_unquoted, url_quoted=url, from_popup=from_popup)
 
 
 @app.route('/hostnames/<string:hostname>', methods=['GET'])
 def hostname_details(hostname: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('hostname.html', hostname=hostname, from_popup=from_popup)
+    return render_template('investigate/hostname.html', hostname=hostname, from_popup=from_popup)
 
 
 @app.route('/tlds/<string:tld>', methods=['GET'])
 def tld_details(tld: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('tld.html', tld=tld, from_popup=from_popup)
+    return render_template('investigate/tld.html', tld=tld, from_popup=from_popup)
 
 
 @app.route('/domains/<string:domain>', methods=['GET'])
 def domain_details(domain: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('domain.html', domain=domain, from_popup=from_popup)
+    return render_template('investigate/domain.html', domain=domain, from_popup=from_popup)
 
 
 @app.route('/ips/<string:ip>', methods=['GET'])
 def ip_details(ip: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('ip.html', ip=ip, from_popup=from_popup)
+    return render_template('investigate/ip.html', ip=ip, from_popup=from_popup)
 
 
 @app.route('/cloudflare_ns/<string:cloudflare_ns_key>', methods=['GET'])
@@ -2884,7 +2884,7 @@ def cloudflare_ns_details(cloudflare_ns_key: str) -> str:
 def statsfull() -> str:
     # only available to logged in users, get all the captures
     stats = lookyloo.get_stats(public=not flask_login.current_user.is_authenticated)
-    return render_template('stats.html', stats=stats, version=pkg_version)
+    return render_template('admin/stats.html', stats=stats, version=pkg_version)
 
 
 @app.route('/whois/<string:query>', methods=['GET'])
@@ -2970,7 +2970,7 @@ def urlnode_post_request(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | s
 
     if render_in_modal:
         # return modal
-        return render_template('prettify_text.html',
+        return render_template('tree/prettify_text.html',
                                download_link=url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=node_uuid, seed=request.args.get('seed')),
                                post_info=urlnode.posted_data_info if 'posted_data_info' in urlnode.features else None,
                                from_popup=from_popup)
@@ -3019,7 +3019,7 @@ def get_ressource(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | str | Re
         mimetype = 'text/text'
     if render_in_modal:
         # return modal
-        return render_template('prettify_text.html',
+        return render_template('tree/prettify_text.html',
                                download_link=url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=node_uuid, seed=request.args.get('seed')),
                                from_popup=from_popup)
     else:
