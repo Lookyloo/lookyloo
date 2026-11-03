@@ -255,24 +255,24 @@ function NodeHighlight(hostnode_uuid) {
 function icon_list(relative_x_pos, relative_y_pos, d) {
     const icon_size = 16;
     const icon_options = new Map([
-        ['js', {path: "/static/javascript.png", tooltip: "URL(s) loading Javascript"}],
-        ['exe', {path: "/static/exe.png", tooltip: "URL(s) loading executables"}],
-        ['css', {path: "/static/css.png", tooltip: "URL(s) loading CSS"}],
-        ['font', {path: "/static/font.png", tooltip: "URL(s) loading fonts"}],
-        ['html', {path: "/static/html.png", tooltip: "URL(s) loading HTML"}],
-        ['json', {path: "/static/json.png", tooltip: "URL(s) loading Json"}],
-        ['iframe', {path: "/static/ifr.png", tooltip: "URL(s) loaded from an Iframe"}],
-        ['image', {path: "/static/img.png", tooltip: "URL(s) loading images"}],
-        ['unknown_mimetype', {path: "/static/wtf.png", tooltip: "URL(s) loading contents of an unknown type"}],
-        ['video', {path: "/static/video.png", tooltip: "URL(s) loading videos"}],
-        ['request_cookie', {path: "/static/cookie_read.png", tooltip: "cookie(s) sent to the server in the request"}],
-        ['response_cookie', {path: "/static/cookie_received.png", tooltip: "cookie(s) received in the response"}],
-        ['redirect', {path: "/static/redirect.png", tooltip: "redirect(s)"}],
-        ['redirect_to_nothing', {path: "/static/cookie_in_url.png", tooltip: "redirect(s) to URL(s) missing in the capture"}],
-        ['empty', {path: "/static/empty.svg", tooltip: "URL(s) returning no content"}],
-        ['downloaded_filename', {path: "/static/download.png", tooltip: "contains a downloaded file."}],
-        ['websocket_session', {path: "/static/websocket.svg", tooltip: "contains a websocket session."}],
-        ['posted_data', {path: "/static/send-arrow-up.svg", tooltip: "POSTs content."}]
+        ['js', {path: "/static/images/ui/javascript.png", tooltip: "URL(s) loading Javascript"}],
+        ['exe', {path: "/static/images/ui/exe.png", tooltip: "URL(s) loading executables"}],
+        ['css', {path: "/static/images/ui/css.png", tooltip: "URL(s) loading CSS"}],
+        ['font', {path: "/static/images/ui/font.png", tooltip: "URL(s) loading fonts"}],
+        ['html', {path: "/static/images/ui/html.png", tooltip: "URL(s) loading HTML"}],
+        ['json', {path: "/static/images/ui/json.png", tooltip: "URL(s) loading Json"}],
+        ['iframe', {path: "/static/images/ui/ifr.png", tooltip: "URL(s) loaded from an Iframe"}],
+        ['image', {path: "/static/images/ui/img.png", tooltip: "URL(s) loading images"}],
+        ['unknown_mimetype', {path: "/static/images/ui/wtf.png", tooltip: "URL(s) loading contents of an unknown type"}],
+        ['video', {path: "/static/images/ui/video.png", tooltip: "URL(s) loading videos"}],
+        ['request_cookie', {path: "/static/images/ui/cookie_read.png", tooltip: "cookie(s) sent to the server in the request"}],
+        ['response_cookie', {path: "/static/images/ui/cookie_received.png", tooltip: "cookie(s) received in the response"}],
+        ['redirect', {path: "/static/images/ui/redirect.png", tooltip: "redirect(s)"}],
+        ['redirect_to_nothing', {path: "/static/images/ui/cookie_in_url.png", tooltip: "redirect(s) to URL(s) missing in the capture"}],
+        ['empty', {path: "/static/images/ui/empty.svg", tooltip: "URL(s) returning no content"}],
+        ['downloaded_filename', {path: "/static/images/ui/download.png", tooltip: "contains a downloaded file."}],
+        ['websocket_session', {path: "/static/images/ui/websocket.svg", tooltip: "contains a websocket session."}],
+        ['posted_data', {path: "/static/images/ui/send-arrow-up.svg", tooltip: "POSTs content."}]
     ]);
 
     // Put all the icone in one sub svg document
@@ -628,7 +628,7 @@ function update(root, computed_node_width=0) {
                         .attr('id', 'insecure_image')
                         .attr("width", http_icon_size)
                         .attr("height", http_icon_size)
-                        .attr("xlink:href", '/static/insecure.svg')
+                        .attr("xlink:href", '/static/images/ui/insecure.svg')
                         .on('mouseover', (event, d) => {
                             d3.select('#tooltip')
                                 .style('opacity', 1)
@@ -655,7 +655,7 @@ function update(root, computed_node_width=0) {
                         .attr('id', 'malicious_image')
                         .attr("width", context_icon_size)
                         .attr("height", context_icon_size)
-                        .attr("xlink:href", '/static/bomb.svg')
+                        .attr("xlink:href", '/static/images/ui/bomb.svg')
                         .on('mouseover', (event, d) => {
                             d3.select('#tooltip')
                                 .style('opacity', 1)
@@ -680,7 +680,7 @@ function update(root, computed_node_width=0) {
                         .attr('id', 'known_image')
                         .attr("width", context_icon_size)
                         .attr("height", context_icon_size)
-                        .attr("xlink:href", '/static/check.svg')
+                        .attr("xlink:href", '/static/images/ui/check.svg')
                         .on('mouseover', (event, d) => {
                             d3.select('#tooltip')
                                 .style('opacity', 1)
@@ -705,7 +705,7 @@ function update(root, computed_node_width=0) {
                     .attr('id', 'empty_image')
                     .attr("width", context_icon_size)
                     .attr("height", context_icon_size)
-                    .attr("xlink:href", '/static/empty.svg')
+                    .attr("xlink:href", '/static/images/ui/empty.svg')
                     .on('mouseover', (event, d) => {
                         d3.select('#tooltip')
                             .style('opacity', 1)

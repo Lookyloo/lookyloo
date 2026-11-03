@@ -1826,7 +1826,7 @@ class Lookyloo():
                 success, filename, data = self.get_data(capture_uuid)
                 if success:
                     logger.debug('Download link, set thumbnail.')
-                    error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'download.png'
+                    error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'images' / 'ui' / 'download.png'
                     to_thumbnail = Image.open(error_img)
                 else:
                     # Unable to get data, probably a broken capture.
