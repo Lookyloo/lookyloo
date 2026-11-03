@@ -19,6 +19,8 @@ from ipaddress import IPv4Address, IPv6Address
 from pathlib import Path
 from typing import overload, Literal
 
+import orjson
+
 from har2tree import CrawledTree
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
@@ -28,7 +30,10 @@ from .helpers import load_pickle_tree, remove_pickle_tree, LookylooCacheLogAdapt
 from .default import get_socket_path, get_config
 
 Indexed = namedtuple('Indexed', ['urls', 'body_hashes', 'cookies', 'hhhashes', 'favicons',
-                                 'identifiers', 'categories', 'tlds', 'domains', 'ips', 'hash_types'])
+                                 'identifiers', 'categories', 'tlds', 'domains', 'ips',
+                                 'cloudflare_ns',
+                                 # last
+                                 'hash_types'])
 
 
 class TimeoutException(Exception):
@@ -148,6 +153,7 @@ class Indexing():
         p.srem('indexed_tlds', capture_uuid)
         p.srem('indexed_domains', capture_uuid)
         p.srem('indexed_ips', capture_uuid)
+        p.srem('indexed_cloudflare_ns', capture_uuid)
         for identifier_type in self.identifiers_types():
             p.srem(f'indexed_identifiers|{identifier_type}|captures', capture_uuid)
 
@@ -206,6 +212,7 @@ class Indexing():
         p.sismember('indexed_tlds', capture_uuid)
         p.sismember('indexed_domains', capture_uuid)
         p.sismember('indexed_ips', capture_uuid)
+        p.sismember('indexed_cloudflare_ns', capture_uuid)
         # We also need to check if the hash_type are all indexed for this capture
         hash_types_indexed = all(self.redis.sismember(f'indexed_hash_type|{hash_type}', capture_uuid) for hash_type in self.captures_hashes_types())
         to_return: list[bool] = p.execute()
@@ -311,6 +318,9 @@ class Indexing():
             if not indexed.ips:
                 logger.debug('Indexing IPs')
                 self.index_ips_capture(ct)
+            if not indexed.cloudflare_ns:
+                logger.debug('Indexing Cloudflare NS')
+                self.index_cloudflare_ns_capture(ct, directory)
             if not indexed.hash_types:
                 logger.debug('Indexing hash types')
                 self.index_capture_hashes_types(ct)
@@ -1386,3 +1396,93 @@ class Indexing():
 
     def reindex_categories_capture(self, capture_uuid: str) -> None:
         self.redis.srem('indexed_categories', capture_uuid)
+
+    # ###### Cloudflare NS ######
+
+    @property
+    def cloudflare_ns(self) -> set[str]:
+        return self.redis.smembers('cloudflare_ns')
+
+    def index_cloudflare_ns_capture(self, crawled_tree: CrawledTree, capture_dir: Path) -> None:
+        if self.redis.sismember('indexed_cloudflare_ns', crawled_tree.uuid):
+            # do not reindex
+            return
+        self.redis.sadd('indexed_cloudflare_ns', crawled_tree.uuid)
+        self.logger.debug(f'Indexing Cloudflare NS for {crawled_tree.uuid} ... ')
+
+        ns_file = capture_dir / 'nameservers.json'
+        if not ns_file.exists():
+            return
+
+        with ns_file.open('r') as f:
+            capture_ns = orjson.loads(f.read())
+
+        pipeline = self.redis.pipeline()
+        internal_index = f'capture_indexes|{crawled_tree.uuid}'
+        pipeline.sadd(internal_index, 'cloudflare_ns')
+        pipeline.sadd(internal_index, 'cloudflare_hostnames')
+
+        cf_ns_entries: set[str] = set()
+        for hostname, list_ns in capture_ns.items():
+            # check if the hostname uses cloudflare NS
+            cf_ns = set()
+            for ns in list_ns:
+                if ns.endswith('.ns.cloudflare.com.'):
+                    cf_ns.add(ns)
+            if not cf_ns:
+                continue
+            # strip ns.cloudflare.com. and sort
+            names = sorted([ns.replace('.ns.cloudflare.com.', '') for ns in cf_ns])
+            if len(names) < 2:
+                self.logger.warning(f'Only one NS provided: {cf_ns}')
+                continue
+            # we should only have 2, but pretty sure we're gonna have more at some point
+            cf_ns_key = '-'.join(names)
+            if cf_ns_key not in cf_ns_entries:
+                # new key for this capture
+                pipeline.sadd('cloudflare_ns', cf_ns_key)
+                pipeline.zadd(f'cloudflare_ns|{cf_ns_key}|captures',
+                              mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+                pipeline.sadd(f'{internal_index}|cloudflare_ns', cf_ns_key)
+            # make a list of hostnames with the same tuple
+            pipeline.sadd(f'{internal_index}|cloudflare_ns|{cf_ns_key}', hostname)
+
+            # reverse lookup, get the cloudflare NS keys from a hostname
+            pipeline.sadd('cloudflare_hostnames', hostname)
+            pipeline.zadd(f'cloudflare_hostnames|{hostname}|captures',
+                          mapping={crawled_tree.uuid: crawled_tree.start_time.timestamp()})
+            pipeline.sadd(f'{internal_index}|cloudflare_hostnames', hostname)
+            pipeline.sadd(f'{internal_index}|cloudflare_hostnames|{hostname}', cf_ns_key)
+
+        pipeline.execute()
+
+    def get_captures_cloudflare_ns(self, cloudflare_ns_key: str, most_recent_capture: datetime | None=None,
+                                   oldest_capture: datetime | None = None,
+                                   offset: int | None=None, limit: int | None=None) -> list[str]:
+        """Get all the captures with a specific CLoudflare NS key, on a time interval starting from the most recent one.
+
+        :param cloudflare_ns_key: The Cloudflare NS key
+        :param most_recent_capture: The capture time of the most recent capture to consider
+        :param oldest_capture: The capture time of the oldest capture to consider
+        """
+        max_score: str | float = most_recent_capture.timestamp() if most_recent_capture else '+Inf'
+        min_score: str | float = self.__limit_failsafe(oldest_capture, limit)
+        return self.redis.zrevrangebyscore(f'cloudflare_ns|{cloudflare_ns_key}|captures', max_score, min_score, start=offset, num=limit)
+
+    def get_capture_cloudflare_ns(self, capture_uuid: str) -> set[str]:
+        return self.redis.smembers(f'capture_indexes|{capture_uuid}|cloudflare_ns')
+
+    def get_capture_cloudflare_ns_hostnames(self, capture_uuid: str, cloudflare_ns_key: str) -> set[str]:
+        return self.redis.smembers(f'capture_indexes|{capture_uuid}|cloudflare_ns|{cloudflare_ns_key}')
+
+    def get_captures_cloudflare_ns_count(self, cloudflare_ns_key: str) -> int:
+        return self.redis.zcard(f'cloudflare_ns|{cloudflare_ns_key}|captures')
+
+    def capture_in_cloudflare_ns(self, capture_uuid: str, cloudflare_ns_key: str) -> bool:
+        return self.redis.zscore(f'cloudflare_ns|{cloudflare_ns_key}|captures', capture_uuid) is not None
+
+    def reindex_cloudflare_ns_capture(self, capture_uuid: str) -> None:
+        self.redis.srem('indexed_cloudflare_ns', capture_uuid)
+
+    def scan_captures_cloudflare_ns(self, cloudflare_ns_key: str) -> Iterator[tuple[str, float]]:
+        yield from self.redis.zscan_iter(f'cloudflare_ns|{cloudflare_ns_key}|captures')

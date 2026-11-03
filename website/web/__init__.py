@@ -748,6 +748,16 @@ def get_all_ips(capture_uuid: str, /) -> dict[str, Any]:
     return to_return
 
 
+def get_all_cloudflare_ns(capture_uuid: str, /) -> dict[str, Any]:
+
+    to_return: dict[str, dict[str, list[str] | int]] = defaultdict()
+    for cf_ns in get_indexing(flask_login.current_user).get_capture_cloudflare_ns(capture_uuid):
+        captures_count = get_indexing(flask_login.current_user).get_captures_cloudflare_ns_count(cf_ns)
+        hostnames = get_indexing(flask_login.current_user).get_capture_cloudflare_ns_hostnames(capture_uuid, cf_ns)
+        to_return[cf_ns] = {'total_captures': captures_count, 'hostnames': list(hostnames)}
+    return to_return
+
+
 def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, Any]]:
     cache = lookyloo.capture_cache(capture_uuid)
     to_return: dict[str, dict[str, list[URLNode] | int | str]] = defaultdict()
@@ -902,6 +912,20 @@ def get_hhh_investigator(hhh: str, offset: int | None=None, limit: int | None=No
                 continue
         captures.append((cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, nodes_info))
     return total, captures
+
+
+def get_cloudflare_ns_investigator(cloudflare_ns: str, offset: int | None=None, limit: int | None=None, search: str | None=None) -> tuple[int, list[tuple[str, str, str, datetime]]]:
+    '''Returns all the captures related to an identifier, by type'''
+    total = get_indexing(flask_login.current_user).get_captures_cloudflare_ns_count(cloudflare_ns)
+    if search:
+        cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
+            [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_cloudflare_ns(cloudflare_ns)],
+            cached_captures_only=False) if capture.search(search)]
+    else:
+        cached_captures = lookyloo.sorted_capture_cache(
+            get_indexing(flask_login.current_user).get_captures_cloudflare_ns(cloudflare_ns_key=cloudflare_ns, offset=offset, limit=limit),
+            cached_captures_only=False)
+    return total, [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
 def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[HostNode, list[dict[str, Any]]]:
@@ -2118,6 +2142,11 @@ def tree_urls(tree_uuid: str) -> str:
     return render_template('tree_urls.html', tree_uuid=tree_uuid)
 
 
+@app.route('/tree/<uuid:tree_uuid>/cloudflare_ns', methods=['GET'])
+def tree_cloudflare_ns(tree_uuid: str) -> str:
+    return render_template('tree_cloudflare_ns.html', tree_uuid=tree_uuid)
+
+
 @app.route('/tree/<uuid:tree_uuid>/pandora', methods=['GET', 'POST'])
 def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
     if not lookyloo.pandora.available:
@@ -2844,6 +2873,12 @@ def ip_details(ip: str) -> str:
     return render_template('ip.html', ip=ip, from_popup=from_popup)
 
 
+@app.route('/cloudflare_ns/<string:cloudflare_ns_key>', methods=['GET'])
+def cloudflare_ns_details(cloudflare_ns_key: str) -> str:
+    from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
+    return render_template('cloudflare_ns_details.html', cloudflare_ns_key=cloudflare_ns_key, from_popup=from_popup)
+
+
 @app.route('/stats', methods=['GET'])
 @flask_login.login_required  # type: ignore[untyped-decorator]
 def statsfull() -> str:
@@ -3115,9 +3150,31 @@ def __prepare_landings_in_modal(landing_page: str) -> dict[str, Markup]:
             'filter': escape(landing_page)}
 
 
-def _safe_capture_title(capture_uuid: str, title: str, nodes: Sequence[tuple[str, str] | tuple[str, str, str | None]], from_popup: bool) -> dict[str, Markup]:
+hostnames_view_template = app.jinja_env.from_string(source='''
+<ul style="display:flex">
+{%for hostname in hostnames%}
+  <li style="width:100%">
+    <button type="button" class="btn btn-link" style="text-align: left;width: 70%;"
+            data-remote="{{url_for('hostname_details', hostname=hostname)}}" data-bs-toggle="modal"
+            data-bs-target="#hostnameDetailsModal"> {{shorten_string(hostname, with_copy_button=True)}}
+    </button>
+  </li>
+{%endfor%}
+</ul>
+''')
+
+
+def __prepare_list_hostnames(hostnames: Iterable[str]) -> dict[str, str]:
+    return {'display': render_template(hostnames_view_template, hostnames=hostnames),
+            'filter': escape(' '.join(hostnames))}
+
+
+def _safe_capture_title(capture_uuid: str, title: str, nodes: Sequence[tuple[str, str] | tuple[str, str, str | None]] | None=None, from_popup: bool=False) -> dict[str, Markup]:
     title_modal = __prepare_title_in_modal(capture_uuid, title, from_popup)
-    node_view = __prepare_node_view(capture_uuid, nodes, from_popup)
+    if nodes:
+        node_view = __prepare_node_view(capture_uuid, nodes, from_popup)
+    else:
+        node_view = {'display': '', 'filter': ''}
     # NOTE: This one is safe, as the values are already safe
     return {'display': Markup(f'{title_modal["display"]}</br>{node_view["display"]}'),
             'filter': Markup(f'{title_modal["filter"]} {node_view["filter"]}')}
@@ -3160,7 +3217,7 @@ def get_index(offset: int, limit: int, public: bool=True, show_error: bool=False
         if search:
             # get all the *recent* captures in that category, then filter
             cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
-                [uuid for uuid in get_indexing(flask_login.current_user).get_captures_category(category)],
+                [*get_indexing(flask_login.current_user).get_captures_category(category)],
                 public=public, cached_captures_only=False) if capture.search(search)]
             total_filtered = len(cached_captures)
             cached_captures = cached_captures[offset: offset + limit]
@@ -3331,6 +3388,24 @@ def post_table(table_name: str, value: str='') -> Response:
                 'capture_time': capture_time.isoformat(),
                 'capture_title': __prepare_title_in_modal(capture_uuid, title, from_popup),
                 'landing_page': __prepare_landings_in_modal(landing_page)
+            }
+            prepared_captures.append(to_append)
+        return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
+
+    if table_name == 'cloudflareNSDetailsTable':
+        cloudflare_ns = value.strip()
+        total, captures = get_cloudflare_ns_investigator(cloudflare_ns, offset=start, limit=length, search=search)
+        if search and start is not None and length is not None:
+            total_filtered = len(captures)
+            captures = captures[start:start + length]
+        prepared_captures = []
+        for capture_uuid, title, landing_page, capture_time in captures:
+            hostnames = get_indexing(flask_login.current_user).get_capture_cloudflare_ns_hostnames(capture_uuid, cloudflare_ns)
+            to_append = {
+                'capture_time': capture_time.isoformat(),
+                'landing_page': __prepare_landings_in_modal(landing_page),
+                'capture_title': _safe_capture_title(capture_uuid, title, from_popup=from_popup),
+                'hostnames': __prepare_list_hostnames(hostnames)
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3510,6 +3585,21 @@ def post_table(table_name: str, value: str='') -> Response:
                 }
 
                 prepared_captures.append(to_append)
+        return jsonify(prepared_captures)
+
+    if table_name == 'cloudflareNSTable':
+        tree_uuid = value.strip()
+        prepared_captures = []
+        for _cf_ns, _info in get_all_cloudflare_ns(tree_uuid).items():
+            to_append = {
+                'total_captures': _info['total_captures'],
+                'cloudflare_ns': details_modal_button(target_modal_id='#cloudflareNSDetailsModal',
+                                                      data_remote=url_for('cloudflare_ns_details', cloudflare_ns_key=_cf_ns),
+                                                      button_string=shorten_string(_cf_ns, with_copy_button=True),
+                                                      search=_cf_ns),
+                'hostnames': __prepare_list_hostnames(_info['hostnames'])
+            }
+            prepared_captures.append(to_append)
         return jsonify(prepared_captures)
 
     if table_name == 'ipsTable':
