@@ -80,6 +80,7 @@ jobs:
           cp config/logging_web.json.sample config/logging_web.json
           cp config/modules.json.sample config/modules.json
           poetry run update --init
+          poetry run tools/3rdparty.py
           jq '.UniversalWhois.enabled = true' config/modules.json > temp.json && mv temp.json config/modules.json
           jq '.index_everything = true' config/generic.json > temp.json && mv temp.json config/generic.json
           poetry run start
