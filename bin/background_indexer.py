@@ -65,16 +65,17 @@ class BackgroundIndexer(AbstractManager):
                 if self.shutdown_requested():
                     self.logger.warning('Shutdown requested, breaking.')
                     break
-            if __counter_shutdown_force >= 1000:
+            if capture_dir := self.indexing.redis.hget('lazy_force_reindex', uuid):
+                # might have been processed in the meantime.
+                self.indexing.force_reindex(str(uuid), capture_dir_str=capture_dir, background=True)
+            __counter_shutdown_force += 1
+            if __counter_shutdown_force % 1000 == 0:
                 if quick:
                     self.logger.warning('Too many captures to reindex, breaking.')
                     break
                 else:
                     to_force_reindex = self.indexing.redis.hlen('lazy_force_reindex')
                     self.logger.info(f'Reindexed {__counter_shutdown_force}, {to_force_reindex} to go.')
-            __counter_shutdown_force += 1
-            capture_dir = self.indexing.redis.hget('lazy_force_reindex', uuid)
-            self.indexing.force_reindex(str(uuid), capture_dir_str=capture_dir, background=True)
         self.logger.info('Done with force reindexing.')
 
     def _check_indexes(self, key: str) -> bool:
