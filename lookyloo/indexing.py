@@ -229,7 +229,7 @@ class Indexing():
             return False
 
         if self.redis.hexists('lazy_force_reindex', uuid_to_index):
-            self.force_reindex(uuid_to_index, capture_dir_str=str(directory), background=background)
+            self.force_reindex(uuid_to_index, capture_dir_str=str(directory), background=any([background, force_manual]))
 
         if self.redis.sismember('nothing_to_index', uuid_to_index):
             # No HAR file in the capture, break immediately.
@@ -247,7 +247,7 @@ class Indexing():
             skipped = False
             if all(indexed):
                 skipped = True
-                return True
+                return False
 
             if any(indexed):
                 # some were indexed already
