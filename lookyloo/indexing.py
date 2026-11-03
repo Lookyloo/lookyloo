@@ -200,7 +200,7 @@ class Indexing():
             return None
         if self.redis.hexists('lazy_force_reindex', capture_uuid):
             # the capture needs to be reindexed, it is irrelevant to check.
-            return None
+            return Indexed(*(False, ) * len(Indexed._fields))
         p = self.redis.pipeline()
         p.sismember('indexed_urls', capture_uuid)
         p.sismember('indexed_body_hashes', capture_uuid)
@@ -247,7 +247,7 @@ class Indexing():
             skipped = False
             if all(indexed):
                 skipped = True
-                return False
+                return True
 
             if any(indexed):
                 # some were indexed already
