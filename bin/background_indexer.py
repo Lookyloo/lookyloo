@@ -60,15 +60,16 @@ class BackgroundIndexer(AbstractManager):
 
         self.logger.info(f'{to_force_reindex} to force reindex.')
         __counter_shutdown_force = 0
-        for uuid in self.indexing.redis.hrandfield('lazy_force_reindex', 1000):
-            if __counter_shutdown_force % 10 == 0:
-                if self.shutdown_requested():
-                    self.logger.warning('Shutdown requested, breaking.')
-                    break
-            if capture_dir := self.indexing.redis.hget('lazy_force_reindex', uuid):
-                # might have been processed in the meantime.
-                self.indexing.force_reindex(str(uuid), capture_dir_str=capture_dir, background=True)
-            __counter_shutdown_force += 1
+        while self.indexing.redis.exists('lazy_force_reindex'):
+            for uuid in self.indexing.redis.hrandfield('lazy_force_reindex', 100):
+                if __counter_shutdown_force % 10 == 0:
+                    if self.shutdown_requested():
+                        self.logger.warning('Shutdown requested, breaking.')
+                        break
+                if capture_dir := self.indexing.redis.hget('lazy_force_reindex', uuid):
+                    # might have been processed in the meantime.
+                    self.indexing.force_reindex(str(uuid), capture_dir_str=capture_dir, background=True)
+                __counter_shutdown_force += 1
             if __counter_shutdown_force % 1000 == 0:
                 if quick:
                     self.logger.warning('Too many captures to reindex, breaking.')
