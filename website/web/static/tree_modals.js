@@ -151,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
      "#faviconsModal", "#faviconDetailsModal",
      "#faviconDetailsProbabilisticHashModal",
      "#captureHashesTypesModal", "#captureHashesTypesDetailsModal",
+     "#cloudflareNSModal", "#cloudflareNSDetailsModal",
      "#bodyHashesModal", "#bodyHashDetailsModal",
      "#hostnamesModal", "#hostnameDetailsModal",
      "#urlsModal", "#urlDetailsModal", "#consoleMessagesModal",

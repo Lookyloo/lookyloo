@@ -163,6 +163,26 @@ function renderTables() {
                   { data:  'download', width: '10%', orderable: false }],
       });
   }
+  if (document.getElementById('cloudflareNSTable')) {
+      let treeUUID = document.getElementById('cloudflareNSTable').dataset.treeuuid;
+      new DataTable('#cloudflareNSTable', {
+        processing: true,
+        retrieve: true,
+        searching: true,
+        drawCallback: function (settings) {
+            newTabClickListener(); add_event_js_copy();;
+        },
+        order: [[ 0, "desc" ]],
+        ajax: {
+            url: `/tables/cloudflareNSTable/${treeUUID}${window.location.search}`,
+            type: 'POST',
+            dataSrc: ""
+        },
+        columns: [{ data: 'total_captures', width: '10%' },
+                  { data: {_: 'cloudflare_ns.display', filter: 'cloudflare_ns.filter'}, width: '40%' },
+                  { data: {_: 'hostnames.display', filter: 'hostnames.filter'}, width: '50%', orderable: false }],
+      });
+  }
   if (document.getElementById('treeHashesTable')) {
       let treeUUID = document.getElementById('treeHashesTable').dataset.treeuuid;
       new DataTable('#treeHashesTable', {
@@ -403,6 +423,27 @@ function renderTables() {
            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
+        ],
+      });
+  }
+  if (document.getElementById('cloudflareNSDetailsTable')) {
+      let cloudflarens = document.getElementById('cloudflareNSDetailsTable').dataset.cloudflarens;
+      new DataTable('#cloudflareNSDetailsTable', {
+        processing: true,
+        serverSide: true,
+        retrieve: true,
+        ordering: false,
+        searching: true,
+        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
+        ajax: {
+           url: `/tables/cloudflareNSDetailsTable/${cloudflarens}${window.location.search}`,
+           type: 'POST'
+        },
+        columns : [
+           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
+           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '30%' },
+           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '30%' },
+           { data: {_: 'hostnames.display', filter: 'hostnames.filter'}, width: '20%' }
         ],
       });
   }

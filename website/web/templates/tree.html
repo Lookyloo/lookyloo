@@ -334,6 +334,13 @@
                  data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button"
                  title="Identifiers found on the rendered page">Other Identifiers</a>
               </li>
+              <li>
+              <a href="#cloudflareNSModal" data-remote="{{ url_for('tree_cloudflare_ns', tree_uuid=tree_uuid, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#cloudflareNSModal" role="button"
+                 title="Cloudflare Nameservers found in the capture">Cloudflare NameServers</a>
+
+              </li>
             </ul>
           </div>
 
@@ -786,6 +793,42 @@
   </div>
 </div>
 
+<div class="modal fade" id="cloudflareNSModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="cloudflareNSModalLabel">Cloudflare NameServer found during the capture</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading cloudflare NS ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="cloudflareNSDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="cloudflareNSDetailsModalLabel">Other occurrences of the Cloudlare NS tuple</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading cloudflare NS details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#cloudflareNSModal"
+                 data-remote="{{ url_for('tree_cloudflare_ns', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#cloudflareNSModal" role="button">Back to capture's Cloudflare NameServers</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
 <div class="modal fade" id="captureHashesTypesModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
