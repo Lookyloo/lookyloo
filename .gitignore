@@ -118,6 +118,7 @@ d3.v5.js
 full_index/db
 
 # Local config files
+etc/nginx/certs/
 config/*.json
 config/users/*.json
 config/*.json.bkp
