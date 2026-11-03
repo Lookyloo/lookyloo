@@ -2144,7 +2144,7 @@ def tree_urls(tree_uuid: str) -> str:
 
 @app.route('/tree/<uuid:tree_uuid>/cloudflare_ns', methods=['GET'])
 def tree_cloudflare_ns(tree_uuid: str) -> str:
-    return render_template('tree_cloudflare_ns.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_cloudflare_ns.html', tree_uuid=tree_uuid)
 
 
 @app.route('/tree/<uuid:tree_uuid>/pandora', methods=['GET', 'POST'])
@@ -2876,7 +2876,7 @@ def ip_details(ip: str) -> str:
 @app.route('/cloudflare_ns/<string:cloudflare_ns_key>', methods=['GET'])
 def cloudflare_ns_details(cloudflare_ns_key: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('cloudflare_ns_details.html', cloudflare_ns_key=cloudflare_ns_key, from_popup=from_popup)
+    return render_template('investigate/cloudflare_ns_details.html', cloudflare_ns_key=cloudflare_ns_key, from_popup=from_popup)
 
 
 @app.route('/stats', methods=['GET'])
