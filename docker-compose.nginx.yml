@@ -1,0 +1,16 @@
+services:
+  lookyloo:
+    ports: !reset []
+    environment:
+      FORWARDED_ALLOW_IPS: "*"
+
+  nginx:
+    image: nginx:stable-alpine
+    depends_on:
+      - lookyloo
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./etc/nginx/docker.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./etc/nginx/certs:/etc/nginx/certs:ro
