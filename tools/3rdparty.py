@@ -14,7 +14,8 @@ jquery_json_viewer_version = "1.5.0"
 
 
 if __name__ == '__main__':
-    dest_dir = get_homedir() / 'website' / 'web' / 'static'
+    dest_dir = get_homedir() / 'website' / 'web' / 'static' / 'vendor'
+    dest_dir.mkdir(parents=True, exist_ok=True)
 
     d3 = requests.get(f'https://cdn.jsdelivr.net/npm/d3@{d3js_version}/dist/d3.min.js')
     with (dest_dir / 'd3.min.js').open('wb') as f:

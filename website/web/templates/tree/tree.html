@@ -1,0 +1,1407 @@
+{% extends "layouts/main.html" %}
+
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from 'bootstrap5/utils.html' import render_messages %}
+{% from "macros/macros.html" import monitoring_form %}
+{% from "macros/macros.html" import notify_form %}
+
+{% block title %}Capture of {{info.url}}{% endblock %}
+
+{% block card %}
+<meta property="og:title" content="Lookyloo capture" />
+<meta property="og:type" content="website"/>
+<meta
+  property="og:description"
+  content="URL captured: {{info.url}}"
+/>
+<meta
+  property="og:image"
+  content="https://{{public_domain}}{{ url_for('thumbnail', tree_uuid=tree_uuid, width=1200, seed=seed) }}"
+/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta
+  property="og:url"
+  content="https://{{public_domain}}{{ url_for('tree', tree_uuid=tree_uuid, seed=seed) }}"
+/>
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src='{{ url_for('static', filename='vendor/d3.min.js') }}'
+          {{get_sri('static', 'vendor/d3.min.js')}}
+          nonce="{{ csp_nonce() }}"
+          crossorigin="anonymous"></script>
+  <script src='{{ url_for('static', filename='js/tree.js') }}'
+          {{get_sri('static', 'js/tree.js')}}
+          nonce="{{ csp_nonce() }}"
+          crossorigin="anonymous" type="module"
+          id="tree_js" data-remote="{{url_for('GenericAPI_tree_dump', capture_uuid=tree_uuid, seed=seed)}}"
+                       {% if urlnode_uuid %}data-urlnode="{{urlnode_uuid}}" {%endif%}>
+  </script>
+  <script src='{{ url_for('static', filename='js/tree_modals.js') }}'
+          {{get_sri('static', 'js/tree_modals.js')}}
+          nonce="{{ csp_nonce() }}"
+          crossorigin="anonymous"></script>
+
+  <script nonce="{{ csp_nonce() }}">
+    const buttonModulesRefresh = document.getElementById("modulesForceRefresh");
+    buttonModulesRefresh.addEventListener("click", (event) => {
+        document.getElementById("modulesBody").textContent = "Reloading modules, please wait...";
+        fetch("{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=True, seed=seed) }}", {
+            method: "GET"
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("modulesBody").innerHTML = data;
+        })
+        .catch((error) => {
+            document.getElementById("modulesBody").textContent = error;
+        });
+    });
+  </script>
+
+  {% if auto_trigger_modules %}
+  <script nonce="{{ csp_nonce() }}">
+    $.get("{{ url_for('trigger_modules', tree_uuid=tree_uuid, seed=seed, auto_trigger=True) }}")
+  </script>
+  {% endif%}
+  {% if enable_monitoring %}
+  <script nonce="{{ csp_nonce() }}">
+    const today = new Date()
+    let tomorrow =  new Date()
+    tomorrow.setDate(today.getDate() + 1)
+    document.getElementById('expire_at').min = tomorrow.toISOString().split('T')[0];
+    document.getElementById('expire_at').value = tomorrow.toISOString().split('T')[0];
+  </script>
+  {% endif%}
+
+{% endblock %}
+
+
+{% block styles %}
+  {{ super() }}
+  <link rel="stylesheet"
+        {{get_sri('static', 'css/tree.css')}}
+        href="{{ url_for('static', filename='css/tree.css') }}">
+{% endblock %}
+
+
+{% block content %}
+{{super()}}
+
+<script nonce="{{ csp_nonce() }}">
+  var treeUUID = "{{ tree_uuid }}";
+  var screenshot_thumbnail = "{{ screenshot_thumbnail }}";
+  var favicon = "{{ favicon }}";
+  var mime_favicon = "{{ mime_favicon }}";
+  var enable_bookmark = {{ enable_bookmark|tojson }};
+
+  var parent_uuid = {{ parent_uuid|tojson }};
+  var capture_starttime = new Date(Date.parse("{{ info.timestamp.isoformat() if info.timestamp else 0 }}"));
+  {% if seed and seed_expire_at %}
+  var seed_expire = new Date(Date.parse("{{ seed_expire_at.isoformat() }}"));
+  {% endif %}
+  window.addEventListener('DOMContentLoaded', (event) => {
+      document.getElementById("start_time").textContent = capture_starttime.toString();
+      {% if seed and seed_expire_at %}
+      document.getElementById("seed_expire_at").textContent = seed_expire.toString();
+      {% endif %}
+      document.getElementById("content").classList.remove('container');
+      document.getElementById("content").classList.add('container-fluid');
+  });
+</script>
+
+
+<!-- Containers -->
+
+<div id="tree_svg" class="container-fluid">
+
+<div id="menu-tree-top">
+ <div id="menu_container_vertical">
+  <div id=menu_vertical>
+    <div class="menu_vertical_header">
+      <a href="{{ url_for('index') }}" title="Back to captures">
+        <img src="{{ url_for('static', filename='images/ui/lookyloo.png') }}"
+             alt="Lookyloo icon" id="tree_logo">
+      </a>
+    </div>
+    <hr/>
+    <div class="mx-auto" style="width: 52px;">
+      <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#menu_vertical_content">
+          <span class="if-collapsed">
+            <img src="{{ url_for('static', filename='images/ui/up.jpg') }}" class="arrow-down" alt="Maximize menu" height="25" width="25" title="Expand">
+          </span>
+          <span class="if-not-collapsed">
+            <img src="{{ url_for('static', filename='images/ui/up.jpg') }}" alt="Minimize menu" height="25" width="25" title="Collapse">
+          </span>
+      </button>
+    </div>
+
+    <div id=menu_vertical_content class="collapse show">
+      <hr/>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          <a href="{{ url_for('capture_web') }}" role="button">New capture</a>
+        </li>
+        {% if enable_monitoring %}
+            <li class="list-group-item">
+            {% if monitoring_url %}
+              <a href="{{monitoring_url}}" role="button" class="btn btn-outline-info">Show monitoring</a>
+            {% else %}
+              <a href="#monitoringModal" data-bs-toggle="modal" data-bs-target="#monitoringModal" role="button" class="btn btn-outline-info">Monitor capture</a>
+            {% endif %}
+            </li>
+        {% endif %}
+        {% if enable_mail_notification %}
+        <li class="list-group-item">
+          <a href="#emailModal" data-bs-toggle="modal" data-bs-target="#emailModal" role="button" class="btn btn-outline-danger">Report suspicious<br>capture</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+ </div>
+
+
+ <div id="menu_container_horizontal">
+  <div id=menu_horizontal class="d-flex">
+    <div class="flex-shrink-1 align-self-center">
+     <div class="mx-auto" style="width: 52px;">
+      <button type="button" class="btn btn-link mr-3" data-bs-toggle="collapse" data-bs-target="#menu_horizontal_content">
+        <span class="if-collapsed">
+          <img src="{{ url_for('static', filename='images/ui/up.jpg') }}" class="arrow-right" alt="Maximize menu" height="25" width="25" title="Expand">
+        </span>
+        <span class="if-not-collapsed">
+          <img src="{{ url_for('static', filename='images/ui/up.jpg') }}" class="arrow-left" alt="Minimize menu" height="25" width="25" title="Collapse">
+        </span>
+      </button>
+     </div>
+    </div>
+    <div id="menu_horizontal_content" class="collapse show flex-grow-1">
+        <div class="hstack gap-3">
+          <div class="vr"></div>
+
+          <div id="capture-menu" class="dropdown">
+              <button class="btn btn-primary dropdown-toggle dropbtn" type="button" id="capture-menu-btn"
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                Capture
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="capture-menu-btn">
+                <li>
+                <a href="#detailsModal" data-bs-toggle="modal" data-bs-target="#detailsModal"
+                   class="dropdown-item"
+                   role="button" title="Details about the capture configuration">Capture Details</a>
+                </li>
+                <li>
+                <a href="#statsModal" data-remote="{{ url_for('stats', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
+                   class="dropdown-item"
+                   data-bs-target="#statsModal" role="button" title="The capture in numbers">Statistics</a>
+                </li>
+                <li>
+                <a href="#storageStateModal" data-remote="{{ url_for('storage_state', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
+                    class="dropdown-item"
+                    data-bs-target="#storageStateModal" role="button" title="The storage state at the end of the capture">Storage state</a>
+                </li>
+                <li>
+                <a href="#consoleMessagesModal" data-remote="{{ url_for('console_messages', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
+                    class="dropdown-item"
+                    data-bs-target="#consoleMessagesModal" role="button" title="The messages in the debug console during the capture">Console messages</a>
+                </li>
+                {% if has_downloads %}
+                <li>
+                <a href="#downloadsModal" data-remote="{{ url_for('downloads', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
+                    class="dropdown-item"
+                    data-bs-target="#downloadsModal" role="button" title="The file(s) downloaded during the capture">Downloads</a>
+                </li>
+                {% endif %}
+                {% if has_videos %}
+                <li>
+                <a href="#videoModal" data-remote="{{ url_for('videos', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
+                    class="dropdown-item"
+                    data-bs-target="#videoModal" role="button" title="The video generated during the capture">Video</a>
+                </li>
+                {% endif %}
+                <li>
+                <a href="#screenshotModal" data-bs-toggle="modal" data-bs-target="#screenshotModal"
+                    class="dropdown-item"
+                    role="button" title="Contains the URL rendered in the browser">Page Screenshot</a>
+                </li>
+                <li>
+                  <a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, seed=seed) }}"
+                      class="dropdown-item" role="button">MISP Export</a>
+                </li>
+              </ul>
+          </div>
+
+          <div id="tools-menu" class="dropdown">
+            <button class="btn btn-primary dropdown-toggle dropbtn" type="button" id="tools-menu-btn"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Analytical Tools
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="tools-menu-btn">
+              {% if not capture_indexed %}
+                {% if not current_user.is_authenticated and info.private %}
+                <li>
+                  <center>
+                    <div role="alert" class="alert alert-danger">Cannot index private capture without being logged in.</div>
+                  </center>
+                </li>
+                {% else %}
+                <li>
+                  <center>
+                  <a href="{{ url_for('trigger_indexing', tree_uuid=tree_uuid, seed=seed) }}" role="button"
+                     class="dropdown-item alert alert-warning"
+                     title="The capture isn't (fully) indexed, index now.">Index capture</a>
+                  </center>
+                </li>
+                {% endif %}
+              {% endif %}
+              {% if misp_lookup%}
+              <li>
+                <a href="#mispLookupModal" data-remote="{{ url_for('web_misp_lookup_view', tree_uuid=tree_uuid, seed=seed) }}"
+                  class="dropdown-item"
+                  data-bs-toggle="modal" data-bs-target="#mispLookupModal" role="button">Search events on MISP</a>
+              </li>
+              {% endif %}
+              <li>
+              <a href="#modulesModal" data-remote="{{ url_for('trigger_modules', tree_uuid=tree_uuid, force=False, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#modulesModal" role="button"
+                 title="Lookups from supported 3rd party services">Third Party Reports</a>
+
+              </li>
+              <li>
+              <a href="#historyModal" data-remote="{{ url_for('historical_lookups', tree_uuid=tree_uuid, force=False, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#historyModal" role="button"
+                 title="Historical data and context about this capture ">Historical lookups</a>
+
+              </li>
+              <li>
+              <a href="#hashlookupModal" data-remote="{{ url_for('hashlookup', tree_uuid=tree_uuid, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#hashlookupModal" role="button"
+                 title="Hits in Hashlookup ">Hashlookup hits</a>
+
+              </li>
+              <li>
+              <a href="#bodyHashesModal" data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button"
+                 title="All resources contained in the tree">Resources</a>
+
+              </li>
+              <li>
+              <a href="#ipsModal" data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#ipsModal" role="button"
+                 title="All IPs contained in the tree">IP Addresses</a>
+
+              </li>
+              <li>
+              <a href="#hostnamesModal" data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button"
+                 title="All hostnames contained in the tree">Hostnames</a>
+
+              </li>
+              <li>
+              <a href="#urlsModal" data-remote="{{ url_for('tree_urls', tree_uuid=tree_uuid, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#urlsModal" role="button"
+                 title="All URLs contained in the tree">URLs</a>
+
+              </li>
+              <li>
+              <a href="#faviconsModal" data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button"
+                 title="Favicons found on the rendered page">Favicons</a>
+
+              </li>
+              <li>
+              <a href="#captureHashesTypesModal" data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button"
+                 title="Compare hashes of the rendered page">(Fuzzy)Hashes types</a>
+
+              </li>
+              <li>
+              <a href="#identifiersModal" data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button"
+                 title="Identifiers found on the rendered page">Other Identifiers</a>
+              </li>
+              <li>
+              <a href="#cloudflareNSModal" data-remote="{{ url_for('tree_cloudflare_ns', tree_uuid=tree_uuid, seed=seed) }}"
+                 class="dropdown-item"
+                 data-bs-toggle="modal" data-bs-target="#cloudflareNSModal" role="button"
+                 title="Cloudflare Nameservers found in the capture">Cloudflare NameServers</a>
+
+              </li>
+            </ul>
+          </div>
+
+          <div id="actions-menu" class="dropdown">
+            <button class="btn btn-primary dropdown-toggle dropbtn" type="button" id="actions-menu-btn"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Actions
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="actions-menu-btn">
+              <li>
+              <a href="#urlsInPageModal" data-remote="{{ url_for('urls_rendered_page', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#urlsInPageModal" role="button"
+                 class="dropdown-item"
+                 title="Start a capture from one of the URLs rendered in the page">Subsequent Captures</a>
+
+              </li>
+              <li>
+              <a href="{{ url_for('recapture', tree_uuid=tree_uuid, seed=seed) }}" role="button"
+                 class="dropdown-item"
+                 title="Submit the URL again">Re-Capture</a>
+
+              </li>
+              <li>
+              <a href="#downloadModal" data-remote="{{ url_for('download_elements', tree_uuid=tree_uuid, seed=seed) }}" data-bs-toggle="modal"
+                 class="dropdown-item"
+                 data-bs-target="#downloadModal" role="button" title="Forensic Acquisition of the Web Capture">Get forensic acquisition</a>
+
+              </li>
+              {% if misp_push%}
+                <li>
+                <a href="#mispPushModal" data-remote="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid, seed=seed) }}"
+                   class="dropdown-item"
+                   data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
+                </li>
+              {% endif %}
+              </li>
+              <a href="#lookylooPushModal" data-bs-toggle="modal" data-bs-target="#lookylooPushModal" role="button"
+                 class="dropdown-item"
+                 title="Push the capture to another Lookyloo Instance">Push to another Lookyloo</a>
+              </li>
+              <li>
+              <a href="#visibilityModal" data-bs-toggle="modal" data-bs-target="#visibilityModal" role="button"
+                 class="dropdown-item"
+                 title="Change the visibility of the capture, get a new seed">Visibility and sharing</a>
+              </li>
+            </ul>
+          </div>
+
+          {% if current_user.is_authenticated %}
+            <div id="admin-menu" class="dropdown">
+              <button class="btn btn-primary dropdown-toggle dropbtn" type="button" id="admin-menu-btn"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Admin only
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="admin-menu-btn">
+                <li>
+                <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid, seed=seed) }}" class="dropdown-item" role="button">Rebuild capture</a>
+                </li>
+                <li>
+                <a href="{{ url_for('remove_capture', tree_uuid=tree_uuid, seed=seed) }}" class="dropdown-item" role="button" id="removeCapture">Remove capture</a>
+                </li>
+                <a href="#ollamaModal" data-remote="{{ url_for('tree_ollama_report', tree_uuid=tree_uuid, seed=seed) }}"
+                   class="dropdown-item"
+                   data-bs-toggle="modal" data-bs-target="#ollamaModal" role="button"
+                   title="Thrown the capture in Ollama and hope">Ollama Report</a>
+                </li>
+              </ul>
+            </div>
+          {% endif %}
+
+          {%if enable_categorization or enable_bookmark or enable_context_by_users %}
+            <div id="extra-menu" class="dropdown">
+              <button class="btn btn-primary dropdown-toggle dropbtn" type="button" id="extra-menu-btn"
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                Extras
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="extra-menu-btn">
+                {% if enable_categorization %}
+                    <li>
+                    <a href="#categoriesModal" data-remote="{{ url_for('categories_capture', tree_uuid=tree_uuid, seed=seed) }}"
+                       class="dropdown-item"
+                       data-bs-toggle="modal" data-bs-target="#categoriesModal" role="button">Manage categories</a>
+                    </li>
+                {% endif %}
+                {% if enable_bookmark %}
+                    <li>
+                    <a href="#/" class="dropdown-item" role="button" id="unbookmarkAllNodes">Unbookmark all nodes</a>
+                    </li>
+                {% endif %}
+                {% if enable_context_by_users %}
+                    <li>
+                    <a href="#/" class="dropdown-item" role="button" id="markAsKnown">Mark all the captures' entries as known</a>
+                    </li>
+                {% endif %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <a id="help" href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture" role="button" title="Lookyloo Manual" target="_blank">?</a>
+          <div></div>
+
+      </div>
+    </div>
+  </div>
+ </div>
+</div>
+
+<div id="legend_container">
+  <!-- Keep it behind the legend -->
+  <div id="legend_show">
+    <center>
+    <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#legend">
+      <img src="{{ url_for('static', filename='images/ui/up.jpg') }}" alt="Maximize legend" height="40" width="40" title="Expand">
+      <b>Legend</b>
+    </button>
+    </center>
+  </div>
+
+  <div id=legend class="collapse show">
+    <center>
+      <div style="display: inline">
+        <b>Legend</b>
+      </div>
+      <div style="display: inline;">
+        <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#legend">
+            <img src="{{ url_for('static', filename='images/ui/down.jpg') }}" alt="Minimize legend" height="25" width="25" title="Collapse">
+        </button>
+      </div>
+    </center>
+  <hr/>
+  <div title="This node contains at least one insecure (not HTTPS) request">
+    <img src="{{ url_for('static', filename='images/ui/insecure.svg') }}" alt="Insecure requests"
+         height="20" width="20"> Unencrypted requests
+  </div>
+
+  <div title="This node contains only empty responses">
+    <img src="{{ url_for('static', filename='images/ui/empty.svg') }}" alt="Empty responses"
+         height="20" width="20"> Empty responses
+  </div>
+
+  <div title="This node contains POST requests">
+    <img src="{{ url_for('static', filename='images/ui/send-arrow-up.svg') }}" alt="POST requests"
+         height="20" width="20"> POST requests
+  </div>
+
+  <div title="Number of cookies received in the responses of this node">
+    <img src="{{ url_for('static', filename='images/ui/cookie_received.png') }}" alt="Cookie received"
+         height="20" width="20"> Cookie received
+  </div>
+
+  <div title="Number of cookies sent in the requests of this node">
+    <img src="{{ url_for('static', filename='images/ui/cookie_read.png') }}" alt="Cookie read"
+         height="20" width="20"> Cookie read
+  </div>
+
+  <div title="Number of redirects initiated by the responses of this node">
+    <img src="{{ url_for('static', filename='images/ui/redirect.png') }}" alt="Redirect"
+         height="20" width="20"> Redirect
+  </div>
+
+  <div title="Number of resources loaded from iFrames in the responses in this node">
+    <img src="{{ url_for('static', filename='images/ui/ifr.png') }}" alt="iFrame"
+        height="20" width="20"> iFrame
+  </div>
+
+  <div title="Number of JavaScript in the responses in this node">
+    <img src="{{ url_for('static', filename='images/ui/javascript.png') }}" alt="JavaScript"
+         height="20" width="20"> Javascript
+  </div>
+
+  <div title="Number of fonts in the responses in this node">
+    <img src="{{ url_for('static', filename='images/ui/font.png') }}" alt="Font"
+         height="20" width="20"> Font
+  </div>
+
+  <div title="Number of HTML in the responses in this node">
+    <img src="{{ url_for('static', filename='images/ui/html.png') }}" alt="HTML"
+         height="20" width="20"> HTML
+  </div>
+
+  <div title="Number of JSON in the responses in this node">
+    <img src="{{ url_for('static', filename='images/ui/json.png') }}" alt="JSON"
+         height="20" width="20"> JSON
+  </div>
+
+  <div title="Number of CSS in the responses in this node">
+    <img src="{{ url_for('static', filename='images/ui/css.png') }}" alt="CSS"
+         height="20" width="20"> CSS
+  </div>
+
+  <div title="Number of executables in the responses in this node">
+    <img src="{{ url_for('static', filename='images/ui/exe.png') }}" alt="EXE"
+        height="20" width="20"> EXE
+  </div>
+
+  <div title="Number of images in the responses in this node">
+    <img src="{{ url_for('static', filename='images/ui/img.png') }}" alt="Image"
+        height="20" width="20"> Image
+  </div>
+
+  <div title="Number of videos in the responses in this node">
+    <img src="{{ url_for('static', filename='images/ui/video.png') }}" alt="Video"
+        height="20" width="20"> Video
+  </div>
+
+  <div title="Number of unknown resources in the responses in this node">
+    <img src="{{ url_for('static', filename='images/ui/wtf.png') }}" alt="Content type not set/unknown"
+        height="20" width="20"> Unknown content
+    </div>
+
+  <div title="The node contains a downloaded file">
+    <img src="{{ url_for('static', filename='images/ui/download.png') }}" alt="Contains a downloaded file"
+        height="20" width="20"> Downloaded file
+    </div>
+
+  <div title="The node contains a websocket session">
+    <img src="{{ url_for('static', filename='images/ui/websocket.svg') }}" alt="Contains a websocket session"
+        height="20" width="20"> Websocket
+    </div>
+  </div>
+
+</div>
+
+{{ render_messages(container=True, dismissible=True) }}
+<div class="spinner-border" role="status" id='tree-loading' alt="Tree loading spinner">
+  <span class="visually-hidden">Tree loading, please wait</span>
+</div>
+</div>
+
+<!-- Modals - Not in the main div. -->
+
+<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="detailsModalLabel">Details of the capture at the time it happened</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <dl class="row">
+        <dt class="col-sm-2">URL captured</dt>
+        <dd class="col-sm-10 d-inline-block text-break">{{ shorten_string(info.url, with_copy_button=True) }}</dd>
+
+        <dt class="col-sm-2">Page title</dt>
+        <dd class="col-sm-10">{{ info.title }}</dd>
+
+        <dt class="col-sm-2">Capture time</dt>
+        <dd class="col-sm-10" id="start_time"></dd>
+
+        <dt class="col-sm-2">User Agent</dt>
+        <dd class="col-sm-10">{{ info.user_agent }}</dd>
+
+        {% if info.referer %}
+        <dt class="col-sm-2">Referer</dt>
+        <dd class="col-sm-10">{{ info.referer }}</dd>
+        {%endif%}
+
+        {% if meta %}
+          {% for k, v in meta.items() if k not in ['user_agent'] %}
+            <dt class="col-sm-2">{{k.title()}}</dt>
+            <dd class="col-sm-10">{{ v }}</dd>
+          {% endfor %}
+        {%endif%}
+        {% if capture_settings %}
+          {% for k, v in capture_settings.items() if v and k in ['proxy']%}
+            <dt class="col-sm-2">{{k.title()}}</dt>
+            <dd class="col-sm-10">{{ v }}</dd>
+          {% endfor %}
+        {%endif%}
+        {% if seed %}
+          <dt class="col-sm-2">Seed expire at</dt>
+          <dd class="col-sm-10" id="seed_expire_at"></dd>
+        {%endif%}
+        {% if info.categories %}
+          <dt class="col-sm-2">Categories</dt>
+          <dd class="col-sm-10">
+            <ul>
+              {%for c in info.categories %}
+              <li>
+                {{ c }} (<a href="{{ url_for('index', category=c) }}">See more</a>)
+              </li>
+              {%endfor%}
+            </ul>
+          </dd>
+        {%endif%}
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="modal fade" id="statsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="statsModalLabel">Statistics</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading statistics ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="storageStateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="storageStateModalLabel">Storage State </h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading storage state ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="consoleMessagesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="consoleMessagesModalLabel">Console Messages</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading console messages ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="downloadsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="downloadsModalLabel">Downloads</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading downloads ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="videoModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="videoModalLabel">Video</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading video ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="identifiersModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="identifiersModalLabel">Identifiers found on the rendered page</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading identifiers ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="identifierDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="identifierDetailsModalLabel">Other occurrences of the identifier</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading identifier details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#identifiersModal"
+                 data-remote="{{ url_for('tree_identifiers', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#identifiersModal" role="button">Back to capture's identifiers</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="faviconsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="faviconsModalLabel">Favicons found on the rendered page</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading favicons ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="faviconDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="faviconDetailsModalLabel">Other occurrences of the favicon</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading favicon details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#faviconsModal"
+                 data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Back to capture's favicons</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="cloudflareNSModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="cloudflareNSModalLabel">Cloudflare NameServer found during the capture</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading cloudflare NS ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="cloudflareNSDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="cloudflareNSDetailsModalLabel">Other occurrences of the Cloudlare NS tuple</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading cloudflare NS details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#cloudflareNSModal"
+                 data-remote="{{ url_for('tree_cloudflare_ns', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#cloudflareNSModal" role="button">Back to capture's Cloudflare NameServers</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+<div class="modal fade" id="captureHashesTypesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="captureHashesTypesModalLabel">Hashes of the rendered page</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading hash types ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="captureHashesTypesDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="captureHashesTypesDetailsModalLabel">Other occurrences of the hash</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading hash details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#captureHashesTypesModal"
+                 data-remote="{{ url_for('tree_capture_hashes_types', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#captureHashesTypesModal" role="button">Back to capture's hashes</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="faviconDetailsProbabilisticHashModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="faviconDetailsProbabilisticHashModalLabel">Other occurrences of the favicon from a probabilistic hash</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading favicon details from probabilistic hash ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#faviconsModal"
+                 data-remote="{{ url_for('tree_favicons', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#faviconsModal" role="button">Back to capture's favicons</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="bodyHashesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="bodyHashesModalLabel">Resources in tree</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading resources ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="bodyHashDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="bodyHashDetailsModalLabel">Other occurrences of the resource</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading resource details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#bodyHashesModal"
+                 data-remote="{{ url_for('tree_body_hashes', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#bodyHashesModal" role="button">Back to capture's resources</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ipsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="ipsModalLabel">IPs in tree</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading IPs ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ipDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="ipDetailsModalLabel">Other occurrences of the IP</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading IP details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#HostnamesModal"
+                 data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button">Back to capture's hostnames</a>
+              <a class="btn btn-primary" href="#ipsModal"
+                 data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#ipsModal" role="button">Back to capture's IPs</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="hostnamesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="hostnamesModalLabel">Hostnames in tree</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading hostnames ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="hostnameDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="hostnameDetailsModalLabel">Other occurrences of the hostname</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading hostname details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#ipsModal"
+                 data-remote="{{ url_for('tree_ips', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#ipsModal" role="button">Back to capture's IPs</a>
+              <a class="btn btn-primary" href="#HostnamesModal"
+                 data-remote="{{ url_for('tree_hostnames', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#hostnamesModal" role="button">Back to capture's hostnames</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="urlsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="urlsModalLabel">URLs in tree</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading urls ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="urlDetailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="hostnameDetailsModalLabel">Other occurrences of the URL</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading url details ...
+          </div>
+          <div class="modal-footer">
+              <a class="btn btn-primary" href="#HostnamesModal"
+                 data-remote="{{ url_for('tree_urls', tree_uuid=tree_uuid, seed=seed) }}"
+                 data-bs-toggle="modal" data-bs-target="#urlsModal" role="button">Back to capture's URLs</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="mispPushModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="mispPushModalLabel">MISP Push</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading MISP Push view ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="mispLookupModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="mispLookupModalLabel">MISP Lookup</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading MISP Lookup view ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="screenshotModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="screenshotModalLabel">Screenshot</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+    <center>
+      {% set screenshot_too_big = screenshot_size > 10 * 1024 * 1024 %}
+      {% if screenshot_too_big %}
+        Image too big ({{ sizeof_fmt(screenshot_size) }}) to display in the browser, the screenshot below is cropped.
+        <br>
+      {% endif %}
+      {% if blur_screenshot %}
+      <button type="button" class="btn btn-primary" id="blurScreenshot">Unblur</button>
+      {% endif %}
+      <a href="{{ url_for('image', tree_uuid=tree_uuid, seed=seed) }}" role="button" class="btn btn-primary">Download</a>
+      <br>
+      <br>
+      <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '', seed=seed) }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
+      <br>
+    </center>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modulesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="modulesModalLabel">
+                  Reports from 3rd party services
+              </h4>
+              <br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <br>
+          <center><h5>Note that if you get an error when you click on a
+                  link below, it probably means the capture is still ongoing.
+                  Try reloading the page after a few seconds.</h5></center>
+          <div class="modal-body" id="modulesBody">
+              ... loading results from 3rd party modules ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-success" id="modulesForceRefresh">Re-run all modules</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="historyModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="historyModalLabel">
+                  Historical data and context about this capture
+              </h4>
+              <br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <br>
+          <div class="modal-body">
+              ... loading results historical context ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="statsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="statsModalLabel">Statistics</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading statistics ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="downloadModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="downloadModalLabel">
+                  Forensic Acquisition of the Web Capture
+              </h4>
+              <br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <br>
+          <div class="modal-body">
+            ... loading elements ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="visibilityModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="visibilityModalLabel">
+                  Change the visibility of the capture
+              </h4>
+              <br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <br>
+          <div class="modal-body">
+              <div class="alert alert-info" role="alert">
+                The capture is currently
+                  {%if not info %}
+                    {% set visibility = 'public' %}
+                    <b>in an unknown state</b>, assuming public
+                  {%elif info.private is true %}
+                    {% set visibility = 'private' %}
+                    <b>private</b>
+                  {%elif info.no_index is true %}
+                    {% set visibility = 'unlisted' %}
+                    <b>unlisted</b>
+                  {%else%}
+                    {% set visibility = 'public' %}
+                    <b>public</b>
+                  {%endif%}
+                  .
+              </div>
+
+              <form role="form" action="{{ url_for('visibility', tree_uuid=tree_uuid, seed=seed) }}"
+                    method=post enctype=multipart/form-data>
+                  <div class="row mb-3">
+                    <div class="col-sm-2 col-form">New visibility level:</div>
+                    <div class="col-sm-10">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" id="public" name="visibility" value="public"
+                          {% if visibility == 'public' %}checked="checked"{% endif %}>
+                        <label for="public" class="form-check-label">Display capture on public index</label>
+                      </div>
+
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" id="unlisted" name="visibility" value="unlisted"
+                          {% if visibility == 'unlisted' %}checked="checked"{% endif %}>
+                        <label for="unlisted" class="form-check-label">Do not display capture on public index</label>
+                      </div>
+
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" id="private" name="visibility" value="private"
+                          {% if visibility == 'private' %}checked="checked"{% endif %}>
+                        <label for="private" class="form-check-label">Make capture private, only accessible with a seed. Keep this box selected if the capture is already private and you want a new seed.</label>
+                        <br>
+                        <label for="seed_expire" class="form-check-label">When should the seed expire?</label>
+                        <input type="text" id="seed_expire" name="seed_expire" value="{{default_seed_expire}}">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="alert alert-info" role="alert">
+                      All the captures are always visible by the platform administrators. If you want a truly
+                      private capture, you need to run your own instance of lookyloo.
+                  </div>
+                  <button type="submit" class="btn btn-primary">Change</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="lookylooPushModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="lookylooPushModalLabel">
+                  Push the current capture to another Lookyloo instance
+              </h4>
+              <br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <br>
+          <div class="modal-body">
+              <form role="form" action="{{ url_for('web_lookyloo_push_view', tree_uuid=tree_uuid, seed=seed) }}"
+                    method=post enctype=multipart/form-data>
+                  <label for="remote_lookyloo_url" class="col-sm-2 col-form-label">Submit capture to:</label>
+                  <input type="text" class="form-control" name="remote_lookyloo_url" id="remote_lookyloo_url" required>
+                  <button type="submit" class="btn btn-primary">Submit</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ollamaModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="ollamaModalLabel">
+                  Ollama Report
+              </h4>
+              <br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <br>
+          <div class="modal-body">
+              ... loading report from ollama ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="hashlookupModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title" id="hashlookupModalLabel">
+                  Hits in Hashlookup
+              </h4>
+              <br>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <br>
+          <div class="modal-body">
+              ... loading results from hashlookup ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+{% if enable_categorization %}
+<div class="modal fade" id="categoriesModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="categoriesModalLabel">Categorize the capture</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading the categorization options ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+{% endif %}
+
+{% if enable_monitoring %}
+<div class="modal fade" id="monitoringModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <form role="form" action="{{ url_for('monitor', tree_uuid=tree_uuid, seed=seed) }}" method=post enctype=multipart/form-data>
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="monitorModalLabel">Monitor capture</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>The capture will be submitted to the monitoring interface.</p>
+            {{monitoring_form(monitoring_settings, monitoring_collections, confirm_message="Yes, I want to submit this capture for monitoring.", auth=current_user.is_authenticated)}}
+          </div>
+          <div class="modal-footer">
+              <button type="submit" class="btn btn-success" id="btn-notification-monitoring">Send to monitoring</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% if enable_mail_notification %}
+<div class="modal fade" id="emailModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <form role="form" action="{{ url_for('send_mail', tree_uuid=tree_uuid, seed=seed) }}" method=post enctype=multipart/form-data>
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="emailModalLabel">Notify by email</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>A notification of this capture will be sent to the owners of this Lookyloo instance. They may or may not act on it.</p>
+            {{notify_form(confirm_message)}}
+          </div>
+          <div class="modal-footer">
+              <button type="submit" class="btn btn-success" id="btn-notification-report">Send email</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div class="modal fade" id="urlsInPageModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="urlsInPageModalLabel">URLs in the rendered page</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              ... loading URLs in rendered page ...
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+{% endblock content %}

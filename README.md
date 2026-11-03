@@ -1,4 +1,4 @@
-[![Lookyloo icon](website/web/static/lookyloo.jpeg)](https://www.lookyloo.eu/docs/main/index.html)
+[![Lookyloo icon](website/web/static/images/ui/lookyloo.jpeg)](https://www.lookyloo.eu/docs/main/index.html)
 
 *[Lookyloo](https://lookyloo.circl.lu/)* is a web interface that captures a webpage and then displays a tree of the domains, that call each other.
 

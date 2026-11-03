@@ -140,7 +140,7 @@ def get_tt_template() -> str:
 
 @lru_cache
 def get_error_screenshot() -> Image.Image:
-    error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'error_screenshot.png'
+    error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'images' / 'ui' / 'error_screenshot.png'
     return Image.open(error_img)
 
 
