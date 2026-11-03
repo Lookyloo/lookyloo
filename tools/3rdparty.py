@@ -4,11 +4,11 @@ import requests
 
 from lookyloo.default import get_homedir
 
-d3js_version = '7.9.0'
+d3js_version = '7.9.1'
 jquery_version = "3.7.1"
-datatables_version = "3.1.2"
+datatables_version = "3.1.5"
 datatables_rowgroup_version = "2.1.1"
-datatables_buttons_version = "4.1.2"
+datatables_buttons_version = "4.1.3"
 datatables_select_version = "4.1.1"
 jquery_json_viewer_version = "1.5.0"
 
