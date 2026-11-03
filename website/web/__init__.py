@@ -322,25 +322,25 @@ class Icon(TypedDict):
 
 def get_icon(icon_id: str) -> Icon | None:
     available_icons: dict[str, Icon] = {
-        'js': {'icon': "javascript.png", 'tooltip': 'The content of the response is a javascript'},
-        'exe': {'icon': "exe.png", 'tooltip': 'The content of the response is an executable'},
-        'css': {'icon': "css.png", 'tooltip': 'The content of the response is a CSS'},
-        'font': {'icon': "font.png", 'tooltip': 'The content of the response is a font'},
-        'html': {'icon': "html.png", 'tooltip': 'The content of the response is a HTML document'},
-        'json': {'icon': "json.png", 'tooltip': 'The content of the response is a Json'},
-        'text': {'icon': "json.png", 'tooltip': 'The content of the response is a text'},  # FIXME: Need new icon
-        'iframe': {'icon': "ifr.png", 'tooltip': 'This content is loaded from an Iframe'},
-        'image': {'icon': "img.png", 'tooltip': 'The content of the response is an image'},
-        'unset_mimetype': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is not set'},
-        'octet-stream': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is a binary blob'},
-        'unknown_mimetype': {'icon': "wtf.png", 'tooltip': 'The type of content of the response is of an unknown type'},
-        'video': {'icon': "video.png", 'tooltip': 'The content of the response is a video'},
-        'livestream': {'icon': "video.png", 'tooltip': 'The content of the response is a livestream'},
-        'response_cookie': {'icon': "cookie_received.png", 'tooltip': 'There are cookies in the response'},
-        'request_cookie': {'icon': "cookie_read.png", 'tooltip': 'There are cookies in the request'},
-        'redirect': {'icon': "redirect.png", 'tooltip': 'The request is redirected'},
-        'redirect_to_nothing': {'icon': "cookie_in_url.png", 'tooltip': 'The request is redirected to an URL we do not have in the capture'},
-        'websocket': {'icon': "websocket.svg", 'tooltip': 'The request contains a websocket session'}
+        'js': {'icon': "images/ui/javascript.png", 'tooltip': 'The content of the response is a javascript'},
+        'exe': {'icon': "images/ui/exe.png", 'tooltip': 'The content of the response is an executable'},
+        'css': {'icon': "images/ui/css.png", 'tooltip': 'The content of the response is a CSS'},
+        'font': {'icon': "images/ui/font.png", 'tooltip': 'The content of the response is a font'},
+        'html': {'icon': "images/ui/html.png", 'tooltip': 'The content of the response is a HTML document'},
+        'json': {'icon': "images/ui/json.png", 'tooltip': 'The content of the response is a Json'},
+        'text': {'icon': "images/ui/json.png", 'tooltip': 'The content of the response is a text'},  # FIXME: Need new icon
+        'iframe': {'icon': "images/ui/ifr.png", 'tooltip': 'This content is loaded from an Iframe'},
+        'image': {'icon': "images/ui/img.png", 'tooltip': 'The content of the response is an image'},
+        'unset_mimetype': {'icon': "images/ui/wtf.png", 'tooltip': 'The type of content of the response is not set'},
+        'octet-stream': {'icon': "images/ui/wtf.png", 'tooltip': 'The type of content of the response is a binary blob'},
+        'unknown_mimetype': {'icon': "images/ui/wtf.png", 'tooltip': 'The type of content of the response is of an unknown type'},
+        'video': {'icon': "images/ui/video.png", 'tooltip': 'The content of the response is a video'},
+        'livestream': {'icon': "images/ui/video.png", 'tooltip': 'The content of the response is a livestream'},
+        'response_cookie': {'icon': "images/ui/cookie_received.png", 'tooltip': 'There are cookies in the response'},
+        'request_cookie': {'icon': "images/ui/cookie_read.png", 'tooltip': 'There are cookies in the request'},
+        'redirect': {'icon': "images/ui/redirect.png", 'tooltip': 'The request is redirected'},
+        'redirect_to_nothing': {'icon': "images/ui/cookie_in_url.png", 'tooltip': 'The request is redirected to an URL we do not have in the capture'},
+        'websocket': {'icon': "images/ui/websocket.svg", 'tooltip': 'The request contains a websocket session'}
     }
     return available_icons.get(icon_id)
 
@@ -382,7 +382,7 @@ def hash_icon_render(tree_uuid: str, urlnode_uuid: str, mimetype: str, h_ressour
             url_get_ressource = url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=urlnode_uuid, render_in_modal={render_in_modal}, seed=seed)
             link_url = Markup('<a href="{}">').format(url_get_ressource)
 
-        url_img = url_for('static', filename=f"{icon_info['icon']}")
+        url_img = url_for('static', filename=icon_info['icon'])
         # NOTE: the title contains ", so we absolutely must wrap it in '
         return Markup('{link_url} <img src="{url_img}" alt="{alt_tooltip}" width="21" height="21" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title=\'{title}\'/></a><br><small>Mimetype: <b>{mimetype}</b></small><br>').format(link_url=link_url, url_img=url_img, alt_tooltip=icon_info['tooltip'], title=title, mimetype=mimetype)
     else:
