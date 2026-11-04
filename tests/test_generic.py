@@ -76,4 +76,14 @@ def test_capture_page(page: Page) -> None:
     page.get_by_role("textbox", name="URL part:").fill(domain)
     page.get_by_role("button", name="Search").click()
     expect(page).to_have_title(re.compile(domain))
+    max_loop = 6
+    while max_loop > 0:
+        # When the indexer is slow, the capture is indexed later, in the background
+        try:
+            expect(page.get_by_text("The capture contains").first).to_be_visible()
+            break
+        except AssertionError:
+            max_loop -= 1
+            time.sleep(10)
+            page.reload()
     expect(page.get_by_text("The capture contains").first).to_be_visible()
