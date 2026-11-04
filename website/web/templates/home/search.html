@@ -1,5 +1,10 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/page.html" %}
 {% block title %}Search{% endblock %}
+
+{% from 'macros/page.html' import page_header %}
+{% block page_header %}
+{{ page_header('Search', description='Find the captures that loaded a URL, a hostname, an IP address, a resource, a cookie or a favicon. Search one thing at a time.', icon_name='search') }}
+{% endblock %}
 
 {% block card %}
 <meta property="og:title" content="Lookyloo" />
@@ -21,7 +26,6 @@
 
 {% block content %}
 <div class="container">
-  {% include 'partials/top_navbar.html' %}
   <br>
   <div>Please only search one of the following thing at a time.</div>
   <br>

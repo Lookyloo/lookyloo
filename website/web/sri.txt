@@ -1,6 +1,11 @@
 {
   "static": {
+    "css/components/footer.css": "W0GYp1qP7IKtmZU09srK4SqLIrI9bcVw8ijJcldxemjFumfRyupnjZeMUGf5BWHR0WbAzHoIO1PXc46bIMa/rw==",
+    "css/components/header.css": "GuR4SbNEqrmYdUW5cyROh+7PafeB+LGGuY7p0JGQqLb3tfH/YpblAX8qufdfzrE/4yyNOByDs3VIfJy90kgufA==",
+    "css/components/page-header.css": "D6UsQqj4cakBtwNDrCtOLwGQx7XTuEzgwCsjrqJjIN7BJ1HAt/R0VFl3W+MNcj6OVR84/m2yKybi1KMW3VO+AA==",
+    "css/components/site.css": "pnr43U6683nyktDB71rf2iW8TcdXlrpVtllKdZ4ThgKlj2z7Yq+Itjmd2GSYSpbRkEDtJ1jCSIhipsZE8IPdhg==",
     "css/generic.css": "hH3DlQc2Ge5JvdUzUcgTczfFTSHaXJrXU+V/OctfG7etWnHKzZ7KD4U1e4ymw5XrMO1RO+kFl+LpXPcXFld8cg==",
+    "css/home.css": "MxjxHPNpxR6LVPm8X/ceeKwimGsHqtbH+V81EOXH7fDzs2RAYob9ULX6XSgFEt04UZrxknHbnBUTah5BCDtxTg==",
     "css/stats.css": "/kY943FwWBTne4IIyf7iBROSfbGd82TeBicEXqKkRwawMVRIvM/Pk5MRa7okUyGIxaDjFQGmV/U1vy+PhN6Jbw==",
     "css/tree.css": "vOna6sv0cakqlxTD2LOSL+AfKFVKsPSIDKX/bj3EBS4Ff5nf+wu1uzLzzQjoLlmcya43YdQhJGj2OySXlAMzLg==",
     "favicon.ico": "KOmrfwRbOQqhhwSeBkNpMRAxSVMmmLg+2kRMg9iSv7OWjE9spJc7x4MKB4AE/hi0knaV7UBVctAU6XZ7AC72ZA==",
@@ -25,6 +30,7 @@
     "images/ui/javascript.png": "sQcLDBrB+fEEt3PPoOwFh0g/RVkhDNrhuBMo0WMzf9IKNnZusYx+J59k8HGkAHFGDbytDwe6Tq6LIVgg/B6nqw==",
     "images/ui/json.png": "nE6ROpXE5iovHyd5oh8cnA4ozTa5bZjn1A6b+10b1Hb59O1NcMdcrv8Rqge3CAtSqJDKnrYbMChCT1j48yMwQw==",
     "images/ui/loader.gif": "ZZKD5vLSKBWKeUpa2KI9qheUJ49iTI/UULmVU/AX28fBfH00K3lLc2v5pVJZ4qXG1BbB13LTXzRKKU35H2XfNg==",
+    "images/ui/lookyloo-no-pupils.png": "SiJ+7hQ68NH6ODyWXUuafqMeCer4yBjCdO5U2fTNM00/QS2Ib3Bi5Z7n+RavxR7ACFi9xfJR8gHO3/vaVsvHAg==",
     "images/ui/lookyloo.jpeg": "i6wBj8CsIM5YAQLEMQfhs3CNOSKkErF8AMqqM6ZygSwCyQgv9CU8xt94veMZhM/ufBWoz7kAXmR+yywmxsTxug==",
     "images/ui/lookyloo.png": "RBEyk/q/Iyinz5hroz4fsc7eeLSutjPbi7tW2AcB7VoANLdO4AIfmOH/6UAvGFvjtNKp5gMcU25OfcBQB6Tz1g==",
     "images/ui/redirect.png": "PAjzlPV97rEFvH55mG1ZC9wRl98be3yMeX/nENuFkJcds6/AXgSR2ig/QyPULgobSnNgiYieLVWY/oqsgeywrQ==",
@@ -37,6 +43,7 @@
     "images/ui/wtf.png": "5iUj4m5G3tJN3wQvR1jD/hF4OKFrboVeuFejd+6ZUvdll3zjkLeewJQ+zptO9ckzktsMPC2+bKM3zM3CXXWoCw==",
     "js/capture.js": "jCLCLV+Dxq5i1V3D+Ydin0IS/QbxZ9XfsXHde8mz1LBNhy1bITSSz6l3SyUxdoUvkA15hMrwPTJmk/vWJE2owg==",
     "js/generic.js": "+FH/wRtY6JonICCBWDNWir2XY2jup6NNGrub7z7JzRdeazMdyQhp7yqiblUpejYWdQDcnGlngT/0xMRo7H8wVw==",
+    "js/home.js": "bOv6lhDiXi+a08K+qgl+urpMj8EXhUkR4irt/eTZWpa5wEpgNOadhdnIXpVEwfzCbSu8SriXCzh9NTJzL3O8WQ==",
     "js/hostnode_modals.js": "dafJhJUavktQb3UKap96aUhmZiHEXteZrF1xzjRsxROtKAzZYemwkoHbNlQCRznhAKYkiAmtpMBoZPdmFOwqqA==",
     "js/render_tables.js": "8pCEc415Hd+mVt/AY6Q3QYFcUZofudpwhzVQUtgQAEgAd85z1/z5DyfY81xnBlcBfRq7m+5cxUWiQgc+50TPPQ==",
     "js/stats_graph.js": "S/sMNQK1UMMLD0xQeEa7sq3ce8o6oPxwxGlyKVtaHOODjair86dbBDm7cu6pa/elMRDJT1j09jEFjWp+5GbhTw==",

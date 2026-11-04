@@ -1,0 +1,121 @@
+{#
+  Site header, included by layouts/page.html.
+  Active link: request.endpoint is compared to the endpoints of each entry.
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% macro nav_link(label, endpoint_name, also=()) -%}
+  {%- set active = request.endpoint == endpoint_name or request.endpoint in also -%}
+  <li class="nav-item">
+    <a class="nav-link{% if active %} active{% endif %}" href="{{ url_for(endpoint_name) }}"
+       {% if active %}aria-current="page"{% endif %}>{{ label }}</a>
+  </li>
+{%- endmacro %}
+
+{# js/theme_toggle.js reads the `href` attribute of the <use> elements #}
+{% macro theme_icon(name, classes='') -%}
+  <svg class="bi {{ classes }}" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+    <use href="{{ url_for('bootstrap.static', filename='icons/bootstrap-icons.svg') }}#{{ name }}"></use>
+  </svg>
+{%- endmacro %}
+
+{% set endpoint = request.endpoint %}
+<header class="lk-header">
+  <nav class="navbar navbar-expand-lg lk-container" aria-label="Main navigation">
+    <a class="navbar-brand lk-header-brand" href="{{ url_for('landing_page') }}">
+      <img id="navbar_logo" src="{{ url_for('static', filename='images/ui/lookyloo.png') }}"
+           alt="Lookyloo" height="34"
+           {{get_sri('static', 'images/ui/lookyloo.png')}}
+           crossorigin="anonymous">
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#lkNavbar" aria-controls="lkNavbar" aria-expanded="false"
+            aria-label="Toggle navigation">
+      {{ render_icon('list') }}
+    </button>
+
+    <div class="collapse navbar-collapse" id="lkNavbar">
+      <ul class="navbar-nav lk-header-nav me-auto">
+        {{ nav_link('Recent captures', 'index', also=('index_hidden',)) }}
+        {{ nav_link('Search', 'search') }}
+        {{ nav_link('Categories', 'categories') }}
+        {% set explore = ('ressources', 'cookies_lookup', 'favicons_lookup', 'hhhashes_lookup') %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle{% if endpoint in explore %} active{% endif %}" href="#"
+             role="button" data-bs-toggle="dropdown" aria-expanded="false">Explore</a>
+          <ul class="dropdown-menu">
+            <li><h6 class="dropdown-header">Seen in recent captures</h6></li>
+            <li><a class="dropdown-item" href="{{ url_for('ressources') }}">Resources</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('cookies_lookup') }}">Cookies</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('favicons_lookup') }}">Favicons</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('hhhashes_lookup') }}">HTTP headers hashes</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+             aria-expanded="false">Help</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="https://www.lookyloo.eu/docs/main/index.html">Documentation</a></li>
+            <li><a class="dropdown-item" href="/doc">API documentation</a></li>
+            <li><a class="dropdown-item" href="https://github.com/Lookyloo/lookyloo/releases/tag/v{{ lookyloo_version }}">Changelog (v{{ lookyloo_version }})</a></li>
+            <li><a class="dropdown-item" href="https://github.com/Lookyloo">Project page</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav lk-header-actions">
+        {# Colour theme selector, driven by js/theme_toggle.js (ids and classes are its API) #}
+        <li class="nav-item dropdown">
+          <button class="btn nav-link lk-header-icon-btn" id="bd-theme" type="button"
+                  aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)">
+            {{ theme_icon('circle-half', classes='theme-icon-active') }}
+            <span class="d-lg-none ms-2" id="bd-theme-text">Toggle theme</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme-text">
+            <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="light" aria-pressed="false">
+              {{ theme_icon('sun-fill') }} Light</button></li>
+            <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="dark" aria-pressed="false">
+              {{ theme_icon('moon-stars-fill') }} Dark</button></li>
+            <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-bs-theme-value="auto" aria-pressed="true">
+              {{ theme_icon('circle-half') }} Auto</button></li>
+          </ul>
+        </li>
+
+        {% if current_user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle{% if endpoint in ('statsfull', 'index_hidden') %} active{% endif %}" href="#"
+             role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ render_icon('person-circle') }} {{ current_user.id }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('index_hidden') }}">Hidden captures</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('statsfull') }}">Statistics</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Log out</a></li>
+          </ul>
+        </li>
+        {% else %}
+        {{ nav_link('Log in', 'login') }}
+        {% endif %}
+
+        <li class="nav-item lk-header-cta">
+          <div class="btn-group">
+            <a class="btn btn-primary" href="{{ url_for('capture_web') }}">{{ render_icon('plus-lg') }} New capture</a>
+            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="visually-hidden">More capture options</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{{ url_for('capture_web') }}">Capture a URL or a document</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('submit_capture') }}">Submit an existing capture</a></li>
+              {% if current_user.is_authenticated %}
+              <li><a class="dropdown-item" href="{{ url_for('simple_capture') }}">Capture for takedown</a></li>
+              {% endif %}
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</header>

@@ -1,0 +1,27 @@
+{% extends "layouts/main.html" %}
+{#
+  Standard page: layouts/main.html + site header and footer.
+  Full screen pages (capture tree, popups) keep extending layouts/main.html directly.
+  Optional block: page_header, filled with macros/page.html page_header().
+#}
+
+{% block styles %}
+{{ super() }}
+{% for stylesheet in ['css/components/site.css', 'css/components/header.css', 'css/components/footer.css',
+                      'css/components/page-header.css'] %}
+<link rel="stylesheet" href="{{ url_for('static', filename=stylesheet) }}"
+      {{get_sri('static', stylesheet)}}
+      crossorigin="anonymous">
+{% endfor %}
+{% endblock %}
+
+{% block body_class %}lk-page{% endblock %}
+
+{% block site_header %}
+<a class="visually-hidden-focusable lk-skip-link" href="#content">Skip to content</a>
+{% include 'partials/header.html' %}
+{% endblock %}
+
+{% block site_footer %}
+{% include 'partials/footer.html' %}
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "layouts/page.html" %}
+{#
+  Home page (route landing_page, "/"): logo and quick capture form.
+  The list of captures is on its own page (home/index.html, route index).
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% block title %}Lookyloo{% endblock %}
+
+{% block card %}
+<meta property="og:title" content="Lookyloo" />
+<meta property="og:type" content="website"/>
+<meta
+  property="og:description"
+  content="Lookyloo captures websites and let you investigate them."
+/>
+<meta
+  property="og:image"
+  content="https://{{public_domain}}{{ url_for('static', filename='images/ui/lookyloo.jpeg') }}"
+/>
+<meta
+  property="og:url"
+  content="https://{{public_domain}}"
+/>
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+
+{% block identity %}
+  {% if mastobot_enabled %}
+    <link rel="me" href="https://{{mastodon_domain}}/@{{mastodon_botname}}">
+  {% endif %}
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}"
+      {{get_sri('static', 'css/home.css')}}
+      crossorigin="anonymous">
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/home.js') }}"
+        {{get_sri('static', 'js/home.js')}}
+        nonce="{{ csp_nonce() }}"
+        crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block content %}
+<section class="lk-hero" aria-labelledby="quick-capture-title">
+  <div class="lk-hero-main">
+    <div class="lk-hero-brand">
+      {# Logo without the pupils of the first two "o": two real pupils follow
+         the mouse (js/home.js). Positions in pixels of the 706x316 logo. #}
+      <div class="lk-hero-logo" data-lk-eyes data-width="706" data-height="316">
+        <img class="lk-logo" src="{{ url_for('static', filename='images/ui/lookyloo-no-pupils.png') }}"
+             alt="Lookyloo" width="320"
+             {{get_sri('static', 'images/ui/lookyloo-no-pupils.png')}}
+             crossorigin="anonymous">
+        <span class="lk-logo-pupil" aria-hidden="true" data-ring-x="180" data-ring-y="85.6" data-x="191.9" data-y="94.3"></span>
+        <span class="lk-logo-pupil" aria-hidden="true" data-ring-x="281.2" data-ring-y="82.5" data-x="292.5" data-y="91.8"></span>
+      </div>
+      <p>Web forensics tool</p>
+    </div>
+
+    <form class="lk-hero-form" method="post" action="{{ url_for('capture_web') }}">
+      <h1 id="quick-capture-title">See where a link really goes.</h1>
+      <p class="lk-hero-lead">Paste a URL: Lookyloo opens it in a real browser and records every redirect, request and resource it loads.</p>
+
+      {# Honeypot: bots fill it, the capture route rejects them #}
+      <input class="boatymcboat" type="text" name="name" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <input type="hidden" name="java_script_enabled" value="1">
+
+      <div class="lk-capture-bar">
+        {{ render_icon('globe2', classes='lk-capture-bar-icon') }}
+        <label for="quick-capture-url" class="visually-hidden">URL to capture</label>
+        <input type="text" id="quick-capture-url" name="url"
+               placeholder="https://suspicious-link.example/login" required
+               autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button type="submit" class="btn btn-primary btn-lg">{{ render_icon('camera') }} Capture</button>
+      </div>
+
+      <div class="lk-capture-options">
+        <label class="lk-pill-select">
+          {{ render_icon('laptop') }}
+          <span class="visually-hidden">Device</span>
+          <select name="device_name">
+            <option value="{{ default_device }}" selected>{{ default_device }}</option>
+            {% if default_mobile_device %}
+            <option value="{{ default_mobile_device }}">{{ default_mobile_device }}</option>
+            {% endif %}
+          </select>
+        </label>
+        <label class="lk-pill-select">
+          {{ render_icon('eye') }}
+          <span class="visually-hidden">Visibility</span>
+          <select name="visibility">
+            <option value="public" {% if default_public and not default_private %}selected{% endif %}>Public</option>
+            <option value="unlisted" {% if not default_public and not default_private %}selected{% endif %}>Unlisted</option>
+            <option value="private" {% if default_private %}selected{% endif %}>Private</option>
+          </select>
+        </label>
+        <span class="lk-capture-options-links">
+          <a href="{{ url_for('capture_web') }}">{{ render_icon('sliders') }} All capture options</a>
+          <a href="{{ url_for('submit_capture') }}">{{ render_icon('upload') }} Upload a capture</a>
+          <a href="{{ url_for('index') }}">{{ render_icon('collection') }} Recent captures</a>
+        </span>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
