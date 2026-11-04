@@ -1,18 +1,92 @@
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
+/*
+ * Admin statistics page (admin/stats.html): cards of the week, a bar chart and a
+ * table per year (js/stats_graph.js). Doc: doc/ui/stats.md
+ */
+
+.lk-stats-section { margin-bottom: var(--lk-space-5); }
+.lk-stats-title { display: flex; align-items: baseline; gap: var(--lk-space-2); margin: 0 0 var(--lk-space-3); font-size: 1.25rem; font-weight: var(--lk-font-weight-semibold); }
+.lk-stats-sub { color: var(--lk-color-muted); font-size: var(--lk-font-size-sm); font-weight: normal; }
+
+.lk-stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: var(--lk-space-3); margin-bottom: var(--lk-space-2); }
+.lk-stats-card {
+  display: flex;
+  gap: var(--lk-space-3);
+  padding: var(--lk-space-3) var(--lk-space-4);
+  background: var(--lk-color-surface);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-lg);
+}
+.lk-stats-card p { margin: 0; }
+.lk-stats-card-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--lk-radius-md);
+  background: var(--lk-color-accent-soft);
+  color: var(--lk-color-accent);
+}
+.lk-stats-card-label { color: var(--lk-color-muted); font-size: var(--lk-font-size-sm); }
+.lk-stats-card-value { font-size: 1.6rem; font-weight: var(--lk-font-weight-semibold); line-height: 1.2; font-variant-numeric: tabular-nums; }
+.lk-stats-card-delta { color: var(--lk-color-muted); font-size: var(--lk-font-size-xs); }
+.lk-stats-card-delta.is-up { color: var(--lk-color-success); }
+.lk-stats-card-delta.is-down { color: var(--lk-color-danger); }
+
+.lk-stats-chart {
+  margin-bottom: var(--lk-space-3);
+  padding: var(--lk-space-2);
+  background: var(--lk-color-surface);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-lg);
+}
+.lk-stats-chart svg { display: block; max-width: 100%; height: auto; }
+.lk-stats-note { color: var(--lk-color-muted); font-size: var(--lk-font-size-sm); }
+.lk-stats-bar { fill: var(--lk-color-accent); transition: fill 0.15s; }
+.lk-stats-bar:hover { fill: var(--lk-color-ink); }
+.lk-stats-bar.is-empty { fill: none; }
+.lk-stats-bar-label { fill: var(--lk-color-ink); font-size: 11px; font-variant-numeric: tabular-nums; }
+.lk-stats-axis text,
+.lk-stats-grid text { fill: var(--lk-color-muted); font-size: 11px; }
+.lk-stats-axis path,
+.lk-stats-axis line { stroke: var(--lk-color-rule-strong); }
+.lk-stats-grid line { stroke: var(--lk-color-rule); }
+
+.lk-stats-table td,
+.lk-stats-table tfoot td { font-variant-numeric: tabular-nums; }
+.lk-stats-table tfoot th,
+.lk-stats-table tfoot td { font-weight: var(--lk-font-weight-semibold); border-bottom: 0; }
+
+/* Curve mode (js/stats_graph.js, drawCurve) */
+.lk-stats-line { fill: none; stroke: var(--lk-color-accent); stroke-width: 2.5px; stroke-linecap: round; }
+.lk-stats-area { fill: var(--lk-color-accent-soft); }
+.lk-stats-dot { fill: var(--lk-color-surface); stroke: var(--lk-color-accent); stroke-width: 2px; }
+.lk-stats-dot:hover { fill: var(--lk-color-accent); }
+.lk-stats-dot.is-empty { stroke: var(--lk-color-rule-strong); stroke-width: 1.5px; }
+
+/* Bars / Curve switch */
+.lk-stats-mode { display: flex; align-items: center; gap: var(--lk-space-1); margin-bottom: var(--lk-space-3); font-size: var(--lk-font-size-sm); }
+.lk-stats-mode > span { margin-right: var(--lk-space-1); color: var(--lk-color-muted); }
+.lk-stats-mode button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  padding: 3px var(--lk-space-3);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-surface);
+  color: var(--lk-color-ink);
+}
+.lk-stats-mode button[aria-pressed="true"] { background: var(--lk-color-accent-soft); border-color: var(--lk-color-accent); color: var(--lk-color-accent); font-weight: var(--lk-font-weight-semibold); }
+
+/* Phones: the table keeps its columns readable and scrolls sideways in its card */
+.lk-stats-table {
+  min-width: 34rem;
 }
 
-.grid path,
-.grid line {
-  fill: none;
-  stroke: rgba(0, 0, 0, 0.25);
-  shape-rendering: crispEdges;
-}
-
-.line {
-  fill: none;
-  stroke-width: 2.5px;
+.lk-stats-table th,
+.lk-stats-table td {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
