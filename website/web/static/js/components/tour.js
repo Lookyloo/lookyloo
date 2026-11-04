@@ -23,8 +23,16 @@
             session.clear();   // past the last page: the end of the full tour
             return;
         }
+        // Only pages of this instance (the list is built with url_for, but it is read
+        // from the DOM: never follow another origin or a javascript: URL)
+        let url = null;
+        try { url = new URL(pages[page].url, location.href); } catch (e) { /* invalid */ }
+        if (!url || url.origin !== location.origin) {
+            session.clear();
+            return;
+        }
         session.set({ page });
-        location.href = pages[page].url;
+        location.assign(url.pathname + url.search);
     }
     function startFull() {
         stop();
