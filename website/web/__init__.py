@@ -183,13 +183,7 @@ def _load_user_from_request(request: Request) -> User | None:
 @app.route('/login', methods=['GET', 'POST'])
 def login() -> WerkzeugResponse | str | Response:
     if request.method == 'GET':
-        return '''
-               <form action='login' method='POST'>
-                <input type='text' name='username' id='username' placeholder='username'/>
-                <input type='password' name='password' id='password' placeholder='password'/>
-                <input type='submit' name='submit'/>
-               </form>
-               '''
+        return render_template('admin/login.html')
 
     username = request.form['username']
     users_table = build_users_table()
