@@ -218,6 +218,8 @@
     padding: var(--lk-space-6) var(--lk-space-5);
   }
 
+  /* The container shrinks, not only the image: the pupils are placed in % of it */
+  .lk-hero-logo,
   .lk-hero-brand img {
     max-width: 220px;
   }
