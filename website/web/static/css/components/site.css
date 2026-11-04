@@ -24,22 +24,34 @@
 }
 
 [data-bs-theme="dark"] {
-  /* Same scale as the Bootstrap dark theme (body: #212529) */
-  --lk-color-page: #212529;
-  --lk-color-surface: #2B3035;
-  --lk-color-surface-2: #343A40;
-  --lk-color-ink: #F1F3F5;
-  --lk-color-muted: #ADB5BD;
-  --lk-color-rule: #3D444B;
-  --lk-color-rule-strong: #495057;
+  /* Dark navy blue */
+  --lk-color-page: #172033;
+  --lk-color-surface: #1E293D;
+  --lk-color-surface-2: #26324A;
+  --lk-color-ink: #E8ECF4;
+  --lk-color-muted: #9AA6BD;
+  --lk-color-rule: #2F3B55;
+  --lk-color-rule-strong: #3E4B68;
   --lk-color-accent: #8EA2FF;
-  --lk-color-accent-soft: #2E3760;
+  --lk-color-accent-soft: #2A3566;
   --lk-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --lk-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
   --lk-color-emphasis: #FFFFFF;
   --lk-focus-ring: rgba(142, 162, 255, 0.3);
   --lk-focus-border: #8EA2FF;
   --lk-logo-filter: invert(1);
+}
+
+/* Bootstrap components (fields, tables, dropdowns) follow the same blue, only on
+   the pages extending layouts/page.html: the capture tree keeps the Bootstrap theme */
+[data-bs-theme="dark"] body.lk-page {
+  --bs-body-bg: var(--lk-color-page);
+  --bs-body-color: var(--lk-color-ink);
+  --bs-secondary-bg: var(--lk-color-surface-2);
+  --bs-tertiary-bg: var(--lk-color-surface-2);
+  --bs-secondary-color: var(--lk-color-muted);
+  --bs-border-color: var(--lk-color-rule-strong);
+  --bs-emphasis-color: #FFFFFF;
 }
 
 :root {
@@ -139,4 +151,9 @@ body.lk-page > #content {
 .lk-page #content .table-responsive-sm .table {
   --bs-table-bg: transparent;
   margin-bottom: 0;
+}
+
+/* Index: space between the capture buttons and the table below */
+.lk-page #content .new-capture-button {
+  margin-bottom: var(--lk-space-4);
 }
