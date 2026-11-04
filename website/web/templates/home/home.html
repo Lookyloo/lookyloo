@@ -1,7 +1,7 @@
 {% extends "layouts/page.html" %}
 {#
-  Home page (route landing_page, "/"): logo and quick capture form.
-  The list of captures is on its own page (home/index.html, route index).
+  Home page (route landing_page, "/"): logo, quick capture form and the
+  recent captures (same table as home/index.html, route index).
 #}
 {% from 'bootstrap5/utils.html' import render_icon %}
 
@@ -103,10 +103,28 @@
         <span class="lk-capture-options-links">
           <a href="{{ url_for('capture_web') }}">{{ render_icon('sliders') }} All capture options</a>
           <a href="{{ url_for('submit_capture') }}">{{ render_icon('upload') }} Upload a capture</a>
-          <a href="{{ url_for('index') }}">{{ render_icon('collection') }} Recent captures</a>
         </span>
       </div>
     </form>
+  </div>
+</section>
+
+{# Same table as the index page (home/index.html), filled by js/render_tables.js #}
+<section class="lk-latest" aria-labelledby="latest-captures-title">
+  <div class="lk-latest-head">
+    <h2 class="lk-section-title" id="latest-captures-title">Recent captures</h2>
+    <a href="{{ url_for('index') }}">See all captures {{ render_icon('arrow-right') }}</a>
+  </div>
+  <div class="table-responsive">
+    <table id="IndexTable" class="table table-striped" style="width:100%" data-indextype="index">
+    <thead>
+     <tr>
+       <th>Page</th>
+       <th>Timestamp</th>
+       <th>Redirects</th>
+     </tr>
+    </thead>
+  </table>
   </div>
 </section>
 {% endblock %}

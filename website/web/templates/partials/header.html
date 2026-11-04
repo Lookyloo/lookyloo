@@ -40,6 +40,7 @@
         {{ nav_link('Recent captures', 'index', also=('index_hidden',)) }}
         {{ nav_link('Search', 'search') }}
         {{ nav_link('Categories', 'categories') }}
+        {% if current_user.is_authenticated %}
         {% set explore = ('ressources', 'cookies_lookup', 'favicons_lookup', 'hhhashes_lookup') %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle{% if endpoint in explore %} active{% endif %}" href="#"
@@ -52,6 +53,7 @@
             <li><a class="dropdown-item" href="{{ url_for('hhhashes_lookup') }}">HTTP headers hashes</a></li>
           </ul>
         </li>
+        {% endif %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
              aria-expanded="false">Help</a>

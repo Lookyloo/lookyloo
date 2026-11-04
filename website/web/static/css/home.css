@@ -1,5 +1,5 @@
 /*
- * Home page (home/home.html): hero with the quick capture form.
+ * Home page (home/home.html): hero with the quick capture form, recent captures.
  */
 
 /* ---- Hero: quick capture ---- */
@@ -247,4 +247,25 @@
     margin-left: 0;
   }
 
+}
+
+/* Recent captures, under the hero */
+.lk-latest-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--lk-space-3);
+  margin: var(--lk-space-6) 0 var(--lk-space-3);
+}
+
+.lk-latest-head h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.lk-latest-head a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  font-weight: var(--lk-font-weight-medium);
 }

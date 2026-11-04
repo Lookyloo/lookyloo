@@ -5,7 +5,7 @@
     "css/components/page-header.css": "D6UsQqj4cakBtwNDrCtOLwGQx7XTuEzgwCsjrqJjIN7BJ1HAt/R0VFl3W+MNcj6OVR84/m2yKybi1KMW3VO+AA==",
     "css/components/site.css": "pnr43U6683nyktDB71rf2iW8TcdXlrpVtllKdZ4ThgKlj2z7Yq+Itjmd2GSYSpbRkEDtJ1jCSIhipsZE8IPdhg==",
     "css/generic.css": "hH3DlQc2Ge5JvdUzUcgTczfFTSHaXJrXU+V/OctfG7etWnHKzZ7KD4U1e4ymw5XrMO1RO+kFl+LpXPcXFld8cg==",
-    "css/home.css": "MxjxHPNpxR6LVPm8X/ceeKwimGsHqtbH+V81EOXH7fDzs2RAYob9ULX6XSgFEt04UZrxknHbnBUTah5BCDtxTg==",
+    "css/home.css": "7CW4dgb5bk2aEidzjdW4e9kiGO6PCIcE3zDp+r+3D6xxXowBLxQyzP4QbKmeLXzXphcft8Hh3SEYE5fiVAtgmA==",
     "css/stats.css": "/kY943FwWBTne4IIyf7iBROSfbGd82TeBicEXqKkRwawMVRIvM/Pk5MRa7okUyGIxaDjFQGmV/U1vy+PhN6Jbw==",
     "css/tree.css": "vOna6sv0cakqlxTD2LOSL+AfKFVKsPSIDKX/bj3EBS4Ff5nf+wu1uzLzzQjoLlmcya43YdQhJGj2OySXlAMzLg==",
     "favicon.ico": "KOmrfwRbOQqhhwSeBkNpMRAxSVMmmLg+2kRMg9iSv7OWjE9spJc7x4MKB4AE/hi0knaV7UBVctAU6XZ7AC72ZA==",
