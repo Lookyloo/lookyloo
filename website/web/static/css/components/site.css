@@ -191,3 +191,35 @@ body.lk-page > #content {
   background: var(--lk-color-surface);
   text-decoration: none;
 }
+
+/* Buttons: blue a bit darker than the Bootstrap default (#0D6EFD) */
+body.lk-page {
+  --lk-btn-blue: #1D4ED8;
+  --lk-btn-blue-hover: #1E40AF;
+}
+
+.lk-page .btn-primary {
+  --bs-btn-bg: var(--lk-btn-blue);
+  --bs-btn-border-color: var(--lk-btn-blue);
+  --bs-btn-hover-bg: var(--lk-btn-blue-hover);
+  --bs-btn-hover-border-color: var(--lk-btn-blue-hover);
+  --bs-btn-active-bg: var(--lk-btn-blue-hover);
+  --bs-btn-active-border-color: var(--lk-btn-blue-hover);
+  --bs-btn-disabled-bg: var(--lk-btn-blue);
+  --bs-btn-disabled-border-color: var(--lk-btn-blue);
+}
+
+.lk-page .btn-outline-primary {
+  --bs-btn-color: var(--lk-btn-blue);
+  --bs-btn-border-color: var(--lk-btn-blue);
+  --bs-btn-hover-bg: var(--lk-btn-blue);
+  --bs-btn-hover-border-color: var(--lk-btn-blue);
+  --bs-btn-active-bg: var(--lk-btn-blue-hover);
+  --bs-btn-active-border-color: var(--lk-btn-blue-hover);
+}
+
+/* Outline buttons stay readable on the dark background */
+[data-bs-theme="dark"] .lk-page .btn-outline-primary {
+  --bs-btn-color: var(--lk-color-accent);
+  --bs-btn-border-color: var(--lk-color-accent);
+}
