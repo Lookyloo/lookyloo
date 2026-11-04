@@ -22,17 +22,15 @@
      <tr>
        <th>Cookie name</th>
        <th>Frequency</th>
-       <th>Number unique domains</th>
      </tr>
     </thead>
     <tbody>
-      {% for name, freq, number_domains in cookies_names %}
+      {% for name, freq in cookies_names %}
       <tr>
         <td>
           <a href="{{ url_for('cookies_name_detail', cookie_name=name) }}">{{ name }}</a>
         </td>
         <td>{{ freq }}</td>
-        <td>{{ number_domains }}</td>
       </tr>
       {% endfor %}
     </tbody>
