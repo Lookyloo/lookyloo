@@ -1,4 +1,5 @@
 {% extends "layouts/page.html" %}
+{% from 'macros/tour.html' import tour %}
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% block title %}Submit an existing capture{% endblock %}
 
@@ -139,3 +140,13 @@
 {% block scripts %}
   {{ super() }}
 {% endblock %}
+
+{# Tutorial of the page (js/components/tour.js, doc/ui/tour.md) #}
+{% block tour %}{{ tour([
+  (None, "Submit a capture", "Bring in a capture made elsewhere: from another Lookyloo, from a Lookyloo export, or from a HAR file."),
+  ("#pull_capture", "From another Lookyloo", "Give the address of another Lookyloo instance and the UUID of a capture: it is copied here."),
+  ("#full_capture", "A Lookyloo export", "The full capture (zip) downloaded from the page of a capture."),
+  ("#har_file", "A HAR file", "The HTTP Archive saved from the developer tools of a browser, with an optional landing page, screenshot and HTML."),
+  ("#btn-looking", "Submit", "Starts the import; the tree of the capture opens when it is ready."),
+  ("#lk-tour-menu-btn", "The tutorial, any time", "This button starts the tour of the page you are on, or the full tour of Lookyloo: every page, one after the other.")
+]) }}{% endblock %}

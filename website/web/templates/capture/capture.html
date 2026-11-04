@@ -1,14 +1,16 @@
 {% extends "layouts/page.html" %}
-{% from 'bootstrap5/utils.html' import render_messages %}
+{% from 'macros/tour.html' import tour %}
+{% from 'macros/page.html' import page_header %}
+{% from 'bootstrap5/utils.html' import render_messages, render_icon %}
 {% from "macros/macros.html" import monitoring_form %}
 {% from "macros/macros.html" import notify_form %}
 {% from "macros/macros.html" import lacus_info %}
 {% block title %}Capture{% endblock %}
-
-{% from 'macros/page.html' import page_header %}
-{% block page_header %}
-{{ page_header('New capture', description='Capture a URL or a document with all the available settings: browser, device, privacy, proxy, cookies, headers and more.', icon_name='camera') }}
-{% endblock %}
+{#
+  Full capture form. Layout: numbered section cards + sticky summary panel.
+  Every field name / id is read by capture_web() or js/capture.js: keep them.
+  Doc: doc/ui/pages/capture.md
+#}
 
 {% block card %}
 <meta property="og:title" content="Lookyloo Capture" />
@@ -36,15 +38,35 @@
 
 {% block styles %}
 {{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/capture.css') }}"
+      {{get_sri('static', 'css/capture.css')}}
+      crossorigin="anonymous">
+{% endblock %}
+
+{% block page_header %}
+{{ page_header('New capture', description='Capture a URL or a document with all the available settings: browser, device, privacy, proxy, cookies, headers and more.', icon_name='camera') }}
 {% endblock %}
 
 {% block content %}
-<div class="container">
-  {{ render_messages(container=True, dismissible=True) }}
-  {% if current_user.is_authenticated %}
-  <div class="alert alert-info" role="alert">
-    <p class="lead">You are logged-in as <strong>{{ current_user.id }}</strong></p>
-    <hr>
+{% macro section(num, anchor, icon_name, title, description, open=False) -%}
+<details class="lk-form-section" id="{{ anchor }}" {% if open %}open{% endif %}>
+  <summary class="lk-form-section-head">
+    <span class="lk-form-section-num" aria-hidden="true">{{ num }}</span>
+    <span class="lk-form-section-icon">{{ render_icon(icon_name) }}</span>
+    <div>
+      <h2 id="{{ anchor }}-title">{{ title }}</h2>
+      <p>{{ description }}</p>
+    </div>
+  </summary>
+  <div class="lk-form-section-body">{{ caller() }}</div>
+</details>
+{%- endmacro %}
+
+{% if current_user.is_authenticated %}
+<div class="lk-callout lk-callout-info lk-capture-user">
+  {{ render_icon('person-circle') }}
+  <div>
+    <p>You are logged-in as <strong>{{ current_user.id }}</strong>.</p>
     {% if user_config %}
     <p>
       {% if user_config['overwrite'] == true %}
@@ -52,170 +74,496 @@
       {% else %}
         The settings in your users configuration file will only be used if you don't overwrite them in the form below.
       {% endif %}
-      <dl class="row">
-        {% for key, value in user_config.items() %}
-          {% if key != 'overwrite' %}
-           <dt class="col-sm-3">{{ key }}</dt>
-           <dd class="col-sm-9">
-           {% if value is mapping %}
-            <dl class="row">
-             {% for sub_key, sub_value in value.items() %}
-              <dt class="col-sm-4">{{ sub_key}}</dt>
-              <dd class="col-sm-8">{{ sub_value }}</dd>
-             {% endfor %}
-            </dl>
-           {% else %}
-            {{ value }}
-           {% endif %}
-           </dd>
-          {% endif %}
-        {% endfor %}
-      </dl>
     </p>
-    <hr>
+    <dl class="lk-capture-user-config">
+      {% for key, value in user_config.items() %}
+        {% if key != 'overwrite' %}
+         <dt>{{ key }}</dt>
+         <dd>
+         {% if value is mapping %}
+          <dl>
+           {% for sub_key, sub_value in value.items() %}
+            <dt>{{ sub_key }}</dt>
+            <dd>{{ sub_value }}</dd>
+           {% endfor %}
+          </dl>
+         {% else %}
+          {{ value }}
+         {% endif %}
+         </dd>
+        {% endif %}
+      {% endfor %}
+    </dl>
     {% endif %}
   </div>
-  {% endif %}
+</div>
+{% endif %}
 
-  <form role="form" action="{{ url_for('capture_web') }}" method=post enctype=multipart/form-data>
-    <!-- Submission type -->
+<form class="lk-capture-form" role="form" action="{{ url_for('capture_web') }}" method=post enctype=multipart/form-data data-lk-loading="Starting the capture">
+<div class="lk-capture-layout">
+<div class="lk-capture-sections">
+
+  {# ---------------- 1. What to capture ---------------- #}
+  {% call section(1, 'capture-target', 'crosshair', 'What to capture', 'One URL, a list of URLs, or a document opened in the browser.', open=True) %}
     <nav>
-      <div class="nav nav-tabs" id="submission-type" role="tablist">
-        <button class="nav-link active" id="nav-url-tab" data-bs-toggle="tab" data-bs-target="#nav-url" type="button" role="tab" aria-current="nav-url" aria-selected="true" href="#">URL(s)</button>
-        <button class="nav-link" id="nav-doc-tab" data-bs-toggle="tab" data-bs-target="#nav-doc" type="button" role="tab" aria-current="nav-doc" aria-selected="false" href="#">Web enabled document</button>
+      <div class="nav nav-tabs lk-capture-tabs" id="submission-type" role="tablist">
+        <button class="nav-link active" id="nav-url-tab" data-bs-toggle="tab" data-bs-target="#nav-url" type="button" role="tab" aria-current="nav-url" aria-selected="true" href="#">{{ render_icon('link-45deg') }} URL(s)</button>
+        <button class="nav-link" id="nav-doc-tab" data-bs-toggle="tab" data-bs-target="#nav-doc" type="button" role="tab" aria-current="nav-doc" aria-selected="false" href="#">{{ render_icon('file-earmark-code') }} Web enabled document</button>
       </div>
     </nav>
-
     <div class="tab-content" id="nav-tabContent">
-      <br>
       <div class="tab-pane fade show active" id="nav-url" role="tabpanel" aria-labelledby="nav-url-tab">
-        <div class="row input-group mb-3">
-          <label for="url" class="col-sm-1 col-form-label">URL:</label>
-          <input type="text" class="form-control col-auto" name="url" id=singleCaptureField
-                 placeholder="URL to capture" value="{{predefined_settings.get('url', '')}}" required>
-
-          <textarea class="form-control col-auto" placeholder="URLs to capture, one per line"
-                    name="urls" id=multipleCapturesField style="display: none;"></textarea>
-
-          <div class="col-sm-2 input-group-text">
-            <div class="form-check">
-              <input class="form-check-input" name="multipleCaptures" id="multipleCaptures" type="checkbox"
-                     value="" aria-label="tick to enable multiple captures">
-              <label for="multipleCaptures" class="form-check-label">Multiple captures</label>
-            </div>
-          </div>
+        <label for="singleCaptureField" class="visually-hidden">URL to capture</label>
+        <input type="text" class="form-control form-control-lg lk-capture-url" name="url" id=singleCaptureField
+               placeholder="URL to capture" value="{{predefined_settings.get('url', '')}}" required
+               autocomplete="off" spellcheck="false">
+        <textarea class="form-control lk-capture-url" placeholder="URLs to capture, one per line" rows="5"
+                  name="urls" id=multipleCapturesField style="display: none;" aria-label="URLs to capture, one per line"></textarea>
+        <div class="form-check form-switch lk-capture-multiple">
+          <input class="form-check-input" name="multipleCaptures" id="multipleCaptures" type="checkbox"
+                 value="" role="switch" aria-label="tick to enable multiple captures">
+          <label for="multipleCaptures" class="form-check-label">Multiple captures <span class="lk-hint-inline">one URL per line</span></label>
         </div>
       </div>
-
       <div class="tab-pane fade" id="nav-doc" role="tabpanel" aria-labelledby="nav-doc-tab">
-        <div class="row mb-3">
-          <label for="document" class="col-sm-1 col-form-label">Document:</label>
-          <div class="col-sm-10">
-            <input type="file" class="form-control" id="document" name="document">
-            <div class="alert alert-info" role="alert">
-                Instead of a URL, you can upload a file. Preferably an HTML document, but it can be anything supported by a browser.
+        <label for="document" class="form-label">Document</label>
+        <input type="file" class="form-control" id="document" name="document">
+        <p class="lk-hint">Instead of a URL, you can upload a file. Preferably an HTML document, but it can be anything supported by a browser.</p>
+      </div>
+    </div>
+  {% endcall %}
+
+  {# ---------------- 2. Privacy ---------------- #}
+  {% call section(2, 'capture-privacy', 'shield-lock', 'Privacy', 'Who can find and open the capture.') %}
+    <fieldset>
+      <legend class="visually-hidden">Visibility level</legend>
+      <div class="lk-choices">
+        <label class="lk-choice" for="public">
+          <input class="form-check-input" type="radio" id="public" name="visibility" value="public"
+            {% if default_public or predefined_settings.get('listing') is true %}checked="checked"{% endif %}>
+          <span class="lk-choice-icon">{{ render_icon('globe2') }}</span>
+          <span class="lk-choice-text"><strong>Public</strong><span>Display capture on public index</span></span>
+        </label>
+        <label class="lk-choice" for="unlisted">
+          <input class="form-check-input" type="radio" id="unlisted" name="visibility" value="unlisted"
+            {% if not default_public or predefined_settings.get('listing') is false %}checked="checked"{% endif %}>
+          <span class="lk-choice-icon">{{ render_icon('link-45deg') }}</span>
+          <span class="lk-choice-text"><strong>Unlisted</strong><span>Do not display capture on public index</span></span>
+        </label>
+        <label class="lk-choice" for="private">
+          <input class="form-check-input" type="radio" id="private" name="visibility" value="private"
+            {% if default_private or predefined_settings.get('private') is true %}checked="checked"{% endif %}>
+          <span class="lk-choice-icon">{{ render_icon('lock') }}</span>
+          <span class="lk-choice-text"><strong>Private</strong><span>Make capture private, only accessible with a seed</span></span>
+        </label>
+      </div>
+    </fieldset>
+    <div class="lk-field lk-field-inline">
+      <label for="seed_expire">When should the seed expire?</label>
+      <div>
+        <input type="text" class="form-control" id="seed_expire" name="seed_expire" value="{{default_seed_expire}}"
+          {% if not default_private or predefined_settings.get('private') is false %}disabled{%endif%}>
+        <p class="lk-hint">Only for private captures.</p>
+      </div>
+    </div>
+    <p class="lk-callout lk-callout-info">{{ render_icon('info-circle') }}
+      <span>All the captures are always visible by the platform administrators. If you want a truly
+      private capture, you need to run your own instance of lookyloo.</span></p>
+  {% endcall %}
+
+  {# ---------------- 3. Browser ---------------- #}
+  {% call section(3, 'capture-browser', 'window', 'Browser', 'The User-Agent decides the browser used for the capture (Firefox, Chromium or WebKit).') %}
+    <div id="collapseConfigBrowser">
+      {% if personal_ua %}
+      <div class="lk-ua-option">
+        <div class="form-check">
+          <input class="form-check-input" type="radio" id="personal_ua_select" name="user_agent_select">
+          <label for="personal_ua_select" class="form-check-label">
+              Use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser
+          </label>
+          <input class="visually-hidden" type="text" id="personal_ua" name="personal_ua" value="{{ personal_ua }}" disabled>
+        </div>
+        <code class="lk-ua-preview">{{ personal_ua }}</code>
+      </div>
+      {% endif %}
+
+      <div class="lk-ua-option">
+        <div class="form-check">
+          <input class="form-check-input" type="radio" id="predefined_ua_select" name="user_agent_select" checked>
+          <label for="predefined_ua_select" class="form-check-label">Pick the <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your choice</label>
+        </div>
+        <div id="prefed_selector" class="lk-ua-picker">
+          <div class="lk-field">
+            <label for="os-type">OS type</label>
+            <select class="form-select" name="os-type" id="os-type">
+              <option value="desktop">Desktop</option>
+              <option value="mobile">Mobile</option>
+            </select>
+          </div>
+
+          <!-- Desktops -->
+          <div id="desktops-list">
+            <div class="lk-field">
+              <label for="os">Operating System</label>
+              <select class="form-select" name="os" id="os">
+                {% for os in user_agents.keys()|sort(reverse=True) %}
+                <option value="{{ os }}">{{ os }}</option>
+                {% endfor%}
+              </select>
+            </div>
+
+            {% for os, browsers in user_agents.items() %}
+            <div id="{{os.replace(' ', '_')}}" class="browsers" style="display: none;">
+              <label class="lk-field">
+                <span>Browser Type</span>
+                <select class="form-select" name="browser" id="sel_{{os.replace(' ', '_')}}" disabled>
+                  {% for browser in browsers.keys()|sort(reverse=True) %}
+                  <option value="{{ browser }}">{{ browser }}</option>
+                  {% endfor%}
+                </select>
+              </label>
+            </div>
+            {% for browser, user_agents in browsers.items() %}
+            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="user-agents" style="display: none;">
+              <label class="lk-field">
+                <span>User-Agent</span>
+                <select class="form-select" name="user_agent" id="sel_{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" disabled>
+                  {% for user_agent in user_agents %}
+                  <option value="{{ user_agent }}">{{ user_agent }}</option>
+                  {% endfor%}
+                </select>
+              </label>
+            </div>
+            {% endfor%}
+            {% endfor%}
+          </div>
+          <!-- End of Desktops -->
+
+          <!-- Mobiles -->
+          <div id="mobiles-list">
+            <div class="lk-field">
+              <label for="device-name-mobile">Device name</label>
+              <select class="form-select" name="device_name" id="device-name-mobile" disabled>
+                {% for device_name in devices['mobile']['default'].keys() %}
+                <option value="{{ device_name }}">{{ device_name }}</option>
+                {%endfor%}
+              </select>
             </div>
           </div>
+          <!-- End of Mobiles -->
+        </div>
+      </div>
+
+      <div class="lk-ua-option">
+        <div class="form-check">
+          <input class="form-check-input" type="radio" id="freetext_ua_select" name="user_agent_select">
+          <label for="freetext_ua_select" class="form-check-label">Type the <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your choice</label>
+        </div>
+        <div class="lk-field">
+          <label for="freetext_ua">User-Agent</label>
+          <input type="text" class="form-control" name="freetext_ua" id="freetext_ua"
+                 placeholder="String to use as a User-Agent for the capture" disabled>
+        </div>
+      </div>
+
+      <div class="lk-callout lk-callout-info">{{ render_icon('lightbulb') }}
+        <div>
+          Depending on the User-Agent, Lookyloo will select a specific browser for the capture.
+          <strong>Firefox</strong> is better at bypassing bot detections, <strong>Chromium</strong> gives a better HAR
+          file (more reliable tree). You may want to do the same capture with different browsers to see the difference.
         </div>
       </div>
     </div>
-    <hr>
+  {% endcall %}
 
-    <!-- End of Submission type -->
+  {# ---------------- 4. Advanced settings ---------------- #}
+  {% call section(4, 'capture-advanced', 'sliders', 'Advanced settings', 'Optional: timing, network, emulation, session. Leave empty to use the defaults.') %}
+    <div id="collapseConfigCapture">
 
-    <!-- Start privacy settings -->
-    <div>
-      <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrivacySettings"
-            aria-expanded="true" aria-controls="collapsePrivacySettings">
-        <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
-        <b>Privacy settings</b>
-        </p>
-      </button>
-      <div class="help-tip" title="Select the privacy level for your capture"></div>
-    </div>
-    <div id="collapsePrivacySettings" class="collapse show">
-      <div class="card card-body">
-        <div class="row mb-3">
-          <div class="col-sm-2 col-form">Visibility level:</div>
-          <div class="col-sm-10">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" id="public" name="visibility" value="public"
-                {% if default_public or predefined_settings.get('listing') is true %}checked="checked"{% endif %}>
-              <label for="public" class="form-check-label">Display capture on public index</label>
+    <details class="lk-form-group" open>
+      <summary>{{ render_icon('gear') }} Behaviour</summary>
+      <div class="lk-form-group-body">
+        <div class="lk-field">
+          <span class="lk-field-label">Options</span>
+          <div class="lk-checks">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="java_script_enabled" name="java_script_enabled" aria-describedby="java_script_enabled_help"
+                {% if predefined_settings.get('java_script_enabled', true) is true %}checked="checked"{% endif %}>
+              <label class="form-check-label" for="java_script_enabled">Enable <a href="https://playwright.dev/python/docs/emulation#javascript-enabled">JavaScript</a></label>
+              <p id="java_script_enabled_help" class="lk-hint">If disabled, the browser will not run any JavaScript when rendering the page.</p>
             </div>
-
-            <div class="form-check">
-              <input class="form-check-input" type="radio" id="unlisted" name="visibility" value="unlisted"
-                {% if not default_public or predefined_settings.get('listing') is false %}checked="checked"{% endif %}>
-              <label for="unlisted" class="form-check-label">Do not display capture on public index</label>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="allow_tracking" name="allow_tracking" aria-describedby="allow_tracking_help"
+                {% if predefined_settings.get('allow_tracking') is true %}checked="checked"{% endif %}>
+              <label class="form-check-label" for="allow_tracking">Allow tracking</label>
+              <p id="allow_tracking_help" class="lk-hint">We'll attempt to click on the button allowing the website captured to violate your privacy.</p>
             </div>
-
-            <div class="form-check">
-              <input class="form-check-input" type="radio" id="private" name="visibility" value="private"
-                {% if default_private or predefined_settings.get('private') is true %}checked="checked"{% endif %}>
-              <label for="private" class="form-check-label">Make capture private, only accessible with a seed</label>
-              <br>
-              <label for="seed_expire" class="form-check-label">When should the seed expire?</label>
-              <input type="text" id="seed_expire" name="seed_expire" value="{{default_seed_expire}}"
-                {% if not default_private or predefined_settings.get('private') is false %}disabled{%endif%}>
+            {% if not hide_tt_checkbox %}
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="with_trusted_timestamps" name="with_trusted_timestamps" aria-describedby="with_trusted_timestamps_help"
+                {% if predefined_settings.get('with_trusted_timestamps') is true or tt_enabled_default%}checked="checked"{% endif %}>
+              <label class="form-check-label" for="with_trusted_timestamps">Request trusted timestamps (<a href="https://en.wikipedia.org/wiki/Trusted_timestamping">RFC 3161</a>)</label>
+              <p id="with_trusted_timestamps_help" class="lk-hint">Once the capture is done, we trigger a request to get Trusted Timestamps from a pre-defined provider.</p>
             </div>
+            {% endif %}
+            {% if current_user.is_authenticated %}
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="with_video" name="with_video" aria-describedby="with_video_help">
+              <label class="form-check-label" for="with_video">Record a video of the capture</label>
+              <p id="with_video_help" class="lk-hint">If selected, a video of the capture will be recorded. It might be pretty big.</p>
+            </div>
+            {%endif%}
           </div>
         </div>
-        <div class="alert alert-info" role="alert">
-            All the captures are always visible by the platform administrators. If you want a truly
-            private capture, you need to run your own instance of lookyloo.
+        <div class="lk-field">
+          <label for="final_wait">Final wait time</label>
+          <div>
+            <div class="input-group">
+              <input class="form-control" type="number" id="final_wait" name="final_wait" aria-describedby="final_wait_help" placeholder="5">
+              <span class="input-group-text">sec</span>
+            </div>
+            <p id="final_wait_help" class="lk-hint">The capture will wait for that time after the instrumentation is over.</p>
+          </div>
+        </div>
+        <div class="lk-field">
+          <label for="general_timeout_in_sec">Max capture time</label>
+          <div>
+            <div class="input-group">
+              <input class="form-control" type="number" id="general_timeout_in_sec" name="general_timeout_in_sec" aria-describedby="general_timeout_in_sec_help" placeholder="90">
+              <span class="input-group-text">sec</span>
+            </div>
+            <p id="general_timeout_in_sec_help" class="lk-hint">The capture will stop regardless the state of the page after this time.</p>
+          </div>
+        </div>
+        <div class="lk-field">
+          <span class="lk-field-label">Viewport</span>
+          <div>
+            <div class="lk-field-pair">
+              <div class="input-group">
+                <label class="input-group-text" for="width">Width</label>
+                <input class="form-control" type="number" id="width" name="width" aria-describedby="width" placeholder="1280">
+              </div>
+              <div class="input-group">
+                <label class="input-group-text" for="height">Height</label>
+                <input class="form-control" type="number" id="height" name="height" aria-describedby="height" placeholder="720">
+              </div>
+            </div>
+            <p class="lk-hint">The size of the browser window (default is 1280x720), if possible, the screenshot will take the full page and not just the viewport.</p>
+          </div>
+        </div>
+        {% if current_user.is_authenticated and categories%}
+        <div class="lk-field" id="user_categories">
+          <label for="categories">Categories</label>
+          <div>
+            <select class="form-select" multiple size="5" name="categories" id="categories" aria-label="size 3 multiple select categories">
+                {% for category in categories %}
+                <option value="{{category}}">{{category}}</option>
+                {% endfor %}
+            </select>
+            <p class="lk-hint">Select one or more.</p>
+          </div>
+        </div>
+        {%endif%}
+      </div>
+    </details>
+
+    <details class="lk-form-group">
+      <summary>{{ render_icon('hdd-network') }} Network &amp; headers</summary>
+      <div class="lk-form-group-body">
+        {% if not has_global_proxy %}
+        <div class="lk-field" id="user_defined_proxy">
+          <label for="proxy">Proxy</label>
+          <div>
+            <input type="text" class="form-control" name="proxy" id="proxy" placeholder="Expected format: [scheme]://[username]:[password]@[hostname]:[port]">
+            <p class="lk-hint">http(s) or socks5. A predefined proxy of the capture engine (section 5) replaces it.</p>
+          </div>
+        </div>
+        {%endif%}
+        <div class="lk-field">
+          <label for="referer"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer">Referer</a></label>
+          <div>
+            <input type="text" class="form-control" name="referer" id=referer placeholder="https://my.website.org/path">
+            <p class="lk-hint">Sets the Referrer HTTP header.</p>
+          </div>
+        </div>
+        <div class="lk-field">
+          <label for="locale">Browser <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language">locale</a></label>
+          <div>
+            <input type="text" class="form-control" name="locale" id="locale" placeholder="fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5">
+            <p class="lk-hint">Sets the Accept-Language HTTP header.</p>
+          </div>
+        </div>
+        <div class="lk-field">
+          <label for="headers">Other <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers">HTTP headers</a></label>
+          <div>
+            <textarea class="form-control" name="headers" id=headers rows=3 placeholder="X-Auth-Token: YWJjcmFjYWRhYnJh"></textarea>
+            <p class="lk-hint">The headers will be added to the request. One header per line.
+              For <strong>Referrer</strong>, <strong>Accept-Language</strong> (Locale),
+              <strong>Authorization</strong> (HTTP Authentication), <strong>Cookie</strong>,
+              and <strong>DNT</strong> (Do Not Track), please use the dedicated fields in this form.</p>
+          </div>
+        </div>
+        <div class="lk-field">
+          <label for="dnt"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/DNT">Do not Track</a> (discontinued)</label>
+          <div>
+            <select class="form-select" name="dnt" id="dnt" aria-label="Select a value for the Do Not Track HTTP Header">
+              <option value="" selected>Select a value for the DNT header (header not set otherwise)</option>
+              <option value="0">0 (The user prefers to allow tracking on the target site.)</option>
+              <option value="1">1 (The user prefers not to be tracked on the target site.)</option>
+              <option value="null">null (The user has not specified a preference about tracking.)</option>
+            </select>
+            <p class="lk-hint">Sets the DNT HTTP header.</p>
+          </div>
+        </div>
+        <div class="lk-field" id="httpauth">
+          <span class="lk-field-label">HTTP Basic Authentication</span>
+          <div>
+            <div class="lk-field-pair">
+              <div class="input-group">
+                <label class="input-group-text" for="http_auth_username">Username</label>
+                <input class="form-control" type="text" id="http_auth_username" name="http_auth_username" aria-describedby="http_auth_username" placeholder="Jacques Chirac">
+              </div>
+              <div class="input-group">
+                <label class="input-group-text" for="http_auth_password">Password</label>
+                <input class="form-control" autocomplete="new-password" type="password" id="http_auth_password" name="http_auth_password" aria-describedby="http_auth_password" placeholder="Yackety Yak">
+              </div>
+            </div>
+            <p class="lk-callout lk-callout-danger">{{ render_icon('exclamation-triangle') }}
+              <span>The authentication credentials will be stored on the lookyloo instance and potentially
+              accessed by third parties (either because the Lookyloo instance is public,
+              or people other than you have access to the instance).
+              If that's the case, please make sure none of them can be used to login as yourself on websites.</span></p>
+          </div>
         </div>
       </div>
-    </div>
-    <hr>
+    </details>
 
-    <!-- Start Lacus Selection -->
-    <div>
-      <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLacusSelection"
-            aria-expanded="false" aria-controls="collapseLacusSelection">
-        <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
-        <b>Lacus Selection</b>
-        </p>
-      </button>
-      <div class="help-tip" title="Lacus is the capturing interface, this section lists the capabilities available"></div>
+    <details class="lk-form-group">
+      <summary>{{ render_icon('globe-americas') }} Emulation</summary>
+      <div class="lk-form-group-body">
+        <div class="lk-field">
+          {% set local_TZ, local_UTC_offset, all_timezones = tz_info() %}
+          <label for="timezone_id"><a href="https://playwright.dev/python/docs/emulation#locale--timezone">Timezone</a></label>
+          <div>
+            <input class="form-control" list="tzOptions" name="timezone_id" id="timezone_id" aria-label="Pick the timezone for the capture" placeholder="Europe/Vatican">
+            <datalist id="tzOptions">
+              {% for tz, offset in all_timezones.items() %}
+              <option value="{{tz}}">{{tz}} ({{offset}})</option>
+              {%endfor%}
+            </datalist>
+            <p class="lk-hint">Defaults to localtime: {{local_TZ}} ({{local_UTC_offset}}).</p>
+          </div>
+        </div>
+        <div class="lk-field">
+          <label for="color_scheme"><a href="https://playwright.dev/python/docs/emulation#color-scheme-and-media">Color scheme</a></label>
+          <select class="form-select" id="color_scheme" name="color_scheme" aria-label="Select a prefered color scheme">
+            <option value="" selected>Select a color scheme</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="no-preference">No preference</option>
+          </select>
+        </div>
+        <div class="lk-field" id="geoloc">
+          <span class="lk-field-label"><a href="https://playwright.dev/python/docs/emulation#geolocation">Geolocation</a></span>
+          <div>
+            <div class="lk-field-pair">
+              <div class="input-group">
+                <label class="input-group-text" for="geo_latitude">Latitude</label>
+                <input class="form-control" step="any" type="number" id="geo_latitude" name="geo_latitude" aria-describedby="geo_latitude" placeholder="55.750996996">
+              </div>
+              <div class="input-group">
+                <label class="input-group-text" for="geo_longitude">Longitude</label>
+                <input class="form-control" step="any" type="number" id="geo_longitude" name="geo_longitude" aria-describedby="geo_longitude" placeholder="37.617330864">
+              </div>
+            </div>
+            <p class="lk-hint">The values are passed to captured website if it requests them via the Geolocation API.</p>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lk-form-group">
+      <summary>{{ render_icon('cookie') }} Session &amp; scripts</summary>
+      <div class="lk-form-group-body">
+        <div class="lk-field">
+          <label for="cookies">Cookies</label>
+          <div>
+            <input type="file" class="form-control" id="cookies" name="cookies">
+            <p class="lk-hint">The file can either be the JSON export from the Firefox plugin <a href="https://addons.mozilla.org/en-US/firefox/addon/cookie-quick-manager/">Cookie Quick Manager</a> <b>or</b> from an other Lookyloo capture.</p>
+            <p class="lk-callout lk-callout-danger">{{ render_icon('exclamation-triangle') }}
+              <span>The cookies will be stored on the lookyloo instance and potentially
+              accessed by third parties (either because the Lookyloo instance is public,
+              or people other than you have access to the instance).
+              If that's the case, please make sure none of them can be used to login as yourself on websites.</span></p>
+          </div>
+        </div>
+        <div class="lk-field">
+          <label for="storage_state">Storage state</label>
+          <div>
+            <input type="file" class="form-control" id="storage_state" name="storage_state">
+            <p class="lk-hint">The file has to be a storage state from another lookyloo capture.</p>
+            <p class="lk-callout lk-callout-danger">{{ render_icon('exclamation-triangle') }}
+              <span>The storage state will be stored on the lookyloo instance and potentially
+              accessed by third parties (either because the Lookyloo instance is public,
+              or people other than you have access to the instance).
+              If that's the case, and as the storage state may contain login credentials and
+              other kind of unique identifiers, please make sure none of them can be used to
+              login as yourself on websites.</span></p>
+          </div>
+        </div>
+        <div class="lk-field">
+          <label for="init_script">Init Script</label>
+          <div>
+            <textarea class="form-control lk-code" id="init_script" name="init_script" rows="5"
+                      placeholder="// Smooth scrool to the bottom of the page, once the DOM is loaded
+window.addEventListener('DOMContentLoaded', () => {
+ window.scrollTo({
+  top: document.body.scrollHeight,
+  behavior: 'smooth',
+ });
+});
+"></textarea>
+            <p class="lk-hint">The JavaScript code you set in this field will be executed on every page
+              as described in the <a href="https://playwright.dev/python/docs/api/class-browsercontext#browser-context-add-init-script">Playwright documentation</a>.
+              Invalid or broken code there may cause the capture to fail.</p>
+          </div>
+        </div>
+      </div>
+    </details>
     </div>
-    <div id="collapseLacusSelection" class="collapse">
-      <div class="card card-body">
+  {% endcall %}
+
+  {# ---------------- 5. Capture engine (Lacus) ---------------- #}
+  {% call section(5, 'capture-lacus', 'cpu', 'Capture engine (Lacus)', 'Lacus is the capturing interface: pick an instance, the browser interface and a predefined proxy.') %}
+    <div id="collapseLacusSelection">
         {% if not multiple_remote_lacus %}
         <!-- Unable to get lacus information, the capture will be queued and triggered whenever something is available -->
-        <div class="alert alert-warning" role="alert">
-            Unable to connect to a Lacus instance, the platform admin needs to fix it.
-            Any capture submitted now will be triggered as soon as Lacus is back.
-        </div>
+        <p class="lk-callout lk-callout-warning">{{ render_icon('exclamation-triangle') }}
+            <span>Unable to connect to a Lacus instance, the platform admin needs to fix it.
+            Any capture submitted now will be triggered as soon as Lacus is back.</span></p>
         {% else%}
           {% if multiple_remote_lacus|length == 1  %}
           <!-- Only one Lacus available, no need to have a dropdown -->
-          <div class="alert alert-info" role="alert">
-              There is only one Lacus instance available.
-          </div>
+          <p class="lk-hint">There is only one Lacus instance available.</p>
           {% else %}
-          <div class="alert alert-info" role="alert">
-              Multiple Lacus instances available, you can select one below.
-          </div>
+          <p class="lk-hint">Multiple Lacus instances available, you can select one below.</p>
           <!-- Multiple Lacus available -->
-          <div class="row mb-3">
-            <label for="remote_lacus_name" class="col-sm-2 col-form-label">Select the lacus instance to use:</label>
-            <div class="col-sm-10">
-              <select class="form-select" id="remote_lacus_name" name="remote_lacus_name" aria-label="Select the remote lacus instance to use for the capture">
-                {% for name in multiple_remote_lacus %}
-                <option value="{{name}}" {% if name == default_remote_lacus %}selected{% endif %}>{{name}}</option>
-                {% endfor %}
-              </select>
-            </div>
+          <div class="lk-field">
+            <label for="remote_lacus_name">Lacus instance</label>
+            <select class="form-select" id="remote_lacus_name" name="remote_lacus_name" aria-label="Select the remote lacus instance to use for the capture">
+              {% for name in multiple_remote_lacus %}
+              <option value="{{name}}" {% if name == default_remote_lacus %}selected{% endif %}>{{name}}</option>
+              {% endfor %}
+            </select>
           </div>
           {%endif%}
           {% for lacus_name, details in multiple_remote_lacus.items()%}
             <div name="remote_lacus_settings" id="settings_{{lacus_name}}" {%if lacus_name != default_remote_lacus %}style="display: none;"{% endif %}>
               {% if 'settings' in details %}
                 {{lacus_info(lacus_name, details['settings'], default_lacus_name)}}
-                <div class="row mb-3">
-                  <div class="col-sm-2 col-form">Browser interface:</div>
-                  <div class="col-sm-10">
+                <div class="lk-field">
+                  <span class="lk-field-label">Browser interface</span>
+                  <div class="lk-checks">
                     <div class="form-check">
                       <input class="form-check-input" type="radio" value="headless" id="browser_graphical_mode_headless_{{lacus_name}}" name="browser_graphical_mode_{{lacus_name}}" aria-describedby="headless_help"
                         {% if predefined_settings.get('headless', true) is true %}checked{% endif %}>
@@ -248,597 +596,110 @@
                   </div>
                 </div>
               {%else%}
-                <div class="alert alert-warning" role="alert">
-                  Old Lacus instance, unable to get capabilities.
-                </div>
+                <p class="lk-callout lk-callout-warning">{{ render_icon('exclamation-triangle') }} <span>Old Lacus instance, unable to get capabilities.</span></p>
               {% endif %}
             </div>
 
             <div name="remote_lacus_proxies" id="proxies_{{lacus_name}}"
                   {%if lacus_name != default_remote_lacus %}style="display: none;"{% endif %}>
-              <div class="row mb-3">
-                <label for="remote_lacus_proxy_name_{{lacus_name}}" class="col-sm-2 col-form-label">Select the proxy to use on that lacus instance:</label>
+              <div class="lk-field">
+                <label for="remote_lacus_proxy_name_{{lacus_name}}">Predefined proxy</label>
+                <div>
                 {%if 'proxies' in details %}
-                  <div class="col-sm-4">
-                    <select class="form-select" id="remote_lacus_proxy_name_{{lacus_name}}" name="remote_lacus_proxy_name" aria-label="The name of the proxy.">
-                      <option value="" selected>No pre-defined Proxy</option>
-                      {% for proxy_name in details['proxies'].keys() %}
-                      <option value="{{proxy_name}}">{{proxy_name}}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                  <div name="proxy_details" id="{{lacus_name}}_no_proxy_details" class="col-sm-6">
+                  <select class="form-select" id="remote_lacus_proxy_name_{{lacus_name}}" name="remote_lacus_proxy_name" aria-label="The name of the proxy.">
+                    <option value="" selected>No pre-defined Proxy</option>
+                    {% for proxy_name in details['proxies'].keys() %}
+                    <option value="{{proxy_name}}">{{proxy_name}}</option>
+                    {% endfor %}
+                  </select>
+                  <p name="proxy_details" id="{{lacus_name}}_no_proxy_details" class="lk-hint">
                       No predefined proxy selected.
-                  </div>
+                  </p>
                   {% for proxy_name, proxy_details in details['proxies'].items() %}
-                  <div name="proxy_details" id="{{lacus_name}}_{{proxy_name}}_details" class="col-sm-6" style="display: none;">
-                      <div class="card">
-                        <div class="card-body">
-                          <h5 class="card-title">{{ proxy_details['description']}}</h5>
-                          <p class="card-text">
-                            {%for key, value in proxy_details['meta'].items() %}
-                            <b>{{key}}:</b> {{ value }}<br>
-                            {%endfor%}
-                        </div>
-                      </div>
+                  <div name="proxy_details" id="{{lacus_name}}_{{proxy_name}}_details" class="lk-proxy-details" style="display: none;">
+                    <strong>{{ proxy_details['description']}}</strong>
+                    <dl>
+                      {%for key, value in proxy_details['meta'].items() %}
+                      <dt>{{key}}</dt><dd>{{ value }}</dd>
+                      {%endfor%}
+                    </dl>
                   </div>
                   {% endfor %}
                 {% else %}
-                <div class="col-sm-6">
-                  No predefined proxies for that Lacus instance.
-                </div>
+                  <p class="lk-hint">No predefined proxies for that Lacus instance.</p>
                 {% endif %}
+                </div>
               </div>
             </div>
           {% endfor %}
         {% endif %}
+    </div>
+  {% endcall %}
+
+  {% if enable_monitoring %}
+  {% call section(6, 'capture-monitoring', 'activity', 'Monitoring', 'Capture the URL(s) again regularly and get notified when something changes.') %}
+    <div id="collapseMonitoring">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="monitor_capture" name="monitor_capture" aria-describedby="monitor_capture_help">
+        <label class="form-check-label" for="monitor_capture">Monitor Capture</label>
+        <p id="monitor_capture_help" class="lk-hint">If checked, the URL(s) will be monitored.</p>
+      </div>
+      <div id="collapseMonitoringConfiguration" class="collapse lk-subform">
+        {{monitoring_form(monitoring_settings, monitoring_collections, auth=current_user.is_authenticated)}}
       </div>
     </div>
-    <hr>
+  {% endcall %}
+  {% endif %}
 
-    <!-- End Lacus Selection -->
-
-    <div>
-      <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfigBrowser"
-            aria-expanded="false" aria-controls="collapseConfigBrowser">
-        <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
-          <b>Browser Configuration</b>
-        </p>
-      </button>
-      <div class="help-tip" title="Lookyloo uses an emulated browser for all captures, click to configure the User-Agent"></div>
-    </div>
-
-    <div id="collapseConfigBrowser" class="collapse show">
-      <div class="card card-body">
-        {% if personal_ua %}
-        <div class="row mb-3">
-          <div class="col-sm-10">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" id="personal_ua_select" name="user_agent_select">
-              <label for="personal_ua_select" class="form-check-label">
-                  Use the current <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your own browser:<br>
-              </label>
-              <input class="visually-hidden" type="text" id="personal_ua" name="personal_ua" value="{{ personal_ua }}" disabled>
-            </div>
-          </div>
-          <div class="alert alert-light" role="alert">
-            <b>{{ personal_ua }}</b>
-          </div>
-        </div>
-        <hr>
-        {% endif %}
-
-        <div class="row mb-3">
-          <div class="col-sm-10">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" id="predefined_ua_select" name="user_agent_select" checked>
-              <label for="predefined_ua_select" class="form-check-label">Pick the <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your choice:</label>
-            </div>
-          </div>
-        </div>
-        <div id="prefed_selector">
-          <div class="row mb-3">
-            <label for="os-type" class="col-sm-2 col-form-label">OS type:</label>
-            <div class="col-sm-10">
-              <select class="form-select" name="os-type" id="os-type">
-                <option value="desktop">Desktop</option>
-                <option value="mobile">Mobile</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Desktops -->
-          <div id="desktops-list">
-            <div class="row mb-3">
-              <label for="os" class="col-sm-2 col-form-label">Operating System:</label>
-              <div class="col-sm-10">
-                <select class="form-select" name="os" id="os">
-                  {% for os in user_agents.keys()|sort(reverse=True) %}
-                  <!-- Select the default os -->
-                  <option value="{{ os }}">{{ os }}</option>
-                  {% endfor%}
-                </select>
-              </div>
-            </div>
-
-            {% for os, browsers in user_agents.items() %}
-            <!-- Hide the browsers -->
-            <div id="{{os.replace(' ', '_')}}" class="browsers" style="display: none;">
-              <label class="row mb-3">
-                <span class="col-sm-2 col-form-label">Browser Type:</span>
-                <span class="col-sm-10">
-                  <!-- Disable all the selects -->
-                  <select class="form-select" name="browser" id="sel_{{os.replace(' ', '_')}}" disabled>
-                    {% for browser in browsers.keys()|sort(reverse=True) %}
-                    <option value="{{ browser }}">{{ browser }}</option>
-                    {% endfor%}
-                  </select>
-                </span>
-              </label>
-            </div>
-            {% for browser, user_agents in browsers.items() %}
-            <!-- Hide the user agents -->
-            <div id="{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" class="user-agents" style="display: none;">
-              <label class="row mb-3">
-                <span class="col-sm-2 col-form-label">User-Agent:</span>
-                <span class="col-sm-10">
-                  <!-- Disable all the selects -->
-                  <select class="form-select" name="user_agent" id="sel_{{os.replace(' ', '_')}}_{{browser.replace(' ', '_')}}" disabled>
-                    {% for user_agent in user_agents %}
-                    <option value="{{ user_agent }}">{{ user_agent }}</option>
-                    {% endfor%}
-                  </select>
-                </span>
-              </label>
-            </div>
-            {% endfor%}
-            {% endfor%}
-          </div>
-        </div>
-        <!-- End of Desktops -->
-
-        <!-- Mobiles -->
-        <div id="mobiles-list">
-          <div class="row mb-3">
-            <label for="device-name-mobile" class="col-sm-2 col-form-label">Device name:</label>
-            <div class="col-sm-10">
-                <select class="form-select" name="device_name" id="device-name-mobile" disabled>
-                {% for device_name in devices['mobile']['default'].keys() %}
-                <option value="{{ device_name }}">{{ device_name }}</option>
-                {%endfor%}
-              </select>
-            </div>
-          </div>
-        </div>
-        <!-- End of Mobiles -->
-
-        <hr>
-        <div class="row mb-3">
-          <div class="col-sm-10">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" id="freetext_ua_select" name="user_agent_select">
-              <label for="freetext_ua_select" class="form-check-label">Type the <a href="https://en.wikipedia.org/wiki/User_agent">user-agent</a> of your choice:</label>
-            </div>
-          </div>
-        </div>
-        <div class="row mb-3">
-          <label for="freetext_ua" class="col-sm-2 col-form-label">User-Agent:</label>
-          <div class="col-sm-10">
-              <input type="text" class="form-control" name="freetext_ua" id="freetext_ua"
-                     placeholder="String to use as a User-Agent for the capture" disabled>
-          </div>
-        </div>
+  {% if current_user.is_authenticated %}
+  {% call section(7 if enable_monitoring else 6, 'capture-report', 'send', 'Auto-Report', 'Automatically report this capture to the investigation team.') %}
+    <div id="collapseReporting">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="auto-report" name="auto-report" aria-describedby="auto_report_help">
+        <label class="form-check-label" for="auto-report">Report Capture</label>
+        <p id="auto_report_help" class="lk-hint">Automatically submit to investigation team</p>
       </div>
-      <div class="alert alert-info" role="alert">
-        Depending on the User-Agent, Lookyloo will select a specific browser for the capture (Firefox, Chromium, or WebKit).
-        <ul>
-            <li><b>Firefox</b>: Better at bypassing bot detections</li>
-            <li><b>Chromium</b>: Better HAR file, making the tree more reliable</li>
-        </ul>
-        You may want to do the same capture with different browser to see the difference.
+      <div id="collapseMailConfiguration" class="collapse lk-subform">
+        {{notify_form()}}
       </div>
     </div>
+  {% endcall %}
+  {% endif %}
 
-    <hr>
-
-    <div>
-      <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfigCapture" aria-expanded="false" aria-controls="collapseConfigCapture">
-        <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
-          <b>Capture Configuration</b>
-        </p>
-      </button>
-      <div class="help-tip" title="Edit configuration options for the capture."></div>
-    </div>
-
-    <div id="collapseConfigCapture" class="collapse">
-      <div class="card card-body">
-        <div class="row mb-3">
-          <label for="allow_tracking" class="col-sm-2 col-form-check-label">Allow tracking:</label>
-          <div class="col-sm-10">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="allow_tracking" name="allow_tracking" aria-describedby="allow_tracking_help"
-                {% if predefined_settings.get('allow_tracking') is true %}checked="checked"{% endif %}>
-              <label id="allow_tracking_help" class="form-check-label" for="allow_tracking">We'll attempt to click on the button allowing the website captured to violate your privacy.</label>
-            </div>
-          </div>
-        </div>
-
-        {% if not hide_tt_checkbox %}
-        <div class="row mb-3">
-          <label for="with_trusted_timestamps" class="col-sm-2 col-form-check-label">Request trusted timestamps (<a href="https://en.wikipedia.org/wiki/Trusted_timestamping">RFC 3161</a>):</label>
-          <div class="col-sm-10">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="with_trusted_timestamps" name="with_trusted_timestamps" aria-describedby="with_trusted_timestamps_help"
-                {% if predefined_settings.get('with_trusted_timestamps') is true or tt_enabled_default%}checked="checked"{% endif %}>
-              <label id="with_trusted_timestamps_help" class="form-check-label" for="with_trusted_timestamps">Once the capture is done, we trigger a request to get Trusted Timestamps from a pre-defined provider.</label>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-        <div class="row mb-3">
-          <label for="java_script_enabled" class="col-sm-2 col-form-check-label">Enable <a href="https://playwright.dev/python/docs/emulation#javascript-enabled">JavaScript</a>:</label>
-          <div class="col-sm-10">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="java_script_enabled" name="java_script_enabled" aria-describedby="java_script_enabled_help"
-                {% if predefined_settings.get('java_script_enabled', true) is true %}checked="checked"{% endif %}>
-              <label id="java_script_enabled_help" class="form-check-label" for="java_script_enabled">If disabled, the browser will not run any JavaScript when rendering the page.</label>
-            </div>
-          </div>
-        </div>
-        {% if current_user.is_authenticated %}
-        <div class="row mb-3">
-          <label for="with_video" class="col-sm-2 col-form-label">Record a video of the capture</label>
-          <div class="col-sm-10">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="with_video" name="with_video" aria-describedby="with_video_help">
-                <label id="with_video_help" class="form-check-label" for="with_video">If selected, a video of the capture will be recorded. It might be pretty big.</label>
-            </div>
-          </div>
-        </div>
-        {%endif%}
-
-        {% if not has_global_proxy %}
-        <div class="row mb-3" id="user_defined_proxy">
-          <label for="proxy" class="col-sm-2 col-form-label">Proxy:</label>
-          <div class="col-sm-10">
-            <input type="text" class="form-control" name="proxy" id="proxy" placeholder="Expected format: [scheme]://[username]:[password]@[hostname]:[port]">
-          </div>
-        </div>
-        {%endif%}
-        {% if current_user.is_authenticated and categories%}
-        <div class="row mb-3" id="user_categories">
-          <label for="categories" class="col-sm-2 col-form-label">Categories (select one or more):</label>
-          <div class="col-sm-10">
-            <select class="form-select" multiple size="5" name="categories" id="categories" aria-label="size 3 multiple select categories">
-                {% for category in categories %}
-                <option value="{{category}}">{{category}}</option>
-                {% endfor %}
-            </select>
-          </div>
-        </div>
-        {%endif%}
-
-        <div class="row mb-3">
-          <label for="final_wait" class="col-sm-2 col-form-label">Final wait time:</label>
-          <div class="col-sm-10">
-            <input class="form-control" type="number" id="final_wait" name="final_wait" aria-describedby="final_wait_help" placeholder="5">
-            <div class="alert alert-info" role="alert">
-                The capture will wait for that time (in sec) after the instrumentation is over.
-            </div>
-          </div>
-        </div>
-
-
-        <div class="row mb-3">
-          <label for="capture_timeout_in_sec" class="col-sm-2 col-form-label">Max capture time:</label>
-          <div class="col-sm-10">
-            <input class="form-control" type="number" id="general_timeout_in_sec" name="general_timeout_in_sec" aria-describedby="general_timeout_in_sec_help" placeholder="90">
-            <div class="alert alert-info" role="alert">
-                The capture will stop regardless the state of the page after this time.
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label class="col-sm-2 col-form-label">Viewport:</label>
-          <div class="col-sm-10">
-           <div class="row align-items-center">
-            <div class="col">
-             <label class="visually-hidden" for="width">Width</label>
-              <div class="input-group">
-                <div class="input-group-text">Width</div>
-                <input class="form-control" type="number" id="width" name="width" aria-describedby="width" placeholder="1280">
-              </div>
-            </div>
-            <div class="col">
-             <label class="visually-hidden" for="height">Height</label>
-              <div class="input-group">
-                <div class="input-group-text">Height</div>
-                <input class="form-control" type="number" id="height" name="height" aria-describedby="height" placeholder="720">
-              </div>
-            </div>
-           </div>
-           <div class="alert alert-info" role="alert">
-                The size of the browser window (default is 1280x720), if possible, the screenshot will take the full page and not just the viewport.
-           </div>
-          </div>
-        </div>
-
-        <!-- Referer -->
-        <div class="row mb-3">
-          <label for="referer" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer">Referer</a>:</label>
-          <div class="col-sm-10">
-            <input type="text" class="form-control" name="referer" id=referer placeholder="https://my.website.org/path">
-            <div class="alert alert-info" role="alert">
-                Sets the Referrer HTTP header.
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label for="locale" class="col-sm-2 col-form-label">Browser <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language">locale</a>:</label>
-          <div class="col-sm-10">
-            <input type="text" class="form-control" name="locale" id="locale" placeholder="fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5">
-            <div class="alert alert-info" role="alert">
-                Sets the Accept-Language HTTP header.
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label for="headers" class="col-sm-2 col-form-label">Other <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers">HTTP headers</a>:</label>
-          <div class="col-sm-10">
-            <textarea class="form-control" name="headers" id=headers rows=3 placeholder="X-Auth-Token: YWJjcmFjYWRhYnJh"></textarea>
-            <div class="alert alert-warning" role="alert">
-              The headers will be added to the request. One header per line.<br>
-              For <strong>Referrer</strong>, <strong>Accept-Language</strong> (Locale),
-              <strong>Authorization</strong> (HTTP Authentication), <strong>Cookie</strong>,
-              and <strong>DNT</strong> (Do Not Track),
-              please use the dedicated fields in this form.
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          {% set local_TZ, local_UTC_offset, all_timezones = tz_info() %}
-          <label for="timezone_id" class="col-sm-2 col-form-label"><a href="https://playwright.dev/python/docs/emulation#locale--timezone">Timezone</a>:</label>
-          <div class="col-sm-10">
-            <input class="form-control" list="tzOptions" name="timezone_id" id="timezone_id" aria-label="Pick the timezone for the capture" placeholder="Europe/Vatican">
-            <datalist id="tzOptions">
-              {% for tz, offset in all_timezones.items() %}
-              <option value="{{tz}}">{{tz}} ({{offset}})</option>
-              {%endfor%}
-            </datalist>
-            <div class="alert alert-info" role="alert">
-              Defaults to localtime: {{local_TZ}} ({{local_UTC_offset}}).
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label for="color_scheme" class="col-sm-2 col-form-label"><a href="https://playwright.dev/python/docs/emulation#color-scheme-and-media">Color scheme</a>:</label>
-          <div class="col-sm-10">
-            <select class="form-select" id="color_scheme" name="color_scheme" aria-label="Select a prefered color scheme">
-              <option value="" selected>Select a color scheme</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="no-preference">No preference</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label for="geoloc" class="col-sm-2 col-form-label"><a href="https://playwright.dev/python/docs/emulation#geolocation">Geolocation</a>:</label>
-          <div class="col-sm-10" id="geoloc">
-            <div class="row align-items-center">
-              <div class="col">
-               <label class="visually-hidden" for="geo_latitude">Latitude</label>
-                <div class="input-group">
-                  <div class="input-group-text">Latitude</div>
-                  <input class="form-control" step="any" type="number" id="geo_latitude" name="geo_latitude" aria-describedby="geo_latitude" placeholder="55.750996996">
-                </div>
-              </div>
-              <div class="col">
-               <label class="visually-hidden" for="geo_longitude">Longitude</label>
-                <div class="input-group">
-                  <div class="input-group-text">Longitude</div>
-                  <input class="form-control" step="any" type="number" id="geo_longitude" name="geo_longitude" aria-describedby="geo_longitude" placeholder="37.617330864">
-                </div>
-              </div>
-            </div>
-            <div class="alert alert-info" role="alert">
-              The values are passed to captured website if it requests them via the Geolocation API.
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label for="httpauth" class="col-sm-2 col-form-label">HTTP Basic Authentication</label>
-          <div class="col-sm-10" id="httpauth">
-            <div class="row align-items-center">
-              <div class="col">
-               <label class="visually-hidden" for="http_auth_username">Username</label>
-                <div class="input-group">
-                  <div class="input-group-text">Username</div>
-                  <input class="form-control" type="text" id="http_auth_username" name="http_auth_username" aria-describedby="http_auth_username" placeholder="Jacques Chirac">
-                </div>
-              </div>
-              <div class="col">
-               <label class="visually-hidden" for="http_auth_password">Password</label>
-                <div class="input-group">
-                  <div class="input-group-text">Password</div>
-                  <input class="form-control" autocomplete="new-password" type="password" id="http_auth_password" name="http_auth_password" aria-describedby="http_auth_password" placeholder="Yackety Yak">
-                </div>
-              </div>
-            </div>
-            <div class="alert alert-danger" role="alert">
-              The authentication credentials will be stored on the lookyloo instance and potentially
-              accessed by third parties (either because the Lookyloo instance is public,
-              or people other than you have access to the instance).
-              If that's the case, please make sure none of them can be used to login as yourself
-              on websites.
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label for="storage_state" class="col-sm-2 col-form-label">Storage state:</label>
-          <div class="col-sm-10">
-            <input type="file" class="form-control" id="storage_state" name="storage_state">
-            <div class="alert alert-info" role="alert">
-                The file has to be a storage stste from another lookyloo capture.
-            </div>
-            <div class="alert alert-danger" role="alert">
-              The storage state will be stored on the lookyloo instance and potentially
-              accessed by third parties (either because the Lookyloo instance is public,
-              or people other than you have access to the instance).
-              If that's the case, and as the stotage state may contain login credentials and
-              other kind of unique identifiers, please make sure none of them can be used to
-              login as yourself on websites.
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label for="init_script" class="col-sm-2 col-form-label">Init Script</label>
-          <div class="col-sm-10">
-            <textarea class="form-control" id="init_script" name="init_script" rows="5"
-                      placeholder="// Smooth scrool to the bottom of the page, once the DOM is loaded
-window.addEventListener('DOMContentLoaded', () => {
- window.scrollTo({
-  top: document.body.scrollHeight,
-  behavior: 'smooth',
- });
-});
-"></textarea>
-            <div class="alert alert-info" role="alert">
-                The JavaScript code you set in this field will be executed on every page
-                as described in the
-                <a href="https://playwright.dev/python/docs/api/class-browsercontext#browser-context-add-init-script">
-                    Playwright documentation
-                </a>.
-                Invalid or broken code there may cause the capture to fail.
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <label for="cookies" class="col-sm-2 col-form-label">Cookies:</label>
-          <div class="col-sm-10">
-            <input type="file" class="form-control" id="cookies" name="cookies">
-            <div class="alert alert-info" role="alert">
-                The file can either be the JSON export from the Firefox plugin <a href="https://addons.mozilla.org/en-US/firefox/addon/cookie-quick-manager/">Cookie Quick Manager</a> <b>or</b> from an other Lookyloo capture.
-            </div>
-            <div class="alert alert-danger" role="alert">
-              The cookies will be stored on the lookyloo instance and potentially
-              accessed by third parties (either because the Lookyloo instance is public,
-              or people other than you have access to the instance).
-              If that's the case, please make sure none of them can be used to login as yourself
-              on websites.
-            </div>
-          </div>
-        </div>
-        <div class="row mb-3">
-          <label for="dnt" class="col-sm-2 col-form-label"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/DNT">Do not Track</a> (discontinued):</label>
-          <div class="col-sm-10">
-            <select class="form-select" name="dnt" id="dnt" aria-label="Select a value for the Do Not Track HTTP Header">
-              <option value="" selected>Select a value for the DNT header (header not set otherwise)</option>
-              <option value="0">0 (The user prefers to allow tracking on the target site.)</option>
-              <option value="1">1 (The user prefers not to be tracked on the target site.)</option>
-              <option value="null">null (The user has not specified a preference about tracking.)</option>
-            </select>
-            <div class="alert alert-info" role="alert">
-                Sets the DNT HTTP header.
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-    <hr>
-{% if enable_monitoring %}
-  <div>
-    <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMonitoring" aria-expanded="false" aria-controls="collapseMonitoring">
-      <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
-        <b>Monitoring</b>
-      </p>
-    </button>
-    <div class="help-tip" title="Configure monitoring for the capture"></div>
-  </div>
-
-  <div id="collapseMonitoring" class="collapse show">
-    <div class="card card-body">
-      <div class="row mb-3">
-        <label for="monitor_capture" class="col-sm-2 col-form-check-label">Monitor Capture:</label>
-        <div class="col-sm-10">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="monitor_capture" name="monitor_capture" aria-describedby="monitor_capture_help">
-            <label id="monitor_capture_help" class="form-check-label" for="monitor_capture">If checked, the URL(s) will be monitored.</label>
-          </div>
-        </div>
-      </div>
-      <div id="collapseMonitoringConfiguration" class="collapse">
-        <div class="card card-body">
-          {{monitoring_form(monitoring_settings, monitoring_collections, auth=current_user.is_authenticated)}}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <hr>
-{% endif %}
-
-{% if current_user.is_authenticated %}
-  <!-- admin only checkbox for autoreport -->
-  <div>
-    <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReporting" aria-expanded="false" aria-controls="collapseReporting">
-      <p style="margin-left: -12px; margin-top: 12px; font-size: x-large; text-decoration: underline; text-decoration-color: blue;">
-        <b>Auto-Report</b>
-      </p>
-    </button>
-    <div class="help-tip" title="Automatically report this capture"></div>
-  </div>
-
-  <div id="collapseReporting" class="collapse show">
-    <div class="card card-body">
-      <div class="row mb-3">
-        <label for="report_capture" class="col-sm-2 col-form-check-label">Report Capture:</label>
-        <div class="col-sm-10">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox"  id="auto-report" name="auto-report" aria-describedby="auto_report_help">
-            <label id="auto_report_help" class="form-check-label" for="auto-report">Automatically submit to investigation team</label>
-          </div>
-        </div>
-        <div id="collapseMailConfiguration" class="collapse">
-          <div class="card card-body">
-            {{notify_form()}}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <hr>
-{%  endif %}
-
-    <center>
-      <b>
-        {% if default_public %}
-          By default, the capture is public: listed on the index and accessible by anyone who knows the UUID.
-        {% elif default_private %}
-          By default, the capture is private: not listed on the index and you'll need a (time limited) seed to access it.
-        {% else %}
-          By default, the capture is unlisted: not visible on the index page, but accessible by anyone who knows the UUID.
-        {% endif %}
-      </b>
-      <br>
-      <br>
-      <button type="submit" class="new-capture-button btn btn-primary" id="btn-looking">Start looking!</button>
-    </center>
-  </form>
 </div>
+
+{# ---------------- Summary panel ---------------- #}
+<aside class="lk-capture-aside" aria-label="Capture summary">
+  <div class="lk-capture-aside-card">
+    <nav aria-label="Form sections">
+      <p class="lk-capture-aside-title">Sections</p>
+      <ol class="lk-capture-toc">
+        <li><a href="#capture-target">What to capture</a></li>
+        <li><a href="#capture-privacy">Privacy</a></li>
+        <li><a href="#capture-browser">Browser</a></li>
+        <li><a href="#capture-advanced">Advanced settings</a></li>
+        <li><a href="#capture-lacus">Capture engine</a></li>
+        {% if enable_monitoring %}<li><a href="#capture-monitoring">Monitoring</a></li>{% endif %}
+        {% if current_user.is_authenticated %}<li><a href="#capture-report">Auto-Report</a></li>{% endif %}
+      </ol>
+    </nav>
+    <p class="lk-capture-default">
+      {{ render_icon('info-circle') }}
+      <span>
+      {% if default_public %}
+        By default, the capture is public: listed on the index and accessible by anyone who knows the UUID.
+      {% elif default_private %}
+        By default, the capture is private: not listed on the index and you'll need a (time limited) seed to access it.
+      {% else %}
+        By default, the capture is unlisted: not visible on the index page, but accessible by anyone who knows the UUID.
+      {% endif %}
+      </span>
+    </p>
+    <button type="submit" class="btn btn-primary btn-lg w-100 lk-capture-submit" id="btn-looking">{{ render_icon('camera') }} Start looking!</button>
+  </div>
+</aside>
+</div>
+</form>
 {% endblock %}
 
 {% block scripts %}
@@ -854,3 +715,15 @@ window.addEventListener('DOMContentLoaded', () => {
   </script>
 
 {% endblock %}
+
+{# Tutorial of the page (js/components/tour.js, doc/ui/tour.md) #}
+{% block tour %}{{ tour([
+  (None, "Capture a URL", "Every setting of a capture. Only the URL is required: the defaults suit most links."),
+  ("#singleCaptureField", "The URL", "The link to capture. Tick \"Multiple captures\" to capture several URLs at once, one per line."),
+  (".lk-capture-toc", "Sections", "The settings are grouped in sections: click one to open it. Only the first one is open to begin with."),
+  ("#capture-privacy", "Privacy", "Who can find and open the capture: public, unlisted or private."),
+  ("#capture-browser", "The browser", "Which browser and device the page sees: desktop or mobile, operating system, user agent."),
+  ("#capture-advanced", "Advanced settings", "Cookies, headers, referer, proxy, timeouts and other technical settings of the browser."),
+  ("#btn-looking", "Start", "Starts the capture. The page of the capture opens and fills in when the capture is done."),
+  ("#lk-tour-menu-btn", "The tutorial, any time", "This button starts the tour of the page you are on, or the full tour of Lookyloo: every page, one after the other.")
+]) }}{% endblock %}

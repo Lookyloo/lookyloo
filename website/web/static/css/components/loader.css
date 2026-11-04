@@ -123,3 +123,28 @@ div.dt-processing > div:last-child {
   height: 9rem;
   vertical-align: middle;
 }
+
+/* Submit button while its form is being sent (data-lk-loading, js/loader.js) */
+.lk-btn-loading,
+.lk-btn-loading:disabled {
+  pointer-events: none;
+  opacity: 1;
+}
+
+.lk-btn-loading .lk-loader {
+  /* A clicked button reacts at once */
+  --lk-loader-delay: 0s;
+  flex-direction: row;
+  gap: var(--lk-space-2);
+  color: inherit;
+}
+
+.lk-btn-loading .lk-loader-label {
+  color: inherit;
+  font-size: inherit;
+}
+
+.lk-btn-loading .lk-loader-sm .lk-loader-eyes,
+.lk-btn-loading .lk-loader-eyes {
+  width: 34px;
+}

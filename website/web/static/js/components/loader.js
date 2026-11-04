@@ -18,3 +18,31 @@ function lkLoader(label = 'Loading', size = 'md', showLabel = false) {
     wrapper.appendChild(text);
     return wrapper.outerHTML;
 }
+
+// Forms with data-lk-loading="Label": on submit, the submit button shows the eyes and is disabled.
+document.addEventListener('submit', event => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || !form.dataset.lkLoading) {
+        return;
+    }
+    const button = event.submitter || form.querySelector('[type="submit"]');
+    if (button) {
+        button.dataset.lkOriginal = button.innerHTML;
+        button.classList.add('lk-btn-loading');
+        button.innerHTML = lkLoader(form.dataset.lkLoading, 'sm', true);
+        // Disabled after the submission has been built, so the button value is still sent
+        setTimeout(() => { button.disabled = true; }, 0);
+    }
+});
+
+// Back button (page restored from the browser cache): give the buttons back their content
+window.addEventListener('pageshow', event => {
+    if (!event.persisted) {
+        return;
+    }
+    document.querySelectorAll('.lk-btn-loading').forEach(button => {
+        button.innerHTML = button.dataset.lkOriginal || button.innerHTML;
+        button.classList.remove('lk-btn-loading');
+        button.disabled = false;
+    });
+});
