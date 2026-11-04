@@ -1,11 +1,60 @@
 /*
- * Capture preview (js/components/capture_preview.js): the square at the left of
- * each capture in the lists.
- *
- * TEMPORARY: identicon of the hostname (GitHub avatar style) until the blurred
- * screenshots are shown. Replacing it = this file + capture_preview.js only.
+ * Capture preview (js/components/capture_preview.js), at the left of each capture
+ * in the lists: the screenshot, blurred until clicked (.lk-thumb), or the
+ * identicon of the hostname when there is no screenshot (.lk-capture-preview).
  * Doc: doc/ui/capture-list.md
  */
+
+/* Screenshot thumbnail, blurred until clicked */
+.lk-thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 128px;
+  height: 80px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+  background: var(--lk-color-surface-2);
+  cursor: pointer;
+}
+
+.lk-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: filter var(--lk-transition-fast);
+}
+
+.lk-thumb.is-blurred img {
+  filter: blur(8px) saturate(0.6);
+  transform: scale(1.1); /* hides the blurred, transparent edges */
+}
+
+/* "Show" label drawn in CSS so the rows stay light */
+.lk-thumb.is-blurred::after {
+  content: 'Show';
+  position: absolute;
+  inset: auto 0.35rem 0.35rem auto;
+  padding: 0.05rem 0.45rem;
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-surface);
+  color: var(--lk-color-ink);
+  font-size: var(--lk-font-size-xs);
+  font-weight: var(--lk-font-weight-medium);
+  opacity: 0.9;
+}
+
+.lk-thumb:hover {
+  border-color: var(--lk-color-rule-strong);
+}
+
+.lk-thumb:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px var(--lk-focus-ring);
+}
 
 .lk-capture-preview {
   --lk-preview-hue: 220;
@@ -13,8 +62,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 128px;
+  height: 80px;
   border: 1px solid var(--lk-color-rule);
   border-radius: var(--lk-radius-md);
   /* Tones of the hue picked from the hostname */
@@ -28,8 +77,8 @@
 }
 
 .lk-identicon {
-  width: 60%;
-  height: 60%;
+  width: 44px;
+  height: 44px;
   fill: currentColor;
   shape-rendering: crispEdges;
 }
@@ -40,8 +89,20 @@
 }
 
 @media (max-width: 576px) {
+  .lk-thumb,
   .lk-capture-preview {
-    width: 40px;
-    height: 40px;
+    width: 88px;
+    height: 56px;
+  }
+
+  .lk-identicon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-thumb img {
+    transition: none;
   }
 }

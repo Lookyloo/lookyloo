@@ -1,75 +1,89 @@
 {% extends "layouts/page.html" %}
+{% from 'macros/page.html' import page_header %}
+{% from 'bootstrap5/utils.html' import render_icon %}
 
 {% block title %}Statistics{% endblock %}
 
-{% from 'macros/page.html' import page_header %}
 {% block page_header %}
-{{ page_header('Statistics', description='Captures, redirects, URLs and domains per week and per month on this instance.', icon_name='graph-up', crumbs=[('Admin', None)]) }}
+{{ page_header('Statistics', description='Captures, redirects, URLs and domains on this instance: this week, and per month.', icon_name='graph-up', crumbs=[('Admin', None)]) }}
 {% endblock %}
 
 {% block content %}
-<div>
-{% for week in stats['weeks'] %}
-  <h2> Week: {{ week['week_number'] }}</h2>
-  <div class="table-responsive">
-  <table id="table" class="table" style="width:96%">
-    <thead>
-    <tr>
-      <th>Submissions</th>
-      <th>Redirects</th>
-      <th>Unique urls (including redirects)</th>
-      <th>Unique domains (including redirects)</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-      <td> {{ week['submissions'] }} </td>
-      <td> {{ week['redirects'] }} </td>
-      <td> {{ week['uniq_urls'] }} </td>
-      <td> {{ week['uniq_domains'] }} </td>
-    </tr>
-    </tbody>
-  </table>
-  </div>
-{% endfor %}
-</div>
+{# Weeks: the last one and the current one (Lookyloo.get_stats) #}
+{% set weeks = stats['weeks'] %}
+{% set this_week = weeks[-1] if weeks else {} %}
+{% set last_week = weeks[-2] if weeks|length > 1 else {} %}
+{% set metrics = [('submissions', 'Captures', 'camera'), ('redirects', 'Redirects', 'arrow-return-right'),
+                  ('uniq_urls', 'Unique URLs', 'link-45deg'), ('uniq_domains', 'Unique domains', 'globe2')] %}
 
-<div>
-{% for year in stats['years'] %}
-  <h2>Year: {{ year['year'] }}</h2>
-  <ul>
-      <li><b>Total submissions</b>: {{ year['yearly_submissions'] }}</li>
-  </ul>
-  <div>
-    <div class="table-responsive">
-    <table id="table" class="table" style="width:96%">
+<section class="lk-stats-section" aria-labelledby="stats-week-title">
+  <h2 class="lk-stats-title" id="stats-week-title">This week{% if this_week %} <span class="lk-stats-sub">week {{ this_week['week_number'] }}</span>{% endif %}</h2>
+  <div class="lk-stats-cards">
+    {% for key, label, icon_name in metrics %}
+    {% set now = this_week.get(key, 0) %}
+    {% set before = last_week.get(key) %}
+    <div class="lk-stats-card">
+      <span class="lk-stats-card-icon">{{ render_icon(icon_name) }}</span>
+      <div>
+        <p class="lk-stats-card-label">{{ label }}</p>
+        <p class="lk-stats-card-value" data-value="{{ now }}">{{ '{:,}'.format(now) }}</p>
+        {% if before is not none %}
+        {% set diff = now - before %}
+        <p class="lk-stats-card-delta {{ 'is-up' if diff > 0 else ('is-down' if diff < 0 else '') }}">
+          {{ '+' if diff > 0 else '' }}{{ diff }} vs last week ({{ before }})</p>
+        {% else %}
+        <p class="lk-stats-card-delta">No capture last week</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="lk-stats-note">URLs and domains include the redirects. Only the recent captures are counted in detail: archived ones only count as captures.</p>
+</section>
+
+{% if stats['years'] %}
+{# Chart type (js/stats_graph.js), remembered #}
+<div class="lk-stats-mode" role="group" aria-label="Chart type">
+  <span>Chart:</span>
+  <button type="button" data-stats-mode="bars" aria-pressed="true">{{ render_icon('bar-chart') }} Bars</button>
+  <button type="button" data-stats-mode="curve" aria-pressed="false">{{ render_icon('graph-up') }} Curve</button>
+</div>
+{% endif %}
+{% for year in stats['years']|reverse %}
+<section class="lk-stats-section" aria-labelledby="stats-year-{{ year['year'] }}">
+  <h2 class="lk-stats-title" id="stats-year-{{ year['year'] }}">{{ year['year'] }}
+    <span class="lk-stats-sub">{{ '{:,}'.format(year['yearly_submissions']) }} capture{{ 's' if year['yearly_submissions'] != 1 }}</span></h2>
+  {# Bars drawn by js/stats_graph.js from data-months #}
+  <div class="lk-stats-chart" data-year="{{ year['year'] }}"
+       data-months="{{ year['months']|map(attribute='submissions')|list|tojson }}"
+       data-month-numbers="{{ year['months']|map(attribute='month_number')|list|tojson }}"
+       role="img" aria-label="Captures per month in {{ year['year'] }}"></div>
+  <div class="table-responsive">
+    <table class="table lk-stats-table">
       <thead>
-      <tr>
-        <th>Month</th>
-        <th>Submissions</th>
-        <th>Redirects</th>
-        <th>Unique urls (including redirects)</th>
-        <th>Unique domains (including redirects)</th>
-      </tr>
+        <tr><th scope="col">Month</th><th scope="col">Captures</th><th scope="col">Redirects</th>
+            <th scope="col">Unique URLs</th><th scope="col">Unique domains</th></tr>
       </thead>
       <tbody>
-      {% for month in year['months'] %}
+        {% for month in year['months'] %}
         <tr>
-          <td> {{ month_name(month['month_number']) }} </td>
-          <td> {{ month['submissions'] }} </td>
-          <td> {{ month['redirects'] }} </td>
-          <td> {{ month['uniq_urls'] }} </td>
-          <td> {{ month['uniq_domains'] }} </td>
+          <th scope="row">{{ month_name(month['month_number']) }}</th>
+          <td>{{ '{:,}'.format(month['submissions']) }}</td>
+          <td>{{ '{:,}'.format(month['redirects']) if month.get('redirects') is not none else '—' }}</td>
+          <td>{{ '{:,}'.format(month['uniq_urls']) if month.get('uniq_urls') is not none else '—' }}</td>
+          <td>{{ '{:,}'.format(month['uniq_domains']) if month.get('uniq_domains') is not none else '—' }}</td>
         </tr>
-      {% endfor %}
+        {% endfor %}
       </tbody>
+      <tfoot>
+        <tr><th scope="row">Total</th><td>{{ '{:,}'.format(year['yearly_submissions']) }}</td><td colspan="3"></td></tr>
+      </tfoot>
     </table>
-    </div>
   </div>
+</section>
+{% else %}
+<p class="lk-stats-note">No capture yet.</p>
 {% endfor %}
-</div>
-
-<div class='graphs'></div>
 {% endblock %}
 
 {% block scripts %}

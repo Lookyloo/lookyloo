@@ -154,7 +154,8 @@ function lkRoute(sprite, capture) {
 // The capture cell: preview + title + URL + facts (+ redirect chain)
 function lkCaptureCell(sprite, capture) {
     const wrapper = lkElement('div', 'lk-capture');
-    wrapper.appendChild(lkCapturePreview({url: capture.url, finalUrl: capture.hops.at(-1)}));
+    wrapper.appendChild(lkCapturePreview({url: capture.url, finalUrl: capture.hops.at(-1),
+                                          href: capture.href, thumbnail: capture.thumbnail}));
 
     const body = lkElement('div', 'lk-capture-body');
     const title = lkElement(capture.href ? 'a' : 'span', 'lk-capture-title', capture.title || 'No title');
@@ -227,11 +228,13 @@ function lkTimeCell(isoTime) {
 // DOM nodes in createdCell, the render only gives the text for search / sort.
 function lkIndexColumns(table) {
     const sprite = table.dataset.lkIcons;
+    // URL of a thumbnail, for a placeholder UUID (url_for in the template)
+    const thumbnail = table.dataset.lkThumbnail || null;
     return [
         {
             data: null,
             render: (data, type, row) => type === 'display' ? '' : row.page.filter,
-            createdCell: (cell, data, row) => cell.appendChild(lkCaptureCell(sprite, lkParseIndexRow(row))),
+            createdCell: (cell, data, row) => cell.appendChild(lkCaptureCell(sprite, {...lkParseIndexRow(row), thumbnail})),
         },
         {
             data: 'capture_time',

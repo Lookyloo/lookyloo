@@ -124,7 +124,8 @@
   <div class="lk-capture-list">
   <table id="IndexTable" class="table lk-capture-table" style="width:100%"
          data-indextype="index" data-lk-compact
-         data-lk-icons="{{ url_for('bootstrap.static', filename='icons/bootstrap-icons.svg') }}">
+         data-lk-icons="{{ url_for('bootstrap.static', filename='icons/bootstrap-icons.svg') }}"
+         data-lk-thumbnail="{{ url_for('thumbnail', tree_uuid='00000000-0000-0000-0000-000000000000', width=256) }}">
     <thead>
      <tr>
        <th>Capture</th>
