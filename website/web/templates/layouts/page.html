@@ -1,17 +1,35 @@
 {% extends "layouts/main.html" %}
+{% from 'bootstrap5/utils.html' import render_icon %}
 {#
   Standard page: layouts/main.html + site header and footer.
   Full screen pages (capture tree, popups) keep extending layouts/main.html directly.
   Optional block: page_header, filled with macros/page.html page_header().
+  Also loads the shared components: eyes loader, DataTables look, capture list.
 #}
 
 {% block styles %}
 {{ super() }}
 {% for stylesheet in ['css/components/site.css', 'css/components/header.css', 'css/components/footer.css',
-                      'css/components/page-header.css'] %}
+                      'css/components/page-header.css', 'css/components/loader.css',
+                      'css/components/datatables.css', 'css/components/capture-list.css',
+                      'css/components/capture-preview.css', 'css/components/tag.css',
+                      'css/components/back-to-top.css', 'css/components/backdrop.css'] %}
 <link rel="stylesheet" href="{{ url_for('static', filename=stylesheet) }}"
       {{get_sri('static', stylesheet)}}
       crossorigin="anonymous">
+{% endfor %}
+{% endblock %}
+
+{# Loaded after the DataTables library, before the tables are created (js/generic.js) #}
+{% block scripts %}
+{{ super() }}
+{% for script in ['js/components/loader.js', 'js/components/datatables.js',
+                  'js/components/capture_preview.js', 'js/components/capture_list.js',
+                  'js/components/category_tag.js', 'js/components/back_to_top.js'] %}
+<script src="{{ url_for('static', filename=script) }}"
+        {{get_sri('static', script)}}
+        nonce="{{ csp_nonce() }}"
+        crossorigin="anonymous"></script>
 {% endfor %}
 {% endblock %}
 
@@ -20,8 +38,13 @@
 {% block site_header %}
 <a class="visually-hidden-focusable lk-skip-link" href="#content">Skip to content</a>
 {% include 'partials/header.html' %}
+{# Decorative background, see css/components/backdrop.css #}
+<div class="lk-backdrop" aria-hidden="true"></div>
 {% endblock %}
 
 {% block site_footer %}
 {% include 'partials/footer.html' %}
+{# Shown after scrolling down a bit (js/components/back_to_top.js) #}
+<button type="button" class="lk-back-to-top" id="lk-back-to-top" tabindex="-1"
+        aria-label="Back to top" title="Back to top">{{ render_icon('arrow-up') }}</button>
 {% endblock %}

@@ -1,0 +1,46 @@
+/*
+ * Decorative background of the pages extending layouts/page.html: a faint
+ * capture tree (images/ui/backdrop-tree.svg, used as a mask so it takes the
+ * accent colour) and an accent glow, centred in the window and fading out
+ * towards the edges. Fixed: it stays in place while scrolling. Stronger on the
+ * home page (.lk-page-home). Doc: doc/ui/backdrop.md
+ */
+
+body.lk-page {
+  --lk-backdrop-tree-opacity: 0.08;
+  --lk-backdrop-glow: 0.09;
+}
+
+[data-bs-theme="dark"] body.lk-page {
+  --lk-backdrop-tree-opacity: 0.12;
+}
+
+body.lk-page.lk-page-home {
+  --lk-backdrop-tree-opacity: 0.15;
+  --lk-backdrop-glow: 0.15;
+}
+
+[data-bs-theme="dark"] body.lk-page.lk-page-home {
+  --lk-backdrop-tree-opacity: 0.22;
+}
+
+.lk-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 45% 40% at 50% 55%, rgba(var(--lk-color-accent-rgb), var(--lk-backdrop-glow)), transparent 75%);
+  /* Only the alpha of the mask counts: black = shown */
+  -webkit-mask-image: radial-gradient(ellipse 60% 55% at 50% 55%, #000 35%, transparent 80%);
+  mask-image: radial-gradient(ellipse 60% 55% at 50% 55%, #000 35%, transparent 80%);
+}
+
+.lk-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--lk-color-accent);
+  opacity: var(--lk-backdrop-tree-opacity);
+  -webkit-mask: url("../../images/ui/backdrop-tree.svg") center 55% / min(1600px, 120vw) auto no-repeat;
+  mask: url("../../images/ui/backdrop-tree.svg") center 55% / min(1600px, 120vw) auto no-repeat;
+}

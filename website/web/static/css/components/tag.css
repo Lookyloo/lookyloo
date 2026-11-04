@@ -1,0 +1,118 @@
+/*
+ * Tags (lkCategoryTag() in js/components/category_tag.js): coloured pill with an icon.
+ * Tints come from the --lk-tag-* tokens of css/components/site.css. Doc: doc/ui/tags.md
+ */
+
+.lk-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.65rem 0.2rem 0.5rem;
+  border-radius: var(--lk-radius-pill);
+  font-size: var(--lk-font-size-sm);
+  font-weight: var(--lk-font-weight-medium);
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--lk-tag-fg);
+  background: var(--lk-tag-bg);
+  border: 1px solid color-mix(in srgb, var(--lk-tag-fg) 25%, transparent);
+}
+
+a.lk-tag:hover {
+  text-decoration: none;
+  border-color: var(--lk-tag-fg);
+}
+
+.lk-tag-family {
+  opacity: 0.75;
+  font-weight: 400;
+}
+
+.lk-tag-family::after {
+  content: ' ·';
+}
+
+.lk-tag-blue   { --lk-tag-fg: var(--lk-tag-blue);   --lk-tag-bg: var(--lk-tag-blue-bg); }
+.lk-tag-teal   { --lk-tag-fg: var(--lk-tag-teal);   --lk-tag-bg: var(--lk-tag-teal-bg); }
+.lk-tag-green  { --lk-tag-fg: var(--lk-tag-green);  --lk-tag-bg: var(--lk-tag-green-bg); }
+.lk-tag-red    { --lk-tag-fg: var(--lk-tag-red);    --lk-tag-bg: var(--lk-tag-red-bg); }
+.lk-tag-amber  { --lk-tag-fg: var(--lk-tag-amber);  --lk-tag-bg: var(--lk-tag-amber-bg); }
+.lk-tag-pink   { --lk-tag-fg: var(--lk-tag-pink);   --lk-tag-bg: var(--lk-tag-pink-bg); }
+.lk-tag-violet { --lk-tag-fg: var(--lk-tag-violet); --lk-tag-bg: var(--lk-tag-violet-bg); }
+.lk-tag-slate  { --lk-tag-fg: var(--lk-tag-slate);  --lk-tag-bg: var(--lk-tag-slate-bg); }
+
+/* Categories page */
+.lk-capture-table.lk-categories-table tbody td {
+  vertical-align: middle;
+}
+
+.lk-categories-count {
+  font-family: var(--lk-font-mono);
+  font-weight: var(--lk-font-weight-semibold);
+}
+
+.lk-machinetag {
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-sm);
+  color: var(--lk-color-muted);
+  overflow-wrap: anywhere;
+}
+
+/* Number column: DataTables reverses its header (arrows first, on the left of a
+   wide cell). Title then arrows, both on the right */
+.lk-page table.dataTable.lk-categories-table th.dt-type-numeric div.dt-column-header {
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: var(--lk-space-2);
+}
+
+/* Phones: value only (the family is in the title), the machine tag column is
+   hidden in js/components/category_tag.js */
+@media (max-width: 768px) {
+  .lk-categories-table .lk-tag-family {
+    display: none;
+  }
+}
+
+/* Active category filter of the captures list (lkIndexFilter()), next to "per page" */
+.lk-active-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  margin-left: var(--lk-space-3);
+}
+
+.lk-active-filter-remove {
+  display: inline-flex;
+  padding: 0.3rem;
+  border-radius: var(--lk-radius-pill);
+  color: var(--lk-color-muted);
+}
+
+.lk-active-filter-remove:hover {
+  color: var(--lk-color-ink);
+  background: var(--lk-color-surface-2);
+}
+
+/* Phones: "per page" on the left, the filter tag on the right of the same row,
+   with room between them (they wrap if the tag is too long) */
+@media (max-width: 767.98px) {
+  .lk-page .dt-layout-start:has(.lk-active-filter) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between !important;
+    gap: var(--lk-space-2) var(--lk-space-3);
+  }
+
+  .lk-active-filter {
+    margin-left: 0;
+    min-width: 0;
+  }
+
+  .lk-active-filter .lk-tag {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

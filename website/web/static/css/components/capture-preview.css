@@ -1,0 +1,47 @@
+/*
+ * Capture preview (js/components/capture_preview.js): the square at the left of
+ * each capture in the lists.
+ *
+ * TEMPORARY: identicon of the hostname (GitHub avatar style) until the blurred
+ * screenshots are shown. Replacing it = this file + capture_preview.js only.
+ * Doc: doc/ui/capture-list.md
+ */
+
+.lk-capture-preview {
+  --lk-preview-hue: 220;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+  /* Tones of the hue picked from the hostname */
+  background: hsl(var(--lk-preview-hue) 60% 96%);
+  color: hsl(var(--lk-preview-hue) 55% 45%);
+}
+
+[data-bs-theme="dark"] .lk-capture-preview {
+  background: hsl(var(--lk-preview-hue) 30% 20%);
+  color: hsl(var(--lk-preview-hue) 65% 68%);
+}
+
+.lk-identicon {
+  width: 60%;
+  height: 60%;
+  fill: currentColor;
+  shape-rendering: crispEdges;
+}
+
+/* No URL to draw from */
+.lk-capture-preview.is-empty {
+  background: var(--lk-color-surface-2);
+}
+
+@media (max-width: 576px) {
+  .lk-capture-preview {
+    width: 40px;
+    height: 40px;
+  }
+}

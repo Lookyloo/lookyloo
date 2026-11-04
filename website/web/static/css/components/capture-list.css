@@ -1,0 +1,362 @@
+/*
+ * Capture list (lk-capture-table / lk-capture): the recent captures tables
+ * (#IndexTable on home/index.html and home/home.html).
+ * Row markup: built in js/components/capture_list.js from the table JSON.
+ * Preview square: css/components/capture-preview.css.
+ * Doc: doc/ui/capture-list.md
+ */
+
+/* The table, styled as a list of capture rows */
+.lk-capture-table {
+  --bs-table-bg: var(--lk-color-surface);
+  --bs-table-hover-bg: var(--lk-color-surface-2);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-lg);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+}
+
+.lk-capture-table thead th {
+  background: var(--lk-color-surface-2);
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-xs);
+  font-weight: var(--lk-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--lk-color-rule);
+  padding: var(--lk-space-2) var(--lk-space-4);
+}
+
+.lk-capture-table tbody td {
+  padding: var(--lk-space-3) var(--lk-space-4);
+  border-bottom: 1px solid var(--lk-color-rule);
+  vertical-align: top;
+}
+
+.lk-capture-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.lk-capture-table tbody tr:hover td {
+  background: var(--lk-color-surface-2);
+}
+
+/* One capture: thumbnail + text */
+.lk-capture {
+  display: flex;
+  gap: var(--lk-space-4);
+  min-width: 0;
+}
+
+.lk-capture-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.lk-capture-title {
+  display: block;
+  font-weight: var(--lk-font-weight-semibold);
+  color: var(--lk-color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lk-capture-url {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  min-width: 0;
+  margin-top: 0.1rem;
+}
+
+.lk-capture-url-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-sm);
+  color: var(--lk-color-muted);
+}
+
+.lk-capture-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lk-space-1) var(--lk-space-4);
+  list-style: none;
+  margin: var(--lk-space-2) 0 0;
+  padding: 0;
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-sm);
+}
+
+.lk-capture-facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.lk-capture-warning {
+  color: var(--lk-color-warning);
+}
+
+/* Hostname trail: google.be › www.google.be › www.google.com */
+.lk-hop-trail {
+  flex-wrap: wrap;
+  row-gap: 0.15rem;
+}
+
+.lk-hop {
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-xs);
+  color: var(--lk-color-ink);
+  background: var(--lk-color-surface-2);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-pill);
+  padding: 0.05rem 0.5rem;
+  white-space: nowrap;
+}
+
+.lk-hop.is-final {
+  background: var(--lk-color-accent);
+  border-color: var(--lk-color-accent);
+  color: var(--lk-color-on-accent);
+}
+
+.lk-hop-sep {
+  color: var(--lk-color-muted);
+}
+
+.lk-hop-more {
+  font-size: var(--lk-font-size-xs);
+  color: var(--lk-color-muted);
+}
+
+/* Redirect chain, expanded: vertical route with one dot per step */
+.lk-route-details {
+  margin-top: var(--lk-space-2);
+  font-size: var(--lk-font-size-sm);
+}
+
+.lk-route-details summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  color: var(--lk-color-accent);
+  cursor: pointer;
+  list-style: none;
+}
+
+.lk-route-details summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Chevron drawn in CSS, turns when open */
+.lk-route-details summary::before {
+  content: '';
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--lk-transition-fast);
+}
+
+.lk-route-details[open] summary::before {
+  transform: rotate(45deg);
+}
+
+.lk-route-count {
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-xs);
+}
+
+.lk-route {
+  list-style: none;
+  margin: var(--lk-space-3) 0 var(--lk-space-2);
+  padding: var(--lk-space-3) var(--lk-space-4);
+  background: var(--lk-color-surface-2);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+}
+
+.lk-route-step {
+  position: relative;
+  padding: 0 0 var(--lk-space-3) var(--lk-space-5);
+}
+
+.lk-route-step.is-last {
+  padding-bottom: 0;
+}
+
+/* The line between two dots */
+.lk-route-step:not(.is-last)::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 0.9rem;
+  bottom: -0.1rem;
+  width: 2px;
+  background: var(--lk-color-rule-strong);
+}
+
+/* The dot: hollow for the start and the hops, filled for the final page */
+.lk-route-step::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.3rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--lk-color-ink);
+  background: var(--lk-color-surface-2);
+}
+
+.lk-route-step.is-last::after {
+  background: var(--lk-color-accent);
+  border-color: var(--lk-color-accent);
+}
+
+.lk-route-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-2);
+}
+
+.lk-route-label {
+  font-size: var(--lk-font-size-xs);
+  font-weight: var(--lk-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--lk-color-muted);
+}
+
+.lk-route-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--lk-font-size-xs);
+  padding: 0 0.45rem;
+  border-radius: var(--lk-radius-pill);
+  border: 1px solid var(--lk-color-rule-strong);
+  color: var(--lk-color-muted);
+}
+
+.lk-route-badge.is-warning {
+  color: var(--lk-color-warning);
+  background: var(--lk-color-warning-soft);
+  border-color: var(--lk-color-warning-border);
+}
+
+.lk-route-url {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  min-width: 0;
+  margin-top: 0.1rem;
+}
+
+.lk-route-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-sm);
+}
+
+.lk-route-host {
+  color: var(--lk-color-ink);
+  font-weight: var(--lk-font-weight-semibold);
+}
+
+.lk-route-path {
+  color: var(--lk-color-muted);
+}
+
+.lk-route-step.is-last .lk-route-host {
+  text-decoration: underline;
+  text-decoration-color: var(--lk-color-rule-strong);
+  text-underline-offset: 3px;
+}
+
+/* Small icon-only copy button */
+.lk-copy {
+  flex-shrink: 0;
+  display: inline-flex;
+  padding: 0.2rem;
+  border: 0;
+  border-radius: var(--lk-radius-sm);
+  background: transparent;
+  color: var(--lk-color-muted);
+}
+
+.lk-copy:hover {
+  color: var(--lk-color-ink);
+  background: var(--lk-color-surface-3);
+}
+
+.lk-route-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Capture time column */
+.lk-capture-table td.lk-capture-time {
+  text-align: right;
+  width: 1%;
+}
+
+.lk-relative-time {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  white-space: nowrap;
+  font-size: var(--lk-font-size-sm);
+}
+
+.lk-absolute-time {
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-xs);
+  font-family: var(--lk-font-mono);
+}
+
+@media (max-width: 576px) {
+  .lk-capture-table thead {
+    display: none;
+  }
+}
+
+/* Public / Hidden switch of the captures list (home/index.html, logged-in users),
+   in the page header */
+.lk-segmented {
+  display: inline-flex;
+  padding: 2px;
+  background: var(--lk-color-surface-2);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+}
+
+.lk-segmented a {
+  padding: 0.25rem 0.85rem;
+  border-radius: var(--lk-radius-sm);
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-sm);
+  font-weight: var(--lk-font-weight-medium);
+  text-decoration: none;
+}
+
+.lk-segmented a:hover {
+  color: var(--lk-color-ink);
+}
+
+.lk-segmented a[aria-current="page"] {
+  background: var(--lk-color-surface);
+  color: var(--lk-color-accent);
+  box-shadow: var(--lk-shadow-sm);
+}

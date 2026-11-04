@@ -1,0 +1,75 @@
+{% extends "layouts/page.html" %}
+{% from 'macros/page.html' import page_header %}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{#
+  Credits and third-party licenses of the web interface (route credits, /credits),
+  linked from the footer. Keep it in sync when adding a library, a font or an
+  icon set. Doc: doc/ui/credits.md
+#}
+
+{% block title %}Credits &amp; licenses · Lookyloo{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/credits.css') }}"
+      {{get_sri('static', 'css/credits.css')}}
+      crossorigin="anonymous">
+{% endblock %}
+
+{% block page_header %}
+{{ page_header('Credits & licenses', description='Lookyloo is free software. This page lists the open source projects its web interface is built with, and their licenses.', icon_name='award') }}
+{% endblock %}
+
+{% macro credit(name, role, license, url, license_url=None) -%}
+<li class="lk-credit">
+  <div>
+    <a class="lk-credit-name" href="{{ url }}" target="_blank" rel="noopener">{{ name }}</a>
+    <p>{{ role }}</p>
+  </div>
+  {% if license_url %}<a class="lk-credit-license" href="{{ license_url }}" target="_blank" rel="noopener">{{ license }}</a>
+  {% else %}<span class="lk-credit-license">{{ license }}</span>{% endif %}
+</li>
+{%- endmacro %}
+
+{% block content %}
+<div class="lk-credits">
+  <section class="lk-card lk-credits-section">
+    <h2>{{ render_icon('eye') }} Lookyloo</h2>
+    <ul class="lk-credits-list">
+      {{ credit('Lookyloo', 'Web forensics tool, by CIRCL - Computer Incident Response Center Luxembourg.', 'BSD-3-Clause', 'https://github.com/Lookyloo/lookyloo', 'https://github.com/Lookyloo/lookyloo/blob/main/LICENSE') }}
+      {{ credit('Lacus / LacusCore', 'Capture engine driving the browser.', 'BSD-3-Clause', 'https://github.com/ail-project/lacus') }}
+      {{ credit('har2tree', 'Builds the tree of domains and URLs from the HTTP Archive.', 'BSD-3-Clause', 'https://github.com/Lookyloo/har2tree') }}
+    </ul>
+  </section>
+
+  <section class="lk-card lk-credits-section">
+    <h2>{{ render_icon('code-slash') }} Interface</h2>
+    <ul class="lk-credits-list">
+      {{ credit('Bootstrap', 'CSS framework (served by Bootstrap-Flask).', 'MIT', 'https://getbootstrap.com', 'https://github.com/twbs/bootstrap/blob/main/LICENSE') }}
+      {{ credit('Bootstrap Icons', 'Interface icons (served by Bootstrap-Flask).', 'MIT', 'https://icons.getbootstrap.com', 'https://github.com/twbs/icons/blob/main/LICENSE') }}
+      {{ credit('Bootstrap-Flask', 'Bootstrap integration for Flask.', 'MIT', 'https://github.com/helloflask/bootstrap-flask') }}
+      {{ credit('jQuery', 'JavaScript utilities used by the tables.', 'MIT', 'https://jquery.com', 'https://jquery.org/license/') }}
+      {{ credit('DataTables', 'Interactive tables (lists of captures, pivots, explore pages).', 'MIT', 'https://datatables.net', 'https://datatables.net/license/mit') }}
+      {{ credit('D3.js', 'Drawing of the capture tree and of the statistics charts.', 'ISC', 'https://d3js.org', 'https://github.com/d3/d3/blob/main/LICENSE') }}
+      {{ credit('jquery.json-viewer', 'JSON pretty printer.', 'MIT', 'https://github.com/abodelot/jquery.json-viewer') }}
+    </ul>
+  </section>
+
+  <section class="lk-card lk-credits-section">
+    <h2>{{ render_icon('server') }} Server</h2>
+    <ul class="lk-credits-list">
+      {{ credit('Flask', 'Web framework.', 'BSD-3-Clause', 'https://flask.palletsprojects.com') }}
+      {{ credit('Jinja', 'Templates.', 'BSD-3-Clause', 'https://jinja.palletsprojects.com') }}
+      {{ credit('Flask-RESTX', 'REST API and its documentation.', 'BSD-3-Clause', 'https://github.com/python-restx/flask-restx') }}
+      {{ credit('Flask-Login', 'User sessions.', 'MIT', 'https://github.com/maxcountryman/flask-login') }}
+      {{ credit('Flask-Talisman', 'Security headers (Content Security Policy).', 'Apache-2.0', 'https://github.com/wntrblm/flask-talisman') }}
+      {{ credit('Playwright', 'Browser automation used for the captures.', 'Apache-2.0', 'https://playwright.dev') }}
+      {{ credit('Valkey', 'Cache and indexes.', 'BSD-3-Clause', 'https://valkey.io') }}
+      {{ credit('PyMISP', 'MISP integration.', 'BSD-2-Clause', 'https://github.com/MISP/PyMISP') }}
+      {{ credit('Pillow', 'Screenshot thumbnails.', 'MIT-CMU', 'https://python-pillow.org') }}
+    </ul>
+  </section>
+
+  <p class="lk-credits-note">The complete list of the Python dependencies is in the <a href="https://github.com/Lookyloo/lookyloo/blob/main/pyproject.toml" target="_blank" rel="noopener">pyproject.toml</a> of the project.</p>
+</div>
+{% endblock %}
