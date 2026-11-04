@@ -6,6 +6,7 @@
 
 :root,
 [data-bs-theme="light"] {
+  --lk-color-page: #F5F6F8;
   --lk-color-surface: #FFFFFF;
   --lk-color-surface-2: #F3F3F3;
   --lk-color-ink: #171717;
@@ -24,6 +25,7 @@
 
 [data-bs-theme="dark"] {
   /* Same scale as the Bootstrap dark theme (body: #212529) */
+  --lk-color-page: #212529;
   --lk-color-surface: #2B3035;
   --lk-color-surface-2: #343A40;
   --lk-color-ink: #F1F3F5;
@@ -66,6 +68,8 @@
 
 /* Footer stays at the bottom of short pages */
 body.lk-page {
+  /* Page background slightly different from the sections (header, cards, tables) */
+  background: var(--lk-color-page);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -117,4 +121,22 @@ body.lk-page > #content {
 
 .lk-login {
   padding: var(--lk-space-6);
+}
+
+/* Tables: shown as a section, same surface as the page headers.
+   Only on the pages extending layouts/page.html (the capture tree is not affected). */
+.lk-page #content .table-responsive,
+.lk-page #content .table-responsive-sm {
+  background: var(--lk-color-surface);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-lg);
+  box-shadow: var(--lk-shadow-sm);
+  padding: var(--lk-space-4);
+  margin-bottom: var(--lk-space-5);
+}
+
+.lk-page #content .table-responsive .table,
+.lk-page #content .table-responsive-sm .table {
+  --bs-table-bg: transparent;
+  margin-bottom: 0;
 }
