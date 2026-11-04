@@ -13,13 +13,13 @@
   --lk-color-muted: #6B6B6B;
   --lk-color-rule: #E6E6E6;
   --lk-color-rule-strong: #C9C9C9;
-  --lk-color-accent: #2B4BEE;
+  --lk-color-accent: #1D4ED8;
   --lk-color-accent-soft: #EBEFFE;
   --lk-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
   --lk-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --lk-color-emphasis: #000000;
-  --lk-focus-ring: rgba(43, 75, 238, 0.22);
-  --lk-focus-border: #2B4BEE;
+  --lk-focus-ring: rgba(29, 78, 216, 0.22);
+  --lk-focus-border: #1D4ED8;
   --lk-logo-filter: none;
 }
 
@@ -32,13 +32,13 @@
   --lk-color-muted: #9AA6BD;
   --lk-color-rule: #2F3B55;
   --lk-color-rule-strong: #3E4B68;
-  --lk-color-accent: #8EA2FF;
+  --lk-color-accent: #7B93F5;
   --lk-color-accent-soft: #2A3566;
   --lk-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --lk-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
   --lk-color-emphasis: #FFFFFF;
-  --lk-focus-ring: rgba(142, 162, 255, 0.3);
-  --lk-focus-border: #8EA2FF;
+  --lk-focus-ring: rgba(123, 147, 245, 0.3);
+  --lk-focus-border: #7B93F5;
   --lk-logo-filter: invert(1);
 }
 
@@ -192,7 +192,8 @@ body.lk-page > #content {
   text-decoration: none;
 }
 
-/* Buttons: blue a bit darker than the Bootstrap default (#0D6EFD) */
+/* Blues (buttons, links, pagination, checkboxes, focus): a bit darker than the
+   Bootstrap default (#0D6EFD) */
 body.lk-page {
   --lk-btn-blue: #1D4ED8;
   --lk-btn-blue-hover: #1E40AF;
@@ -222,4 +223,45 @@ body.lk-page {
 [data-bs-theme="dark"] .lk-page .btn-outline-primary {
   --bs-btn-color: var(--lk-color-accent);
   --bs-btn-border-color: var(--lk-color-accent);
+}
+
+.lk-page {
+  --bs-primary: var(--lk-btn-blue);
+  --bs-primary-rgb: 29, 78, 216;
+  --bs-link-color: var(--lk-color-accent);
+  --bs-link-color-rgb: 29, 78, 216;
+  --bs-link-hover-color: var(--lk-btn-blue-hover);
+  --bs-link-hover-color-rgb: 30, 64, 175;
+}
+
+[data-bs-theme="dark"] .lk-page {
+  --bs-link-color-rgb: 123, 147, 245;
+  --bs-link-hover-color: #9DB0FF;
+  --bs-link-hover-color-rgb: 157, 176, 255;
+}
+
+.lk-page .pagination {
+  --bs-pagination-color: var(--lk-color-accent);
+  --bs-pagination-hover-color: var(--bs-link-hover-color);
+  --bs-pagination-active-bg: var(--lk-btn-blue);
+  --bs-pagination-active-border-color: var(--lk-btn-blue);
+  --bs-pagination-focus-box-shadow: 0 0 0 0.25rem var(--lk-focus-ring);
+}
+
+.lk-page .form-check-input:checked {
+  background-color: var(--lk-btn-blue);
+  border-color: var(--lk-btn-blue);
+}
+
+.lk-page .form-control:focus,
+.lk-page .form-select:focus,
+.lk-page .form-check-input:focus {
+  border-color: var(--lk-focus-border);
+  box-shadow: 0 0 0 0.25rem var(--lk-focus-ring);
+}
+
+.lk-page .nav-tabs .nav-link,
+.lk-page .nav-link {
+  --bs-nav-link-color: var(--lk-color-accent);
+  --bs-nav-link-hover-color: var(--bs-link-hover-color);
 }
