@@ -3,7 +3,7 @@
     "css/components/footer.css": "W0GYp1qP7IKtmZU09srK4SqLIrI9bcVw8ijJcldxemjFumfRyupnjZeMUGf5BWHR0WbAzHoIO1PXc46bIMa/rw==",
     "css/components/header.css": "GuR4SbNEqrmYdUW5cyROh+7PafeB+LGGuY7p0JGQqLb3tfH/YpblAX8qufdfzrE/4yyNOByDs3VIfJy90kgufA==",
     "css/components/page-header.css": "D6UsQqj4cakBtwNDrCtOLwGQx7XTuEzgwCsjrqJjIN7BJ1HAt/R0VFl3W+MNcj6OVR84/m2yKybi1KMW3VO+AA==",
-    "css/components/site.css": "JCsJJFFhJolsn51zX96Db5OQrWYeSsjneisDmHTmH0XUncE1/tQtbQ0ALFBj3zg9amE+oq96675qbc0DG/UwAQ==",
+    "css/components/site.css": "VO+b6MPWa60JPLmbnuGhiScImdU4szQ4/e4PRTkJLtTbXZmYOqOs2iHM+HXwMirfIQ5bTve54EXvITYdRPYRbg==",
     "css/generic.css": "hH3DlQc2Ge5JvdUzUcgTczfFTSHaXJrXU+V/OctfG7etWnHKzZ7KD4U1e4ymw5XrMO1RO+kFl+LpXPcXFld8cg==",
     "css/home.css": "7CW4dgb5bk2aEidzjdW4e9kiGO6PCIcE3zDp+r+3D6xxXowBLxQyzP4QbKmeLXzXphcft8Hh3SEYE5fiVAtgmA==",
     "css/stats.css": "/kY943FwWBTne4IIyf7iBROSfbGd82TeBicEXqKkRwawMVRIvM/Pk5MRa7okUyGIxaDjFQGmV/U1vy+PhN6Jbw==",

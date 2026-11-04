@@ -157,3 +157,37 @@ body.lk-page > #content {
 .lk-page #content .new-capture-button {
   margin-bottom: var(--lk-space-4);
 }
+
+/* Active filter (index: category), the cross reloads the page without it */
+.lk-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--lk-space-2);
+  margin-bottom: var(--lk-space-4);
+}
+
+.lk-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  padding: 0.2rem 0.35rem 0.2rem 0.8rem;
+  background: var(--lk-color-accent-soft);
+  border: 1px solid var(--lk-color-rule-strong);
+  border-radius: var(--lk-radius-pill);
+  color: var(--lk-color-ink);
+  font-size: var(--lk-font-size-sm);
+}
+
+.lk-filter-chip a {
+  display: inline-flex;
+  padding: 0.25rem;
+  border-radius: var(--lk-radius-pill);
+  color: var(--lk-color-muted);
+}
+
+.lk-filter-chip a:hover {
+  color: var(--lk-color-ink);
+  background: var(--lk-color-surface);
+  text-decoration: none;
+}

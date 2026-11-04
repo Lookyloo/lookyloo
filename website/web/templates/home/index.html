@@ -1,6 +1,6 @@
 {% extends "layouts/page.html" %}
 
-{% from 'bootstrap5/utils.html' import render_messages %}
+{% from 'bootstrap5/utils.html' import render_messages, render_icon %}
 
 {% block title %}Lookyloo{% endblock %}
 
@@ -67,9 +67,13 @@
     </p>
     {% endif %}
     {% if category %}
-    <p class="lead">
-    Only showing the captures for the category <strong>{{ category }}</strong>.
-    </p>
+    <div class="lk-filters">
+      <span class="lk-filter-chip">
+        Category: <strong>{{ category }}</strong>
+        <a href="{{ url_for('index_hidden' if show_hidden else 'index') }}"
+           aria-label="Remove the category filter" title="Remove the filter">{{ render_icon('x-lg') }}</a>
+      </span>
+    </div>
     {% endif %}
     {{ render_messages(container=True, dismissible=True) }}
   </center>
