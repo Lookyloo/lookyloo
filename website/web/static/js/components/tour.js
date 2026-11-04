@@ -14,25 +14,18 @@
         set: (value) => { try { sessionStorage.setItem(FULL_KEY, JSON.stringify(value)); } catch (e) { /* not kept */ } },
         clear: () => { try { sessionStorage.removeItem(FULL_KEY); } catch (e) { /* nothing */ } },
     };
+    // Pages of the full tour: the links of #lk-tour-full-pages (partials/header.html)
     function fullPages() {
-        try { return JSON.parse(document.getElementById('lk-tour-full-pages')?.textContent || '[]'); } catch (e) { return []; }
+        return [...document.querySelectorAll('#lk-tour-full-pages a')];
     }
     function goToFullPage(page) {
-        const pages = fullPages();
-        if (page >= pages.length) {
+        const link = fullPages()[page];
+        if (!link) {
             session.clear();   // past the last page: the end of the full tour
             return;
         }
-        // Only pages of this instance (the list is built with url_for, but it is read
-        // from the DOM: never follow another origin or a javascript: URL)
-        let url = null;
-        try { url = new URL(pages[page].url, location.href); } catch (e) { /* invalid */ }
-        if (!url || url.origin !== location.origin) {
-            session.clear();
-            return;
-        }
         session.set({ page });
-        location.assign(url.pathname + url.search);
+        link.click();
     }
     function startFull() {
         stop();
@@ -207,7 +200,7 @@
         card.querySelector('[data-role="previous"]').disabled = index === 0;
         const next_page = full && pages[full.page + 1];
         card.querySelector('[data-role="next"]').textContent = index < list.length - 1 ? 'Next'
-            : next_page ? `Next page: ${next_page.label} →` : 'Finish';
+            : next_page ? `Next page: ${next_page.textContent.trim()} →` : 'Finish';
         openMenu(step.open);
         const element = target(step);
         // Entry of an opened menu: the whole menu stays readable above the veil,
@@ -252,7 +245,7 @@
         // Left the full tour for another page (a link, the back button, an error page):
         // the full tour stops, the tour of this page does not start by itself
         const expected = fullPages()[full.page];
-        if (!expected || new URL(expected.url, location.href).pathname !== location.pathname) {
+        if (!expected || expected.pathname !== location.pathname) {
             session.clear();
             return;
         }

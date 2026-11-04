@@ -79,19 +79,17 @@
               {{ theme_icon('play-circle') }} Start the tour of this page</button>
             <button type="button" class="dropdown-item d-flex align-items-center gap-2" id="lk-tour-full" data-lk-tour-full>
               {{ theme_icon('signpost-2') }} Full tour of Lookyloo</button>
-            {# Pages of the full tour, in order (the capture tree is not part of it) #}
-            <script type="application/json" id="lk-tour-full-pages">{{ [
-              {'label': 'Home', 'url': url_for('landing_page')},
-              {'label': 'Recent captures', 'url': url_for('index')},
-              {'label': 'New capture', 'url': url_for('capture_web')},
-              {'label': 'Submit a capture', 'url': url_for('submit_capture')},
-              {'label': 'Search', 'url': url_for('search')},
-              {'label': 'Categories', 'url': url_for('categories')},
-              {'label': 'Resources', 'url': url_for('ressources')},
-              {'label': 'Cookies', 'url': url_for('cookies_lookup')},
-              {'label': 'Favicons', 'url': url_for('favicons_lookup')},
-              {'label': 'HTTP headers hashes', 'url': url_for('hhhashes_lookup')},
-            ] | tojson }}</script>
+            {# Pages of the full tour, in order (the capture tree is not part of it): links
+               followed one after the other by js/components/tour.js #}
+            <nav id="lk-tour-full-pages" hidden aria-hidden="true">
+              {% for label, endpoint in [('Home', 'landing_page'), ('Recent captures', 'index'),
+                                         ('New capture', 'capture_web'), ('Submit a capture', 'submit_capture'),
+                                         ('Search', 'search'), ('Categories', 'categories'),
+                                         ('Resources', 'ressources'), ('Cookies', 'cookies_lookup'),
+                                         ('Favicons', 'favicons_lookup'), ('HTTP headers hashes', 'hhhashes_lookup')] %}
+              <a href="{{ url_for(endpoint) }}" tabindex="-1">{{ label }}</a>
+              {% endfor %}
+            </nav>
           </div>
         </li>
 

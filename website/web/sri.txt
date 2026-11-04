@@ -61,7 +61,7 @@
     "js/components/category_tag.js": "3l9cNaLoO2WyMHjUweKsnt0Z4FV36GUJO+5dDQG/dvS/l0V9OzHCji5dEmY0ohm49+JKz3iideJveZHFmVdkLg==",
     "js/components/datatables.js": "IfuAW8SfkPRSscPApbJSLQzRuNGDPW501HFbA9XQQTsTWKtdM5K9FCewQelHvzh178HvcqR9Z6M5qEqB04Urkg==",
     "js/components/loader.js": "JvMpk0oSjIgVdGCacQ6+Isbby9n7O44KZQBhoohoD6xZeWpLkU6P/YNhr8Cv4r3hkVW+kMOrQXz/nEsq9VRK9Q==",
-    "js/components/tour.js": "hQIxHMPVGE/AZ6I1xHz6Ayd9lZbtRQfiIVeJpsE25teZtMR1ZZv7lGtEnqriWv9eUslhhIT8f99DGZrl2LDDWg==",
+    "js/components/tour.js": "yfvZd3CpzeZfApOjgjFzvKyBsgbqzXvmFquDYsIuOOJUGgZIFnwgndrwRlh3fpY7z7Vbm7ueXorQGXOqpqKi5g==",
     "js/generic.js": "+FH/wRtY6JonICCBWDNWir2XY2jup6NNGrub7z7JzRdeazMdyQhp7yqiblUpejYWdQDcnGlngT/0xMRo7H8wVw==",
     "js/home.js": "bOv6lhDiXi+a08K+qgl+urpMj8EXhUkR4irt/eTZWpa5wEpgNOadhdnIXpVEwfzCbSu8SriXCzh9NTJzL3O8WQ==",
     "js/hostnode_modals.js": "dafJhJUavktQb3UKap96aUhmZiHEXteZrF1xzjRsxROtKAzZYemwkoHbNlQCRznhAKYkiAmtpMBoZPdmFOwqqA==",

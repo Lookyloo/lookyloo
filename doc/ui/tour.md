@@ -8,9 +8,10 @@ none** (it does not use `layouts/page.html`).
 The "Tutorial" button of the site header (`#lk-tour-menu-btn`) offers:
 
 - **Start the tour of this page** (disabled when the page has no tour);
-- **Full tour of Lookyloo**: every page of `#lk-tour-full-pages` (in
-  `partials/header.html`), one after the other. Leaving it for another page
-  stops it.
+- **Full tour of Lookyloo**: the pages of `#lk-tour-full-pages`, one after the
+  other. That list is a hidden `<nav>` of links built with `url_for` in
+  `partials/header.html`: the script clicks the next link, it never reads a URL
+  from the page. Leaving the full tour for another page stops it.
 
 ## Adding a tour to a page
 
