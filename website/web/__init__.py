@@ -3155,7 +3155,7 @@ def __prepare_landings_in_modal(landing_page: str) -> dict[str, Markup]:
 
 
 hostnames_view_template = app.jinja_env.from_string(source='''
-<ul style="display:flex">
+<ul>
 {%for hostname in hostnames%}
   <li style="width:100%">
     <button type="button" class="btn btn-link" style="text-align: left;width: 70%;"
