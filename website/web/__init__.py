@@ -1870,9 +1870,9 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
                 cache.monitor_uuid = monitoring_uuid
                 flash(f"Sent to monitoring ({monitoring_uuid}).", 'success')
                 if collection:
-                    flash(f"See monitored captures in the same collection here: {lookyloo.monitoring.root_url}/monitored/{collection}.", 'success')
+                    flash(f"See monitored captures in the same collection here: {lookyloo.monitoring_public_url}/monitored/{collection}.", 'success')
                 else:
-                    flash(f"Comparison available as soon as we have more than one capture: {lookyloo.monitoring.root_url}/changes_tracking/{monitoring_uuid}.", 'success')
+                    flash(f"Comparison available as soon as we have more than one capture: {lookyloo.monitoring_public_url}/changes_tracking/{monitoring_uuid}.", 'success')
             else:
                 flash("Got no UUID from the monitoring interface.", 'error')
         except Exception as e:
@@ -2007,7 +2007,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
         enable_monitoring, monitoring_collections, monitoring_settings = prepare_monitoring()
         if lookyloo.monitoring and enable_monitoring and cache.monitor_uuid:
             # the capture is already monitored, pass the URL
-            monitoring_url = f'{lookyloo.monitoring.root_url}/changes_tracking/{cache.monitor_uuid}'
+            monitoring_url = f'{lookyloo.monitoring_public_url}/changes_tracking/{cache.monitor_uuid}'
         else:
             monitoring_url = ''
 
