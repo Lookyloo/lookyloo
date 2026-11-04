@@ -154,8 +154,19 @@ function lkRoute(sprite, capture) {
 // The capture cell: preview + title + URL + facts (+ redirect chain)
 function lkCaptureCell(sprite, capture) {
     const wrapper = lkElement('div', 'lk-capture');
-    wrapper.appendChild(lkCapturePreview({url: capture.url, finalUrl: capture.hops.at(-1),
-                                          href: capture.href, thumbnail: capture.thumbnail}));
+    // Preview, and under it the "View capture" button of the phones (on larger
+    // screens it is at the bottom right of the row, in the time cell)
+    const side = lkElement('div', 'lk-capture-side');
+    side.appendChild(lkCapturePreview({url: capture.url, finalUrl: capture.hops.at(-1),
+                                       href: capture.href, thumbnail: capture.thumbnail}));
+    if (capture.href) {
+        const view = lkElement('a', 'btn btn-sm btn-outline-primary lk-capture-view-side', 'View ');
+        view.href = capture.href;
+        view.setAttribute('aria-label', 'View capture');
+        view.appendChild(lkIcon(sprite, 'arrow-right'));
+        side.appendChild(view);
+    }
+    wrapper.appendChild(side);
 
     const body = lkElement('div', 'lk-capture-body');
     const title = lkElement(capture.href ? 'a' : 'span', 'lk-capture-title', capture.title || 'No title');
@@ -240,7 +251,17 @@ function lkIndexColumns(table) {
             data: 'capture_time',
             className: 'lk-capture-time',
             render: (data, type) => type === 'display' ? '' : data,
-            createdCell: (cell, data) => cell.appendChild(lkTimeCell(data)),
+            createdCell: (cell, data, row) => {
+                cell.appendChild(lkTimeCell(data));
+                // "View capture" at the bottom right of the row
+                const href = lkParseIndexRow(row).href;
+                if (href) {
+                    const view = lkElement('a', 'btn btn-sm btn-outline-primary lk-capture-view', 'View capture ');
+                    view.href = href;
+                    view.appendChild(lkIcon(sprite, 'arrow-right'));
+                    cell.appendChild(view);
+                }
+            },
         },
     ];
 }
