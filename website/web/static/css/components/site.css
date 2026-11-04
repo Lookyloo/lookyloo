@@ -23,19 +23,20 @@
 }
 
 [data-bs-theme="dark"] {
-  --lk-color-surface: #17171A;
-  --lk-color-surface-2: #1F1F23;
-  --lk-color-ink: #EDEDED;
-  --lk-color-muted: #A0A0A0;
-  --lk-color-rule: #2A2A2E;
-  --lk-color-rule-strong: #3F3F45;
-  --lk-color-accent: #7C93FF;
-  --lk-color-accent-soft: #1B2142;
-  --lk-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --lk-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  /* Same scale as the Bootstrap dark theme (body: #212529) */
+  --lk-color-surface: #2B3035;
+  --lk-color-surface-2: #343A40;
+  --lk-color-ink: #F1F3F5;
+  --lk-color-muted: #ADB5BD;
+  --lk-color-rule: #3D444B;
+  --lk-color-rule-strong: #495057;
+  --lk-color-accent: #8EA2FF;
+  --lk-color-accent-soft: #2E3760;
+  --lk-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --lk-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
   --lk-color-emphasis: #FFFFFF;
-  --lk-focus-ring: rgba(124, 147, 255, 0.3);
-  --lk-focus-border: #7C93FF;
+  --lk-focus-ring: rgba(142, 162, 255, 0.3);
+  --lk-focus-border: #8EA2FF;
   --lk-logo-filter: invert(1);
 }
 

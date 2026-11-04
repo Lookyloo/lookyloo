@@ -6,6 +6,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    {# Applies the stored / OS colour theme before the first paint (no white flash) #}
+    <script src='{{ url_for('static', filename='js/theme_toggle.js') }}'
+            {{get_sri('static', 'js/theme_toggle.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+
     {% block styles %}
     <!-- Bootstrap CSS -->
     {{ bootstrap.load_css() }}
@@ -68,10 +74,6 @@
             crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='vendor/jquery.json-viewer.js') }}'
             {{get_sri('static', 'vendor/jquery.json-viewer.js')}}
-            nonce="{{ csp_nonce() }}"
-            crossorigin="anonymous"></script>
-    <script src='{{ url_for('static', filename='js/theme_toggle.js') }}'
-            {{get_sri('static', 'js/theme_toggle.js')}}
             nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
     {% set overrides_js = load_custom_js('overrides.js') %}
