@@ -27,6 +27,9 @@
   --lk-color-warning-soft: #FFF3DF;
   --lk-color-warning-border: #F2CF94;
   --lk-color-accent-rgb: 29, 78, 216;
+  --lk-color-info: #1D4ED8;  --lk-color-info-soft: #EBEFFE;  --lk-color-info-border: #B9C5FA;
+  --lk-color-danger: #C8102E;  --lk-color-danger-soft: #FDECEE;  --lk-color-danger-border: #F5B5BF;
+  --lk-tour-veil: rgba(10, 12, 20, 0.55);
   /* Category tags (css/components/tag.css) */
   --lk-tag-blue: #1D4ED8;    --lk-tag-blue-bg: #E6EDFD;
   --lk-tag-teal: #0F766E;    --lk-tag-teal-bg: #DDF3F0;
@@ -61,6 +64,9 @@
   --lk-color-warning-soft: #33280F;
   --lk-color-warning-border: #6B5020;
   --lk-color-accent-rgb: 123, 147, 245;
+  --lk-color-info: #8EA3FF;  --lk-color-info-soft: #1B2142;  --lk-color-info-border: #34407A;
+  --lk-color-danger: #FF6B7D;  --lk-color-danger-soft: #3A1C21;  --lk-color-danger-border: #6E2A34;
+  --lk-tour-veil: rgba(0, 0, 0, 0.6);
   --lk-tag-blue: #93B4FF;    --lk-tag-blue-bg: #1A2747;
   --lk-tag-teal: #5ED3C4;    --lk-tag-teal-bg: #12302D;
   --lk-tag-green: #6EDC93;   --lk-tag-green-bg: #14301F;

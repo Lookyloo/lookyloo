@@ -1,10 +1,8 @@
 {% extends "layouts/page.html" %}
-{% block title %}Search{% endblock %}
-
+{% from 'macros/tour.html' import tour %}
 {% from 'macros/page.html' import page_header %}
-{% block page_header %}
-{{ page_header('Search', description='Find the captures that loaded a URL, a hostname, an IP address, a resource, a cookie or a favicon. Search one thing at a time.', icon_name='search') }}
-{% endblock %}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% block title %}Search{% endblock %}
 
 {% block card %}
 <meta property="og:title" content="Lookyloo" />
@@ -24,48 +22,90 @@
 <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
 
-{% block content %}
-<div class="lk-card">
-  <div>Please only search one of the following thing at a time.</div>
-  <br>
-  <form role="form" action="{{ url_for('search') }}" method=post enctype=multipart/form-data>
-    <div class="row mb-3">
-      <label for="url" class="col-sm-2 col-form-label">URL part:</label>
-      <div class="col-sm-10">
-        <input type="text" class="form-control" name="url" id=url placeholder="Full URL, hostname, domain, suffix, or TLD">
-      </div>
-    </div>
-    <div class="row mb-3">
-      <label for="ip" class="col-sm-2 col-form-label">IP Address:</label>
-      <div class="col-sm-10">
-        <input type="text" class="form-control" name="ip" id=ip placeholder="IP">
-      </div>
-    </div>
-    <div class="row mb-3">
-      <label for="ressource" class="col-sm-2 col-form-label">Ressource:</label>
-      <div class="col-sm-10">
-        <input type="text" class="form-control" name="ressource" id=ressource placeholder="Sha521 of the ressource">
-      </div>
-    </div>
-    <div class="row mb-3">
-      <label for="cookie" class="col-sm-2 col-form-label">Cookie name:</label>
-      <div class="col-sm-10">
-        <input type="text" class="form-control" name="cookie" id=cookie placeholder="Cookie name">
-      </div>
-    </div>
-    <div class="row mb-3">
-      <label for="favicon_sha512" class="col-sm-2 col-form-label">Favicon SHA512:</label>
-      <div class="col-sm-10">
-        <input type="text" class="form-control" name="favicon_sha512" id=favicon_sha512 placeholder="Sha512 of a favicon">
-      </div>
-    </div>
-    <div class="row mb-3">
-      <label for="favicon_file" class="col-sm-2 col-form-label">Favicon:</label>
-      <div class="col-sm-10">
-        <input class="form-control" type="file" id="favicon_file" name="favicon_file">
-      </div>
-    </div>
-    <button type="submit" class="btn btn-primary" id="btn-looking">Search</button>
-  </form>
-</div>
+{% block page_header %}
+{{ page_header('Search', description='Find the captures that loaded a URL, a hostname, an IP address, a resource, a cookie or a favicon. Search one thing at a time.', icon_name='search') }}
 {% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}"
+      {{get_sri('static', 'css/search.css')}}
+      crossorigin="anonymous">
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/search.js') }}"
+        {{get_sri('static', 'js/search.js')}}
+        nonce="{{ csp_nonce() }}"
+        crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block content %}
+<form class="lk-search lk-card" role="search" action="{{ url_for('search') }}" method=post
+      enctype=multipart/form-data data-lk-loading="Searching">
+  <p class="lk-search-note">{{ render_icon('info-circle') }} <span>Fill in <strong>one</strong> field: the first one filled is used.</span></p>
+  <div class="lk-search-grid">
+      <div class="lk-search-field">
+        <span class="lk-search-field-icon">{{ render_icon('link-45deg') }}</span>
+        <div class="lk-search-field-body">
+          <label for="url">URL part</label>
+          <input type="text" class="form-control" name="url" id="url" placeholder="Full URL, hostname, domain, suffix, or TLD" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="lk-search-field">
+        <span class="lk-search-field-icon">{{ render_icon('hdd-network') }}</span>
+        <div class="lk-search-field-body">
+          <label for="ip">IP Address</label>
+          <input type="text" class="form-control" name="ip" id="ip" placeholder="IP" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="lk-search-field">
+        <span class="lk-search-field-icon">{{ render_icon('file-earmark-binary') }}</span>
+        <div class="lk-search-field-body">
+          <label for="ressource">Ressource</label>
+          <p id="ressource-hint">Copy it from the resources of a capture, or from Explore &gt; Resources</p>
+          <input type="text" class="form-control" name="ressource" id="ressource" placeholder="Sha512 of the ressource"
+                 pattern="\s*[0-9a-fA-F]{128}\s*" title="Paste the whole SHA512 of the file" aria-describedby="ressource-hint" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="lk-search-field">
+        <span class="lk-search-field-icon">{{ render_icon('cookie') }}</span>
+        <div class="lk-search-field-body">
+          <label for="cookie">Cookie name</label>
+          <input type="text" class="form-control" name="cookie" id="cookie" placeholder="Cookie name" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="lk-search-field">
+        <span class="lk-search-field-icon">{{ render_icon('fingerprint') }}</span>
+        <div class="lk-search-field-body">
+          <label for="favicon_sha512">Favicon SHA512</label>
+          <p id="favicon_sha512-hint">Copy it from the favicons of a capture, or from Explore &gt; Favicons</p>
+          <input type="text" class="form-control" name="favicon_sha512" id="favicon_sha512" placeholder="Sha512 of a favicon"
+                 pattern="\s*[0-9a-fA-F]{128}\s*" title="Paste the whole SHA512 of the file" aria-describedby="favicon_sha512-hint" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="lk-search-field">
+        <span class="lk-search-field-icon">{{ render_icon('image') }}</span>
+        <div class="lk-search-field-body">
+          <label for="favicon_file">Favicon</label>
+          <input class="form-control" type="file" id="favicon_file" name="favicon_file">
+        </div>
+      </div>
+  </div>
+  <div class="lk-search-actions">
+    <button type="submit" class="btn btn-primary btn-lg" id="btn-looking">{{ render_icon('search') }} Search</button>
+  </div>
+</form>
+{% endblock %}
+
+{# Tutorial of the page (js/components/tour.js, doc/ui/tour.md) #}
+{% block tour %}{{ tour([
+  (None, "Search", "Find the captures where something was seen: a URL, an IP address, a resource, a cookie or a favicon."),
+  (".lk-search-grid", "One field at a time", "Fill the field of what you are looking for: the other ones are greyed out until you empty it."),
+  ("#url", "URL or hostname", "Captures that loaded this URL, or any URL of this host."),
+  ("#ip", "IP address", "Captures that contacted this IP address."),
+  ("#ressource", "Resource", "The hash of a file (script, image…) seen in a capture: where else it was loaded."),
+  ("#btn-looking", "Search", "Opens the page of what you searched, with the captures where it was seen."),
+  ("#lk-tour-menu-btn", "The tutorial, any time", "This button starts the tour of the page you are on, or the full tour of Lookyloo: every page, one after the other.")
+]) }}{% endblock %}

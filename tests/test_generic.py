@@ -30,8 +30,8 @@ def test_capture_page(page: Page) -> None:
     domain = 'google.be'
     capture_url = f'https://{domain}'
     page.get_by_role("link", name="New capture", exact=True).click()
-    page.get_by_role("button", name="Lacus Selection").click()
-    expect(page.get_by_role("button", name="Browser Configuration")).to_be_visible()
+    expect(page.get_by_role("heading", name="What to capture")).to_be_visible()
+    expect(page.get_by_role("heading", name="Browser")).to_be_visible()
     page.get_by_role("textbox", name="URL to capture").click()
     page.get_by_role("textbox", name="URL to capture").fill(capture_url)
     page.get_by_role("button", name="Start looking!").click()
@@ -73,7 +73,7 @@ def test_capture_page(page: Page) -> None:
     page.get_by_role("link", name="Lookyloo icon").click()
     page.get_by_role("navigation", name="Main navigation").get_by_role("link", name="Search").click()
     expect(page).to_have_title(re.compile("Search"))
-    page.get_by_role("textbox", name="URL part:").fill(domain)
+    page.get_by_role("textbox", name="URL part").fill(domain)
     page.get_by_role("button", name="Search").click()
     expect(page).to_have_title(re.compile(domain))
     max_loop = 6

@@ -1,4 +1,5 @@
 {% extends "layouts/page.html" %}
+{% from 'macros/tour.html' import tour %}
 
 {% from 'bootstrap5/utils.html' import render_messages, render_icon %}
 
@@ -87,3 +88,19 @@
   </table>
   </div>
 {% endblock %}
+
+{# Tutorial of the page (js/components/tour.js, doc/ui/tour.md) #}
+{% block tour %}{{ tour([
+  (None, "Recent captures", "Every capture of this instance, newest first. Each row is one capture: a click on its title opens its tree."),
+  (".lk-segmented", "Public or hidden", "Administrators: the public captures, or the hidden ones."),
+  (".lk-active-filter", "Category filter", "The list shows only one category: the cross removes the filter."),
+  ("#IndexTable_wrapper .dt-search", "Filter", "Type a part of a title or of a URL: only the matching captures stay."),
+  ("#IndexTable_wrapper .dt-length", "Rows per page", "How many captures each page shows."),
+  ("#IndexTable .lk-capture-preview", "Preview", "An icon drawn from the hostname of the page: the same site always gets the same icon."),
+  ("#IndexTable .lk-capture-title", "Title", "The title of the page. Click it to open the capture: its tree, and everything that was recorded."),
+  ("#IndexTable .lk-capture-url", "URL", "The URL that was captured, with a button to copy it."),
+  ("#IndexTable .lk-capture-facts", "What happened", "The redirects to the final page (or none), and a warning when a step was not encrypted."),
+  ("#IndexTable .lk-relative-time", "When", "When the capture was made: how long ago, and the exact date."),
+  ("#IndexTable_wrapper .dt-paging", "Pages", "Go through the older captures."),
+  ("#lk-tour-menu-btn", "The tutorial, any time", "This button starts the tour of the page you are on, or the full tour of Lookyloo: every page, one after the other.")
+]) }}{% endblock %}

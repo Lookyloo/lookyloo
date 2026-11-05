@@ -1,4 +1,5 @@
 {% extends "layouts/page.html" %}
+{% from 'macros/tour.html' import tour %}
 {#
   Home page (route landing_page, "/"): logo, quick capture form and the
   recent captures (same table as home/index.html, route index).
@@ -137,3 +138,17 @@
   </div>
 </section>
 {% endblock %}
+
+{# Tutorial of the page (js/components/tour.js, doc/ui/tour.md) #}
+{% block tour %}{{ tour([
+  (None, "Welcome to Lookyloo", "Lookyloo opens a link in a real browser, records everything it loads and shows it as a tree. A good way to check a suspicious link without opening it yourself."),
+  ("#quick-capture-url", "Paste a URL", "Paste the link to check and press Capture. The capture runs on the server, in a real browser: nothing is opened on your computer."),
+  (".lk-capture-options", "Quick options", "The kind of browser to use (desktop, phone…) and who can see the capture: public, unlisted or private."),
+  (".lk-capture-options-links", "More options", "All the settings of a capture (cookies, headers, proxy, timeouts…), or the upload of a capture made elsewhere."),
+  ("#IndexTable", "Recent captures", "The last public captures of this instance: title, URL and redirects. Click one to open its tree."),
+  (".lk-latest-more", "Every capture", "The full list of the captures, with a filter and pages."),
+  (".lk-header-nav", "Main menu", "Recent captures, search, categories, and Explore: what has been seen across all the captures (resources, cookies, favicons, headers)."),
+  (".lk-header-cta", "New capture", "From any page: capture a URL or a document, or submit a capture made elsewhere."),
+  ("#bd-theme", "Theme", "Light or dark colours for the interface, kept in this browser."),
+  ("#lk-tour-menu-btn", "The tutorial, any time", "This button starts the tour of the page you are on, or the full tour of Lookyloo: every page, one after the other.")
+]) }}{% endblock %}
