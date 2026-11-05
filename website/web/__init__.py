@@ -526,6 +526,29 @@ def file_response(func):  # type: ignore[no-untyped-def]
     return wrapper
 
 
+@app.errorhandler(404)
+def handle_not_found(error: Exception) -> Response | str | WerkzeugResponse:
+    '''Unknown URL: error page for browsers, JSON for API clients.'''
+    if not request.accept_mimetypes.accept_html:
+        return make_response(jsonify({'message': 'Not found.'}), 404)
+    return make_response(render_template('errors/error.html', error_code=404,
+                                         error_title='Page not found',
+                                         error_message="Lookyloo looked everywhere, but there is nothing at this address. "
+                                                       "The link may be wrong, or the page was moved.",
+                                         requested_path=request.path), 404)
+
+
+@app.errorhandler(500)
+def handle_server_error(error: Exception) -> Response | str | WerkzeugResponse:
+    '''Unexpected error (the traceback is logged by Flask).'''
+    if not request.accept_mimetypes.accept_html:
+        return make_response(jsonify({'message': 'Internal server error.'}), 500)
+    return make_response(render_template('errors/error.html', error_code=500,
+                                         error_title='Something went wrong',
+                                         error_message='Lookyloo hit an unexpected error while preparing this page. '
+                                                       'It has been logged; try again in a moment.'), 500)
+
+
 @app.errorhandler(IndexError)
 def handle_index_error(error: IndexError) -> Response | str | WerkzeugResponse:
     '''Tree was rebuild, page reload required'''

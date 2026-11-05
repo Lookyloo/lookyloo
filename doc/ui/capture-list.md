@@ -8,7 +8,12 @@ copy button, then either "No redirect" or the hostname trail
 (`google.be › www.google.be › www.google.com`, an "Unencrypted hop" warning if
 one URL is `http://`), and a folded redirect chain with a copy button per step
 and the link to download the redirects. The time column shows "2 hours ago"
-over the date and time, in the browser time zone.
+over the date and time, in the browser time zone, and a **View capture** button
+at the bottom right of the row.
+
+On phones the table becomes a list of blocks: the time goes on its own line
+under the capture, and the button moves under the preview, on the left
+(`.lk-capture-view-side`), so it never covers the text.
 
 ## Front-end only
 

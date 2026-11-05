@@ -308,8 +308,23 @@
 
 /* Capture time column */
 .lk-capture-table td.lk-capture-time {
+  position: relative;
   text-align: right;
   width: 1%;
+  /* Room for the "View capture" button, at the bottom of the cell */
+  padding-bottom: calc(var(--lk-space-3) + 2.25rem);
+}
+
+/* "View capture": bottom right of the row, whatever its height */
+.lk-capture-view {
+  position: absolute;
+  right: var(--lk-space-4);
+  bottom: var(--lk-space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  white-space: nowrap;
+  border-radius: var(--lk-radius-pill);
 }
 
 .lk-relative-time {
@@ -359,4 +374,65 @@
   background: var(--lk-color-surface);
   color: var(--lk-color-accent);
   box-shadow: var(--lk-shadow-sm);
+}
+
+/* Preview column: the preview, and under it "View capture" on phones only */
+.lk-capture-side {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-2);
+}
+
+.lk-capture-view-side {
+  display: none;
+}
+
+/* Phones: the button under the preview (left), the time on its own line under
+   the capture; the table as blocks (no column widths computed by DataTables) */
+@media (max-width: 576px) {
+  .lk-capture-table,
+  .lk-capture-table tbody,
+  .lk-capture-table tbody tr {
+    display: block;
+    width: 100% !important;
+  }
+
+  .lk-capture-table colgroup {
+    display: none;
+  }
+
+  .lk-capture-table tbody td {
+    display: block;
+  }
+
+  .lk-capture-table tbody td:first-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .lk-capture-table td.lk-capture-time {
+    width: auto;
+    padding-top: var(--lk-space-1);
+    padding-bottom: var(--lk-space-3);
+    text-align: left;
+  }
+
+  .lk-capture-table td.lk-capture-time .lk-relative-time {
+    flex-direction: row;
+    gap: var(--lk-space-2);
+    align-items: baseline;
+  }
+
+  .lk-capture-view {
+    display: none;
+  }
+
+  .lk-capture-view-side {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--lk-space-1);
+    border-radius: var(--lk-radius-pill);
+  }
 }
