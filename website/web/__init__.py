@@ -2303,11 +2303,15 @@ def ressources() -> str:
         freq = get_indexing(flask_login.current_user).get_captures_body_hash_count(h)
         context = lookyloo.context.find_known_content(h)
         # Only get the recent captures
-        _, entries = get_indexing(flask_login.current_user).get_captures_body_hash(h, oldest_capture=datetime.now() - lookyloo.time_delta_on_index)
+        entries = get_indexing(flask_login.current_user).get_captures_body_hash(h, oldest_capture=datetime.now() - lookyloo.time_delta_on_index)
         for capture_uuid in entries:
             url_nodes = get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, h)
             url_node = url_nodes.pop()
-            ressource = lookyloo.get_ressource(capture_uuid, url_node, h)
+            try:
+                ressource = lookyloo.get_ressource(capture_uuid, url_node, h)
+            except UUIDMissingInCache:
+                # The capture is still indexed but not in the cache anymore (archived, removed)
+                continue
             if not ressource:
                 continue
             ressources.append((h, freq, context.get(h), capture_uuid, url_node, ressource[0], ressource[2]))
@@ -3192,7 +3196,7 @@ def __prepare_landings_in_modal(landing_page: str) -> dict[str, Markup]:
 
 
 hostnames_view_template = app.jinja_env.from_string(source='''
-<ul style="display:flex">
+<ul>
 {%for hostname in hostnames%}
   <li style="width:100%">
     <button type="button" class="btn btn-link" style="text-align: left;width: 70%;"
