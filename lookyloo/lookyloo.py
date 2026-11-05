@@ -249,6 +249,13 @@ class Lookyloo():
             return self._monitoring
         return None
 
+    @property
+    def monitoring_public_url(self) -> str:
+        """URL of monitoring reachable by the users"""
+        monitoring_config = get_config('generic', 'monitoring') or {}
+        public_url = monitoring_config.get('public_url') or monitoring_config.get('url', '')
+        return public_url.rstrip('/')
+
     def _get_lacus_from_group(self, group: str) -> str:
         lacuses_up = []
         for name in self._lacuses_groups[group]:
