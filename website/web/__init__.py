@@ -2895,6 +2895,12 @@ def cloudflare_ns_details(cloudflare_ns_key: str) -> str:
     return render_template('investigate/cloudflare_ns_details.html', cloudflare_ns_key=cloudflare_ns_key, from_popup=from_popup)
 
 
+@app.route('/credits', methods=['GET'])
+def credits() -> str:
+    '''Third-party projects and licenses used by the interface (about/credits.html).'''
+    return render_template('about/credits.html')
+
+
 @app.route('/stats', methods=['GET'])
 @flask_login.login_required  # type: ignore[untyped-decorator]
 def statsfull() -> str:

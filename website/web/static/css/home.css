@@ -271,3 +271,18 @@
   gap: var(--lk-space-2);
   font-weight: var(--lk-font-weight-medium);
 }
+
+/* "See all captures" under the latest captures */
+.lk-latest-more {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--lk-space-4);
+}
+
+.lk-latest-more .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  border-radius: var(--lk-radius-pill);
+  padding-inline: var(--lk-space-5);
+}

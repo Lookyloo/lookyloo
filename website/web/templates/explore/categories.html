@@ -31,16 +31,6 @@
 {{ super() }}
 {% endblock %}
 
-{% block scripts %}
-{{ super() }}
-<script type="text/javascript" nonce="{{ csp_nonce() }}">
-    new DataTable('#table', {
-        "order": [[ 1, "desc" ]],
-        "pageLength": 500
-    });
-</script>
-
-{% endblock %}
 
 {% block content %}
 
@@ -49,17 +39,15 @@
     <p class="lead">Categorization not enabled.</p>
   </center>
   {% else %}
-  <center>
-    <p class="lead">See known categories below.</p>
-  </center>
-
-
-  <div class="table-responsive">
-  <table id="categoriesTable" class="table table-striped" style="width:100%">
+  {# Rows built by js/components/category_tag.js (render_tables.js) #}
+  <div class="lk-capture-list">
+  <table id="categoriesTable" class="table lk-capture-table lk-categories-table" style="width:100%"
+         data-lk-icons="{{ url_for('bootstrap.static', filename='icons/bootstrap-icons.svg') }}">
     <thead>
      <tr>
        <th>Category</th>
-       <th>Total captures</th>
+       <th>Machine tag</th>
+       <th>Captures</th>
      </tr>
     </thead>
   </table>

@@ -1,0 +1,75 @@
+/*
+ * Credits & licenses page (about/credits.html, route credits). Doc: doc/ui/credits.md
+ */
+
+.lk-credits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--lk-space-4);
+  align-items: start;
+}
+
+.lk-credits-section h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  font-size: 1.05rem;
+  margin: 0 0 var(--lk-space-3);
+}
+
+.lk-credits-section h2 .bi {
+  color: var(--lk-color-accent);
+}
+
+.lk-credits-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lk-credit {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--lk-space-3);
+  padding: var(--lk-space-3) 0;
+  border-top: 1px solid var(--lk-color-rule);
+}
+
+.lk-credit:first-child {
+  border-top: 0;
+}
+
+.lk-credit-name {
+  font-weight: var(--lk-font-weight-semibold);
+}
+
+.lk-credit p {
+  margin: 0;
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-sm);
+}
+
+.lk-credit-license {
+  flex-shrink: 0;
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-xs);
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-surface-2);
+  color: var(--lk-color-ink);
+  white-space: nowrap;
+}
+
+.lk-credits-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-sm);
+}
+
+@media (max-width: 900px) {
+  .lk-credits {
+    grid-template-columns: 1fr;
+  }
+}

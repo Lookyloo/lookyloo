@@ -1,0 +1,125 @@
+/*
+ * lk-loader: loading indicator drawn like the eyes of the Lookyloo logo.
+ * Markup: loader() in macros/loader.html, lkLoader() in js/components/loader.js.
+ * Doc: doc/ui/loader.md
+ *
+ * Colour follows the text colour (currentColor), size follows the size class.
+ * Animations: pupils look around, rings turn, eyes blink. All of them stop
+ * when the user asks for reduced motion.
+ */
+
+.lk-loader {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--lk-space-3);
+  color: var(--lk-color-ink);
+  /* Only shown when loading takes a while: fast loads never flash the eyes */
+  opacity: 0;
+  animation: lk-loader-appear 200ms ease-out var(--lk-loader-delay, 400ms) forwards;
+}
+
+@keyframes lk-loader-appear {
+  to { opacity: 1; }
+}
+
+.lk-loader-eyes {
+  display: block;
+  overflow: visible;
+}
+
+.lk-loader-sm .lk-loader-eyes { width: 40px; }
+.lk-loader-md .lk-loader-eyes { width: 72px; }
+.lk-loader-lg .lk-loader-eyes { width: 128px; }
+.lk-loader-xl .lk-loader-eyes { width: 200px; }
+
+/* Eyes used as an illustration (error pages): visible at once */
+.lk-loader-decorative {
+  --lk-loader-delay: 0s;
+  animation-duration: 0s;
+}
+
+.lk-loader-label {
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-sm);
+}
+
+/* Broken ring, like the "o" of the logo: three arcs, three gaps */
+.lk-eye-ring {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 4.2;
+  stroke-dasharray: 27 6.33;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lk-eye-turn 6s linear infinite;
+}
+
+.lk-eye-pupil {
+  fill: currentColor;
+  animation: lk-eye-look 3.2s ease-in-out infinite;
+}
+
+.lk-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lk-eye-blink 4.8s ease-in-out infinite;
+}
+
+/* The second eye turns the other way, like the logo's mirrored eyes */
+.lk-eye + .lk-eye .lk-eye-ring {
+  animation-direction: reverse;
+}
+
+@keyframes lk-eye-turn {
+  to { transform: rotate(360deg); }
+}
+
+/* Pupil positions are offsets from the logo's resting place (bottom right) */
+@keyframes lk-eye-look {
+  0%, 12%   { transform: translate(0, 0); }
+  25%, 37%  { transform: translate(-5px, -1px); }
+  50%, 62%  { transform: translate(-3.5px, -5px); }
+  75%, 87%  { transform: translate(1px, -4px); }
+  100%      { transform: translate(0, 0); }
+}
+
+@keyframes lk-eye-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95%           { transform: scaleY(0.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-eye-ring,
+  .lk-eye-pupil,
+  .lk-eye {
+    animation: none;
+  }
+
+  .lk-loader {
+    animation-duration: 0s;
+  }
+}
+
+/* DataTables "processing" indicator: the eyes (set in js/render_tables.js)
+   replace the default text and animated dots */
+div.dt-processing {
+  width: auto;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  padding: var(--lk-space-3) var(--lk-space-5);
+  background: var(--lk-color-surface);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-lg);
+  box-shadow: var(--lk-shadow-md);
+}
+
+div.dt-processing > div:last-child {
+  display: none;
+}
+
+/* First load of a table: room for the eyes under the header row */
+.lk-page table.dataTable tbody td.dt-empty {
+  height: 9rem;
+  vertical-align: middle;
+}

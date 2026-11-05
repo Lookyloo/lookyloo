@@ -7,6 +7,9 @@
 
 {% block title %}Lookyloo{% endblock %}
 
+{# Stronger decorative background (css/components/backdrop.css) #}
+{% block body_class %}lk-page lk-page-home{% endblock %}
+
 {% block card %}
 <meta property="og:title" content="Lookyloo" />
 <meta property="og:type" content="website"/>
@@ -109,22 +112,28 @@
   </div>
 </section>
 
-{# Same table as the index page (home/index.html), filled by js/render_tables.js #}
+{# Same table as the index page (home/index.html), filled by js/render_tables.js;
+   compact (data-lk-compact): the 10 latest captures, no paging nor search #}
 <section class="lk-latest" aria-labelledby="latest-captures-title">
   <div class="lk-latest-head">
     <h2 class="lk-section-title" id="latest-captures-title">Recent captures</h2>
     <a href="{{ url_for('index') }}">See all captures {{ render_icon('arrow-right') }}</a>
   </div>
-  <div class="table-responsive">
-    <table id="IndexTable" class="table table-striped" style="width:100%" data-indextype="index">
+  {# Rows built by js/components/capture_list.js (render_tables.js) #}
+  <div class="lk-capture-list">
+  <table id="IndexTable" class="table lk-capture-table" style="width:100%"
+         data-indextype="index" data-lk-compact
+         data-lk-icons="{{ url_for('bootstrap.static', filename='icons/bootstrap-icons.svg') }}">
     <thead>
      <tr>
-       <th>Page</th>
-       <th>Timestamp</th>
-       <th>Redirects</th>
+       <th>Capture</th>
+       <th class="text-end">Captured</th>
      </tr>
     </thead>
   </table>
+  </div>
+  <div class="lk-latest-more">
+    <a class="btn btn-outline-primary" href="{{ url_for('index') }}">See all captures {{ render_icon('arrow-right') }}</a>
   </div>
 </section>
 {% endblock %}

@@ -1,0 +1,195 @@
+/*
+ * DataTables controls on the pages extending layouts/page.html: rows per page,
+ * filter field, column ordering, info and pagination. Texts: js/components/datatables.js.
+ * The capture tree keeps the default DataTables look (not under .lk-page).
+ * Doc: doc/ui/tables.md
+ */
+
+/* ---- Controls row (above and under the table) ---- */
+
+.lk-page .dt-container > .row {
+  align-items: center;
+  row-gap: var(--lk-space-2);
+}
+
+.lk-page .dt-length {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-sm);
+}
+
+.lk-page div.dt-container div.dt-length label {
+  margin: 0;
+}
+
+.lk-page .dt-length select.form-select {
+  width: auto;
+  padding: 0.3rem 2rem 0.3rem 0.75rem;
+  border-color: var(--lk-color-rule);
+  border-radius: var(--lk-radius-pill);
+  background-color: var(--lk-color-surface);
+  color: var(--lk-color-ink);
+  font-weight: var(--lk-font-weight-medium);
+}
+
+/* Filter field with a magnifier drawn in CSS (no image, follows the theme) */
+.lk-page .dt-search {
+  position: relative;
+}
+
+.lk-page .dt-search input.form-control {
+  min-width: min(280px, 100%);
+  margin-left: 0;
+  padding: 0.35rem 0.85rem 0.35rem 2.1rem;
+  border-color: var(--lk-color-rule);
+  border-radius: var(--lk-radius-pill);
+  background-color: var(--lk-color-surface);
+  color: var(--lk-color-ink);
+}
+
+.lk-page .dt-search::before,
+.lk-page .dt-search::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.lk-page .dt-search::before {
+  left: 0.85rem;
+  top: 50%;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-top: -0.45rem;
+  border: 1.5px solid var(--lk-color-muted);
+  border-radius: 50%;
+}
+
+.lk-page .dt-search::after {
+  left: 1.4rem;
+  top: 50%;
+  width: 0.35rem;
+  height: 1.5px;
+  margin-top: 0.15rem;
+  background: var(--lk-color-muted);
+  transform: rotate(45deg);
+}
+
+.lk-page .dt-search input.form-control:focus,
+.lk-page .dt-length select.form-select:focus {
+  border-color: var(--lk-focus-border);
+  box-shadow: 0 0 0 3px var(--lk-focus-ring);
+}
+
+.lk-page .dt-info {
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Pagination ---- */
+
+.lk-page .dt-paging .pagination {
+  gap: var(--lk-space-1);
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.lk-page .dt-paging .page-link {
+  min-width: 2.1rem;
+  height: 2.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.6rem;
+  border: 1px solid transparent;
+  border-radius: var(--lk-radius-md) !important;
+  background: transparent;
+  color: var(--lk-color-ink);
+  font-size: var(--lk-font-size-sm);
+  font-weight: var(--lk-font-weight-medium);
+  font-variant-numeric: tabular-nums;
+  margin: 0 !important;
+  transition: background-color var(--lk-transition-fast), border-color var(--lk-transition-fast);
+}
+
+.lk-page .dt-paging .page-link:hover {
+  background: var(--lk-color-surface-2);
+  border-color: var(--lk-color-rule);
+}
+
+.lk-page .dt-paging .page-link:focus-visible {
+  box-shadow: 0 0 0 3px var(--lk-focus-ring);
+}
+
+/* First / previous / next / last: outlined, the arrows a bit bigger */
+.lk-page .dt-paging .page-link.first,
+.lk-page .dt-paging .page-link.previous,
+.lk-page .dt-paging .page-link.next,
+.lk-page .dt-paging .page-link.last {
+  border-color: var(--lk-color-rule);
+  background: var(--lk-color-surface);
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.lk-page .dt-paging .page-item.active .page-link {
+  background: var(--lk-color-accent);
+  border-color: var(--lk-color-accent);
+  color: var(--lk-color-on-accent);
+}
+
+.lk-page .dt-paging .page-item.disabled .page-link {
+  color: var(--lk-color-muted);
+  opacity: 0.45;
+  background: transparent;
+}
+
+/* "…" between page numbers */
+.lk-page .dt-paging .page-item.disabled .page-link.ellipsis {
+  border-color: transparent;
+  opacity: 1;
+}
+
+@media (max-width: 576px) {
+  .lk-page .dt-paging .page-link.first,
+  .lk-page .dt-paging .page-link.last {
+    display: none;
+  }
+
+  .lk-page .dt-container .dt-layout-start,
+  .lk-page .dt-container .dt-layout-end {
+    width: 100%;
+    justify-content: center !important;
+  }
+
+  .lk-page .dt-search input.form-control {
+    width: 100%;
+  }
+}
+
+/* ---- Column ordering, only on the columns that could already be ordered ---- */
+
+.lk-page table.dataTable thead th.dt-orderable-asc,
+.lk-page table.dataTable thead th.dt-orderable-desc {
+  cursor: pointer;
+}
+
+.lk-page table.dataTable thead th.dt-orderable-asc:hover,
+.lk-page table.dataTable thead th.dt-orderable-desc:hover {
+  color: var(--lk-color-ink);
+}
+
+/* The two small arrows drawn by DataTables: muted, the active one in the accent */
+.lk-page table.dataTable thead .dt-column-order::before,
+.lk-page table.dataTable thead .dt-column-order::after {
+  color: var(--lk-color-muted);
+  opacity: 0.45;
+}
+
+.lk-page table.dataTable thead th.dt-ordering-asc .dt-column-order::before,
+.lk-page table.dataTable thead th.dt-ordering-desc .dt-column-order::after {
+  color: var(--lk-color-accent);
+  opacity: 1;
+}

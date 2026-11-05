@@ -5,11 +5,26 @@
 {% block title %}Lookyloo{% endblock %}
 
 {% from 'macros/page.html' import page_header %}
+{# Logged-in users: switch between the public and the hidden captures (keeps the category filter) #}
+{% macro public_hidden_switch() %}
+<nav class="lk-segmented" aria-label="Captures to show">
+  <a href="{{ url_for('index', category=category if category else None) }}"
+     {% if not show_hidden %}aria-current="page"{% endif %}>Public</a>
+  <a href="{{ url_for('index_hidden', category=category if category else None) }}"
+     {% if show_hidden %}aria-current="page"{% endif %}>Hidden</a>
+</nav>
+{% endmacro %}
+
 {% block page_header %}
 {% if show_hidden %}
-{{ page_header('Hidden captures', description='Captures not listed on the public index, only visible to administrators.', icon_name='eye-slash', crumbs=[('Recent captures', url_for('index'))]) }}
+{% set header = ('Hidden captures', 'Captures not listed on the public index, only visible to administrators.', 'eye-slash', [('Recent captures', url_for('index'))]) %}
 {% else %}
-{{ page_header('Recent captures', description='Public captures made on this instance, most recent first.', icon_name='collection') }}
+{% set header = ('Recent captures', 'Public captures made on this instance, most recent first.', 'collection', []) %}
+{% endif %}
+{% if current_user.is_authenticated %}
+{% call page_header(header[0], description=header[1], icon_name=header[2], crumbs=header[3]) %}{{ public_hidden_switch() }}{% endcall %}
+{% else %}
+{{ page_header(header[0], description=header[1], icon_name=header[2], crumbs=header[3]) }}
 {% endif %}
 {% endblock %}
 
@@ -43,34 +58,14 @@
 
 
 {% block content %}
+  {# New captures: the "New capture" button of the site header (partials/header.html) #}
   <center>
-    <a href="{{ url_for('capture_web') }}">
-      <button class="new-capture-button btn btn-primary">Start a new capture</button>
-    </a>
-    <a href="{{ url_for('submit_capture') }}">
-      <button class="new-capture-button btn btn-primary">Submit capture</button>
-    </a>
-    {% if current_user.is_authenticated and enable_takedown_form == true %}
-    <a href="{{ url_for('simple_capture') }}">
-      <button class="new-capture-button btn btn-primary">Takedown process</button>
-    </a>
-    {% endif %}
-    <br>
-    {% if current_user.is_authenticated %}
-    <p class="lead">
-    You are logged-in as <strong>{{ current_user.id }}</strong>,
-      {% if show_hidden == false %}
-      and you can check the <a href="{{ url_for('index_hidden', category=category if category else None) }}">hidden</a> captures.
-      {% else %}
-      and you're looking at the hidden captures. Go back to the <a href="{{ url_for('index', category=category if category else None) }}">public</a> captures.
-      {% endif %}
-    </p>
-    {% endif %}
     {% if category %}
-    <div class="lk-filters">
+    {# Replaced by a category tag in the row of the table controls (js/components/category_tag.js) #}
+    <div class="lk-filters" id="lk-index-filters" data-category="{{ category }}">
       <span class="lk-filter-chip">
         Category: <strong>{{ category }}</strong>
-        <a href="{{ url_for('index_hidden' if show_hidden else 'index') }}"
+        <a href="{{ url_for('index_hidden' if show_hidden else 'index') }}" data-lk-remove-filter
            aria-label="Remove the category filter" title="Remove the filter">{{ render_icon('x-lg') }}</a>
       </span>
     </div>
@@ -78,14 +73,15 @@
     {{ render_messages(container=True, dismissible=True) }}
   </center>
 
-  <div class="table-responsive">
-    <table id="IndexTable" class="table table-striped" style="width:100%"
-        data-indextype="{%if show_hidden%}hidden{%else%}index{%endif%}">
+  {# Rows built by js/components/capture_list.js (render_tables.js) #}
+  <div class="lk-capture-list">
+  <table id="IndexTable" class="table lk-capture-table" style="width:100%"
+         data-indextype="{%if show_hidden%}hidden{%else%}index{%endif%}"
+         data-lk-icons="{{ url_for('bootstrap.static', filename='icons/bootstrap-icons.svg') }}">
     <thead>
      <tr>
-       <th>Page</th>
-       <th>Timestamp</th>
-       <th>Redirects</th>
+       <th>Capture</th>
+       <th class="text-end">Captured</th>
      </tr>
     </thead>
   </table>

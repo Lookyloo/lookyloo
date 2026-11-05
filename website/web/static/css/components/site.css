@@ -21,6 +21,21 @@
   --lk-focus-ring: rgba(29, 78, 216, 0.22);
   --lk-focus-border: #1D4ED8;
   --lk-logo-filter: none;
+  --lk-color-surface-3: #EBEBEB;
+  --lk-color-on-accent: #FFFFFF;
+  --lk-color-warning: #A15C00;
+  --lk-color-warning-soft: #FFF3DF;
+  --lk-color-warning-border: #F2CF94;
+  --lk-color-accent-rgb: 29, 78, 216;
+  /* Category tags (css/components/tag.css) */
+  --lk-tag-blue: #1D4ED8;    --lk-tag-blue-bg: #E6EDFD;
+  --lk-tag-teal: #0F766E;    --lk-tag-teal-bg: #DDF3F0;
+  --lk-tag-green: #15803D;   --lk-tag-green-bg: #E1F5E7;
+  --lk-tag-red: #B91C1C;     --lk-tag-red-bg: #FDE6E6;
+  --lk-tag-amber: #A16207;   --lk-tag-amber-bg: #FDF1D6;
+  --lk-tag-pink: #BE185D;    --lk-tag-pink-bg: #FCE4EF;
+  --lk-tag-violet: #6D28D9;  --lk-tag-violet-bg: #EEE7FD;
+  --lk-tag-slate: #475569;   --lk-tag-slate-bg: #EBEEF2;
 }
 
 [data-bs-theme="dark"] {
@@ -40,6 +55,20 @@
   --lk-focus-ring: rgba(123, 147, 245, 0.3);
   --lk-focus-border: #7B93F5;
   --lk-logo-filter: invert(1);
+  --lk-color-surface-3: #2F3B55;
+  --lk-color-on-accent: #0E1526;
+  --lk-color-warning: #F2B661;
+  --lk-color-warning-soft: #33280F;
+  --lk-color-warning-border: #6B5020;
+  --lk-color-accent-rgb: 123, 147, 245;
+  --lk-tag-blue: #93B4FF;    --lk-tag-blue-bg: #1A2747;
+  --lk-tag-teal: #5ED3C4;    --lk-tag-teal-bg: #12302D;
+  --lk-tag-green: #6EDC93;   --lk-tag-green-bg: #14301F;
+  --lk-tag-red: #FF8A8A;     --lk-tag-red-bg: #3A1A1C;
+  --lk-tag-amber: #F5C35B;   --lk-tag-amber-bg: #33280F;
+  --lk-tag-pink: #F58CBF;    --lk-tag-pink-bg: #3A1729;
+  --lk-tag-violet: #B9A2FF;  --lk-tag-violet-bg: #2A1F4A;
+  --lk-tag-slate: #B4BECC;   --lk-tag-slate-bg: #262A31;
 }
 
 /* Bootstrap components (fields, tables, dropdowns) follow the same blue, only on
@@ -56,6 +85,7 @@
 
 :root {
   --lk-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --lk-font-size-xs: 0.75rem;
   --lk-font-size-sm: 0.8125rem;
   --lk-font-weight-medium: 500;
   --lk-font-weight-semibold: 600;
@@ -66,6 +96,8 @@
   --lk-space-5: 1.5rem;
   --lk-space-6: 2rem;
   --lk-space-7: 3rem;
+  --lk-radius-sm: 4px;
+  --lk-radius-md: 6px;
   --lk-radius-lg: 10px;
   --lk-radius-pill: 999px;
   --lk-transition-fast: 120ms ease;
@@ -151,11 +183,6 @@ body.lk-page > #content {
 .lk-page #content .table-responsive-sm .table {
   --bs-table-bg: transparent;
   margin-bottom: 0;
-}
-
-/* Index: space between the capture buttons and the table below */
-.lk-page #content .new-capture-button {
-  margin-bottom: var(--lk-space-4);
 }
 
 /* Active filter (index: category), the cross reloads the page without it */
