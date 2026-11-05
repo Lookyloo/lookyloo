@@ -1,0 +1,18 @@
+{#
+  Site footer, included by layouts/page.html. Instances can add their own
+  content with templates/custom_footer.html (loaded by layouts/main.html).
+#}
+<footer class="lk-footer">
+  <div class="lk-container lk-footer-inner">
+    <p class="lk-footer-about">
+      <strong>Lookyloo</strong> <span class="lk-footer-version">v{{ lookyloo_version }}</span><br>
+      Web forensics: capture a page in a real browser and see everything it loaded.
+    </p>
+    <ul class="lk-footer-links">
+      <li><a href="https://www.lookyloo.eu/docs/main/index.html">Documentation</a></li>
+      <li><a href="/doc">API</a></li>
+      <li><a href="https://github.com/Lookyloo/lookyloo/releases/tag/v{{ lookyloo_version }}">Changelog</a></li>
+      <li><a href="https://github.com/Lookyloo/lookyloo">Source code</a></li>
+    </ul>
+  </div>
+</footer>

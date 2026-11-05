@@ -1,9 +1,13 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/page.html" %}
 
 {% block title %}Statistics{% endblock %}
 
+{% from 'macros/page.html' import page_header %}
+{% block page_header %}
+{{ page_header('Statistics', description='Captures, redirects, URLs and domains per week and per month on this instance.', icon_name='graph-up', crumbs=[('Admin', None)]) }}
+{% endblock %}
+
 {% block content %}
-{% include 'partials/top_navbar.html' %}
 <div>
 {% for week in stats['weeks'] %}
   <h2> Week: {{ week['week_number'] }}</h2>

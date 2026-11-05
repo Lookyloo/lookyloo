@@ -1,0 +1,48 @@
+/*
+ * Site footer (partials/footer.html). Uses the tokens of components/site.css.
+ */
+
+.lk-footer {
+  border-top: 1px solid var(--lk-color-rule);
+  background: var(--lk-color-surface);
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-sm);
+}
+
+.lk-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--lk-space-3) var(--lk-space-6);
+  padding-block: var(--lk-space-5);
+}
+
+.lk-footer-about {
+  margin: 0;
+}
+
+.lk-footer-about strong {
+  color: var(--lk-color-ink);
+}
+
+.lk-footer-version {
+  font-family: var(--lk-font-mono);
+}
+
+.lk-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lk-space-2) var(--lk-space-5);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lk-footer-links a {
+  color: var(--lk-color-muted);
+}
+
+.lk-footer-links a:hover {
+  color: var(--lk-color-ink);
+}

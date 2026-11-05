@@ -1,8 +1,13 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/page.html" %}
 
 {% from 'bootstrap5/utils.html' import render_messages %}
 
 {% block title %}HTTP Headers Hashes lookup{% endblock %}
+
+{% from 'macros/page.html' import page_header %}
+{% block page_header %}
+{{ page_header('HTTP headers hashes', description='Hashes of the HTTP response headers (HHHash): servers configured the same way share a hash.', icon_name='fingerprint', crumbs=[('Explore', None)]) }}
+{% endblock %}
 
 {% block scripts %}
 {{ super() }}

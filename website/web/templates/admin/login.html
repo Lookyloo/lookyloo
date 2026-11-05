@@ -1,0 +1,23 @@
+{% extends "layouts/page.html" %}
+{% from 'macros/page.html' import page_header %}
+
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+<div class="lk-container-form">
+  {{ page_header('Log in', description='Administrators can see hidden captures, statistics and more capture options.', icon_name='box-arrow-in-right') }}
+  <div class="lk-card lk-login">
+    <form action="{{ url_for('login') }}" method="post">
+      <div class="mb-3">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-control" type="text" name="username" id="username" autocomplete="username" required autofocus>
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-control" type="password" name="password" id="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-primary w-100" type="submit" name="submit">Log in</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

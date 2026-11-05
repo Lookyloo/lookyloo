@@ -1,6 +1,11 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/page.html" %}
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% block title %}Submit an existing capture{% endblock %}
+
+{% from 'macros/page.html' import page_header %}
+{% block page_header %}
+{{ page_header('Submit an existing capture', description='Upload a capture made elsewhere (Lookyloo export or HAR files) or pull one from another Lookyloo instance.', icon_name='upload', crumbs=[('New capture', url_for('capture_web'))]) }}
+{% endblock %}
 
 {% block card %}
 <meta property="og:title" content="Lookyloo" />
@@ -22,7 +27,6 @@
 
 {% block content %}
 <div class="container">
-  {% include 'partials/top_navbar.html' %}
   {{ render_messages(container=True, dismissible=True) }}
   <form role="form" action="{{ url_for('submit_capture') }}" method=post enctype=multipart/form-data>
     <div class="row mb-3">

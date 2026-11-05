@@ -1,8 +1,17 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/page.html" %}
 
-{% from 'bootstrap5/utils.html' import render_messages %}
+{% from 'bootstrap5/utils.html' import render_messages, render_icon %}
 
 {% block title %}Lookyloo{% endblock %}
+
+{% from 'macros/page.html' import page_header %}
+{% block page_header %}
+{% if show_hidden %}
+{{ page_header('Hidden captures', description='Captures not listed on the public index, only visible to administrators.', icon_name='eye-slash', crumbs=[('Recent captures', url_for('index'))]) }}
+{% else %}
+{{ page_header('Recent captures', description='Public captures made on this instance, most recent first.', icon_name='collection') }}
+{% endif %}
+{% endblock %}
 
 {% block card %}
 <meta property="og:title" content="Lookyloo" />
@@ -34,7 +43,6 @@
 
 
 {% block content %}
-  {% include 'partials/top_navbar.html' %}
   <center>
     <a href="{{ url_for('capture_web') }}">
       <button class="new-capture-button btn btn-primary">Start a new capture</button>
@@ -59,9 +67,13 @@
     </p>
     {% endif %}
     {% if category %}
-    <p class="lead">
-    Only showing the captures for the category <strong>{{ category }}</strong>.
-    </p>
+    <div class="lk-filters">
+      <span class="lk-filter-chip">
+        Category: <strong>{{ category }}</strong>
+        <a href="{{ url_for('index_hidden' if show_hidden else 'index') }}"
+           aria-label="Remove the category filter" title="Remove the filter">{{ render_icon('x-lg') }}</a>
+      </span>
+    </div>
     {% endif %}
     {{ render_messages(container=True, dismissible=True) }}
   </center>

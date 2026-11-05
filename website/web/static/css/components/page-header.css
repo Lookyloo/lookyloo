@@ -1,0 +1,121 @@
+/*
+ * Page header: breadcrumb + card with icon, title and description
+ * (macros/page.html page_header()). Uses the tokens of components/site.css.
+ */
+
+.lk-page-head {
+  margin-bottom: var(--lk-space-5);
+}
+
+/* Breadcrumb: Home / Parent / Current page */
+.lk-breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-1) 0;
+  list-style: none;
+  margin: 0 0 var(--lk-space-3);
+  padding: 0;
+  font-size: var(--lk-font-size-sm);
+  color: var(--lk-color-muted);
+}
+
+.lk-breadcrumb li {
+  display: inline-flex;
+  align-items: center;
+}
+
+.lk-breadcrumb li + li::before {
+  content: '/';
+  margin: 0 var(--lk-space-2);
+  color: var(--lk-color-rule-strong);
+}
+
+.lk-breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--lk-color-muted);
+}
+
+.lk-breadcrumb a:hover {
+  color: var(--lk-color-accent);
+}
+
+.lk-breadcrumb [aria-current="page"] {
+  color: var(--lk-color-ink);
+  font-weight: var(--lk-font-weight-medium);
+}
+
+/* The card */
+.lk-page-head-card {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-4);
+  padding: var(--lk-space-5);
+  background: var(--lk-color-surface);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-lg);
+  box-shadow: var(--lk-shadow-sm);
+}
+
+.lk-page-head-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--lk-radius-lg);
+  background: var(--lk-color-accent-soft);
+  color: var(--lk-color-accent);
+  font-size: 1.6rem;
+}
+
+.lk-page-head-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.lk-page-head-text h1 {
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.lk-page-head-text p {
+  margin: var(--lk-space-1) 0 0;
+  color: var(--lk-color-muted);
+  max-width: 75ch;
+}
+
+.lk-page-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-2);
+}
+
+@media (max-width: 576px) {
+  .lk-page-head-card {
+    flex-wrap: wrap;
+    padding: var(--lk-space-4);
+  }
+
+  .lk-page-head-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .lk-page-head-actions {
+    width: 100%;
+  }
+}
+
+/* Bootstrap Icons rendered by render_icon() have a fixed size: follow the font size */
+.lk-page-head-icon .bi,
+.lk-breadcrumb .bi {
+  width: 1em;
+  height: 1em;
+}

@@ -146,7 +146,24 @@ else:
         if request.method == 'HEAD':
             # Just returns ack if the webserver is running
             return 'Ack'
-        return redirect(url_for('index'))
+        return home_page()
+
+
+def home_page() -> str:
+    '''Home page: logo and quick capture form. The list of captures is on the index page.'''
+    mastodon_domain = None
+    mastodon_botname = None
+    if get_config('mastobot', 'enable'):
+        mastodon_domain = get_config('mastobot', 'domain')
+        mastodon_botname = get_config('mastobot', 'botname')
+    return render_template('home/home.html', public_domain=lookyloo.public_domain,
+                           mastobot_enabled=get_config('mastobot', 'enable'),
+                           mastodon_domain=mastodon_domain,
+                           mastodon_botname=mastodon_botname,
+                           default_device=user_agents.default['default_device_name'],
+                           default_mobile_device=user_agents.default.get('default_mobile_device_name'),
+                           default_public=lookyloo.default_public,
+                           default_private=lookyloo.default_private)
 
 
 @login_manager.user_loader  # type: ignore[untyped-decorator]
@@ -166,13 +183,7 @@ def _load_user_from_request(request: Request) -> User | None:
 @app.route('/login', methods=['GET', 'POST'])
 def login() -> WerkzeugResponse | str | Response:
     if request.method == 'GET':
-        return '''
-               <form action='login' method='POST'>
-                <input type='text' name='username' id='username' placeholder='username'/>
-                <input type='password' name='password' id='password' placeholder='password'/>
-                <input type='submit' name='submit'/>
-               </form>
-               '''
+        return render_template('admin/login.html')
 
     username = request.form['username']
     users_table = build_users_table()
@@ -426,7 +437,8 @@ app.jinja_env.globals.update(
      'tz_info': get_tz_info,
      'details_modal_button': details_modal_button,
      'load_custom_css': load_custom_css,
-     'load_custom_js': load_custom_js
+     'load_custom_js': load_custom_js,
+     'lookyloo_version': pkg_version
      }
 )
 

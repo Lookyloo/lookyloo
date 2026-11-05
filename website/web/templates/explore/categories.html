@@ -1,8 +1,13 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/page.html" %}
 
 {% from 'bootstrap5/utils.html' import render_messages %}
 
 {% block title %}Categories{% endblock %}
+
+{% from 'macros/page.html' import page_header %}
+{% block page_header %}
+{{ page_header('Categories', description='Captures grouped by the categories they were given.', icon_name='tags') }}
+{% endblock %}
 
 {% block card %}
 <meta property="og:title" content="Lookyloo" />
@@ -38,7 +43,6 @@
 {% endblock %}
 
 {% block content %}
-  {% include 'partials/top_navbar.html' %}
 
   {% if not_enabled %}
   <center>

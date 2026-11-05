@@ -199,3 +199,52 @@ hr {
   border: 1px solid;
   padding: 5px;
 }
+
+/* ---- Dark mode ----
+   The tree (js/tree.js) draws light colours: they are only replaced in dark mode,
+   the light mode is unchanged. !important is needed for the colours js/tree.js
+   sets with inline styles (normal and highlighted nodes). */
+
+/* Background stripes */
+[data-bs-theme="dark"] #backstripes rect {
+  fill: #2B3035;
+}
+
+/* Nodes */
+[data-bs-theme="dark"] .node_data rect[fill="white"] {
+  fill: #343A40;
+  stroke: #6C757D;
+}
+
+[data-bs-theme="dark"] .node_data text {
+  fill: #F8F9FA;
+}
+
+/* Text halo drawn in white around some labels */
+[data-bs-theme="dark"] .node_data text[stroke="white"] {
+  stroke: #343A40;
+}
+
+/* Normal / highlighted node, as set by js/tree.js */
+[data-bs-theme="dark"] .node_data rect[style*="fill: white"] {
+  fill: #343A40 !important;
+}
+
+[data-bs-theme="dark"] .node_data text[style*="fill: black"] {
+  fill: #F8F9FA !important;
+}
+
+[data-bs-theme="dark"] .node_data rect[style*="fill: black"] {
+  fill: #E9ECEF !important;
+}
+
+[data-bs-theme="dark"] .node_data text[style*="fill: white"] {
+  fill: #212529 !important;
+}
+
+/* Expand / collapse circles (lightsteelblue when collapsed is kept) */
+[data-bs-theme="dark"] circle.node[style*="rgb(255, 255, 255)"],
+[data-bs-theme="dark"] circle.node[style*="fill: white"],
+[data-bs-theme="dark"] circle.node[style*="#fff"] {
+  fill: #343A40 !important;
+}

@@ -6,6 +6,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    {# Applies the stored / OS colour theme before the first paint (no white flash) #}
+    <script src='{{ url_for('static', filename='js/theme_toggle.js') }}'
+            {{get_sri('static', 'js/theme_toggle.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+
     {% block styles %}
     <!-- Bootstrap CSS -->
     {{ bootstrap.load_css() }}
@@ -36,12 +42,15 @@
 
     {% endblock %}
   </head>
-  <body>
+  <body{% set body_class %}{% block body_class %}{% endblock %}{% endset %}{% if body_class %} class="{{ body_class }}"{% endif %}>
     {% include "custom_header.html" ignore missing %}
+    {% block site_header %}{% endblock %}
     <!-- Your page content -->
     <div id="content" class="container">
+      {% block page_header %}{% endblock %}
       {% block content %}{% endblock%}
     </div>
+    {% block site_footer %}{% endblock %}
     {% include "custom_footer.html" ignore missing %}
 
     {% block scripts %}
@@ -65,10 +74,6 @@
             crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='vendor/jquery.json-viewer.js') }}'
             {{get_sri('static', 'vendor/jquery.json-viewer.js')}}
-            nonce="{{ csp_nonce() }}"
-            crossorigin="anonymous"></script>
-    <script src='{{ url_for('static', filename='js/theme_toggle.js') }}'
-            {{get_sri('static', 'js/theme_toggle.js')}}
             nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
     {% set overrides_js = load_custom_js('overrides.js') %}
