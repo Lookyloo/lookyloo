@@ -52,6 +52,7 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from lookyloo import Lookyloo, LookylooException
 from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError, StorageStateSettings
+from pydantic import ValidationError
 from lookyloo.default import get_config, get_homedir, ConfigError
 from lookyloo.exceptions import (UnknownUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild,
                                  LookylooPrivateCapture, UUIDMissingInCache, MissingCaptureDirectory,
@@ -2538,6 +2539,7 @@ def capture_web() -> str | Response | WerkzeugResponse:
             return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
 
         capture_query: dict[str, Any] = {}
+        invalid_settings = False
         # check if the post request has the file part
         if 'cookies' in request.files and request.files['cookies'].filename:
             capture_query['cookies'] = request.files['cookies'].stream.read()
@@ -2545,9 +2547,10 @@ def capture_web() -> str | Response | WerkzeugResponse:
             if _storage := request.files['storage_state'].stream.read():
                 try:
                     capture_query['storage'] = StorageStateSettings.model_validate(orjson.loads(_storage))
-                except orjson.JSONDecodeError:
-                    flash(Markup('Invalid storage state: must be a JSON: {}.').format(_storage.decode()), 'error')
+                except (orjson.JSONDecodeError, ValidationError):
+                    flash(Markup('Invalid storage state: must be a valid JSON storage state: {}.').format(_storage.decode()), 'error')
                     app.logger.info(f'Invalid storage state: must be a JSON: {_storage.decode()}.')
+                    invalid_settings = True
 
         if request.form.get('device_name'):
             capture_query['device_name'] = request.form['device_name']
@@ -2659,10 +2662,16 @@ def capture_web() -> str | Response | WerkzeugResponse:
                             capture_query['proxy'] = proxy
                         else:
                             flash('You need to enter a username AND a password for your proxy.', 'error')
+                            invalid_settings = True
                     else:
                         flash('Proxy scheme not supported: must be http(s) or socks5.', 'error')
+                        invalid_settings = True
                 else:
                     flash('Invalid proxy: Check that you entered a scheme, a hostname and a port.', 'error')
+                    invalid_settings = True
+
+        if invalid_settings:
+            return _prepare_capture_template(user_ua=request.headers.get('User-Agent'), user_config=user_config)
 
         # auto monitoring
         if request.form.get('monitor_capture'):
