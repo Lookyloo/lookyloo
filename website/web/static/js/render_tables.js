@@ -459,9 +459,9 @@ function renderTables() {
         },
         columns : [
            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '30%' },
+           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '20%' },
            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '30%' },
-           { data: {_: 'hostnames.display', filter: 'hostnames.filter'}, width: '20%' }
+           { data: {_: 'hostnames.display', filter: 'hostnames.filter'}, width: '30%' }
         ],
       });
   }

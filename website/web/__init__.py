@@ -3196,9 +3196,9 @@ def __prepare_landings_in_modal(landing_page: str) -> dict[str, Markup]:
 
 
 hostnames_view_template = app.jinja_env.from_string(source='''
-<ul>
+<ul class="list-group list-group-flush bg-transparent">
 {%for hostname in hostnames%}
-  <li style="width:100%">
+  <li class="list-group-item bg-transparent" style="width:100%">
     <button type="button" class="btn btn-link" style="text-align: left;width: 70%;"
             data-remote="{{url_for('hostname_details', hostname=hostname)}}" data-bs-toggle="modal"
             data-bs-target="#hostnameDetailsModal"> {{shorten_string(hostname, with_copy_button=True)}}
