@@ -2852,7 +2852,8 @@ def url_details(url: str) -> str:
 @app.route('/hostnames/<string:hostname>', methods=['GET'])
 def hostname_details(hostname: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('investigate/hostname.html', hostname=hostname, from_popup=from_popup)
+    return render_template('investigate/hostname.html', hostname=hostname, from_popup=from_popup,
+                           circl_pdns_available=lookyloo.circl_pdns.available)
 
 
 @app.route('/tlds/<string:tld>', methods=['GET'])
@@ -2870,7 +2871,8 @@ def domain_details(domain: str) -> str:
 @app.route('/ips/<string:ip>', methods=['GET'])
 def ip_details(ip: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    return render_template('investigate/ip.html', ip=ip, from_popup=from_popup)
+    return render_template('investigate/ip.html', ip=ip, from_popup=from_popup,
+                           circl_pdns_available=lookyloo.circl_pdns.available)
 
 
 @app.route('/cloudflare_ns/<string:cloudflare_ns_key>', methods=['GET'])
