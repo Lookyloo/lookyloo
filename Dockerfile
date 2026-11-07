@@ -20,12 +20,13 @@ COPY bin bin/
 COPY website website/
 COPY config config/
 COPY data data/
+COPY known_content known_content/
 COPY pyproject.toml .
 COPY poetry.lock .
 COPY README.md .
 COPY LICENSE .
 
-RUN mkdir cache user_agents scraped logs
+RUN mkdir cache user_agents scraped logs known_content_user
 
 RUN echo LOOKYLOO_HOME="'`pwd`'" > .env
 RUN cat .env
