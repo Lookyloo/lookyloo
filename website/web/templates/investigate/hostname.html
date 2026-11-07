@@ -25,6 +25,7 @@
   </p>
 </center>
 
+{% if circl_pdns_available %}
 <div class="accordion" id="accordionDetails">
     <div class="accordion-item">
         <h2 class="accordion-header">
@@ -50,6 +51,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <table id="hostnameTable" class="table table-striped" style="width:100%" data-hostname="{{hostname}}">
   <thead>
