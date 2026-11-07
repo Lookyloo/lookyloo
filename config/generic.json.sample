@@ -51,7 +51,8 @@
   },
   "monitoring": {
     "enable": false,
-    "url": "http://127.0.0.1:5200"
+    "url": "http://127.0.0.1:5200",
+    "public_url": ""
   },
   "tor_proxy": {
     "server": "socks5://127.0.0.1:9050"
@@ -149,7 +150,7 @@
     "enable_mail_notification": "Allow users to notify a pre-configured email address about a specific capture",
     "remote_lacus": "By default, lookyloo will do the capture locally. Enabling this feature means you have a dedicated Lacus instance somewhere",
     "multiple_remote_lacus": "By default, lookyloo will do the capture locally. Enabling this feature means you have multiple dedicated Lacus instances somewhere",
-    "monitoring": "Enable connection to a remote monitoring instance",
+    "monitoring": "Enable connection to a remote monitoring instance. url is used by Lookyloo to talk to it, public_url (optional) is the URL used in links shown to the users, e.g. https://lookyloo.example.com/monitoring",
     "tor_proxy": "[Ignored if remote Lacus instance] URL to connect to a SOCKS 5 proxy for tor.",
     "i2p_proxy": "[Ignored if remote Lacus instance] URL to connect to an HTTP proxy for i2p.",
     "trusted_timestamp_settings": "[URL Ignored if remote Lacus instance] Settings to connect to a TimeStamp Authority.",
