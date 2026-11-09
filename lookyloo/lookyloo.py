@@ -19,7 +19,7 @@ import time
 
 from base64 import b64decode, b64encode
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from email.message import EmailMessage
 from functools import cached_property
 from io import BytesIO
@@ -2357,18 +2357,20 @@ class Lookyloo():
 
     def get_stats(self, public: bool=True) -> dict[str, list[Any]]:
         '''Gather statistics about the lookyloo instance'''
-        # today = date.today()
-        # calendar_week = today.isocalendar()[1]
+        today = date.today()
+        calendar_week = today.isocalendar()[1]
 
-        # stats_dict = {'submissions': 0, 'redirects': 0}
+        stats_dict = {'submissions': 0, 'redirects': 0}
         stats: dict[int, dict[int, dict[str, Any]]] = {}
         weeks_stats: dict[int, dict[str, Any]] = {}
+        recent_uuids = set()
 
         # Only recent captures that are not archived
-        """
-        for cache in self.sorted_capture_cache(public=public, cached_captures_only=True):
+        for cache in self.sorted_capture_cache(public=public, cached_captures_only=True,
+                                               index_cut_time=datetime.now() - timedelta(days=10)):
             if not hasattr(cache, 'timestamp'):
                 continue
+            recent_uuids.add(cache.uuid)
             date_submission: datetime = cache.timestamp
 
             if date_submission.year not in stats:
@@ -2392,17 +2394,21 @@ class Lookyloo():
                 if hasattr(cache, 'redirects') and len(cache.redirects) > 0:
                     weeks_stats[date_submission.isocalendar()[1]]['redirects'] += len(cache.redirects)
                     weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'].update(cache.redirects)
-        """
 
-        for _, capture_path in self.redis.hscan_iter('lookup_dirs'):
+        for _uuid, capture_path in self.redis.hscan_iter('lookup_dirs'):
+            if _uuid in recent_uuids:
+                continue
             capture_ts = datetime.fromisoformat(capture_path.rsplit('/', 1)[-1])
             if capture_ts.year not in stats:
                 stats[capture_ts.year] = {}
             if capture_ts.month not in stats[capture_ts.year]:
                 stats[capture_ts.year][capture_ts.month] = {'submissions': 0}
             stats[capture_ts.year][capture_ts.month]['submissions'] += 1
+
         # Build limited stats based on archved captures and the indexes
         for _, capture_path in self.redis.hscan_iter('lookup_dirs_archived'):
+            if _uuid in recent_uuids:
+                continue
             capture_ts = datetime.fromisoformat(capture_path.rsplit('/', 1)[-1])
             if capture_ts.year not in stats:
                 stats[capture_ts.year] = {}
