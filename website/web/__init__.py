@@ -3257,6 +3257,18 @@ def __prepare_list_hostnames(hostnames: Iterable[str]) -> dict[str, str]:
             'filter': escape(' '.join(hostnames))}
 
 
+def _capture_redirects(capture_uuid: str) -> list[str]:
+    '''Redirect chain of a capture, for the rows of the pivot tables (shown like
+    the list of the captures, js/components/capture_list.js). Read from the
+    cache in valkey only (quick=True): never builds a tree. Plain strings, the
+    front end writes them with textContent.'''
+    try:
+        cache = lookyloo.capture_cache(capture_uuid, quick=True)
+    except Exception:
+        return []
+    return [str(url) for url in (getattr(cache, 'redirects', None) or [])]
+
+
 def _safe_capture_title(capture_uuid: str, title: str, nodes: Sequence[tuple[str, str] | tuple[str, str, str | None]] | None=None, from_popup: bool=False) -> dict[str, Markup]:
     title_modal = __prepare_title_in_modal(capture_uuid, title, from_popup)
     if nodes:
@@ -3342,7 +3354,7 @@ def post_table(table_name: str, value: str='') -> Response:
     length = request.form.get('length', type=int)
     search = request.form.get('search[value]', type=str)
     captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, list[tuple[str, str]]]] | list[tuple[str, str, str, datetime]] | list[tuple[str, str, list[str], datetime]]
-    to_append: dict[str, int | str | dict[str, str] | dict[str, Markup]]
+    to_append: dict[str, int | str | list[str] | dict[str, str] | dict[str, Markup]]
     if table_name == 'indexTable':
         show_error, category = get_index_params(request)
         show_hidden = (value == "hidden")
@@ -3396,6 +3408,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3412,6 +3425,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3428,6 +3442,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3445,6 +3460,7 @@ def post_table(table_name: str, value: str='') -> Response:
             to_append = {
                 'capture_time': capture_time.isoformat(),
                 'capture_title': __prepare_title_in_modal(capture_uuid, title, from_popup),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
             prepared_captures.append(to_append)
@@ -3461,6 +3477,7 @@ def post_table(table_name: str, value: str='') -> Response:
             to_append = {
                 'capture_time': capture_time.isoformat(),
                 'capture_title': __prepare_title_in_modal(capture_uuid, title, from_popup),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
             prepared_captures.append(to_append)
@@ -3476,6 +3493,7 @@ def post_table(table_name: str, value: str='') -> Response:
             to_append = {
                 'capture_time': capture_time.isoformat(),
                 'capture_title': __prepare_title_in_modal(capture_uuid, title, from_popup),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
             prepared_captures.append(to_append)
@@ -3492,6 +3510,7 @@ def post_table(table_name: str, value: str='') -> Response:
             hostnames = get_indexing(flask_login.current_user).get_capture_cloudflare_ns_hostnames(capture_uuid, cloudflare_ns)
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, from_popup=from_popup),
                 'hostnames': __prepare_list_hostnames(hostnames)
@@ -3508,6 +3527,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3523,6 +3543,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3538,6 +3559,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3553,6 +3575,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3569,6 +3592,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }

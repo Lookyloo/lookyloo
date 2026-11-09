@@ -64,6 +64,11 @@
             {{get_sri('static', 'vendor/datatables.min.js')}}
             nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
+    {# Before render_tables.js: listens to the draws of the pivot tables (doc/ui/pivot-pages.md) #}
+    <script src='{{ url_for('static', filename='js/components/pivot.js') }}'
+            {{get_sri('static', 'js/components/pivot.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='js/render_tables.js') }}'
             {{get_sri('static', 'js/render_tables.js')}}
             nonce="{{ csp_nonce() }}"

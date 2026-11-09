@@ -29,6 +29,13 @@
 
 {% block scripts %}
   {{ super() }}
+  {# Captures rows of the pivot pages shown in the modals (lkPivotColumns) #}
+  {% for script in ['js/components/capture_preview.js', 'js/components/capture_list.js'] %}
+  <script src="{{ url_for('static', filename=script) }}"
+          {{get_sri('static', script)}}
+          nonce="{{ csp_nonce() }}"
+          crossorigin="anonymous"></script>
+  {% endfor %}
   <script src='{{ url_for('static', filename='vendor/d3.min.js') }}'
           {{get_sri('static', 'vendor/d3.min.js')}}
           nonce="{{ csp_nonce() }}"
@@ -85,6 +92,14 @@
   <link rel="stylesheet"
         {{get_sri('static', 'css/tree.css')}}
         href="{{ url_for('static', filename='css/tree.css') }}">
+  {# Pivot pages loaded in the modals (investigate/*, macros/investigate.html):
+     cards + captures rows of the list of the captures #}
+  {% for stylesheet in ['css/components/pivot.css', 'css/components/capture-list.css',
+                        'css/components/capture-preview.css'] %}
+  <link rel="stylesheet"
+        {{get_sri('static', stylesheet)}}
+        href="{{ url_for('static', filename=stylesheet) }}">
+  {% endfor %}
 {% endblock %}
 
 
