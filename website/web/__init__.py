@@ -36,6 +36,7 @@ import flask_login  # type: ignore[import-untyped]
 from flask import (Flask, Response, Request, flash, jsonify, redirect, render_template,
                    request, send_file, url_for, make_response, send_from_directory)
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
+from flask_caching import Cache
 from flask_cors import CORS
 from flask_restx import Api  # type: ignore[import-untyped]
 from flask_talisman import Talisman  # type: ignore[import-untyped]
@@ -84,6 +85,8 @@ app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.debug = bool(os.environ.get('DEBUG', False))
+
+cache = Cache(app, config={"CACHE_TYPE": "SimpleCache"})
 
 magicdb = MagicDb()
 
@@ -1635,6 +1638,7 @@ def video(tree_uuid: str) -> Response:
 
 @app.route('/tree/<uuid:tree_uuid>/thumbnail/', defaults={'width': 64}, methods=['GET'])
 @app.route('/tree/<uuid:tree_uuid>/thumbnail/<int:width>', methods=['GET'])
+@cache.cached(timeout=300)
 @file_response  # type: ignore[untyped-decorator]
 def thumbnail(tree_uuid: str, width: int) -> Response:
     to_return = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=False, width=width)

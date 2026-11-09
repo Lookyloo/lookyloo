@@ -104,6 +104,7 @@ yara-x = "^1.23.0"
 ollama = "^0.6.3"
 markdown = "^3.11.3"
 justhtml = "^3.16.0"
+flask-caching = "^2.5.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^2.4.1"

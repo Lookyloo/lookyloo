@@ -980,6 +980,26 @@ cffi = [
 ]
 
 [[package]]
+name = "cachelib"
+version = "0.17.0"
+description = "A collection of cache libraries in the same API interface."
+optional = false
+python-versions = ">=3.11"
+groups = ["main"]
+files = [
+    {file = "cachelib-0.17.0-py3-none-any.whl", hash = "sha256:f83909b6f78741c3a5d76d292d13bf24964ffb13e00ea1d18f92e20599766ce0"},
+    {file = "cachelib-0.17.0.tar.gz", hash = "sha256:f3c7dc8d3c1132ab699681ffdf8a52d341d9425ac1401c538cf0b1d87b1677c8"},
+]
+
+[package.extras]
+dynamodb = ["boto3 (>=1.43.4)"]
+memcached = ["pylibmc (>=1.6.3)"]
+mongodb = ["pymongo (>=4.11)"]
+redis = ["redis (>=6.0.0)"]
+uwsgi = ["uwsgi (>=2.0.28)"]
+valkey = ["valkey (>=6.1.0)"]
+
+[[package]]
 name = "cattrs"
 version = "26.2.1"
 description = "Composable complex class support for attrs and dataclasses."
@@ -1572,6 +1592,22 @@ werkzeug = ">=3.1.0"
 [package.extras]
 async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
+
+[[package]]
+name = "flask-caching"
+version = "2.5.1"
+description = "Adds caching support to Flask applications."
+optional = false
+python-versions = ">=3.11"
+groups = ["main"]
+files = [
+    {file = "flask_caching-2.5.1-py3-none-any.whl", hash = "sha256:a8591b0315f033d1f10ba67e318b82b3179e548306195ec08e8f0c5f8ef287bf"},
+    {file = "flask_caching-2.5.1.tar.gz", hash = "sha256:f75b451fde3faac0e278da72263818134deca8c4ba6bb07b9b3b238991368dae"},
+]
+
+[package.dependencies]
+cachelib = ">=0.17.0"
+flask = ">=3.0"
 
 [[package]]
 name = "flask-cors"
@@ -7010,4 +7046,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.16"
-content-hash = "8d1fedcbe4af809e2d8a3b04b7439b75c0fe06f54971d21be62d8eab12f64748"
+content-hash = "99510c79d81bf9d3001e0e79eb35c65bb33c3fedc312ef42fe5599a7ec261680"
