@@ -33,6 +33,13 @@
   transform: scale(1.1); /* hides the blurred, transparent edges */
 }
 
+/* After a click: still slightly blurred, never in the clear (a page can be a
+   single shocking image). The clear screenshot is in the capture. */
+.lk-thumb.is-peek img {
+  filter: blur(2.5px);
+  transform: scale(1.05);
+}
+
 /* "Show" label drawn in CSS so the rows stay light */
 .lk-thumb.is-blurred::after {
   content: 'Show';
