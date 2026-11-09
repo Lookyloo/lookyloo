@@ -1,37 +1,61 @@
-{% extends "layouts/main.html" %}
-{% from 'bootstrap5/utils.html' import render_messages %}
+{% extends "layouts/page.html" %}
+{#
+  Shown while a capture is queued / running / being processed. Reloads itself
+  every 10 seconds until the tree is ready (js/tree_wait.js). Doc: doc/ui/loader.md
+#}
+{% from 'macros/loader.html' import loader %}
+{% from 'macros/tour.html' import tour %}
+{% from 'bootstrap5/utils.html' import render_icon %}
+
 {% block title %}Ongoing capture...{% endblock %}
 
+{% block head %}
+{{ super() }}
+{# Without JavaScript; with it, js/tree_wait.js reloads (and waits while a tour is open) #}
+<noscript><meta http-equiv="refresh" content="10;url={{url_for('tree', tree_uuid=tree_uuid, seed=seed)}}" /></noscript>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/tree_wait.js') }}"
+        {{get_sri('static', 'js/tree_wait.js')}}
+        nonce="{{ csp_nonce() }}"
+        crossorigin="anonymous"></script>
+{% endblock %}
+
+
 {% block content %}
-{{ render_messages(container=True, dismissible=True) }}
-<div class="container">
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <br>
-  <center>
-  <b>{{ message }}
-    <br>
-    Please wait...
-  </b>
+<section class="lk-card lk-wait" aria-live="polite" data-lk-reload="{{ url_for('tree', tree_uuid=tree_uuid, seed=seed) }}">
+  {{ loader('Capture in progress', size='lg') }}
+  <h1 class="lk-wait-title">{{ message }}</h1>
+  <p class="lk-wait-text">Lookyloo is looking at the page. This page refreshes by itself every 10 seconds
+    and shows the capture as soon as it is ready.</p>
 
-
-  {%if remote_headed_session %}
-    <br>
-    {% if remote_headed_session.get('raw_status') == 1%}
-      <a href="{{remote_headed_session.get('view_url')}}" target="_blank">Open interactive capture</a>
+  {% if remote_headed_session %}
+  <div class="lk-wait-session">
+    {% if remote_headed_session.get('raw_status') == 1 %}
+      <a class="btn btn-primary" href="{{ remote_headed_session.get('view_url') }}" target="_blank" rel="noopener">
+        {{ render_icon('box-arrow-up-right') }} Open the interactive capture</a>
     {% elif remote_headed_session.get('raw_status') in [2, 3, 4] %}
       The capture terminated, please wait a little bit longer for the tree to be generated.
     {% elif remote_headed_session.get('raw_status') in [-1, 0, 5] %}
       The URL to access the remote headed session isn't available yet.
-    {%endif%}
-  {%endif%}
+    {% endif %}
+  </div>
+  {% endif %}
 
-  </center>
-
-
-</div>
-<meta http-equiv="refresh" content="10;url={{url_for('tree', tree_uuid=tree_uuid, seed=seed)}}" />
+  <p class="lk-wait-link">
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('tree', tree_uuid=tree_uuid, seed=seed) }}">
+      {{ render_icon('arrow-clockwise') }} Check now<span class="lk-wait-countdown" data-lk-countdown hidden></span></a>
+  </p>
+</section>
 {% endblock %}
+
+{# Tutorial of the page (js/components/tour.js, doc/ui/tour.md) #}
+{% block tour %}{{ tour([
+  (None, "The capture is running", "Lookyloo is opening the page in a real browser, on the server: it records every request, the screenshot, the cookies… It usually takes 10 to 30 seconds."),
+  (".lk-loader", "Lookyloo is looking", "The eyes say it is still working: queued, capturing, then building the tree."),
+  (".lk-wait-title", "Where it is", "The current step of the capture: waiting in the queue, ongoing, or being processed."),
+  (".lk-wait-text", "No need to reload", "This page checks by itself every 10 seconds and shows the tree as soon as it is ready (it waits while this tour is open)."),
+  (".lk-wait-link", "Check now", "Impatient? This button checks right away. It shows the seconds left before the next automatic check.")
+]) }}{% endblock %}
