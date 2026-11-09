@@ -280,3 +280,17 @@
   top: var(--lk-space-2);
   right: var(--lk-space-2);
 }
+
+/* Total of captures next to the title (js/components/pivot.js) */
+.lk-pivot-count {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0.1em 0.55em;
+  border-radius: 999px;
+  background: var(--lk-color-accent-soft);
+  color: var(--lk-color-accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}

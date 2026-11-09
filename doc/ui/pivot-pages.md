@@ -69,3 +69,6 @@ tree). On top of that, "Found in N nodes" and the folded list of these nodes.
 On the favicon page, the favicon can be clicked (`zoom=True` of
 `pivot_header()`): `pivot.js` opens it in large in a `<dialog>` (same image, no
 new request), closed by a click or Escape.
+
+The total number of captures with the value is shown next to the title of the
+captures (`[data-lk-count]`), from the DataTables `recordsTotal`.

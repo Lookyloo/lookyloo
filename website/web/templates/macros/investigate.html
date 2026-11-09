@@ -77,7 +77,9 @@
 {# Same block as the list of the captures (home/index.html): the title, then
    the .lk-capture-list card around the table, no extra card #}
 <section class="lk-pivot-captures">
-  <h2 class="lk-pivot-captures-title">{{ render_icon('collection') }} {{ title }}</h2>
+  <h2 class="lk-pivot-captures-title">{{ render_icon('collection') }} {{ title }}
+    {# Total number of captures, filled by js/components/pivot.js #}
+    <span class="lk-pivot-count" data-lk-count hidden></span></h2>
   {# Rows built like the list of the captures (js/components/capture_list.js, lkPivotColumns) #}
   <div class="lk-capture-list"
        data-lk-icons="{{ url_for('bootstrap.static', filename='icons/bootstrap-icons.svg') }}"
