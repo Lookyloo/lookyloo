@@ -3308,6 +3308,7 @@ def get_index(offset: int, limit: int, public: bool=True, show_error: bool=False
 
 @app.route('/tables/<string:table_name>/', methods=['POST'])
 @app.route('/tables/<string:table_name>/<string:value>', methods=['POST'])
+@cache.cached(timeout=60, unless=lambda: flask_login.current_user.is_authenticated)
 def post_table(table_name: str, value: str='') -> Response:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     draw = request.form.get('draw', type=int)
