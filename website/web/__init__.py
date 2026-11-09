@@ -606,7 +606,6 @@ def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Respons
 
 
 @app.route('/favicon.ico')
-@cache.cached()
 def favicon() -> WerkzeugResponse:
     """Load either the default favicon from static/favicon.ico
     or static/custom-favicon.ico (if it exists)"""
