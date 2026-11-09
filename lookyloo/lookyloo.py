@@ -2360,55 +2360,25 @@ class Lookyloo():
         today = date.today()
         calendar_week = today.isocalendar()[1]
 
-        stats_dict = {'submissions': 0, 'redirects': 0}
         stats: dict[int, dict[int, dict[str, Any]]] = {}
         weeks_stats: dict[int, dict[str, Any]] = {}
-        recent_uuids = set()
 
         # Only recent captures that are not archived
-        for cache in self.sorted_capture_cache(public=public, cached_captures_only=True,
-                                               index_cut_time=datetime.now() - timedelta(days=10)):
-            if not hasattr(cache, 'timestamp'):
-                continue
-            recent_uuids.add(cache.uuid)
-            date_submission: datetime = cache.timestamp
-
-            if date_submission.year not in stats:
-                stats[date_submission.year] = {}
-            if date_submission.month not in stats[date_submission.year]:
-                stats[date_submission.year][date_submission.month] = defaultdict(dict, **stats_dict)
-                stats[date_submission.year][date_submission.month]['uniq_urls'] = set()
-            stats[date_submission.year][date_submission.month]['submissions'] += 1
-            stats[date_submission.year][date_submission.month]['uniq_urls'].add(cache.url)
-            if hasattr(cache, 'redirects') and len(cache.redirects) > 0:
-                stats[date_submission.year][date_submission.month]['redirects'] += len(cache.redirects)
-                stats[date_submission.year][date_submission.month]['uniq_urls'].update(cache.redirects)
-
-            if ((date_submission.year == today.year and calendar_week - 1 <= date_submission.isocalendar()[1] <= calendar_week)
-                    or (calendar_week == 1 and date_submission.year == today.year - 1 and date_submission.isocalendar()[1] in [52, 53])):
-                if date_submission.isocalendar()[1] not in weeks_stats:
-                    weeks_stats[date_submission.isocalendar()[1]] = defaultdict(dict, **stats_dict)
-                    weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'] = set()
-                weeks_stats[date_submission.isocalendar()[1]]['submissions'] += 1
-                weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'].add(cache.url)
-                if hasattr(cache, 'redirects') and len(cache.redirects) > 0:
-                    weeks_stats[date_submission.isocalendar()[1]]['redirects'] += len(cache.redirects)
-                    weeks_stats[date_submission.isocalendar()[1]]['uniq_urls'].update(cache.redirects)
-
         for _uuid, capture_path in self.redis.hscan_iter('lookup_dirs'):
-            if _uuid in recent_uuids:
-                continue
             capture_ts = datetime.fromisoformat(capture_path.rsplit('/', 1)[-1])
             if capture_ts.year not in stats:
                 stats[capture_ts.year] = {}
             if capture_ts.month not in stats[capture_ts.year]:
                 stats[capture_ts.year][capture_ts.month] = {'submissions': 0}
             stats[capture_ts.year][capture_ts.month]['submissions'] += 1
+            if ((capture_ts.year == today.year and calendar_week - 1 <= capture_ts.isocalendar()[1] <= calendar_week)
+                    or (calendar_week == 1 and capture_ts.year == today.year - 1 and capture_ts.isocalendar()[1] in [52, 53])):
+                if capture_ts.isocalendar()[1] not in weeks_stats:
+                    weeks_stats[capture_ts.isocalendar()[1]] = {'submissions': 0}
+                weeks_stats[capture_ts.isocalendar()[1]]['submissions'] += 1
 
         # Build limited stats based on archved captures and the indexes
         for _, capture_path in self.redis.hscan_iter('lookup_dirs_archived'):
-            if _uuid in recent_uuids:
-                continue
             capture_ts = datetime.fromisoformat(capture_path.rsplit('/', 1)[-1])
             if capture_ts.year not in stats:
                 stats[capture_ts.year] = {}
@@ -2419,10 +2389,7 @@ class Lookyloo():
         statistics: dict[str, list[Any]] = {'weeks': [], 'years': []}
         for week_number in sorted(weeks_stats.keys()):
             week_stat = weeks_stats[week_number]
-            urls = week_stat.pop('uniq_urls')
             week_stat['week_number'] = week_number
-            week_stat['uniq_urls'] = len(urls)
-            week_stat['uniq_domains'] = len(uniq_domains(urls))
             statistics['weeks'].append(week_stat)
 
         for year in sorted(stats.keys()):
