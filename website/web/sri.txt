@@ -5,7 +5,7 @@
     "css/components/backdrop.css": "LrVDbHup6142HCc+ANzamgQrXJPBDkoApNe2NFbW/0rIzOeV7uslBk28dUUwmWMt7LJGuGJSlwOXPFRozlEVkg==",
     "css/components/callout.css": "OkkH2t+UA79qMUZiOdH1oboDLt4qmvD43fgB5ol9BnzIDWGjoVgZ9LZ2JH4qYClf+zuoqyVenpzCL9TJ/wpreA==",
     "css/components/capture-list.css": "YxV7y65V9YzHqXr9e9x4yQdurvPlRw+k3xPTtiXr5UkOpsPkAWAHl2wXTxzCfNNr+HD6iBQdEsuTAB/PUeNOfw==",
-    "css/components/capture-preview.css": "d54bPlqZDwANqhJ+9XqVFTzI1/S3XmOijzSSeX8Ldk821p8mDkMvaKVWZiZpfZHxcitVJZQ8EbnvlYqM00i29w==",
+    "css/components/capture-preview.css": "Ub7yZq0iQuXy8CWpBwWLjU6kAMVPQN0r0IOZz7KHG5JnhGnUl6+o7ybrW5iqFgneOtn/9/3CPrZuvKT0tNiymg==",
     "css/components/datatables.css": "7/AyFslPEP9qN1naPUHaPtWccaYeVWir1kGx31HT6XPCnIvIifztJq3brmTT2Zzi8bkl/JcNgGnygtJ5bef/4A==",
     "css/components/footer.css": "W0GYp1qP7IKtmZU09srK4SqLIrI9bcVw8ijJcldxemjFumfRyupnjZeMUGf5BWHR0WbAzHoIO1PXc46bIMa/rw==",
     "css/components/header.css": "GuR4SbNEqrmYdUW5cyROh+7PafeB+LGGuY7p0JGQqLb3tfH/YpblAX8qufdfzrE/4yyNOByDs3VIfJy90kgufA==",

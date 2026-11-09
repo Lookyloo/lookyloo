@@ -36,8 +36,8 @@
 /* After a click: still slightly blurred, never in the clear (a page can be a
    single shocking image). The clear screenshot is in the capture. */
 .lk-thumb.is-peek img {
-  filter: blur(2.5px);
-  transform: scale(1.05);
+  filter: blur(1.2px);
+  transform: scale(1.03);
 }
 
 /* Labels drawn in CSS so the rows stay light, saying what to do: "Click to
