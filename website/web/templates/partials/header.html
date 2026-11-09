@@ -80,14 +80,18 @@
             <button type="button" class="dropdown-item d-flex align-items-center gap-2" id="lk-tour-full" data-lk-tour-full>
               {{ theme_icon('signpost-2') }} Full tour of Lookyloo</button>
             {# Pages of the full tour, in order (the capture tree is not part of it): links
-               followed one after the other by js/components/tour.js #}
+               followed one after the other by js/components/tour.js. Same rules as the
+               menu: the Explore pages only for logged-in users, never a disabled page
+               (page_enabled, doc/ui/disabled_pages.md). (label, endpoint, logged-in only) #}
             <nav id="lk-tour-full-pages" hidden aria-hidden="true">
-              {% for label, endpoint in [('Home', 'landing_page'), ('Recent captures', 'index'),
-                                         ('New capture', 'capture_web'), ('Submit a capture', 'submit_capture'),
-                                         ('Search', 'search'), ('Categories', 'categories'),
-                                         ('Resources', 'ressources'), ('Cookies', 'cookies_lookup'),
-                                         ('Favicons', 'favicons_lookup'), ('HTTP headers hashes', 'hhhashes_lookup')] %}
-              {% if page_enabled(endpoint) %}<a href="{{ url_for(endpoint) }}" tabindex="-1">{{ label }}</a>{% endif %}
+              {% for label, endpoint, login_only in [('Home', 'landing_page', False), ('Recent captures', 'index', False),
+                                                     ('New capture', 'capture_web', False), ('Submit a capture', 'submit_capture', False),
+                                                     ('Search', 'search', False), ('Categories', 'categories', False),
+                                                     ('Resources', 'ressources', True), ('Cookies', 'cookies_lookup', True),
+                                                     ('Favicons', 'favicons_lookup', True), ('HTTP headers hashes', 'hhhashes_lookup', True)] %}
+              {% if page_enabled(endpoint) and (current_user.is_authenticated or not login_only) %}
+              <a href="{{ url_for(endpoint) }}" tabindex="-1">{{ label }}</a>
+              {% endif %}
               {% endfor %}
             </nav>
           </div>
