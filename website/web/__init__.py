@@ -33,7 +33,7 @@ from zoneinfo import ZoneInfo
 
 from har2tree import HostNode, URLNode
 import flask_login  # type: ignore[import-untyped]
-from flask import (Flask, Response, Request, flash, jsonify, redirect, render_template,
+from flask import (Flask, Response, Request, abort, flash, jsonify, redirect, render_template,
                    request, send_file, url_for, make_response, send_from_directory)
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_caching import Cache
@@ -430,8 +430,28 @@ def load_custom_local_ressource(ressource_type: str, filename: str) -> tuple[str
     return (url, sri_hash)
 
 
+# Pages switched off on every instance, for everyone (admins included): their URL
+# answers 404 and the links to them are hidden (page_enabled() in the templates).
+# The code stays, so a page comes back by removing its endpoint from this set.
+# Explore (resources, cookies, favicons, HTTP headers hashes) and the statistics
+# compute over every indexed capture: far too slow on a big instance.
+# Doc: doc/ui/disabled_pages.md
+DISABLED_PAGES: frozenset[str] = frozenset({
+    'ressources', 'cookies_lookup', 'favicons_lookup', 'hhhashes_lookup',  # Explore
+    'statsfull',  # Admin > Statistics
+})
+
+
+def page_enabled(endpoint: str) -> bool:
+    return endpoint not in DISABLED_PAGES
+
+
+app.jinja_env.tests['page_enabled'] = page_enabled
+
+
 app.jinja_env.globals.update(
     {'sizeof_fmt': sizeof_fmt,
+     'page_enabled': page_enabled,
      'http_status_description': http_status_description,
      'month_name': month_name,
      'get_sri': get_sri,
@@ -468,6 +488,13 @@ def b64enode_filter(blob: str | bytes | BytesIO) -> str:
 
 
 # ##### Generic/configuration methods #####
+
+@app.before_request
+def disabled_pages() -> None:
+    '''Pages switched off (DISABLED_PAGES): 404, as if they did not exist.'''
+    if request.endpoint in DISABLED_PAGES:
+        abort(404)
+
 
 @app.before_request
 def before_request() -> None:
@@ -3115,7 +3142,7 @@ def hashes_urlnode(tree_uuid: str, node_uuid: str) -> Response:
 @flask_login.login_required  # type: ignore[untyped-decorator]
 def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
     if not enable_context_by_users:
-        return redirect(url_for('ressources'))
+        return redirect(url_for('ressources') if page_enabled('ressources') else url_for('tree', tree_uuid=tree_uuid))
 
     context_data = request.form
     ressource_hash: str = context_data['hash_to_contextualize']
@@ -3144,7 +3171,7 @@ def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
         hostnode_uuid = lookyloo.get_urlnode_from_tree(cache.tree, node_uuid).hostnode_uuid
         return redirect(url_for('hostnode_popup', tree_uuid=tree_uuid, node_uuid=hostnode_uuid))
     elif callback_str == 'ressources':
-        return redirect(url_for('ressources'))
+        return redirect(url_for('ressources') if page_enabled('ressources') else url_for('tree', tree_uuid=tree_uuid))
     return None
 
 

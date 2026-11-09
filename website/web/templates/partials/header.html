@@ -40,17 +40,17 @@
         {{ nav_link('Recent captures', 'index', also=('index_hidden',)) }}
         {{ nav_link('Search', 'search') }}
         {{ nav_link('Categories', 'categories') }}
-        {% if current_user.is_authenticated %}
-        {% set explore = ('ressources', 'cookies_lookup', 'favicons_lookup', 'hhhashes_lookup') %}
+        {% set explore = ('ressources', 'cookies_lookup', 'favicons_lookup', 'hhhashes_lookup')|select('page_enabled')|list %}
+        {% if current_user.is_authenticated and explore %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle{% if endpoint in explore %} active{% endif %}" href="#"
              role="button" data-bs-toggle="dropdown" aria-expanded="false">Explore</a>
           <ul class="dropdown-menu">
             <li><h6 class="dropdown-header">Seen in recent captures</h6></li>
-            <li><a class="dropdown-item" href="{{ url_for('ressources') }}">Resources</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('cookies_lookup') }}">Cookies</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('favicons_lookup') }}">Favicons</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('hhhashes_lookup') }}">HTTP headers hashes</a></li>
+            {% if page_enabled('ressources') %}<li><a class="dropdown-item" href="{{ url_for('ressources') }}">Resources</a></li>{% endif %}
+            {% if page_enabled('cookies_lookup') %}<li><a class="dropdown-item" href="{{ url_for('cookies_lookup') }}">Cookies</a></li>{% endif %}
+            {% if page_enabled('favicons_lookup') %}<li><a class="dropdown-item" href="{{ url_for('favicons_lookup') }}">Favicons</a></li>{% endif %}
+            {% if page_enabled('hhhashes_lookup') %}<li><a class="dropdown-item" href="{{ url_for('hhhashes_lookup') }}">HTTP headers hashes</a></li>{% endif %}
           </ul>
         </li>
         {% endif %}
@@ -87,7 +87,7 @@
                                          ('Search', 'search'), ('Categories', 'categories'),
                                          ('Resources', 'ressources'), ('Cookies', 'cookies_lookup'),
                                          ('Favicons', 'favicons_lookup'), ('HTTP headers hashes', 'hhhashes_lookup')] %}
-              <a href="{{ url_for(endpoint) }}" tabindex="-1">{{ label }}</a>
+              {% if page_enabled(endpoint) %}<a href="{{ url_for(endpoint) }}" tabindex="-1">{{ label }}</a>{% endif %}
               {% endfor %}
             </nav>
           </div>
@@ -118,7 +118,7 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{{ url_for('index_hidden') }}">Hidden captures</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('statsfull') }}">Statistics</a></li>
+            {% if page_enabled('statsfull') %}<li><a class="dropdown-item" href="{{ url_for('statsfull') }}">Statistics</a></li>{% endif %}
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{ url_for('logout') }}">Log out</a></li>
           </ul>
