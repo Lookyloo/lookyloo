@@ -84,6 +84,7 @@ Bootstrap5(app)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 app.config['SESSION_COOKIE_NAME'] = 'lookyloo'
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 60
 app.debug = bool(os.environ.get('DEBUG', False))
 
 cache = Cache(app, config={"CACHE_TYPE": "SimpleCache"})
@@ -605,6 +606,7 @@ def handle_pydandic_validation_exception(error: CaptureSettingsError) -> Respons
 
 
 @app.route('/favicon.ico')
+@cache.cached()
 def favicon() -> WerkzeugResponse:
     """Load either the default favicon from static/favicon.ico
     or static/custom-favicon.ico (if it exists)"""
