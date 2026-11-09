@@ -53,9 +53,9 @@ anything. A click never shows it in the clear: it goes from strongly blurred
 the colours, not the details of an image: some pages are a single shocking
 picture); another click blurs it strongly again (`aria-pressed`). The clear
 screenshot is only in the capture itself. So that the light blur does not look
-broken, the labels drawn on the thumbnail (CSS) say what happens: "Click to see
-more" when strongly blurred, "Blurred on purpose" after the click ("See more" /
-"On purpose" on phones); the tooltip explains why and how to see it clearly.
+broken, the labels drawn on the thumbnail (CSS) say what to do: "Click to
+preview" when strongly blurred, "Open to see all" (open the capture) after the click
+("Preview" / "Open to see" on phones); the tooltip explains why.
 
 The table gives the thumbnail URL for a placeholder UUID
 (`data-lk-thumbnail="{{ url_for('thumbnail', tree_uuid='00000000-0000-0000-0000-000000000000', width=256) }}"`);
