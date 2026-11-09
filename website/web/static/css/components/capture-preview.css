@@ -40,9 +40,16 @@
   transform: scale(1.05);
 }
 
-/* "Show" label drawn in CSS so the rows stay light */
+/* Labels drawn in CSS so the rows stay light: "Click to see more" when strongly blurred,
+   "Blurred on purpose" after a click (else the light blur looks broken) */
+
 .lk-thumb.is-blurred::after {
-  content: 'Show';
+  content: 'Click to see more';
+  white-space: nowrap;
+}
+
+.lk-thumb.is-blurred::after,
+.lk-thumb.is-peek::after {
   position: absolute;
   inset: auto 0.35rem 0.35rem auto;
   padding: 0.05rem 0.45rem;
@@ -111,5 +118,27 @@
 @media (prefers-reduced-motion: reduce) {
   .lk-thumb img {
     transition: none;
+  }
+}
+
+/* Must come after the shared label rule: smaller, on one line */
+.lk-thumb.is-peek::after {
+  content: 'Blurred on purpose';
+  white-space: nowrap;
+  font-size: 0.625rem;
+}
+
+/* Must also come after the shared rule: same small size as the other label */
+.lk-thumb.is-blurred::after {
+  font-size: 0.625rem;
+}
+
+@media (max-width: 576px) {
+  .lk-thumb.is-blurred::after {
+    content: 'See more';
+  }
+
+  .lk-thumb.is-peek::after {
+    content: 'On purpose';
   }
 }

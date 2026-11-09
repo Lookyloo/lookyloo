@@ -98,7 +98,8 @@ function lkCapturePreview(capture) {
         const blurred = button.classList.toggle('is-blurred');
         button.classList.toggle('is-peek', !blurred);
         button.setAttribute('aria-pressed', String(!blurred));
-        const label = blurred ? 'Show the screenshot (still slightly blurred)' : 'Blur the screenshot';
+        const label = blurred ? 'Show the screenshot (still slightly blurred)'
+            : 'Blurred on purpose: a captured page can be shocking. Open the capture to see it clearly. Click to blur it again.';
         button.setAttribute('aria-label', label);
         button.title = label;
     });
