@@ -892,7 +892,7 @@ rocksdb.wal_size_limit_mb 16384
 # compression is enabled.
 #
 # Default: 16KB
-rocksdb.block_size 262144
+rocksdb.block_size 524288
 
 # Indicating if we'd put index/filter blocks to the block cache
 #
@@ -902,7 +902,7 @@ rocksdb.cache_index_and_filter_blocks yes
 # Specify the compression to use.
 # Accept value: "no", "snappy", "lz4", "zstd", "zlib"
 # default snappy
-rocksdb.compression snappy
+rocksdb.compression lz4
 
 # Specify the compression level to use. It trades compression speed
 #   and ratio, might be useful when tuning for disk space.
@@ -947,7 +947,7 @@ rocksdb.compression_zstd_max_train_bytes 0
 # true.
 #
 # Default: 2 MB
-rocksdb.compaction_readahead_size 2097152
+rocksdb.compaction_readahead_size 16777216
 
 # Enable compression from n levels of LSM-tree.
 # By default compression is disabled for the first two levels (L0 and L1),
@@ -992,7 +992,7 @@ rocksdb.level0_stop_writes_trigger 40
 # Number of files to trigger level-0 compaction.
 #
 # Default: 4
-rocksdb.level0_file_num_compaction_trigger 4
+rocksdb.level0_file_num_compaction_trigger 10
 
 # if not zero, dump rocksdb.stats to LOG every stats_dump_period_sec
 #
@@ -1062,7 +1062,7 @@ rocksdb.level_compaction_dynamic_level_bytes yes
 # The total file size of level-1 sst.
 #
 # Default: 268435456 bytes
-rocksdb.max_bytes_for_level_base 268435456
+rocksdb.max_bytes_for_level_base 536870912
 
 # Multiplication factor for the total file size of L(n+1) layers.
 # This option is a double type number in RocksDB, but kvrocks is
