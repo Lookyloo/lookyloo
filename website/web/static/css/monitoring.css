@@ -1,0 +1,27 @@
+/*
+ * Admin monitoring page (admin/monitoring.html). Cards and titles come from
+ * css/stats.css. Doc: doc/ui/monitoring.md
+ */
+
+.lk-mon-refresh { color: var(--lk-color-muted); font-size: var(--lk-font-size-sm); }
+.lk-mon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); gap: 0 var(--lk-space-5); }
+.lk-mon-table { font-size: var(--lk-font-size-sm); }
+.lk-mon-url { max-width: 32rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lk-mon-empty { color: var(--lk-color-muted); }
+.lk-mon-state {
+  display: inline-block;
+  padding: 0 var(--lk-space-2);
+  border-radius: var(--lk-radius-md);
+  background: var(--lk-color-rule);
+  font-size: var(--lk-font-size-xs);
+}
+.lk-mon-state.is-active { background: var(--lk-color-accent-soft); color: var(--lk-color-accent); }
+.lk-mon-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: var(--lk-space-2);
+  border-radius: 50%;
+  background: var(--lk-color-danger);
+}
+.lk-mon-dot.is-up { background: var(--lk-color-success); }

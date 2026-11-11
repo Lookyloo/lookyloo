@@ -116,13 +116,14 @@
 
         {% if current_user.is_authenticated %}
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle{% if endpoint in ('statsfull', 'index_hidden') %} active{% endif %}" href="#"
+          <a class="nav-link dropdown-toggle{% if endpoint in ('statsfull', 'index_hidden', 'admin_monitoring') %} active{% endif %}" href="#"
              role="button" data-bs-toggle="dropdown" aria-expanded="false">
             {{ render_icon('person-circle') }} {{ current_user.id }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{{ url_for('index_hidden') }}">Hidden captures</a></li>
             {% if page_enabled('statsfull') %}<li><a class="dropdown-item" href="{{ url_for('statsfull') }}">Statistics</a></li>{% endif %}
+            <li><a class="dropdown-item" href="{{ url_for('admin_monitoring') }}">Monitoring (ongoing captures)</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{ url_for('logout') }}">Log out</a></li>
           </ul>

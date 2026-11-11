@@ -1,0 +1,128 @@
+{% extends "layouts/page.html" %}
+{% from 'macros/page.html' import page_header %}
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% block title %}Monitoring{% endblock %}
+
+{% block page_header %}
+{{ page_header('Monitoring', description='What the instance is doing right now: captures in progress, services, recent submissions. Read only, same data as tools/monitoring.py.', icon_name='activity', crumbs=[('Admin', None)]) }}
+{% endblock %}
+
+{% block content %}
+<p class="lk-mon-refresh">Data of {{ now }}. <a href="{{ url_for('admin_monitoring') }}">{{ render_icon('arrow-clockwise') }} Refresh</a></p>
+
+{% set alive_services = services | selectattr('alive') | list %}
+<div class="lk-stats-cards">
+  {% for label, value, icon_name in [('Being captured', ongoing_total, 'camera'),
+                                      ('Waiting in the queue', queued_total, 'hourglass-split'),
+                                      ('Recent submissions', submitters | sum(attribute='count'), 'send'),
+                                      ('Running services', alive_services | length, 'cpu')] %}
+  <div class="lk-stats-card">
+    <span class="lk-stats-card-icon">{{ render_icon(icon_name) }}</span>
+    <div>
+      <p class="lk-stats-card-label">{{ label }}</p>
+      <p class="lk-stats-card-value">{{ '{:,}'.format(value) }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<section class="lk-stats-section" aria-labelledby="mon-captures">
+  <h2 class="lk-stats-title" id="mon-captures">Ongoing captures
+    <span class="lk-stats-sub">{{ ongoing_total }} being captured, {{ queued_total }} waiting{% if ongoing_total + queued_total > limit %}, first {{ limit }} shown{% endif %}</span></h2>
+  {% if captures %}
+  <div class="table-responsive lk-mon-table">
+    <table class="table table-sm align-middle">
+      <thead><tr><th>State</th><th>URL</th><th>Submitted by</th><th class="text-end">Priority</th><th></th></tr></thead>
+      <tbody>
+      {% for c in captures %}
+      <tr>
+        <td><span class="lk-mon-state{% if c.state == 'Capturing' %} is-active{% endif %}">{{ c.state }}</span></td>
+        <td class="lk-mon-url" title="{{ c.url }}">{{ c.url or c.uuid }}</td>
+        <td>{{ c.user or '—' }} <span class="lk-stats-sub">{{ c.source }}{% if c.authenticated %} · logged in{% endif %}</span></td>
+        <td class="text-end">{{ c.priority if c.priority is not none else '' }}</td>
+        <td class="text-end"><a href="{{ url_for('tree', tree_uuid=c.uuid) }}">Open</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="lk-mon-empty">No capture in progress.</p>
+  {% endif %}
+</section>
+
+<div class="lk-mon-grid">
+<section class="lk-stats-section" aria-labelledby="mon-submitters">
+  <h2 class="lk-stats-title" id="mon-submitters">Recent submissions <span class="lk-stats-sub">per submitter, captures not finished (forgotten 10 min after the last one)</span></h2>
+  {% if submitters %}
+  <table class="table table-sm lk-mon-table">
+    <thead><tr><th>Submitter</th><th>Source</th><th class="text-end">Captures</th></tr></thead>
+    <tbody>
+    {% for s in submitters %}
+    <tr><td>{{ s.user or '—' }}{% if s.authenticated %} <span class="lk-stats-sub">logged in</span>{% endif %}</td>
+        <td>{{ s.source }}</td><td class="text-end">{{ s.count }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="lk-mon-empty">No recent submission.</p>{% endif %}
+</section>
+
+<section class="lk-stats-section" aria-labelledby="mon-services">
+  <h2 class="lk-stats-title" id="mon-services">Services <span class="lk-stats-sub">background processes</span></h2>
+  {% if services %}
+  <table class="table table-sm lk-mon-table">
+    <thead><tr><th>Service</th><th class="text-end">Processes</th><th>PIDs</th></tr></thead>
+    <tbody>
+    {% for s in services %}
+    <tr><td><span class="lk-mon-dot{% if s.alive %} is-up{% endif %}" aria-hidden="true"></span>{{ s.name }}</td>
+        <td class="text-end">{{ s.alive | length }}{% if s.pids | length != s.alive | length %} <span class="lk-stats-sub">({{ s.pids | length - s.alive | length }} dead)</span>{% endif %}</td>
+        <td class="lk-stats-sub">{{ s.pids | join(', ') }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="lk-mon-empty">No service registered.</p>{% endif %}
+</section>
+</div>
+
+<div class="lk-mon-grid">
+<section class="lk-stats-section" aria-labelledby="mon-visitors">
+  <h2 class="lk-stats-title" id="mon-visitors">Web requests today <span class="lk-stats-sub">per IP, top 50 ({{ visitors_entries }} IP + user agent pairs, reset every day)</span></h2>
+  {% if visitors %}
+  <table class="table table-sm lk-mon-table">
+    <thead><tr><th>IP</th><th class="text-end">User agents</th><th class="text-end">Requests</th></tr></thead>
+    <tbody>
+    {% for v in visitors %}
+    <tr><td>{{ v.ip }}</td><td class="text-end">{{ v.user_agents }}</td><td class="text-end">{{ v.hits }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="lk-mon-empty">No request yet today.</p>{% endif %}
+</section>
+
+<section class="lk-stats-section" aria-labelledby="mon-cache">
+  <h2 class="lk-stats-title" id="mon-cache">Tree cache <span class="lk-stats-sub">per process</span></h2>
+  {% if tree_cache %}
+  <table class="table table-sm lk-mon-table">
+    <tbody>
+    {% for name, status in tree_cache %}
+    <tr><td>{{ name }}</td><td class="lk-stats-sub">{{ status }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="lk-mon-empty">No tree cache.</p>{% endif %}
+  {% for l in lacus_status %}
+  <h2 class="lk-stats-title">Lacus {{ l.name }} {% if l.busy %}<span class="lk-mon-state is-active">busy</span>{% endif %}</h2>
+  <p>{{ l.ongoing }} ongoing, {{ l.enqueued }} enqueued, at most {{ l.max }} at the same time.</p>
+  {% endfor %}
+</section>
+</div>
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/stats.css') }}"
+      {{get_sri('static', 'css/stats.css')}} crossorigin="anonymous">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/monitoring.css') }}"
+      {{get_sri('static', 'css/monitoring.css')}} crossorigin="anonymous">
+{% endblock %}

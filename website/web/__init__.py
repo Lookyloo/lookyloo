@@ -54,7 +54,8 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 from lookyloo import Lookyloo, LookylooException
 from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError, StorageStateSettings
 from pydantic import ValidationError
-from lookyloo.default import get_config, get_homedir, ConfigError
+from lookyloo.default import get_config, get_homedir, get_socket_path, ConfigError
+from redis import Redis
 from lookyloo.exceptions import (UnknownUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild,
                                  LookylooPrivateCapture, UUIDMissingInCache, MissingCaptureDirectory,
                                  TreeBuildFailed, ZipBomb)
@@ -2973,6 +2974,95 @@ def statsfull() -> str:
     # only available to logged in users, get all the captures
     stats = lookyloo.get_stats(public=not flask_login.current_user.is_authenticated)
     return render_template('admin/stats.html', stats=stats, version=pkg_version)
+
+
+@app.route('/admin/monitoring', methods=['GET'])
+@flask_login.login_required  # type: ignore[untyped-decorator]
+def admin_monitoring() -> str:
+    '''Admin: what tools/monitoring.py prints, in a page (admin/monitoring.html).
+    READ ONLY: only reads keys already written by the backend (no write, no cleanup,
+    no new key), every list is capped so it stays cheap on a big instance.
+    Doc: doc/ui/monitoring.md'''
+    limit = 200
+    r = lookyloo.redis
+    # Services (AbstractManager, cache db 1): same data as AbstractManager.is_running()
+    # without its cleanup of the dead PIDs (it writes).
+    services: list[dict[str, Any]] = []
+    try:
+        r_services = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
+        for name, number in r_services.zrangebyscore('running', '-inf', '+inf', withscores=True):
+            pids = sorted(r_services.smembers(f'service|{name}'))
+            alive = []
+            for pid in pids:
+                try:
+                    os.kill(int(pid), 0)
+                    alive.append(pid)
+                except (OSError, ValueError):
+                    pass
+            services.append({'name': name, 'number': int(number), 'pids': pids, 'alive': alive})
+    except Exception as e:
+        app.logger.warning(f'Monitoring: unable to get the services: {e}')
+
+    # Captures waiting (to_capture, by priority) and being captured (ongoing)
+    queued_total = r.zcard('to_capture')
+    ongoing_uuids = sorted(r.smembers('ongoing'))
+    captures: list[dict[str, Any]] = []
+    entries: list[tuple[str, str, float | None]] = [(u, 'Capturing', None) for u in ongoing_uuids[:limit]]
+    entries += [(u, 'Queued', p) for u, p in r.zrevrange('to_capture', 0, limit - 1, withscores=True)
+                if u not in ongoing_uuids]
+    for capture_uuid, state, priority in entries[:limit]:
+        url, document_name = r.hmget(capture_uuid, ['url', 'document_name'])
+        mgmt = r.get(f'{capture_uuid}_mgmt') or ''
+        source, _, rest = mgmt.partition('|')
+        authenticated, _, user = rest.partition('|')
+        captures.append({'uuid': capture_uuid, 'state': state,
+                         'priority': int(priority) if priority is not None else None,
+                         'url': url or document_name or '', 'source': source,
+                         'authenticated': authenticated == 'True', 'user': user})
+
+    # Recent submissions per submitter (queues: +1 at submission, -1 when captured,
+    # the key expires 10 min after the last capture)
+    submitters: list[dict[str, Any]] = []
+    for queue, count in r.zrevrangebyscore('queues', '+inf', '-inf', start=0, num=limit, withscores=True):
+        source, _, rest = queue.partition('|')
+        authenticated, _, user = rest.partition('|')
+        submitters.append({'source': source, 'authenticated': authenticated == 'True',
+                           'user': user, 'count': int(count)})
+
+    # Web requests of the day per IP (user_agents|<today>, one entry per IP + user
+    # agent, deleted once a day by background_processing): top entries only.
+    today_key = f'user_agents|{date.today().isoformat()}'
+    visitors_entries = r.zcard(today_key)
+    per_ip: dict[str, dict[str, Any]] = {}
+    for entry, hits in r.zrevrange(today_key, 0, 999, withscores=True):
+        ip, _, ua = entry.partition('|')
+        item = per_ip.setdefault(ip, {'ip': ip, 'hits': 0, 'user_agents': 0})
+        item['hits'] += int(hits)
+        item['user_agents'] += 1
+    visitors = sorted(per_ip.values(), key=lambda i: i['hits'], reverse=True)[:50]
+
+    # Tree cache of each process (tree_cache, written by the processes themselves)
+    tree_cache = sorted(r.hgetall('tree_cache').items())
+
+    # Remote lacus (same calls as tools/monitoring.py)
+    lacus_status: list[dict[str, Any]] = []
+    try:
+        for name, lacus in lookyloo.lacus.items():
+            if isinstance(lacus, PyLacus):
+                status = lacus.status()
+                lacus_status.append({'name': name, 'busy': lacus.is_busy(),
+                                     'ongoing': status.get('ongoing_captures'),
+                                     'enqueued': status.get('enqueued_captures'),
+                                     'max': status.get('max_concurrent_captures')})
+    except Exception as e:
+        app.logger.info(f'Monitoring: no lacus status: {e}')
+
+    return render_template('admin/monitoring.html', services=services, captures=captures,
+                           queued_total=queued_total, ongoing_total=len(ongoing_uuids),
+                           submitters=submitters, visitors=visitors,
+                           visitors_entries=visitors_entries, tree_cache=tree_cache,
+                           lacus_status=lacus_status, limit=limit,
+                           now=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 
 @app.route('/whois/<string:query>', methods=['GET'])
