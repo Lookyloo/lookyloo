@@ -346,3 +346,16 @@
   .lk-mon-open { margin-left: auto; }
   .lk-mon-pids { margin-left: 0; }
 }
+
+/* ---- Ongoing captures: the eyes of the logo (macros/loader.html) ---- */
+.lk-mon-eyes {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 32px;
+}
+.lk-mon-eyes .lk-loader { --lk-loader-delay: 0s; } /* no 400 ms wait: redrawn every 10 s */
+.lk-mon-eyes.is-waiting { color: var(--lk-tag-amber); }
+.lk-mon-capture.is-capturing { background: color-mix(in srgb, var(--lk-color-accent-soft) 45%, transparent); }

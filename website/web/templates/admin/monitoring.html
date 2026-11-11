@@ -1,6 +1,6 @@
 {% extends "layouts/page.html" %}
 {% from 'macros/page.html' import page_header %}
-{% from 'macros/monitoring.html' import panel_head, empty, folded %}
+{% from 'macros/monitoring.html' import panel_head, folded %}
 {% from 'bootstrap5/utils.html' import render_icon %}
 
 {% block title %}Monitoring{% endblock %}
@@ -49,7 +49,7 @@
     <div class="lk-mon-kpi is-{{ tone }}">
       <span class="lk-mon-kpi-icon">{{ render_icon(icon_name) }}</span>
       <p class="lk-mon-kpi-label">{{ label }}</p>
-      <p class="lk-mon-kpi-value">{{ '{:,}'.format(value) }}</p>
+      <p class="lk-mon-kpi-value" data-lk-mon-kpi="{{ loop.index }}">{{ '{:,}'.format(value) }}</p>
       <p class="lk-mon-kpi-hint">{{ hint }}</p>
     </div>
     {% endfor %}
@@ -62,29 +62,10 @@
                     ongoing_total ~ ' being captured, ' ~ queued_total ~ ' waiting' ~ ((', first ' ~ limit ~ ' shown') if ongoing_total + queued_total > limit else '') ~ '.',
                     ongoing_total + queued_total) }}
     </header>
-    {% if captures %}
-    <ul class="lk-mon-captures">
-      {% for c in captures %}
-      <li class="lk-mon-capture">
-        <span class="lk-mon-state {{ 'is-capturing' if c.state == 'Capturing' else 'is-queued' }}">
-          <span class="lk-mon-dot" aria-hidden="true"></span>{{ c.state }}
-        </span>
-        <div class="lk-mon-capture-main">
-          <span class="lk-mon-capture-url" title="{{ c.url }}">{{ c.url or 'No URL (document)' }}</span>
-          <span class="lk-mon-capture-meta">
-            <span class="lk-mon-mono">{{ c.uuid }}</span>
-            <span>{{ render_icon('person') }} {{ c.user or 'unknown' }}</span>
-            <span>{{ render_icon('box-arrow-in-right') }} {{ c.source or '—' }}{% if c.authenticated %} · logged in{% endif %}</span>
-            {% if c.priority is not none %}<span>{{ render_icon('sort-down') }} priority {{ c.priority }}</span>{% endif %}
-          </span>
-        </div>
-        <a class="btn btn-sm btn-outline-primary lk-mon-open" href="{{ url_for('tree', tree_uuid=c.uuid) }}">Open {{ render_icon('arrow-right') }}</a>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    {{ empty('cup-hot', 'No capture in progress', 'The queue is empty: a new capture starts right away.') }}
-    {% endif %}
+    <div class="lk-mon-panel-body" id="lk-mon-captures"
+         data-lk-mon-url="{{ url_for('admin_monitoring_section', section='captures') }}" data-lk-mon-every="10">
+      {% with section='captures', now=now[-8:] %}{% include 'admin/monitoring_section.html' %}{% endwith %}
+    </div>
   </section>
 
   {# ---- Folded sections: requested when opened (js/monitoring.js) ---- #}

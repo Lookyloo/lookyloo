@@ -9,6 +9,23 @@ the backend already writes, never writes, cleans up or creates a key, and every
 list is capped (200 captures, top 1000 entries of the day), so it is safe on an
 instance with millions of captures. Reload the page to refresh.
 
+## Ongoing captures, checked every 10 s
+
+Rendered with the page, then `static/js/monitoring.js` requests
+`GET /admin/monitoring/captures` every 10 s (countdown under the list, paused
+while the tab is hidden, checked at once when it is shown again) and replaces
+the list. The fragment carries the totals (`.lk-mon-totals` data-*) that
+update the counter of the panel, its sub-title and the "Being captured" /
+"Waiting" figures.
+
+A capture in progress shows the eyes of the Lookyloo logo (`loader()` of
+`macros/loader.html`, no 400 ms delay since it is redrawn every 10 s) and the
+blue "Capturing" pill, first in the list; a waiting one an hourglass and the
+amber "Queued" pill. While the browser works, a capture stays in `to_capture`:
+only Lacus knows it is running, so the state comes from
+`Lookyloo.get_capture_status()` (the same read as the waiting page of a capture),
+for the first 50 waiting captures. No capture: the empty state, without eyes.
+
 ## Folded sections, loaded when opened
 
 The status banner, the key figures and **Ongoing captures** are rendered with
@@ -25,7 +42,7 @@ to refresh a section.
 
 | Section | Redis key (cache db) | Written by |
 |---|---|---|
-| Ongoing captures (being captured / waiting, priority, submitter) | `ongoing` (set), `to_capture` (zset), `<uuid>` hash (`url`, `document_name`), `<uuid>_mgmt` | `async_capture`, `Lookyloo.enqueue_capture` |
+| Ongoing captures (being captured / waiting, priority, submitter) | `ongoing` (set), `to_capture` (zset), `<uuid>` hash (`url`, `document_name`), `<uuid>_mgmt`, status in Lacus (`get_capture_status`) | `async_capture`, `Lookyloo.enqueue_capture`, Lacus |
 | Recent submissions per submitter | `queues` (zset `source\|authenticated\|user`: +1 when submitted, -1 when captured, expires 10 min after the last capture) | `enqueue_capture`, `async_capture` |
 | Services | `running` + `service\|<name>` (db 1); dead PIDs are shown, not removed | `AbstractManager` |
 | Web requests today per IP | `user_agents\|<today>` (one entry per IP + user agent, deleted daily) | `after_request` of the website, `background_processing` |

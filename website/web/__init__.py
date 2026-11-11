@@ -64,7 +64,7 @@ from lookyloo.helpers import (UserAgents,
                               get_taxonomies,
                               mimetype_to_generic,
                               )
-from pylacus import RemoteHeadedSessionResponse, PyLacus
+from pylacus import RemoteHeadedSessionResponse, PyLacus, CaptureStatus as CaptureStatusPy
 from zoneinfo import available_timezones
 
 from .genericapi import api as generic_api
@@ -3045,12 +3045,8 @@ def _monitoring_lacus() -> list[dict[str, Any]]:
     return lacus_status
 
 
-@app.route('/admin/monitoring', methods=['GET'])
-@flask_login.login_required  # type: ignore[untyped-decorator]
-def admin_monitoring() -> str:
-    '''Admin: what tools/monitoring.py prints, in a page. The status, the key figures
-    and the ongoing captures are rendered here; the other sections are folded and
-    loaded from admin_monitoring_section when they are opened.'''
+def _monitoring_captures() -> dict[str, Any]:
+    '''Captures being captured (ongoing) and waiting (to_capture, by priority).'''
     r = lookyloo.redis
     queued_total = r.zcard('to_capture')
     ongoing_uuids = sorted(r.smembers('ongoing'))
@@ -3058,7 +3054,16 @@ def admin_monitoring() -> str:
     entries: list[tuple[str, str, float | None]] = [(u, 'Capturing', None) for u in ongoing_uuids[:MONITORING_LIMIT]]
     entries += [(u, 'Queued', p) for u, p in r.zrevrange('to_capture', 0, MONITORING_LIMIT - 1, withscores=True)
                 if u not in ongoing_uuids]
-    for capture_uuid, state, priority in entries[:MONITORING_LIMIT]:
+    for i, (capture_uuid, state, priority) in enumerate(entries[:MONITORING_LIMIT]):
+        if state == 'Queued' and i < 50:
+            # While the browser works, the capture stays in to_capture: only Lacus
+            # knows it is running. Same read as the waiting page of a capture
+            # (get_capture_status), for the first 50 only.
+            try:
+                if lookyloo.get_capture_status(capture_uuid) in (CaptureStatus.ONGOING, CaptureStatusPy.ONGOING):
+                    state = 'Capturing'
+            except Exception as e:
+                app.logger.info(f'Monitoring: no status for {capture_uuid}: {e}')
         url, document_name = r.hmget(capture_uuid, ['url', 'document_name'])
         mgmt = r.get(f'{capture_uuid}_mgmt') or ''
         source, _, rest = mgmt.partition('|')
@@ -3067,9 +3072,20 @@ def admin_monitoring() -> str:
                          'priority': int(priority) if priority is not None else None,
                          'url': url or document_name or '', 'source': source,
                          'authenticated': authenticated == 'True', 'user': user})
+    captures.sort(key=lambda c: c['state'] != 'Capturing')  # in progress first (stable)
+    capturing = sum(1 for c in captures if c['state'] == 'Capturing')
+    return {'captures': captures, 'ongoing_total': max(capturing, len(ongoing_uuids)),
+            'queued_total': max(queued_total + len(ongoing_uuids) - max(capturing, len(ongoing_uuids)), 0)}
+
+
+@app.route('/admin/monitoring', methods=['GET'])
+@flask_login.login_required  # type: ignore[untyped-decorator]
+def admin_monitoring() -> str:
+    '''Admin: what tools/monitoring.py prints, in a page. The status, the key figures
+    and the ongoing captures are rendered here; the other sections are folded and
+    loaded from admin_monitoring_section when they are opened.'''
     return render_template('admin/monitoring.html', services=_monitoring_services(),
-                           captures=captures, queued_total=queued_total,
-                           ongoing_total=len(ongoing_uuids), submitters=_monitoring_submitters(),
+                           submitters=_monitoring_submitters(), **_monitoring_captures(),
                            lacus_status=_monitoring_lacus(), limit=MONITORING_LIMIT,
                            now=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
@@ -3080,7 +3096,9 @@ def admin_monitoring_section(section: str) -> str | tuple[str, int]:
     '''Admin: body of one folded section of the monitoring page (HTML fragment,
     admin/monitoring_section.html), requested by js/monitoring.js when it is opened.'''
     data: dict[str, Any] = {}
-    if section == 'submissions':
+    if section == 'captures':
+        data.update(_monitoring_captures())
+    elif section == 'submissions':
         data['submitters'] = _monitoring_submitters()
     elif section == 'services':
         data['services'] = _monitoring_services()
@@ -3091,7 +3109,7 @@ def admin_monitoring_section(section: str) -> str | tuple[str, int]:
         data['lacus_status'] = _monitoring_lacus()
     else:
         return 'Unknown section', 404
-    return render_template('admin/monitoring_section.html', section=section,
+    return render_template('admin/monitoring_section.html', section=section, limit=MONITORING_LIMIT,
                            now=datetime.now().strftime('%H:%M:%S'), **data)
 
 
