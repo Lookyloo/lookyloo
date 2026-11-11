@@ -12,7 +12,7 @@
   {% if captures %}
   <ul class="lk-mon-captures">
     {% for c in captures %}
-    <li class="lk-mon-capture{% if c.state == 'Capturing' %} is-capturing{% endif %}">
+    <li class="lk-mon-capture{% if c.state == 'Capturing' %} is-capturing{% endif %}" data-uuid="{{ c.uuid }}">
       {% if c.state == 'Capturing' %}
       <span class="lk-mon-eyes">{{ loader('Capture in progress', size='sm') }}</span>
       {% else %}

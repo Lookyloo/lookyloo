@@ -26,6 +26,12 @@ only Lacus knows it is running, so the state comes from
 `Lookyloo.get_capture_status()` (the same read as the waiting page of a capture),
 for the first 50 waiting captures. No capture: the empty state, without eyes.
 
+A capture that leaves the list between two checks becomes a green **Done !** row
+(check icon, filled "Open" button to its capture page), under the captures still
+in progress, in place of the empty state when nothing else runs. These rows are
+kept in the memory of the page only (`done` in `js/monitoring.js`, rows matched
+by `data-uuid`): a reload of the page removes them.
+
 ## Folded sections, loaded when opened
 
 The status banner, the key figures and **Ongoing captures** are rendered with

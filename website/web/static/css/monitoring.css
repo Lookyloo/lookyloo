@@ -359,3 +359,10 @@
 .lk-mon-eyes .lk-loader { --lk-loader-delay: 0s; } /* no 400 ms wait: redrawn every 10 s */
 .lk-mon-eyes.is-waiting { color: var(--lk-tag-amber); }
 .lk-mon-capture.is-capturing { background: color-mix(in srgb, var(--lk-color-accent-soft) 45%, transparent); }
+
+/* Finished since the page was loaded (js/monitoring.js), until a reload */
+.lk-mon-eyes.is-done { color: var(--lk-color-success); font-size: 1.4rem; }
+.lk-mon-state.is-done { color: var(--lk-tag-green); background: var(--lk-tag-green-bg); }
+.lk-mon-capture.is-done { background: color-mix(in srgb, var(--lk-tag-green-bg) 55%, transparent); }
+/* Same width for Capturing / Queued / Done !, so the URLs stay aligned */
+.lk-mon-capture .lk-mon-state { min-width: 6.5rem; justify-content: center; }

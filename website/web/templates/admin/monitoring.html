@@ -62,6 +62,8 @@
                     ongoing_total ~ ' being captured, ' ~ queued_total ~ ' waiting' ~ ((', first ' ~ limit ~ ' shown') if ongoing_total + queued_total > limit else '') ~ '.',
                     ongoing_total + queued_total) }}
     </header>
+    {# Icon of a finished capture, copied by js/monitoring.js #}
+    <template id="lk-mon-done-icon">{{ render_icon('check-circle-fill') }}</template>
     <div class="lk-mon-panel-body" id="lk-mon-captures"
          data-lk-mon-url="{{ url_for('admin_monitoring_section', section='captures') }}" data-lk-mon-every="10">
       {% with section='captures', now=now[-8:] %}{% include 'admin/monitoring_section.html' %}{% endwith %}

@@ -51,6 +51,54 @@ document.querySelectorAll('details[data-lk-mon-url]').forEach(section => {
     const panel = body.closest('.lk-mon-panel');
     let left = every;
     let loading = false;
+    // Captures that left the list since the page was loaded: kept as "Done !"
+    // rows (link to the capture) until the page is reloaded. Memory only.
+    const done = new Map();
+    const doneIcon = document.getElementById('lk-mon-done-icon');
+
+    const markDone = row => {
+        const copy = row.cloneNode(true);
+        copy.classList.remove('is-capturing');
+        copy.classList.add('is-done');
+        const eyes = copy.querySelector('.lk-mon-eyes');
+        if (eyes) {
+            eyes.className = 'lk-mon-eyes is-done';
+            eyes.replaceChildren(doneIcon ? doneIcon.content.cloneNode(true) : '');
+        }
+        const state = copy.querySelector('.lk-mon-state');
+        if (state) {
+            state.className = 'lk-mon-state is-done';
+            const dot = document.createElement('span');
+            dot.className = 'lk-mon-dot';
+            dot.setAttribute('aria-hidden', 'true');
+            state.replaceChildren(dot, 'Done !');
+        }
+        copy.querySelector('.lk-mon-open')?.classList.replace('btn-outline-primary', 'btn-primary');
+        return copy;
+    };
+
+    // After each check: rows gone from the new list become "Done !", and every
+    // "Done !" row is shown again under the captures still in progress.
+    const keepDone = previousRows => {
+        const current = new Set([...body.querySelectorAll('.lk-mon-capture[data-uuid]')].map(row => row.dataset.uuid));
+        previousRows.forEach(row => {
+            if (!current.has(row.dataset.uuid) && !done.has(row.dataset.uuid)) {
+                done.set(row.dataset.uuid, markDone(row));
+            }
+        });
+        if (!done.size) {
+            return;
+        }
+        let list = body.querySelector('.lk-mon-captures');
+        if (!list) {
+            // Nothing in progress any more: the finished ones instead of the empty state
+            body.querySelector('.lk-mon-empty')?.remove();
+            list = document.createElement('ul');
+            list.className = 'lk-mon-captures';
+            body.prepend(list);
+        }
+        [...done.values()].reverse().forEach(row => list.appendChild(row));
+    };
 
     const applyTotals = () => {
         const totals = body.querySelector('.lk-mon-totals');
@@ -90,7 +138,9 @@ document.querySelectorAll('details[data-lk-mon-url]').forEach(section => {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
+            const previousRows = [...body.querySelectorAll('.lk-mon-capture[data-uuid]:not(.is-done)')];
             body.innerHTML = await response.text();
+            keepDone(previousRows);
             applyTotals();
         } catch (error) {
             const countdown = body.querySelector('[data-lk-mon-countdown]')?.parentElement;
