@@ -186,12 +186,12 @@ document.addEventListener("DOMContentLoaded", () => {
       MarkAsKnown(treeUUID)
     });
 
-    document.getElementById("blurScreenshot")?.addEventListener("click", function (e) {
-      let blur_status = document.getElementById('screenshot').classList.toggle('blur');
-      if (blur_status) {
-        this.innerText = 'Unblur';
-      } else {
-        this.innerText = 'Blur';
-      }
+    // Blur / Unblur the screenshot, blurred at first (tree/tree.html), and the
+    // thumbnail of the landing node in the tree with it (js/tree.js)
+    document.getElementById("blurScreenshot")?.addEventListener("click", function () {
+      const blurred = document.getElementById('screenshot').classList.toggle('blur');
+      document.getElementById('screenshot_thumbnail')?.classList.toggle('blur', blurred);
+      this.setAttribute('aria-pressed', blurred ? 'true' : 'false');
+      this.textContent = blurred ? 'Unblur' : 'Blur';
     });
 });

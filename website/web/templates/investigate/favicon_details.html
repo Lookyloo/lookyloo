@@ -1,40 +1,31 @@
 {% from 'bootstrap5/utils.html' import render_icon %}
+{% from 'macros/investigate.html' import pivot_header, captures_section, pivot_section with context %}
 
 {% if from_popup %}
-
+{# Standalone page (from_popup=True): site layout; otherwise an HTML fragment for the tree modals #}
 {% extends "layouts/page.html" %}
-{% from 'bootstrap5/utils.html' import render_messages %}
 {% block title %}Favicon{% endblock %}
-
-{%endif%}
+{% endif %}
 
 
 {% block content %}
+<div class="lk-pivot">
+{% call pivot_header('Favicon', favicon_sha512, description='Captures whose page used this favicon. The same icon on different sites often means the same kit or the same owner.',
+                       image_src='data:' ~ mimetype ~ ';base64,' ~ b64_favicon, zoom=True,
+                       share_url=url_for('favicon_detail', favicon_sha512=favicon_sha512, from_popup=True), from_popup=from_popup) %}
+  <a class="btn btn-outline-primary btn-sm" href="https://www.shodan.io/search?query=http.favicon.hash%3A{{ mmh3_shodan }}" target="_blank" rel="noopener">
+    {{ render_icon('search') }} Shodan (MMH3 {{ mmh3_shodan }})</a>
+{% endcall %}
 
-{% if from_popup %}
-<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
-{%endif%}
-
-<center>
-  <p class="lead">
-    <img src="data:{{mimetype}};base64,{{ b64_favicon }}" style="width:32px;height:32px;"/>
-    {% if not from_popup %}
-      <a href="{{ url_for('favicon_detail', favicon_sha512=favicon_sha512, from_popup=True) }}" class="btn btn-light">
-        {{ render_icon('share') }}
-      </a>
-    {%endif%}
-    <h5>Shodan MMH3 Hash: <a href="https://www.shodan.io/search?query=http.favicon.hash%3A{{ mmh3_shodan }}" target="_blank">{{ mmh3_shodan }}</a></h5>
-  </p>
-</center>
-
-<table id="faviconDetailsTable" class="table table-striped" style="width:100%" data-favicon="{{favicon_sha512}}">
+{% call captures_section() %}
+<table id="faviconDetailsTable" class="table lk-capture-table" style="width:100%" data-favicon="{{favicon_sha512}}">
   <thead>
     <tr>
-      <th>Capture Time</th>
-      <th>Capture Title</th>
-      <th>Landing page</th>
+      <th>Capture</th>
+      <th class="text-end">Captured</th>
     </tr>
   </thead>
 </table>
-
+{% endcall %}
+</div>
 {% endblock %}

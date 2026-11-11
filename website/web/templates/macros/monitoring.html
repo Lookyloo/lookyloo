@@ -1,0 +1,35 @@
+{#
+  Pieces of the admin monitoring page (admin/monitoring.html and its folded
+  sections, admin/monitoring_section.html). Doc: doc/ui/monitoring.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{# Panel header: icon chip, title, sub-title, optional counter #}
+{% macro panel_head(id, icon_name, title, sub, count=None) %}
+<span class="lk-mon-panel-icon">{{ render_icon(icon_name) }}</span>
+<span class="lk-mon-panel-text">
+  <span class="lk-mon-panel-title" id="{{ id }}" role="heading" aria-level="2">{{ title }}</span>
+  <span class="lk-mon-panel-sub">{{ sub }}</span>
+</span>
+{% if count is not none %}<span class="lk-mon-count">{{ '{:,}'.format(count) }}</span>{% endif %}
+{% endmacro %}
+
+{# Empty state, like the pivot pages (.lk-pivot-empty) #}
+{% macro empty(icon_name, title, text) %}
+<div class="lk-mon-empty">
+  <span class="lk-mon-empty-icon">{{ render_icon(icon_name) }}</span>
+  <p class="lk-mon-empty-title">{{ title }}</p>
+  <p>{{ text }}</p>
+</div>
+{% endmacro %}
+
+{# Folded section: its body is requested when it is opened (js/monitoring.js) #}
+{% macro folded(section, icon_name, title, sub) %}
+<details class="lk-mon-panel lk-mon-folded" data-lk-mon-url="{{ url_for('admin_monitoring_section', section=section) }}">
+  <summary class="lk-mon-panel-head">
+    {{ panel_head('mon-' ~ section, icon_name, title, sub) }}
+    <span class="lk-mon-chevron" aria-hidden="true">{{ render_icon('chevron-down') }}</span>
+  </summary>
+  <div class="lk-mon-panel-body" aria-live="polite"></div>
+</details>
+{% endmacro %}

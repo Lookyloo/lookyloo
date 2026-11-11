@@ -1,0 +1,115 @@
+{# Body of one folded section of admin/monitoring.html (admin_monitoring_section).
+   HTML fragment, inserted by js/monitoring.js. Doc: doc/ui/monitoring.md #}
+{% from 'macros/monitoring.html' import empty %}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from 'macros/loader.html' import loader %}
+
+{% if section == 'captures' %}
+  {# Ongoing captures: rendered with the page, then every 10 s by js/monitoring.js.
+     The data-* give the totals to update the counter and the key figures. #}
+  <div class="lk-mon-totals" hidden data-ongoing="{{ ongoing_total }}" data-queued="{{ queued_total }}"
+       data-sub="{{ ongoing_total }} being captured, {{ queued_total }} waiting{{ (', first ' ~ limit ~ ' shown') if ongoing_total + queued_total > limit else '' }}."></div>
+  {% if captures %}
+  <ul class="lk-mon-captures">
+    {% for c in captures %}
+    <li class="lk-mon-capture{% if c.state == 'Capturing' %} is-capturing{% endif %}" data-uuid="{{ c.uuid }}">
+      {% if c.state == 'Capturing' %}
+      <span class="lk-mon-eyes">{{ loader('Capture in progress', size='sm') }}</span>
+      {% else %}
+      <span class="lk-mon-eyes is-waiting" aria-hidden="true">{{ render_icon('hourglass-split') }}</span>
+      {% endif %}
+      <span class="lk-mon-state {{ 'is-capturing' if c.state == 'Capturing' else 'is-queued' }}">
+        <span class="lk-mon-dot" aria-hidden="true"></span>{{ c.state }}
+      </span>
+      <div class="lk-mon-capture-main">
+        <span class="lk-mon-capture-url" title="{{ c.url }}">{{ c.url or 'No URL (document)' }}</span>
+        <span class="lk-mon-capture-meta">
+          <span class="lk-mon-mono">{{ c.uuid }}</span>
+          <span>{{ render_icon('person') }} {{ c.user or 'unknown' }}</span>
+          <span>{{ render_icon('box-arrow-in-right') }} {{ c.source or '—' }}{% if c.authenticated %} · logged in{% endif %}</span>
+          {% if c.priority is not none %}<span>{{ render_icon('sort-down') }} priority {{ c.priority }}</span>{% endif %}
+        </span>
+      </div>
+      <a class="btn btn-sm btn-outline-primary lk-mon-open" href="{{ url_for('tree', tree_uuid=c.uuid) }}">Open {{ render_icon('arrow-right') }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  {{ empty('cup-hot', 'No capture in progress', 'The queue is empty: a new capture starts right away.') }}
+  {% endif %}
+  <p class="lk-mon-loaded">Checked at <time class="lk-mon-mono">{{ now }}</time>, next check in <span data-lk-mon-countdown>10</span> s.</p>
+
+{% elif section == 'submissions' %}
+  {% if submitters %}
+  {% set top = submitters | map(attribute='count') | max %}
+  <ul class="lk-mon-bars">
+    {% for s in submitters %}
+    <li>
+      <div class="lk-mon-bar-label">
+        <span class="lk-mon-mono">{{ s.user or 'unknown' }}</span>
+        <span class="lk-mon-sub">{{ s.source }}{% if s.authenticated %} · logged in{% endif %}</span>
+        <strong>{{ s.count }}</strong>
+      </div>
+      <meter class="lk-mon-bar" min="0" max="{{ top }}" value="{{ s.count }}">{{ s.count }}</meter>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  {{ empty('inbox', 'No recent submission', 'Nobody submitted a capture in the last minutes.') }}
+  {% endif %}
+
+{% elif section == 'services' %}
+  {% if services %}
+  <ul class="lk-mon-services">
+    {% for s in services %}
+    <li class="{{ 'is-up' if s.alive else 'is-down' }}">
+      <span class="lk-mon-dot" aria-hidden="true"></span>
+      <span class="lk-mon-service-name">{{ s.name }}</span>
+      <span class="lk-mon-sub">{{ s.alive | length }} process{{ 'es' if s.alive | length != 1 }}</span>
+      <span class="lk-mon-pids">
+        {% for pid in s.pids %}<span class="lk-mon-pid{% if pid not in s.alive %} is-dead{% endif %}" title="{{ 'Running' if pid in s.alive else 'Stale: no such process' }}">{{ pid }}</span>{% endfor %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  {{ empty('power', 'No service registered', 'Start them with poetry run start.') }}
+  {% endif %}
+
+{% elif section == 'requests' %}
+  {% if visitors %}
+  <p class="lk-mon-note">{{ '{:,}'.format(entries) }} IP + user agent pairs today, top 50 IPs.</p>
+  <table class="table table-sm lk-mon-table">
+    <thead><tr><th>IP</th><th class="text-end">User agents</th><th class="text-end">Requests</th></tr></thead>
+    <tbody>
+    {% for v in visitors %}
+    <tr><td class="lk-mon-mono">{{ v.ip }}</td><td class="text-end">{{ v.user_agents }}</td><td class="text-end"><strong>{{ '{:,}'.format(v.hits) }}</strong></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  {{ empty('globe2', 'No request yet today', 'The counter starts again every day.') }}
+  {% endif %}
+
+{% elif section == 'cache' %}
+  {% if tree_cache %}
+  <ul class="lk-mon-cache">
+    {% for name, status in tree_cache %}
+    {% set parts = name.split('|', 1) %}
+    <li><span class="lk-mon-mono">{{ parts[0] }}</span> <span class="lk-mon-sub">{{ parts[1] if parts | length > 1 }}</span>
+        <code class="lk-mon-cache-status">{{ status }}</code></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  {{ empty('diagram-3', 'No tree cache', 'No process has loaded a tree yet.') }}
+  {% endif %}
+  {% for l in lacus_status %}
+  <div class="lk-mon-lacus">
+    <span class="lk-mon-state {{ 'is-busy' if l.busy else 'is-capturing' }}"><span class="lk-mon-dot" aria-hidden="true"></span>Lacus {{ l.name }}: {{ 'busy' if l.busy else 'available' }}</span>
+    <span class="lk-mon-sub">{{ l.ongoing }} ongoing · {{ l.enqueued }} enqueued · max {{ l.max }} at once</span>
+  </div>
+  {% endfor %}
+{% endif %}
+{% if section != 'captures' %}
+<p class="lk-mon-loaded">Loaded at <time class="lk-mon-mono">{{ now }}</time>, close and open again to refresh.</p>
+{% endif %}

@@ -48,7 +48,14 @@ the previous three columns otherwise.
 
 Each row shows the screenshot of the capture (its thumbnail, `thumbnail` route,
 256 px wide, loaded lazily), **always blurred first**: a captured page can show
-anything. A click reveals it, another one blurs it again (`aria-pressed`).
+anything. A click never shows it in the clear: it goes from strongly blurred
+(`.is-blurred`) to slightly blurred (`.is-peek`, enough to see the layout and
+the colours, not the details of an image: some pages are a single shocking
+picture); another click blurs it strongly again (`aria-pressed`). The clear
+screenshot is only in the capture itself. So that the light blur does not look
+broken, the labels drawn on the thumbnail (CSS) say what to do: "Click to
+preview" when strongly blurred, "Open to see all" (open the capture) after the click
+("Preview" / "Open to see" on phones); the tooltip explains why.
 
 The table gives the thumbnail URL for a placeholder UUID
 (`data-lk-thumbnail="{{ url_for('thumbnail', tree_uuid='00000000-0000-0000-0000-000000000000', width=256) }}"`);

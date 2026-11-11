@@ -590,6 +590,8 @@ function update(root, computed_node_width=0) {
                     .attr('x', selected_node_bbox.width/2)
                     .attr('y', node_height - 3)
                     .attr('id', 'screenshot_thumbnail')
+                    // blurred like the screenshot, until it is unblurred (js/tree_modals.js)
+                    .attr('class', document.getElementById('screenshot')?.classList.contains('blur') === false ? null : 'blur')
                     .attr("width", thumbnail_size)
                     .attr("height", thumbnail_size)
                     .attr("xlink:href",`data:image/png;base64,${screenshot_thumbnail}`)

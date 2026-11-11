@@ -33,7 +33,7 @@ from zoneinfo import ZoneInfo
 
 from har2tree import HostNode, URLNode
 import flask_login  # type: ignore[import-untyped]
-from flask import (Flask, Response, Request, flash, jsonify, redirect, render_template,
+from flask import (Flask, Response, Request, abort, flash, jsonify, redirect, render_template,
                    request, send_file, url_for, make_response, send_from_directory)
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_caching import Cache
@@ -54,7 +54,8 @@ from werkzeug.wrappers.response import Response as WerkzeugResponse
 from lookyloo import Lookyloo, LookylooException
 from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError, StorageStateSettings
 from pydantic import ValidationError
-from lookyloo.default import get_config, get_homedir, ConfigError
+from lookyloo.default import get_config, get_homedir, get_socket_path, ConfigError
+from redis import Redis
 from lookyloo.exceptions import (UnknownUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild,
                                  LookylooPrivateCapture, UUIDMissingInCache, MissingCaptureDirectory,
                                  TreeBuildFailed, ZipBomb)
@@ -63,7 +64,7 @@ from lookyloo.helpers import (UserAgents,
                               get_taxonomies,
                               mimetype_to_generic,
                               )
-from pylacus import RemoteHeadedSessionResponse, PyLacus
+from pylacus import RemoteHeadedSessionResponse, PyLacus, CaptureStatus as CaptureStatusPy
 from zoneinfo import available_timezones
 
 from .genericapi import api as generic_api
@@ -430,8 +431,28 @@ def load_custom_local_ressource(ressource_type: str, filename: str) -> tuple[str
     return (url, sri_hash)
 
 
+# Pages switched off on every instance, for everyone (admins included): their URL
+# answers 404 and the links to them are hidden (page_enabled() in the templates).
+# The code stays, so a page comes back by removing its endpoint from this set.
+# Explore (resources, cookies, favicons, HTTP headers hashes) and the statistics
+# compute over every indexed capture: far too slow on a big instance.
+# Doc: doc/ui/disabled_pages.md
+DISABLED_PAGES: frozenset[str] = frozenset({
+    'ressources', 'cookies_lookup', 'favicons_lookup', 'hhhashes_lookup',  # Explore
+    'statsfull',  # Admin > Statistics
+})
+
+
+def page_enabled(endpoint: str) -> bool:
+    return endpoint not in DISABLED_PAGES
+
+
+app.jinja_env.tests['page_enabled'] = page_enabled
+
+
 app.jinja_env.globals.update(
     {'sizeof_fmt': sizeof_fmt,
+     'page_enabled': page_enabled,
      'http_status_description': http_status_description,
      'month_name': month_name,
      'get_sri': get_sri,
@@ -468,6 +489,13 @@ def b64enode_filter(blob: str | bytes | BytesIO) -> str:
 
 
 # ##### Generic/configuration methods #####
+
+@app.before_request
+def disabled_pages() -> None:
+    '''Pages switched off (DISABLED_PAGES): 404, as if they did not exist.'''
+    if request.endpoint in DISABLED_PAGES:
+        abort(404)
+
 
 @app.before_request
 def before_request() -> None:
@@ -2948,6 +2976,143 @@ def statsfull() -> str:
     return render_template('admin/stats.html', stats=stats, version=pkg_version)
 
 
+# ---- Admin > Monitoring (admin/monitoring.html, doc/ui/monitoring.md) ----
+# READ ONLY: only reads keys already written by the backend (no write, no
+# cleanup, no new key); every list is capped so it stays cheap on a big instance.
+MONITORING_LIMIT = 200
+
+
+def _monitoring_services() -> list[dict[str, Any]]:
+    '''AbstractManager services (cache db 1): same data as AbstractManager.is_running()
+    without its cleanup of the dead PIDs (it writes).'''
+    services: list[dict[str, Any]] = []
+    try:
+        r_services = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
+        for name, number in r_services.zrangebyscore('running', '-inf', '+inf', withscores=True):
+            pids = sorted(r_services.smembers(f'service|{name}'))
+            alive = []
+            for pid in pids:
+                try:
+                    os.kill(int(pid), 0)
+                    alive.append(pid)
+                except (OSError, ValueError):
+                    pass
+            services.append({'name': name, 'number': int(number), 'pids': pids, 'alive': alive})
+    except Exception as e:
+        app.logger.warning(f'Monitoring: unable to get the services: {e}')
+    return services
+
+
+def _monitoring_submitters() -> list[dict[str, Any]]:
+    '''queues: +1 at submission, -1 when captured, expires 10 min after the last capture.'''
+    submitters: list[dict[str, Any]] = []
+    for queue, count in lookyloo.redis.zrevrangebyscore('queues', '+inf', '(0', start=0,
+                                                        num=MONITORING_LIMIT, withscores=True):
+        source, _, rest = queue.partition('|')
+        authenticated, _, user = rest.partition('|')
+        submitters.append({'source': source, 'authenticated': authenticated == 'True',
+                           'user': user, 'count': int(count)})
+    return submitters
+
+
+def _monitoring_visitors() -> dict[str, Any]:
+    '''user_agents|<today>: one entry per IP + user agent, deleted once a day by
+    background_processing. Top entries only.'''
+    today_key = f'user_agents|{date.today().isoformat()}'
+    per_ip: dict[str, dict[str, Any]] = {}
+    for entry, hits in lookyloo.redis.zrevrange(today_key, 0, 999, withscores=True):
+        ip, _, _ua = entry.partition('|')
+        item = per_ip.setdefault(ip, {'ip': ip, 'hits': 0, 'user_agents': 0})
+        item['hits'] += int(hits)
+        item['user_agents'] += 1
+    return {'entries': lookyloo.redis.zcard(today_key),
+            'visitors': sorted(per_ip.values(), key=lambda i: i['hits'], reverse=True)[:50]}
+
+
+def _monitoring_lacus() -> list[dict[str, Any]]:
+    '''Remote lacus only (same calls as tools/monitoring.py).'''
+    lacus_status: list[dict[str, Any]] = []
+    try:
+        for name, lacus in lookyloo.lacus.items():
+            if isinstance(lacus, PyLacus):
+                status = lacus.status()
+                lacus_status.append({'name': name, 'busy': lacus.is_busy(),
+                                     'ongoing': status.get('ongoing_captures'),
+                                     'enqueued': status.get('enqueued_captures'),
+                                     'max': status.get('max_concurrent_captures')})
+    except Exception as e:
+        app.logger.info(f'Monitoring: no lacus status: {e}')
+    return lacus_status
+
+
+def _monitoring_captures() -> dict[str, Any]:
+    '''Captures being captured (ongoing) and waiting (to_capture, by priority).'''
+    r = lookyloo.redis
+    queued_total = r.zcard('to_capture')
+    ongoing_uuids = sorted(r.smembers('ongoing'))
+    captures: list[dict[str, Any]] = []
+    entries: list[tuple[str, str, float | None]] = [(u, 'Capturing', None) for u in ongoing_uuids[:MONITORING_LIMIT]]
+    entries += [(u, 'Queued', p) for u, p in r.zrevrange('to_capture', 0, MONITORING_LIMIT - 1, withscores=True)
+                if u not in ongoing_uuids]
+    for i, (capture_uuid, state, priority) in enumerate(entries[:MONITORING_LIMIT]):
+        if state == 'Queued' and i < 50:
+            # While the browser works, the capture stays in to_capture: only Lacus
+            # knows it is running. Same read as the waiting page of a capture
+            # (get_capture_status), for the first 50 only.
+            try:
+                if lookyloo.get_capture_status(capture_uuid) in (CaptureStatus.ONGOING, CaptureStatusPy.ONGOING):
+                    state = 'Capturing'
+            except Exception as e:
+                app.logger.info(f'Monitoring: no status for {capture_uuid}: {e}')
+        url, document_name = r.hmget(capture_uuid, ['url', 'document_name'])
+        mgmt = r.get(f'{capture_uuid}_mgmt') or ''
+        source, _, rest = mgmt.partition('|')
+        authenticated, _, user = rest.partition('|')
+        captures.append({'uuid': capture_uuid, 'state': state,
+                         'priority': int(priority) if priority is not None else None,
+                         'url': url or document_name or '', 'source': source,
+                         'authenticated': authenticated == 'True', 'user': user})
+    captures.sort(key=lambda c: c['state'] != 'Capturing')  # in progress first (stable)
+    capturing = sum(1 for c in captures if c['state'] == 'Capturing')
+    return {'captures': captures, 'ongoing_total': max(capturing, len(ongoing_uuids)),
+            'queued_total': max(queued_total + len(ongoing_uuids) - max(capturing, len(ongoing_uuids)), 0)}
+
+
+@app.route('/admin/monitoring', methods=['GET'])
+@flask_login.login_required  # type: ignore[untyped-decorator]
+def admin_monitoring() -> str:
+    '''Admin: what tools/monitoring.py prints, in a page. The status, the key figures
+    and the ongoing captures are rendered here; the other sections are folded and
+    loaded from admin_monitoring_section when they are opened.'''
+    return render_template('admin/monitoring.html', services=_monitoring_services(),
+                           submitters=_monitoring_submitters(), **_monitoring_captures(),
+                           lacus_status=_monitoring_lacus(), limit=MONITORING_LIMIT,
+                           now=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+
+@app.route('/admin/monitoring/<string:section>', methods=['GET'])
+@flask_login.login_required  # type: ignore[untyped-decorator]
+def admin_monitoring_section(section: str) -> str | tuple[str, int]:
+    '''Admin: body of one folded section of the monitoring page (HTML fragment,
+    admin/monitoring_section.html), requested by js/monitoring.js when it is opened.'''
+    data: dict[str, Any] = {}
+    if section == 'captures':
+        data.update(_monitoring_captures())
+    elif section == 'submissions':
+        data['submitters'] = _monitoring_submitters()
+    elif section == 'services':
+        data['services'] = _monitoring_services()
+    elif section == 'requests':
+        data.update(_monitoring_visitors())
+    elif section == 'cache':
+        data['tree_cache'] = sorted(lookyloo.redis.hgetall('tree_cache').items())
+        data['lacus_status'] = _monitoring_lacus()
+    else:
+        return 'Unknown section', 404
+    return render_template('admin/monitoring_section.html', section=section, limit=MONITORING_LIMIT,
+                           now=datetime.now().strftime('%H:%M:%S'), **data)
+
+
 @app.route('/whois/<string:query>', methods=['GET'])
 @app.route('/whois/<string:query>/<int:email_only>', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
@@ -3115,7 +3280,7 @@ def hashes_urlnode(tree_uuid: str, node_uuid: str) -> Response:
 @flask_login.login_required  # type: ignore[untyped-decorator]
 def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
     if not enable_context_by_users:
-        return redirect(url_for('ressources'))
+        return redirect(url_for('ressources') if page_enabled('ressources') else url_for('tree', tree_uuid=tree_uuid))
 
     context_data = request.form
     ressource_hash: str = context_data['hash_to_contextualize']
@@ -3144,7 +3309,7 @@ def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
         hostnode_uuid = lookyloo.get_urlnode_from_tree(cache.tree, node_uuid).hostnode_uuid
         return redirect(url_for('hostnode_popup', tree_uuid=tree_uuid, node_uuid=hostnode_uuid))
     elif callback_str == 'ressources':
-        return redirect(url_for('ressources'))
+        return redirect(url_for('ressources') if page_enabled('ressources') else url_for('tree', tree_uuid=tree_uuid))
     return None
 
 
@@ -3228,6 +3393,18 @@ hostnames_view_template = app.jinja_env.from_string(source='''
 def __prepare_list_hostnames(hostnames: Iterable[str]) -> dict[str, str]:
     return {'display': render_template(hostnames_view_template, hostnames=hostnames),
             'filter': escape(' '.join(hostnames))}
+
+
+def _capture_redirects(capture_uuid: str) -> list[str]:
+    '''Redirect chain of a capture, for the rows of the pivot tables (shown like
+    the list of the captures, js/components/capture_list.js). Read from the
+    cache in valkey only (quick=True): never builds a tree. Plain strings, the
+    front end writes them with textContent.'''
+    try:
+        cache = lookyloo.capture_cache(capture_uuid, quick=True)
+    except Exception:
+        return []
+    return [str(url) for url in (getattr(cache, 'redirects', None) or [])]
 
 
 def _safe_capture_title(capture_uuid: str, title: str, nodes: Sequence[tuple[str, str] | tuple[str, str, str | None]] | None=None, from_popup: bool=False) -> dict[str, Markup]:
@@ -3315,7 +3492,7 @@ def post_table(table_name: str, value: str='') -> Response:
     length = request.form.get('length', type=int)
     search = request.form.get('search[value]', type=str)
     captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, list[tuple[str, str]]]] | list[tuple[str, str, str, datetime]] | list[tuple[str, str, list[str], datetime]]
-    to_append: dict[str, int | str | dict[str, str] | dict[str, Markup]]
+    to_append: dict[str, int | str | list[str] | dict[str, str] | dict[str, Markup]]
     if table_name == 'indexTable':
         show_error, category = get_index_params(request)
         show_hidden = (value == "hidden")
@@ -3369,6 +3546,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3385,6 +3563,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3401,6 +3580,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3418,6 +3598,7 @@ def post_table(table_name: str, value: str='') -> Response:
             to_append = {
                 'capture_time': capture_time.isoformat(),
                 'capture_title': __prepare_title_in_modal(capture_uuid, title, from_popup),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
             prepared_captures.append(to_append)
@@ -3434,6 +3615,7 @@ def post_table(table_name: str, value: str='') -> Response:
             to_append = {
                 'capture_time': capture_time.isoformat(),
                 'capture_title': __prepare_title_in_modal(capture_uuid, title, from_popup),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
             prepared_captures.append(to_append)
@@ -3449,6 +3631,7 @@ def post_table(table_name: str, value: str='') -> Response:
             to_append = {
                 'capture_time': capture_time.isoformat(),
                 'capture_title': __prepare_title_in_modal(capture_uuid, title, from_popup),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page)
             }
             prepared_captures.append(to_append)
@@ -3465,6 +3648,7 @@ def post_table(table_name: str, value: str='') -> Response:
             hostnames = get_indexing(flask_login.current_user).get_capture_cloudflare_ns_hostnames(capture_uuid, cloudflare_ns)
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, from_popup=from_popup),
                 'hostnames': __prepare_list_hostnames(hostnames)
@@ -3481,6 +3665,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3496,6 +3681,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3511,6 +3697,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3526,6 +3713,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
@@ -3542,6 +3730,7 @@ def post_table(table_name: str, value: str='') -> Response:
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
             to_append = {
                 'capture_time': capture_time.isoformat(),
+                'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
             }
