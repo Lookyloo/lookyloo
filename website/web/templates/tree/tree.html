@@ -1104,13 +1104,12 @@
         Image too big ({{ sizeof_fmt(screenshot_size) }}) to display in the browser, the screenshot below is cropped.
         <br>
       {% endif %}
-      {% if blur_screenshot %}
-      <button type="button" class="btn btn-primary" id="blurScreenshot">Unblur</button>
-      {% endif %}
+      {# Always blurred at first: a capture can show shocking content (doc/ui/screenshot-blur.md) #}
+      <button type="button" class="btn btn-primary" id="blurScreenshot" aria-pressed="true">Unblur</button>
       <a href="{{ url_for('image', tree_uuid=tree_uuid, seed=seed) }}" role="button" class="btn btn-primary">Download</a>
       <br>
       <br>
-      <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '', seed=seed) }}" class="img-fluid {{ 'blur' if blur_screenshot else '' }}" id="screenshot"/>
+      <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '', seed=seed) }}" class="img-fluid blur" id="screenshot"/>
       <br>
     </center>
     </div>
