@@ -1,5 +1,6 @@
 {% extends "layouts/page.html" %}
 {% from 'macros/page.html' import page_header %}
+{% from 'macros/monitoring.html' import panel_head, empty, folded %}
 {% from 'bootstrap5/utils.html' import render_icon %}
 
 {% block title %}Monitoring{% endblock %}
@@ -7,27 +8,6 @@
 {% block page_header %}
 {{ page_header('Monitoring', description='What the instance is doing right now: captures in progress, services, recent submissions. Read only, same data as tools/monitoring.py.', icon_name='activity', crumbs=[('Admin', None)]) }}
 {% endblock %}
-
-{# Panel header: icon chip, title, sub-title, optional counter #}
-{% macro panel_head(id, icon_name, title, sub, count=None) %}
-<header class="lk-mon-panel-head">
-  <span class="lk-mon-panel-icon">{{ render_icon(icon_name) }}</span>
-  <div class="lk-mon-panel-text">
-    <h2 class="lk-mon-panel-title" id="{{ id }}">{{ title }}</h2>
-    <p class="lk-mon-panel-sub">{{ sub }}</p>
-  </div>
-  {% if count is not none %}<span class="lk-mon-count">{{ '{:,}'.format(count) }}</span>{% endif %}
-</header>
-{% endmacro %}
-
-{# Empty state, like the pivot pages (.lk-pivot-empty) #}
-{% macro empty(icon_name, title, text) %}
-<div class="lk-mon-empty">
-  <span class="lk-mon-empty-icon">{{ render_icon(icon_name) }}</span>
-  <p class="lk-mon-empty-title">{{ title }}</p>
-  <p>{{ text }}</p>
-</div>
-{% endmacro %}
 
 {% block content %}
 {% set alive_services = services | selectattr('alive') | list %}
@@ -75,11 +55,13 @@
     {% endfor %}
   </div>
 
-  {# ---- Ongoing captures ---- #}
+  {# ---- Ongoing captures: always shown ---- #}
   <section class="lk-mon-panel" aria-labelledby="mon-captures">
-    {{ panel_head('mon-captures', 'camera-reels', 'Ongoing captures',
-                  ongoing_total ~ ' being captured, ' ~ queued_total ~ ' waiting' ~ ((', first ' ~ limit ~ ' shown') if ongoing_total + queued_total > limit else '') ~ '.',
-                  ongoing_total + queued_total) }}
+    <header class="lk-mon-panel-head">
+      {{ panel_head('mon-captures', 'camera-reels', 'Ongoing captures',
+                    ongoing_total ~ ' being captured, ' ~ queued_total ~ ' waiting' ~ ((', first ' ~ limit ~ ' shown') if ongoing_total + queued_total > limit else '') ~ '.',
+                    ongoing_total + queued_total) }}
+    </header>
     {% if captures %}
     <ul class="lk-mon-captures">
       {% for c in captures %}
@@ -105,91 +87,11 @@
     {% endif %}
   </section>
 
-  <div class="lk-mon-grid">
-    {# ---- Recent submissions ---- #}
-    <section class="lk-mon-panel" aria-labelledby="mon-submitters">
-      {{ panel_head('mon-submitters', 'send', 'Recent submissions', 'Per submitter, captures not finished yet. Forgotten 10 min after the last one.', submitters | length) }}
-      {% if submitters %}
-      {% set top = submitters | map(attribute='count') | max %}
-      <ul class="lk-mon-bars">
-        {% for s in submitters %}
-        <li>
-          <div class="lk-mon-bar-label">
-            <span class="lk-mon-mono">{{ s.user or 'unknown' }}</span>
-            <span class="lk-mon-sub">{{ s.source }}{% if s.authenticated %} · logged in{% endif %}</span>
-            <strong>{{ s.count }}</strong>
-          </div>
-          <meter class="lk-mon-bar" min="0" max="{{ top if top > 0 else 1 }}" value="{{ s.count if s.count > 0 else 0 }}">{{ s.count }}</meter>
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      {{ empty('inbox', 'No recent submission', 'Nobody submitted a capture in the last minutes.') }}
-      {% endif %}
-    </section>
-
-    {# ---- Services ---- #}
-    <section class="lk-mon-panel" aria-labelledby="mon-services">
-      {{ panel_head('mon-services', 'cpu', 'Services', 'Background processes of Lookyloo.', services | length) }}
-      {% if services %}
-      <ul class="lk-mon-services">
-        {% for s in services %}
-        <li class="{{ 'is-up' if s.alive else 'is-down' }}">
-          <span class="lk-mon-dot" aria-hidden="true"></span>
-          <span class="lk-mon-service-name">{{ s.name }}</span>
-          <span class="lk-mon-sub">{{ s.alive | length }} process{{ 'es' if s.alive | length != 1 }}</span>
-          <span class="lk-mon-pids">
-            {% for pid in s.pids %}<span class="lk-mon-pid{% if pid not in s.alive %} is-dead{% endif %}" title="{{ 'Running' if pid in s.alive else 'Stale: no such process' }}">{{ pid }}</span>{% endfor %}
-          </span>
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      {{ empty('power', 'No service registered', 'Start them with poetry run start.') }}
-      {% endif %}
-    </section>
-  </div>
-
-  <div class="lk-mon-grid">
-    {# ---- Web requests per IP ---- #}
-    <section class="lk-mon-panel" aria-labelledby="mon-visitors">
-      {{ panel_head('mon-visitors', 'globe2', 'Web requests today', 'Per IP, top 50. ' ~ visitors_entries ~ ' IP + user agent pairs, reset every day.', visitors | length) }}
-      {% if visitors %}
-      <table class="table table-sm lk-mon-table">
-        <thead><tr><th>IP</th><th class="text-end">User agents</th><th class="text-end">Requests</th></tr></thead>
-        <tbody>
-        {% for v in visitors %}
-        <tr><td class="lk-mon-mono">{{ v.ip }}</td><td class="text-end">{{ v.user_agents }}</td><td class="text-end"><strong>{{ '{:,}'.format(v.hits) }}</strong></td></tr>
-        {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-      {{ empty('globe2', 'No request yet today', 'The counter starts again every day.') }}
-      {% endif %}
-    </section>
-
-    {# ---- Tree cache + Lacus ---- #}
-    <section class="lk-mon-panel" aria-labelledby="mon-cache">
-      {{ panel_head('mon-cache', 'diagram-3', 'Tree cache', 'Trees kept in memory, per process.', tree_cache | length) }}
-      {% if tree_cache %}
-      <ul class="lk-mon-cache">
-        {% for name, status in tree_cache %}
-        {% set parts = name.split('|', 1) %}
-        <li><span class="lk-mon-mono">{{ parts[0] }}</span> <span class="lk-mon-sub">{{ parts[1] if parts | length > 1 }}</span>
-            <code class="lk-mon-cache-status">{{ status }}</code></li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      {{ empty('diagram-3', 'No tree cache', 'No process has loaded a tree yet.') }}
-      {% endif %}
-      {% for l in lacus_status %}
-      <div class="lk-mon-lacus">
-        <span class="lk-mon-state {{ 'is-busy' if l.busy else 'is-capturing' }}"><span class="lk-mon-dot" aria-hidden="true"></span>Lacus {{ l.name }}: {{ 'busy' if l.busy else 'available' }}</span>
-        <span class="lk-mon-sub">{{ l.ongoing }} ongoing · {{ l.enqueued }} enqueued · max {{ l.max }} at once</span>
-      </div>
-      {% endfor %}
-    </section>
-  </div>
+  {# ---- Folded sections: requested when opened (js/monitoring.js) ---- #}
+  {{ folded('submissions', 'send', 'Recent submissions', 'Per submitter, captures not finished yet. Forgotten 10 min after the last one.') }}
+  {{ folded('services', 'cpu', 'Services', 'Background processes of Lookyloo, their PIDs.') }}
+  {{ folded('requests', 'globe2', 'Web requests today', 'Per IP, top 50, reset every day.') }}
+  {{ folded('cache', 'diagram-3', 'Tree cache and Lacus', 'Trees kept in memory per process, state of the remote Lacus.') }}
 </div>
 {% endblock %}
 
@@ -197,4 +99,11 @@
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/monitoring.css') }}"
       {{get_sri('static', 'css/monitoring.css')}} crossorigin="anonymous">
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/monitoring.js') }}"
+        {{get_sri('static', 'js/monitoring.js')}}
+        nonce="{{ csp_nonce() }}" crossorigin="anonymous"></script>
 {% endblock %}

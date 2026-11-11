@@ -105,12 +105,6 @@
 .lk-mon-kpi-hint { color: var(--lk-color-muted); font-size: var(--lk-font-size-sm); }
 
 /* ---- Panels ---- */
-.lk-mon-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
-  gap: var(--lk-space-4);
-  align-items: start;
-}
 .lk-mon-panel {
   background: var(--lk-color-surface);
   border: 1px solid var(--lk-color-rule);
@@ -136,9 +130,40 @@
   background: var(--lk-color-accent-soft);
   color: var(--lk-color-accent);
 }
-.lk-mon-panel-text { flex: 1; min-width: 0; }
-.lk-mon-panel-title { margin: 0; font-size: 1.05rem; font-weight: var(--lk-font-weight-semibold); }
+.lk-mon-panel-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.lk-mon-panel-title { margin: 0; font-size: 1.05rem; font-weight: var(--lk-font-weight-semibold); color: var(--lk-color-ink); }
 .lk-mon-panel-sub { margin: 0; color: var(--lk-color-muted); font-size: var(--lk-font-size-sm); }
+
+/* Folded sections (<details>, body requested when opened by js/monitoring.js) */
+.lk-mon-folded > summary {
+  cursor: pointer;
+  list-style: none;
+  border-bottom-color: transparent;
+  transition: background var(--lk-transition-fast);
+}
+.lk-mon-folded > summary::-webkit-details-marker { display: none; }
+.lk-mon-folded > summary:hover { background: var(--lk-color-surface-2); }
+.lk-mon-folded > summary:focus-visible { outline: none; box-shadow: var(--lk-focus-ring); }
+.lk-mon-folded[open] > summary { border-bottom-color: var(--lk-color-rule); }
+.lk-mon-chevron {
+  display: inline-flex;
+  color: var(--lk-color-muted);
+  transition: transform var(--lk-transition-fast);
+}
+.lk-mon-folded[open] .lk-mon-chevron { transform: rotate(180deg); }
+.lk-mon-panel-body .lk-loader { display: flex; margin: var(--lk-space-5) auto; }
+.lk-mon-note,
+.lk-mon-loaded {
+  margin: 0;
+  padding: var(--lk-space-2) var(--lk-space-4);
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-xs);
+}
+.lk-mon-loaded { border-top: 1px solid var(--lk-color-rule); background: var(--lk-color-surface-2); }
+.lk-mon-error { margin: 0; padding: var(--lk-space-4); color: var(--lk-color-danger); }
+@media (prefers-reduced-motion: reduce) {
+  .lk-mon-chevron { transition: none; }
+}
 .lk-mon-count {
   padding: 0.1rem 0.6rem;
   border-radius: var(--lk-radius-pill);

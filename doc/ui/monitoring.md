@@ -9,6 +9,20 @@ the backend already writes, never writes, cleans up or creates a key, and every
 list is capped (200 captures, top 1000 entries of the day), so it is safe on an
 instance with millions of captures. Reload the page to refresh.
 
+## Folded sections, loaded when opened
+
+The status banner, the key figures and **Ongoing captures** are rendered with
+the page. The other sections (Recent submissions, Services, Web requests today,
+Tree cache and Lacus) are folded `<details>` (`folded()` in
+`macros/monitoring.html`): nothing is read for them until they are opened.
+Each time one is opened, `static/js/monitoring.js` requests
+`GET /admin/monitoring/<section>` (`admin_monitoring_section`, login required,
+`section` = `submissions` | `services` | `requests` | `cache`, anything else is a
+404) and inserts the HTML fragment `admin/monitoring_section.html` (rendered and
+escaped by Flask). The eyes loader shows while it loads; closing the section
+aborts the request; an error is shown with `textContent`. Close and open again
+to refresh a section.
+
 | Section | Redis key (cache db) | Written by |
 |---|---|---|
 | Ongoing captures (being captured / waiting, priority, submitter) | `ongoing` (set), `to_capture` (zset), `<uuid>` hash (`url`, `document_name`), `<uuid>_mgmt` | `async_capture`, `Lookyloo.enqueue_capture` |
@@ -33,6 +47,8 @@ as the pivot pages and the tags:
 - panels: surface card, header with icon chip + title + counter pill;
 - captures: state pill (`Capturing` pulses, off with `prefers-reduced-motion`,
   `Queued` amber), URL and UUID in mono, "Open" to the capture page;
+- folded sections: the header is the `<summary>`, chevron turned when open,
+  "Loaded at" line under the body;
 - submissions: one `<meter>` bar per submitter (submitters at 0 are hidden);
 - services: green / red dot, PIDs as mono chips, stale PIDs struck through;
 - empty states like `.lk-pivot-empty`; stacked layout under 576 px.

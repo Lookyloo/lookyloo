@@ -2976,17 +2976,15 @@ def statsfull() -> str:
     return render_template('admin/stats.html', stats=stats, version=pkg_version)
 
 
-@app.route('/admin/monitoring', methods=['GET'])
-@flask_login.login_required  # type: ignore[untyped-decorator]
-def admin_monitoring() -> str:
-    '''Admin: what tools/monitoring.py prints, in a page (admin/monitoring.html).
-    READ ONLY: only reads keys already written by the backend (no write, no cleanup,
-    no new key), every list is capped so it stays cheap on a big instance.
-    Doc: doc/ui/monitoring.md'''
-    limit = 200
-    r = lookyloo.redis
-    # Services (AbstractManager, cache db 1): same data as AbstractManager.is_running()
-    # without its cleanup of the dead PIDs (it writes).
+# ---- Admin > Monitoring (admin/monitoring.html, doc/ui/monitoring.md) ----
+# READ ONLY: only reads keys already written by the backend (no write, no
+# cleanup, no new key); every list is capped so it stays cheap on a big instance.
+MONITORING_LIMIT = 200
+
+
+def _monitoring_services() -> list[dict[str, Any]]:
+    '''AbstractManager services (cache db 1): same data as AbstractManager.is_running()
+    without its cleanup of the dead PIDs (it writes).'''
     services: list[dict[str, Any]] = []
     try:
         r_services = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
@@ -3002,49 +3000,37 @@ def admin_monitoring() -> str:
             services.append({'name': name, 'number': int(number), 'pids': pids, 'alive': alive})
     except Exception as e:
         app.logger.warning(f'Monitoring: unable to get the services: {e}')
+    return services
 
-    # Captures waiting (to_capture, by priority) and being captured (ongoing)
-    queued_total = r.zcard('to_capture')
-    ongoing_uuids = sorted(r.smembers('ongoing'))
-    captures: list[dict[str, Any]] = []
-    entries: list[tuple[str, str, float | None]] = [(u, 'Capturing', None) for u in ongoing_uuids[:limit]]
-    entries += [(u, 'Queued', p) for u, p in r.zrevrange('to_capture', 0, limit - 1, withscores=True)
-                if u not in ongoing_uuids]
-    for capture_uuid, state, priority in entries[:limit]:
-        url, document_name = r.hmget(capture_uuid, ['url', 'document_name'])
-        mgmt = r.get(f'{capture_uuid}_mgmt') or ''
-        source, _, rest = mgmt.partition('|')
-        authenticated, _, user = rest.partition('|')
-        captures.append({'uuid': capture_uuid, 'state': state,
-                         'priority': int(priority) if priority is not None else None,
-                         'url': url or document_name or '', 'source': source,
-                         'authenticated': authenticated == 'True', 'user': user})
 
-    # Recent submissions per submitter (queues: +1 at submission, -1 when captured,
-    # the key expires 10 min after the last capture)
+def _monitoring_submitters() -> list[dict[str, Any]]:
+    '''queues: +1 at submission, -1 when captured, expires 10 min after the last capture.'''
     submitters: list[dict[str, Any]] = []
-    for queue, count in r.zrevrangebyscore('queues', '+inf', '(0', start=0, num=limit, withscores=True):
+    for queue, count in lookyloo.redis.zrevrangebyscore('queues', '+inf', '(0', start=0,
+                                                        num=MONITORING_LIMIT, withscores=True):
         source, _, rest = queue.partition('|')
         authenticated, _, user = rest.partition('|')
         submitters.append({'source': source, 'authenticated': authenticated == 'True',
                            'user': user, 'count': int(count)})
+    return submitters
 
-    # Web requests of the day per IP (user_agents|<today>, one entry per IP + user
-    # agent, deleted once a day by background_processing): top entries only.
+
+def _monitoring_visitors() -> dict[str, Any]:
+    '''user_agents|<today>: one entry per IP + user agent, deleted once a day by
+    background_processing. Top entries only.'''
     today_key = f'user_agents|{date.today().isoformat()}'
-    visitors_entries = r.zcard(today_key)
     per_ip: dict[str, dict[str, Any]] = {}
-    for entry, hits in r.zrevrange(today_key, 0, 999, withscores=True):
-        ip, _, ua = entry.partition('|')
+    for entry, hits in lookyloo.redis.zrevrange(today_key, 0, 999, withscores=True):
+        ip, _, _ua = entry.partition('|')
         item = per_ip.setdefault(ip, {'ip': ip, 'hits': 0, 'user_agents': 0})
         item['hits'] += int(hits)
         item['user_agents'] += 1
-    visitors = sorted(per_ip.values(), key=lambda i: i['hits'], reverse=True)[:50]
+    return {'entries': lookyloo.redis.zcard(today_key),
+            'visitors': sorted(per_ip.values(), key=lambda i: i['hits'], reverse=True)[:50]}
 
-    # Tree cache of each process (tree_cache, written by the processes themselves)
-    tree_cache = sorted(r.hgetall('tree_cache').items())
 
-    # Remote lacus (same calls as tools/monitoring.py)
+def _monitoring_lacus() -> list[dict[str, Any]]:
+    '''Remote lacus only (same calls as tools/monitoring.py).'''
     lacus_status: list[dict[str, Any]] = []
     try:
         for name, lacus in lookyloo.lacus.items():
@@ -3056,13 +3042,57 @@ def admin_monitoring() -> str:
                                      'max': status.get('max_concurrent_captures')})
     except Exception as e:
         app.logger.info(f'Monitoring: no lacus status: {e}')
+    return lacus_status
 
-    return render_template('admin/monitoring.html', services=services, captures=captures,
-                           queued_total=queued_total, ongoing_total=len(ongoing_uuids),
-                           submitters=submitters, visitors=visitors,
-                           visitors_entries=visitors_entries, tree_cache=tree_cache,
-                           lacus_status=lacus_status, limit=limit,
+
+@app.route('/admin/monitoring', methods=['GET'])
+@flask_login.login_required  # type: ignore[untyped-decorator]
+def admin_monitoring() -> str:
+    '''Admin: what tools/monitoring.py prints, in a page. The status, the key figures
+    and the ongoing captures are rendered here; the other sections are folded and
+    loaded from admin_monitoring_section when they are opened.'''
+    r = lookyloo.redis
+    queued_total = r.zcard('to_capture')
+    ongoing_uuids = sorted(r.smembers('ongoing'))
+    captures: list[dict[str, Any]] = []
+    entries: list[tuple[str, str, float | None]] = [(u, 'Capturing', None) for u in ongoing_uuids[:MONITORING_LIMIT]]
+    entries += [(u, 'Queued', p) for u, p in r.zrevrange('to_capture', 0, MONITORING_LIMIT - 1, withscores=True)
+                if u not in ongoing_uuids]
+    for capture_uuid, state, priority in entries[:MONITORING_LIMIT]:
+        url, document_name = r.hmget(capture_uuid, ['url', 'document_name'])
+        mgmt = r.get(f'{capture_uuid}_mgmt') or ''
+        source, _, rest = mgmt.partition('|')
+        authenticated, _, user = rest.partition('|')
+        captures.append({'uuid': capture_uuid, 'state': state,
+                         'priority': int(priority) if priority is not None else None,
+                         'url': url or document_name or '', 'source': source,
+                         'authenticated': authenticated == 'True', 'user': user})
+    return render_template('admin/monitoring.html', services=_monitoring_services(),
+                           captures=captures, queued_total=queued_total,
+                           ongoing_total=len(ongoing_uuids), submitters=_monitoring_submitters(),
+                           lacus_status=_monitoring_lacus(), limit=MONITORING_LIMIT,
                            now=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+
+@app.route('/admin/monitoring/<string:section>', methods=['GET'])
+@flask_login.login_required  # type: ignore[untyped-decorator]
+def admin_monitoring_section(section: str) -> str | tuple[str, int]:
+    '''Admin: body of one folded section of the monitoring page (HTML fragment,
+    admin/monitoring_section.html), requested by js/monitoring.js when it is opened.'''
+    data: dict[str, Any] = {}
+    if section == 'submissions':
+        data['submitters'] = _monitoring_submitters()
+    elif section == 'services':
+        data['services'] = _monitoring_services()
+    elif section == 'requests':
+        data.update(_monitoring_visitors())
+    elif section == 'cache':
+        data['tree_cache'] = sorted(lookyloo.redis.hgetall('tree_cache').items())
+        data['lacus_status'] = _monitoring_lacus()
+    else:
+        return 'Unknown section', 404
+    return render_template('admin/monitoring_section.html', section=section,
+                           now=datetime.now().strftime('%H:%M:%S'), **data)
 
 
 @app.route('/whois/<string:query>', methods=['GET'])
