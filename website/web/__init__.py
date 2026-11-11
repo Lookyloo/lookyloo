@@ -3023,7 +3023,7 @@ def admin_monitoring() -> str:
     # Recent submissions per submitter (queues: +1 at submission, -1 when captured,
     # the key expires 10 min after the last capture)
     submitters: list[dict[str, Any]] = []
-    for queue, count in r.zrevrangebyscore('queues', '+inf', '-inf', start=0, num=limit, withscores=True):
+    for queue, count in r.zrevrangebyscore('queues', '+inf', '(0', start=0, num=limit, withscores=True):
         source, _, rest = queue.partition('|')
         authenticated, _, user = rest.partition('|')
         submitters.append({'source': source, 'authenticated': authenticated == 'True',

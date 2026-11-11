@@ -1,7 +1,7 @@
 # Monitoring page (admin)
 
 `/admin/monitoring` (`admin_monitoring` in `website/web/__init__.py`,
-template `admin/monitoring.html`, CSS `css/monitoring.css` + `css/stats.css`),
+template `admin/monitoring.html`, CSS `css/monitoring.css`),
 logged-in users only, in the user menu: "Monitoring (ongoing captures)".
 
 The web version of `tools/monitoring.py`. **Read only**: it only reads Redis keys
@@ -20,3 +20,19 @@ instance with millions of captures. Reload the page to refresh.
 
 Note: there is no per-IP *submission* counter in the backend; the per-IP table
 counts web requests (all pages), the per-submitter table counts captures.
+
+## Look
+
+`css/monitoring.css`, only `--lk-*` tokens (light + dark), same building blocks
+as the pivot pages and the tags:
+
+- status banner: green when every service has a live process, amber when a
+  service is down, none is registered, or a Lacus is busy;
+- key figures: cards with a coloured top line and icon chip, tinted with the
+  `--lk-tag-*` tokens (`.lk-mon-kpi.is-blue|amber|slate|violet|green|red`);
+- panels: surface card, header with icon chip + title + counter pill;
+- captures: state pill (`Capturing` pulses, off with `prefers-reduced-motion`,
+  `Queued` amber), URL and UUID in mono, "Open" to the capture page;
+- submissions: one `<meter>` bar per submitter (submitters at 0 are hidden);
+- services: green / red dot, PIDs as mono chips, stale PIDs struck through;
+- empty states like `.lk-pivot-empty`; stacked layout under 576 px.

@@ -8,121 +8,193 @@
 {{ page_header('Monitoring', description='What the instance is doing right now: captures in progress, services, recent submissions. Read only, same data as tools/monitoring.py.', icon_name='activity', crumbs=[('Admin', None)]) }}
 {% endblock %}
 
-{% block content %}
-<p class="lk-mon-refresh">Data of {{ now }}. <a href="{{ url_for('admin_monitoring') }}">{{ render_icon('arrow-clockwise') }} Refresh</a></p>
+{# Panel header: icon chip, title, sub-title, optional counter #}
+{% macro panel_head(id, icon_name, title, sub, count=None) %}
+<header class="lk-mon-panel-head">
+  <span class="lk-mon-panel-icon">{{ render_icon(icon_name) }}</span>
+  <div class="lk-mon-panel-text">
+    <h2 class="lk-mon-panel-title" id="{{ id }}">{{ title }}</h2>
+    <p class="lk-mon-panel-sub">{{ sub }}</p>
+  </div>
+  {% if count is not none %}<span class="lk-mon-count">{{ '{:,}'.format(count) }}</span>{% endif %}
+</header>
+{% endmacro %}
 
+{# Empty state, like the pivot pages (.lk-pivot-empty) #}
+{% macro empty(icon_name, title, text) %}
+<div class="lk-mon-empty">
+  <span class="lk-mon-empty-icon">{{ render_icon(icon_name) }}</span>
+  <p class="lk-mon-empty-title">{{ title }}</p>
+  <p>{{ text }}</p>
+</div>
+{% endmacro %}
+
+{% block content %}
 {% set alive_services = services | selectattr('alive') | list %}
-<div class="lk-stats-cards">
-  {% for label, value, icon_name in [('Being captured', ongoing_total, 'camera'),
-                                      ('Waiting in the queue', queued_total, 'hourglass-split'),
-                                      ('Recent submissions', submitters | sum(attribute='count'), 'send'),
-                                      ('Running services', alive_services | length, 'cpu')] %}
-  <div class="lk-stats-card">
-    <span class="lk-stats-card-icon">{{ render_icon(icon_name) }}</span>
-    <div>
-      <p class="lk-stats-card-label">{{ label }}</p>
-      <p class="lk-stats-card-value">{{ '{:,}'.format(value) }}</p>
+{% set down_services = services | rejectattr('alive') | list %}
+{% set dead_pids = (services | map(attribute='pids') | map('length') | sum) - (services | map(attribute='alive') | map('length') | sum) %}
+{% set submissions = submitters | sum(attribute='count') %}
+{% set busy_lacus = lacus_status | selectattr('busy') | list %}
+{% set warning = down_services or busy_lacus or not services %}
+
+<div class="lk-mon">
+
+  {# ---- Overall status ---- #}
+  <div class="lk-mon-status {{ 'is-warning' if warning else 'is-ok' }}" role="status">
+    <span class="lk-mon-status-icon">{{ render_icon('exclamation-triangle-fill' if warning else 'check-circle-fill') }}</span>
+    <div class="lk-mon-status-text">
+      {% if not services %}
+      <strong>No service registered.</strong> The background processes are not running.
+      {% elif down_services %}
+      <strong>{{ down_services | length }} service{{ 's' if down_services | length > 1 }} down:</strong> {{ down_services | map(attribute='name') | join(', ') }}.
+      {% elif busy_lacus %}
+      <strong>Lacus is busy:</strong> new captures wait in the queue.
+      {% else %}
+      <strong>Everything is running.</strong> {{ alive_services | length }} services up{% if ongoing_total %}, {{ ongoing_total }} capture{{ 's' if ongoing_total > 1 }} in progress{% endif %}.
+      {% endif %}
+    </div>
+    <div class="lk-mon-status-meta">
+      <time class="lk-mon-mono">{{ now }}</time>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_monitoring') }}">{{ render_icon('arrow-clockwise') }} Refresh</a>
     </div>
   </div>
-  {% endfor %}
-</div>
 
-<section class="lk-stats-section" aria-labelledby="mon-captures">
-  <h2 class="lk-stats-title" id="mon-captures">Ongoing captures
-    <span class="lk-stats-sub">{{ ongoing_total }} being captured, {{ queued_total }} waiting{% if ongoing_total + queued_total > limit %}, first {{ limit }} shown{% endif %}</span></h2>
-  {% if captures %}
-  <div class="table-responsive lk-mon-table">
-    <table class="table table-sm align-middle">
-      <thead><tr><th>State</th><th>URL</th><th>Submitted by</th><th class="text-end">Priority</th><th></th></tr></thead>
-      <tbody>
-      {% for c in captures %}
-      <tr>
-        <td><span class="lk-mon-state{% if c.state == 'Capturing' %} is-active{% endif %}">{{ c.state }}</span></td>
-        <td class="lk-mon-url" title="{{ c.url }}">{{ c.url or c.uuid }}</td>
-        <td>{{ c.user or '—' }} <span class="lk-stats-sub">{{ c.source }}{% if c.authenticated %} · logged in{% endif %}</span></td>
-        <td class="text-end">{{ c.priority if c.priority is not none else '' }}</td>
-        <td class="text-end"><a href="{{ url_for('tree', tree_uuid=c.uuid) }}">Open</a></td>
-      </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+  {# ---- Key figures ---- #}
+  <div class="lk-mon-kpis">
+    {% for label, value, icon_name, tone, hint in [
+         ('Being captured', ongoing_total, 'camera', 'blue', 'in the browser now'),
+         ('Waiting', queued_total, 'hourglass-split', 'amber' if queued_total else 'slate', 'in the capture queue'),
+         ('Recent submissions', submissions, 'send', 'violet', (submitters | length) ~ ' submitter' ~ ('s' if submitters | length != 1 else '')),
+         ('Services', alive_services | length, 'cpu', 'red' if down_services else 'green', (dead_pids ~ ' stale PID' ~ ('s' if dead_pids != 1 else '')) if dead_pids else 'all processes alive')] %}
+    <div class="lk-mon-kpi is-{{ tone }}">
+      <span class="lk-mon-kpi-icon">{{ render_icon(icon_name) }}</span>
+      <p class="lk-mon-kpi-label">{{ label }}</p>
+      <p class="lk-mon-kpi-value">{{ '{:,}'.format(value) }}</p>
+      <p class="lk-mon-kpi-hint">{{ hint }}</p>
+    </div>
+    {% endfor %}
   </div>
-  {% else %}
-  <p class="lk-mon-empty">No capture in progress.</p>
-  {% endif %}
-</section>
 
-<div class="lk-mon-grid">
-<section class="lk-stats-section" aria-labelledby="mon-submitters">
-  <h2 class="lk-stats-title" id="mon-submitters">Recent submissions <span class="lk-stats-sub">per submitter, captures not finished (forgotten 10 min after the last one)</span></h2>
-  {% if submitters %}
-  <table class="table table-sm lk-mon-table">
-    <thead><tr><th>Submitter</th><th>Source</th><th class="text-end">Captures</th></tr></thead>
-    <tbody>
-    {% for s in submitters %}
-    <tr><td>{{ s.user or '—' }}{% if s.authenticated %} <span class="lk-stats-sub">logged in</span>{% endif %}</td>
-        <td>{{ s.source }}</td><td class="text-end">{{ s.count }}</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}<p class="lk-mon-empty">No recent submission.</p>{% endif %}
-</section>
+  {# ---- Ongoing captures ---- #}
+  <section class="lk-mon-panel" aria-labelledby="mon-captures">
+    {{ panel_head('mon-captures', 'camera-reels', 'Ongoing captures',
+                  ongoing_total ~ ' being captured, ' ~ queued_total ~ ' waiting' ~ ((', first ' ~ limit ~ ' shown') if ongoing_total + queued_total > limit else '') ~ '.',
+                  ongoing_total + queued_total) }}
+    {% if captures %}
+    <ul class="lk-mon-captures">
+      {% for c in captures %}
+      <li class="lk-mon-capture">
+        <span class="lk-mon-state {{ 'is-capturing' if c.state == 'Capturing' else 'is-queued' }}">
+          <span class="lk-mon-dot" aria-hidden="true"></span>{{ c.state }}
+        </span>
+        <div class="lk-mon-capture-main">
+          <span class="lk-mon-capture-url" title="{{ c.url }}">{{ c.url or 'No URL (document)' }}</span>
+          <span class="lk-mon-capture-meta">
+            <span class="lk-mon-mono">{{ c.uuid }}</span>
+            <span>{{ render_icon('person') }} {{ c.user or 'unknown' }}</span>
+            <span>{{ render_icon('box-arrow-in-right') }} {{ c.source or '—' }}{% if c.authenticated %} · logged in{% endif %}</span>
+            {% if c.priority is not none %}<span>{{ render_icon('sort-down') }} priority {{ c.priority }}</span>{% endif %}
+          </span>
+        </div>
+        <a class="btn btn-sm btn-outline-primary lk-mon-open" href="{{ url_for('tree', tree_uuid=c.uuid) }}">Open {{ render_icon('arrow-right') }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    {{ empty('cup-hot', 'No capture in progress', 'The queue is empty: a new capture starts right away.') }}
+    {% endif %}
+  </section>
 
-<section class="lk-stats-section" aria-labelledby="mon-services">
-  <h2 class="lk-stats-title" id="mon-services">Services <span class="lk-stats-sub">background processes</span></h2>
-  {% if services %}
-  <table class="table table-sm lk-mon-table">
-    <thead><tr><th>Service</th><th class="text-end">Processes</th><th>PIDs</th></tr></thead>
-    <tbody>
-    {% for s in services %}
-    <tr><td><span class="lk-mon-dot{% if s.alive %} is-up{% endif %}" aria-hidden="true"></span>{{ s.name }}</td>
-        <td class="text-end">{{ s.alive | length }}{% if s.pids | length != s.alive | length %} <span class="lk-stats-sub">({{ s.pids | length - s.alive | length }} dead)</span>{% endif %}</td>
-        <td class="lk-stats-sub">{{ s.pids | join(', ') }}</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}<p class="lk-mon-empty">No service registered.</p>{% endif %}
-</section>
-</div>
+  <div class="lk-mon-grid">
+    {# ---- Recent submissions ---- #}
+    <section class="lk-mon-panel" aria-labelledby="mon-submitters">
+      {{ panel_head('mon-submitters', 'send', 'Recent submissions', 'Per submitter, captures not finished yet. Forgotten 10 min after the last one.', submitters | length) }}
+      {% if submitters %}
+      {% set top = submitters | map(attribute='count') | max %}
+      <ul class="lk-mon-bars">
+        {% for s in submitters %}
+        <li>
+          <div class="lk-mon-bar-label">
+            <span class="lk-mon-mono">{{ s.user or 'unknown' }}</span>
+            <span class="lk-mon-sub">{{ s.source }}{% if s.authenticated %} · logged in{% endif %}</span>
+            <strong>{{ s.count }}</strong>
+          </div>
+          <meter class="lk-mon-bar" min="0" max="{{ top if top > 0 else 1 }}" value="{{ s.count if s.count > 0 else 0 }}">{{ s.count }}</meter>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      {{ empty('inbox', 'No recent submission', 'Nobody submitted a capture in the last minutes.') }}
+      {% endif %}
+    </section>
 
-<div class="lk-mon-grid">
-<section class="lk-stats-section" aria-labelledby="mon-visitors">
-  <h2 class="lk-stats-title" id="mon-visitors">Web requests today <span class="lk-stats-sub">per IP, top 50 ({{ visitors_entries }} IP + user agent pairs, reset every day)</span></h2>
-  {% if visitors %}
-  <table class="table table-sm lk-mon-table">
-    <thead><tr><th>IP</th><th class="text-end">User agents</th><th class="text-end">Requests</th></tr></thead>
-    <tbody>
-    {% for v in visitors %}
-    <tr><td>{{ v.ip }}</td><td class="text-end">{{ v.user_agents }}</td><td class="text-end">{{ v.hits }}</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}<p class="lk-mon-empty">No request yet today.</p>{% endif %}
-</section>
+    {# ---- Services ---- #}
+    <section class="lk-mon-panel" aria-labelledby="mon-services">
+      {{ panel_head('mon-services', 'cpu', 'Services', 'Background processes of Lookyloo.', services | length) }}
+      {% if services %}
+      <ul class="lk-mon-services">
+        {% for s in services %}
+        <li class="{{ 'is-up' if s.alive else 'is-down' }}">
+          <span class="lk-mon-dot" aria-hidden="true"></span>
+          <span class="lk-mon-service-name">{{ s.name }}</span>
+          <span class="lk-mon-sub">{{ s.alive | length }} process{{ 'es' if s.alive | length != 1 }}</span>
+          <span class="lk-mon-pids">
+            {% for pid in s.pids %}<span class="lk-mon-pid{% if pid not in s.alive %} is-dead{% endif %}" title="{{ 'Running' if pid in s.alive else 'Stale: no such process' }}">{{ pid }}</span>{% endfor %}
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      {{ empty('power', 'No service registered', 'Start them with poetry run start.') }}
+      {% endif %}
+    </section>
+  </div>
 
-<section class="lk-stats-section" aria-labelledby="mon-cache">
-  <h2 class="lk-stats-title" id="mon-cache">Tree cache <span class="lk-stats-sub">per process</span></h2>
-  {% if tree_cache %}
-  <table class="table table-sm lk-mon-table">
-    <tbody>
-    {% for name, status in tree_cache %}
-    <tr><td>{{ name }}</td><td class="lk-stats-sub">{{ status }}</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}<p class="lk-mon-empty">No tree cache.</p>{% endif %}
-  {% for l in lacus_status %}
-  <h2 class="lk-stats-title">Lacus {{ l.name }} {% if l.busy %}<span class="lk-mon-state is-active">busy</span>{% endif %}</h2>
-  <p>{{ l.ongoing }} ongoing, {{ l.enqueued }} enqueued, at most {{ l.max }} at the same time.</p>
-  {% endfor %}
-</section>
+  <div class="lk-mon-grid">
+    {# ---- Web requests per IP ---- #}
+    <section class="lk-mon-panel" aria-labelledby="mon-visitors">
+      {{ panel_head('mon-visitors', 'globe2', 'Web requests today', 'Per IP, top 50. ' ~ visitors_entries ~ ' IP + user agent pairs, reset every day.', visitors | length) }}
+      {% if visitors %}
+      <table class="table table-sm lk-mon-table">
+        <thead><tr><th>IP</th><th class="text-end">User agents</th><th class="text-end">Requests</th></tr></thead>
+        <tbody>
+        {% for v in visitors %}
+        <tr><td class="lk-mon-mono">{{ v.ip }}</td><td class="text-end">{{ v.user_agents }}</td><td class="text-end"><strong>{{ '{:,}'.format(v.hits) }}</strong></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      {{ empty('globe2', 'No request yet today', 'The counter starts again every day.') }}
+      {% endif %}
+    </section>
+
+    {# ---- Tree cache + Lacus ---- #}
+    <section class="lk-mon-panel" aria-labelledby="mon-cache">
+      {{ panel_head('mon-cache', 'diagram-3', 'Tree cache', 'Trees kept in memory, per process.', tree_cache | length) }}
+      {% if tree_cache %}
+      <ul class="lk-mon-cache">
+        {% for name, status in tree_cache %}
+        {% set parts = name.split('|', 1) %}
+        <li><span class="lk-mon-mono">{{ parts[0] }}</span> <span class="lk-mon-sub">{{ parts[1] if parts | length > 1 }}</span>
+            <code class="lk-mon-cache-status">{{ status }}</code></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      {{ empty('diagram-3', 'No tree cache', 'No process has loaded a tree yet.') }}
+      {% endif %}
+      {% for l in lacus_status %}
+      <div class="lk-mon-lacus">
+        <span class="lk-mon-state {{ 'is-busy' if l.busy else 'is-capturing' }}"><span class="lk-mon-dot" aria-hidden="true"></span>Lacus {{ l.name }}: {{ 'busy' if l.busy else 'available' }}</span>
+        <span class="lk-mon-sub">{{ l.ongoing }} ongoing · {{ l.enqueued }} enqueued · max {{ l.max }} at once</span>
+      </div>
+      {% endfor %}
+    </section>
+  </div>
 </div>
 {% endblock %}
 
 {% block styles %}
 {{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/stats.css') }}"
-      {{get_sri('static', 'css/stats.css')}} crossorigin="anonymous">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/monitoring.css') }}"
       {{get_sri('static', 'css/monitoring.css')}} crossorigin="anonymous">
 {% endblock %}

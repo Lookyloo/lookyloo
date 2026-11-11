@@ -19,7 +19,7 @@
     "css/errors.css": "mYxQYze+h/SiFgIT4jwMYzwWvT294XBV2+aJCO2DZzvfGjZ7ultEa5B6sKsBAUuK9edkths02efrt49+vpMy5A==",
     "css/generic.css": "hH3DlQc2Ge5JvdUzUcgTczfFTSHaXJrXU+V/OctfG7etWnHKzZ7KD4U1e4ymw5XrMO1RO+kFl+LpXPcXFld8cg==",
     "css/home.css": "8MtT51Xdznmo3JLVgCA9OC/X1JA7Ueep8Ok+Musxeg6qxA0i7fM7uxeAjhOrsRhyr96CsmzCW8vfklLZ0/eHKQ==",
-    "css/monitoring.css": "Pl6KYJkSyBVajL27HrZPpmuDUXXnfqq3mKACcLFPQcFriCOD6N8EBAJSftMwrrUcVzqVa0w5hndkZJ1mO/fG4Q==",
+    "css/monitoring.css": "PAiAP1j4K1oP4XqhpwSdWwz/NS4FUBb+yBgpIUaBvFmwjH/LGAXVmwb06VaqT6MWu0IlgP9yBphzHFe6f2Ghjg==",
     "css/search.css": "eOnEygfuVhGeFhTauVkLe89nhsB6N2JG0j392m0OHyJDD2aifopmguzGZ/E8tNnmdj28xf5RmcQV++Feyzb/hg==",
     "css/stats.css": "MsEA7gOOHGAVnlD1pQ6rtzpQWU4diz/RPwZjO5d5Rr2ZyJaR+uCJhRwBG5d94DK1GHlco5NG3BTQBNRclFO0ng==",
     "css/tree.css": "HzuC9atMENARzyzNSTINOe/EP1il+NbnH5nu8Q8EcKVyEhYhC+40i/jJ4B++JspOvQ8OW3e147Z9Uw+CMV21wA==",
