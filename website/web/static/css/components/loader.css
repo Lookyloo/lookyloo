@@ -101,6 +101,33 @@
   }
 }
 
+/* Waiting page for an ongoing capture (tree/tree_wait.html) */
+.lk-wait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--lk-space-3);
+  margin: var(--lk-space-6) auto;
+  max-width: 640px;
+  padding-block: var(--lk-space-7);
+}
+
+.lk-wait-title {
+  font-size: 1.25rem;
+  margin: var(--lk-space-3) 0 0;
+}
+
+.lk-wait-text,
+.lk-wait-link {
+  color: var(--lk-color-muted);
+  margin: 0;
+}
+
+.lk-wait-countdown {
+  font-variant-numeric: tabular-nums;
+}
+
 /* DataTables "processing" indicator: the eyes (set in js/render_tables.js)
    replace the default text and animated dots */
 div.dt-processing {

@@ -78,8 +78,8 @@ function lkCapturePreview(capture) {
     button.type = 'button';
     button.className = 'lk-thumb is-blurred';
     button.setAttribute('aria-pressed', 'false');
-    button.setAttribute('aria-label', 'Show the screenshot');
-    button.title = 'Show the screenshot';
+    button.setAttribute('aria-label', 'Click to preview the screenshot (still slightly blurred)');
+    button.title = 'Click to preview the screenshot (still slightly blurred)';
     const image = document.createElement('img');
     image.alt = '';
     image.loading = 'lazy';
@@ -90,10 +90,16 @@ function lkCapturePreview(capture) {
     image.addEventListener('error', () => button.replaceWith(lkIdenticonPreview(capture)), { once: true });
     image.src = capture.thumbnail.replace(LK_PLACEHOLDER_UUID, uuid);
     button.appendChild(image);
+    // A click never shows the screenshot in the clear: it goes from strongly
+    // blurred to lightly blurred (.is-peek: the layout and the colours, not the
+    // details of an image), another click blurs it strongly again. The clear
+    // screenshot is in the capture itself.
     button.addEventListener('click', () => {
         const blurred = button.classList.toggle('is-blurred');
+        button.classList.toggle('is-peek', !blurred);
         button.setAttribute('aria-pressed', String(!blurred));
-        const label = blurred ? 'Show the screenshot' : 'Blur the screenshot';
+        const label = blurred ? 'Click to preview the screenshot (still slightly blurred)'
+            : 'Still slightly blurred on purpose: a captured page can be shocking. To see it in full, open the capture. Click here to blur it again.';
         button.setAttribute('aria-label', label);
         button.title = label;
     });

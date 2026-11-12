@@ -1,0 +1,103 @@
+{#
+  Building blocks of the pivot pages (templates/investigate/*): a hostname, an
+  IP, a cookie, a resource... and the captures it was seen in. Each page is
+  rendered either as a standalone page (from_popup=True: layouts/page.html, site
+  menu on top, breadcrumb Home / Search / value) or as an HTML fragment inside the
+  capture tree modals. CSS: css/components/pivot.css. Doc: doc/ui/pivot-pages.md
+
+  pivot_header(kind, value, description=None, icon_name=None, image_src=None,
+               share_url=None, from_popup=False, copy=True)
+    kind         what the value is ("Hostname", "Cookie name"...)
+    value        the value itself (escaped, shown in monospace, copy button)
+    description  one sentence about what the page shows
+    icon_name    Bootstrap Icons name, or image_src (URL / data: URI) for a favicon
+    share_url    standalone page of this pivot (from_popup=True); shown as
+                 "Open as a page" when we are in a modal
+    from_popup   standalone page: adds the breadcrumb
+    zoom         image_src can be clicked to see it in large (favicon)
+    {% call %}   extra actions (links, buttons) on the right
+
+  captures_section(title='Seen in these captures')
+    Card around the captures table; the table itself is passed with {% call %}
+    so its id / data-* attributes (read by js/render_tables.js) stay explicit.
+    When the table has no row, js/components/pivot.js shows a message with
+    links to Search and to the list of the captures.
+
+  pivot_section(title, icon_name='info-circle')
+    Card with a title, content passed with {% call %}.
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% macro pivot_header(kind, value, description=None, icon_name=None, image_src=None,
+                      share_url=None, from_popup=False, copy=True, zoom=False) -%}
+{% if from_popup %}
+<nav class="lk-breadcrumb lk-pivot-breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    <li><a href="{{ url_for('landing_page') }}">{{ render_icon('house') }} Home</a></li>
+    <li><a href="{{ url_for('search') }}">Search</a></li>
+    <li><span>{{ kind }}</span></li>
+    {# The value can be very long (URL, SHA512): shortened here, in full in the card #}
+    <li><span aria-current="page" title="{{ value }}">{{ value if value|length <= 32 else value[:16] ~ '…' }}</span></li>
+  </ol>
+</nav>
+{% endif %}
+<header class="lk-pivot-head">
+  <span class="lk-pivot-icon">
+    {% if image_src and zoom %}
+    {# Click: the image in large (js/components/pivot.js) #}
+    <button type="button" class="lk-pivot-zoom" data-lk-zoom aria-label="Show the image in large" title="Show in large">
+      <img src="{{ image_src }}" alt="" width="32" height="32"></button>
+    {% elif image_src %}<img src="{{ image_src }}" alt="" width="32" height="32">
+    {% elif icon_name %}{{ render_icon(icon_name) }}{% endif %}
+  </span>
+  <div class="lk-pivot-text">
+    <p class="lk-pivot-kind">{{ kind }}</p>
+    <h1 class="lk-pivot-value">
+      <span>{{ value }}</span>
+      {% if copy %}
+      <button type="button" class="lk-copy js-copy" data-bs-toggle="tooltip" data-copy="{{ value }}"
+              title="Copy" data-bs-original-title="Copy" aria-label="Copy the value">{{ render_icon('copy') }}</button>
+      {% endif %}
+    </h1>
+    {% if description %}<p class="lk-pivot-description">{{ description }}</p>{% endif %}
+  </div>
+  {% if caller or (share_url and not from_popup) %}
+  <div class="lk-pivot-actions">
+    {% if caller %}{{ caller() }}{% endif %}
+    {% if share_url and not from_popup %}
+    <a class="btn btn-outline-primary btn-sm" href="{{ share_url }}" target="_blank" rel="noopener">
+      {{ render_icon('box-arrow-up-right') }} Open as a page</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</header>
+{%- endmacro %}
+
+{% macro captures_section(title='Seen in these captures') -%}
+{# Same block as the list of the captures (home/index.html): the title, then
+   the .lk-capture-list card around the table, no extra card #}
+<section class="lk-pivot-captures">
+  <h2 class="lk-pivot-captures-title">{{ render_icon('collection') }} {{ title }}
+    {# Total number of captures, filled by js/components/pivot.js #}
+    <span class="lk-pivot-count" data-lk-count hidden></span></h2>
+  {# Rows built like the list of the captures (js/components/capture_list.js, lkPivotColumns) #}
+  <div class="lk-capture-list"
+       data-lk-icons="{{ url_for('bootstrap.static', filename='icons/bootstrap-icons.svg') }}"
+       data-lk-thumbnail="{{ url_for('thumbnail', tree_uuid='00000000-0000-0000-0000-000000000000', width=256) }}">
+    {{ caller() }}
+  </div>
+  {# Shown by js/components/pivot.js when the table comes back empty #}
+  <div class="lk-pivot-empty lk-card" hidden>
+    <p class="lk-pivot-empty-title">{{ render_icon('binoculars') }} No capture found with this value on this instance.</p>
+    <p>Try another value in <a href="{{ url_for('search') }}">Search</a>, or go back to the
+      <a href="{{ url_for('index') }}">list of the captures</a>.</p>
+  </div>
+</section>
+{%- endmacro %}
+
+{% macro pivot_section(title, icon_name='info-circle') -%}
+<section class="lk-pivot-section">
+  <h2 class="lk-pivot-section-title">{{ render_icon(icon_name) }} {{ title }}</h2>
+  {{ caller() }}
+</section>
+{%- endmacro %}
