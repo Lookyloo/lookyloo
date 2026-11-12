@@ -10,11 +10,11 @@
 {% endblock %}
 
 {% block content %}
-{% set alive_services = services | selectattr('alive') | list %}
-{% set down_services = services | rejectattr('alive') | list %}
-{% set dead_pids = (services | map(attribute='pids') | map('length') | sum) - (services | map(attribute='alive') | map('length') | sum) %}
+{% set alive_services = services | selectattr('number') | list %}
+{% set down_services = services | rejectattr('number') | list %}
+{% set dead_pids = (services | map(attribute='dead') | map('length') | sum) %}
 {% set submissions = submitters | sum(attribute='count') %}
-{% set busy_lacus = lacus_status | selectattr('busy') | list %}
+{% set busy_lacus = lacus_status | selectattr('is_busy') | list %}
 {% set warning = down_services or busy_lacus or not services %}
 
 <div class="lk-mon">

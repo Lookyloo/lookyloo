@@ -67,7 +67,8 @@
       <span class="lk-mon-service-name">{{ s.name }}</span>
       <span class="lk-mon-sub">{{ s.alive | length }} process{{ 'es' if s.alive | length != 1 }}</span>
       <span class="lk-mon-pids">
-        {% for pid in s.pids %}<span class="lk-mon-pid{% if pid not in s.alive %} is-dead{% endif %}" title="{{ 'Running' if pid in s.alive else 'Stale: no such process' }}">{{ pid }}</span>{% endfor %}
+        {% for pid in s.alive %}<span class="lk-mon-pid" title="Running">{{ pid }}</span>{% endfor %}
+        {% for pid in s.dead %}<span class="lk-mon-pid is-dead" title="Stale: no such process">{{ pid }}</span>{% endfor %}
       </span>
     </li>
     {% endfor %}
@@ -83,7 +84,7 @@
     <thead><tr><th>IP</th><th class="text-end">User agents</th><th class="text-end">Requests</th></tr></thead>
     <tbody>
     {% for v in visitors %}
-    <tr><td class="lk-mon-mono">{{ v.ip }}</td><td class="text-end">{{ v.user_agents }}</td><td class="text-end"><strong>{{ '{:,}'.format(v.hits) }}</strong></td></tr>
+    <tr><td class="lk-mon-mono">{{ v.ip }}</td>{% for ua in v.user_agents %}<td class="text-end">{{ ua }}</td>{%endfor%}<td class="text-end"><strong>{{ '{:,}'.format(v.hits) }}</strong></td></tr>
     {% endfor %}
     </tbody>
   </table>
@@ -105,8 +106,8 @@
   {% endif %}
   {% for l in lacus_status %}
   <div class="lk-mon-lacus">
-    <span class="lk-mon-state {{ 'is-busy' if l.busy else 'is-capturing' }}"><span class="lk-mon-dot" aria-hidden="true"></span>Lacus {{ l.name }}: {{ 'busy' if l.busy else 'available' }}</span>
-    <span class="lk-mon-sub">{{ l.ongoing }} ongoing · {{ l.enqueued }} enqueued · max {{ l.max }} at once</span>
+    <span class="lk-mon-state {{ 'is-busy' if l.is_busy else 'is-capturing' }}"><span class="lk-mon-dot" aria-hidden="true"></span>Lacus {{ l.name }}: {{ 'busy' if l.is_busy else 'available' }}</span>
+    <span class="lk-mon-sub">{{ l.ongoing_captures }} ongoing · {{ l.enqueued_captures }} enqueued · max {{ l.max_concurrent_captures }} at once</span>
   </div>
   {% endfor %}
 {% endif %}
