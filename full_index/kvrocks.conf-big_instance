@@ -764,7 +764,7 @@ skip-block-cache-deallocation-on-close yes
 # Specify the capacity of column family block cache. A larger block cache
 # may make requests faster while more keys would be cached. Max Size is 400*1024.
 # Default: 4096MB
-rocksdb.block_cache_size 24576
+rocksdb.block_cache_size 49152
 
 # Specify the type of cache used in the block cache.
 # Accept value: "lru", "hcc"
@@ -799,13 +799,13 @@ rocksdb.max_open_files -1
 # See db_write_buffer_size for sharing memory across column families.
 
 # default is 64MB
-rocksdb.write_buffer_size 512
+rocksdb.write_buffer_size 256
 
 # Target file size for compaction, target file size for Level N can be calculated
 # by target_file_size_base * (target_file_size_multiplier ^ (L-1))
 #
 # Default: 128MB
-rocksdb.target_file_size_base 1024
+rocksdb.target_file_size_base 256
 
 # The maximum number of write buffers that are built up in memory.
 # The default and the minimum number is 2, so that when 1 write buffer
@@ -814,13 +814,13 @@ rocksdb.target_file_size_base 1024
 # If max_write_buffer_number > 3, writing will be slowed down to
 # options.delayed_write_rate if we are writing to the last write buffer
 # allowed.
-rocksdb.max_write_buffer_number 6
+rocksdb.max_write_buffer_number 5
 
 # The minimum number of write buffers that will be merged together
 # during compaction.
 #
 # Default: 1
-rocksdb.min_write_buffer_number_to_merge 4
+rocksdb.min_write_buffer_number_to_merge 2
 
 
 # Maximum number of concurrent background jobs (compactions and flushes).
@@ -863,7 +863,7 @@ rocksdb.wal_compression no
 # rocksdb.max_write_buffer_number.
 #
 # default is 512MB
-rocksdb.max_total_wal_size 2048
+rocksdb.max_total_wal_size 512
 
 # Whether to print malloc stats together with rocksdb.stats when printing to LOG.
 #
@@ -992,7 +992,7 @@ rocksdb.level0_stop_writes_trigger 40
 # Number of files to trigger level-0 compaction.
 #
 # Default: 4
-rocksdb.level0_file_num_compaction_trigger 10
+rocksdb.level0_file_num_compaction_trigger 6
 
 # if not zero, dump rocksdb.stats to LOG every stats_dump_period_sec
 #
@@ -1062,7 +1062,7 @@ rocksdb.level_compaction_dynamic_level_bytes yes
 # The total file size of level-1 sst.
 #
 # Default: 268435456 bytes
-rocksdb.max_bytes_for_level_base 536870912
+rocksdb.max_bytes_for_level_base 2147483648
 
 # Multiplication factor for the total file size of L(n+1) layers.
 # This option is a double type number in RocksDB, but kvrocks is
@@ -1118,7 +1118,7 @@ rocksdb.write_options.low_pri no
 # in concurrent writes if keys in one writebatch are sequential.
 #
 # Default: no
-rocksdb.write_options.memtable_insert_hint_per_batch no
+rocksdb.write_options.memtable_insert_hint_per_batch yes
 
 
 # Support RocksDB auto-tune rate limiter for the background IO
@@ -1138,7 +1138,7 @@ rocksdb.partition_filters yes
 # see https://github.com/facebook/rocksdb/wiki/IO#avoid-blocking-io
 #
 # Default: yes
-# rocksdb.avoid_unnecessary_blocking_io yes
+rocksdb.avoid_unnecessary_blocking_io yes
 
 # Specifies the maximum size in bytes for a write batch in RocksDB.
 # If set to 0, there is no size limit for write batches.
