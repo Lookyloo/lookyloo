@@ -379,7 +379,7 @@ max-io-mb 0
 
 # Whether to cache blob files within the block cache.
 # Default: no
-enable-blob-cache no
+enable-blob-cache yes
 
 # The maximum allowed space (in GB) that should be used by RocksDB.
 # If the total size of the SST files exceeds max_allowed_space, writes to RocksDB will fail.
@@ -805,7 +805,7 @@ rocksdb.write_buffer_size 256
 # by target_file_size_base * (target_file_size_multiplier ^ (L-1))
 #
 # Default: 128MB
-rocksdb.target_file_size_base 256
+rocksdb.target_file_size_base 128
 
 # The maximum number of write buffers that are built up in memory.
 # The default and the minimum number is 2, so that when 1 write buffer
@@ -1015,7 +1015,7 @@ rocksdb.disable_auto_compactions no
 # items will take effect.
 #
 # Default: no
-rocksdb.enable_blob_files no
+rocksdb.enable_blob_files yes
 
 # The size of the smallest value to be stored separately in a blob file. Values
 # which have an uncompressed size smaller than this threshold are stored alongside
@@ -1062,7 +1062,7 @@ rocksdb.level_compaction_dynamic_level_bytes yes
 # The total file size of level-1 sst.
 #
 # Default: 268435456 bytes
-rocksdb.max_bytes_for_level_base 2147483648
+rocksdb.max_bytes_for_level_base 1342177280
 
 # Multiplication factor for the total file size of L(n+1) layers.
 # This option is a double type number in RocksDB, but kvrocks is
