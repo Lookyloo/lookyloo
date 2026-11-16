@@ -6,7 +6,11 @@ menus on the right). Both stay at the top while the tree scrolls.
 
 ## Capture bar (`tree/capture_bar.html`)
 
-Included in the `site_header` block of `tree/tree.html`.
+Included in the `site_header` block of `tree/tree.html`. The top block (site
+header + capture bar) is `position: fixed`, not sticky: a zoomed tree is wider
+than the window and the page scrolls sideways, a sticky bar would scroll away
+to the left. `js/capture_page.js` keeps `--lk-capture-top-height` equal to its
+height; the page starts under it.
 
 - **What was captured**: the screenshot thumbnail (click: screenshot modal),
   the favicon and the title of the page, the URL with a copy button, the time,
@@ -57,11 +61,15 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
 ## Zoom and drag
 
 - **Zoom** (`js/tree.js`, `setupZoom`): the `−` / `100 %` / `+` buttons at
-  the bottom left (`#tree-zoom`), or Ctrl + wheel over the tree. From 20 % to
-  300 %; the point under the mouse (or the centre of the window for the
-  buttons) stays in place; `100 %` resets. The SVG keeps the coordinates of the
-  layout in its `viewBox` and is drawn at its size times the zoom, so nodes,
-  links, tooltips and the legend filter are not affected.
+  the top right, just under the capture bar (`#tree-zoom`), or Ctrl + wheel
+  over the tree. Limited to 25 %–200 % (below, the cards are unreadable; above,
+  one card no longer fits the window); `−` / `+` are disabled at the limits.
+  The point under the mouse (or the centre of the window for the buttons) stays
+  in place; `100 %` resets. The SVG keeps the coordinates of the layout in its
+  `viewBox` and is drawn at its size times the zoom, so nodes, links, tooltips
+  and the legend filter are not affected.
+- **Center** (`#tree-center`, `centerOnRoot`): brings the root of the tree
+  back to the left of the window, vertically centred under the capture bar.
 - **Drag** (`js/capture_page.js`): press anywhere on the tree and move to move
   around it (the page scrolls). A press without movement is still a normal
   click; after a drag the click is swallowed. Links, buttons and the legend are

@@ -1,6 +1,7 @@
 "use strict";
 // Capture page (tree/tree.html). Doc: doc/ui/tree.md
-// - The top block (site header, capture bar) stays at the top of the page.
+// - The top block (site header, capture bar) stays at the top of the window,
+//   even when the tree is scrolled sideways.
 // - The capture bar can be folded to one line; the choice is remembered.
 // - The tree can be dragged with the mouse to move around it.
 
@@ -12,6 +13,13 @@
         return;
     }
     const KEY = 'lk-capture-bar-folded';
+
+    // The top block is fixed (css/components/capture-bar.css): the page starts under it
+    const measure = () => {
+        document.documentElement.style.setProperty('--lk-capture-top-height', `${top.offsetHeight}px`);
+    };
+    new ResizeObserver(measure).observe(top);
+    measure();
 
     const setFolded = (folded) => {
         bar.classList.toggle('is-folded', folded);

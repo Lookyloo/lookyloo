@@ -152,11 +152,13 @@
 <div id="tree_svg" class="container-fluid">
 
 
-{# Zoom of the tree (js/tree.js, setupZoom); Ctrl + wheel zooms too #}
+{# Tree controls, top right under the capture bar (js/tree.js, setupZoom):
+   zoom (Ctrl + wheel zooms too) and back to the root of the tree #}
 <div class="lk-tree-zoom" id="tree-zoom" role="toolbar" aria-label="Zoom of the tree">
   <button type="button" id="tree-zoom-out" title="Zoom out" aria-label="Zoom out">{{ render_icon('zoom-out') }}</button>
   <button type="button" id="tree-zoom-reset" title="Reset the zoom" aria-label="Reset the zoom">100 %</button>
   <button type="button" id="tree-zoom-in" title="Zoom in" aria-label="Zoom in">{{ render_icon('zoom-in') }}</button>
+  <button type="button" id="tree-center" title="Back to the root of the tree" aria-label="Back to the root of the tree">{{ render_icon('bullseye') }}<span>Center</span></button>
 </div>
 
 {# Legend & icon filter (js/tree.js, setupLegendFilter) #}

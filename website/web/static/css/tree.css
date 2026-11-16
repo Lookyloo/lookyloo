@@ -200,8 +200,8 @@ g.node.is-filter-match .node_data > rect { stroke: var(--lk-color-accent); strok
 
 .lk-tree-zoom {
   position: fixed;
-  left: var(--lk-space-3);
-  bottom: var(--lk-space-3);
+  top: calc(var(--lk-capture-top-height, 160px) + var(--lk-space-3));
+  right: var(--lk-space-3);
   z-index: 1020;
   display: inline-flex;
   border: 1px solid var(--lk-color-rule);
@@ -223,9 +223,11 @@ g.node.is-filter-match .node_data > rect { stroke: var(--lk-color-accent); strok
   font-family: var(--lk-font-mono);
   font-size: var(--lk-font-size-xs);
 }
+.lk-tree-zoom #tree-center { gap: var(--lk-space-1); font-family: inherit; }
 .lk-tree-zoom button + button { border-left: 1px solid var(--lk-color-rule); }
 .lk-tree-zoom button:hover,
 .lk-tree-zoom button:focus-visible { background: var(--lk-color-accent-soft); }
+.lk-tree-zoom button:disabled { color: var(--lk-color-muted); opacity: 0.5; background: none; }
 
 #tree_svg { cursor: grab; }
 #tree_svg.is-dragging { cursor: grabbing; user-select: none; }

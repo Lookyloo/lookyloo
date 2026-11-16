@@ -32,8 +32,9 @@ let main_svg = d3.select("#tree_svg").append("svg")
 
 // Zoom of the tree (buttons of #tree-zoom, Ctrl + wheel): the SVG is drawn at its
 // size times tree_zoom, its viewBox keeps the coordinates of the layout (svg_size).
-const ZOOM_MIN = 0.2;
-const ZOOM_MAX = 3;
+// Limits: below, the cards are unreadable; above, a card no longer fits the window
+const ZOOM_MIN = 0.25;
+const ZOOM_MAX = 2;
 let tree_zoom = 1;
 let svg_size = {width: min_width + margin.right + margin.left, height: min_height + margin.top + margin.bottom};
 
@@ -56,14 +57,37 @@ function setZoom(zoom, client_x=null, client_y=null) {
     tree_zoom = zoom;
     applyZoom();
     window.scrollTo({left: window.scrollX + point_x * (zoom - old_zoom), top: window.scrollY + point_y * (zoom - old_zoom), behavior: 'instant'});
+    updateZoomButtons();
+}
+
+// Bring the root of the tree to the left of the window, vertically centred
+// under the capture bar (after a drag or a zoom that went far from it)
+function centerOnRoot() {
+    const root_node = node_container.select('g.node').node();
+    if (!root_node) return;
+    const box = root_node.getBoundingClientRect();
+    const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-capture-top-height')) || 0;
+    window.scrollTo({
+        left: window.scrollX + box.left - 30,
+        top: window.scrollY + box.top + box.height / 2 - (top + window.innerHeight) / 2,
+        behavior: 'instant'});
+}
+
+// Show the zoom, and disable - / + at the limits
+function updateZoomButtons() {
     const reset = document.getElementById('tree-zoom-reset');
-    if (reset) reset.textContent = `${Math.round(zoom * 100)} %`;
+    if (reset) reset.textContent = `${Math.round(tree_zoom * 100)} %`;
+    const zoom_out = document.getElementById('tree-zoom-out');
+    if (zoom_out) zoom_out.disabled = tree_zoom <= ZOOM_MIN;
+    const zoom_in = document.getElementById('tree-zoom-in');
+    if (zoom_in) zoom_in.disabled = tree_zoom >= ZOOM_MAX;
 }
 
 function setupZoom() {
     document.getElementById('tree-zoom-in')?.addEventListener('click', () => setZoom(tree_zoom * 1.2));
     document.getElementById('tree-zoom-out')?.addEventListener('click', () => setZoom(tree_zoom / 1.2));
     document.getElementById('tree-zoom-reset')?.addEventListener('click', () => setZoom(1));
+    document.getElementById('tree-center')?.addEventListener('click', centerOnRoot);
     // Ctrl + wheel over the tree: zoom the tree, not the page
     document.getElementById('tree_svg').addEventListener('wheel', (event) => {
         if (!event.ctrlKey) return;

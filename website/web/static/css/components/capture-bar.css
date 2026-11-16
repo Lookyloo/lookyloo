@@ -6,12 +6,18 @@
 
 body.lk-capture-page { background: var(--lk-color-page); }
 
-/* Site header + capture bar: stay visible while the page scrolls */
+/* Site header + capture bar: stay visible while the page scrolls, also
+   sideways (a zoomed tree is wider than the window: sticky would let the bar
+   scroll away to the left). js/capture_page.js keeps --lk-capture-top-height
+   equal to its height, the page starts under it. */
 .lk-capture-top {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1030;
 }
+body.lk-capture-page { padding-top: var(--lk-capture-top-height, 160px); }
 body.lk-capture-page .lk-header { position: static; }
 
 /* ---------- Capture bar ---------- */
