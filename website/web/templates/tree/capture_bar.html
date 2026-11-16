@@ -66,8 +66,8 @@
         <button class="btn btn-sm lk-tool-btn dropdown-toggle" type="button" id="capture-menu-btn"
                 data-bs-toggle="dropdown" aria-expanded="false">{{ render_icon('camera') }}<span>Capture</span></button>
         <ul class="dropdown-menu lk-tool-menu" aria-labelledby="capture-menu-btn">
-          {{ menu_item('detailsModal', 'Capture details', 'info-circle', title='Details about the capture configuration') }}
-          {{ menu_item('statsModal', 'Statistics', 'bar-chart', url_for('stats', tree_uuid=tree_uuid, seed=seed), 'The capture in numbers') }}
+          {# Details and statistics in one panel (the statistics are a section of it) #}
+          {{ menu_item('detailsModal', 'Details & statistics', 'info-circle', title='How the capture was made, and the capture in numbers') }}
           {{ menu_item('storageStateModal', 'Storage state', 'database', url_for('storage_state', tree_uuid=tree_uuid, seed=seed), 'The storage state at the end of the capture') }}
           {{ menu_item('consoleMessagesModal', 'Console messages', 'terminal', url_for('console_messages', tree_uuid=tree_uuid, seed=seed), 'The messages in the debug console during the capture') }}
           {% if has_downloads %}

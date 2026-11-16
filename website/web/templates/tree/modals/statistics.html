@@ -22,10 +22,14 @@
    'description': 'Size of all the responses'},
 ] %}
 
+{# embedded=1: only the tiles, as the "In numbers" section of Capture details (tree/tree.html) #}
+{% set embedded = request.args.get('embedded') %}
 <div class="lk-panel">
+  {% if not embedded %}
   {{ panel_header('Capture', 'The capture in numbers',
                   'Hosts, URLs, cookies, depth of the tree, load times and size of the responses.',
                   icon_name='bar-chart') }}
+  {% endif %}
   <vt-stats class="lk-vitrine lk-panel-stats" trend="false" changes="false"
             label="Statistics of the capture">{{ figures | tojson }}</vt-stats>
   <noscript>

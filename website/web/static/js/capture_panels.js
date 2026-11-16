@@ -305,9 +305,40 @@ function copyOnDoubleClick(doc = document) {
 window.copyOnDoubleClick = copyOnDoubleClick;   // detached windows (js/side_panel.js)
 copyOnDoubleClick(document);
 
+// ---- Parts of a panel loaded from another URL (the statistics in Capture details) ----
+
+const setupRemoteParts = (root) => {
+    root.querySelectorAll('[data-lk-remote-part]:not([data-lk-ready])').forEach(part => {
+        part.dataset.lkReady = '';
+        let loaded = false;
+        const load = async () => {
+            if (loaded) return;
+            loaded = true;
+            try {
+                const response = await fetch(part.dataset.lkRemotePart);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                // HTML rendered (and escaped) by Flask, like the panels themselves
+                part.innerHTML = await response.text();
+                setupCapturePanels(part);
+            } catch (error) {
+                part.textContent = `Could not be loaded (${error.message}).`;
+                loaded = false;
+            }
+        };
+        // In a panel written in the page: when it is shown (show.bs.modal, js/side_panel.js)
+        const modal = part.closest('.modal');
+        if (modal && !part.closest('.lk-side-panel-content')) {
+            modal.addEventListener('show.bs.modal', load);
+        } else {
+            load();
+        }
+    });
+};
+
 // ---- Entry point ----
 
 function setupCapturePanels(root = document) {
+    setupRemoteParts(root);
     setupTables(root);
     setupLogs(root);
     setupMispExport(root);
