@@ -234,13 +234,12 @@
         {% endcall %}
         {# Statistics of the capture (tree/modals/statistics.html, embedded): loaded the first
            time the panel is shown (js/capture_panels.js, setupRemoteParts) #}
-        {# No card around it: the tiles have their own frame #}
-        <section class="lk-panel-numbers" aria-labelledby="details-numbers-title">
-          <h2 class="lk-pivot-section-title" id="details-numbers-title">{{ render_icon('bar-chart') }} In numbers</h2>
-          <div data-lk-remote-part="{{ url_for('stats', tree_uuid=tree_uuid, seed=seed, embedded=1) }}">
-            <div class="lk-side-panel-loading">{{ loader('Loading the statistics', size='md', show_label=True) }}</div>
-          </div>
-        </section>
+        {# A card like Page and Browser (the tiles have no frame of their own: capture-panels.css) #}
+        {% call panel_section('In numbers', icon_name='bar-chart') %}
+        <div data-lk-remote-part="{{ url_for('stats', tree_uuid=tree_uuid, seed=seed, embedded=1) }}">
+          <div class="lk-side-panel-loading">{{ loader('Loading the statistics', size='md', show_label=True) }}</div>
+        </div>
+        {% endcall %}
         {% call panel_section('Browser', icon_name='browser-chrome') %}
         <dl class="lk-panel-facts">
           <dt>User agent</dt>
