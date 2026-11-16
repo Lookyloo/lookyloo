@@ -135,18 +135,21 @@ try {
 } catch (e) { /* storage unavailable: default */ }
 
 function setBackground(name) {
+    if (!(name in BACKGROUNDS)) return;
     tree_background = name;
     main_svg.select('#tree-background-rect').style('fill', BACKGROUNDS[name]);
-    document.getElementById('tree_svg').classList.toggle('lk-bg-dots', name === 'dots');
-    document.querySelectorAll('#tree-background button').forEach(button => {
+    // On the body: its background fills the whole page, however far it scrolls
+    document.body.classList.toggle('lk-bg-dots', name === 'dots');
+    document.querySelectorAll('#tree-background [data-background]').forEach(button => {
         button.setAttribute('aria-pressed', button.dataset.background === name ? 'true' : 'false');
+        button.classList.toggle('active', button.dataset.background === name);
     });
     try {
         localStorage.setItem(BACKGROUND_KEY, name);
     } catch (e) { /* not remembered */ }
 }
 
-document.querySelectorAll('#tree-background button').forEach(button => {
+document.querySelectorAll('#tree-background [data-background]').forEach(button => {
     button.addEventListener('click', () => setBackground(button.dataset.background));
 });
 
@@ -181,13 +184,10 @@ try {
     history.scrollRestoration = "manual";
     LocateNode(document.getElementById('tree_js').dataset.urlnode);
   } else {
-    // Open on the first node, not in the free room around the tree
+    // Open on the first node (it used to scroll smoothly to the node of the
+    // rendered page, at the bottom of the window, and fought with Center)
     history.scrollRestoration = "manual";
     centerOnRoot();
-  }
-  else {
-    let rendered_node = document.getElementById('screenshot_thumbnail');
-    rendered_node.scrollIntoView({behavior: "smooth", block: "end", inline: "center"});
   }
 
   if (parent_uuid != null) {

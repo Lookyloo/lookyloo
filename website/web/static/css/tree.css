@@ -231,10 +231,14 @@ g.node.is-filter-match .node_data > rect { stroke: var(--lk-color-accent); strok
 .lk-tree-zoom button:focus-visible { background: var(--lk-color-accent-soft); }
 /* Background picker, after Center */
 .lk-tree-background { display: inline-flex; border-left: 1px solid var(--lk-color-rule); }
-.lk-tree-background button + button { border-left: 0; }
-.lk-tree-background button[aria-pressed="true"] { background: var(--lk-color-accent-soft); color: var(--lk-color-accent); }
-/* Dots background (default), on the tree and the free room around it */
-#tree_svg.lk-bg-dots {
+.lk-tree-background > button { gap: var(--lk-space-1); font-family: inherit; }
+/* The list is not clipped by the toolbar */
+.lk-tree-zoom { overflow: visible; }
+.lk-tree-background .dropdown-item { font-family: inherit; font-size: var(--lk-font-size-sm); height: auto; justify-content: flex-start; }
+.lk-tree-background .dropdown-item + .dropdown-item { border-left: 0; }
+/* Dots background (default), on the body: the background of the body fills the
+   whole page (the tree and the free room around it), however far it scrolls */
+body.lk-capture-page.lk-bg-dots {
   background-image: radial-gradient(var(--lk-color-rule-strong) 1.3px, transparent 1.4px);
   background-size: 20px 20px;
 }

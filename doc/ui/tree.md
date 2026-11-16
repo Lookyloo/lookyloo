@@ -75,10 +75,12 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
   tree (the root, the node without parent) to the middle of the window, under
   the capture bar. The page opens that way too (unless the link points to a
   node: then that node is shown).
-- **Background** (`#tree-background`, `setBackground`, next to Center):
+- **Background** (`#tree-background`, `setBackground`): a button next to
+  Center opens the list:
   dots (default), columns (one stripe per depth, the former background) or
   plain. Remembered in `localStorage` (`lk-tree-background`). The dots are a
-  CSS background of `#tree_svg`, so the free room has them too; the columns
+  CSS background of the `body` (`lk-bg-dots`), which fills the whole page
+  however far it is dragged; the columns
   are the `#backstripes` pattern of the SVG.
 - **Drag** (`js/capture_page.js`): press anywhere on the tree and move to move
   around it (the page scrolls). A press without movement is still a normal
