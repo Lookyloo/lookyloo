@@ -87,6 +87,12 @@
   color: var(--lk-color-ink);
   font-weight: var(--lk-font-weight-semibold);
 }
+/* Reorder by dragging (js/side_panel.js, startTabDrag): the dragged tab fades, a
+   line shows where it goes */
+.lk-side-tab { touch-action: none; user-select: none; }
+.lk-side-tab.is-dragged { opacity: 0.4; }
+.lk-side-tab.drop-before { box-shadow: inset 2px 0 0 var(--lk-color-accent); }
+.lk-side-tab.drop-after { box-shadow: inset -2px 0 0 var(--lk-color-accent); }
 .lk-side-tab.is-detached { font-style: italic; opacity: 0.75; }
 .lk-side-tab-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lk-side-tab-close {
@@ -133,7 +139,10 @@
   background: var(--lk-color-surface);
 }
 .lk-side-panel-content { padding: 0; }
-.lk-side-panel-content:not(:has(> .modal-body)) { padding: var(--lk-space-4); }
+.lk-side-panel-content:not(.is-page):not(:has(> .modal-body)) { padding: var(--lk-space-4); }
+.lk-side-panel-content.is-page { height: 100%; }
+.lk-side-panel-content.is-page iframe { display: block; width: 100%; height: 100%; border: 0; }
+.lk-side-panel-content[hidden] { display: none; }
 .lk-side-panel-loading {
   display: flex;
   align-items: center;

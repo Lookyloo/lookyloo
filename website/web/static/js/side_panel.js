@@ -12,8 +12,7 @@
 //   moved into the tab, and back into the modal when the tab is closed.
 // Only the content of the current tab is in the page: the others are kept
 // aside (state kept), so the IDs the tables rely on (js/render_tables.js) stay
-// unique. Each tab has its own width (drag the left edge), remembered per kind
-// of panel. A tab can be detached in its own window; closing that window closes
+// unique. One width for the whole panel (drag the left edge), remembered. A tab can be detached in its own window; closing that window closes
 // the tab.
 (() => {
     const panel = document.getElementById('lk-side-panel');
@@ -27,7 +26,8 @@
     // Real dialogs, kept as Bootstrap modals
     const KEPT_AS_MODALS = new Set([]);
     const MIN_WIDTH = 320;
-    const WIDTH_KEY = (kind) => `lk-side-panel-width|${kind}`;
+    // One width for the whole panel, whatever the tab (switching tabs never moves it)
+    const WIDTH_KEY = 'lk-side-panel-width';
     const storage = {
         get: (key) => { try { return localStorage.getItem(key); } catch (e) { return null; } },
         set: (key, value) => { try { localStorage.setItem(key, value); } catch (e) { /* not kept */ } },
@@ -40,16 +40,16 @@
 
     const maxWidth = () => Math.max(MIN_WIDTH, window.innerWidth - 240);
     const clampWidth = (width) => Math.min(Math.max(width, MIN_WIDTH), maxWidth());
-    const defaultWidth = (kind) => {
-        const saved = parseInt(storage.get(WIDTH_KEY(kind)), 10);
+    let panel_width = (() => {
+        const saved = parseInt(storage.get(WIDTH_KEY), 10);
         return clampWidth(Number.isFinite(saved) ? saved : Math.round(window.innerWidth * 0.4));
-    };
+    })();
 
     // The page knows the room the panel takes (js/tree.js centres in what is left,
     // css/tree.css moves the tree controls and the legend)
     const applyWidth = () => {
         const docked = tabs.filter(tab => !tab.win);
-        const width = current && !current.win ? current.width : 0;
+        const width = current && !current.win ? panel_width : 0;
         panel.style.width = `${width}px`;
         root.style.setProperty('--lk-side-panel-space', docked.length ? `${width}px` : '0px');
         panel.hidden = docked.length === 0;
@@ -164,6 +164,7 @@
             });
             button.append(label, close);
             button.addEventListener('click', () => {
+                if (swallow_tab_click) return;   // the end of a drag
                 if (tab.win && !tab.win.closed) {
                     tab.win.focus();
                 } else {
@@ -173,18 +174,175 @@
             button.addEventListener('auxclick', (event) => {
                 if (event.button === 1) closeTab(tab);   // middle click, like a browser
             });
+            // Reorder: drag a tab before / after another (pointer events), or Shift + ← / →
+            button.addEventListener('pointerdown', (event) => startTabDrag(event, tab, button));
+            button.addEventListener('keydown', (event) => {
+                if (!event.shiftKey || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+                event.preventDefault();
+                const index = tabs.indexOf(tab);
+                const other = tabs[index + (event.key === 'ArrowLeft' ? -1 : 1)];
+                if (other) {
+                    moveTab(tab, other, event.key === 'ArrowRight');
+                    tabs_bar.querySelector('[aria-selected="true"]')?.focus();
+                }
+            });
             return button;
         }));
         tabs_bar.querySelector('[aria-selected="true"]')?.scrollIntoView({block: 'nearest', inline: 'nearest'});
+        saveState();
     };
+
+    // Drag a tab along the bar: a line shows where it goes, dropped on release.
+    // A press without movement stays a click (shows the tab).
+    let tab_drag = null;
+    let swallow_tab_click = false;
+    function startTabDrag(event, tab, button) {
+        if (event.button !== 0 || event.target.closest('.lk-side-tab-close')) return;
+        tab_drag = {tab, button, x: event.clientX, moving: false, target: null, after: false};
+        const clear = () => tabs_bar.querySelectorAll('.lk-side-tab').forEach(t => t.classList.remove('drop-before', 'drop-after'));
+        const move = (e) => {
+            if (!tab_drag) return;
+            if (!tab_drag.moving) {
+                if (Math.abs(e.clientX - tab_drag.x) < 5) return;
+                tab_drag.moving = true;
+                button.classList.add('is-dragged');
+            }
+            e.preventDefault();
+            clear();
+            // The tab under the pointer (along the bar only)
+            const others = [...tabs_bar.querySelectorAll('.lk-side-tab')];
+            const over = others.find(t => {
+                const box = t.getBoundingClientRect();
+                return e.clientX >= box.left && e.clientX <= box.right;
+            }) || (e.clientX < others[0].getBoundingClientRect().left ? others[0] : others[others.length - 1]);
+            const index = others.indexOf(over);
+            if (over === button || index === -1) {
+                tab_drag.target = null;
+                return;
+            }
+            const box = over.getBoundingClientRect();
+            tab_drag.target = tabs[index];
+            tab_drag.after = e.clientX > box.left + box.width / 2;
+            over.classList.add(tab_drag.after ? 'drop-after' : 'drop-before');
+        };
+        const up = () => {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+            window.removeEventListener('blur', up);
+            const drag = tab_drag;
+            tab_drag = null;
+            clear();
+            button.classList.remove('is-dragged');
+            if (drag?.moving) {
+                swallow_tab_click = true;
+                setTimeout(() => { swallow_tab_click = false; }, 0);
+                if (drag.target) moveTab(drag.tab, drag.target, drag.after);
+            }
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+        window.addEventListener('blur', up);
+    }
+
+    // Move a tab before or after another one (the order is kept in the URL too)
+    function moveTab(tab, target, after) {
+        const from = tabs.indexOf(tab);
+        if (from === -1 || tab === target) return;
+        tabs.splice(from, 1);
+        const to = tabs.indexOf(target) + (after ? 1 : 0);
+        tabs.splice(to, 0, tab);
+        renderTabs();
+    }
+
+    // ---- The open tabs in the URL (#panels=...): a reload opens them again ----
+    // [kind (modal id) | 'node', remote URL | hostnode uuid | null, title], and the
+    // index of the current tab. Detached tabs are not kept.
+    const saveState = () => {
+        if (restoring) return;
+        const docked = tabs.filter(tab => !tab.win);
+        const state = {
+            t: docked.map(tab => tab.page ? ['node', tab.node, tab.title] : [tab.kind, tab.url, tab.title]),
+            a: Math.max(0, docked.indexOf(current)),
+        };
+        const hash = docked.length ? `#panels=${encodeURIComponent(JSON.stringify(state))}` : '';
+        history.replaceState(history.state, '', `${location.pathname}${location.search}${hash}`);
+    };
+
+    // The hash comes from a link anyone can write: only the panels of this page
+    // and the read-only detail pages are opened again (some GET routes of
+    // Lookyloo change things: remove, rebuild...)
+    const DETAIL_PATHS = ['/urls/', '/hostnames/', '/ips/', '/favicon_details/', '/capture_hash_details/',
+                          '/body_hashes/', '/identifier_details/', '/cloudflare_ns/'];
+    const allowedRemote = (url) => {
+        if (typeof url !== 'string') return false;
+        let parsed;
+        try {
+            parsed = new URL(url, location.origin);
+        } catch (e) {
+            return false;
+        }
+        if (parsed.origin !== location.origin) return false;
+        if ([...document.querySelectorAll('[data-remote]')].some(el => el.dataset.remote === url)) return true;
+        return DETAIL_PATHS.some(prefix => parsed.pathname.startsWith(prefix));
+    };
+    const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+    let restoring = false;
+    function restore() {
+        const match = location.hash.match(/^#panels=(.+)$/);
+        if (!match) return;
+        let state;
+        try {
+            state = JSON.parse(decodeURIComponent(match[1]));
+        } catch (e) {
+            return;
+        }
+        if (!state || !Array.isArray(state.t)) return;
+        restoring = true;
+        try {
+            state.t.slice(0, 20).forEach(entry => {
+                if (!Array.isArray(entry)) return;
+                const [kind, value, title] = entry;
+                const label = typeof title === 'string' ? title.slice(0, 200) : 'Panel';
+                if (kind === 'node') {
+                    if (typeof value === 'string' && UUID.test(value)) {
+                        openPage(`/tree/${treeUUID}/host/${value}${location.search}`, label, 'hostnode', value);
+                    }
+                    return;
+                }
+                const modal = typeof kind === 'string' && /^[A-Za-z][\w-]*$/.test(kind) && document.getElementById(kind);
+                if (!modal || !modal.classList.contains('modal') || KEPT_AS_MODALS.has(kind)) return;
+                if (value === null) {
+                    openModal(modal, null, label, {focus: false});
+                } else if (allowedRemote(value)) {
+                    openModal(modal, value, label, {focus: false});
+                }
+            });
+        } finally {
+            restoring = false;
+        }
+        const docked = tabs.filter(tab => !tab.win);
+        const active = docked[Number.isInteger(state.a) ? state.a : 0];
+        if (active) activate(active);
+        saveState();
+    }
 
     function activate(tab) {
         if (current && current !== tab && !current.win) {
-            current.content.remove();   // kept aside, with its state
+            if (current.page) {
+                current.content.hidden = true;   // a frame removed from the page would reload
+            } else {
+                current.content.remove();   // kept aside, with its state
+            }
         }
         current = tab;
         if (!tab.win) {
-            body.replaceChildren(tab.content);
+            // Other contents out (frames only hidden), this one in
+            body.querySelectorAll(':scope > .lk-side-panel-content:not(.is-page)').forEach(el => {
+                if (el !== tab.content) el.remove();
+            });
+            if (tab.content.parentElement !== body) body.appendChild(tab.content);
+            tab.content.hidden = false;
             if (tab.pending_setup) {
                 tab.pending_setup = false;
                 setupContent();
@@ -192,14 +350,55 @@
         }
         renderTabs();
         applyWidth();
+        syncNode();
     }
 
+    // The node of the current tab (details of a node) is selected in the tree
+    const syncNode = () => {
+        if (!window.lkTree) return;
+        if (current && current.node && !current.win) {
+            window.lkTree.selectNode(current.node);
+        } else {
+            window.lkTree.clearNodeSelection();
+        }
+    };
+
+    // A whole page in a tab (the details of a node: tree/hostname_popup.html), in a
+    // frame. It talks to the capture page with window.parent (js/generic.js).
+    function openPage(url, title, kind, node=null) {
+        closeDropdowns();
+        const existing = tabs.find(tab => tab.page && tab.url === url);
+        if (existing) {
+            if (existing.win && !existing.win.closed) {
+                existing.win.focus();
+            } else {
+                activate(existing);
+            }
+            return;
+        }
+        const tab = {
+            id: next_id++, kind, url, page: true, modal: null, win: null, title, node,
+            content: document.createElement('div'),
+        };
+        tab.content.className = 'lk-side-panel-content is-page';
+        const frame = document.createElement('iframe');
+        frame.src = url;
+        frame.title = title;
+        tab.content.appendChild(frame);
+        tabs.push(tab);
+        activate(tab);
+    }
+    window.lkSidePanel = { openPage, restore };
+
     function open(modal, opener) {
+        openModal(modal, opener?.dataset.remote || null, titleOf(modal, opener));
+    }
+
+    function openModal(modal, url, title, {focus = true} = {}) {
         closeDropdowns();
         const kind = modal.id;
-        const url = opener?.dataset.remote || null;
         // Already open: back to it (a remote one is loaded again, a fresh view)
-        const existing = tabs.find(tab => tab.kind === kind && tab.url === url);
+        const existing = tabs.find(tab => !tab.page && tab.kind === kind && tab.url === url);
         if (existing) {
             if (existing.win && !existing.win.closed) {
                 existing.win.focus();
@@ -210,10 +409,8 @@
             return;
         }
         const tab = {
-            id: next_id++, kind, url, modal, win: null,
-            title: titleOf(modal, opener),
+            id: next_id++, kind, url, modal, win: null, title,
             content: document.createElement('div'),
-            width: defaultWidth(kind),
         };
         tab.content.className = 'lk-side-panel-content';
         tabs.push(tab);
@@ -224,7 +421,7 @@
             borrowStatic(tab);
             activate(tab);
         }
-        panel.focus({preventScroll: true});
+        if (focus) panel.focus({preventScroll: true});
     }
 
     function closeTab(tab) {
@@ -237,7 +434,7 @@
             tab.closing = true;
             tab.win.close();
         }
-        if (!tab.url) {
+        if (!tab.url && !tab.page) {
             giveBackStatic(tab);
         }
         tab.content.remove();
@@ -253,6 +450,7 @@
         }
         renderTabs();
         applyWidth();
+        syncNode();
     }
 
     function closeAll() {
@@ -265,8 +463,17 @@
         if (!tab || tab.win) {
             return;
         }
+        if (tab.page) {
+            // The page itself in a window, like the former pop-up (window.opener works)
+            const popup = window.open(tab.url, '_blank', `width=${Math.max(1024, Math.round(panel_width))},height=768`);
+            if (popup) {
+                popup.focus();
+                closeTab(tab);
+            }
+            return;
+        }
         const win = window.open('', `lk-panel-${treeUUID}-${tab.id}`,
-                                `width=${Math.round(tab.width)},height=${Math.round(window.innerHeight * 0.8)}`);
+                                `width=${Math.round(panel_width)},height=${Math.round(window.innerHeight * 0.8)}`);
         if (!win) {
             return;   // pop-up blocked
         }
@@ -313,6 +520,7 @@
         }
         renderTabs();
         applyWidth();
+        syncNode();
     };
 
     // ---- Openers ----
@@ -358,17 +566,17 @@
         closeTab(current);
     }, true);
 
-    // ---- Width of the current tab: drag the left edge (or arrows on the handle) ----
+    // ---- Width of the panel: drag the left edge (or arrows on the handle) ----
 
     const setCurrentWidth = (width) => {
         if (!current) {
             return;
         }
-        current.width = clampWidth(width);
+        panel_width = clampWidth(width);
         applyWidth();
     };
     const saveCurrentWidth = () => {
-        if (current) storage.set(WIDTH_KEY(current.kind), String(Math.round(current.width)));
+        storage.set(WIDTH_KEY, String(Math.round(panel_width)));
     };
     // Followed on the whole window (the handle moves with the width, and its
     // pointer capture was dropped after the first move)
@@ -395,11 +603,11 @@
             return;
         }
         event.preventDefault();
-        setCurrentWidth(current.width + (event.key === 'ArrowLeft' ? 40 : -40));
+        setCurrentWidth(panel_width + (event.key === 'ArrowLeft' ? 40 : -40));
         saveCurrentWidth();
     });
     window.addEventListener('resize', () => {
-        tabs.forEach(tab => { tab.width = clampWidth(tab.width); });
+        panel_width = clampWidth(panel_width);
         applyWidth();
     });
 

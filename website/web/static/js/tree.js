@@ -66,25 +66,48 @@ function setZoom(zoom, client_x=null, client_y=null) {
 // smooth: a short glide to the node (the Center button, the opening of the page);
 // instant when the user prefers reduced motion
 function centerOnRoot(align='middle', smooth=true) {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) smooth = false;
     // The first node of the tree: the one without parent (not the first <g> of
     // the SVG, whose order changes when nodes are expanded / collapsed)
     const root_node = node_container.selectAll('g.node').filter(d => !d.parent).node();
     if (!root_node) return;
+    scrollToNode(root_node, align, smooth);
+}
+
+// Scroll the page so that a node is in view: in the middle of the space left of
+// the side panel, under the capture bar ('left': near the left edge)
+function scrollToNode(node, align='middle', smooth=true) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) smooth = false;
     // The card of the node, not its group: Firefox gives the <g> a box that also
     // covers its hidden parts, and the view went far from the node
-    const card = root_node.querySelector('.node_data > rect') || root_node;
+    const card = node.querySelector('.node_data > rect') || node;
     const box = card.getBoundingClientRect();
     const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-capture-top-height')) || 0;
     // Room taken by the side panel at the right (js/side_panel.js): centred in what is left
     const panel = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-side-panel-space')) || 0;
     window.scrollTo({
-        // align 'left': the node near the left edge (opening of the page)
         left: align === 'left' ? window.scrollX + box.left - 40
                                : window.scrollX + box.left + box.width / 2 - (window.innerWidth - panel) / 2,
         top: window.scrollY + box.top + box.height / 2 - (top + window.innerHeight) / 2,
         behavior: smooth ? 'smooth' : 'instant'});
 }
+
+// The node whose details are shown in the side panel (js/side_panel.js): outlined
+// in the tree (css/tree.css, .is-selected) and scrolled into view
+let selected_node = null;
+function selectNode(hostnode_uuid) {
+    clearNodeSelection();
+    selected_node = hostnode_uuid;
+    const node = document.getElementById(`node_${hostnode_uuid}`);
+    if (!node) return;   // in a collapsed branch
+    node.classList.add('is-selected');
+    // After the panel has taken its room
+    requestAnimationFrame(() => scrollToNode(node));
+}
+function clearNodeSelection() {
+    selected_node = null;
+    document.querySelectorAll('g.node.is-selected').forEach(n => n.classList.remove('is-selected'));
+}
+window.lkTree = { selectNode, clearNodeSelection };
 
 // Show the zoom, and disable - / + at the limits
 function updateZoomButtons() {
@@ -199,6 +222,10 @@ try {
     history.scrollRestoration = "manual";
     centerOnRoot('left');
   }
+
+  // The tabs of the side panel kept in the URL (#panels=..., js/side_panel.js), once
+  // the tree is drawn and placed: the node of a node tab is then selected (scrolled to)
+  window.lkSidePanel?.restore();
 
   if (parent_uuid != null) {
 
@@ -374,11 +401,19 @@ function setupLegendFilter(root) {
     requestAnimationFrame(() => legend.classList.add('is-ready'));
 }
 
-function open_hostnode_popup(hostnode_uuid) {
+function open_hostnode_popup(hostnode_uuid, name=null) {
     // /tree is kept, append the paramaters (seed, if present)
-    let win = window.open(`/tree/${treeUUID}/host/${hostnode_uuid}${document.location.search}`, '_blank', 'width=1024,height=768,left=200,top=100');
+    const url = `/tree/${treeUUID}/host/${hostnode_uuid}${document.location.search}`;
+    // In a tab of the side panel (js/side_panel.js); the ⇱ button of the tab
+    // opens it in its own window
+    if (window.lkSidePanel) {
+        window.lkSidePanel.openPage(url, name ? `Node: ${name}` : 'Node', 'hostnode', hostnode_uuid);
+        return;
+    }
+    let win = window.open(url, '_blank', 'width=1024,height=768,left=200,top=100');
     if (win == null) {
         alert("The browser didn't allow Lookyloo to open a pop-up. There should be an icon on the right of your URL bar to allow it.");
+        return;
     }
     win.focus();
 }
@@ -531,7 +566,7 @@ function text_entry(relative_x_pos, relative_y_pos, d) {
           .attr("stroke-width", ".2px")
           .style("opacity", .9)
           .attr('cursor', 'pointer')
-          .on('click', (event, d) => open_hostnode_popup(d.data.uuid))
+          .on('click', (event, d) => open_hostnode_popup(d.data.uuid, d.data.idna || d.data.name))
           .on('mouseover', (event, d) => {
               d3.select('#tooltip')
                   .style('opacity', 1)
@@ -562,7 +597,7 @@ function text_entry(relative_x_pos, relative_y_pos, d) {
           .attr("stroke-width", ".2px")
           .style("opacity", .9)
           .attr('cursor', 'pointer')
-          .on('click', (event, d) => open_hostnode_popup(d.data.uuid))
+          .on('click', (event, d) => open_hostnode_popup(d.data.uuid, d.data.idna || d.data.name))
           .on('mouseover', (event, d) => {
               d3.select('#tooltip')
                   .style('opacity', 1)

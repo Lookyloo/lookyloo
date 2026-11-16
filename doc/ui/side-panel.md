@@ -8,7 +8,7 @@ visible and usable on the left.
 
 Files: `templates/tree/side_panel.html`, `static/js/side_panel.js`,
 `static/css/components/side-panel.css`. The hostname pop-up (a click on a node)
-is not concerned yet.
+opens here too, see below.
 
 ## How it works
 
@@ -34,12 +34,15 @@ phase, before Bootstrap) and opens a tab instead:
 
 ## Using it
 
-- **Tabs**: click to show, `×` or middle click to close; the title of a panel
+- **Tabs**: click to show, `×` or middle click to close, **drag a tab** along
+  the bar to reorder (a blue line shows where it goes; pointer events, not
+  HTML drag and drop), or Shift + ← / → on a focused tab; the title of a panel
   opened from inside another one ends with the value clicked
   (`Other occurrences of the hostname: fonts.gstatic.com`).
-- **Width**: drag the left edge of the panel (or focus it and use ← / →). Each
-  tab has its own width, remembered per kind of panel in `localStorage`
-  (`lk-side-panel-width|<modal id>`). Between 320 px and the window minus 240 px.
+- **Width**: drag the left edge of the panel (or focus it and use ← / →).
+  **One width for the whole panel**, the same for every tab (switching tabs
+  never moves it), remembered in `localStorage` (`lk-side-panel-width`).
+  Between 320 px and the window minus 240 px.
 - **Detach** (`box-arrow-up-right` button): the current tab opens in its own
   window, with the stylesheets of the page; it stays in the tab bar, in
   italics (a click focuses the window). Links that open panels inside that
@@ -56,3 +59,42 @@ phase, before Bootstrap) and opens a tab instead:
 controls and the legend move left of it, the blue edge glow of the drag stops
 at it, and Center (`js/tree.js`, `centerOnRoot`) centres the first node in the
 space left. Phones: the panel takes the whole width, no resize.
+
+## Details of a node
+
+A click on a node of the tree no longer opens a pop-up window: the details of
+the node (`tree/hostname_popup.html`) open in a tab, `Node: <hostname>`, as a
+whole page in a frame (`openPage()`, `window.lkSidePanel`). Frames are hidden,
+not taken out of the page, when another tab is shown (they would reload).
+
+- The node of the current tab is **selected in the tree**: outlined in blue
+  with a glow (`g.node.is-selected`, `css/tree.css`) and scrolled to the middle
+  of the space left of the panel (`window.lkTree.selectNode`, `js/tree.js`).
+  Another tab, or no tab: the selection follows / is cleared. A node in a
+  collapsed branch is not drawn: nothing to select.
+- The page talks to the capture page through `capturePage()` (`js/generic.js`):
+  `window.opener` in a pop-up window, `window.parent` in a tab ("Locate in
+  tree", "open the capture in a new tab").
+- **Detach** of a node tab: the page opens in its own window, like the former
+  pop-up (`window.opener` works), and the tab is closed.
+- Without the side panel script, `open_hostnode_popup()` still opens the pop-up.
+
+## Kept in the URL
+
+The open tabs, their order and the current one are written in the hash of the
+page (`#panels=<JSON>`, `history.replaceState` at every change): a reload, or
+the link sent to someone, opens them again once the tree is drawn (the node of a
+node tab is then selected). Detached tabs are not kept. The JSON is
+`{"t": [[<modal id> | "node", <remote URL> | <hostnode uuid> | null, <title>], …], "a": <index of the current tab>}`.
+
+The hash comes from a link anyone can write, so `restore()` only opens:
+- modals of the page (an element `.modal` with that ID, not in `KEPT_AS_MODALS`);
+- remote URLs of the same origin that are either the `data-remote` of an
+  element of the page, or under the read-only detail pages (`/urls/`,
+  `/hostnames/`, `/ips/`, `/favicon_details/`, `/capture_hash_details/`,
+  `/body_hashes/`, `/identifier_details/`, `/cloudflare_ns/`), never the GET
+  routes that change things (remove, rebuild…);
+- node tabs with a valid UUID. At most 20 tabs; titles are shown as text.
+
+The panel is not part of the tree drag (`js/capture_page.js` ignores presses
+inside `#lk-side-panel`): texts of the panel can be selected, tabs dragged.

@@ -344,3 +344,11 @@ body.lk-capture-page.lk-bg-dots {
 /* Node cards: solid (js/tree.js draws them at 50 % opacity, the background
    showed through); white in light mode, dark grey in dark mode (rules above) */
 .node_data > rect { opacity: 1 !important; }
+
+/* Node whose details are shown in the side panel (js/tree.js, selectNode) */
+g.node.is-selected .node_data > rect {
+  stroke: var(--lk-color-accent) !important;
+  stroke-width: 3px;
+  stroke-opacity: 1 !important;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--lk-color-accent) 60%, transparent));
+}
