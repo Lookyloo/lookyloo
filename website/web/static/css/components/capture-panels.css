@@ -155,3 +155,27 @@
 /* Inside vitrine tables (built by js/capture_panels.js, in their shadow DOM:
    only the link and button classes are ours) */
 vt-table.lk-vitrine, vt-log.lk-vitrine, vt-json.lk-vitrine { max-width: 100%; }
+
+/* Double-click on a value: copied (js/capture_panels.js, copyOnDoubleClick) */
+.lk-copied-bubble {
+  position: fixed;
+  z-index: 2000;
+  padding: 2px var(--lk-space-2);
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-success);
+  color: #fff;
+  font-size: var(--lk-font-size-xs);
+  font-weight: var(--lk-font-weight-semibold);
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 8px));
+  animation: lk-copied 1.2s ease forwards;
+}
+.lk-copied-bubble.is-failed { background: var(--lk-color-danger); }
+@keyframes lk-copied {
+  0% { opacity: 0; transform: translate(-50%, calc(-100% - 2px)); }
+  15%, 70% { opacity: 1; transform: translate(-50%, calc(-100% - 8px)); }
+  100% { opacity: 0; transform: translate(-50%, calc(-100% - 14px)); }
+}
+@media (prefers-reduced-motion: reduce) { .lk-copied-bubble { animation: none; } }
+/* What can be copied with a double-click: a hint on hover */
+.lk-panel dd, .lk-panel .lk-file-name, .lk-panel .lk-origin-name { cursor: copy; }

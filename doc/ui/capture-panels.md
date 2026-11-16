@@ -69,3 +69,20 @@ While a panel is fetched, the side panel shows the eyes of the logo
 `loading()` in `js/side_panel.js`); `css/components/loader.css` is loaded by the
 capture page. Like everywhere on the site, the eyes appear after a short delay,
 so a fast panel does not flicker.
+
+## Double-click to copy
+
+In every panel of the side panel (and in a detached window, and the "Open as a
+page" versions), **a double-click on a value copies it**; a green "Copied"
+bubble shows next to the mouse ("Copy failed" in red). `copyOnDoubleClick()` in
+`js/capture_panels.js` finds the value from the innermost element clicked
+(`event.composedPath()`, so inside the vitrine components too):
+
+- a cell of a table: the whole cell; a JSON value in it: the whole JSON;
+- console log: the time, one field value, or the message without its fields;
+- a line of a JSON viewer (MISP export, IndexedDB): that line;
+- our markup: a fact (`dd`), a file name, an origin, a title, a paragraph…
+
+The whole value is copied, not the word the browser selected (the selection is
+cleared). Links, buttons, tabs and form fields keep their own double-click.
+The values that can be copied show a `copy` cursor.

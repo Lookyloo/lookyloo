@@ -238,6 +238,73 @@ const setupLogs = (root) => {
     });
 };
 
+// ---- Double-click on a value: copied (every panel of the side panel) ----
+
+// The value under the mouse, from the innermost element (composedPath: also inside
+// the vitrine components), or null for the controls (links, buttons, fields)
+const valueAt = (path) => {
+    const elements = path.filter(node => node instanceof Element);
+    if (elements.some(node => node.matches('a, button, input, textarea, select, summary, label, [role="button"], [role="tab"]'))) return null;
+    // A table cell first: the whole cell, even when the click is on a line of the JSON in it
+    const cell = elements.find(node => node.matches('td[part~="cell"], [role="gridcell"]'));
+    if (cell) {
+        const json = cell.querySelector('vt-json');
+        return json ? json.content : cell.textContent;
+    }
+    for (const node of elements) {
+        // vt-log: one field, the time, or the message without its fields
+        if (node.matches('.field-value, .field-key, .time')) return node.textContent;
+        if (node.matches('.field')) return node.querySelector('.field-value')?.textContent ?? node.textContent;
+        if (node.matches('.msg')) {
+            return [...node.childNodes].filter(n => !(n instanceof Element && n.classList.contains('fields')))
+                .map(n => n.textContent).join('');
+        }
+        // A JSON viewer: the line clicked
+        if (node.matches('vt-json')) return null;
+        // Our own markup: a fact, a file, an origin, a title...
+        if (node.matches('dd, dt, .lk-file-name, .lk-origin-name, .lk-panel-title, .lk-misp-size, p, li, span, code, td, th')) {
+            return node.textContent;
+        }
+        if (node.classList.contains('lk-panel') || node.id === 'lk-side-panel-body') return null;
+    }
+    return null;
+};
+
+// "Copied" next to the mouse for a moment
+const copiedBubble = (doc, x, y, ok) => {
+    const bubble = doc.createElement('div');
+    bubble.className = `lk-copied-bubble${ok ? '' : ' is-failed'}`;
+    bubble.textContent = ok ? 'Copied' : 'Copy failed';
+    bubble.setAttribute('role', 'status');
+    bubble.style.left = `${x}px`;
+    bubble.style.top = `${y}px`;
+    doc.body.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 1200);
+};
+
+function copyOnDoubleClick(doc = document) {
+    doc.addEventListener('dblclick', (event) => {
+        const path = event.composedPath();
+        // Only in the panels (side panel, detached window, "Open as a page")
+        if (!path.some(node => node instanceof Element && (node.classList.contains('lk-panel') || node.id === 'lk-side-panel-body'))) return;
+        const raw = valueAt(path);
+        const value = raw?.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim();
+        if (!value) return;
+        // The word selected by the double-click is not what is copied: the whole value is
+        doc.getSelection()?.removeAllRanges();
+        const win = doc.defaultView || window;
+        if (!win.navigator.clipboard) {
+            copiedBubble(doc, event.clientX, event.clientY, false);
+            return;
+        }
+        win.navigator.clipboard.writeText(value).then(
+            () => copiedBubble(doc, event.clientX, event.clientY, true),
+            () => copiedBubble(doc, event.clientX, event.clientY, false));
+    });
+}
+window.copyOnDoubleClick = copyOnDoubleClick;   // detached windows (js/side_panel.js)
+copyOnDoubleClick(document);
+
 // ---- Entry point ----
 
 function setupCapturePanels(root = document) {

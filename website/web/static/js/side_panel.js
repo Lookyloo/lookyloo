@@ -503,6 +503,8 @@
         tab.win = win;
         // Links that open a panel, inside the window: a tab of the capture page
         doc.addEventListener('click', onOpenerClick, true);
+        // Double-click on a value copies it there too (js/capture_panels.js)
+        if (typeof copyOnDoubleClick === 'function') copyOnDoubleClick(doc);
         // Its "Close" buttons close the window (and the tab)
         doc.addEventListener('click', (event) => {
             if (event.target.closest('[data-bs-dismiss="modal"]')) {
