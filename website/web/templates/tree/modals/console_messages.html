@@ -27,7 +27,7 @@
   {% if not messages %}
     {{ panel_empty('No messages in the console', 'The page did not write anything in the browser console.', icon_name='terminal') }}
   {% else %}
-    <vt-log class="lk-vitrine" id="consoleMessagesLog" data-lk-log variant="full" label="Console ({{ messages|length }} messages)"
+    <vt-log class="lk-vitrine" id="consoleMessagesLog" data-lk-log variant="full" fullscreen="false" label="Console ({{ messages|length }} messages)"
             max-height="70vh"></vt-log>
     {# Rows read by js/capture_panels.js (setupLogs); tojson escapes <, > and & #}
     <script type="application/json">{{ log_lines | tojson }}</script>

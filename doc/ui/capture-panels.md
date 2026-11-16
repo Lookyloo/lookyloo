@@ -28,12 +28,12 @@ standalone pages).
 |-------|----------|---------------|---------------|
 | Capture details | `tree/tree.html` `#detailsModal` | Page (URL with copy, title, time, referer, seed expiry), Browser (user agent, meta, proxy), Categories as tags | `#start_time`, `#seed_expire_at` filled by the page script; a category links to the captures in it |
 | Statistics | `tree/modals/statistics.html` | `<vt-stats>` tiles: hostnames, URLs, nodes, depth, cookies received / sent, sum of load times (duration, the raw value under it), total size (bytes) | the same 8 figures; a `<noscript>` list. `stats()` converts the load time to seconds |
-| Storage state | `tree/modals/storage.html` | Tabs Cookies / Storage / WebAuthn credentials with counts. Cookies, local storage, OPFS and credentials in `<vt-table>` (sort, filters, search, copy, CSV / JSON download, column chooser); one foldable card per origin; IndexedDB stores in `<vt-json>` | download of the full storage state; a cookie name opens the other captures with that name (`#cookieNameModal`, was missing on the page); number of captures per cookie; CHIPS partition key and its details; expiry as a date (Session when none); OPFS files downloaded as `<capture uuid>_<name>` |
-| Console messages | `tree/modals/console_messages.html` | `<vt-log>`: one entry per message, the level from the console type, URL / line / column / type as fields, buttons per level with counts, search, copy, download | time of each message; nothing lost from the former table |
+| Storage state | `tree/modals/storage.html` | Tabs Cookies / Storage / WebAuthn credentials with counts. Cookies, local storage, OPFS and credentials in `<vt-table>`: every value in full (`wrap`: long text goes to the next line, never cut; `layout="table"`: no cards in a narrow panel), sort, search, filter row shown at first (`filters`), column chooser; no copy / download / fullscreen buttons in their header. A value that is JSON (object or array) is shown pretty-printed in a small `<vt-json>` (`jsonOrText` in `js/capture_panels.js`); one foldable card per origin; IndexedDB stores in `<vt-json>` | download of the full storage state; a cookie name opens the other captures with that name (`#cookieNameModal`, was missing on the page); number of captures per cookie; CHIPS partition key and its details; expiry as a date (Session when none); OPFS files downloaded as `<capture uuid>_<name>` |
+| Console messages | `tree/modals/console_messages.html` | `<vt-log>`: one entry per message, the level from the console type, URL / line / column / type as fields, buttons per level with counts, search, copy, download; no fullscreen | time of each message; nothing lost from the former table |
 | Downloads | `tree/modals/downloads.html` | One card per file: index, name, Download, Submit to Pandora | `downloadsTable` id kept on the list |
 | Video | `tree/modals/video.html` | One card per video: name, Download, player | |
 | Page screenshot | `tree/tree.html` `#screenshotModal` | Header with Unblur / Download, the image in a frame | blurred at first (`#blurScreenshot`, `#screenshot`, doc/ui/screenshot-blur.md); warning and cropped image when it is over 10 MB |
-| MISP export | `tree/tree.html` `#mispExportModal` (new) | The export in `<vt-json>` (tree / raw, search, copy path / value), its size; Copy, Download, Export again | was a raw JSON link; loaded the first time the panel is shown, not with the page. Over 50 MiB: download only |
+| MISP export | `tree/tree.html` `#mispExportModal` (new) | The eyes of the logo (`macros/loader.html`) while the export is generated, then the export in `<vt-json>` (tree / raw, search; no path bar), its size; Copy, Download, Export again | was a raw JSON link; loaded the first time the panel is shown, not with the page. Over 50 MiB: download only |
 
 Rows of the tables and lines of the log are prepared by the views
 (`storage_state()`: `cookie_rows`; `console_messages()`: `log_lines`) and put in
@@ -61,3 +61,11 @@ panel CSS and the vitrine module (`partials/capture_panels_assets.html`).
 - With no download / no video, the views passed `uuid=` instead of `tree_uuid=`.
 - Duplicate `#statsModal` in `tree/tree.html`; `| safe` removed with the old
   storage template.
+
+## Loading
+
+While a panel is fetched, the side panel shows the eyes of the logo
+(`macros/loader.html`, a `<template>` in `tree/side_panel.html` cloned by
+`loading()` in `js/side_panel.js`); `css/components/loader.css` is loaded by the
+capture page. Like everywhere on the site, the eyes appear after a short delay,
+so a fast panel does not flicker.

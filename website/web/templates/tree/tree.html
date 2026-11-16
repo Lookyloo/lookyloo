@@ -3,6 +3,7 @@
 {% from 'bootstrap5/utils.html' import render_icon %}
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% from "macros/panel.html" import panel_header, panel_section %}
+{% from 'macros/loader.html' import loader %}
 {% from "macros/macros.html" import monitoring_form %}
 {% from "macros/macros.html" import notify_form %}
 
@@ -106,7 +107,8 @@
 {% block styles %}
   {{ super() }}
   {% for stylesheet in ['css/components/header.css', 'css/components/capture-bar.css', 'css/components/side-panel.css',
-                        'css/components/capture-panels.css', 'css/components/vitrine.css'] %}
+                        'css/components/capture-panels.css', 'css/components/vitrine.css',
+                        'css/components/loader.css'] %}
   <link rel="stylesheet"
         {{get_sri('static', stylesheet)}}
         href="{{ url_for('static', filename=stylesheet) }}">
@@ -755,9 +757,11 @@
           <button type="button" class="btn btn-primary btn-sm" data-lk-misp-download disabled>{{ render_icon('download') }} <span>Download</span></button>
           <button type="button" class="btn btn-outline-secondary btn-sm" data-lk-misp-reload title="Export again">{{ render_icon('arrow-clockwise') }}</button>
         {% endcall %}
-        <p class="lk-misp-status" role="status"></p>
-        <p class="lk-misp-status">Size: <span class="lk-misp-size" data-lk-misp-size>…</span></p>
-        <vt-json class="lk-vitrine" variant="full" view="tree" depth="2" max-height="65vh" label="MISP event" hidden></vt-json>
+        {# While the export is generated: the eyes of the logo (macros/loader.html) #}
+        <div class="lk-misp-loading" data-lk-misp-loading hidden>{{ loader('Preparing the MISP export', size='lg', show_label=True) }}</div>
+        <p class="lk-misp-status" role="status" hidden></p>
+        <p class="lk-misp-status" data-lk-misp-size-line hidden>Size: <span class="lk-misp-size" data-lk-misp-size></span></p>
+        <vt-json class="lk-vitrine" variant="full" view="tree" depth="2" max-height="65vh" path="false" label="MISP event" hidden></vt-json>
       </div>
     </div>
   </div>

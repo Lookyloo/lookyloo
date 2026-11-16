@@ -71,6 +71,25 @@ const downloadText = (text, filename, type = 'application/json') => {
 
 const yesNo = { type: 'boolean', align: 'center', width: 90 };
 
+// A value that is JSON (an object or an array, often in the storage): pretty, in a
+// small <vt-json>; any other value as text
+const jsonOrText = (value) => {
+    if (typeof value !== 'string') return value;
+    const text = value.trim();
+    if (!(text.startsWith('{') && text.endsWith('}')) && !(text.startsWith('[') && text.endsWith(']'))) return value;
+    try {
+        JSON.parse(text);
+    } catch (e) {
+        return value;
+    }
+    const viewer = document.createElement('vt-json');
+    viewer.className = 'lk-vitrine';
+    viewer.setAttribute('view', 'raw');
+    viewer.setAttribute('max-height', '320px');
+    viewer.content = text;
+    return viewer;
+};
+
 // A link that opens a panel (js/side_panel.js reads the click through the shadow DOM)
 const panelLink = (text, target, remote) => {
     const link = el('a', 'lk-table-link', text);
@@ -84,10 +103,10 @@ const panelLink = (text, target, remote) => {
 
 const TABLES = {
     cookies: [
-        { key: 'frequency', label: 'Captures', type: 'number', width: 110 },
+        { key: 'frequency', label: 'Captures', type: 'number', width: 130 },
         { key: 'name', label: 'Name', width: 180,
           render: (value, row) => (row.detail ? panelLink(value, 'cookieNameModal', row.detail) : value) },
-        { key: 'value', label: 'Value', width: 240 },
+        { key: 'value', label: 'Value', width: 280, render: jsonOrText },
         { key: 'domain', label: 'Domain', width: 160 },
         { key: 'partition', label: 'CHIPS', width: 140, format: (value) => value || '—' },
         { key: 'expires', label: 'Expires', type: 'date', width: 200,
@@ -99,7 +118,7 @@ const TABLES = {
     ],
     local_storage: [
         { key: 'name', label: 'Name', width: 220 },
-        { key: 'value', label: 'Value' },
+        { key: 'value', label: 'Value', render: jsonOrText },
     ],
     opfs: [
         { key: 'path', label: 'Path', width: 260 },
@@ -164,11 +183,16 @@ const setupMispExport = (root) => {
     copy.addEventListener('click', () => text && copyWithFeedback(copy, text));
     download.addEventListener('click', () => text && downloadText(text, filename));
 
+    const loading = panel.querySelector('[data-lk-misp-loading]');
+    const size_line = panel.querySelector('[data-lk-misp-size-line]');
+    const say = (message) => { status.textContent = message; status.hidden = false; };
     const load = async () => {
         ready(false);
         viewer.hidden = true;
-        status.hidden = false;
-        status.textContent = 'Preparing the MISP export…';
+        status.hidden = true;
+        size_line.hidden = true;
+        // The eyes while the export is generated (it can take a while on a big capture)
+        loading.hidden = false;
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -176,16 +200,18 @@ const setupMispExport = (root) => {
             ready(true);
             const size = `${(text.length / 1048576).toFixed(1)} MiB`;
             panel.querySelector('[data-lk-misp-size]').textContent = size;
+            size_line.hidden = false;
             if (text.length > MAX_JSON) {
-                status.textContent = `The export (${size}) is too big to be shown here: download it.`;
+                say(`The export (${size}) is too big to be shown here: download it.`);
                 return;
             }
-            status.hidden = true;
             await customElements.whenDefined('vt-json');
             viewer.content = text;
             viewer.hidden = false;
         } catch (error) {
-            status.textContent = `The MISP export failed (${error.message}).`;
+            say(`The MISP export failed (${error.message}).`);
+        } finally {
+            loading.hidden = true;
         }
     };
     panel.querySelector('[data-lk-misp-reload]')?.addEventListener('click', load);

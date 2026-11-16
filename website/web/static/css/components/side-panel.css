@@ -145,9 +145,8 @@
 .lk-side-panel-content[hidden] { display: none; }
 .lk-side-panel-loading {
   display: flex;
-  align-items: center;
-  gap: var(--lk-space-2);
-  padding: var(--lk-space-4);
+  justify-content: center;
+  padding: var(--lk-space-6) var(--lk-space-4);
   color: var(--lk-color-muted);
 }
 

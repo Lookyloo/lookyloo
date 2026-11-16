@@ -78,15 +78,16 @@
 
     // ---- Content ----
 
+    // The eyes of the logo (macros/loader.html, template in tree/side_panel.html)
+    const loader_template = document.getElementById('lk-side-panel-loader');
     const loading = () => {
         const wrap = document.createElement('div');
         wrap.className = 'lk-side-panel-loading';
-        const spinner = document.createElement('div');
-        spinner.className = 'spinner-border spinner-border-sm';
-        spinner.setAttribute('role', 'status');
-        const label = document.createElement('span');
-        label.textContent = 'Loading…';
-        wrap.append(spinner, label);
+        if (loader_template) {
+            wrap.appendChild(loader_template.content.cloneNode(true));
+        } else {
+            wrap.textContent = 'Loading…';
+        }
         return wrap;
     };
 

@@ -6,6 +6,7 @@
   Doc: doc/ui/side-panel.md
 #}
 {% from 'bootstrap5/utils.html' import render_icon %}
+{% from 'macros/loader.html' import loader %}
 <aside class="lk-side-panel" id="lk-side-panel" aria-label="Side panel" hidden>
   {# Drag to change the width of the panel (the same for every tab) #}
   <div class="lk-side-panel-resize" id="lk-side-panel-resize" role="separator" aria-orientation="vertical"
@@ -18,4 +19,6 @@
     </div>
   </div>
   <div class="lk-side-panel-body" id="lk-side-panel-body" role="tabpanel"></div>
+  {# Shown while a panel loads (js/side_panel.js, loading()): the eyes of the logo #}
+  <template id="lk-side-panel-loader">{{ loader('Loading the panel', size='md', show_label=True) }}</template>
 </aside>
