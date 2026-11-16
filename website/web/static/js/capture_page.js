@@ -80,6 +80,11 @@
     window.addEventListener('mouseup', () => {
         start = null;
         area.classList.remove('is-dragging');
+        // Only the click ending the drag is swallowed (it fires right after
+        // mouseup), not the next click on a node or a button of the tree controls
+        if (dragged) {
+            setTimeout(() => { dragged = false; }, 0);
+        }
     });
     area.addEventListener('click', (event) => {
         if (dragged) {

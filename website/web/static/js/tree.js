@@ -60,10 +60,12 @@ function setZoom(zoom, client_x=null, client_y=null) {
     updateZoomButtons();
 }
 
-// Bring the root of the tree to the left of the window, vertically centred
-// under the capture bar (after a drag or a zoom that went far from it)
+// Bring the first node of the tree (the root) to the left of the window,
+// vertically centred under the capture bar (after a drag or a zoom that went far)
 function centerOnRoot() {
-    const root_node = node_container.select('g.node').node();
+    // The first node of the tree: the one without parent (not the first <g> of
+    // the SVG, whose order changes when nodes are expanded / collapsed)
+    const root_node = node_container.selectAll('g.node').filter(d => !d.parent).node();
     if (!root_node) return;
     const box = root_node.getBoundingClientRect();
     const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-capture-top-height')) || 0;
