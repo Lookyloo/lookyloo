@@ -96,5 +96,8 @@ The hash comes from a link anyone can write, so `restore()` only opens:
   routes that change things (remove, rebuild…);
 - node tabs with a valid UUID. At most 20 tabs; titles are shown as text.
 
-The panel is not part of the tree drag (`js/capture_page.js` ignores presses
-inside `#lk-side-panel`): texts of the panel can be selected, tabs dragged.
+The panel is not part of the tree: `js/capture_page.js` ignores presses inside
+`#lk-side-panel` (no tree drag: texts can be selected, tabs dragged), Ctrl +
+wheel over it does not zoom the tree (`js/tree.js`, `setupZoom`), and it has the
+normal cursor, not the grab hand of the tree (same for the legend and the zoom
+buttons).

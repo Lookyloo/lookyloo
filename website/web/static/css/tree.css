@@ -296,6 +296,8 @@ body.lk-capture-page.lk-bg-dots {
 
 
 #tree_svg { cursor: grab; }
+/* The controls over the tree are not the tree: normal cursor */
+#tree_svg .lk-tree-legend, #tree_svg .lk-tree-zoom { cursor: auto; }
 
 /* Free room around the tree (half the window on each side): the tree can be
    moved far past its edges, and Center can put the first node in the middle.

@@ -20,6 +20,9 @@
   outline: none;
 }
 .lk-side-panel[hidden] { display: none; }
+/* Inside the tree area (#tree_svg, cursor: grab), but not part of the tree:
+   the normal cursor (text, links, buttons keep theirs) */
+.lk-side-panel { cursor: auto; }
 .lk-side-panel.is-resizing { user-select: none; }
 
 /* Left edge: drag to change the width of the current tab */

@@ -127,6 +127,8 @@ function setupZoom() {
     // Ctrl + wheel over the tree: zoom the tree, not the page
     document.getElementById('tree_svg').addEventListener('wheel', (event) => {
         if (!event.ctrlKey) return;
+        // Not over the side panel, the legend or the controls: only over the tree
+        if (event.target.closest('#lk-side-panel, #legend, #tree-zoom')) return;
         event.preventDefault();
         setZoom(tree_zoom * Math.exp(-event.deltaY * 0.0015), event.clientX, event.clientY);
     }, {passive: false});
