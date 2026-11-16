@@ -783,7 +783,7 @@ rocksdb.block_cache_type hcc
 # on target_file_size_base and target_file_size_multiplier for level-based
 # compaction. For universal-style compaction, you can usually set it to -1.
 # Default: 8096
-rocksdb.max_open_files -1
+rocksdb.max_open_files 8096
 
 # Amount of data to build up in memory (backed by an unsorted log
 # on disk) before converting to a sorted on-disk file.
