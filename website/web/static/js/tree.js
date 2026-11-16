@@ -63,7 +63,10 @@ function setZoom(zoom, client_x=null, client_y=null) {
 // Bring the first node of the tree (the root) to the middle of the window, under
 // the capture bar (after a drag or a zoom that went far). As far as the free
 // room around the tree (css/tree.css, half the window) allows.
-function centerOnRoot() {
+// smooth: a short glide to the node (the Center button, the opening of the page);
+// instant when the user prefers reduced motion
+function centerOnRoot(align='middle', smooth=true) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) smooth = false;
     // The first node of the tree: the one without parent (not the first <g> of
     // the SVG, whose order changes when nodes are expanded / collapsed)
     const root_node = node_container.selectAll('g.node').filter(d => !d.parent).node();
@@ -74,9 +77,11 @@ function centerOnRoot() {
     const box = card.getBoundingClientRect();
     const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-capture-top-height')) || 0;
     window.scrollTo({
-        left: window.scrollX + box.left + box.width / 2 - window.innerWidth / 2,
+        // align 'left': the node near the left edge (opening of the page)
+        left: align === 'left' ? window.scrollX + box.left - 40
+                               : window.scrollX + box.left + box.width / 2 - window.innerWidth / 2,
         top: window.scrollY + box.top + box.height / 2 - (top + window.innerHeight) / 2,
-        behavior: 'instant'});
+        behavior: smooth ? 'smooth' : 'instant'});
 }
 
 // Show the zoom, and disable - / + at the limits
@@ -93,7 +98,7 @@ function setupZoom() {
     document.getElementById('tree-zoom-in')?.addEventListener('click', () => setZoom(tree_zoom * 1.2));
     document.getElementById('tree-zoom-out')?.addEventListener('click', () => setZoom(tree_zoom / 1.2));
     document.getElementById('tree-zoom-reset')?.addEventListener('click', () => setZoom(1));
-    document.getElementById('tree-center')?.addEventListener('click', centerOnRoot);
+    document.getElementById('tree-center')?.addEventListener('click', () => centerOnRoot());
     // Ctrl + wheel over the tree: zoom the tree, not the page
     document.getElementById('tree_svg').addEventListener('wheel', (event) => {
         if (!event.ctrlKey) return;
@@ -187,10 +192,10 @@ try {
     history.scrollRestoration = "manual";
     LocateNode(document.getElementById('tree_js').dataset.urlnode);
   } else {
-    // Open on the first node (it used to scroll smoothly to the node of the
-    // rendered page, at the bottom of the window, and fought with Center)
+    // Open on the first node, near the left edge, the tree going right (it used
+    // to scroll smoothly to the node of the rendered page, at the bottom)
     history.scrollRestoration = "manual";
-    centerOnRoot();
+    centerOnRoot('left');
   }
 
   if (parent_uuid != null) {

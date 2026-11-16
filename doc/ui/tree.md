@@ -74,8 +74,10 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
 - **Center** (`#tree-center`, `centerOnRoot`): brings the first node of the
   tree (the root, the node without parent) to the middle of the window, under
   the capture bar. It measures the card of the node, not its group (Firefox
-  gives the `<g>` a box that also covers its hidden parts). The page opens that way too (unless the link points to a
-  node: then that node is shown).
+  gives the `<g>` a box that also covers its hidden parts). The page opens with the first node near the left edge instead (vertically
+  centred, the tree going right), unless the link points to a node: then that
+  node is shown. Both glide smoothly to the node (instant when the system
+  asks for reduced motion).
 - **Background** (`#tree-background`, `setBackground`): a button next to
   Center opens the list:
   dots (default), columns (one stripe per depth, the former background) or
