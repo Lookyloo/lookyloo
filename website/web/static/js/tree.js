@@ -62,7 +62,7 @@ function setZoom(zoom, client_x=null, client_y=null) {
 
 // Bring the first node of the tree (the root) to the middle of the window, under
 // the capture bar (after a drag or a zoom that went far). As far as the free
-// room around the tree (css/tree.css, 250 px) allows: the page cannot scroll more.
+// room around the tree (css/tree.css, half the window) allows.
 function centerOnRoot() {
     // The first node of the tree: the one without parent (not the first <g> of
     // the SVG, whose order changes when nodes are expanded / collapsed)
@@ -123,6 +123,33 @@ pattern.append('rect')
     .attr('height', min_height)
     .attr("fill", "#EEEEEE");
 
+// Background of the tree (#tree-background buttons): columns (backstripes, in
+// the SVG), dots (default: CSS on #tree_svg, so the free room around the tree
+// has them too) or plain. Remembered in localStorage.
+const BACKGROUNDS = {columns: 'url(#backstripes)', dots: 'none', plain: 'none'};
+const BACKGROUND_KEY = 'lk-tree-background';
+let tree_background = 'dots';
+try {
+    const stored = localStorage.getItem(BACKGROUND_KEY);
+    if (stored in BACKGROUNDS) tree_background = stored;
+} catch (e) { /* storage unavailable: default */ }
+
+function setBackground(name) {
+    tree_background = name;
+    main_svg.select('#tree-background-rect').style('fill', BACKGROUNDS[name]);
+    document.getElementById('tree_svg').classList.toggle('lk-bg-dots', name === 'dots');
+    document.querySelectorAll('#tree-background button').forEach(button => {
+        button.setAttribute('aria-pressed', button.dataset.background === name ? 'true' : 'false');
+    });
+    try {
+        localStorage.setItem(BACKGROUND_KEY, name);
+    } catch (e) { /* not remembered */ }
+}
+
+document.querySelectorAll('#tree-background button').forEach(button => {
+    button.addEventListener('click', () => setBackground(button.dataset.background));
+});
+
 // append the svg object to the body of the page
 // appends a 'group' element to 'svg'
 // moves the 'group' element to the top left margin
@@ -153,6 +180,10 @@ try {
   if (document.getElementById('tree_js').dataset.urlnode != null){
     history.scrollRestoration = "manual";
     LocateNode(document.getElementById('tree_js').dataset.urlnode);
+  } else {
+    // Open on the first node, not in the free room around the tree
+    history.scrollRestoration = "manual";
+    centerOnRoot();
   }
   else {
     let rendered_node = document.getElementById('screenshot_thumbnail');
@@ -554,20 +585,23 @@ function update(root, computed_node_width=0) {
     tree.size([svgHeight, svgWidth])
 
     // Set background based on the computed width and height
+    main_svg.select('#tree-background-rect').remove();
     let background = main_svg.insert('rect', ':first-child')
+      .attr('id', 'tree-background-rect')
       .attr('y', 0)
       // Note: We want the background width with an extra computed_node_width
       // in order to make sure the last node is completely covered
       .attr('width', svgWidth + (margin.right + margin.left + computed_node_width))
       .attr('height', svgHeight + margin.top + margin.bottom)
-      .style('fill', "url(#backstripes)");
+      .style('fill', BACKGROUNDS[tree_background]);
+    setBackground(tree_background);
 
     // Update size
     svg_size = {width: svgWidth + (margin.right + margin.left)*2, height: svgHeight + margin.top + margin.bottom};
     applyZoom();
 
     // Update pattern
-    main_svg.selectAll('pattern')
+    pattern
       .attr('width', `${computed_node_width * 2}px`)
     pattern.selectAll('rect')
       .attr('width', `${computed_node_width}px`)

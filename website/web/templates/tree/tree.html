@@ -159,6 +159,12 @@
   <button type="button" id="tree-zoom-reset" title="Reset the zoom" aria-label="Reset the zoom">100 %</button>
   <button type="button" id="tree-zoom-in" title="Zoom in" aria-label="Zoom in">{{ render_icon('zoom-in') }}</button>
   <button type="button" id="tree-center" title="Back to the root of the tree" aria-label="Back to the root of the tree">{{ render_icon('bullseye') }}<span>Center</span></button>
+  {# Background of the tree (js/tree.js, setBackground) #}
+  <span class="lk-tree-background" id="tree-background" role="group" aria-label="Background of the tree">
+    <button type="button" data-background="dots" aria-pressed="true" title="Background: dots" aria-label="Background: dots">{{ render_icon('grid-3x3-gap') }}</button>
+    <button type="button" data-background="columns" aria-pressed="false" title="Background: columns (one per depth)" aria-label="Background: columns">{{ render_icon('layout-three-columns') }}</button>
+    <button type="button" data-background="plain" aria-pressed="false" title="Background: plain" aria-label="Background: plain">{{ render_icon('square') }}</button>
+  </span>
 </div>
 
 {# Legend & icon filter (js/tree.js, setupLegendFilter) #}

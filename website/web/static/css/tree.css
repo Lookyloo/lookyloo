@@ -229,18 +229,28 @@ g.node.is-filter-match .node_data > rect { stroke: var(--lk-color-accent); strok
 .lk-tree-zoom button + button { border-left: 1px solid var(--lk-color-rule); }
 .lk-tree-zoom button:hover,
 .lk-tree-zoom button:focus-visible { background: var(--lk-color-accent-soft); }
+/* Background picker, after Center */
+.lk-tree-background { display: inline-flex; border-left: 1px solid var(--lk-color-rule); }
+.lk-tree-background button + button { border-left: 0; }
+.lk-tree-background button[aria-pressed="true"] { background: var(--lk-color-accent-soft); color: var(--lk-color-accent); }
+/* Dots background (default), on the tree and the free room around it */
+#tree_svg.lk-bg-dots {
+  background-image: radial-gradient(var(--lk-color-rule-strong) 1.3px, transparent 1.4px);
+  background-size: 20px 20px;
+}
+
 .lk-tree-zoom button:disabled { color: var(--lk-color-muted); opacity: 0.5; background: none; }
 
 #tree_svg { cursor: grab; }
 
-/* Free room around the tree (250 px on each side): the tree can be moved past
-   its edges, and Center can put the first node in the middle of the window.
+/* Free room around the tree (half the window on each side): the tree can be
+   moved far past its edges, and Center can put the first node in the middle.
    inline-block: the box takes the size of the (zoomed) SVG, so the room is
    also on the right and at the bottom. */
 #tree_svg.container-fluid {
   display: inline-block;
   width: auto;
   min-width: 100%;
-  padding: 250px;
+  padding: 50vh 50vw;
 }
 #tree_svg.is-dragging { cursor: grabbing; user-select: none; }
