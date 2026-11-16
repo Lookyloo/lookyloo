@@ -1214,7 +1214,22 @@ def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
 @app.route('/tree/<uuid:tree_uuid>/stats', methods=['GET'])
 def stats(tree_uuid: str) -> str:
     stats = lookyloo.get_statistics(tree_uuid)
-    return render_template('tree/modals/statistics.html', uuid=tree_uuid, stats=stats)
+    # The sum of the load times is a timedelta as text ("0:00:05.123456", maybe
+    # "1 day, ..."): in seconds for the duration tile (tree/modals/statistics.html)
+    load_seconds: float | None = None
+    if isinstance(stats.get('total_load_time'), str):
+        try:
+            days = 0
+            text = stats['total_load_time']
+            if ',' in text:
+                day_part, text = text.split(',', 1)
+                days = int(day_part.split()[0])
+            hours, minutes, seconds = text.strip().split(':')
+            load_seconds = days * 86400 + int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+        except ValueError:
+            load_seconds = None
+    return render_template('tree/modals/statistics.html', uuid=tree_uuid, stats=stats,
+                           load_seconds=load_seconds)
 
 
 @app.route('/tree/<uuid:tree_uuid>/trusted_timestamp/<string:name>', methods=['GET'])
@@ -1271,7 +1286,8 @@ def downloads(tree_uuid: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     success, filename, file = lookyloo.get_data(tree_uuid)
     if not success:
-        return render_template('tree/modals/downloads.html', uuid=tree_uuid, files=None, seed=request.args.get('seed'))
+        return render_template('tree/modals/downloads.html', tree_uuid=tree_uuid, files=None, seed=request.args.get('seed'),
+                               from_popup=from_popup)
     if filename and file:
         if filename.strip() == f'{tree_uuid}_multiple_downloads.zip':
             # We have a zipfile containing all the files downloaded during the capture
@@ -1309,7 +1325,8 @@ def videos(tree_uuid: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     success, filename, file = lookyloo.get_video(tree_uuid)
     if not success:
-        return render_template('tree/modals/video.html', uuid=tree_uuid, files=None, seed=request.args.get('seed'))
+        return render_template('tree/modals/video.html', tree_uuid=tree_uuid, files=None, seed=request.args.get('seed'),
+                               from_popup=from_popup)
     if filename and file:
         if filename.strip() == f'{tree_uuid}_multiple_videos.zip':
             # We have a zipfile containing all the videos generated during the capture
@@ -1345,10 +1362,34 @@ def storage_state(tree_uuid: str) -> str:
                         if opfs.get('base64'):
                             m = magicdb.best_magic_buffer(base64.b64decode(opfs['base64']), None)
                             opfs['mimetype'] = m.mime_type
-                            opfs['filename'] = PurePath(opfs['path']).name
+                            # Downloaded as <capture uuid>_<name> (js/capture_panels.js, TABLES.opfs)
+                            opfs['filename'] = f'{tree_uuid}_{PurePath(opfs["path"]).name}'
 
+    # Rows of the vitrine tables of the panel (js/capture_panels.js, TABLES)
+    cookie_rows: list[dict[str, Any]] = []
+    for cookie in storage.get('cookies', []):
+        partition = cookie.get('partitionKey') or ''
+        if partition:
+            # Details of the partitioned cookie (keys starting with "_")
+            extra = ', '.join(f'{k}: {v}' for k, v in cookie.items() if k.startswith('_'))
+            partition = f'{partition} ({extra})' if extra else str(partition)
+        cookie_rows.append({
+            'frequency': cookie.get('frequency', 0),
+            'name': cookie.get('name', ''),
+            # Other captures with this cookie name: a panel (#cookieNameModal)
+            'detail': url_for('cookies_name_detail', cookie_name=cookie['name']) if cookie.get('name') else '',
+            'value': cookie.get('value', ''),
+            'domain': cookie.get('domain', ''),
+            'partition': partition,
+            # Seconds since the epoch, -1 for a session cookie: milliseconds for the dates
+            'expires': int(cookie['expires'] * 1000) if isinstance(cookie.get('expires'), (int, float)) and cookie['expires'] > 0 else -1,
+            'path': cookie.get('path', ''),
+            'httpOnly': bool(cookie.get('httpOnly')),
+            'secure': bool(cookie.get('secure')),
+            'sameSite': cookie.get('sameSite', ''),
+        })
     return render_template('tree/modals/storage.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
-                           storage=storage, from_popup=from_popup)
+                           storage=storage, cookie_rows=cookie_rows, from_popup=from_popup)
 
 
 @app.route('/tree/<uuid:tree_uuid>/console_messages', methods=['GET'])
@@ -1358,8 +1399,22 @@ def console_messages(tree_uuid: str) -> str:
     success, console_messages = lookyloo.get_console_messages(tree_uuid)
     if success and console_messages and console_messages.getvalue():
         messages = orjson.loads(console_messages.getvalue())
+    # JSON lines for the vitrine <vt-log> of the panel (js/capture_panels.js): the
+    # level from the console type (kept as a field), the source as fields
+    levels = {'error': 'error', 'assert': 'error', 'warning': 'warn', 'warn': 'warn', 'info': 'info',
+              'log': 'info', 'debug': 'debug', 'trace': 'trace', 'verbose': 'debug'}
+    log_lines: list[dict[str, Any]] = []
+    for message in messages:
+        line: dict[str, Any] = {'level': levels.get(str(message.get('type', '')).lower(), 'none'),
+                                'msg': message.get('text', ''), 'type': message.get('type', '')}
+        if message.get('timestamp'):
+            line['time'] = int(message['timestamp'])
+        for key in ('url', 'line', 'column'):
+            if message.get(key) not in (None, ''):
+                line[key] = message[key]
+        log_lines.append(line)
     return render_template('tree/modals/console_messages.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
-                           messages=messages, from_popup=from_popup)
+                           messages=messages, log_lines=log_lines, from_popup=from_popup)
 
 
 @app.route('/tree/<uuid:tree_uuid>/misp_lookup', methods=['GET'])

@@ -498,85 +498,8 @@ function renderTables() {
         });
       })
   }
-  if (document.getElementById('storageStateCookiesTable')) {
-      let cat_table = new DataTable('#storageStateCookiesTable', {
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        columns: [
-            {width: '7%'},
-            {width: '15%'},
-            {width: '20%'},
-            {width: '12%'},
-            {width: '13%'},
-            {width: '10%', render: DataTable.render.datetime_with_tz()},
-            {width: '5%'},
-            {width: '5%'},
-            {width: '6%'},
-            {width: '5%'}
-        ]
-      });
-  }
-  if (document.getElementById('storageStateCookiesTable')) {
-      let cat_table = new DataTable('#storageStateCookiesTable', {
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        columns: [
-            {width: '15%'},
-            {width: '20%'},
-            {width: '15%'},
-            {width: '25%'},
-            {width: '25%'}
-        ]
-      });
-  }
-  if (document.getElementById('consoleMessagesTable')) {
-      let cm_table = new DataTable('#consoleMessagesTable', {
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        columns: [
-            {width: '20%', render: DataTable.render.datetime_with_tz()},
-            {width: '10%'},
-            {width: '30%'},
-            {width: '25%'},
-            {width: '5%'},
-            {width: '10%'}
-        ]
-      });
-  }
-  if (document.getElementsByName('opfsTable').length > 0) {
-    let opfsTables = document.getElementsByName("opfsTable");
-    Array.from(opfsTables).forEach(function (opfsTable) {
-      let cat_table = new DataTable(`#${opfsTable.id}`, {
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        drawCallback: function (settings) { downloadOpfsFileListener(); },
-        columns: [
-            {width: '50%'},
-            {width: '20%'},
-            {width: '20%'},
-            {width: '10%'}
-        ]
-      });
-    });
-  }
-  if (document.getElementsByName('localStorageTable').length > 0) {
-    let localStorageTables = document.getElementsByName("localStorageTable");
-    Array.from(localStorageTables).forEach(function (localStorageTable) {
-      let cat_table = new DataTable(`#${localStorageTable.id}`, {
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        columns: [
-            {width: '20%'},
-            {width: '80%'}
-        ]
-      });
-    });
-  }
+  // Storage state and console messages (tree/modals/storage.html, console_messages.html):
+  // vitrine <vt-table> / <vt-log>, set up by js/capture_panels.js
   if (document.getElementById('category_table')) {
       let cat_table = new DataTable('#category_table', {
         retrieve: true,

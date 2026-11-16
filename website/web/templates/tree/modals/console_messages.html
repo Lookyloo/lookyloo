@@ -1,63 +1,36 @@
+{#
+  Messages of the browser console during the capture (Capture > Console
+  messages), in a vitrine <vt-log> (js/capture_panels.js): one entry per
+  message, its level from the console type, buttons per level with their count,
+  search, copy and download. The source URL, line and column are fields of the
+  entry. HTML fragment for the side panel, or a page with from_popup=True.
+  Doc: doc/ui/capture-panels.md
+#}
 {% from 'bootstrap5/utils.html' import render_icon %}
-{% from "macros/macros.html" import pandora_submit %}
+{% from "macros/panel.html" import panel_header, panel_empty %}
+{% from "partials/capture_panels_assets.html" import panel_styles, panel_scripts with context %}
 
 {% if from_popup %}
-
-{% extends "layouts/main.html" %}
-{% from 'bootstrap5/utils.html' import render_messages %}
-{% block title %}Downloads{% endblock %}
-
-{%endif%}
+{% extends "layouts/page.html" %}
+{% block title %}Console messages{% endblock %}
+{% block styles %}{{ super() }}{{ panel_styles() }}{% endblock %}
+{% block scripts %}{{ super() }}{{ panel_scripts() }}{% endblock %}
+{% endif %}
 
 {% block content %}
-
-<center>
-  The console messages generated during the capture.
-  <br>
-  {% if from_popup %}
-  <a href="{{ url_for('tree', tree_uuid=tree_uuid, seed=seed) }}" class="btn btn-info">
-    Open the capture.
-  </a>
+<div class="lk-panel">
+  {{ panel_header('Capture', 'Console messages',
+                  'The messages written in the browser console during the capture: errors, warnings, logs.',
+                  icon_name='terminal', from_popup=from_popup,
+                  share_url=url_for('console_messages', tree_uuid=tree_uuid, from_popup=True, seed=seed),
+                  capture_url=url_for('tree', tree_uuid=tree_uuid, seed=seed)) }}
+  {% if not messages %}
+    {{ panel_empty('No messages in the console', 'The page did not write anything in the browser console.', icon_name='terminal') }}
   {% else %}
-  <a href="{{ url_for('console_messages', tree_uuid=tree_uuid, from_popup=True, seed=seed) }}" class="btn btn-light">
-    {{ render_icon('share') }}
-  </a>
+    <vt-log class="lk-vitrine" id="consoleMessagesLog" data-lk-log variant="full" label="Console ({{ messages|length }} messages)"
+            max-height="70vh"></vt-log>
+    {# Rows read by js/capture_panels.js (setupLogs); tojson escapes <, > and & #}
+    <script type="application/json">{{ log_lines | tojson }}</script>
   {% endif %}
-</center>
-
-
-{% if not messages %}
-<div class="card text-center">
-  <div class="card-body">
-    <h5 class="card-title">No messages in the console</h5>
-  </div>
 </div>
-{%else%}
-<table id="consoleMessagesTable" class="table table-striped">
-  <thead>
-    <tr>
-      <th>Time</th>
-      <th>Type</th>
-      <th>Message</th>
-      <th>Url</th>
-      <th>Line</th>
-      <th>Column</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for message in messages %}
-    <tr>
-      <td>{{message['timestamp']}}</td>
-      <td>{{message['type']}}</td>
-      <td class="text-break">{{message['text']}}</td>
-      <td class="text-break">{{message.get('url', '')}}</td>
-      <td>{{message.get('line', '')}}</td>
-      <td>{{message.get('column', '')}}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% endif %}
-</div>
-
 {% endblock %}

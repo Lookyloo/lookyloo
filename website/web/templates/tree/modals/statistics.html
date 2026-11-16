@@ -1,38 +1,36 @@
-<div>
-  <dl class="row">
+{#
+  Statistics of the capture (Capture > Statistics): key figures as vitrine
+  <vt-stats> tiles (js/capture_panels.js), the figures as a list under them for
+  screen readers and if JavaScript is off. Doc: doc/ui/capture-panels.md
+#}
+{% from "macros/panel.html" import panel_header, panel_section %}
+{% set hostnames = {'label': 'Unique hostnames', 'value': stats['total_unique_hostnames']} if 'total_unique_hostnames' in stats
+                   else {'label': 'Hostname nodes', 'value': stats['total_hostnames']} %}
+{% set urls = {'label': 'Unique URLs', 'value': stats['total_unique_urls']} if 'total_unique_urls' in stats
+              else {'label': 'URL nodes', 'value': stats['total_urls']} %}
+{% set load = {'label': 'Sum of load times', 'value': load_seconds, 'format': 'duration', 'digits': 2,
+               'description': stats['total_load_time'] | string} if load_seconds is not none
+              else {'label': 'Sum of load times', 'value': stats['total_load_time'] | string} %}
+{% set figures = [
+  hostnames, urls,
+  {'label': 'Total nodes', 'value': stats['total_hostnames']},
+  {'label': 'Depth of the tree', 'value': stats['tree_depth']},
+  {'label': 'Cookies received', 'value': stats['total_cookies_received']},
+  {'label': 'Cookies sent', 'value': stats['total_cookies_sent']},
+  load,
+  {'label': 'Total size', 'value': stats['total_size_responses'], 'format': 'bytes',
+   'description': 'Size of all the responses'},
+] %}
 
-    {% if 'total_unique_hostnames' in stats %}
-    <dt class="col-sm-2">Unique hostnames</dt>
-    <dd class="col-sm-10">{{ stats['total_unique_hostnames'] }}</dd>
-    {% else %}
-    <dt class="col-sm-2">Total hostnames nodes</dt>
-    <dd class="col-sm-10">{{ stats['total_hostnames'] }}</dd>
-    {% endif %}
-
-    {% if 'total_unique_urls' in stats %}
-    <dt class="col-sm-2">Unique URLs</dt>
-    <dd class="col-sm-10">{{ stats['total_unique_urls'] }}</dd>
-    {% else %}
-    <dt class="col-sm-2">Total URLs nodes</dt>
-    <dd class="col-sm-10">{{ stats['total_urls'] }}</dd>
-    {% endif %}
-
-    <dt class="col-sm-2">Cookies Received</dt>
-    <dd class="col-sm-10">{{ stats['total_cookies_received'] }}</dd>
-
-    <dt class="col-sm-2">Cookies Sent</dt>
-    <dd class="col-sm-10">{{ stats['total_cookies_sent'] }}</dd>
-
-    <dt class="col-sm-2">Node Depth</dt>
-    <dd class="col-sm-10">{{ stats['tree_depth'] }}</dd>
-
-    <dt class="col-sm-2">Total Nodes</dt>
-    <dd class="col-sm-10">{{ stats['total_hostnames'] }}</dd>
-
-    <dt class="col-sm-2">Sum of load times</dt>
-    <dd class="col-sm-10">{{ stats['total_load_time'] }}</dd>
-
-    <dt class="col-sm-2">Total size</dt>
-    <dd class="col-sm-10">{{ sizeof_fmt(stats['total_size_responses']) }}</dd>
-  </dl>
+<div class="lk-panel">
+  {{ panel_header('Capture', 'The capture in numbers',
+                  'Hosts, URLs, cookies, depth of the tree, load times and size of the responses.',
+                  icon_name='bar-chart') }}
+  <vt-stats class="lk-vitrine lk-panel-stats" trend="false" changes="false"
+            label="Statistics of the capture">{{ figures | tojson }}</vt-stats>
+  <noscript>
+    <dl class="lk-panel-facts">
+      {% for f in figures %}<dt>{{ f['label'] }}</dt><dd>{{ f['value'] }}</dd>{% endfor %}
+    </dl>
+  </noscript>
 </div>

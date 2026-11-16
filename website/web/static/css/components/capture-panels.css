@@ -1,0 +1,155 @@
+/*
+ * Panels of the Capture menu of the capture page (macros/panel.html,
+ * tree/modals/*, tree/tree.html): the pivot cards (css/components/pivot.css) in
+ * a compact version for the side panel, and the vitrine components in them.
+ * Doc: doc/ui/capture-panels.md
+ */
+
+.lk-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-3);
+  container-type: inline-size;
+}
+/* Narrow panel: the actions of the header go under its text */
+@container (max-width: 640px) {
+  .lk-panel-head { flex-wrap: wrap; }
+  .lk-panel-head .lk-pivot-actions { width: 100%; justify-content: flex-start; padding-left: calc(40px + var(--lk-space-3)); }
+}
+
+/* Header card, compact */
+.lk-panel-head {
+  padding: var(--lk-space-4);
+  gap: var(--lk-space-3);
+}
+.lk-panel-head .lk-pivot-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+.lk-panel-title {
+  margin: 2px 0 0;
+  font-size: 1.05rem;
+  font-weight: var(--lk-font-weight-semibold);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.lk-panel-head .lk-pivot-actions .btn { display: inline-flex; align-items: center; gap: var(--lk-space-1); white-space: nowrap; }
+
+.lk-panel-section { padding: var(--lk-space-3) var(--lk-space-4); }
+.lk-panel-section .lk-pivot-section-title { margin-bottom: var(--lk-space-2); font-size: 0.95rem; }
+.lk-panel-count {
+  padding: 0 var(--lk-space-2);
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-accent-soft);
+  color: var(--lk-color-accent);
+  font-size: var(--lk-font-size-xs);
+  font-weight: var(--lk-font-weight-semibold);
+}
+
+/* Facts: key / value grid (details of the capture) */
+.lk-panel-facts {
+  display: grid;
+  grid-template-columns: minmax(7rem, max-content) minmax(0, 1fr);
+  gap: var(--lk-space-2) var(--lk-space-4);
+  margin: 0;
+  font-size: var(--lk-font-size-sm);
+}
+.lk-panel-facts dt { color: var(--lk-color-muted); font-weight: var(--lk-font-weight-medium); }
+.lk-panel-facts dd { margin: 0; overflow-wrap: anywhere; }
+.lk-panel-facts .lk-mono { font-family: var(--lk-font-mono); }
+.lk-panel-tags { display: flex; flex-wrap: wrap; gap: var(--lk-space-1); }
+@media (max-width: 480px) {
+  .lk-panel-facts { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .lk-panel-facts dd { margin-bottom: var(--lk-space-2); }
+}
+
+/* Nothing to show */
+.lk-panel-empty {
+  padding: var(--lk-space-5) var(--lk-space-3);
+  border: 1px dashed var(--lk-color-rule-strong);
+  border-radius: var(--lk-radius-lg);
+  text-align: center;
+  color: var(--lk-color-muted);
+}
+.lk-panel-empty-icon { display: inline-flex; margin-bottom: var(--lk-space-2); font-size: 1.6rem; color: var(--lk-color-accent); }
+.lk-panel-empty-title { margin: 0; color: var(--lk-color-ink); font-weight: var(--lk-font-weight-semibold); }
+.lk-panel-empty-text { margin: var(--lk-space-1) 0 0; font-size: var(--lk-font-size-sm); }
+
+/* Tabs inside a panel (storage state): underlined, like the rest of the site */
+.lk-panel-tabs.nav-tabs {
+  gap: var(--lk-space-1);
+  border-bottom: 1px solid var(--lk-color-rule);
+}
+.lk-panel-tabs .nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-sm);
+  font-weight: var(--lk-font-weight-medium);
+}
+.lk-panel-tabs .nav-link:hover { color: var(--lk-color-ink); }
+.lk-panel-tabs .nav-link.active { border-bottom-color: var(--lk-color-accent); background: none; color: var(--lk-color-ink); }
+.lk-panel-tab-content { padding-top: var(--lk-space-3); }
+
+/* Origins of the storage (storage state): one card per origin */
+.lk-origin { padding: var(--lk-space-3) var(--lk-space-4); }
+.lk-origin + .lk-origin { margin-top: var(--lk-space-3); }
+.lk-origin-name { margin: 0 0 var(--lk-space-2); font-family: var(--lk-font-mono); font-size: var(--lk-font-size-sm); overflow-wrap: anywhere; }
+.lk-origin-part { margin-top: var(--lk-space-3); }
+.lk-origin-part-title {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  margin: 0 0 var(--lk-space-2);
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-xs);
+  font-weight: var(--lk-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.lk-store + .lk-store { margin-top: var(--lk-space-2); }
+
+/* Files (downloads, videos) */
+.lk-file-list { display: grid; gap: var(--lk-space-2); margin: 0; padding: 0; list-style: none; }
+.lk-file {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-2) var(--lk-space-3);
+  padding: var(--lk-space-2) var(--lk-space-3);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+  background: var(--lk-color-surface);
+}
+.lk-file-index { color: var(--lk-color-muted); font-family: var(--lk-font-mono); font-size: var(--lk-font-size-xs); }
+.lk-file-icon { color: var(--lk-color-accent); font-size: 1.2rem; display: inline-flex; }
+.lk-file-name { flex: 1; min-width: 10rem; font-family: var(--lk-font-mono); font-size: var(--lk-font-size-sm); overflow-wrap: anywhere; }
+.lk-file-actions { display: flex; flex-wrap: wrap; gap: var(--lk-space-1); }
+.lk-file-actions .btn, .lk-file-actions .col-sm-8 { display: inline-flex; align-items: center; gap: var(--lk-space-1); width: auto; }
+.lk-video { flex-direction: column; align-items: stretch; }
+.lk-video-head { display: flex; align-items: center; gap: var(--lk-space-2) var(--lk-space-3); flex-wrap: wrap; }
+.lk-video video { width: 100%; max-height: 60vh; border-radius: var(--lk-radius-md); background: #000; }
+
+/* Screenshot */
+.lk-shot-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--lk-space-2); }
+.lk-shot-note { margin: 0; color: var(--lk-color-warning); font-size: var(--lk-font-size-sm); }
+.lk-shot-frame {
+  overflow: auto;
+  max-height: 75vh;
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+  background: repeating-conic-gradient(var(--lk-color-surface-2) 0 25%, var(--lk-color-surface) 0 50%) 0 0 / 16px 16px;
+}
+.lk-shot-frame img { display: block; width: 100%; height: auto; }
+
+/* MISP export */
+.lk-misp-status { margin: 0; color: var(--lk-color-muted); font-size: var(--lk-font-size-sm); }
+.lk-misp-size { font-family: var(--lk-font-mono); }
+
+/* Statistics */
+.lk-panel-stats { --vt-font-size: var(--lk-font-size-sm); }
+
+/* Inside vitrine tables (built by js/capture_panels.js, in their shadow DOM:
+   only the link and button classes are ours) */
+vt-table.lk-vitrine, vt-log.lk-vitrine, vt-json.lk-vitrine { max-width: 100%; }

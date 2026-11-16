@@ -1,0 +1,61 @@
+{#
+  Building blocks of the panels of the capture page (the Capture menu:
+  tree/tree.html and tree/modals/*). Same look as the pivot pages
+  (css/components/pivot.css) in a compact version for the side panel
+  (css/components/capture-panels.css). Doc: doc/ui/capture-panels.md
+
+  panel_header(kind, title, description=None, icon_name='info-circle', share_url=None, from_popup=False)
+    kind         small capitals above the title ("Capture", "Storage")
+    title        what the panel shows
+    description  one sentence
+    icon_name    Bootstrap Icons name
+    share_url    standalone page of the panel (from_popup=True): "Open as a page"
+                 in the panel; in the standalone page, a link back to the capture
+    {% call %}   extra actions (download buttons...) on the right
+
+  panel_section(title, icon_name='info-circle', count=None)
+    Card with a title (and a count), content passed with {% call %}.
+
+  panel_empty(title, text=None, icon_name='inbox')
+    Nothing to show (no cookie, no download...).
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% macro panel_header(kind, title, description=None, icon_name='info-circle', share_url=None,
+                      from_popup=False, capture_url=None) -%}
+<header class="lk-pivot-head lk-panel-head">
+  <span class="lk-pivot-icon">{{ render_icon(icon_name) }}</span>
+  <div class="lk-pivot-text">
+    <p class="lk-pivot-kind">{{ kind }}</p>
+    <h1 class="lk-panel-title">{{ title }}</h1>
+    {% if description %}<p class="lk-pivot-description">{{ description }}</p>{% endif %}
+  </div>
+  {% if caller or share_url or capture_url %}
+  <div class="lk-pivot-actions">
+    {% if caller %}{{ caller() }}{% endif %}
+    {% if from_popup and capture_url %}
+    <a class="btn btn-outline-primary btn-sm" href="{{ capture_url }}">{{ render_icon('diagram-3') }} Open the capture</a>
+    {% elif share_url and not from_popup %}
+    <a class="btn btn-outline-secondary btn-sm" href="{{ share_url }}" target="_blank" rel="noopener"
+       title="This panel alone, in a new tab (a link to share)">{{ render_icon('box-arrow-up-right') }} Open as a page</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</header>
+{%- endmacro %}
+
+{% macro panel_section(title, icon_name='info-circle', count=None) -%}
+<section class="lk-pivot-section lk-panel-section">
+  <h2 class="lk-pivot-section-title">{{ render_icon(icon_name) }} {{ title }}
+    {% if count is not none %}<span class="lk-panel-count">{{ count }}</span>{% endif %}</h2>
+  {{ caller() }}
+</section>
+{%- endmacro %}
+
+{% macro panel_empty(title, text=None, icon_name='inbox') -%}
+<div class="lk-panel-empty">
+  <span class="lk-panel-empty-icon">{{ render_icon(icon_name) }}</span>
+  <p class="lk-panel-empty-title">{{ title }}</p>
+  {% if text %}<p class="lk-panel-empty-text">{{ text }}</p>{% endif %}
+</div>
+{%- endmacro %}

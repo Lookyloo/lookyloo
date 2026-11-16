@@ -78,7 +78,7 @@
           {% endif %}
           {{ menu_item('screenshotModal', 'Page screenshot', 'image', title='Contains the URL rendered in the browser') }}
           <li><hr class="dropdown-divider"></li>
-          {{ menu_link(url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, seed=seed), 'MISP export', 'box-arrow-up-right', 'The capture as a MISP event (JSON)') }}
+          {{ menu_item('mispExportModal', 'MISP export', 'box-arrow-up-right', title='The capture as a MISP event (JSON): read, copy or download it') }}
         </ul>
       </div>
 

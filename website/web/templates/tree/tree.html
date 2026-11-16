@@ -2,6 +2,7 @@
 
 {% from 'bootstrap5/utils.html' import render_icon %}
 {% from 'bootstrap5/utils.html' import render_messages %}
+{% from "macros/panel.html" import panel_header, panel_section %}
 {% from "macros/macros.html" import monitoring_form %}
 {% from "macros/macros.html" import notify_form %}
 
@@ -56,6 +57,11 @@
           {{get_sri('static', 'js/tree_modals.js')}}
           nonce="{{ csp_nonce() }}"
           crossorigin="anonymous"></script>
+  {# Panels of the Capture menu: vitrine components (js/capture_panels.js, module) #}
+  <script src='{{ url_for('static', filename='js/capture_panels.js') }}'
+          {{get_sri('static', 'js/capture_panels.js')}}
+          nonce="{{ csp_nonce() }}"
+          crossorigin="anonymous" type="module"></script>
   {# Panels of the menus in tabs at the right of the tree (tree/side_panel.html) #}
   <script src='{{ url_for('static', filename='js/side_panel.js') }}'
           {{get_sri('static', 'js/side_panel.js')}}
@@ -99,7 +105,8 @@
 
 {% block styles %}
   {{ super() }}
-  {% for stylesheet in ['css/components/header.css', 'css/components/capture-bar.css', 'css/components/side-panel.css'] %}
+  {% for stylesheet in ['css/components/header.css', 'css/components/capture-bar.css', 'css/components/side-panel.css',
+                        'css/components/capture-panels.css', 'css/components/vitrine.css'] %}
   <link rel="stylesheet"
         {{get_sri('static', stylesheet)}}
         href="{{ url_for('static', filename=stylesheet) }}">
@@ -196,59 +203,62 @@
   <div class="modal-dialog modal-xl" role="document">
   <div class="modal-content">
     <div class="modal-header">
-      <h5 class="modal-title" id="detailsModalLabel">Details of the capture at the time it happened</h5>
+      <h5 class="modal-title" id="detailsModalLabel">Capture details</h5>
         <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
+    {# Restyled panel (macros/panel.html, css/components/capture-panels.css); IDs start_time and
+       seed_expire_at are filled by the script at the top of the page #}
     <div class="modal-body">
-      <dl class="row">
-        <dt class="col-sm-2">URL captured</dt>
-        <dd class="col-sm-10 d-inline-block text-break">{{ shorten_string(info.url, with_copy_button=True) }}</dd>
-
-        <dt class="col-sm-2">Page title</dt>
-        <dd class="col-sm-10">{{ info.title }}</dd>
-
-        <dt class="col-sm-2">Capture time</dt>
-        <dd class="col-sm-10" id="start_time"></dd>
-
-        <dt class="col-sm-2">User Agent</dt>
-        <dd class="col-sm-10">{{ info.user_agent }}</dd>
-
-        {% if info.referer %}
-        <dt class="col-sm-2">Referer</dt>
-        <dd class="col-sm-10">{{ info.referer }}</dd>
-        {%endif%}
-
-        {% if meta %}
-          {% for k, v in meta.items() if k not in ['user_agent'] %}
-            <dt class="col-sm-2">{{k.title()}}</dt>
-            <dd class="col-sm-10">{{ v }}</dd>
-          {% endfor %}
-        {%endif%}
-        {% if capture_settings %}
-          {% for k, v in capture_settings.items() if v and k in ['proxy']%}
-            <dt class="col-sm-2">{{k.title()}}</dt>
-            <dd class="col-sm-10">{{ v }}</dd>
-          {% endfor %}
-        {%endif%}
-        {% if seed %}
-          <dt class="col-sm-2">Seed expire at</dt>
-          <dd class="col-sm-10" id="seed_expire_at"></dd>
-        {%endif%}
+      <div class="lk-panel">
+        {{ panel_header('Capture', 'Details of the capture', 'How the capture was made, at the time it happened.',
+                        icon_name='info-circle') }}
+        {% call panel_section('Page', icon_name='window') %}
+        <dl class="lk-panel-facts">
+          <dt>URL captured</dt>
+          <dd class="lk-mono">{{ shorten_string(info.url, with_copy_button=True) }}</dd>
+          <dt>Page title</dt>
+          <dd>{{ info.title }}</dd>
+          <dt>Capture time</dt>
+          <dd id="start_time"></dd>
+          {% if info.referer %}
+          <dt>Referer</dt>
+          <dd class="lk-mono">{{ info.referer }}</dd>
+          {% endif %}
+          {% if seed %}
+          <dt>Seed expires at</dt>
+          <dd id="seed_expire_at"></dd>
+          {% endif %}
+        </dl>
+        {% endcall %}
+        {% call panel_section('Browser', icon_name='browser-chrome') %}
+        <dl class="lk-panel-facts">
+          <dt>User agent</dt>
+          <dd class="lk-mono">{{ info.user_agent }}</dd>
+          {% if meta %}
+            {% for k, v in meta.items() if k not in ['user_agent'] %}
+            <dt>{{ k.replace('_', ' ').capitalize() }}</dt>
+            <dd>{{ v }}</dd>
+            {% endfor %}
+          {% endif %}
+          {% if capture_settings %}
+            {% for k, v in capture_settings.items() if v and k in ['proxy'] %}
+            <dt>{{ k.capitalize() }}</dt>
+            <dd class="lk-mono">{{ v }}</dd>
+            {% endfor %}
+          {% endif %}
+        </dl>
+        {% endcall %}
         {% if info.categories %}
-          <dt class="col-sm-2">Categories</dt>
-          <dd class="col-sm-10">
-            <ul>
-              {%for c in info.categories %}
-              <li>
-                {{ c }} (<a href="{{ url_for('index', category=c) }}">See more</a>)
-              </li>
-              {%endfor%}
-            </ul>
-          </dd>
-        {%endif%}
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        {% call panel_section('Categories', icon_name='tags', count=info.categories|length) %}
+        {# A click lists the captures in this category (index page) #}
+        <div class="lk-panel-tags">
+          {% for c in info.categories|sort %}
+          <a class="lk-tag lk-tag-slate" href="{{ url_for('index', category=c) }}" title="See the captures in this category">{{ c }}</a>
+          {% endfor %}
+        </div>
+        {% endcall %}
+        {% endif %}
+      </div>
     </div>
   </div>
   </div>
@@ -275,7 +285,7 @@
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
           <div class="modal-header">
-              <h5 class="modal-title" id="storageStateModalLabel">Storage State </h5>
+              <h5 class="modal-title" id="storageStateModalLabel">Storage state</h5>
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -292,7 +302,7 @@
   <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
           <div class="modal-header">
-              <h5 class="modal-title" id="consoleMessagesModalLabel">Console Messages</h5>
+              <h5 class="modal-title" id="consoleMessagesModalLabel">Console messages</h5>
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -699,29 +709,71 @@
   <div class="modal-dialog modal-xl" role="document">
   <div class="modal-content">
     <div class="modal-header">
-      <h5 class="modal-title" id="screenshotModalLabel">Screenshot</h5>
+      <h5 class="modal-title" id="screenshotModalLabel">Page screenshot</h5>
         <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-    <center>
       {% set screenshot_too_big = screenshot_size > 10 * 1024 * 1024 %}
-      {% if screenshot_too_big %}
-        Image too big ({{ sizeof_fmt(screenshot_size) }}) to display in the browser, the screenshot below is cropped.
-        <br>
-      {% endif %}
-      {# Always blurred at first: a capture can show shocking content (doc/ui/screenshot-blur.md) #}
-      <button type="button" class="btn btn-primary" id="blurScreenshot" aria-pressed="true">Unblur</button>
-      <a href="{{ url_for('image', tree_uuid=tree_uuid, seed=seed) }}" role="button" class="btn btn-primary">Download</a>
-      <br>
-      <br>
-      <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '', seed=seed) }}" class="img-fluid blur" id="screenshot"/>
-      <br>
-    </center>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <div class="lk-panel">
+        {% call panel_header('Capture', 'Screenshot of the rendered page',
+                             'The page as the browser rendered it. Blurred at first: a capture can show shocking content.',
+                             icon_name='image') %}
+          {# Always blurred at first (doc/ui/screenshot-blur.md); js/tree_modals.js toggles it #}
+          <button type="button" class="btn btn-outline-primary btn-sm" id="blurScreenshot" aria-pressed="true">Unblur</button>
+          <a href="{{ url_for('image', tree_uuid=tree_uuid, seed=seed) }}" role="button" class="btn btn-primary btn-sm"
+             title="Download the full screenshot (PNG)">{{ render_icon('download') }} Download</a>
+        {% endcall %}
+        {% if screenshot_too_big %}
+        <p class="lk-shot-note">{{ render_icon('exclamation-triangle') }} Image too big ({{ sizeof_fmt(screenshot_size) }}) to display
+          in the browser: the screenshot below is cropped. Download it to see it all.</p>
+        {% endif %}
+        <div class="lk-shot-frame">
+          <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '', seed=seed) }}"
+               class="img-fluid blur" id="screenshot" alt="Screenshot of the rendered page"/>
+        </div>
+      </div>
     </div>
   </div>
+  </div>
+</div>
+
+{# MISP export of the capture (Capture > MISP export): loaded the first time the panel is
+   shown, displayed in a vitrine <vt-json> with Copy and Download (js/capture_panels.js) #}
+<div class="modal fade" id="mispExportModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="mispExportModalLabel">MISP export</h5>
+        <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <div class="lk-panel" data-lk-misp-export="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, seed=seed) }}"
+           data-lk-capture="{{ tree_uuid }}">
+        {% call panel_header('Capture', 'MISP export',
+                             'The capture as a MISP event (JSON), ready to import in MISP.', icon_name='box-arrow-up-right') %}
+          <button type="button" class="btn btn-outline-primary btn-sm" data-lk-misp-copy disabled>{{ render_icon('clipboard') }} <span>Copy</span></button>
+          <button type="button" class="btn btn-primary btn-sm" data-lk-misp-download disabled>{{ render_icon('download') }} <span>Download</span></button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-lk-misp-reload title="Export again">{{ render_icon('arrow-clockwise') }}</button>
+        {% endcall %}
+        <p class="lk-misp-status" role="status"></p>
+        <p class="lk-misp-status">Size: <span class="lk-misp-size" data-lk-misp-size>…</span></p>
+        <vt-json class="lk-vitrine" variant="full" view="tree" depth="2" max-height="65vh" label="MISP event" hidden></vt-json>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+{# Other captures with a cookie name (the names in Capture > Storage state) #}
+<div class="modal fade" id="cookieNameModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="cookieNameModalLabel">Other captures with the cookie</h5>
+              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">... loading ...</div>
+      </div>
   </div>
 </div>
 
@@ -771,22 +823,6 @@
   </div>
 </div>
 
-<div class="modal fade" id="statsModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-xl" role="document">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title" id="statsModalLabel">Statistics</h5>
-              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-              ... loading statistics ...
-          </div>
-          <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-      </div>
-  </div>
-</div>
 
 <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">

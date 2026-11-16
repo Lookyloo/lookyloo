@@ -66,7 +66,9 @@
         let title = modal.querySelector('.modal-title')?.textContent.trim() || 'Panel';
         // From inside a panel (a hostname, a favicon...): the value clicked, to tell the tabs apart
         // Spaces collapsed, invisible direction marks of the shortened values removed
-        const value = opener?.closest('.lk-side-panel-content')
+        // (the opener can be inside a vitrine component: its shadow host is in the panel)
+        const in_panel = opener && (opener.getRootNode().host || opener).closest?.('.lk-side-panel-content');
+        const value = in_panel
             ? opener.textContent.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').replace(/\s*\n\s*/g, '').replace(/\s+/g, ' ').trim() : '';
         if (value && value.length < 80) {
             title = `${title}: ${value}`;
@@ -123,6 +125,8 @@
         if (typeof downloadSvg === 'function') {
             document.getElementById('dlTreeAsSVG')?.addEventListener('click', downloadSvg);
         }
+        // Vitrine components of the Capture panels (js/capture_panels.js)
+        if (typeof setupCapturePanels === 'function') setupCapturePanels(body);
     };
 
     // Panel written in the page: its body (and footer) go into the tab
@@ -527,7 +531,10 @@
 
     // On window, capture phase: runs before Bootstrap's own listener
     function onOpenerClick(event) {
-        const opener = event.target.closest('[data-bs-toggle="modal"]');
+        // composedPath: also the links drawn inside a vitrine component (shadow DOM:
+        // event.target is the component itself), like the cookie names of the storage state
+        const opener = event.composedPath().find(node => node instanceof Element && node.matches('[data-bs-toggle="modal"]'))
+            || event.target.closest?.('[data-bs-toggle="modal"]');
         if (!opener) {
             return;
         }
