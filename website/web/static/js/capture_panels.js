@@ -69,11 +69,45 @@ const downloadText = (text, filename, type = 'application/json') => {
 
 // ---- Tables (<vt-table data-lk-table="kind">, rows in the next <script type="application/json">) ----
 
-const yesNo = { type: 'boolean', align: 'center', width: 90 };
+// true / false / null / None (a boolean, or a text that says it): styled like in
+// the JSON viewer (vitrine's keyword colour, monospace), in every table
+const LITERAL = /^(true|false|null|none|undefined)$/i;
+const literal = (value) => {
+    const text = typeof value === 'boolean' ? String(value)
+        : (value === null ? 'null' : (typeof value === 'string' && LITERAL.test(value.trim()) ? value.trim() : null));
+    if (text === null) return null;
+    const span = document.createElement('span');
+    span.className = 'lk-literal';
+    span.textContent = text;
+    // Inside the shadow DOM of the table: CSSOM, with vitrine's own variable
+    span.style.color = 'var(--_syntax-keyword, var(--vt-syntax-keyword, #7a3ec8))';
+    span.style.fontFamily = 'var(--vt-font-mono, ui-monospace, monospace)';
+    return span;
+};
+const literalOr = (value) => literal(value) ?? value;
+
+// A text with "key: True" pairs (the details of a partitioned cookie): the values styled
+const literalsInText = (value) => {
+    if (typeof value !== 'string' || !/:\s*(true|false|none|null)\b/i.test(value)) return value || '—';
+    const wrap = document.createElement('span');
+    let last = 0;
+    for (const match of value.matchAll(/(:\s*)(true|false|none|null)\b/gi)) {
+        const start = match.index + match[1].length;
+        wrap.append(value.slice(last, start), literal(match[2]));
+        last = start + match[2].length;
+    }
+    wrap.append(value.slice(last));
+    return wrap;
+};
+
+// Booleans: filtered with Yes / No, shown as true / false
+const yesNo = { type: 'boolean', align: 'center', width: 100, render: (value) => literalOr(Boolean(value)) };
 
 // A value that is JSON (an object or an array, often in the storage): pretty, in a
 // small <vt-json>; any other value as text
 const jsonOrText = (value) => {
+    const word = literal(value);
+    if (word) return word;
     if (typeof value !== 'string') return value;
     const text = value.trim();
     if (!(text.startsWith('{') && text.endsWith('}')) && !(text.startsWith('[') && text.endsWith(']'))) return value;
@@ -103,12 +137,12 @@ const panelLink = (text, target, remote) => {
 
 const TABLES = {
     cookies: [
-        { key: 'frequency', label: 'Captures', type: 'number', width: 130 },
+        { key: 'frequency', label: 'Captures', type: 'number', width: 150 },
         { key: 'name', label: 'Name', width: 180,
           render: (value, row) => (row.detail ? panelLink(value, 'cookieNameModal', row.detail) : value) },
         { key: 'value', label: 'Value', width: 280, render: jsonOrText },
         { key: 'domain', label: 'Domain', width: 160 },
-        { key: 'partition', label: 'CHIPS', width: 140, format: (value) => value || '—' },
+        { key: 'partition', label: 'CHIPS', width: 160, render: literalsInText },
         { key: 'expires', label: 'Expires', type: 'date', width: 200,
           format: (value) => (value > 0 ? datetime(value) : 'Session') },
         { key: 'path', label: 'Path', width: 90 },
@@ -160,7 +194,8 @@ const setupTables = (root) => {
         if (!columns || !rows) return;
         table.dataset.lkReady = '';
         customElements.whenDefined('vt-table').then(() => {
-            table.columns = columns;
+            // Columns shown as they are: true / false / null styled (literal)
+            table.columns = columns.map(column => (column.render || column.format ? column : { ...column, render: literalOr }));
             table.data = rows;
         });
     });

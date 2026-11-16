@@ -91,3 +91,12 @@ our markup (facts, file names, origins, paragraphs, cells), and inside the
 vitrine components through their CSS parts (`vt-table::part(cell)`,
 `vt-log::part(time | message | field)`, `vt-json::part(body)`; a JSON shown in
 a cell inherits it). Links, buttons, tabs, filter fields keep their own cursor.
+
+## true / false / null in the tables
+
+In every `<vt-table>` of the panels, a value that is `true`, `false`, `null` or
+`None` (a boolean, or a text that says it, any case) is styled like in the JSON
+viewer: vitrine's keyword colour (`--_syntax-keyword`, light and dark) in
+monospace (`literal()` in `js/capture_panels.js`). The boolean columns (HTTP
+only, Secure) show `true` / `false` and keep their Yes / No filter. In the
+CHIPS column, the values of the `key: True` pairs are styled the same way.
