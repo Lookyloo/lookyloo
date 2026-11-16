@@ -25,29 +25,55 @@
 .lk-side-panel { cursor: auto; }
 .lk-side-panel.is-resizing { user-select: none; }
 
-/* Left edge: drag to change the width of the current tab */
+/* Left edge: drag to change the width of the panel. Above everything in the panel
+   (the vitrine components have their own layers), on the whole height, with a
+   visible grip so it can be found */
 .lk-side-panel-resize {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: -4px;
-  width: 8px;
+  left: -6px;
+  width: 12px;
   cursor: ew-resize;
-  z-index: 2;
+  z-index: 100;
+  touch-action: none;
 }
-.lk-side-panel-resize::after {
+/* The line along the edge, in the accent colour on hover / while resizing */
+.lk-side-panel-resize::before {
   content: "";
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 3px;
+  left: 5px;
   width: 2px;
   background: transparent;
   transition: background var(--lk-transition-fast);
 }
+/* The grip in the middle: a small pill with two lines */
+.lk-side-panel-resize::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 1px;
+  width: 10px;
+  height: 44px;
+  transform: translateY(-50%);
+  border: 1px solid var(--lk-color-rule-strong);
+  border-radius: var(--lk-radius-pill);
+  background:
+    linear-gradient(var(--lk-color-muted), var(--lk-color-muted)) 3px 50% / 1px 22px no-repeat,
+    linear-gradient(var(--lk-color-muted), var(--lk-color-muted)) 6px 50% / 1px 22px no-repeat,
+    var(--lk-color-surface);
+  box-shadow: var(--lk-shadow-sm);
+  transition: border-color var(--lk-transition-fast), background-color var(--lk-transition-fast);
+}
+.lk-side-panel-resize:hover::before,
+.lk-side-panel-resize:focus-visible::before,
+.lk-side-panel.is-resizing .lk-side-panel-resize::before { background: var(--lk-color-accent); }
 .lk-side-panel-resize:hover::after,
 .lk-side-panel-resize:focus-visible::after,
-.lk-side-panel.is-resizing .lk-side-panel-resize::after { background: var(--lk-color-accent); }
+.lk-side-panel.is-resizing .lk-side-panel-resize::after { border-color: var(--lk-color-accent); }
+.lk-side-panel.is-resizing, .lk-side-panel.is-resizing * { cursor: ew-resize !important; }
 
 /* Tabs, like a browser */
 .lk-side-panel-bar {

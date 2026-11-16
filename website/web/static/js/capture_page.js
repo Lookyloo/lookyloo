@@ -90,7 +90,7 @@
 
     area.addEventListener('pointerdown', (event) => {
         if (event.pointerType !== 'mouse' || event.button !== 0
-            || event.target.closest('a, button, input, textarea, select, .dropdown-menu, #legend, #tree-zoom, #lk-side-panel')) {
+            || event.target.closest('a, button, input, textarea, select, .dropdown-menu, #legend, #tree-zoom, #lk-side-panel, .lk-side-panel-resize')) {
             return;
         }
         // No text selection, no native drag; stops a smooth glide in progress

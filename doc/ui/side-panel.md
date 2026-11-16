@@ -39,7 +39,12 @@ phase, before Bootstrap) and opens a tab instead:
   HTML drag and drop), or Shift + ← / → on a focused tab; the title of a panel
   opened from inside another one ends with the value clicked
   (`Other occurrences of the hostname: fonts.gstatic.com`).
-- **Width**: drag the left edge of the panel (or focus it and use ← / →).
+- **Width**: drag the left edge of the panel (or focus it and use ← / →). The
+  edge has a visible grip in the middle (a small pill with two lines) and turns
+  blue on hover. The handle (`.lk-side-panel-resize`, 12 px wide, half outside
+  the panel) is above everything in the panel (`z-index`: the vitrine components
+  have their own layers and used to cover it below the header), and a press on
+  it never starts a drag of the tree.
   **One width for the whole panel**, the same for every tab (switching tabs
   never moves it), remembered in `localStorage` (`lk-side-panel-width`).
   Between 320 px and the window minus 240 px.

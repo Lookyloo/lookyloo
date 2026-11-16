@@ -620,6 +620,7 @@
             return;
         }
         event.preventDefault();
+        event.stopPropagation();   // never a drag of the tree (js/capture_page.js)
         panel.classList.add('is-resizing');
         const move = (e) => setCurrentWidth(window.innerWidth - e.clientX);
         const up = () => {
