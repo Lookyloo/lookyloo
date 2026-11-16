@@ -60,8 +60,9 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
 
 ## Zoom and drag
 
-- **Zoom** (`js/tree.js`, `setupZoom`): the `−` / `100 %` / `+` buttons at
-  the top right, just under the capture bar (`#tree-zoom`), or Ctrl + wheel
+- **Zoom** (`js/tree.js`, `setupZoom`): a pill `−  100 %  +` at the top
+  right, just under the capture bar (`#tree-zoom`, `.lk-zoom-pill`), followed
+  by the Center and Background buttons (`.lk-tree-chip`, icons only on phones), or Ctrl + wheel
   over the tree. Limited to 25 %–200 % (below, the cards are unreadable; above,
   one card no longer fits the window); `−` / `+` are disabled at the limits.
   The point under the mouse (or the centre of the window for the buttons) stays

@@ -206,36 +206,72 @@ g.node.is-filter-match .node_data > rect { stroke: var(--lk-color-accent); strok
   right: var(--lk-space-3);
   z-index: 1020;
   display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+}
+
+/* Zoom: a pill  ( −  100 %  + ) */
+.lk-zoom-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 3px;
   border: 1px solid var(--lk-color-rule);
-  border-radius: var(--lk-radius-md);
+  border-radius: var(--lk-radius-pill);
   background: var(--lk-color-surface);
   box-shadow: var(--lk-shadow-sm);
-  overflow: hidden;
 }
-.lk-tree-zoom button {
+.lk-zoom-pill button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  height: 34px;
-  padding: 0 var(--lk-space-2);
+  height: 28px;
   border: 0;
+  border-radius: var(--lk-radius-pill);
   background: none;
   color: var(--lk-color-ink);
-  font-family: var(--lk-font-mono);
-  font-size: var(--lk-font-size-xs);
+  transition: background var(--lk-transition-fast), color var(--lk-transition-fast);
 }
-.lk-tree-zoom #tree-center { gap: var(--lk-space-1); font-family: inherit; }
-.lk-tree-zoom button + button { border-left: 1px solid var(--lk-color-rule); }
-.lk-tree-zoom button:hover,
-.lk-tree-zoom button:focus-visible { background: var(--lk-color-accent-soft); }
-/* Background picker, after Center */
-.lk-tree-background { display: inline-flex; border-left: 1px solid var(--lk-color-rule); }
-.lk-tree-background > button { gap: var(--lk-space-1); font-family: inherit; }
-/* The list is not clipped by the toolbar */
-.lk-tree-zoom { overflow: visible; }
-.lk-tree-background .dropdown-item { font-family: inherit; font-size: var(--lk-font-size-sm); height: auto; justify-content: flex-start; }
-.lk-tree-background .dropdown-item + .dropdown-item { border-left: 0; }
+#tree-zoom-out,
+#tree-zoom-in { width: 28px; padding: 0; }
+#tree-zoom-reset {
+  min-width: 3.6rem;
+  padding: 0 var(--lk-space-2);
+  font-size: var(--lk-font-size-sm);
+  font-weight: var(--lk-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--lk-color-muted);
+}
+.lk-zoom-pill button:hover:not(:disabled),
+.lk-zoom-pill button:focus-visible { background: var(--lk-color-accent-soft); color: var(--lk-color-accent); }
+.lk-zoom-pill button:disabled { color: var(--lk-color-muted); opacity: 0.4; cursor: default; }
+
+/* Center and Background: separate rounded buttons */
+.lk-tree-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  height: 36px;
+  padding: 0 var(--lk-space-3);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-surface);
+  box-shadow: var(--lk-shadow-sm);
+  color: var(--lk-color-ink);
+  font-size: var(--lk-font-size-sm);
+  font-weight: var(--lk-font-weight-medium);
+  transition: border-color var(--lk-transition-fast), background var(--lk-transition-fast);
+}
+.lk-tree-chip:hover,
+.lk-tree-chip:focus-visible,
+.lk-tree-chip.show { border-color: var(--lk-color-accent); background: var(--lk-color-accent-soft); }
+.lk-tree-background .dropdown-item { display: flex; align-items: center; gap: var(--lk-space-2); font-size: var(--lk-font-size-sm); }
+
+@media (max-width: 767.98px) {
+  .lk-tree-chip span { display: none; }
+  .lk-tree-chip { padding: 0 var(--lk-space-2); }
+}
+
 /* Dots background (default), on the body: the background of the body fills the
    whole page (the tree and the free room around it), however far it scrolls */
 body.lk-capture-page.lk-bg-dots {
@@ -243,7 +279,6 @@ body.lk-capture-page.lk-bg-dots {
   background-size: 20px 20px;
 }
 
-.lk-tree-zoom button:disabled { color: var(--lk-color-muted); opacity: 0.5; background: none; }
 
 #tree_svg { cursor: grab; }
 

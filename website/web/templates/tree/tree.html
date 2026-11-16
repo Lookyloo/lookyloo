@@ -155,13 +155,15 @@
 {# Tree controls, top right under the capture bar (js/tree.js, setupZoom):
    zoom (Ctrl + wheel zooms too) and back to the root of the tree #}
 <div class="lk-tree-zoom" id="tree-zoom" role="toolbar" aria-label="Zoom of the tree">
-  <button type="button" id="tree-zoom-out" title="Zoom out" aria-label="Zoom out">{{ render_icon('zoom-out') }}</button>
-  <button type="button" id="tree-zoom-reset" title="Reset the zoom" aria-label="Reset the zoom">100 %</button>
-  <button type="button" id="tree-zoom-in" title="Zoom in" aria-label="Zoom in">{{ render_icon('zoom-in') }}</button>
-  <button type="button" id="tree-center" title="Back to the root of the tree" aria-label="Back to the root of the tree">{{ render_icon('bullseye') }}<span>Center</span></button>
+  <div class="lk-zoom-pill" role="group" aria-label="Zoom">
+    <button type="button" id="tree-zoom-out" title="Zoom out" aria-label="Zoom out">{{ render_icon('dash-lg') }}</button>
+    <button type="button" id="tree-zoom-reset" title="Reset the zoom to 100 %" aria-label="Reset the zoom">100 %</button>
+    <button type="button" id="tree-zoom-in" title="Zoom in" aria-label="Zoom in">{{ render_icon('plus-lg') }}</button>
+  </div>
+  <button type="button" class="lk-tree-chip" id="tree-center" title="Back to the root of the tree" aria-label="Back to the root of the tree">{{ render_icon('bullseye') }}<span>Center</span></button>
   {# Background of the tree (js/tree.js, setBackground): one button, a list #}
   <div class="dropdown lk-tree-background" id="tree-background">
-    <button type="button" id="tree-background-btn" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
+    <button type="button" id="tree-background-btn" class="lk-tree-chip dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"
             title="Background of the tree">{{ render_icon('palette') }}<span>Background</span></button>
     <ul class="dropdown-menu dropdown-menu-end lk-tool-menu" aria-labelledby="tree-background-btn">
       <li><button type="button" class="dropdown-item" data-background="dots" aria-pressed="true">{{ render_icon('grid-3x3-gap') }}<span>Dots</span></button></li>
