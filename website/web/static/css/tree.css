@@ -257,7 +257,10 @@ body.lk-capture-page.lk-bg-dots {
   min-width: 100%;
   padding: 50vh 50vw;
 }
-#tree_svg.is-dragging { cursor: grabbing; user-select: none; }
+#tree_svg.is-dragging { cursor: grabbing; }
+/* The texts of the tree are not selected while dragging it (js/capture_page.js);
+   the tooltips and pop-ups keep their texts selectable */
+#tree_svg svg { user-select: none; -webkit-user-select: none; }
 
 /* Drag past the edge of the free room (js/capture_page.js): a blue glow on the
    side(s) of the window where the limit is reached, "you cannot go further";

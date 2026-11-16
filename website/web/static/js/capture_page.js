@@ -46,6 +46,12 @@
 // Drag the tree with the mouse: press anywhere on the tree and move to scroll
 // the page. A press without movement stays a normal click (node, icons, hostname
 // pop-up); after a drag the click is swallowed so nothing opens by accident.
+// - Pointer events + pointer capture: the drag goes on, and ends, even when the
+//   mouse leaves the window.
+// - No text selection and no native drag of the images (screenshot thumbnail):
+//   both started on the press and fought with the scroll.
+// - A smooth glide still running (opening of the page, Center) is stopped by
+//   the press, otherwise it pulled the page away from the mouse.
 (() => {
     const area = document.getElementById('tree_svg');
     if (!area) {
@@ -60,46 +66,73 @@
     let start = null;
     let dragged = false;
 
-    area.addEventListener('mousedown', (event) => {
-        if (event.button !== 0 || event.target.closest('a, button, input, textarea, select, #legend')) {
+    const scrollNow = (left, top) => {
+        // instant: Bootstrap makes the page scroll smooth, it would lag behind the mouse
+        window.scrollTo({left: left, top: top, behavior: 'instant'});
+    };
+
+    const stop = () => {
+        if (!start) {
             return;
         }
-        start = {x: event.clientX, y: event.clientY, sx: window.scrollX, sy: window.scrollY};
+        if (area.hasPointerCapture(start.id)) {
+            area.releasePointerCapture(start.id);
+        }
+        start = null;
+        area.classList.remove('is-dragging');
+        edge.classList.remove('is-left', 'is-right', 'is-top', 'is-bottom');
+        // Only the click ending the drag is swallowed (it fires right after the
+        // release), not the next click on a node or a button of the tree controls
+        if (dragged) {
+            setTimeout(() => { dragged = false; }, 0);
+        }
+    };
+
+    area.addEventListener('pointerdown', (event) => {
+        if (event.pointerType !== 'mouse' || event.button !== 0
+            || event.target.closest('a, button, input, textarea, select, .dropdown-menu, #legend, #tree-zoom')) {
+            return;
+        }
+        // No text selection, no native drag; stops a smooth glide in progress
+        event.preventDefault();
+        scrollNow(window.scrollX, window.scrollY);
+        start = {id: event.pointerId, x: event.clientX, y: event.clientY, sx: window.scrollX, sy: window.scrollY};
         dragged = false;
     });
-    window.addEventListener('mousemove', (event) => {
-        if (!start) {
+
+    area.addEventListener('pointermove', (event) => {
+        if (!start || event.pointerId !== start.id) {
             return;
         }
         const dx = event.clientX - start.x;
         const dy = event.clientY - start.y;
-        if (!dragged && Math.hypot(dx, dy) < THRESHOLD) {
-            return;
+        if (!dragged) {
+            if (Math.hypot(dx, dy) < THRESHOLD) {
+                return;
+            }
+            dragged = true;
+            area.classList.add('is-dragging');
+            area.setPointerCapture(start.id);
         }
-        dragged = true;
-        area.classList.add('is-dragging');
-        event.preventDefault();   // no text selection
         const left = start.sx - dx;
-        const top_ = start.sy - dy;
-        // instant: Bootstrap makes the page scroll smooth, it would lag behind the mouse
-        window.scrollTo({left: left, top: top_, behavior: 'instant'});
+        const top = start.sy - dy;
+        scrollNow(left, top);
         // Past the edge of the free room: that side of the window glows blue
         const root = document.documentElement;
         edge.classList.toggle('is-left', left < 0);
         edge.classList.toggle('is-right', left > root.scrollWidth - window.innerWidth);
-        edge.classList.toggle('is-top', top_ < 0);
-        edge.classList.toggle('is-bottom', top_ > root.scrollHeight - window.innerHeight);
+        edge.classList.toggle('is-top', top < 0);
+        edge.classList.toggle('is-bottom', top > root.scrollHeight - window.innerHeight);
     });
-    window.addEventListener('mouseup', () => {
-        start = null;
-        area.classList.remove('is-dragging');
-        edge.classList.remove('is-left', 'is-right', 'is-top', 'is-bottom');
-        // Only the click ending the drag is swallowed (it fires right after
-        // mouseup), not the next click on a node or a button of the tree controls
-        if (dragged) {
-            setTimeout(() => { dragged = false; }, 0);
-        }
-    });
+
+    area.addEventListener('pointerup', stop);
+    area.addEventListener('pointercancel', stop);
+    area.addEventListener('lostpointercapture', stop);
+    window.addEventListener('blur', stop);
+
+    // Images and links of the tree are never dragged by the browser
+    area.addEventListener('dragstart', (event) => event.preventDefault());
+
     area.addEventListener('click', (event) => {
         if (dragged) {
             event.stopPropagation();

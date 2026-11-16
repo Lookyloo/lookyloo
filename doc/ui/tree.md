@@ -88,7 +88,11 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
 - **Drag** (`js/capture_page.js`): press anywhere on the tree and move to move
   around it (the page scrolls). A press without movement is still a normal
   click; after a drag the click is swallowed. Links, buttons and the legend are
-  not draggable. The scroll is `instant`: Bootstrap makes the page scroll
+  not draggable. Pointer events with pointer capture (the drag goes on and
+  ends even outside the window); the press prevents the text selection and the
+  native drag of the images, and stops a smooth glide still running (opening,
+  Center), which used to pull the page away from the mouse. The texts of the
+  tree are not selectable (`user-select: none` on the SVG). The scroll is `instant`: Bootstrap makes the page scroll
   smooth, which would lag behind the mouse. Dragged past the limit of the free
   room, that side of the window glows blue (`.lk-tree-edge`, `css/tree.css`)
   until the mouse is released.
