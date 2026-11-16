@@ -100,4 +100,8 @@ The panel is not part of the tree: `js/capture_page.js` ignores presses inside
 `#lk-side-panel` (no tree drag: texts can be selected, tabs dragged), Ctrl +
 wheel over it does not zoom the tree (`js/tree.js`, `setupZoom`), and it has the
 normal cursor, not the grab hand of the tree (same for the legend and the zoom
-buttons).
+buttons). The wheel over the panel scrolls the panel only, never the page (the
+tree): `overscroll-behavior: contain` on its body, and a `wheel` listener that
+stops the wheel when nothing under the mouse can scroll that way any more (end
+of the content, tab bar; the scrolling boxes inside the vitrine components
+count, through `composedPath()`).

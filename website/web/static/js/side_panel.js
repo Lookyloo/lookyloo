@@ -561,6 +561,31 @@
         }
     }, true);
 
+    // The wheel over the panel scrolls the panel only, never the page (the tree):
+    // when nothing under the mouse can scroll that way any more (end of the
+    // content, tab bar...), the wheel stops there. composedPath: the scrolling
+    // boxes inside the vitrine components count too. Ctrl + wheel is left to the browser.
+    const canScroll = (el, dx, dy) => {
+        const style = getComputedStyle(el);
+        if (dy && /(auto|scroll)/.test(style.overflowY) && el.scrollHeight > el.clientHeight + 1) {
+            if (dy < 0 ? el.scrollTop > 0 : el.scrollTop + el.clientHeight < el.scrollHeight - 1) return true;
+        }
+        if (dx && /(auto|scroll)/.test(style.overflowX) && el.scrollWidth > el.clientWidth + 1) {
+            if (dx < 0 ? el.scrollLeft > 0 : el.scrollLeft + el.clientWidth < el.scrollWidth - 1) return true;
+        }
+        return false;
+    };
+    panel.addEventListener('wheel', (event) => {
+        if (event.ctrlKey) return;
+        const dx = event.shiftKey && !event.deltaX ? event.deltaY : event.deltaX;
+        const dy = event.shiftKey && !event.deltaX ? 0 : event.deltaY;
+        for (const node of event.composedPath()) {
+            if (node === panel) break;
+            if (node instanceof Element && canScroll(node, dx, dy)) return;   // it scrolls: let it
+        }
+        event.preventDefault();
+    }, {passive: false});
+
     document.getElementById('lk-side-panel-close-all').addEventListener('click', closeAll);
     document.getElementById('lk-side-panel-detach').addEventListener('click', () => detach(current));
 

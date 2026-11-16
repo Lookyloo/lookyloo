@@ -132,6 +132,8 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
+  /* Scrolling past its end does not scroll the page (the tree) */
+  overscroll-behavior: contain;
 }
 .lk-side-panel-content > .modal-body { padding: var(--lk-space-4); }
 .lk-side-panel-content > .modal-footer {
