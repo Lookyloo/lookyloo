@@ -1,0 +1,21 @@
+{#
+  Side panel of the capture page (tree/tree.html), at the right of the tree.
+  The panels of the menus are still written as Bootstrap modals (IDs, data-remote,
+  loaders unchanged); js/side_panel.js opens them here instead, as tabs, like a
+  browser: several at once, a width per tab, detachable in their own window.
+  Doc: doc/ui/side-panel.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+<aside class="lk-side-panel" id="lk-side-panel" aria-label="Side panel" hidden>
+  {# Drag to change the width of the current tab #}
+  <div class="lk-side-panel-resize" id="lk-side-panel-resize" role="separator" aria-orientation="vertical"
+       aria-label="Width of the panel" title="Drag to change the width" tabindex="0"></div>
+  <div class="lk-side-panel-bar">
+    <div class="lk-side-panel-tabs" id="lk-side-panel-tabs" role="tablist" aria-label="Open panels"></div>
+    <div class="lk-side-panel-tools">
+      <button type="button" id="lk-side-panel-detach" title="Open this tab in its own window" aria-label="Open this tab in its own window">{{ render_icon('box-arrow-up-right') }}</button>
+      <button type="button" id="lk-side-panel-close-all" title="Close all the tabs (Esc closes the current one)" aria-label="Close all the tabs">{{ render_icon('x-lg') }}</button>
+    </div>
+  </div>
+  <div class="lk-side-panel-body" id="lk-side-panel-body" role="tabpanel"></div>
+</aside>

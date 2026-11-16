@@ -56,6 +56,11 @@
           {{get_sri('static', 'js/tree_modals.js')}}
           nonce="{{ csp_nonce() }}"
           crossorigin="anonymous"></script>
+  {# Panels of the menus in tabs at the right of the tree (tree/side_panel.html) #}
+  <script src='{{ url_for('static', filename='js/side_panel.js') }}'
+          {{get_sri('static', 'js/side_panel.js')}}
+          nonce="{{ csp_nonce() }}"
+          crossorigin="anonymous"></script>
 
   <script nonce="{{ csp_nonce() }}">
     const buttonModulesRefresh = document.getElementById("modulesForceRefresh");
@@ -94,7 +99,7 @@
 
 {% block styles %}
   {{ super() }}
-  {% for stylesheet in ['css/components/header.css', 'css/components/capture-bar.css'] %}
+  {% for stylesheet in ['css/components/header.css', 'css/components/capture-bar.css', 'css/components/side-panel.css'] %}
   <link rel="stylesheet"
         {{get_sri('static', stylesheet)}}
         href="{{ url_for('static', filename=stylesheet) }}">
@@ -172,6 +177,9 @@
     </ul>
   </div>
 </div>
+
+{# Panels of the menus, as tabs (js/side_panel.js) #}
+{% include 'tree/side_panel.html' %}
 
 {# Legend & icon filter (js/tree.js, setupLegendFilter) #}
 {% include 'tree/legend.html' %}

@@ -76,10 +76,12 @@ function centerOnRoot(align='middle', smooth=true) {
     const card = root_node.querySelector('.node_data > rect') || root_node;
     const box = card.getBoundingClientRect();
     const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-capture-top-height')) || 0;
+    // Room taken by the side panel at the right (js/side_panel.js): centred in what is left
+    const panel = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-side-panel-space')) || 0;
     window.scrollTo({
         // align 'left': the node near the left edge (opening of the page)
         left: align === 'left' ? window.scrollX + box.left - 40
-                               : window.scrollX + box.left + box.width / 2 - window.innerWidth / 2,
+                               : window.scrollX + box.left + box.width / 2 - (window.innerWidth - panel) / 2,
         top: window.scrollY + box.top + box.height / 2 - (top + window.innerHeight) / 2,
         behavior: smooth ? 'smooth' : 'instant'});
 }
