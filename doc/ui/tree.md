@@ -45,8 +45,10 @@ No new modal and no new route: every entry opens the same modal (same IDs and
 
 ## Legend & filter (`tree/legend.html`)
 
-A panel at the bottom right (a `<details>`, open by default) replaces the old
-static legend. Each entry is a button carrying the data key of the node icon
+A panel at the bottom right (a `<details>`) replaces the old static legend.
+It is hidden while the tree loads; once the tree is drawn, `setupLegendFilter()`
+opens it and adds `.is-ready`: it fades in and slides up (300 ms, none with
+reduced motion). Each entry is a button carrying the data key of the node icon
 it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
 
 - When the tree is loaded, `setupLegendFilter()` counts the nodes having each

@@ -70,6 +70,22 @@ hr {
   color: var(--lk-color-ink);
 }
 .lk-tree-legend:not([open]) { width: auto; }
+/* Hidden while the tree loads; js/tree.js adds .is-ready once it is drawn:
+   a short fade and slide up */
+.lk-tree-legend:not(.is-ready) {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(12px);
+}
+.lk-tree-legend.is-ready {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-tree-legend.is-ready { transition: none; }
+}
 .lk-tree-legend > summary {
   position: sticky;
   top: 0;

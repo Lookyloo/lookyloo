@@ -30,7 +30,8 @@
   ('downloaded_filename', 'download.png', 'Downloaded file', 'Nodes containing a downloaded file'),
   ('websocket_session', 'websocket.svg', 'Websocket', 'Nodes containing a websocket session'),
 ] %}
-<details class="lk-tree-legend" id="legend" open>
+{# Hidden while the tree loads: js/tree.js (setupLegendFilter) opens it, with an entry animation #}
+<details class="lk-tree-legend" id="legend">
   <summary>{{ render_icon('funnel') }}<span>Legend &amp; filter</span>
     <span class="lk-legend-active" id="legend-active" hidden></span></summary>
   <div class="lk-legend-body">

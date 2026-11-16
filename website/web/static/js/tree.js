@@ -366,6 +366,10 @@ function setupLegendFilter(root) {
         present.querySelectorAll('.lk-legend-item').forEach(b => b.setAttribute('aria-pressed', 'false'));
         applyLegendFilter();
     });
+    // The tree is drawn: the legend appears, open (css/tree.css, .is-ready)
+    const legend = document.getElementById('legend');
+    legend.open = true;
+    requestAnimationFrame(() => legend.classList.add('is-ready'));
 }
 
 function open_hostnode_popup(hostnode_uuid) {
