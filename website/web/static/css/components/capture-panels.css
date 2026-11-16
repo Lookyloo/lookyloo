@@ -181,5 +181,14 @@ vt-table.lk-vitrine, vt-log.lk-vitrine, vt-json.lk-vitrine { max-width: 100%; }
   100% { opacity: 0; transform: translate(-50%, calc(-100% - 14px)); }
 }
 @media (prefers-reduced-motion: reduce) { .lk-copied-bubble { animation: none; } }
-/* What can be copied with a double-click: a hint on hover */
-.lk-panel dd, .lk-panel .lk-file-name, .lk-panel .lk-origin-name { cursor: copy; }
+/* What a double-click copies shows the copy cursor (js/capture_panels.js, valueAt):
+   our markup, and the values inside the vitrine components (their CSS parts; the
+   cursor is inherited by what is inside, like the JSON in a cell). Links, buttons,
+   tabs and fields keep their own cursor. */
+.lk-side-panel-content :is(dd, dt, p, li, td, th, .lk-file-name, .lk-origin-name, .lk-panel-title, .lk-misp-size),
+.lk-panel :is(dd, dt, .lk-file-name, .lk-origin-name, .lk-panel-title) { cursor: copy; }
+.lk-side-panel-content :is(a, button, input, select, textarea, summary, label, [role="button"], [role="tab"]),
+.lk-panel :is(a, button, input, select, textarea, summary, label) { cursor: revert; }
+vt-table.lk-vitrine::part(cell),
+vt-log.lk-vitrine::part(time), vt-log.lk-vitrine::part(message), vt-log.lk-vitrine::part(field),
+vt-json.lk-vitrine::part(body) { cursor: copy; }
