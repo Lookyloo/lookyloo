@@ -12,7 +12,8 @@ let margin = {
 let menuHeight = document.getElementById('menu_vertical').clientHeight + 60;
 let min_height = menuHeight * 2;
 
-let min_width = document.getElementById('menu_vertical').clientWidth + document.getElementById('menu_horizontal').clientWidth;
+// The capture bar (#menu_vertical) is as wide as the page, the menus are in it
+let min_width = document.getElementById('menu_vertical').clientWidth;
 
 let node_width = 10;
 let node_height = 55;

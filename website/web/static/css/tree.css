@@ -39,25 +39,6 @@
   filter: blur(3px);
 }
 
-#help {
-  text-align: center;
-  border-style: solid;
-  border-color: #0d6efd;
-  border-radius: 25px;
-  text-decoration: none;
-  height: 50px;
-  width: 50px;
-  padding: 5px;
-  align-content: center;
-  background-color: #0d6efd;
-  color: white;
-}
-
-#help:hover {
-  background-color: light-dark(black, white);
-  color: light-dark(white, black);
-}
-
 /* Generic parts of menus */
 hr {
   display: block;
@@ -68,104 +49,6 @@ hr {
   border-color: black;
   border-style: inset;
   border-width: 1px;
-}
-
-#menu-tree-top {
-  display: flex;
-  flex-direction: row;
-  position: fixed;
-  width: 0;
-}
-
-/* menu vertical */
-#tree_logo {
-  width: 205px;
-}
-
-#menu_container_vertical {
-  position: sticky;
-  top: 5px;
-  left: 5px;
-  width: fit-content;
-  background-color: light-dark(white, #212529);;
-}
-
-#menu_vertical {
-  position: sticky;
-  top: 5px;
-  left: 5px;
-  border: 2px solid;
-  padding: 5px;
-}
-
-.menu_vertical_header {
-  padding: 5px;
-}
-
-#menu_container_vertical ul.components {
-    padding: 10px 0;
-}
-
-#menu_container_vertical ul li a {
-    padding: 5px;
-    font-size: 1.1em;
-    display: block;
-    text-align: center;;
-}
-
-/* menu horizontal */
-
-#menu_container_horizontal {
-  position: sticky;
-  top: 5px;
-  left: 217px;
-  width: 80%;
-}
-
-#menu_horizontal {
-  position: sticky;
-  top: 5px;
-  border: 2px solid;
-  background-color: light-dark(white, #212529);;
-  width: fit-content;
-}
-
-.hstack{
-  height: 106.6px;
-}
-
-
-/* Dropdown Menus */
-.dropbtn {
-  font-size: 16px;
-  width: 180px;
-  text-align: center;
-  height: 50px;
-}
-
-.dropdown-menu {
-  width: 180px;
-}
-
-.dropdown-item {
-  text-wrap: wrap;
-}
-
-/* Show the dropdown menus on hover */
-#capture-menu:hover #capture-menu-content {
-  display: block;
-}
-#actions-menu:hover #actions-menu-content {
-  display: block;
-}
-#tools-menu:hover #tools-menu-content {
-  display: block;
-}
-#admin-menu:hover #admin-menu-content {
-  display: block;
-}
-#extra-menu:hover #extra-menu-content {
-  display: block;
 }
 
 /* legend */
