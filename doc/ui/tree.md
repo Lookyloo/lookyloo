@@ -53,3 +53,17 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
   the summary shows the number of matching nodes. "Clear the filter" resets it.
 - The filter is applied again after a node is expanded or collapsed.
 - Nodes are only dimmed, never removed: the tree keeps its shape.
+
+## Zoom and drag
+
+- **Zoom** (`js/tree.js`, `setupZoom`): the `−` / `100 %` / `+` buttons at
+  the bottom left (`#tree-zoom`), or Ctrl + wheel over the tree. From 20 % to
+  300 %; the point under the mouse (or the centre of the window for the
+  buttons) stays in place; `100 %` resets. The SVG keeps the coordinates of the
+  layout in its `viewBox` and is drawn at its size times the zoom, so nodes,
+  links, tooltips and the legend filter are not affected.
+- **Drag** (`js/capture_page.js`): press anywhere on the tree and move to move
+  around it (the page scrolls). A press without movement is still a normal
+  click; after a drag the click is swallowed. Links, buttons and the legend are
+  not draggable. The scroll is `instant`: Bootstrap makes the page scroll
+  smooth, which would lag behind the mouse.

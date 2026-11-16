@@ -195,3 +195,37 @@ g.node.is-filter-match .node_data > rect { stroke: var(--lk-color-accent); strok
 [data-bs-theme="dark"] circle.node[style*="#fff"] {
   fill: #343A40 !important;
 }
+
+/* ---------- Zoom (js/tree.js, setupZoom) and drag (js/capture_page.js) ---------- */
+
+.lk-tree-zoom {
+  position: fixed;
+  left: var(--lk-space-3);
+  bottom: var(--lk-space-3);
+  z-index: 1020;
+  display: inline-flex;
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+  background: var(--lk-color-surface);
+  box-shadow: var(--lk-shadow-sm);
+  overflow: hidden;
+}
+.lk-tree-zoom button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 34px;
+  padding: 0 var(--lk-space-2);
+  border: 0;
+  background: none;
+  color: var(--lk-color-ink);
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-xs);
+}
+.lk-tree-zoom button + button { border-left: 1px solid var(--lk-color-rule); }
+.lk-tree-zoom button:hover,
+.lk-tree-zoom button:focus-visible { background: var(--lk-color-accent-soft); }
+
+#tree_svg { cursor: grab; }
+#tree_svg.is-dragging { cursor: grabbing; user-select: none; }

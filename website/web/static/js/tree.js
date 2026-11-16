@@ -30,6 +30,49 @@ let main_svg = d3.select("#tree_svg").append("svg")
             .attr("width", min_width + margin.right + margin.left)
             .attr("height", min_height + margin.top + margin.bottom)
 
+// Zoom of the tree (buttons of #tree-zoom, Ctrl + wheel): the SVG is drawn at its
+// size times tree_zoom, its viewBox keeps the coordinates of the layout (svg_size).
+const ZOOM_MIN = 0.2;
+const ZOOM_MAX = 3;
+let tree_zoom = 1;
+let svg_size = {width: min_width + margin.right + margin.left, height: min_height + margin.top + margin.bottom};
+
+function applyZoom() {
+    main_svg.attr('viewBox', `0 0 ${svg_size.width} ${svg_size.height}`)
+            .attr('width', svg_size.width * tree_zoom)
+            .attr('height', svg_size.height * tree_zoom);
+}
+
+// Zoom, keeping the point under the pointer (or the centre of the window) in place
+function setZoom(zoom, client_x=null, client_y=null) {
+    zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(zoom * 100) / 100));
+    if (zoom === tree_zoom) return;
+    const rect = main_svg.node().getBoundingClientRect();
+    const cx = client_x ?? window.innerWidth / 2;
+    const cy = client_y ?? window.innerHeight / 2;
+    const point_x = (cx - rect.left) / tree_zoom;
+    const point_y = (cy - rect.top) / tree_zoom;
+    const old_zoom = tree_zoom;
+    tree_zoom = zoom;
+    applyZoom();
+    window.scrollTo({left: window.scrollX + point_x * (zoom - old_zoom), top: window.scrollY + point_y * (zoom - old_zoom), behavior: 'instant'});
+    const reset = document.getElementById('tree-zoom-reset');
+    if (reset) reset.textContent = `${Math.round(zoom * 100)} %`;
+}
+
+function setupZoom() {
+    document.getElementById('tree-zoom-in')?.addEventListener('click', () => setZoom(tree_zoom * 1.2));
+    document.getElementById('tree-zoom-out')?.addEventListener('click', () => setZoom(tree_zoom / 1.2));
+    document.getElementById('tree-zoom-reset')?.addEventListener('click', () => setZoom(1));
+    // Ctrl + wheel over the tree: zoom the tree, not the page
+    document.getElementById('tree_svg').addEventListener('wheel', (event) => {
+        if (!event.ctrlKey) return;
+        event.preventDefault();
+        setZoom(tree_zoom * Math.exp(-event.deltaY * 0.0015), event.clientX, event.clientY);
+    }, {passive: false});
+}
+setupZoom();
+
 // dummy container for tooltip
 d3.select('body')
     .append('div')
@@ -493,9 +536,8 @@ function update(root, computed_node_width=0) {
       .style('fill', "url(#backstripes)");
 
     // Update size
-    main_svg
-      .attr("width", svgWidth + (margin.right + margin.left)*2)
-      .attr("height", svgHeight + margin.top + margin.bottom)
+    svg_size = {width: svgWidth + (margin.right + margin.left)*2, height: svgHeight + margin.top + margin.bottom};
+    applyZoom();
 
     // Update pattern
     main_svg.selectAll('pattern')
