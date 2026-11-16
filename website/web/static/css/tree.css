@@ -258,3 +258,36 @@ body.lk-capture-page.lk-bg-dots {
   padding: 50vh 50vw;
 }
 #tree_svg.is-dragging { cursor: grabbing; user-select: none; }
+
+/* Drag past the edge of the free room (js/capture_page.js): a blue glow on the
+   side(s) of the window where the limit is reached, "you cannot go further";
+   fades out when released. One gradient per side, sized 0 when not reached. */
+.lk-tree-edge {
+  position: fixed;
+  inset: var(--lk-capture-top-height, 160px) 0 0 0;
+  z-index: 1010;
+  pointer-events: none;
+  --lk-edge-color: color-mix(in srgb, var(--lk-color-accent) 55%, transparent);
+  --lk-edge-l: 0px;
+  --lk-edge-r: 0px;
+  --lk-edge-t: 0px;
+  --lk-edge-b: 0px;
+  background:
+    linear-gradient(to right, var(--lk-edge-color), transparent) left / var(--lk-edge-l) 100% no-repeat,
+    linear-gradient(to left, var(--lk-edge-color), transparent) right / var(--lk-edge-r) 100% no-repeat,
+    linear-gradient(to bottom, var(--lk-edge-color), transparent) top / 100% var(--lk-edge-t) no-repeat,
+    linear-gradient(to top, var(--lk-edge-color), transparent) bottom / 100% var(--lk-edge-b) no-repeat;
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+.lk-tree-edge.is-left   { --lk-edge-l: 36px; opacity: 1; }
+.lk-tree-edge.is-right  { --lk-edge-r: 36px; opacity: 1; }
+.lk-tree-edge.is-top    { --lk-edge-t: 36px; opacity: 1; }
+.lk-tree-edge.is-bottom { --lk-edge-b: 36px; opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .lk-tree-edge { transition: none; }
+}
+
+/* Node cards: solid (js/tree.js draws them at 50 % opacity, the background
+   showed through); white in light mode, dark grey in dark mode (rules above) */
+.node_data > rect { opacity: 1 !important; }

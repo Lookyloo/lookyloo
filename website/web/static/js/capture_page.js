@@ -52,6 +52,11 @@
         return;
     }
     const THRESHOLD = 4;   // pixels before a press becomes a drag
+    // Glow on the side(s) of the window where the drag reached the limit (css/tree.css)
+    const edge = document.createElement('div');
+    edge.className = 'lk-tree-edge';
+    edge.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(edge);
     let start = null;
     let dragged = false;
 
@@ -74,12 +79,21 @@
         dragged = true;
         area.classList.add('is-dragging');
         event.preventDefault();   // no text selection
+        const left = start.sx - dx;
+        const top_ = start.sy - dy;
         // instant: Bootstrap makes the page scroll smooth, it would lag behind the mouse
-        window.scrollTo({left: start.sx - dx, top: start.sy - dy, behavior: 'instant'});
+        window.scrollTo({left: left, top: top_, behavior: 'instant'});
+        // Past the edge of the free room: that side of the window glows blue
+        const root = document.documentElement;
+        edge.classList.toggle('is-left', left < 0);
+        edge.classList.toggle('is-right', left > root.scrollWidth - window.innerWidth);
+        edge.classList.toggle('is-top', top_ < 0);
+        edge.classList.toggle('is-bottom', top_ > root.scrollHeight - window.innerHeight);
     });
     window.addEventListener('mouseup', () => {
         start = null;
         area.classList.remove('is-dragging');
+        edge.classList.remove('is-left', 'is-right', 'is-top', 'is-bottom');
         // Only the click ending the drag is swallowed (it fires right after
         // mouseup), not the next click on a node or a button of the tree controls
         if (dragged) {

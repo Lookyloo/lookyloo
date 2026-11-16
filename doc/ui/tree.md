@@ -73,7 +73,8 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
   far past its edges.
 - **Center** (`#tree-center`, `centerOnRoot`): brings the first node of the
   tree (the root, the node without parent) to the middle of the window, under
-  the capture bar. The page opens that way too (unless the link points to a
+  the capture bar. It measures the card of the node, not its group (Firefox
+  gives the `<g>` a box that also covers its hidden parts). The page opens that way too (unless the link points to a
   node: then that node is shown).
 - **Background** (`#tree-background`, `setBackground`): a button next to
   Center opens the list:
@@ -86,4 +87,8 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
   around it (the page scrolls). A press without movement is still a normal
   click; after a drag the click is swallowed. Links, buttons and the legend are
   not draggable. The scroll is `instant`: Bootstrap makes the page scroll
-  smooth, which would lag behind the mouse.
+  smooth, which would lag behind the mouse. Dragged past the limit of the free
+  room, that side of the window glows blue (`.lk-tree-edge`, `css/tree.css`)
+  until the mouse is released.
+- **Node cards** are solid (white, dark grey in dark mode), so the background
+  of the tree does not show through them.

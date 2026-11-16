@@ -68,7 +68,10 @@ function centerOnRoot() {
     // the SVG, whose order changes when nodes are expanded / collapsed)
     const root_node = node_container.selectAll('g.node').filter(d => !d.parent).node();
     if (!root_node) return;
-    const box = root_node.getBoundingClientRect();
+    // The card of the node, not its group: Firefox gives the <g> a box that also
+    // covers its hidden parts, and the view went far from the node
+    const card = root_node.querySelector('.node_data > rect') || root_node;
+    const box = card.getBoundingClientRect();
     const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-capture-top-height')) || 0;
     window.scrollTo({
         left: window.scrollX + box.left + box.width / 2 - window.innerWidth / 2,
