@@ -93,8 +93,11 @@
         {{get_sri('static', 'css/tree.css')}}
         href="{{ url_for('static', filename='css/tree.css') }}">
   {# Pivot pages loaded in the modals (investigate/*, macros/investigate.html):
-     cards + captures rows of the list of the captures #}
-  {% for stylesheet in ['css/components/pivot.css', 'css/components/capture-list.css',
+     cards + captures rows of the list of the captures. site.css brings the
+     --lk-* tokens they use (its other rules are scoped to .lk-page / .lk-*,
+     so the tree itself is not restyled); tag.css the hostname chips. #}
+  {% for stylesheet in ['css/components/site.css', 'css/components/tag.css',
+                        'css/components/pivot.css', 'css/components/capture-list.css',
                         'css/components/capture-preview.css'] %}
   <link rel="stylesheet"
         {{get_sri('static', stylesheet)}}

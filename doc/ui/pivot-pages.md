@@ -21,7 +21,11 @@ Two ways to show a pivot page:
   breadcrumb `Home / Search / <kind> / <value>` (long values shortened there, in
   full in the card). No "Go back" button: the breadcrumb and the menu replace it.
 - **Fragment in a capture modal** (no `from_popup`): only the cards, with an
-  "Open as a page" button. `tree/tree.html` loads `pivot.css` for them.
+  "Open as a page" button. `tree/tree.html` loads `pivot.css`,
+  `capture-list.css`, `capture-preview.css` and `tag.css` for them, plus
+  `site.css` for the `--lk-*` tokens these files use (without it the cards and
+  rows lose their spacing, borders and colours in the modals). The tree keeps
+  the default DataTables controls: their restyle is scoped to `.lk-page`.
 
 Examples on a local instance (`<…>` from your own captures):
 
