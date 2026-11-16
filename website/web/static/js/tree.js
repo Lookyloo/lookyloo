@@ -19,6 +19,10 @@ let node_width = 10;
 let node_height = 55;
 let center_node = null;
 
+// Keys selected in the legend filter (tree/legend.html): the nodes having at
+// least one of them are highlighted, the others dimmed.
+const active_filters = new Set();
+
 document.getElementById('tree_svg').style.width = min_width;
 document.getElementById('tree_svg').style.height = min_height;
 
@@ -73,6 +77,7 @@ try {
   root.y0 = 0;
 
   update(root);
+  setupLegendFilter(root);
   document.getElementById("tree-loading").style.display = "none";
 
   if (document.getElementById('tree_js').dataset.urlnode != null){
@@ -185,6 +190,74 @@ try {
   document.getElementById("tree-loading").style.display = "none";
 }
 
+
+// ****************** Legend & icon filter (tree/legend.html) ******************
+
+// Does the node have this icon? Same test as icon_list(): true, a non-empty
+// string, a number > 0 or a non-empty list.
+function nodeHas(d, key) {
+    const value = d.data[key];
+    if (value instanceof Array) return value.length > 0;
+    if (typeof value === 'number') return value > 0;
+    return Boolean(value);
+}
+
+function applyLegendFilter() {
+    const filtering = active_filters.size > 0;
+    let matches = 0;
+    node_container.selectAll('g.node').each(function(d) {
+        const match = filtering && [...active_filters].some(key => nodeHas(d, key));
+        if (match) matches++;
+        d3.select(this)
+          .classed('is-filter-match', match)
+          .classed('is-filter-dimmed', filtering && !match);
+    });
+    const active = document.getElementById('legend-active');
+    if (active) {
+        active.hidden = !filtering;
+        active.textContent = filtering ? `${matches} node${matches === 1 ? '' : 's'}` : '';
+    }
+    const clear = document.getElementById('legend-clear');
+    if (clear) clear.hidden = !filtering;
+}
+
+function setupLegendFilter(root) {
+    const present = document.getElementById('legend-present');
+    if (!present) return;
+    const absent = document.getElementById('legend-absent');
+    const nodes = root.descendants();
+    let absent_count = 0;
+    present.querySelectorAll('.lk-legend-item').forEach(button => {
+        const key = button.dataset.key;
+        const count = nodes.filter(d => nodeHas(d, key)).length;
+        button.querySelector('.lk-legend-count').textContent = count;
+        if (count === 0) {
+            // Icons that are not in this capture: in the collapsed "Not in this capture"
+            button.disabled = true;
+            absent.appendChild(button.closest('li'));
+            absent_count++;
+            return;
+        }
+        button.title = `${button.title}: ${count} of ${nodes.length} nodes`;
+        button.addEventListener('click', () => {
+            if (active_filters.has(key)) active_filters.delete(key);
+            else active_filters.add(key);
+            button.setAttribute('aria-pressed', active_filters.has(key) ? 'true' : 'false');
+            applyLegendFilter();
+        });
+    });
+    // Most frequent first
+    [...present.children]
+        .sort((a, b) => b.querySelector('.lk-legend-count').textContent - a.querySelector('.lk-legend-count').textContent)
+        .forEach(li => present.appendChild(li));
+    document.getElementById('legend-absent-count').textContent = absent_count;
+    document.getElementById('legend-absent-panel').hidden = absent_count === 0;
+    document.getElementById('legend-clear').addEventListener('click', () => {
+        active_filters.clear();
+        present.querySelectorAll('.lk-legend-item').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        applyLegendFilter();
+    });
+}
 
 function open_hostnode_popup(hostnode_uuid) {
     // /tree is kept, append the paramaters (seed, if present)
@@ -812,4 +885,6 @@ function update(root, computed_node_width=0) {
   if (computed_node_width === 0) {
     update(root, node_width)
   }
+  // Nodes shown again after an expand keep the legend filter
+  if (active_filters.size > 0) applyLegendFilter();
 }

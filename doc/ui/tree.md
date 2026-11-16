@@ -38,3 +38,18 @@ No new modal and no new route: every entry opens the same modal (same IDs and
 `css/components/capture-bar.css`, with the `--lk-*` tokens of `site.css`
 (light and dark). `css/tree.css` lost the rules of the old floating menus
 (including a global `.dropdown-menu` width of 180px).
+
+## Legend & filter (`tree/legend.html`)
+
+A panel at the bottom right (a `<details>`, open by default) replaces the old
+static legend. Each entry is a button carrying the data key of the node icon
+it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
+
+- When the tree is loaded, `setupLegendFilter()` counts the nodes having each
+  icon. The icons of this capture stay at the top, most frequent first, with
+  their count; the others go to the folded "Not in this capture" list.
+- A click on an entry selects it (several can be selected: a node matches if
+  it has **any** of them). The matching nodes are outlined, the others dimmed;
+  the summary shows the number of matching nodes. "Clear the filter" resets it.
+- The filter is applied again after a node is expanded or collapsed.
+- Nodes are only dimmed, never removed: the tree keeps its shape.
