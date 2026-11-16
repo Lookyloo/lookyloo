@@ -20,6 +20,8 @@
 
 .flashed-messages {
   position: fixed;
+  /* Explicit: its place in the page moves with the free room around the tree */
+  left: 0;
   bottom: 5px;
   text-align: center;
   width: 50%;
@@ -230,4 +232,15 @@ g.node.is-filter-match .node_data > rect { stroke: var(--lk-color-accent); strok
 .lk-tree-zoom button:disabled { color: var(--lk-color-muted); opacity: 0.5; background: none; }
 
 #tree_svg { cursor: grab; }
+
+/* Free room around the tree (250 px on each side): the tree can be moved past
+   its edges, and Center can put the first node in the middle of the window.
+   inline-block: the box takes the size of the (zoomed) SVG, so the room is
+   also on the right and at the bottom. */
+#tree_svg.container-fluid {
+  display: inline-block;
+  width: auto;
+  min-width: 100%;
+  padding: 250px;
+}
 #tree_svg.is-dragging { cursor: grabbing; user-select: none; }

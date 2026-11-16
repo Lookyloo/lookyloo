@@ -60,8 +60,9 @@ function setZoom(zoom, client_x=null, client_y=null) {
     updateZoomButtons();
 }
 
-// Bring the first node of the tree (the root) to the left of the window,
-// vertically centred under the capture bar (after a drag or a zoom that went far)
+// Bring the first node of the tree (the root) to the middle of the window, under
+// the capture bar (after a drag or a zoom that went far). As far as the free
+// room around the tree (css/tree.css, 250 px) allows: the page cannot scroll more.
 function centerOnRoot() {
     // The first node of the tree: the one without parent (not the first <g> of
     // the SVG, whose order changes when nodes are expanded / collapsed)
@@ -70,7 +71,7 @@ function centerOnRoot() {
     const box = root_node.getBoundingClientRect();
     const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-capture-top-height')) || 0;
     window.scrollTo({
-        left: window.scrollX + box.left - 30,
+        left: window.scrollX + box.left + box.width / 2 - window.innerWidth / 2,
         top: window.scrollY + box.top + box.height / 2 - (top + window.innerHeight) / 2,
         behavior: 'instant'});
 }
