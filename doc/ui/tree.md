@@ -45,7 +45,7 @@ No new modal and no new route: every entry opens the same modal (same IDs and
 
 ## Legend & filter (`tree/legend.html`)
 
-A panel at the bottom right (a `<details>`) replaces the old static legend.
+A panel at the bottom left (out of the way of the side panel) (a `<details>`) replaces the old static legend.
 It is hidden while the tree loads; once the tree is drawn, `setupLegendFilter()`
 opens it and adds `.is-ready`: it fades in and slides up (300 ms, none with
 reduced motion). Each entry is a button carrying the data key of the node icon
@@ -84,7 +84,7 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
   asks for reduced motion).
 - **Background** (`#tree-background`, `setBackground`): a button next to
   Center opens the list:
-  dots (default), columns (one stripe per depth, the former background) or
+  dots, columns (default: one stripe per depth, the former background) or
   plain. Remembered in `localStorage` (`lk-tree-background`). The dots are a
   CSS background of the `body` (`lk-bg-dots`), which fills the whole page
   however far it is dragged; the columns

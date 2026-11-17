@@ -63,7 +63,7 @@ hr {
 
 .lk-tree-legend {
   position: fixed;
-  right: var(--lk-space-3);
+  left: var(--lk-space-3);
   bottom: var(--lk-space-3);
   z-index: 1020;
   width: 17rem;
@@ -293,7 +293,7 @@ g.node.is-filter-match .node_data > rect { stroke: var(--lk-color-accent); strok
 .lk-tree-chip.show { border-color: var(--lk-color-accent); background: var(--lk-color-accent-soft); }
 .lk-tree-background .dropdown-item { display: flex; align-items: center; gap: var(--lk-space-2); font-size: var(--lk-font-size-sm); }
 
-/* Dots background (default), on the body: the background of the body fills the
+/* Dots background, on the body: the background of the body fills the
    whole page (the tree and the free room around it), however far it scrolls */
 body.lk-capture-page.lk-bg-dots {
   background-image: radial-gradient(var(--lk-color-rule-strong) 1.3px, transparent 1.4px);
@@ -360,3 +360,4 @@ g.node.is-selected .node_data > rect {
   stroke-opacity: 1 !important;
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--lk-color-accent) 60%, transparent));
 }
+

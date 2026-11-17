@@ -61,7 +61,7 @@ phase, before Bootstrap) and opens a tab instead:
 ## Around the panel
 
 `--lk-side-panel-space` (on `<html>`) is the width the panel takes: the tree
-controls and the legend move left of it, the blue edge glow of the drag stops
+controls move left of it (the legend is at the bottom left), the blue edge glow of the drag stops
 at it, and Center (`js/tree.js`, `centerOnRoot`) centres the first node in the
 space left. Phones: the panel takes the whole width, no resize.
 
@@ -111,3 +111,22 @@ tree): `overscroll-behavior: contain` on its body, and a `wheel` listener that
 stops the wheel when nothing under the mouse can scroll that way any more (end
 of the content, tab bar; the scrolling boxes inside the vitrine components
 count, through `composedPath()`).
+
+## Back and forward in a tab
+
+A link inside the panel shown (a hostname, an IP, a hash... that opens the
+details of the value) opens its page **in the same tab**, like a browser; the
+←  / → buttons at the left of the tab bar (`#lk-side-panel-back`,
+`#lk-side-panel-forward`) go through the pages seen in that tab. Ctrl / ⌘ +
+click or a middle click opens it in a new tab instead, and the links of the
+menus always open a tab.
+
+In `js/side_panel.js`: each tab has `back` and `forward` lists of pages
+(`{kind, modal, url, title}`); `navigate()` pushes the current page and loads
+the new one, `goBack()` / `goForward()` move between them, `renderTabs()`
+enables the buttons. Only the current page of each tab is kept in the URL
+(`#panels=`): after a reload, the history of the tabs starts again.
+
+While the panel is resized, its frames (the pages of the nodes) ignore the mouse
+(`.is-resizing iframe { pointer-events: none }`): otherwise the frame keeps the
+moves as soon as the mouse is over it, and the panel can only grow.

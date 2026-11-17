@@ -146,6 +146,34 @@
 
     // ---- Tabs ----
 
+    // ---- History of a tab: a link inside a panel opens its page in the same tab,
+    // like a browser; back / forward go through the pages seen in that tab ----
+    const back_button = document.getElementById('lk-side-panel-back');
+    const forward_button = document.getElementById('lk-side-panel-forward');
+    const pageOf = (tab) => ({kind: tab.kind, modal: tab.modal, url: tab.url, title: tab.title});
+    const show = (tab, page) => {
+        Object.assign(tab, page);
+        loadRemote(tab);
+        renderTabs();
+    };
+    const navigate = (tab, modal, url, title) => {
+        (tab.back ||= []).push(pageOf(tab));
+        tab.forward = [];
+        show(tab, {kind: modal.id, modal, url, title});
+    };
+    const goBack = () => {
+        if (!current?.back?.length) return;
+        (current.forward ||= []).push(pageOf(current));
+        show(current, current.back.pop());
+    };
+    const goForward = () => {
+        if (!current?.forward?.length) return;
+        current.back.push(pageOf(current));
+        show(current, current.forward.pop());
+    };
+    back_button.addEventListener('click', goBack);
+    forward_button.addEventListener('click', goForward);
+
     const renderTabs = () => {
         tabs_bar.replaceChildren(...tabs.map(tab => {
             const button = document.createElement('div');
@@ -194,6 +222,8 @@
             return button;
         }));
         tabs_bar.querySelector('[aria-selected="true"]')?.scrollIntoView({block: 'nearest', inline: 'nearest'});
+        back_button.disabled = !current?.back?.length;
+        forward_button.disabled = !current?.forward?.length;
         saveState();
     };
 
@@ -507,8 +537,6 @@
         tab.win = win;
         // Links that open a panel, inside the window: a tab of the capture page
         doc.addEventListener('click', onOpenerClick, true);
-        // Double-click on a value copies it there too (js/capture_panels.js)
-        if (typeof copyOnDoubleClick === 'function') copyOnDoubleClick(doc);
         // Its "Close" buttons close the window (and the tab)
         doc.addEventListener('click', (event) => {
             if (event.target.closest('[data-bs-dismiss="modal"]')) {
@@ -552,9 +580,19 @@
         }
         event.preventDefault();
         event.stopPropagation();
+        // A link inside the panel shown, to another loaded page: in the same tab (back
+        // goes to where it was). Ctrl / ⌘ / middle click: in a new tab.
+        const inside = event.composedPath().includes(body);
+        const newTab = event.ctrlKey || event.metaKey || event.button === 1;
+        if (inside && !newTab && current && current.url && !current.page && opener.dataset.remote) {
+            navigate(current, modal, opener.dataset.remote, titleOf(modal, opener));
+            return;
+        }
         open(modal, opener);
     }
     window.addEventListener('click', onOpenerClick, true);
+    // Middle click on a link of a panel: in a new tab
+    window.addEventListener('auxclick', (event) => { if (event.button === 1) onOpenerClick(event); }, true);
 
     // The close buttons of the borrowed panels (data-bs-dismiss="modal")
     body.addEventListener('click', (event) => {

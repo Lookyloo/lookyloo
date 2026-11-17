@@ -163,7 +163,7 @@ pattern.append('rect')
 // has them too) or plain. Remembered in localStorage.
 const BACKGROUNDS = {columns: 'url(#backstripes)', dots: 'none', plain: 'none'};
 const BACKGROUND_KEY = 'lk-tree-background';
-let tree_background = 'dots';
+let tree_background = 'columns';
 try {
     const stored = localStorage.getItem(BACKGROUND_KEY);
     if (stored in BACKGROUNDS) tree_background = stored;

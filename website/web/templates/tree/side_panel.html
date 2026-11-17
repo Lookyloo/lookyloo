@@ -12,6 +12,11 @@
   <div class="lk-side-panel-resize" id="lk-side-panel-resize" role="separator" aria-orientation="vertical"
        aria-label="Width of the panel" title="Drag to change the width" tabindex="0"></div>
   <div class="lk-side-panel-bar">
+    {# Back / forward in the pages opened inside the current tab (js/side_panel.js, navigate) #}
+    <div class="lk-side-panel-nav">
+      <button type="button" id="lk-side-panel-back" title="Back" aria-label="Back" disabled>{{ render_icon('arrow-left') }}</button>
+      <button type="button" id="lk-side-panel-forward" title="Forward" aria-label="Forward" disabled>{{ render_icon('arrow-right') }}</button>
+    </div>
     <div class="lk-side-panel-tabs" id="lk-side-panel-tabs" role="tablist" aria-label="Open panels"></div>
     <div class="lk-side-panel-tools">
       <button type="button" id="lk-side-panel-detach" title="Open this tab in its own window" aria-label="Open this tab in its own window">{{ render_icon('box-arrow-up-right') }}</button>

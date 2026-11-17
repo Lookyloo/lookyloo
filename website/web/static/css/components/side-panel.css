@@ -74,6 +74,9 @@
 .lk-side-panel-resize:focus-visible::after,
 .lk-side-panel.is-resizing .lk-side-panel-resize::after { border-color: var(--lk-color-accent); }
 .lk-side-panel.is-resizing, .lk-side-panel.is-resizing * { cursor: ew-resize !important; }
+/* While resizing, the frame of a node page must not take the mouse (it would keep
+   the moves, and the panel could only grow) */
+.lk-side-panel.is-resizing iframe { pointer-events: none; }
 
 /* Tabs, like a browser */
 .lk-side-panel-bar {
@@ -185,7 +188,6 @@
 
 /* The tree controls and the legend stay left of the panel */
 body.has-side-panel .lk-tree-zoom { right: calc(var(--lk-side-panel-space, 0px) + var(--lk-space-3)); }
-body.has-side-panel .lk-tree-legend { right: calc(var(--lk-side-panel-space, 0px) + var(--lk-space-3)); }
 body.has-side-panel .lk-tree-edge { right: var(--lk-side-panel-space, 0px); }
 
 /* A tab detached in its own window (js/side_panel.js, detach) */
@@ -210,3 +212,12 @@ body.lk-detached-panel {
   .lk-side-panel { left: 0; min-width: 0; max-width: none; width: auto !important; }
   .lk-side-panel-resize { display: none; }
 }
+
+/* Back / forward of the current tab (js/side_panel.js, navigate) */
+.lk-side-panel-nav { display: flex; align-items: center; gap: 2px; padding: 0 var(--lk-space-1); flex: none; }
+.lk-side-panel-nav button {
+  display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+  padding: 0; border: 0; border-radius: var(--lk-radius-sm); background: transparent; color: var(--lk-color-ink);
+}
+.lk-side-panel-nav button:hover:not(:disabled) { background: var(--lk-color-surface-2); color: var(--lk-color-accent); }
+.lk-side-panel-nav button:disabled { opacity: 0.3; }
