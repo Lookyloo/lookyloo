@@ -58,9 +58,7 @@
   display: block;
   font-weight: var(--lk-font-weight-semibold);
   color: var(--lk-color-ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .lk-capture-url {
@@ -73,9 +71,7 @@
 
 .lk-capture-url-text {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   font-family: var(--lk-font-mono);
   font-size: var(--lk-font-size-sm);
   color: var(--lk-color-muted);
@@ -262,9 +258,7 @@
 
 .lk-route-text {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   font-family: var(--lk-font-mono);
   font-size: var(--lk-font-size-sm);
 }
@@ -435,4 +429,27 @@
     gap: var(--lk-space-1);
     border-radius: var(--lk-radius-pill);
   }
+}
+
+/* Title, URL and redirects wrap on wide screens (all the text visible); cut
+   with an ellipsis on phones only, where the room is short */
+@media (max-width: 576px) {
+  .lk-capture-title,
+  .lk-capture-url-text,
+  .lk-route-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* The time column takes only the room of its content (DataTables would give
+   it half the table): the capture column gets the rest */
+@media (min-width: 577px) {
+  .lk-capture-table { table-layout: auto; }
+  .lk-capture-table > colgroup > col:first-child,
+  .lk-capture-table > thead > tr > th:first-child { width: auto !important; }
+  .lk-capture-table > colgroup > col:last-child,
+  .lk-capture-table > thead > tr > th:last-child,
+  .lk-capture-table td.lk-capture-time { width: 1% !important; white-space: nowrap; }
 }
