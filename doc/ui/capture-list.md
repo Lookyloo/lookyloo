@@ -15,6 +15,12 @@ On phones the table becomes a list of blocks: the time goes on its own line
 under the capture, and the button moves under the preview, on the left
 (`.lk-capture-view-side`), so it never covers the text.
 
+The title, the URL and the redirect URLs are shown in full and wrap on several
+lines when they are long; only on phones (576 px and less) are they cut on one
+line with an ellipsis (the full value stays in the copy buttons).
+The time column only takes the width of its content; the capture column gets
+the rest of the row.
+
 ## Front-end only
 
 The rows are built in the browser, from the JSON returned by
