@@ -29,7 +29,7 @@ standalone pages).
 | Details & statistics | `tree/tree.html` `#detailsModal` | Page (URL with copy, title, time, referer, seed expiry), **In numbers** (the statistics: `tree/modals/statistics.html?embedded=1`, loaded the first time the panel is shown, `data-lk-remote-part` / `setupRemoteParts()`; in a card like Page and Browser, the tiles without the frame of `<vt-stats>`, `::part(container)`), Browser (user agent, meta, proxy), Categories as tags | `#start_time`, `#seed_expire_at` filled by the page script; a category links to the captures in it |
 | (Statistics) | `tree/modals/statistics.html` | No menu entry any more: a section of Details & statistics. The panel itself still exists (`#statsModal`, tabs kept in a URL). |
 | | | `<vt-stats>` tiles: hostnames, URLs, nodes, depth, cookies received / sent, sum of load times (duration, the raw value under it), total size (bytes) | the same 8 figures; a `<noscript>` list. `stats()` converts the load time to seconds |
-| Storage state | `tree/modals/storage.html` | Tabs Cookies / Storage / WebAuthn credentials with counts. Cookies, local storage, OPFS and credentials in `<vt-table>`: every value in full (`wrap`: long text goes to the next line, never cut; `layout="table"`: no cards in a narrow panel), sort, search, filter row shown at first (`filters`), column chooser; no copy / download / fullscreen buttons in their header. A value that is JSON (object or array) is shown pretty-printed in a small `<vt-json>` (`jsonOrText` in `js/capture_panels.js`); one foldable card per origin; IndexedDB stores in `<vt-json>` | download of the full storage state; a cookie name opens the other captures with that name (`#cookieNameModal`, was missing on the page); number of captures per cookie; CHIPS partition key and its details; expiry as a date (Session when none); OPFS files downloaded as `<capture uuid>_<name>` |
+| Storage state | `tree/modals/storage.html` | Tabs Cookies / Storage / WebAuthn credentials with counts. Cookies, local storage, OPFS and credentials in `<vt-table>`: every value in full (`wrap`: long text goes to the next line, never cut; `layout="table"`: no cards in a narrow panel), sort, search, filter row hidden at first (`filters="false"`, the funnel button shows it), no row numbers (`row-numbers="false"`), column chooser; no copy / download / fullscreen buttons in their header. A value that is JSON (object or array) is shown pretty-printed in a small `<vt-json>` (`jsonOrText` in `js/capture_panels.js`); one foldable card per origin; IndexedDB stores in `<vt-json>` | download of the full storage state; a cookie name opens the other captures with that name (`#cookieNameModal`, was missing on the page); number of captures per cookie; CHIPS partition key and its details; expiry as a date (Session when none); OPFS files downloaded as `<capture uuid>_<name>` |
 | Console messages | `tree/modals/console_messages.html` | `<vt-log>`: one entry per message, the level from the console type, URL / line / column / type as fields, buttons per level with counts, search, copy, download; no fullscreen | time of each message; nothing lost from the former table |
 | Downloads | `tree/modals/downloads.html` | One card per file: index, name, Download, Submit to Pandora | `downloadsTable` id kept on the list |
 | Video | `tree/modals/video.html` | One card per video: name, Download, player | |
@@ -71,26 +71,22 @@ While a panel is fetched, the side panel shows the eyes of the logo
 capture page. Like everywhere on the site, the eyes appear after a short delay,
 so a fast panel does not flicker.
 
-## Double-click to copy
+## Copy buttons
 
 In every panel of the side panel (and in a detached window, and the "Open as a
-page" versions), **a double-click on a value copies it**; a green "Copied"
-bubble shows next to the mouse ("Copy failed" in red). `copyOnDoubleClick()` in
-`js/capture_panels.js` finds the value from the innermost element clicked
-(`event.composedPath()`, so inside the vitrine components too):
+page" versions), the values have a small **copy button** next to them (Bootstrap
+Icons "copy", `copyButton()` in `js/capture_panels.js`); a green "Copied" bubble
+shows over it ("Copy failed" in red). The mouse cursor stays the normal one.
 
-- a cell of a table: the whole cell; a JSON value in it: the whole JSON;
-- console log: the time, one field value, or the message without its fields;
-- a line of a JSON viewer (MISP export, IndexedDB): that line;
-- our markup: a fact (`dd`), a file name, an origin, a title, a paragraph…
-
-The whole value is copied, not the word the browser selected (the selection is
-cleared). Links, buttons, tabs and form fields keep their own double-click.
-The values that can be copied keep the normal mouse cursor, with a small copy icon next to it (`.lk-copy-hint`, `copyHint()` in `js/capture_panels.js`):
-our markup (facts, file names, origins, paragraphs, cells), and inside the
-vitrine components through their CSS parts (`vt-table::part(cell)`,
-`vt-log::part(time | message | field)`, `vt-json::part(body)`; a JSON shown in
-a cell inherits it). Links, buttons, tabs, filter fields keep their own cursor.
+- In the vitrine tables, the columns with a value to copy (URLs, hostnames,
+  IPs, hashes, identifiers, cookie names / values / domains, storage names /
+  values, OPFS paths, WebAuthn keys, the URLs of the nodes) use `withCopy()` /
+  `copyText()` in `TABLES`. The button is styled inline as well, as the cells
+  are in the shadow DOM of the component.
+- In our markup, `setupCopyButtons()` adds one to the facts (`.lk-panel-facts dd`),
+  file names, report values and any `[data-lk-copy]` (its value, or its text),
+  except the ones with a control inside.
+- The JSON viewers and the console log have their own copy buttons (vitrine).
 
 ## true / false / null in the tables
 

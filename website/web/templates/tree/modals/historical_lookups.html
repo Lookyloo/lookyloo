@@ -1,20 +1,35 @@
-<div>
-{% if not circl_pdns_queries %}
-  No historical data available
-{%else%}
-  {% if circl_pdns_queries %}
-    <center>
-      <h1 class="display-4">CIRCL Passive DNS
-        <a href='https://www.circl.lu/services/passive-dns/' target="_blank">
-          <div class="help-tip" title="Click for more details" style="cursor: pointer;"></div>
-        </a>
-      </h1>
+{#
+  Analysis > Historical lookups: what CIRCL Passive DNS saw for the hostnames of
+  the redirect chain of the capture (first / last seen, record type, data). One
+  section per hostname, its table filled by js/render_tables.js
+  (name="CIRCL_pdns_table", data-query, POST /tables/CIRCL_pdns_table/<query>).
+  A message instead when the module is not configured or failed, or when there
+  is nothing to look up. HTML fragment for the side panel.
+  Doc: doc/ui/analysis-panels.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from "macros/panel.html" import panel_header, panel_section, panel_empty %}
+<div class="lk-panel">
+  {% call panel_header('Analysis', 'Historical lookups',
+                       'What CIRCL Passive DNS saw for the hostnames of the redirect chain of the capture: the records (A, AAAA, CNAME, NS...) with when they were first and last seen.',
+                       icon_name='clock-history') %}
+    <a class="btn btn-outline-secondary btn-sm" href="https://www.circl.lu/services/passive-dns/" target="_blank" rel="noopener"
+       title="About CIRCL Passive DNS">{{ render_icon('box-arrow-up-right') }} CIRCL Passive DNS</a>
+  {% endcall %}
+
+  {% if not available %}
+    {{ panel_empty('Historical lookups are not available',
+                   'CIRCL Passive DNS is not configured on this Lookyloo: it needs an account (user and password of the CIRCLPDNS module in config/modules.json).',
+                   icon_name='clock-history') }}
+  {% elif error %}
+    {{ panel_empty('Unable to run the historical lookup', error, icon_name='exclamation-triangle') }}
+  {% elif not circl_pdns_queries %}
+    {{ panel_empty('No historical data', 'The redirect chain of the capture has no hostname to look up.', icon_name='clock-history') }}
+  {% else %}
     {% for query in circl_pdns_queries %}
-    <div>
-      <h3>{{query}}</h3>
-      <table id="CIRCL_pdns_table_{{query | replace('.', '_')}}" name="CIRCL_pdns_table"
-             class="table table-striped"
-             style="width:100%" data-query="{{query}}">
+    {% call panel_section(query, 'globe2') %}
+      <table id="CIRCL_pdns_table_{{ query | replace('.', '_') }}" name="CIRCL_pdns_table"
+             class="table" style="width:100%" data-query="{{ query }}">
         <thead>
           <tr>
             <th>First seen</th>
@@ -25,9 +40,7 @@
           </tr>
         </thead>
       </table>
-    </div>
-    {%endfor%}
-    </center>
-  {% endif%}
-{% endif%}
+    {% endcall %}
+    {% endfor %}
+  {% endif %}
 </div>

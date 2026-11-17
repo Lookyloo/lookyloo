@@ -135,13 +135,250 @@ const panelLink = (text, target, remote) => {
     return link;
 };
 
+// ---- Copy buttons next to the values (every panel of the side panel) ----
+
+// "Copied" over the button for a moment
+const copiedBubble = (doc, x, y, ok) => {
+    const bubble = doc.createElement('div');
+    bubble.className = `lk-copied-bubble${ok ? '' : ' is-failed'}`;
+    bubble.textContent = ok ? 'Copied' : 'Copy failed';
+    bubble.setAttribute('role', 'status');
+    bubble.style.left = `${x}px`;
+    bubble.style.top = `${y}px`;
+    doc.body.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 1200);
+};
+
+const cleanValue = (value) => String(value ?? '').replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim();
+
+// A small copy button (Bootstrap Icons "copy"). Styled inline as well: inside the
+// vitrine tables it is in a shadow DOM that our stylesheets do not reach.
+function copyButton(value, doc = document) {
+    const NS = 'http://www.w3.org/2000/svg';
+    const button = doc.createElement('button');
+    button.type = 'button';
+    button.className = 'lk-copy-btn';
+    button.title = 'Copy';
+    button.setAttribute('aria-label', 'Copy');
+    Object.assign(button.style, {
+        display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle', flex: 'none',
+        marginLeft: '0.3rem', padding: '2px', border: '0', borderRadius: '4px',
+        background: 'transparent', color: 'inherit', opacity: '0.5', cursor: 'pointer', lineHeight: '0',
+    });
+    button.addEventListener('mouseenter', () => { button.style.opacity = '1'; });
+    button.addEventListener('mouseleave', () => { button.style.opacity = '0.5'; });
+    const svg = doc.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('width', '13');
+    svg.setAttribute('height', '13');
+    svg.setAttribute('fill', 'currentColor');
+    svg.setAttribute('aria-hidden', 'true');
+    const path = doc.createElementNS(NS, 'path');
+    path.setAttribute('fill-rule', 'evenodd');
+    path.setAttribute('d', 'M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z');
+    svg.appendChild(path);
+    button.appendChild(svg);
+    button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const box = button.getBoundingClientRect();
+        const win = button.ownerDocument.defaultView || window;
+        const text = cleanValue(typeof value === 'function' ? value() : value);
+        const done = (ok) => copiedBubble(button.ownerDocument, box.left + box.width / 2, box.top, ok);
+        if (!win.navigator.clipboard || !text) { done(false); return; }
+        win.navigator.clipboard.writeText(text).then(() => done(true), () => done(false));
+    });
+    return button;
+}
+window.copyButton = copyButton;
+
+// A cell content (text or node) followed by its copy button
+const withCopy = (content, value) => {
+    if (value === null || value === undefined || value === '') return content;
+    const wrap = el('span');
+    wrap.append(content, copyButton(value));
+    return wrap;
+};
+// Column helper: the value as it is (true / false / null styled), with a copy button
+const copyText = (value) => withCopy(literalOr(value), typeof value === 'string' ? value : JSON.stringify(value));
+
+// Our own markup: the facts, file names, origins and report values get a copy
+// button (not the ones with a control or a copy button already)
+const setupCopyButtons = (root) => {
+    root.querySelectorAll('.lk-panel-facts dd, .lk-file-name, .lk-report-value, [data-lk-copy]').forEach(node => {
+        if (node.dataset.lkCopyReady !== undefined) return;
+        node.dataset.lkCopyReady = '';
+        if (node.querySelector('button, input, select, textarea, form, vt-table, vt-json, vt-log, .lk-panel-tags, [data-lk-copy]')) return;
+        const value = cleanValue(node.dataset.lkCopy ?? node.textContent);
+        if (!value) return;
+        const button = copyButton(value, node.ownerDocument);
+        if (node.matches('a')) node.after(button); else node.appendChild(button);
+    });
+};
+
+// A small button in a table cell, in the look of the site buttons (.btn-sm
+// outline): styled inline, the cells are in the shadow DOM of the component;
+// the --lk-* tokens cross it, so it follows the light / dark theme
+const DOWNLOAD_ICON = 'M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z';
+const tableButton = (label, title, onClick, iconPath = DOWNLOAD_ICON) => {
+    const NS = 'http://www.w3.org/2000/svg';
+    const button = el('button', 'lk-table-button');
+    button.type = 'button';
+    button.title = title;
+    Object.assign(button.style, {
+        display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.2rem 0.6rem',
+        border: '1px solid var(--lk-color-rule-strong)', borderRadius: 'var(--lk-radius-md, 6px)',
+        background: 'var(--lk-color-surface)', color: 'var(--lk-color-ink)',
+        font: 'inherit', fontSize: '0.8125rem', fontWeight: '500', lineHeight: '1.4', cursor: 'pointer',
+        whiteSpace: 'nowrap',
+    });
+    const hover = (on) => {
+        button.style.borderColor = on ? 'var(--lk-color-accent)' : 'var(--lk-color-rule-strong)';
+        button.style.color = on ? 'var(--lk-color-accent)' : 'var(--lk-color-ink)';
+    };
+    button.addEventListener('mouseenter', () => hover(true));
+    button.addEventListener('mouseleave', () => hover(false));
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('width', '13');
+    svg.setAttribute('height', '13');
+    svg.setAttribute('fill', 'currentColor');
+    svg.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d', iconPath);
+    svg.appendChild(path);
+    button.append(svg, label);
+    button.addEventListener('click', onClick);
+    return button;
+};
+
+// ---- Analysis > In this capture (tree/modals/tree_*.html) ----
+
+// Shows the node in the tree (js/tree_modals.js, LocateNode), from the side panel
+// or a detached window
+const locateNode = (hostnode) => {
+    const page = typeof capturePage === 'function' ? capturePage() : window;
+    (page?.LocateNode || window.LocateNode)?.(hostnode);
+};
+
+// The URLs of the capture with the value, each one shows its node in the tree;
+// folded when there are more than 3
+const nodesCell = (nodes) => {
+    if (!Array.isArray(nodes) || !nodes.length) return '';
+    const list = el('ul', 'lk-node-list');
+    nodes.forEach(node => {
+        const item = el('li');
+        const button = el('a', 'lk-table-link', node.url);
+        button.href = '#';
+        button.setAttribute('role', 'button');
+        button.title = 'Show the node in the tree';
+        button.addEventListener('click', (event) => { event.preventDefault(); locateNode(node.hostnode); });
+        item.append(button, copyButton(node.url));
+        if (node.embedded) item.append(' ', el('em', null, '(embedded)'));
+        list.appendChild(item);
+    });
+    if (nodes.length <= 3) return list;
+    const details = el('details');
+    const summary = el('summary', null, `${nodes.length} URLs`);
+    // Copy all the URLs at once (one per line)
+    const all = copyButton(() => nodes.map(node => node.url).join('\n'));
+    all.title = 'Copy all the URLs';
+    all.setAttribute('aria-label', 'Copy all the URLs');
+    summary.appendChild(all);
+    details.append(summary, list);
+    return details;
+};
+// Text of the nodes for the filter of the column
+const nodesText = (nodes) => (Array.isArray(nodes) ? nodes.map(node => node.url).join(' ') : '');
+
+const capturesColumn = { key: 'captures', label: 'Captures', type: 'number', width: 110 };
+
 const TABLES = {
+    urls: [
+        capturesColumn,
+        { key: 'url', label: 'URL', render: (value, row) => withCopy(panelLink(value, 'urlDetailsModal', row.detail), value) },
+    ],
+    hostnames: [
+        capturesColumn,
+        { key: 'hostname', label: 'Hostname', width: 220, render: (value, row) => withCopy(panelLink(value, 'hostnameDetailsModal', row.detail), value) },
+        { key: 'ip', label: 'IP', width: 160, render: (value, row) => (row.ip_detail ? withCopy(panelLink(value, 'ipDetailsModal', row.ip_detail), value) : value) },
+        { key: 'nodes', label: 'URLs in the capture', width: 380, sortable: false, format: nodesText, render: nodesCell },
+    ],
+    ips: [
+        capturesColumn,
+        { key: 'ip', label: 'IP', width: 160, render: (value, row) => withCopy(panelLink(value, 'ipDetailsModal', row.detail), value) },
+        { key: 'hostname', label: 'Hostname', width: 220, render: (value, row) => withCopy(panelLink(value, 'hostnameDetailsModal', row.hostname_detail), value) },
+        { key: 'nodes', label: 'URLs with the IP in the capture', width: 380, sortable: false, format: nodesText, render: nodesCell },
+    ],
+    body_hashes: [
+        capturesColumn,
+        { key: 'mimetype', label: 'Type', width: 170,
+          render: (value, row) => {
+              const wrap = el('span');
+              const link = el('a', 'lk-table-link', value || row.generic);
+              link.href = row.resource;
+              link.title = 'Download the resource';
+              wrap.append(link, copyButton(value || row.generic));
+              return wrap;
+          } },
+        { key: 'nodes', label: 'URLs in the capture', width: 380, sortable: false, format: nodesText, render: nodesCell },
+        { key: 'sha512', label: 'SHA-512', width: 260, render: (value, row) => withCopy(panelLink(value, 'bodyHashDetailsModal', row.detail), value) },
+    ],
+    favicons: [
+        capturesColumn,
+        { key: 'favicon', label: 'Favicon', width: 110, sortable: false, filterable: false,
+          render: (value, row) => {
+              const link = panelLink('', 'faviconDetailsModal', row.detail);
+              link.title = 'Other captures with this favicon';
+              const img = el('img');
+              img.src = `data:${row.mimetype};base64,${value}`;
+              img.alt = 'Favicon';
+              img.width = 32;
+              img.height = 32;
+              link.appendChild(img);
+              return link;
+          } },
+        { key: 'mmh3', label: 'Shodan MMH3', width: 160, render: (value) => withCopy(String(value), String(value)) },
+        { key: 'sha512', label: 'SHA-512', render: (value, row) => withCopy(panelLink(value, 'faviconDetailsModal', row.detail), value) },
+        { key: 'mimetype', label: 'Download', width: 120, sortable: false, filterable: false,
+          render: (value, row) => {
+              return tableButton('Download', 'Download the favicon', () => downloadBase64File(value, row.favicon, 'favicon.ico'));
+          } },
+    ],
+    hashes_types: [
+        capturesColumn,
+        { key: 'type', label: 'Hash type', width: 160 },
+        { key: 'hash', label: 'Hash', render: (value, row) => withCopy(panelLink(value, 'captureHashesTypesDetailsModal', row.detail), value) },
+    ],
+    identifiers: [
+        capturesColumn,
+        { key: 'type', label: 'Type', width: 160 },
+        { key: 'identifier', label: 'Identifier', render: (value, row) => withCopy(panelLink(value, 'identifierDetailsModal', row.detail), value) },
+    ],
+    cloudflare_ns: [
+        capturesColumn,
+        { key: 'ns', label: 'Name servers', width: 240, render: (value, row) => withCopy(panelLink(value, 'cloudflareNSDetailsModal', row.detail), value) },
+        { key: 'hostnames', label: 'Hostnames of the capture', sortable: false,
+          format: (value) => (Array.isArray(value) ? value.join(' ') : ''),
+          render: (value) => {
+              const list = el('ul', 'lk-node-list');
+              (value || []).forEach(hostname => { const item = el('li', null, hostname); item.appendChild(copyButton(hostname)); list.appendChild(item); });
+              if ((value || []).length <= 3) return list;
+              const details = el('details');
+              const summary = el('summary', null, `${value.length} hostnames`);
+              const all = copyButton(() => value.join('\n'));
+              all.title = 'Copy all the hostnames';
+              summary.appendChild(all);
+              details.append(summary, list);
+              return details;
+          } },
+    ],
     cookies: [
         { key: 'frequency', label: 'Captures', type: 'number', width: 150 },
         { key: 'name', label: 'Name', width: 180,
-          render: (value, row) => (row.detail ? panelLink(value, 'cookieNameModal', row.detail) : value) },
-        { key: 'value', label: 'Value', width: 280, render: jsonOrText },
-        { key: 'domain', label: 'Domain', width: 160 },
+          render: (value, row) => withCopy(row.detail ? panelLink(value, 'cookieNameModal', row.detail) : value, value) },
+        { key: 'value', label: 'Value', width: 280, render: (value) => withCopy(jsonOrText(value), value) },
+        { key: 'domain', label: 'Domain', width: 160, render: copyText },
         { key: 'partition', label: 'CHIPS', width: 160, render: literalsInText },
         { key: 'expires', label: 'Expires', type: 'date', width: 200,
           format: (value) => (value > 0 ? datetime(value) : 'Session') },
@@ -151,29 +388,25 @@ const TABLES = {
         { key: 'sameSite', label: 'Same site', width: 100 },
     ],
     local_storage: [
-        { key: 'name', label: 'Name', width: 220 },
-        { key: 'value', label: 'Value', render: jsonOrText },
+        { key: 'name', label: 'Name', width: 220, render: copyText },
+        { key: 'value', label: 'Value', render: (value) => withCopy(jsonOrText(value), value) },
     ],
     opfs: [
-        { key: 'path', label: 'Path', width: 260 },
+        { key: 'path', label: 'Path', width: 260, render: copyText },
         { key: 'type', label: 'Type', width: 90 },
         { key: 'mimetype', label: 'Mimetype', width: 160 },
         { key: 'filename', label: 'Download', sortable: false, filterable: false, width: 120,
           render: (value, row) => {
               if (!row.base64) return 'N/A';
-              const button = el('button', 'lk-table-button', 'Download');
-              button.type = 'button';
-              button.title = 'Download the file';
-              button.addEventListener('click', () => downloadBase64File(row.mimetype, row.base64, value));
-              return button;
+              return tableButton('Download', 'Download the file', () => downloadBase64File(row.mimetype, row.base64, value));
           } },
     ],
     credentials: [
-        { key: 'id', label: 'ID', width: 160 },
-        { key: 'rpId', label: 'Relying party (rpID)', width: 160 },
-        { key: 'userHandle', label: 'User handle', width: 140 },
-        { key: 'privateKey', label: 'Private key', width: 220 },
-        { key: 'publicKey', label: 'Public key', width: 220 },
+        { key: 'id', label: 'ID', width: 160, render: copyText },
+        { key: 'rpId', label: 'Relying party (rpID)', width: 160, render: copyText },
+        { key: 'userHandle', label: 'User handle', width: 140, render: copyText },
+        { key: 'privateKey', label: 'Private key', width: 220, render: copyText },
+        { key: 'publicKey', label: 'Public key', width: 220, render: copyText },
     ],
 };
 
@@ -273,113 +506,6 @@ const setupLogs = (root) => {
     });
 };
 
-// ---- Double-click on a value: copied (every panel of the side panel) ----
-
-// The value under the mouse, from the innermost element (composedPath: also inside
-// the vitrine components), or null for the controls (links, buttons, fields)
-const valueAt = (path) => {
-    const elements = path.filter(node => node instanceof Element);
-    if (elements.some(node => node.matches('a, button, input, textarea, select, summary, label, [role="button"], [role="tab"]'))) return null;
-    // A table cell first: the whole cell, even when the click is on a line of the JSON in it
-    const cell = elements.find(node => node.matches('td[part~="cell"], [role="gridcell"]'));
-    if (cell) {
-        const json = cell.querySelector('vt-json');
-        return json ? json.content : cell.textContent;
-    }
-    for (const node of elements) {
-        // vt-log: one field, the time, or the message without its fields
-        if (node.matches('.field-value, .field-key, .time')) return node.textContent;
-        if (node.matches('.field')) return node.querySelector('.field-value')?.textContent ?? node.textContent;
-        if (node.matches('.msg')) {
-            return [...node.childNodes].filter(n => !(n instanceof Element && n.classList.contains('fields')))
-                .map(n => n.textContent).join('');
-        }
-        // A JSON viewer: the line clicked
-        if (node.matches('vt-json')) return null;
-        // Our own markup: a fact, a file, an origin, a title...
-        if (node.matches('dd, dt, .lk-file-name, .lk-origin-name, .lk-panel-title, .lk-misp-size, p, li, span, code, td, th')) {
-            return node.textContent;
-        }
-        if (node.classList.contains('lk-panel') || node.id === 'lk-side-panel-body') return null;
-    }
-    return null;
-};
-
-// "Copied" next to the mouse for a moment
-const copiedBubble = (doc, x, y, ok) => {
-    const bubble = doc.createElement('div');
-    bubble.className = `lk-copied-bubble${ok ? '' : ' is-failed'}`;
-    bubble.textContent = ok ? 'Copied' : 'Copy failed';
-    bubble.setAttribute('role', 'status');
-    bubble.style.left = `${x}px`;
-    bubble.style.top = `${y}px`;
-    doc.body.appendChild(bubble);
-    setTimeout(() => bubble.remove(), 1200);
-};
-
-function copyOnDoubleClick(doc = document) {
-    copyHint(doc);
-    doc.addEventListener('dblclick', (event) => {
-        const path = event.composedPath();
-        // Only in the panels (side panel, detached window, "Open as a page")
-        if (!path.some(node => node instanceof Element && (node.classList.contains('lk-panel') || node.id === 'lk-side-panel-body'))) return;
-        const raw = valueAt(path);
-        const value = raw?.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim();
-        if (!value) return;
-        // The word selected by the double-click is not what is copied: the whole value is
-        doc.getSelection()?.removeAllRanges();
-        const win = doc.defaultView || window;
-        if (!win.navigator.clipboard) {
-            copiedBubble(doc, event.clientX, event.clientY, false);
-            return;
-        }
-        win.navigator.clipboard.writeText(value).then(
-            () => copiedBubble(doc, event.clientX, event.clientY, true),
-            () => copiedBubble(doc, event.clientX, event.clientY, false));
-    });
-}
-// The mouse cursor stays the normal one; a small copy icon follows it over what a
-// double-click copies (css/components/capture-panels.css, .lk-copy-hint)
-function copyHint(doc) {
-    const NS = 'http://www.w3.org/2000/svg';
-    const hint = doc.createElement('span');
-    hint.className = 'lk-copy-hint';
-    hint.hidden = true;
-    hint.setAttribute('aria-hidden', 'true');
-    const svg = doc.createElementNS(NS, 'svg');
-    svg.setAttribute('viewBox', '0 0 16 16');
-    svg.setAttribute('width', '14');
-    svg.setAttribute('height', '14');
-    svg.setAttribute('fill', 'currentColor');
-    const path = doc.createElementNS(NS, 'path');
-    // Bootstrap Icons "copy"
-    path.setAttribute('fill-rule', 'evenodd');
-    path.setAttribute('d', 'M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z');
-    svg.appendChild(path);
-    hint.appendChild(svg);
-    doc.body.appendChild(hint);
-    let pending = null;
-    doc.addEventListener('pointermove', (event) => {
-        if (event.pointerType !== 'mouse') return;
-        const path = event.composedPath();
-        const x = event.clientX, y = event.clientY;
-        if (pending) return;
-        pending = (doc.defaultView || window).requestAnimationFrame(() => {
-            pending = null;
-            const inPanel = path.some(node => node instanceof Element && (node.classList.contains('lk-panel') || node.id === 'lk-side-panel-body'));
-            const interactive = path.some(node => node instanceof Element && node.matches('a, button, input, select, textarea, summary, label, [role="button"], [role="tab"]'));
-            const copyable = inPanel && !interactive && !!valueAt(path)?.trim();
-            hint.hidden = !copyable;
-            if (copyable) hint.style.transform = `translate(${x + 14}px, ${y + 16}px)`;
-        });
-    }, {passive: true});
-    doc.addEventListener('pointerleave', () => { hint.hidden = true; });
-    hint.style.left = '0';
-    hint.style.top = '0';
-}
-window.copyOnDoubleClick = copyOnDoubleClick;   // detached windows (js/side_panel.js)
-copyOnDoubleClick(document);
-
 // ---- Parts of a panel loaded from another URL (the statistics in Capture details) ----
 
 const setupRemoteParts = (root) => {
@@ -417,6 +543,25 @@ function setupCapturePanels(root = document) {
     setupTables(root);
     setupLogs(root);
     setupMispExport(root);
+    setupCopyButtons(root);
+    // "+N" of a list of tags (MISP hits): shows / hides the others
+    root.querySelectorAll('[data-lk-more]:not([data-lk-ready])').forEach(button => {
+        button.dataset.lkReady = '';
+        const rest = button.previousElementSibling;
+        const count = button.textContent;
+        button.addEventListener('click', () => {
+            const open = rest.hidden;
+            rest.hidden = !open;
+            button.closest('.lk-misp-ctx')?.classList.toggle('is-open', open);
+            button.setAttribute('aria-expanded', String(open));
+            button.textContent = open ? 'Less' : count;
+        });
+    });
+    // Links that show a node in the tree (data-lk-locate: its host node)
+    root.querySelectorAll('[data-lk-locate]:not([data-lk-ready])').forEach(link => {
+        link.dataset.lkReady = '';
+        link.addEventListener('click', (event) => { event.preventDefault(); locateNode(link.dataset.lkLocate); });
+    });
     // Copy buttons of the panels (data-lk-copy-text)
     root.querySelectorAll('[data-lk-copy-text]:not([data-lk-ready])').forEach(button => {
         button.dataset.lkReady = '';

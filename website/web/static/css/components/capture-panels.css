@@ -174,7 +174,7 @@
    only the link and button classes are ours) */
 vt-table.lk-vitrine, vt-log.lk-vitrine, vt-json.lk-vitrine { max-width: 100%; }
 
-/* Double-click on a value: copied (js/capture_panels.js, copyOnDoubleClick) */
+/* "Copied" over a copy button (js/capture_panels.js, copiedBubble) */
 .lk-copied-bubble {
   position: fixed;
   z-index: 2000;
@@ -195,26 +195,149 @@ vt-table.lk-vitrine, vt-log.lk-vitrine, vt-json.lk-vitrine { max-width: 100%; }
   100% { opacity: 0; transform: translate(-50%, calc(-100% - 14px)); }
 }
 @media (prefers-reduced-motion: reduce) { .lk-copied-bubble { animation: none; } }
-/* What a double-click copies shows the copy cursor (js/capture_panels.js, valueAt):
-   our markup, and the values inside the vitrine components (their CSS parts; the
-   cursor is inherited by what is inside, like the JSON in a cell). Links, buttons,
-   tabs and fields keep their own cursor. */
-.lk-side-panel-content :is(dd, dt, p, li, td, th, .lk-file-name, .lk-origin-name, .lk-panel-title, .lk-misp-size),
-.lk-panel :is(dd, dt, .lk-file-name, .lk-origin-name, .lk-panel-title) { cursor: default; }
-.lk-side-panel-content :is(a, button, input, select, textarea, summary, label, [role="button"], [role="tab"]),
-.lk-panel :is(a, button, input, select, textarea, summary, label) { cursor: revert; }
-vt-table.lk-vitrine::part(cell),
-vt-log.lk-vitrine::part(time), vt-log.lk-vitrine::part(message), vt-log.lk-vitrine::part(field),
-vt-json.lk-vitrine::part(body) { cursor: default; }
+/* Copy buttons next to the values (js/capture_panels.js, copyButton): styled
+   inline too, for the ones inside the vitrine tables */
+.lk-copy-btn:hover, .lk-copy-btn:focus-visible { opacity: 1; color: var(--lk-color-accent); }
 
-/* Small copy icon next to the normal mouse cursor, over what a double-click
-   copies (js/capture_panels.js, copyHint) */
-.lk-copy-hint {
-  position: fixed;
-  z-index: 2000;
-  display: flex;
-  pointer-events: none;
-  color: var(--lk-color-ink);
-  filter: drop-shadow(0 0 1px var(--lk-color-surface)) drop-shadow(0 0 1px var(--lk-color-surface));
+/* Analysis > Third party reports (tree/modals/modules.html) */
+.lk-report-list { margin: 0 0 var(--lk-space-3); padding-left: 1.1rem; font-size: var(--lk-font-size-sm); }
+.lk-report-list li { margin-bottom: var(--lk-space-1); overflow-wrap: anywhere; }
+.lk-report-value { font-family: var(--lk-font-mono); overflow-wrap: anywhere; }
+p.lk-report-value { margin: 0 0 var(--lk-space-1); font-size: var(--lk-font-size-sm); }
+.lk-report-bad { color: var(--lk-color-danger); font-weight: var(--lk-font-weight-semibold); }
+p.lk-report-bad { margin: 0 0 var(--lk-space-2); font-size: var(--lk-font-size-sm); }
+.lk-report-item { padding: var(--lk-space-3) 0; border-top: 1px solid var(--lk-color-rule); }
+.lk-report-item:first-of-type { border-top: 0; padding-top: 0; }
+
+/* Logo of a third party at the top left of a panel header (panel_header(logo=...)),
+   one image per theme */
+.lk-panel-logo { display: inline-flex; align-items: center; margin-bottom: var(--lk-space-2); }
+.lk-panel-logo img { height: 40px; width: auto; }
+.lk-panel-subtitle { margin: 0 0 var(--lk-space-1); }
+.lk-logo-for-dark { display: none !important; }
+[data-bs-theme="dark"] .lk-logo-for-dark { display: block !important; }
+[data-bs-theme="dark"] .lk-logo-for-light { display: none !important; }
+
+/* Analysis > Search events on MISP (tree/modals/misp_lookup.html): the events index
+   of MISP 3 (index-table.css, events-index-table.css, events-index-cards.css,
+   org-tile.css of MISP 3.0_wip), on the --lk-* tokens */
+.lk-misp-instances { display: flex; flex-wrap: wrap; align-items: center; gap: var(--lk-space-2); margin-bottom: var(--lk-space-3); }
+.lk-misp-count { margin: var(--lk-space-3) 0 var(--lk-space-2); font-size: 0.8125rem; color: var(--lk-color-muted); }
+.lk-misp-count b { color: var(--lk-color-ink); }
+.lk-misp-table-wrap { overflow-x: auto; border: 1px solid var(--lk-color-rule); border-radius: 10px; background: var(--lk-color-surface); }
+.lk-misp-table {
+  --ix-hair: color-mix(in srgb, var(--lk-color-rule) 70%, transparent);
+  --ix-lane: color-mix(in srgb, var(--lk-color-rule) 55%, transparent);
+  width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0;
+  font-size: 0.8125rem; color: var(--lk-color-ink);
 }
-.lk-copy-hint[hidden] { display: none; }
+.lk-misp-table col.c-state { width: 34px; } .lk-misp-table col.c-id { width: 48px; }
+.lk-misp-table col.c-title { width: auto; }
+.lk-misp-table col.c-org { width: 110px; } .lk-misp-table col.c-mk { width: 128px; }
+.lk-misp-table col.c-attrib { width: 140px; } .lk-misp-table col.c-behav { width: 150px; }
+.lk-misp-table col.c-classif { width: 220px; } .lk-misp-table col.c-num { width: 40px; }
+.lk-misp-table col.c-threat { width: 88px; } .lk-misp-table col.c-date { width: 84px; }
+.lk-misp-table col.c-changed { width: 86px; } .lk-misp-table col.c-values { width: 220px; }
+/* The table follows the width of the panel (resized by its handle): the columns
+   go away one by one when it gets narrow, like the narrow view of MISP 3; the
+   title, the markings and the values of the capture stay */
+.lk-misp-table-wrap { container-type: inline-size; container-name: lk-misp; }
+@container lk-misp (max-width: 1650px) { .lk-misp-table [data-col="date"], .lk-misp-table col.c-date { display: none; } }
+@container lk-misp (max-width: 1560px) { .lk-misp-table [data-col="num"], .lk-misp-table col.c-num { display: none; } }
+@container lk-misp (max-width: 1470px) { .lk-misp-table [data-col="threat"], .lk-misp-table col.c-threat { display: none; } }
+@container lk-misp (max-width: 1360px) { .lk-misp-table [data-col="org"], .lk-misp-table col.c-org { display: none; } }
+@container lk-misp (max-width: 1240px) { .lk-misp-table [data-col="behav"], .lk-misp-table col.c-behav { display: none; } }
+@container lk-misp (max-width: 1090px) { .lk-misp-table [data-col="attrib"], .lk-misp-table col.c-attrib { display: none; } }
+@container lk-misp (max-width: 940px) { .lk-misp-table [data-col="changed"], .lk-misp-table col.c-changed { display: none; } }
+@container lk-misp (max-width: 820px) { .lk-misp-table [data-col="classif"], .lk-misp-table col.c-classif { display: none; } }
+@container lk-misp (max-width: 600px) { .lk-misp-table [data-col="id"], .lk-misp-table col.c-id { display: none; } }
+.lk-misp-table th, .lk-misp-table td {
+  padding: 4px 8px; vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lk-misp-table tr > :first-child { padding-left: 12px; }
+.lk-misp-table thead th {
+  height: 36px; border-bottom: 1px solid var(--lk-color-rule); background: var(--lk-color-surface);
+  font-size: 0.75rem; font-weight: 600; line-height: 1.25; color: var(--lk-color-muted); text-align: left;
+}
+.lk-misp-table thead th.is-sorted { color: var(--lk-color-ink); box-shadow: inset 0 -2px 0 var(--lk-color-accent); }
+.lk-misp-table thead th.is-sorted svg { color: var(--lk-color-accent); width: 10px; height: 10px; }
+.lk-misp-table tbody td { height: 38px; border-bottom: 1px solid var(--ix-hair); background: var(--lk-color-surface); }
+.lk-misp-table tbody tr:last-child td { border-bottom: 0; }
+.lk-misp-table tbody tr:hover td { background: color-mix(in srgb, var(--lk-color-ink) 4.5%, var(--lk-color-surface)); }
+.lk-misp-table .is-lane { border-left: 1px solid var(--ix-lane); padding-left: 6px; }
+.lk-misp-table .is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.lk-misp-table td.is-num a { font-weight: 600; color: inherit; text-decoration: none; }
+.lk-misp-table .is-state { padding: 0; text-align: center; }
+.lk-misp-table .is-date { color: var(--lk-color-muted); font-size: 0.76rem; }
+.lk-misp-table td.is-id a {
+  font-family: var(--lk-font-mono); font-size: 0.75rem; color: var(--lk-color-muted); text-decoration: none; font-variant-numeric: tabular-nums;
+}
+.lk-misp-table tr:hover td.is-id a { color: var(--lk-color-ink); }
+.lk-misp-table td.is-values { white-space: normal; padding-top: 6px; padding-bottom: 6px; }
+.lk-misp-st { display: inline-grid; place-items: center; width: 20px; height: 20px; vertical-align: middle; font-size: 0.7rem; }
+.lk-misp-st.is-unpub { color: var(--lk-color-warning); background: var(--lk-color-warning-soft); border: 1px solid var(--lk-color-warning-border); border-radius: 5px; }
+.lk-misp-st.is-pub { color: var(--lk-color-ink); }
+.lk-misp-title {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal;
+  min-width: 0; overflow: hidden; color: var(--lk-color-ink); font-weight: 600; text-decoration: none; line-height: 1.3;
+}
+.lk-misp-table tr:hover .lk-misp-title, .lk-misp-title:hover { color: color-mix(in srgb, var(--lk-color-accent) 72%, var(--lk-color-ink)); }
+.lk-misp-none { color: var(--lk-color-muted); }
+.lk-misp-org { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.lk-misp-org > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.lk-misp-org-tile {
+  width: 20px; height: 20px; flex: none; display: grid; place-items: center; border-radius: 4px;
+  color: var(--lk-misp-on-org); font-size: 8.5px; font-weight: 700; letter-spacing: 0.02em; background: var(--lk-misp-org-0);
+}
+.lk-misp-org-tile.m1 { background: var(--lk-misp-org-1); } .lk-misp-org-tile.m2 { background: var(--lk-misp-org-2); }
+.lk-misp-org-tile.m3 { background: var(--lk-misp-org-3); } .lk-misp-org-tile.m4 { background: var(--lk-misp-org-4); }
+.lk-misp-org-tile.m5 { background: var(--lk-misp-org-5); }
+.lk-misp-marks, .lk-misp-ctx { display: flex; align-items: center; gap: 3px; min-width: 0; overflow: hidden; }
+.lk-misp-ctx { gap: 4px; }
+.lk-misp-ctx.is-wrap, .lk-misp-marks.is-wrap { flex-wrap: wrap; overflow: visible; }
+.lk-misp-table td[data-col="mk"] { white-space: normal; }
+/* Markings (TLP / PAP): .dk-mk */
+.lk-misp-mk {
+  --c: var(--lk-color-muted);
+  flex: none; display: inline-flex; align-items: baseline; gap: 3px; height: 18px; line-height: 16px; padding: 0 5px;
+  border: 1px solid var(--c); border-radius: 4px; white-space: nowrap; font-size: 0.7rem; color: var(--lk-color-ink);
+  background: color-mix(in srgb, var(--c) 14%, var(--lk-color-surface));
+}
+.lk-misp-mk small { font-size: 0.64rem; font-weight: 600; color: var(--lk-color-muted); }
+.lk-misp-mk b { font-weight: 700; }
+.lk-misp-mk.is-clear { --c: var(--lk-color-rule-strong); background: transparent; }
+/* Tags and attributes: .dk-chip, .is-tag (the tag colour on the left), .is-attr */
+.lk-misp-chip {
+  flex: none; display: inline-flex; align-items: center; gap: 4px; height: 20px; max-width: 100%; padding: 0 6px;
+  border: 1px solid var(--lk-color-rule); border-radius: 5px; background: var(--lk-color-surface-2);
+  color: var(--lk-color-ink); font-size: 0.73rem; line-height: 1; white-space: nowrap;
+}
+.lk-misp-chip > span:first-child, .lk-misp-chip > a { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.lk-misp-chip.is-tag { border-left: 3px solid var(--tc, var(--lk-color-rule)); padding-left: 5px; }
+[data-bs-theme="dark"] .lk-misp-chip.is-tag { border-left-color: color-mix(in srgb, var(--tc, var(--lk-color-rule)) 70%, var(--lk-misp-on-org)); }
+.lk-misp-chip.is-gx { background: var(--lk-misp-gx-wash); border-color: color-mix(in srgb, var(--lk-misp-gx) 60%, transparent); }
+.lk-misp-chip.is-gx svg { color: var(--lk-misp-gx-ink); flex: none; width: 0.82em; height: 0.82em; }
+.lk-misp-chip.is-strong { font-weight: 600; }
+.lk-misp-chip.is-tid { font-family: var(--lk-font-mono); font-size: 0.69rem; }
+.lk-misp-table thead th svg { width: 11px; height: 11px; vertical-align: -1px; color: var(--lk-color-muted); }
+.lk-misp-chip small { font-size: 0.94em; color: var(--lk-color-muted); }
+.lk-misp-chip.is-attr { font-family: var(--lk-font-mono); font-size: 0.69rem; }
+.lk-misp-chip.is-attr a { color: var(--lk-color-accent); text-decoration: none; }
+.lk-misp-chip.is-attr a:hover { text-decoration: underline; }
+.lk-misp-chip.is-attr .lk-copy-btn { margin-left: 0 !important; }
+.lk-misp-threat { font-size: 0.76rem; font-weight: 600; color: var(--lk-color-muted); }
+.lk-misp-threat.is-high { color: var(--lk-color-danger); }
+.lk-misp-threat.is-medium { color: var(--lk-color-warning); }
+.lk-misp-threat.is-low { color: var(--lk-color-info); }
+
+/* Classification of MISP hits: the first tag, "+N" for the others (.dk-more of MISP 3) */
+.lk-misp-rest { display: contents; }
+.lk-misp-rest[hidden] { display: none; }
+.lk-misp-more {
+  flex: none; padding: 0 3px; border: 0; background: none; color: var(--lk-color-ink);
+  font-size: 0.73rem; font-weight: 600; cursor: pointer;
+}
+.lk-misp-more:hover { color: var(--lk-color-accent); }
+.lk-misp-ctx.is-open { flex-wrap: wrap; overflow: visible; }
+.lk-misp-table td.is-lane:has(.lk-misp-ctx.is-open) { white-space: normal; overflow: visible; padding-top: 6px; padding-bottom: 6px; }
+.lk-misp-ctx:not(.is-open):not(.is-wrap) > .lk-misp-chip { flex: 0 1 auto; min-width: 2.5rem; }

@@ -482,6 +482,7 @@ function renderTables() {
           searching: true,
           drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
           order: [[ 1, "desc" ]],
+          language: { emptyTable: 'CIRCL Passive DNS has no record for this hostname.' },
           ajax: {
              url: `/tables/CIRCL_pdns_table/${query}${window.location.search}`,
              type: 'POST',

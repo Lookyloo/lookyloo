@@ -1,33 +1,48 @@
-<div>
-{% if not merged %}
-  No result data available or hashlookup module not enabled.
-{%else%}
+{#
+  Analysis > Hashlookup hits: the resources of the capture known by CIRCL
+  hashlookup (known files: libraries, OS files, software...). Figures as
+  vitrine <vt-stats> tiles, then one section per hit: its entry on hashlookup
+  (copy buttons, js/capture_panels.js) and the URLs of the capture with it
+  (shown in the tree on click, data-lk-locate). HTML fragment for the side panel.
+  Doc: doc/ui/analysis-panels.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from "macros/panel.html" import panel_header, panel_section, panel_empty %}
+<div class="lk-panel">
+  {{ panel_header('Analysis', 'Hashlookup hits',
+                  'Resources of the capture known by CIRCL hashlookup: known files (libraries, operating system or software files). A hit is usually a legitimate file.',
+                  icon_name='hash') }}
+  {% if not enabled %}
+    {{ panel_empty('Hashlookup is not available', 'The hashlookup module is not enabled on this instance, or the lookup failed.', icon_name='hash') }}
+  {% elif not hits %}
+    {{ panel_empty('No hit', 'None of the ' ~ total_ressources ~ ' resources of the capture is known by hashlookup.', icon_name='hash') }}
+  {% else %}
+    {% set figures = [{'label': 'Known resources', 'value': hits|length},
+                      {'label': 'Resources in the capture', 'value': total_ressources},
+                      {'label': 'Known', 'value': ((hits|length) * 100 / total_ressources)|round(1) if total_ressources else 0, 'unit': '%'}] %}
+    <vt-stats class="lk-vitrine lk-panel-stats" trend="false" changes="false" label="Hashlookup hits">{{ figures | tojson }}</vt-stats>
 
-  <b>Total Hits</b>: {{ merged|length }}<br>
-  <b>Total ressources</b>: {{total_ressources}}<br><br>
-  {% for sha1, entries in merged.items() %}
-    <dl class="row">
-      <dt class="col-sm-2">URLs in tree</dt>
-      <dd class="col-sm-10">
-      {% for node in entries['nodes'] %}
-      {{ node }} <br>
-      {% endfor %}
-      </dd>
-    </dl>
-    <dl class="row">
-      <dt class="col-sm-2">Entries on hashlookup</dt>
-      <dd class="col-sm-7">
-      {% for k, v in entries['hashlookup'].items() %}
-        <b>{{k}}</b>:
-        {% if k == "SHA-1" %}
-        <a href="https://hashlookup.circl.lu/lookup/sha1/{{ v }}">{{ v }}</a>
-        {% else %}
-        {{ v }}
-        {% endif %}
-        <br>
-      {% endfor %}
-      </dd>
-    </dl>
-  {% endfor %}
-{%endif%}
+    {% for hit in hits %}
+    {% call panel_section(hit['entry'].get('FileName') or hit['sha1'], 'file-earmark-check') %}
+      <dl class="lk-panel-facts">
+        {% for key, value in hit['entry'].items() if value is not mapping and (value is string or value is number) %}
+        <dt>{{ key }}</dt>
+        <dd class="lk-mono">{% if key == 'SHA-1' %}<a href="https://hashlookup.circl.lu/lookup/sha1/{{ value }}" target="_blank" rel="noopener" data-lk-copy="{{ value }}">{{ value }}</a>{% else %}{{ value }}{% endif %}</dd>
+        {% endfor %}
+      </dl>
+      {% set nested = hit['entry'] | dictsort | selectattr('1', 'mapping') | list %}
+      {% if nested %}
+      <vt-json class="lk-vitrine" view="tree" depth="1" max-height="320px" label="More on hashlookup">{{ dict(nested) | tojson }}</vt-json>
+      {% endif %}
+      <p class="lk-pivot-description">{{ render_icon('diagram-3') }} URLs of the capture with this file ({{ hit['nodes']|length }}):
+        <span data-lk-copy="{{ hit['nodes'] | map(attribute='url') | join('\n') }}" title="Copy all the URLs"></span></p>
+      <ul class="lk-report-list">
+        {% for node in hit['nodes'] %}
+        <li><a href="#" role="button" data-lk-locate="{{ node['hostnode'] }}" title="Show the node in the tree">{{ node['url'] }}</a>
+          <span data-lk-copy="{{ node['url'] }}"></span></li>
+        {% endfor %}
+      </ul>
+    {% endcall %}
+    {% endfor %}
+  {% endif %}
 </div>

@@ -56,8 +56,8 @@
     {# Cookies: the name opens the other captures with this cookie name (#cookieNameModal) #}
     <div class="tab-pane fade show active" id="nav-cookies" role="tabpanel" aria-labelledby="nav-cookies-tab" tabindex="0">
       {% if cookie_rows %}
-      <vt-table class="lk-vitrine" data-lk-table="cookies" variant="full" selectable="none" reorderable="false" expandable="false"
-                wrap layout="table" filters copy="false" download="false" fullscreen="false" page-size="25" label="Cookies"></vt-table>
+      <vt-table class="lk-vitrine" row-numbers="false" data-lk-table="cookies" variant="full" selectable="none" reorderable="false" expandable="false"
+                wrap layout="table" filters="false" copy="false" download="false" fullscreen="false" page-size="25" label="Cookies"></vt-table>
       <script type="application/json">{{ cookie_rows | tojson }}</script>
       {% else %}
       {{ panel_empty('No cookies', icon_name='cookie') }}
@@ -73,8 +73,8 @@
         {% if origin['localStorage'] %}
         <div class="lk-origin-part">
           <h3 class="lk-origin-part-title">{{ render_icon('list-ul') }} Local storage ({{ origin['localStorage']|length }})</h3>
-          <vt-table class="lk-vitrine" data-lk-table="local_storage" variant="full" selectable="none" reorderable="false" expandable="false"
-                    wrap layout="table" filters copy="false" download="false" fullscreen="false" page-size="25" label="Local storage of {{ origin['origin'] }}"></vt-table>
+          <vt-table class="lk-vitrine" row-numbers="false" data-lk-table="local_storage" variant="full" selectable="none" reorderable="false" expandable="false"
+                    wrap layout="table" filters="false" copy="false" download="false" fullscreen="false" page-size="25" label="Local storage of {{ origin['origin'] }}"></vt-table>
           <script type="application/json">{{ origin['localStorage'] | tojson }}</script>
         </div>
         {% endif %}
@@ -100,8 +100,8 @@
         {% if origin['opfs'] %}
         <div class="lk-origin-part">
           <h3 class="lk-origin-part-title">{{ render_icon('folder2') }} OPFS ({{ origin['opfs']|length }})</h3>
-          <vt-table class="lk-vitrine" data-lk-table="opfs" variant="full" selectable="none" reorderable="false" expandable="false"
-                    wrap layout="table" filters copy="false" download="false" fullscreen="false" page-size="25" label="OPFS of {{ origin['origin'] }}"></vt-table>
+          <vt-table class="lk-vitrine" row-numbers="false" data-lk-table="opfs" variant="full" selectable="none" reorderable="false" expandable="false"
+                    wrap layout="table" filters="false" copy="false" download="false" fullscreen="false" page-size="25" label="OPFS of {{ origin['origin'] }}"></vt-table>
           <script type="application/json">{{ origin['opfs'] | tojson }}</script>
         </div>
         {% endif %}
@@ -112,8 +112,8 @@
 
     {% if storage['credentials'] %}
     <div class="tab-pane fade" id="nav-credentials" role="tabpanel" aria-labelledby="nav-credentials-tab" tabindex="0">
-      <vt-table class="lk-vitrine" data-lk-table="credentials" variant="full" selectable="none" reorderable="false" expandable="false"
-                wrap layout="table" filters copy="false" download="false" fullscreen="false" page-size="25" label="WebAuthn credentials"></vt-table>
+      <vt-table class="lk-vitrine" row-numbers="false" data-lk-table="credentials" variant="full" selectable="none" reorderable="false" expandable="false"
+                wrap layout="table" filters="false" copy="false" download="false" fullscreen="false" page-size="25" label="WebAuthn credentials"></vt-table>
       <script type="application/json">{{ storage['credentials'] | tojson }}</script>
     </div>
     {% endif %}

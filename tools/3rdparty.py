@@ -24,9 +24,9 @@ jquery_json_viewer_version = "1.5.0"
 # Vitrine (https://github.com/ecrou-exact/vitrine): web components of the capture
 # panels (JSON viewer, tables, stats...). Source of a pinned commit, SHA-256
 # checked, built with Node >= 20 (npm ci --ignore-scripts + node scripts/build.js).
-VITRINE_COMMIT = '1f79d7c6914f0222584c9b8e0111597d27a24f05'
+VITRINE_COMMIT = 'a404d96813d12dfe0d5fc2c6beb8eaedd9ef4be8'
 VITRINE_TARBALL = f'https://codeload.github.com/ecrou-exact/vitrine/tar.gz/{VITRINE_COMMIT}'
-VITRINE_SHA256 = '91be915c238f2ba220377f015bf1da480e39af2a23a2ddf499376f3a056cf4ba'
+VITRINE_SHA256 = '5b7ba25722d9b8ecc1c6cb606a95203969a6625c42196e0e6ef1ba5f4ea887da'
 # What the website needs from vitrine's dist/
 VITRINE_KEEP = ('esm', 'languages', 'syntax-themes', 'vendor', 'vitrine.css')
 
@@ -57,6 +57,27 @@ def install_vitrine(dest_dir: Path) -> None:
                 shutil.copy2(built, target / name)
         (target / 'COMMIT').write_text(VITRINE_COMMIT + '\n')
     print(f'Built vitrine {VITRINE_COMMIT[:10]}.')
+
+
+# Logo of MISP 3 (Analysis > Search events on MISP): the horizontal logo of the
+# MISP web interface, for the light and the dark theme, from the MISP repository at
+# a pinned commit of 3.0_wip, checked with their SHA-256
+MISP_LOGO_COMMIT = '1c09fd609d0fda6423a99ca1ed4505f2a45b7a13'
+MISP_LOGOS = {
+    'misp-logo-horizontal.png': 'f57abf0df2f4f35012b44ae1335d80fc66752d81eaea1f2e7a27d11ac908b292',
+    'misp-logo-horizontal-light.png': '07b0d8245f412d82ddc08f757a1441a95cd277d8c5863de2a44c0a3d205784dc',
+}
+
+
+def install_misp_logo(dest_dir: Path) -> None:
+    (dest_dir / 'logos').mkdir(parents=True, exist_ok=True)
+    for name, sha256 in MISP_LOGOS.items():
+        response = requests.get(f'https://raw.githubusercontent.com/MISP/MISP/{MISP_LOGO_COMMIT}/app/webroot/img/{name}', timeout=60)
+        response.raise_for_status()
+        if hashlib.sha256(response.content).hexdigest() != sha256:
+            raise SystemExit(f'MISP logo {name}: SHA-256 mismatch, refusing to install it.')
+        (dest_dir / 'logos' / name).write_bytes(response.content)
+    print(f'Downloaded the MISP logos ({MISP_LOGO_COMMIT[:10]}).')
 
 
 if __name__ == '__main__':
@@ -94,5 +115,6 @@ if __name__ == '__main__':
         print(f'Downloaded jsontree css v{jquery_json_viewer_version}.')
 
     install_vitrine(dest_dir)
+    install_misp_logo(dest_dir)
 
     print('All 3rd party modules for the website were downloaded.')

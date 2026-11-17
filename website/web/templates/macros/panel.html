@@ -22,12 +22,21 @@
 {% from 'bootstrap5/utils.html' import render_icon %}
 
 {% macro panel_header(kind, title, description=None, icon_name='info-circle', share_url=None,
-                      from_popup=False, capture_url=None) -%}
+                      from_popup=False, capture_url=None, logo=None) -%}
 <header class="lk-pivot-head lk-panel-head">
-  <span class="lk-pivot-icon">{{ render_icon(icon_name) }}</span>
+  {# logo: (light theme URL, dark theme URL, name) of a third party logo
+     (static/vendor/logos/, tools/3rdparty.py), at the top left instead of the icon #}
+  {% if not logo %}<span class="lk-pivot-icon">{{ render_icon(icon_name) }}</span>{% endif %}
   <div class="lk-pivot-text">
+    {% if logo %}
+    {# The logo is the title; the kind and the title of the panel in small under it #}
+    <span class="lk-panel-logo" role="img" aria-label="{{ logo[2] }}">
+      <img class="lk-logo-for-light" src="{{ logo[0] }}" alt=""><img class="lk-logo-for-dark" src="{{ logo[1] }}" alt=""></span>
+    <h1 class="lk-pivot-kind lk-panel-subtitle">{{ kind }} · {{ title }}</h1>
+    {% else %}
     <p class="lk-pivot-kind">{{ kind }}</p>
     <h1 class="lk-panel-title">{{ title }}</h1>
+    {% endif %}
     {% if description %}<p class="lk-pivot-description">{{ description }}</p>{% endif %}
   </div>
   {% if caller or share_url or capture_url %}

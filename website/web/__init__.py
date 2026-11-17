@@ -12,6 +12,7 @@ import ipaddress
 import logging
 import logging.config
 import os
+import re
 import time
 
 import markdown
@@ -1171,11 +1172,12 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
     cache = lookyloo.capture_cache(tree_uuid)
     triggered = lookyloo.circl_pdns.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger,
                                                             as_admin=flask_login.current_user.is_authenticated)
-    if 'error' in triggered:
-        flash(Markup('Unable to trigger the historical lookup: {}').format(triggered["error"]), 'error')
-    else:
+    # Said in the panel (tree/modals/historical_lookups.html), not flashed on the next page
+    error = triggered.get('error') if isinstance(triggered, dict) else None
+    if not error:
         circl_pdns_queries = {urlparse(url).hostname for url in cache.redirects if urlparse(url).scheme in ['http', 'https'] and urlparse(url).hostname is not None}
-    return render_template('tree/modals/historical_lookups.html', circl_pdns_queries=circl_pdns_queries)
+    return render_template('tree/modals/historical_lookups.html', circl_pdns_queries=sorted(q for q in circl_pdns_queries if q),
+                           error=error, available=lookyloo.circl_pdns.available)
 
 
 @app.route('/tree/<uuid:tree_uuid>/categories_capture', methods=['GET', 'POST'])
@@ -1442,10 +1444,123 @@ def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
         if occurrences := lookyloo.get_misp_occurrences(tree_uuid,
                                                         as_admin=as_admin,
                                                         instance_name=instance_name):
-            misps_occurrences[instance_name] = occurrences
+            hits, root_url = occurrences
+            misps_occurrences[instance_name] = (_misp_events(instance, hits, root_url, tree_uuid), root_url)
     return render_template('tree/modals/misp_lookup.html', uuid=tree_uuid,
                            current_misp=current_misp,
                            misps_occurrences=misps_occurrences)
+
+
+MISP_THREAT_LEVELS = {1: 'High', 2: 'Medium', 3: 'Low', 4: 'Undefined'}
+# Tags shown as markings (like the Markings column of the events index of MISP 3)
+MISP_MARKINGS = ('tlp:', 'pap:')
+
+
+def _misp_tag(tag: Any) -> dict[str, Any]:
+    '''A MISP tag split like the events index of MISP 3 shows it, in one of its lanes:
+    - markings: tlp:* and pap:* ("tlp amber", amber+strict as "amber*");
+    - attribution: the galaxy clusters of actors, malware and tools (misp-galaxy:...);
+    - behaviour: the ATT&CK techniques, as their ID (T1566.002);
+    - classification: the other tags, "circl:incident-classification="phishing"" as
+      namespace "incident-classification", value "phishing".
+    The colour goes in a style attribute: a hex colour only.'''
+    name = str(tag.name)
+    colour = str(getattr(tag, 'colour', '') or '')
+    namespace, value = '', name
+    if ':' in name:
+        namespace, value = name.split(':', 1)
+        if '=' in value:
+            namespace, value = value.split('=', 1)
+    value = value.strip('"')
+    lane = 'classification'
+    lowered = name.lower()
+    if lowered.startswith(MISP_MARKINGS):
+        lane = 'markings'
+        namespace = namespace.lower()
+        value = value.lower().replace('+strict', '*')
+    elif lowered.startswith('misp-galaxy:'):
+        galaxy = namespace  # misp-galaxy:<galaxy>="<cluster>"
+        if galaxy.startswith('mitre-') and (technique := re.search(r'\bT\d{4}(?:\.\d{3})?\b', value)):
+            lane, namespace, value = 'behaviour', value, technique.group(0)
+        else:
+            lane = 'attribution'
+            namespace = 'actor' if galaxy in ('threat-actor', 'groups', 'intrusion-set', 'mitre-intrusion-set') else 'tool'
+    return {'name': name, 'namespace': namespace, 'value': value, 'lane': lane,
+            'colour': colour if re.fullmatch(r'#[0-9a-fA-F]{3,8}', colour) else None,
+            # tlp:clear / tlp:white are white: a grey border instead, like MISP 3
+            'clear': lowered in ('tlp:clear', 'tlp:white')}
+
+
+def _misp_when(value: Any) -> dict[str, str]:
+    '''A date of MISP as the events index of MISP 3 shows it: "11 min ago", the full
+    date in the title.'''
+    if not isinstance(value, datetime):
+        return {'ago': str(value or ''), 'full': str(value or '')}
+    seconds = (datetime.now(timezone.utc) - value).total_seconds()
+    for unit, size in (('day', 86400), ('hour', 3600), ('min', 60)):
+        if seconds >= size:
+            count = int(seconds // size)
+            ago = f'{count} {unit}{"s" if count > 1 and unit != "min" else ""} ago'
+            break
+    else:
+        ago = 'just now'
+    return {'ago': ago, 'full': value.strftime('%Y-%m-%d %H:%M UTC')}
+MISP_ANALYSIS = {0: 'Initial', 1: 'Ongoing', 2: 'Complete'}
+
+
+def _misp_events(instance: Any, hits: dict[int, set[tuple[str, datetime]]], root_url: str, tree_uuid: str) -> list[dict[str, Any]]:
+    '''The events of a MISP with values of the capture (Analysis > Search events on MISP):
+    their metadata (title, threat level, tags...) in one request, and each value found
+    with the host node of the capture that has it (to show it in the tree).'''
+    # Values looked up by get_misp_occurrences (the nodes up to the rendered page) -> host node
+    where: dict[str, str] = {}
+    try:
+        hartree = lookyloo.capture_cache(tree_uuid).tree.root_hartree
+        for node in hartree.rendered_node.get_ancestors() + [hartree.rendered_node]:
+            hostnode = hartree.get_host_node_by_uuid(node.hostnode_uuid)
+            looked_up = [node.name, hostnode.name, getattr(hostnode, 'domain', None),
+                      *getattr(hostnode, 'resolved_ips', {}).get('v4', []),
+                      *getattr(hostnode, 'resolved_ips', {}).get('v6', []),
+                      *getattr(hostnode, 'cnames', []), getattr(node, 'body_hash', None)]
+            for value in looked_up:
+                if value:
+                    where.setdefault(str(value), node.hostnode_uuid)
+    except Exception as e:
+        app.logger.warning(f'Unable to map the MISP hits of {tree_uuid} to the tree: {e}')
+    metadata: dict[int, Any] = {}
+    try:
+        found = instance.client.search(controller='events', eventid=list(hits), metadata=True, pythonify=True)
+        metadata = {int(event.id): event for event in found} if isinstance(found, list) else {}
+    except Exception as e:
+        app.logger.warning(f'Unable to get the MISP events {list(hits)}: {e}')
+    events = []
+    for event_id, values in hits.items():
+        event = metadata.get(int(event_id))
+        tags = [_misp_tag(tag) for tag in getattr(event, 'tags', [])]
+        events.append({
+            'id': event_id,
+            'url': f'{root_url}/events/view/{event_id}',
+            'info': getattr(event, 'info', None) or f'Event {event_id}',
+            'date': str(getattr(event, 'date', '') or ''),
+            'threat_level': MISP_THREAT_LEVELS.get(int(getattr(event, 'threat_level_id', 4) or 4), 'Undefined'),
+            'analysis': MISP_ANALYSIS.get(int(getattr(event, 'analysis', 0) or 0), ''),
+            'published': bool(getattr(event, 'published', False)),
+            'org': (org := getattr(getattr(event, 'Orgc', None), 'name', None) or ''),
+            # Like MISP 3: two letters, the first of two words or the two first of one
+            'org_initials': (''.join(word[0] for word in org.split()[:2]) if len(org.split()) > 1 else org[:2]).upper(),
+            # The colour of the org tile, one of the six of MISP 3 (.dk-logo.m0 to m5)
+            'org_mono': sum(map(ord, org)) % 6,
+            'attribute_count': getattr(event, 'attribute_count', None),
+            'changed': _misp_when(getattr(event, 'timestamp', None)),
+            # The lanes of the events index of MISP 3
+            **{lane: [tag for tag in tags if tag['lane'] == lane]
+               for lane in ('markings', 'attribution', 'behaviour', 'classification')},
+            'values': [{'value': value, 'seen': timestamp.strftime('%Y-%m-%d %H:%M'), 'hostnode': where.get(value)}
+                       for value, timestamp in sorted(values)],
+        })
+    # Most severe first, then the most recent
+    order = {'High': 0, 'Medium': 1, 'Low': 2, 'Undefined': 3}
+    return sorted(events, key=lambda e: (order[e['threat_level']], e['date']), reverse=False)
 
 
 @app.route('/tree/<uuid:tree_uuid>/lookyloo_push', methods=['GET', 'POST'])
@@ -1832,13 +1947,17 @@ def urls_rendered_page(tree_uuid: str) -> WerkzeugResponse | str | Response:
 def hashlookup(tree_uuid: str) -> str | WerkzeugResponse | Response:
     try:
         merged, total_ressources = lookyloo.merge_hashlookup_tree(tree_uuid, as_admin=flask_login.current_user.is_authenticated)
-        # We only want unique URLs for the template
-        for sha1, entries in merged.items():
-            entries['nodes'] = {node.name for node in entries['nodes']}
+        enabled = True
     except Exception:  # error or module not enabled
-        merged = {}
-        total_ressources = 0
-    return render_template('tree/modals/hashlookup.html', merged=merged, total_ressources=total_ressources)
+        merged, total_ressources, enabled = {}, 0, False
+    # One hit per SHA-1: its entry on hashlookup, and the URL nodes of the capture with it
+    # (each URL once, with its host node to show it in the tree)
+    hits = []
+    for sha1, entries in merged.items():
+        nodes = {node.name: node.hostnode_uuid for node in entries['nodes']}
+        hits.append({'sha1': sha1, 'entry': entries['hashlookup'],
+                     'nodes': [{'url': url, 'hostnode': hostnode} for url, hostnode in nodes.items()]})
+    return render_template('tree/modals/hashlookup.html', hits=hits, total_ressources=total_ressources, enabled=enabled)
 
 
 @app.route('/bulk_captures/<uuid:tree_uuid>', methods=['POST'])
@@ -2230,22 +2349,108 @@ def mark_as_legitimate(tree_uuid: str) -> Response:
 
 @app.route('/tree/<uuid:tree_uuid>/identifiers', methods=['GET'])
 def tree_identifiers(tree_uuid: str) -> str:
-    return render_template('tree/modals/tree_identifiers.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_identifiers.html', tree_uuid=tree_uuid, rows=analysis_rows('identifiers', tree_uuid))
 
 
 @app.route('/tree/<uuid:tree_uuid>/favicons', methods=['GET'])
 def tree_favicons(tree_uuid: str) -> str:
-    return render_template('tree/modals/tree_favicons.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_favicons.html', tree_uuid=tree_uuid, rows=analysis_rows('favicons', tree_uuid))
 
 
 @app.route('/tree/<uuid:tree_uuid>/hashes_types', methods=['GET'])
 def tree_capture_hashes_types(tree_uuid: str) -> str:
-    return render_template('tree/modals/tree_hashes_types.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_hashes_types.html', tree_uuid=tree_uuid, rows=analysis_rows('hashes_types', tree_uuid))
 
 
 @app.route('/tree/<uuid:tree_uuid>/body_hashes', methods=['GET'])
 def tree_body_hashes(tree_uuid: str) -> str:
-    return render_template('tree/modals/tree_body_hashes.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_body_hashes.html', tree_uuid=tree_uuid, rows=analysis_rows('body_hashes', tree_uuid))
+
+
+# ---- Analysis > In this capture: rows of the panels (tree/modals/tree_*.html) ----
+# Plain values only: the panels show them in vitrine <vt-table> (js/capture_panels.js,
+# TABLES), written with textContent; the links open the details panels (detail: URL
+# of the pivot fragment) or locate the node in the tree (hostnode). Doc:
+# doc/ui/analysis-panels.md
+
+
+def _analysis_nodes(nodes: Iterable[Any]) -> list[dict[str, Any]]:
+    """The URL nodes of the capture with the value: their URL and their host node in the tree."""
+    to_return = []
+    for entry in nodes:
+        node, embedded = entry if isinstance(entry, tuple) else (entry, False)
+        to_return.append({'url': node.name, 'hostnode': node.hostnode_uuid, 'embedded': embedded})
+    return to_return
+
+
+def analysis_rows(kind: str, tree_uuid: str) -> list[dict[str, Any]]:
+    indexing = get_indexing(flask_login.current_user)
+    rows: list[dict[str, Any]] = []
+    if kind == 'urls':
+        for url, _info in get_all_urls(tree_uuid).items():
+            rows.append({'captures': _info['total_captures'], 'url': url,
+                         'detail': url_for('url_details', url=_info['quoted_url'])})
+    elif kind == 'identifiers':
+        for id_type, identifiers in indexing.get_identifiers_capture(tree_uuid).items():
+            for identifier in identifiers:
+                rows.append({'captures': indexing.get_captures_identifier_count(id_type, identifier),
+                             'identifier': identifier, 'type': id_type,
+                             'detail': url_for('identifier_details', identifier_type=id_type, identifier=identifier)})
+    elif kind == 'hostnames':
+        for hostname, _info in get_all_hostnames(tree_uuid).items():
+            ip = str(_info['ip'])
+            rows.append({'captures': _info['total_captures'], 'hostname': hostname,
+                         'detail': url_for('hostname_details', hostname=hostname),
+                         'ip': ip, 'ip_detail': url_for('ip_details', ip=ip) if ip != 'N/A' else None,
+                         'nodes': _analysis_nodes(_info['nodes'])})  # type: ignore[arg-type]
+    elif kind == 'hashes_types':
+        for hash_type, h in indexing.get_hashes_types_capture(tree_uuid).items():
+            rows.append({'captures': indexing.get_captures_hash_type_count(hash_type, h),
+                         'hash': h, 'type': hash_type,
+                         'detail': url_for('capture_hash_details', hash_type=hash_type, h=h)})
+    elif kind == 'favicons':
+        success, favicons_zip = lookyloo.get_potential_favicons(tree_uuid, all_favicons=True, for_datauri=False)
+        if success:
+            with ZipFile(favicons_zip, 'r') as myzip:
+                for name in myzip.namelist():
+                    if not name.endswith('.ico'):
+                        continue
+                    favicon = myzip.read(name)
+                    if not favicon:
+                        continue
+                    try:
+                        mimetype = magicdb.best_magic_buffer(favicon, None).mime_type
+                    except Exception as e:
+                        app.logger.info(f'Unable to get the mimetype of a favicon: {e}')
+                        continue
+                    sha512 = hashlib.sha512(favicon).hexdigest()
+                    rows.append({'captures': indexing.get_captures_favicon_count(sha512),
+                                 'favicon': base64.b64encode(favicon).decode(), 'mimetype': mimetype,
+                                 'sha512': sha512, 'mmh3': lookyloo.compute_mmh3_shodan(favicon),
+                                 'detail': url_for('favicon_detail', favicon_sha512=sha512)})
+    elif kind == 'cloudflare_ns':
+        for cf_ns, _info in get_all_cloudflare_ns(tree_uuid).items():
+            rows.append({'captures': _info['total_captures'], 'ns': cf_ns,
+                         'detail': url_for('cloudflare_ns_details', cloudflare_ns_key=cf_ns),
+                         'hostnames': sorted(_info['hostnames'])})
+    elif kind == 'ips':
+        for ip, _info in get_all_ips(tree_uuid).items():
+            if ip.startswith('127'):
+                continue  # loopback entries
+            rows.append({'captures': _info['total_captures'], 'ip': ip,
+                         'detail': url_for('ip_details', ip=ip),
+                         'hostname': _info['hostname'],
+                         'hostname_detail': url_for('hostname_details', hostname=_info['hostname']),
+                         'nodes': _analysis_nodes(_info['nodes'])})
+    elif kind == 'body_hashes':
+        for body_hash, _info in get_all_body_hashes(tree_uuid).items():
+            first = _info['nodes'][0][0]
+            generic = mimetype_to_generic(_info['mimetype'])
+            rows.append({'captures': _info['total_captures'], 'mimetype': _info['mimetype'], 'generic': generic,
+                         'sha512': body_hash, 'detail': url_for('body_hash_details', body_hash=body_hash),
+                         'resource': url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=first.uuid),
+                         'nodes': _analysis_nodes(_info['nodes'])})
+    return sorted(rows, key=lambda row: row['captures'], reverse=True)
 
 
 @app.route('/tree/<uuid:tree_uuid>/ips', methods=['GET'])
@@ -2254,22 +2459,22 @@ def tree_ips(tree_uuid: str) -> str:
     cache = lookyloo.capture_cache(tree_uuid)
     if cache.capture_settings and cache.capture_settings.proxy:
         proxified = True
-    return render_template('tree/modals/tree_ips.html', tree_uuid=tree_uuid, proxified=proxified)
+    return render_template('tree/modals/tree_ips.html', tree_uuid=tree_uuid, proxified=proxified, rows=analysis_rows('ips', tree_uuid))
 
 
 @app.route('/tree/<uuid:tree_uuid>/hostnames', methods=['GET'])
 def tree_hostnames(tree_uuid: str) -> str:
-    return render_template('tree/modals/tree_hostnames.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_hostnames.html', tree_uuid=tree_uuid, rows=analysis_rows('hostnames', tree_uuid))
 
 
 @app.route('/tree/<uuid:tree_uuid>/urls', methods=['GET'])
 def tree_urls(tree_uuid: str) -> str:
-    return render_template('tree/modals/tree_urls.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_urls.html', tree_uuid=tree_uuid, rows=analysis_rows('urls', tree_uuid))
 
 
 @app.route('/tree/<uuid:tree_uuid>/cloudflare_ns', methods=['GET'])
 def tree_cloudflare_ns(tree_uuid: str) -> str:
-    return render_template('tree/modals/tree_cloudflare_ns.html', tree_uuid=tree_uuid)
+    return render_template('tree/modals/tree_cloudflare_ns.html', tree_uuid=tree_uuid, rows=analysis_rows('cloudflare_ns', tree_uuid))
 
 
 @app.route('/tree/<uuid:tree_uuid>/pandora', methods=['GET', 'POST'])
