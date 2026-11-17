@@ -86,7 +86,7 @@ bubble shows next to the mouse ("Copy failed" in red). `copyOnDoubleClick()` in
 
 The whole value is copied, not the word the browser selected (the selection is
 cleared). Links, buttons, tabs and form fields keep their own double-click.
-The values that can be copied show the **copy cursor** (`css/components/capture-panels.css`):
+The values that can be copied keep the normal mouse cursor, with a small copy icon next to it (`.lk-copy-hint`, `copyHint()` in `js/capture_panels.js`):
 our markup (facts, file names, origins, paragraphs, cells), and inside the
 vitrine components through their CSS parts (`vt-table::part(cell)`,
 `vt-log::part(time | message | field)`, `vt-json::part(body)`; a JSON shown in

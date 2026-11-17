@@ -200,9 +200,21 @@ vt-table.lk-vitrine, vt-log.lk-vitrine, vt-json.lk-vitrine { max-width: 100%; }
    cursor is inherited by what is inside, like the JSON in a cell). Links, buttons,
    tabs and fields keep their own cursor. */
 .lk-side-panel-content :is(dd, dt, p, li, td, th, .lk-file-name, .lk-origin-name, .lk-panel-title, .lk-misp-size),
-.lk-panel :is(dd, dt, .lk-file-name, .lk-origin-name, .lk-panel-title) { cursor: copy; }
+.lk-panel :is(dd, dt, .lk-file-name, .lk-origin-name, .lk-panel-title) { cursor: default; }
 .lk-side-panel-content :is(a, button, input, select, textarea, summary, label, [role="button"], [role="tab"]),
 .lk-panel :is(a, button, input, select, textarea, summary, label) { cursor: revert; }
 vt-table.lk-vitrine::part(cell),
 vt-log.lk-vitrine::part(time), vt-log.lk-vitrine::part(message), vt-log.lk-vitrine::part(field),
-vt-json.lk-vitrine::part(body) { cursor: copy; }
+vt-json.lk-vitrine::part(body) { cursor: default; }
+
+/* Small copy icon next to the normal mouse cursor, over what a double-click
+   copies (js/capture_panels.js, copyHint) */
+.lk-copy-hint {
+  position: fixed;
+  z-index: 2000;
+  display: flex;
+  pointer-events: none;
+  color: var(--lk-color-ink);
+  filter: drop-shadow(0 0 1px var(--lk-color-surface)) drop-shadow(0 0 1px var(--lk-color-surface));
+}
+.lk-copy-hint[hidden] { display: none; }

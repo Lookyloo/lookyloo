@@ -318,6 +318,7 @@ const copiedBubble = (doc, x, y, ok) => {
 };
 
 function copyOnDoubleClick(doc = document) {
+    copyHint(doc);
     doc.addEventListener('dblclick', (event) => {
         const path = event.composedPath();
         // Only in the panels (side panel, detached window, "Open as a page")
@@ -336,6 +337,45 @@ function copyOnDoubleClick(doc = document) {
             () => copiedBubble(doc, event.clientX, event.clientY, true),
             () => copiedBubble(doc, event.clientX, event.clientY, false));
     });
+}
+// The mouse cursor stays the normal one; a small copy icon follows it over what a
+// double-click copies (css/components/capture-panels.css, .lk-copy-hint)
+function copyHint(doc) {
+    const NS = 'http://www.w3.org/2000/svg';
+    const hint = doc.createElement('span');
+    hint.className = 'lk-copy-hint';
+    hint.hidden = true;
+    hint.setAttribute('aria-hidden', 'true');
+    const svg = doc.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('width', '14');
+    svg.setAttribute('height', '14');
+    svg.setAttribute('fill', 'currentColor');
+    const path = doc.createElementNS(NS, 'path');
+    // Bootstrap Icons "copy"
+    path.setAttribute('fill-rule', 'evenodd');
+    path.setAttribute('d', 'M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z');
+    svg.appendChild(path);
+    hint.appendChild(svg);
+    doc.body.appendChild(hint);
+    let pending = null;
+    doc.addEventListener('pointermove', (event) => {
+        if (event.pointerType !== 'mouse') return;
+        const path = event.composedPath();
+        const x = event.clientX, y = event.clientY;
+        if (pending) return;
+        pending = (doc.defaultView || window).requestAnimationFrame(() => {
+            pending = null;
+            const inPanel = path.some(node => node instanceof Element && (node.classList.contains('lk-panel') || node.id === 'lk-side-panel-body'));
+            const interactive = path.some(node => node instanceof Element && node.matches('a, button, input, select, textarea, summary, label, [role="button"], [role="tab"]'));
+            const copyable = inPanel && !interactive && !!valueAt(path)?.trim();
+            hint.hidden = !copyable;
+            if (copyable) hint.style.transform = `translate(${x + 14}px, ${y + 16}px)`;
+        });
+    }, {passive: true});
+    doc.addEventListener('pointerleave', () => { hint.hidden = true; });
+    hint.style.left = '0';
+    hint.style.top = '0';
 }
 window.copyOnDoubleClick = copyOnDoubleClick;   // detached windows (js/side_panel.js)
 copyOnDoubleClick(document);
