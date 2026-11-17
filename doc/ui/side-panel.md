@@ -69,7 +69,8 @@ space left. Phones: the panel takes the whole width, no resize.
 
 A click on a node of the tree no longer opens a pop-up window: the details of
 the node (`tree/hostname_popup.html`) open in a tab, `Node: <hostname>`, as a
-whole page in a frame (`openPage()`, `window.lkSidePanel`). Frames are hidden,
+whole page in a frame (`openPage()`, `window.lkSidePanel`); the eyes of the
+logo cover the frame until the page is loaded (`.lk-side-panel-loading.is-over-page`). Frames are hidden,
 not taken out of the page, when another tab is shown (they would reload).
 
 - The node of the current tab is **selected in the tree**: outlined in blue

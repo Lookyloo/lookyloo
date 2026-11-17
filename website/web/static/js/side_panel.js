@@ -389,7 +389,11 @@
         const frame = document.createElement('iframe');
         frame.src = url;
         frame.title = title;
-        tab.content.appendChild(frame);
+        // The eyes over the frame until the page of the node is loaded
+        const wait = loading();
+        wait.classList.add('is-over-page');
+        frame.addEventListener('load', () => wait.remove(), {once: true});
+        tab.content.append(frame, wait);
         tabs.push(tab);
         activate(tab);
     }

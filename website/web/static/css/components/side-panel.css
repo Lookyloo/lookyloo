@@ -171,7 +171,9 @@
 }
 .lk-side-panel-content { padding: 0; }
 .lk-side-panel-content:not(.is-page):not(:has(> .modal-body)) { padding: var(--lk-space-4); }
-.lk-side-panel-content.is-page { height: 100%; }
+.lk-side-panel-content.is-page { position: relative; height: 100%; }
+/* Over the frame of a node page while it loads (js/side_panel.js, openPage) */
+.lk-side-panel-loading.is-over-page { position: absolute; inset: 0; align-items: center; background: var(--lk-color-surface); }
 .lk-side-panel-content.is-page iframe { display: block; width: 100%; height: 100%; border: 0; }
 .lk-side-panel-content[hidden] { display: none; }
 .lk-side-panel-loading {
