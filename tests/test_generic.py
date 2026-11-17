@@ -54,13 +54,13 @@ def test_capture_page(page: Page) -> None:
         expect(page.get_by_text("The indexing db is slow")).to_be_visible()
     expect(page.get_by_alt_text("Tree loading spinner")).not_to_be_visible(timeout=20_000)
     # trigger indexing
-    page.get_by_role("button", name="Analytical Tools").click()
+    page.get_by_role("button", name="Analysis", exact=True).click()
     page.get_by_role("button", name="Index capture").click()
     time.sleep(2)
     max_loop = 5
     while max_loop > 0:
         # Sometimes, the indexing fails in a weird way
-        page.get_by_role("button", name="Analytical Tools").click()
+        page.get_by_role("button", name="Analysis", exact=True).click()
         try:
             expect(page.get_by_role("button", name="Index capture")).to_have_count(1)
             page.get_by_role("button", name="Index capture").click()
