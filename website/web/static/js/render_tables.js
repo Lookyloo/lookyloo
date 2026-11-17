@@ -1,11 +1,5 @@
 "use strict";
 
-// Pivot tables (investigate/*): rows like the list of the captures when
-// js/components/capture_list.js is loaded, the plain columns otherwise.
-function lkPivotColumnsOr(table, fallback) {
-  return typeof lkPivotColumns === 'function' ? lkPivotColumns(table) : fallback;
-}
-
 function renderTables() {
   if (document.getElementById('IndexTable')) {
     let indexType = document.getElementById('IndexTable').dataset.indextype;
@@ -21,22 +15,14 @@ function renderTables() {
         url: `/tables/indexTable/${indexType}${window.location.search}`,
         type: 'POST',
       },
-      // Capture list rows (js/components/capture_list.js) on the redesigned pages
-      ...(typeof lkIndexColumns === 'function' ? {
-        columns: lkIndexColumns(document.getElementById('IndexTable')),
-        language: { searchPlaceholder: 'Filter by title or URL' },
-        // Active category filter on the same row as "per page" and the search field
-        layout: 'lkCompact' in document.getElementById('IndexTable').dataset
-          // Home page: the 10 latest captures only, the full list is on the index page
-          ? { topStart: null, topEnd: null, bottomStart: null, bottomEnd: null }
-          : { topStart: ['pageLength', lkIndexFilter(document.getElementById('IndexTable').dataset.lkIcons)].filter(Boolean) },
-      } : {
-        columns : [
-            { data: {_: 'page.display', filter: 'page.filter'}, width: '40%' },
-            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: {_: 'redirects.display', filter: 'redirects.filter'}, width: '40%' }
-        ],
-      }),
+      // Capture list rows (js/components/capture_list.js)
+      columns: lkIndexColumns(document.getElementById('IndexTable')),
+      language: { searchPlaceholder: 'Filter by title or URL' },
+      // Active category filter on the same row as "per page" and the search field
+      layout: 'lkCompact' in document.getElementById('IndexTable').dataset
+        // Home page: the 10 latest captures only, the full list is on the index page
+        ? { topStart: null, topEnd: null, bottomStart: null, bottomEnd: null }
+        : { topStart: ['pageLength', lkIndexFilter(document.getElementById('IndexTable').dataset.lkIcons)].filter(Boolean) },
     })
   }
   if (document.getElementById('categoriesTable')) {
@@ -76,11 +62,7 @@ function renderTables() {
           url: `/tables/HHHDetailsTable/${hhh}${window.location.search}`,
           type: 'POST'
       },
-      columns: lkPivotColumnsOr(document.getElementById('HHHDetailsTable'), [
-          { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-          { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-          { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-      ]),
+      columns: lkPivotColumns(document.getElementById('HHHDetailsTable')),
     })
   }
   if (document.getElementById('bodyHashDetailsTable')) {
@@ -96,11 +78,7 @@ function renderTables() {
           url: `/tables/bodyHashDetailsTable/${bodyhash}${window.location.search}`,
           type: 'POST'
       },
-      columns: lkPivotColumnsOr(document.getElementById('bodyHashDetailsTable'), [
-          { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-          { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-          { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-      ]),
+      columns: lkPivotColumns(document.getElementById('bodyHashDetailsTable')),
     })
   }
   if (document.getElementById('hashTypeDetailsTable')) {
@@ -116,11 +94,7 @@ function renderTables() {
             url: `/tables/hashTypeDetailsTable/${hash_value}${window.location.search}`,
             type: 'POST'
         },
-        columns: lkPivotColumnsOr(document.getElementById('hashTypeDetailsTable'), [
-            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ]),
+        columns: lkPivotColumns(document.getElementById('hashTypeDetailsTable')),
       });
   }
 
@@ -137,11 +111,7 @@ function renderTables() {
             url: `/tables/identifierDetailsTable/${identifier_value}${window.location.search}`,
             type: 'POST'
         },
-        columns: lkPivotColumnsOr(document.getElementById('identifierDetailsTable'), [
-            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ]),
+        columns: lkPivotColumns(document.getElementById('identifierDetailsTable')),
       });
   }
   if (document.getElementById('bodyHashesTable')) {
@@ -315,11 +285,7 @@ function renderTables() {
             url: `/tables/cookieNameTable/${cookieName}${window.location.search}`,
             type: 'POST'
         },
-        columns: lkPivotColumnsOr(document.getElementById('cookieNameTable'), [
-            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ]),
+        columns: lkPivotColumns(document.getElementById('cookieNameTable')),
       });
   }
 
@@ -336,11 +302,7 @@ function renderTables() {
            url: `/tables/ipTable/${hostname}${window.location.search}`,
            type: 'POST'
         },
-        columns: lkPivotColumnsOr(document.getElementById('ipTable'), [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ]),
+        columns: lkPivotColumns(document.getElementById('ipTable')),
     });
   }
 
@@ -357,11 +319,7 @@ function renderTables() {
            url: `/tables/hostnameTable/${hostname}${window.location.search}`,
            type: 'POST'
         },
-        columns: lkPivotColumnsOr(document.getElementById('hostnameTable'), [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ]),
+        columns: lkPivotColumns(document.getElementById('hostnameTable')),
     });
   }
 
@@ -378,11 +336,7 @@ function renderTables() {
            url: `/tables/domainTable/${domain}${window.location.search}`,
            type: 'POST'
         },
-        columns: lkPivotColumnsOr(document.getElementById('domainTable'), [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ]),
+        columns: lkPivotColumns(document.getElementById('domainTable')),
     });
   }
 
@@ -400,11 +354,7 @@ function renderTables() {
            url: `/tables/tldTable/${tld}${window.location.search}`,
            type: 'POST'
         },
-        columns: lkPivotColumnsOr(document.getElementById('tldTable'), [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ]),
+        columns: lkPivotColumns(document.getElementById('tldTable')),
     });
   }
 
@@ -422,11 +372,7 @@ function renderTables() {
             url: `/tables/urlTable/${url}${window.location.search}`,
             type: 'POST'
         },
-        columns: lkPivotColumnsOr(document.getElementById('urlTable'), [
-            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ]),
+        columns: lkPivotColumns(document.getElementById('urlTable')),
       });
   }
 
@@ -443,11 +389,7 @@ function renderTables() {
            url: `/tables/faviconDetailsTable/${favicon}${window.location.search}`,
            type: 'POST'
         },
-        columns: lkPivotColumnsOr(document.getElementById('faviconDetailsTable'), [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ]),
+        columns: lkPivotColumns(document.getElementById('faviconDetailsTable')),
       });
   }
   if (document.getElementById('cloudflareNSDetailsTable')) {
@@ -463,12 +405,7 @@ function renderTables() {
            url: `/tables/cloudflareNSDetailsTable/${cloudflarens}${window.location.search}`,
            type: 'POST'
         },
-        columns: lkPivotColumnsOr(document.getElementById('cloudflareNSDetailsTable'), [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '20%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '30%' },
-           { data: {_: 'hostnames.display', filter: 'hostnames.filter'}, width: '30%' }
-        ]),
+        columns: lkPivotColumns(document.getElementById('cloudflareNSDetailsTable')),
       });
   }
  //It is allowed to have more than one table on the same page

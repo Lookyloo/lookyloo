@@ -81,6 +81,39 @@
   color: var(--lk-color-muted);
 }
 
+/* Hostnames related to the value of a pivot page (lkHostnames) */
+.lk-capture-hostnames {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-1) var(--lk-space-2);
+  margin-top: var(--lk-space-2);
+  font-size: var(--lk-font-size-sm);
+}
+
+.lk-capture-hostnames-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--lk-color-muted);
+}
+
+.lk-hostname {
+  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-sm);
+  background: var(--lk-color-surface-2);
+  color: var(--lk-color-ink);
+  font-family: var(--lk-font-mono);
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.lk-hostname:hover {
+  border-color: var(--lk-color-accent);
+  color: var(--lk-color-accent);
+}
+
 .lk-capture-facts {
   display: flex;
   flex-wrap: wrap;
