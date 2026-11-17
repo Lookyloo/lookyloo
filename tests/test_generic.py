@@ -70,7 +70,7 @@ def test_capture_page(page: Page) -> None:
             break
     expect(page.get_by_role("button", name="Index capture")).to_have_count(0, timeout=10_000)
     # go to search page and search
-    page.get_by_role("link", name="Lookyloo icon").click()
+    page.get_by_role("link", name="Lookyloo", exact=True).click()
     page.get_by_role("navigation", name="Main navigation").get_by_role("link", name="Search").click()
     expect(page).to_have_title(re.compile("Search"))
     page.get_by_role("textbox", name="URL part").fill(domain)
