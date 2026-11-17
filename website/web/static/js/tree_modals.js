@@ -186,12 +186,93 @@ document.addEventListener("DOMContentLoaded", () => {
       MarkAsKnown(treeUUID)
     });
 
-    // Blur / Unblur the screenshot, blurred at first (tree/tree.html), and the
-    // thumbnail of the landing node in the tree with it (js/tree.js)
-    document.getElementById("blurScreenshot")?.addEventListener("click", function () {
-      const blurred = document.getElementById('screenshot').classList.toggle('blur');
-      document.getElementById('screenshot_thumbnail')?.classList.toggle('blur', blurred);
-      this.setAttribute('aria-pressed', blurred ? 'true' : 'false');
-      this.textContent = blurred ? 'Unblur' : 'Blur';
-    });
+    // Blur of the screenshot, blurred at first (tree/tree.html, doc/ui/screenshot-blur.md):
+    // level in % (100% = 20px), presets, slow reveal, clear spot under the mouse.
+    // The thumbnail of the landing node in the tree (js/tree.js) follows the level.
+    setupScreenshotBlur();
 });
+
+function setupScreenshotBlur() {
+  const shot = document.getElementById('screenshot');
+  const level = document.getElementById('blurLevel');
+  if (!shot || !level) return;
+  const output = document.getElementById('blurLevelValue');
+  const reveal = document.getElementById('revealScreenshot');
+  const revealLabel = reveal?.querySelector('span');
+  const spotlight = document.getElementById('spotlightScreenshot');
+  const frame = document.getElementById('screenshotFrame');
+  const spot = document.getElementById('screenshotSpot');
+  const toggle = document.getElementById('blurScreenshot');
+  const MAX_PX = 20, THUMB_MAX_PX = 3, REVEAL_MS = 8000;
+  let revealing = null;
+
+  const apply = (percent) => {
+    percent = Math.max(0, Math.min(100, Math.round(percent)));
+    level.value = percent;
+    output.textContent = `${percent}%`;
+    shot.classList.remove('blur');
+    shot.style.filter = percent ? `blur(${MAX_PX * percent / 100}px)` : 'none';
+    spot.style.filter = 'none';
+    const thumb = document.getElementById('screenshot_thumbnail');
+    if (thumb) {
+      thumb.classList.remove('blur');
+      thumb.style.filter = percent ? `blur(${THUMB_MAX_PX * percent / 100}px)` : 'none';
+    }
+    if (toggle) {
+      toggle.setAttribute('aria-pressed', percent ? 'true' : 'false');
+      toggle.querySelector('span').textContent = percent ? 'Unblur' : 'Blur';
+    }
+    document.querySelectorAll('[data-blur-preset]').forEach(b =>
+      b.classList.toggle('active', Number(b.dataset.blurPreset) === percent));
+    if (spotlight && !percent) setSpotlight(false);
+  };
+  const stopReveal = () => {
+    if (revealing) cancelAnimationFrame(revealing.frame);
+    revealing = null;
+    if (revealLabel) revealLabel.textContent = 'Reveal slowly';
+  };
+  const setSpotlight = (on) => {
+    spotlight.setAttribute('aria-pressed', on ? 'true' : 'false');
+    spotlight.classList.toggle('active', on);
+    frame.classList.toggle('is-spotlight', on);
+    if (!on) spot.hidden = true;
+  };
+
+  // Unblur (0 %) / Blur (100 %) in one click
+  toggle?.addEventListener('click', () => { stopReveal(); apply(Number(level.value) ? 0 : 100); });
+  level.addEventListener('input', () => { stopReveal(); apply(level.value); });
+  document.querySelectorAll('[data-blur-preset]').forEach(button =>
+    button.addEventListener('click', () => { stopReveal(); apply(button.dataset.blurPreset); }));
+
+  // From the current level down to 0 in REVEAL_MS (for 100%), at a steady pace
+  reveal?.addEventListener('click', () => {
+    if (revealing) { stopReveal(); return; }
+    if (Number(level.value) === 0) apply(100);
+    revealLabel.textContent = 'Pause';
+    let last = performance.now();
+    let next = Number(level.value);   // exact value: the slider rounds it
+    const step = (now) => {
+      next -= (now - last) / REVEAL_MS * 100;
+      last = now;
+      apply(next);
+      if (next <= 0) { stopReveal(); return; }
+      revealing.frame = requestAnimationFrame(step);
+    };
+    revealing = {frame: requestAnimationFrame(step)};
+  });
+
+  // Clear copy of the screenshot over the blurred one, masked to a circle at the mouse
+  spotlight?.addEventListener('click', () => {
+    const on = spotlight.getAttribute('aria-pressed') !== 'true';
+    if (on && Number(level.value) === 0) apply(100);
+    setSpotlight(on);
+  });
+  frame?.addEventListener('pointermove', (e) => {
+    if (!frame.classList.contains('is-spotlight')) return;
+    const box = frame.getBoundingClientRect();
+    frame.style.setProperty('--lk-spot-x', `${e.clientX - box.left + frame.scrollLeft}px`);
+    frame.style.setProperty('--lk-spot-y', `${e.clientY - box.top + frame.scrollTop}px`);
+    spot.hidden = false;
+  });
+  frame?.addEventListener('pointerleave', () => { spot.hidden = true; });
+}

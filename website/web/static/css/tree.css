@@ -2,10 +2,16 @@
   position: relative;
 }
 
+/* Loader while the tree dump is fetched (tree/tree.html): centred in the screen
+   under the capture bar, above the tree */
 #tree-loading {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  position: fixed;
+  inset: var(--lk-capture-top-height, 0) 0 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .node circle {

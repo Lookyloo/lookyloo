@@ -194,8 +194,10 @@
 {% include 'tree/legend.html' %}
 
 {{ render_messages(container=True, dismissible=True) }}
-<div class="spinner-border" role="status" id='tree-loading' alt="Tree loading spinner">
-  <span class="visually-hidden">Tree loading, please wait</span>
+{# While the tree dump is fetched and drawn (js/tree.js hides it): the eyes of the
+   logo, in the middle of the screen. alt is kept for tests/test_generic.py #}
+<div class="lk-tree-loading" id="tree-loading" alt="Tree loading spinner">
+  {{ loader('Building the capture tree', size='lg', show_label=True) }}
 </div>
 </div>
 
@@ -728,8 +730,8 @@
         {% call panel_header('Capture', 'Screenshot of the rendered page',
                              'The page as the browser rendered it. Blurred at first: a capture can show shocking content.',
                              icon_name='image') %}
-          {# Always blurred at first (doc/ui/screenshot-blur.md); js/tree_modals.js toggles it #}
-          <button type="button" class="btn btn-outline-primary btn-sm" id="blurScreenshot" aria-pressed="true">Unblur</button>
+          {# Always blurred at first; Unblur / Blur in one click, finer controls below (js/tree_modals.js) #}
+          <button type="button" class="btn btn-outline-primary btn-sm" id="blurScreenshot" aria-pressed="true">{{ render_icon('eye') }} <span>Unblur</span></button>
           <a href="{{ url_for('image', tree_uuid=tree_uuid, seed=seed) }}" role="button" class="btn btn-primary btn-sm"
              title="Download the full screenshot (PNG)">{{ render_icon('download') }} Download</a>
         {% endcall %}
@@ -737,9 +739,28 @@
         <p class="lk-shot-note">{{ render_icon('exclamation-triangle') }} Image too big ({{ sizeof_fmt(screenshot_size) }}) to display
           in the browser: the screenshot below is cropped. Download it to see it all.</p>
         {% endif %}
-        <div class="lk-shot-frame">
+        {# Always blurred at first, then revealed as the analyst wants: blur level in %,
+           slow reveal, clear spot under the mouse (js/tree_modals.js, doc/ui/screenshot-blur.md) #}
+        <div class="lk-shot-blur" id="screenshotBlur">
+          <label class="lk-shot-blur-level" for="blurLevel">{{ render_icon('eye-slash') }} Blur
+            <input type="range" class="form-range" id="blurLevel" min="0" max="100" step="1" value="100">
+            <output id="blurLevelValue" for="blurLevel">100%</output></label>
+          <div class="btn-group btn-group-sm" role="group" aria-label="Blur presets">
+            <button type="button" class="btn btn-outline-secondary" data-blur-preset="100">100%</button>
+            <button type="button" class="btn btn-outline-secondary" data-blur-preset="50">50%</button>
+            <button type="button" class="btn btn-outline-secondary" data-blur-preset="25">25%</button>
+            <button type="button" class="btn btn-outline-secondary" data-blur-preset="0">0%</button>
+          </div>
+          <button type="button" class="btn btn-outline-primary btn-sm" id="revealScreenshot"
+                  title="Lower the blur little by little; click again to pause">{{ render_icon('play') }} <span>Reveal slowly</span></button>
+          <button type="button" class="btn btn-outline-primary btn-sm" id="spotlightScreenshot" aria-pressed="false"
+                  title="A clear circle follows the mouse over the blurred screenshot">{{ render_icon('bullseye') }} Spotlight</button>
+        </div>
+        <div class="lk-shot-frame" id="screenshotFrame">
           <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '', seed=seed) }}"
                class="img-fluid blur" id="screenshot" alt="Screenshot of the rendered page"/>
+          <img src="{{ url_for('image', tree_uuid=tree_uuid, width=1024 if screenshot_too_big else '', seed=seed) }}"
+               class="lk-shot-spot" id="screenshotSpot" alt="" aria-hidden="true" hidden/>
         </div>
       </div>
     </div>

@@ -33,7 +33,7 @@ standalone pages).
 | Console messages | `tree/modals/console_messages.html` | `<vt-log>`: one entry per message, the level from the console type, URL / line / column / type as fields, buttons per level with counts, search, copy, download; no fullscreen | time of each message; nothing lost from the former table |
 | Downloads | `tree/modals/downloads.html` | One card per file: index, name, Download, Submit to Pandora | `downloadsTable` id kept on the list |
 | Video | `tree/modals/video.html` | One card per video: name, Download, player | |
-| Page screenshot | `tree/tree.html` `#screenshotModal` | Header with Unblur / Download, the image in a frame | blurred at first (`#blurScreenshot`, `#screenshot`, doc/ui/screenshot-blur.md); warning and cropped image when it is over 10 MB |
+| Page screenshot | `tree/tree.html` `#screenshotModal` | Header with Download, blur controls (level in %, presets, Reveal slowly, Spotlight), the image in a frame | blurred at first (`#blurScreenshot`, `#screenshot`, doc/ui/screenshot-blur.md); warning and cropped image when it is over 10 MB |
 | MISP export | `tree/tree.html` `#mispExportModal` (new) | The eyes of the logo (`macros/loader.html`) while the export is generated, then the export in `<vt-json>` (tree / raw, search; no path bar), its size; Copy, Download, Export again | was a raw JSON link; loaded the first time the panel is shown, not with the page. Over 50 MiB: download only |
 
 Rows of the tables and lines of the log are prepared by the views
