@@ -265,3 +265,138 @@ function lkIndexColumns(table) {
         },
     ];
 }
+
+// ---- Pivot pages (templates/investigate/*, doc/ui/pivot-pages.md) ----
+// Same rows as the list of the captures, built from the JSON of the pivot
+// tables (capture_time, capture_title, landing_page, redirects[, hostnames])
+// returned by post_table. On top of the redirects, the row says in how many
+// nodes of the capture the value was found, with the links to these nodes.
+
+function lkParsePivotRow(row) {
+    const title = lkParseFragment(row.capture_title.display);
+    const landing = lkParseFragment(row.landing_page.display);
+    // The link to the capture: the first one of the fragment (the others go to
+    // the nodes). From a popup (?from_popup=True) it is href="#" with the UUID
+    // in data-capture (openNewTab, js/generic.js): rebuilt as /tree/<uuid>.
+    const link = title.querySelector('a');
+    const href = link ? (link.dataset.capture ? `/tree/${link.dataset.capture}` : link.getAttribute('href')) : null;
+    const count = title.querySelector('b');
+    const nodes = [...title.querySelectorAll('li a[href]')].map(a => ({
+        href: a.getAttribute('href'),
+        url: a.querySelector('[title]')?.getAttribute('title') || a.textContent.trim(),
+    }));
+    const landingCopy = landing.querySelector('[data-copy]');
+    const url = landingCopy ? landingCopy.dataset.copy
+        : (landing.querySelector('[title]')?.getAttribute('title') || landing.textContent.trim());
+    // Hostnames of the capture related to the value (plain strings, post_table)
+    const hostnames = Array.isArray(row.hostnames) ? row.hostnames : [];
+    // Redirect chain (redirects, added by post_table): first URL = the captured one
+    const hops = Array.isArray(row.redirects) && row.redirects.length ? row.redirects : (url ? [url] : []);
+    const uuid = href ? lkPreviewUuid(href) : null;
+    return {
+        title: link ? link.textContent.trim() : '',
+        href,
+        url: hops[0] || url,
+        hops,
+        redirectsHref: uuid && hops.length > 1 ? `/tree/${uuid}/redirects` : null,
+        nodes,
+        nodeCount: count ? Number(count.textContent) : nodes.length,
+        hostnames,
+        time: row.capture_time,
+    };
+}
+
+// "Found in 3 nodes" (+ the hostnames), added to the facts of the row, and the
+// folded list of the nodes (links to the node in the tree)
+function lkPivotFacts(sprite, capture, facts) {
+    const fragment = document.createDocumentFragment();
+    if (capture.nodeCount) {
+        const item = lkElement('li');
+        item.append(lkIcon(sprite, 'diagram-3'),
+                    ` Found in ${capture.nodeCount} node${capture.nodeCount > 1 ? 's' : ''}`);
+        facts.appendChild(item);
+    }
+    if (capture.nodes.length) {
+        const details = lkElement('details', 'lk-route-details');
+        details.appendChild(lkElement('summary', null, `Show the node${capture.nodes.length > 1 ? 's' : ''} with this value`));
+        const list = lkElement('ol', 'lk-route');
+        capture.nodes.forEach(node => {
+            const step = lkElement('li', 'lk-route-step');
+            const line = lkElement('div', 'lk-route-url');
+            const link = lkElement('a', 'lk-route-text', node.url);
+            link.href = node.href;
+            link.title = node.url;
+            line.appendChild(link);
+            step.appendChild(line);
+            list.appendChild(step);
+        });
+        details.appendChild(list);
+        fragment.appendChild(details);
+    }
+    return fragment;
+}
+
+// The hostnames of the capture the value is related to (the ones served by the
+// Cloudflare name servers, the ones resolving to the IP...), always visible under
+// the URL: "<label>: host1 host2", each one a link to its own pivot page. The
+// label comes from data-lk-hostnames-label on the table.
+function lkHostnames(sprite, label, hostnames) {
+    const line = lkElement('div', 'lk-capture-hostnames');
+    const name = lkElement('span', 'lk-capture-hostnames-label');
+    name.append(lkIcon(sprite, 'hdd-network'), ` ${label}`);
+    line.appendChild(name);
+    hostnames.forEach(hostname => {
+        const link = lkElement('a', 'lk-hostname', hostname);
+        link.href = `/hostnames/${encodeURIComponent(hostname)}?from_popup=True`;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.title = `Other captures with ${hostname}`;
+        line.appendChild(link);
+    });
+    return line;
+}
+
+// DataTables columns of the pivot tables: [capture, time], like #IndexTable.
+// The sprite and the thumbnail URL come from the closest [data-lk-icons]
+// (captures_section() in macros/investigate.html).
+function lkPivotColumns(table) {
+    const holder = table.closest('[data-lk-icons]') || table;
+    const sprite = holder.dataset.lkIcons;
+    const thumbnail = holder.dataset.lkThumbnail || null;
+    const hostnamesLabel = table.dataset.lkHostnamesLabel || 'Hostnames';
+    return [
+        {
+            data: null,
+            render: (data, type, row) => type === 'display' ? '' : (row.capture_title.filter || ''),
+            createdCell: (cell, data, row) => {
+                const capture = {...lkParsePivotRow(row), thumbnail};
+                // Same row as the list of the captures (redirects, unencrypted hop,
+                // redirect chain), plus where the value was found
+                const wrapper = lkCaptureCell(sprite, capture);
+                const facts = wrapper.querySelector('.lk-capture-facts');
+                if (capture.hostnames.length) {
+                    facts.before(lkHostnames(sprite, hostnamesLabel, capture.hostnames));
+                }
+                if (facts) {
+                    wrapper.querySelector('.lk-capture-body').appendChild(lkPivotFacts(sprite, capture, facts));
+                }
+                cell.appendChild(wrapper);
+            },
+        },
+        {
+            data: 'capture_time',
+            className: 'lk-capture-time',
+            render: (data, type) => type === 'display' ? '' : data,
+            createdCell: (cell, data, row) => {
+                cell.appendChild(lkTimeCell(data));
+                const href = lkParsePivotRow(row).href;
+                if (href) {
+                    const view = lkElement('a', 'btn btn-sm btn-outline-primary lk-capture-view', 'View capture ');
+                    view.href = href;
+                    view.appendChild(lkIcon(sprite, 'arrow-right'));
+                    cell.appendChild(view);
+                }
+            },
+        },
+    ];
+}

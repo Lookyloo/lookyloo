@@ -33,9 +33,24 @@
   transform: scale(1.1); /* hides the blurred, transparent edges */
 }
 
-/* "Show" label drawn in CSS so the rows stay light */
+/* After a click: still slightly blurred, never in the clear (a page can be a
+   single shocking image). The clear screenshot is in the capture. */
+.lk-thumb.is-peek img {
+  filter: blur(1.2px);
+  transform: scale(1.03);
+}
+
+/* Labels drawn in CSS so the rows stay light, saying what to do: "Click to
+   preview" when strongly blurred; after the click, still slightly blurred on
+   purpose, "Open to see all" (else the light blur looks broken) */
+
 .lk-thumb.is-blurred::after {
-  content: 'Show';
+  content: 'Click to preview';
+  white-space: nowrap;
+}
+
+.lk-thumb.is-blurred::after,
+.lk-thumb.is-peek::after {
   position: absolute;
   inset: auto 0.35rem 0.35rem auto;
   padding: 0.05rem 0.45rem;
@@ -104,5 +119,27 @@
 @media (prefers-reduced-motion: reduce) {
   .lk-thumb img {
     transition: none;
+  }
+}
+
+/* Must come after the shared label rule: smaller, on one line */
+.lk-thumb.is-peek::after {
+  content: 'Open to see all';
+  white-space: nowrap;
+  font-size: 0.625rem;
+}
+
+/* Must also come after the shared rule: same small size as the other label */
+.lk-thumb.is-blurred::after {
+  font-size: 0.625rem;
+}
+
+@media (max-width: 576px) {
+  .lk-thumb.is-blurred::after {
+    content: 'Preview';
+  }
+
+  .lk-thumb.is-peek::after {
+    content: 'Open to see';
   }
 }

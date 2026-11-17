@@ -12,6 +12,10 @@ The "Tutorial" button of the site header (`#lk-tour-menu-btn`) offers:
   other. That list is a hidden `<nav>` of links built with `url_for` in
   `partials/header.html`: the script clicks the next link, it never reads a URL
   from the page. Leaving the full tour for another page stops it.
+  The list follows the rules of the menu: the Explore pages are only in it for
+  logged-in users, and a disabled page (`page_enabled()`,
+  [disabled_pages.md](disabled_pages.md)) never is, so the tour never goes to
+  a page the visitor cannot see.
 
 ## Adding a tour to a page
 

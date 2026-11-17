@@ -64,7 +64,7 @@
         <span class="lk-search-field-icon">{{ render_icon('file-earmark-binary') }}</span>
         <div class="lk-search-field-body">
           <label for="ressource">Ressource</label>
-          <p id="ressource-hint">Copy it from the resources of a capture, or from Explore &gt; Resources</p>
+          <p id="ressource-hint">Copy it from the resources of a capture{% if page_enabled('ressources') %}, or from Explore &gt; Resources{% endif %}</p>
           <input type="text" class="form-control" name="ressource" id="ressource" placeholder="Sha512 of the ressource"
                  pattern="\s*[0-9a-fA-F]{128}\s*" title="Paste the whole SHA512 of the file" aria-describedby="ressource-hint" autocomplete="off" spellcheck="false">
         </div>
@@ -80,7 +80,7 @@
         <span class="lk-search-field-icon">{{ render_icon('fingerprint') }}</span>
         <div class="lk-search-field-body">
           <label for="favicon_sha512">Favicon SHA512</label>
-          <p id="favicon_sha512-hint">Copy it from the favicons of a capture, or from Explore &gt; Favicons</p>
+          <p id="favicon_sha512-hint">Copy it from the favicons of a capture{% if page_enabled('favicons_lookup') %}, or from Explore &gt; Favicons{% endif %}</p>
           <input type="text" class="form-control" name="favicon_sha512" id="favicon_sha512" placeholder="Sha512 of a favicon"
                  pattern="\s*[0-9a-fA-F]{128}\s*" title="Paste the whole SHA512 of the file" aria-describedby="favicon_sha512-hint" autocomplete="off" spellcheck="false">
         </div>

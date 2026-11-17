@@ -1,0 +1,92 @@
+{% extends "layouts/page.html" %}
+{% from 'macros/page.html' import page_header %}
+{% from 'macros/monitoring.html' import panel_head, folded %}
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% block title %}Monitoring{% endblock %}
+
+{% block page_header %}
+{{ page_header('Monitoring', description='What the instance is doing right now: captures in progress, services, recent submissions. Read only, same data as tools/monitoring.py.', icon_name='activity', crumbs=[('Admin', None)]) }}
+{% endblock %}
+
+{% block content %}
+{% set alive_services = services | selectattr('number') | list %}
+{% set down_services = services | rejectattr('number') | list %}
+{% set dead_pids = (services | map(attribute='dead') | map('length') | sum) %}
+{% set submissions = submitters | sum(attribute='count') %}
+{% set busy_lacus = lacus_status | selectattr('is_busy') | list %}
+{% set warning = down_services or busy_lacus or not services %}
+
+<div class="lk-mon">
+
+  {# ---- Overall status ---- #}
+  <div class="lk-mon-status {{ 'is-warning' if warning else 'is-ok' }}" role="status">
+    <span class="lk-mon-status-icon">{{ render_icon('exclamation-triangle-fill' if warning else 'check-circle-fill') }}</span>
+    <div class="lk-mon-status-text">
+      {% if not services %}
+      <strong>No service registered.</strong> The background processes are not running.
+      {% elif down_services %}
+      <strong>{{ down_services | length }} service{{ 's' if down_services | length > 1 }} down:</strong> {{ down_services | map(attribute='name') | join(', ') }}.
+      {% elif busy_lacus %}
+      <strong>Lacus is busy:</strong> new captures wait in the queue.
+      {% else %}
+      <strong>Everything is running.</strong> {{ alive_services | length }} services up{% if ongoing_total %}, {{ ongoing_total }} capture{{ 's' if ongoing_total > 1 }} in progress{% endif %}.
+      {% endif %}
+    </div>
+    <div class="lk-mon-status-meta">
+      <time class="lk-mon-mono">{{ now }}</time>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_monitoring') }}">{{ render_icon('arrow-clockwise') }} Refresh</a>
+    </div>
+  </div>
+
+  {# ---- Key figures ---- #}
+  <div class="lk-mon-kpis">
+    {% for label, value, icon_name, tone, hint in [
+         ('Being captured', ongoing_total, 'camera', 'blue', 'in the browser now'),
+         ('Waiting', queued_total, 'hourglass-split', 'amber' if queued_total else 'slate', 'in the capture queue'),
+         ('Recent submissions', submissions, 'send', 'violet', (submitters | length) ~ ' submitter' ~ ('s' if submitters | length != 1 else '')),
+         ('Services', alive_services | length, 'cpu', 'red' if down_services else 'green', (dead_pids ~ ' stale PID' ~ ('s' if dead_pids != 1 else '')) if dead_pids else 'all processes alive')] %}
+    <div class="lk-mon-kpi is-{{ tone }}">
+      <span class="lk-mon-kpi-icon">{{ render_icon(icon_name) }}</span>
+      <p class="lk-mon-kpi-label">{{ label }}</p>
+      <p class="lk-mon-kpi-value" data-lk-mon-kpi="{{ loop.index }}">{{ '{:,}'.format(value) }}</p>
+      <p class="lk-mon-kpi-hint">{{ hint }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# ---- Ongoing captures: always shown ---- #}
+  <section class="lk-mon-panel" aria-labelledby="mon-captures">
+    <header class="lk-mon-panel-head">
+      {{ panel_head('mon-captures', 'camera-reels', 'Ongoing captures',
+                    ongoing_total ~ ' being captured, ' ~ queued_total ~ ' waiting' ~ ((', first ' ~ limit ~ ' shown') if ongoing_total + queued_total > limit else '') ~ '.',
+                    ongoing_total + queued_total) }}
+    </header>
+    {# Icon of a finished capture, copied by js/monitoring.js #}
+    <template id="lk-mon-done-icon">{{ render_icon('check-circle-fill') }}</template>
+    <div class="lk-mon-panel-body" id="lk-mon-captures"
+         data-lk-mon-url="{{ url_for('admin_monitoring_section', section='captures') }}" data-lk-mon-every="10">
+      {% with section='captures', now=now[-8:] %}{% include 'admin/monitoring_section.html' %}{% endwith %}
+    </div>
+  </section>
+
+  {# ---- Folded sections: requested when opened (js/monitoring.js) ---- #}
+  {{ folded('submissions', 'send', 'Recent submissions', 'Per submitter, captures not finished yet. Forgotten 10 min after the last one.') }}
+  {{ folded('services', 'cpu', 'Services', 'Background processes of Lookyloo, their PIDs.') }}
+  {{ folded('requests', 'globe2', 'Web requests today', 'Per IP, top 50, reset every day.') }}
+  {{ folded('cache', 'diagram-3', 'Tree cache and Lacus', 'Trees kept in memory per process, state of the remote Lacus.') }}
+</div>
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/monitoring.css') }}"
+      {{get_sri('static', 'css/monitoring.css')}} crossorigin="anonymous">
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/monitoring.js') }}"
+        {{get_sri('static', 'js/monitoring.js')}}
+        nonce="{{ csp_nonce() }}" crossorigin="anonymous"></script>
+{% endblock %}

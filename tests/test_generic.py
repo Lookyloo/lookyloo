@@ -80,10 +80,10 @@ def test_capture_page(page: Page) -> None:
     while max_loop > 0:
         # When the indexer is slow, the capture is indexed later, in the background
         try:
-            expect(page.get_by_text("The capture contains").first).to_be_visible()
+            expect(page.get_by_text(re.compile(r"Found in \d+ nodes?")).first).to_be_visible()
             break
         except AssertionError:
             max_loop -= 1
             time.sleep(10)
             page.reload()
-    expect(page.get_by_text("The capture contains").first).to_be_visible()
+    expect(page.get_by_text(re.compile(r"Found in \d+ nodes?")).first).to_be_visible()

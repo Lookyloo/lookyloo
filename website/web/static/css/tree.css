@@ -34,6 +34,11 @@
   scroll-margin: 50px;
 }
 
+/* 64 px thumbnail of the screenshot on the tree: a lighter blur is enough */
+#screenshot_thumbnail.blur {
+  filter: blur(3px);
+}
+
 #help {
   text-align: center;
   border-style: solid;

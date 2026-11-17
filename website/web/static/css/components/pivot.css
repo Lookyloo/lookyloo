@@ -1,0 +1,296 @@
+/*
+ * Pivot pages (templates/investigate/*, macros/investigate.html): a value
+ * (hostname, IP, hash...) and the captures it was seen in. Shown as a page
+ * (popup) or inside the capture tree modals. Doc: doc/ui/pivot-pages.md
+ */
+
+.lk-pivot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lk-space-4);
+  padding-block: var(--lk-space-3);
+}
+
+.lk-pivot-back {
+  display: flex;
+}
+
+.lk-pivot-back .btn,
+.lk-pivot-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+}
+
+/* Header card: icon, kind, value, description, actions */
+.lk-pivot-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--lk-space-4);
+  padding: var(--lk-space-5);
+  background: var(--lk-color-surface);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-lg);
+  box-shadow: var(--lk-shadow-sm);
+}
+
+.lk-pivot-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--lk-radius-lg);
+  background: var(--lk-color-accent-soft);
+  color: var(--lk-color-accent);
+  font-size: 1.6rem;
+}
+
+.lk-pivot-icon img {
+  width: 32px;
+  height: 32px;
+  image-rendering: auto;
+}
+
+/* Favicon in the header card: on the checkerboard too */
+.lk-pivot-zoom img {
+  background: repeating-conic-gradient(var(--lk-color-rule) 0 25%, var(--lk-color-surface) 0 50%) 0 0 / 8px 8px;
+  border-radius: 4px;
+}
+
+.lk-pivot-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.lk-pivot-kind {
+  margin: 0;
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-xs);
+  font-weight: var(--lk-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.lk-pivot-value {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--lk-space-1);
+  margin: var(--lk-space-1) 0 0;
+  font-family: var(--lk-font-mono);
+  font-size: 1.15rem;
+  font-weight: var(--lk-font-weight-semibold);
+  line-height: 1.35;
+}
+
+.lk-pivot-value span {
+  overflow-wrap: anywhere;
+}
+
+.lk-pivot-description {
+  margin: var(--lk-space-2) 0 0;
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-sm);
+  max-width: 80ch;
+}
+
+.lk-pivot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--lk-space-2);
+}
+
+/* Sections: file info, headers, passive DNS, captures */
+.lk-pivot-section {
+  padding: var(--lk-space-4) var(--lk-space-5);
+  background: var(--lk-color-surface);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-lg);
+}
+
+.lk-pivot-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  margin: 0 0 var(--lk-space-3);
+  font-size: 1rem;
+}
+
+.lk-pivot-section-title .lk-icon {
+  color: var(--lk-color-accent);
+}
+
+.lk-pivot-table {
+  --bs-table-bg: transparent;
+  margin-bottom: 0;
+}
+
+.lk-pivot-table thead th {
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-xs);
+  font-weight: var(--lk-font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom-color: var(--lk-color-rule);
+}
+
+.lk-pivot-kv th[scope="row"] {
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-sm);
+  font-weight: var(--lk-font-weight-medium);
+  width: 30%;
+}
+
+.lk-pivot-kv td {
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+/* Collapsible block (Passive DNS) */
+.lk-pivot-details summary {
+  color: var(--lk-color-accent);
+  cursor: pointer;
+  width: fit-content;
+}
+
+.lk-pivot-details[open] summary {
+  margin-bottom: var(--lk-space-3);
+}
+
+/* Resource: preview + facts */
+.lk-pivot-file {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--lk-space-5);
+}
+
+.lk-pivot-preview img {
+  display: block;
+  max-width: 256px;
+  max-height: 256px;
+  min-width: 32px;
+  padding: var(--lk-space-2);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+  background: var(--lk-color-surface-2);
+}
+
+.lk-pivot-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--lk-space-2) var(--lk-space-5);
+  margin: 0;
+}
+
+.lk-pivot-facts dt {
+  color: var(--lk-color-muted);
+  font-weight: var(--lk-font-weight-medium);
+}
+
+.lk-pivot-facts dd {
+  margin: 0;
+  font-family: var(--lk-font-mono);
+  overflow-wrap: anywhere;
+}
+
+.lk-pivot-pandora {
+  margin-top: var(--lk-space-4);
+}
+
+@media (max-width: 576px) {
+  .lk-pivot-head {
+    flex-wrap: wrap;
+  }
+
+  .lk-pivot-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* No capture for this value (js/components/pivot.js) */
+.lk-pivot-empty {
+  text-align: center;
+  color: var(--lk-color-muted);
+  padding: var(--lk-space-5) var(--lk-space-3);
+}
+
+.lk-pivot-empty p {
+  margin: 0 0 var(--lk-space-2);
+}
+
+.lk-pivot-empty-title {
+  color: var(--lk-color-ink);
+  font-weight: 600;
+}
+
+/* Captures of a pivot page: same block as the list of the captures
+   (home/index.html), a title then the .lk-capture-list card */
+.lk-pivot-captures {
+  margin-top: var(--lk-space-5);
+}
+
+.lk-pivot-captures-title {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 var(--lk-space-3);
+}
+
+/* Favicon of a pivot page: click to see it in large (js/components/pivot.js) */
+.lk-pivot-zoom {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.lk-zoom-dialog {
+  position: relative;
+  padding: var(--lk-space-5);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: 12px;
+  background: var(--lk-color-surface);
+  cursor: zoom-out;
+}
+
+.lk-zoom-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.lk-zoom-dialog img {
+  display: block;
+  width: min(256px, 70vw);
+  height: auto;
+  image-rendering: pixelated;
+  /* Checkerboard: a light or transparent icon stays visible */
+  background: repeating-conic-gradient(var(--lk-color-rule) 0 25%, var(--lk-color-surface) 0 50%) 0 0 / 16px 16px;
+  border-radius: 6px;
+}
+
+.lk-zoom-dialog .btn-close {
+  position: absolute;
+  top: var(--lk-space-2);
+  right: var(--lk-space-2);
+}
+
+/* Total of captures next to the title (js/components/pivot.js) */
+.lk-pivot-count {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0.1em 0.55em;
+  border-radius: 999px;
+  background: var(--lk-color-accent-soft);
+  color: var(--lk-color-accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}

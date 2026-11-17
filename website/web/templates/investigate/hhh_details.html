@@ -1,60 +1,47 @@
-{% from 'bootstrap5/utils.html' import render_icon %}
+{% from 'macros/investigate.html' import pivot_header, captures_section, pivot_section with context %}
 
 {% if from_popup %}
-
+{# Standalone page (from_popup=True): site layout; otherwise an HTML fragment for the tree modals #}
 {% extends "layouts/page.html" %}
-{% from 'bootstrap5/utils.html' import render_messages %}
 {% block title %}{{ hhh }}{% endblock %}
-
-{%endif%}
+{% endif %}
 
 
 {% block content %}
+<div class="lk-pivot">
+{{ pivot_header('HTTP headers hash', hhh, description='Responses whose HTTP headers have the same names in the same order: servers configured the same way.', icon_name='fingerprint',
+                 share_url=url_for('hhh_detail', hhh=hhh, from_popup=True), from_popup=from_popup) }}
 
-{% if from_popup %}
-<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
-{%endif%}
-
-<center>
-  <p class="lead"><b>{{ hhh }}</b>
-   {% if not from_popup %}
-   <a href="{{ url_for('hhh_detail', hhh=hhh, from_popup=True) }}" class="btn btn-light">
-       {{ render_icon('share') }}
-   </a>
-   {%endif%}
-  </p>
-</center>
-
+{% call pivot_section('Headers', icon_name='list-ul') %}
 <div class="table-responsive">
-    <table id="table" class="table">
-        <thead>
-            <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Value sample</th>
-            </tr>
-        </thead>
-        <tbody>
-            {%for name, value in headers%}
-            <tr>
-                <th scope="row">{{name}}</th>
-                <td>{{value}}</td>
-            </tr>
-            {%endfor%}
-        </tbody>
-    </table>
+  <table class="table lk-pivot-table lk-pivot-kv">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Value sample</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for name, value in headers %}
+      <tr>
+        <th scope="row">{{ name }}</th>
+        <td>{{ value }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
-<p>The same HTTP Headers Hash was seen in these captures:</p>
-<ul>
-<div class="table-responsive">
-    <table id="HHHDetailsTable" class="table" data-hhh="{{hhh}}">
-        <thead>
-            <tr>
-                <th>Capture Time</th>
-                <th>Capture Title</th>
-                <th>URL</th>
-            </tr>
-        </thead>
-    </table>
+{% endcall %}
+
+{% call captures_section() %}
+<table id="HHHDetailsTable" class="table lk-capture-table" style="width:100%" data-hhh="{{hhh}}">
+  <thead>
+    <tr>
+      <th>Capture</th>
+      <th class="text-end">Captured</th>
+    </tr>
+  </thead>
+</table>
+{% endcall %}
 </div>
-</ul>
 {% endblock %}

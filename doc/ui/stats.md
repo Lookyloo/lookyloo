@@ -12,3 +12,7 @@ is the one of `Lookyloo.get_stats()`, unchanged.
 The tables only hold aggregates (one row per month), so they stay small however
 many captures the instance has: they are plain HTML tables, no DataTables. On
 phones they scroll sideways inside their card.
+
+**Disabled**: the page is switched off for now (`/stats` answers 404 and the
+Statistics entry is hidden), it takes too long on a large instance. See
+[disabled_pages.md](disabled_pages.md).

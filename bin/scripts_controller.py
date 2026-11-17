@@ -34,7 +34,7 @@ def main() -> None:
     else:
         # we need to keep the cmdline for the restart
         # And if it doesn't exist, we want to inform the user.
-        for name, numbers, pids in AbstractManager.is_running():
+        for name, numbers, pids, dead_pids in AbstractManager.is_running():
             if name == args.script:
                 to_restart = _get_cmdline(pids.pop())
                 break

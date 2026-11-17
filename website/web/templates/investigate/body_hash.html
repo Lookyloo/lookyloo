@@ -1,72 +1,52 @@
 {% from 'bootstrap5/utils.html' import render_icon %}
+{% from 'macros/investigate.html' import pivot_header, captures_section, pivot_section with context %}
 {% from "macros/macros.html" import pandora_submit %}
 
 {% if from_popup %}
-
+{# Standalone page (from_popup=True): site layout; otherwise an HTML fragment for the tree modals #}
 {% extends "layouts/page.html" %}
-{% from 'bootstrap5/utils.html' import render_messages %}
 {% block title %}{{ body_hash }}{% endblock %}
-
-{%endif%}
+{% endif %}
 
 
 {% block content %}
+<div class="lk-pivot">
+{% call pivot_header('Resource', body_hash, description='A file loaded by the captured pages (script, image, style...), identified by its SHA512.',
+                       image_src=url_for('static', filename=(get_icon(generic_type(mimetype)) or get_icon('unset_mimetype'))['icon']),
+                       share_url=url_for('body_hash_details', body_hash=body_hash, from_popup=True), from_popup=from_popup) %}
+  <a class="btn btn-primary btn-sm" href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">{{ render_icon('download') }} Download</a>
+{% endcall %}
 
-{% if from_popup %}
-<center><button class="btn btn-primary goBack" type="button">Go Back</button></center>
-{%endif%}
-
-<center>
-  <p class="lead">File Information
-    {% if not from_popup %}
-    <a href="{{ url_for('body_hash_details', body_hash=body_hash, from_popup=True) }}" class="btn btn-light">{{ render_icon('share') }}</a>
-    {%endif%}
-  </p>
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">Filename</th>
-        <th scope="col">Size</th>
-        <th scope="col">Mimetype</th>
-        <th scope="col">Hash</th>
-        <th scope="col">Download</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-          <td>
-              <span class="d-inline-block text-break" title="The file may have different names across the captures, this is one of them.">{{ filename }}</span>
-          </td>
-          <td>{{ sizeof_fmt(ressource_size) }}</td>
-          <td>{{ mimetype }}</td>
-          <td ><span style="font-size: 70%;" class="d-inline-block text-break">{{ body_hash }}</span></td>
-          <td>
-            {% if b64 %}
-            <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}">
-              <img class="border rounded border-3" src="data:{{mimetype}};base64,{{ b64 }}" style="min-width: 25px; max-width: 256px;max-height: 256px;"
-                   title="Click to download"/>
-            </a>
-            {% else %}
-            <a href="{{ url_for('ressource_by_hash', sha512=body_hash) }}" type="button" class="btn btn-light">
-                {{ render_icon('cloud-download', title="Download the file") }}
-            </a>
-            {% endif %}
-          </td>
-      </tr>
-    </tbody>
-  </table>
-  {% if has_pandora and sample_tree_uuid and sample_node_uuid%}
-  {{ pandora_submit(sample_tree_uuid, node_uuid=sample_node_uuid, seed=seed) }}
+{% call pivot_section('File', icon_name='file-earmark') %}
+<div class="lk-pivot-file">
+  {% if b64 %}
+  <a class="lk-pivot-preview" href="{{ url_for('ressource_by_hash', sha512=body_hash) }}" title="Click to download">
+    <img src="data:{{mimetype}};base64,{{ b64 }}" alt="Preview of the resource">
+  </a>
   {% endif %}
-</center>
+  <dl class="lk-pivot-facts">
+    <dt>Filename</dt>
+    <dd title="The file may have different names across the captures, this is one of them.">{{ filename }}</dd>
+    <dt>Size</dt>
+    <dd>{{ sizeof_fmt(ressource_size) }}</dd>
+    <dt>Mimetype</dt>
+    <dd>{{ mimetype }}</dd>
+  </dl>
+</div>
+{% if has_pandora and sample_tree_uuid and sample_node_uuid %}
+<div class="lk-pivot-pandora">{{ pandora_submit(sample_tree_uuid, node_uuid=sample_node_uuid, seed=seed) }}</div>
+{% endif %}
+{% endcall %}
 
-<table id="bodyHashDetailsTable" class="table table-striped" style="width:100%" data-bodyhash="{{body_hash}}">
+{% call captures_section() %}
+<table id="bodyHashDetailsTable" class="table lk-capture-table" style="width:100%" data-bodyhash="{{body_hash}}">
   <thead>
-   <tr>
-     <th>Capture Time</th>
-     <th>Capture Title</th>
-     <th>Landing page</th>
-   </tr>
+    <tr>
+      <th>Capture</th>
+      <th class="text-end">Captured</th>
+    </tr>
   </thead>
 </table>
+{% endcall %}
+</div>
 {% endblock %}
