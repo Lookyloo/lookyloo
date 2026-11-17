@@ -218,16 +218,20 @@ try {
   if (document.getElementById('tree_js').dataset.urlnode != null){
     history.scrollRestoration = "manual";
     LocateNode(document.getElementById('tree_js').dataset.urlnode);
+    window.lkSidePanel?.restore();
   } else {
     // Open on the first node, near the left edge, the tree going right (it used
     // to scroll smoothly to the node of the rendered page, at the bottom)
     history.scrollRestoration = "manual";
-    centerOnRoot('left');
+    // Once the layout is settled: the SVG still shrinks right after the first
+    // draw, and the node ended up under the left edge
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      centerOnRoot('left');
+      // The tabs of the side panel kept in the URL (#panels=..., js/side_panel.js), once
+      // the tree is drawn and placed: the node of a node tab is then selected (scrolled to)
+      window.lkSidePanel?.restore();
+    }));
   }
-
-  // The tabs of the side panel kept in the URL (#panels=..., js/side_panel.js), once
-  // the tree is drawn and placed: the node of a node tab is then selected (scrolled to)
-  window.lkSidePanel?.restore();
 
   if (parent_uuid != null) {
 
