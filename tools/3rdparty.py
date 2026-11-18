@@ -27,9 +27,9 @@ jquery_json_viewer_version = "1.5.0"
 # Vitrine (https://github.com/ecrou-exact/vitrine): web components of the capture
 # panels (JSON viewer, tables, stats...). Source of a pinned commit, SHA-256
 # checked, built with Node >= 20 (npm ci --ignore-scripts + node scripts/build.js).
-VITRINE_COMMIT = 'a404d96813d12dfe0d5fc2c6beb8eaedd9ef4be8'
+VITRINE_COMMIT = 'd0dd8410755d2982464b64e0278cdc0f8ef378f7'
 VITRINE_TARBALL = f'https://codeload.github.com/ecrou-exact/vitrine/tar.gz/{VITRINE_COMMIT}'
-VITRINE_SHA256 = '5b7ba25722d9b8ecc1c6cb606a95203969a6625c42196e0e6ef1ba5f4ea887da'
+VITRINE_SHA256 = 'fb5c1e38c417423085360379eb6739967c9281f3f4fefaee8f6c306ab3ad362d'
 # What the website needs from vitrine's dist/
 VITRINE_KEEP = ('esm', 'languages', 'syntax-themes', 'vendor', 'vitrine.css')
 

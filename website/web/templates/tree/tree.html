@@ -889,57 +889,47 @@
           </div>
           <br>
           <div class="modal-body">
-              <div class="alert alert-info" role="alert">
-                The capture is currently
-                  {%if not info %}
-                    {% set visibility = 'public' %}
-                    <b>in an unknown state</b>, assuming public
-                  {%elif info.private is true %}
-                    {% set visibility = 'private' %}
-                    <b>private</b>
-                  {%elif info.no_index is true %}
-                    {% set visibility = 'unlisted' %}
-                    <b>unlisted</b>
-                  {%else%}
-                    {% set visibility = 'public' %}
-                    <b>public</b>
-                  {%endif%}
-                  .
-              </div>
-
+            {# Actions > Visibility and sharing: three choices as cards, the current one
+               marked; the fields are the ones visibility() reads (visibility, seed_expire).
+               Doc: doc/ui/actions-panels.md #}
+            {% if not info %}{% set visibility = 'public' %}{% set unknown = True %}
+            {% elif info.private is true %}{% set visibility = 'private' %}
+            {% elif info.no_index is true %}{% set visibility = 'unlisted' %}
+            {% else %}{% set visibility = 'public' %}{% endif %}
+            <div class="lk-panel">
+              {{ panel_header('Actions', 'Visibility and sharing',
+                              'Who can find and open this capture. A private capture is only opened with its link and seed.',
+                              icon_name='eye') }}
+              <p class="lk-visibility-now">Now: <span class="lk-visibility-badge is-{{ visibility }}">{{ render_icon({'public': 'globe2', 'unlisted': 'eye-slash', 'private': 'lock-fill'}[visibility]) }} {{ visibility|capitalize }}</span>
+                {% if unknown %}<span class="lk-pivot-description">(unknown state, assumed public)</span>{% endif %}</p>
               <form role="form" action="{{ url_for('visibility', tree_uuid=tree_uuid, seed=seed) }}"
-                    method=post enctype=multipart/form-data>
-                  <div class="row mb-3">
-                    <div class="col-sm-2 col-form">New visibility level:</div>
-                    <div class="col-sm-10">
-                      <div class="form-check">
-                        <input class="form-check-input" type="radio" id="public" name="visibility" value="public"
-                          {% if visibility == 'public' %}checked="checked"{% endif %}>
-                        <label for="public" class="form-check-label">Display capture on public index</label>
-                      </div>
-
-                      <div class="form-check">
-                        <input class="form-check-input" type="radio" id="unlisted" name="visibility" value="unlisted"
-                          {% if visibility == 'unlisted' %}checked="checked"{% endif %}>
-                        <label for="unlisted" class="form-check-label">Do not display capture on public index</label>
-                      </div>
-
-                      <div class="form-check">
-                        <input class="form-check-input" type="radio" id="private" name="visibility" value="private"
-                          {% if visibility == 'private' %}checked="checked"{% endif %}>
-                        <label for="private" class="form-check-label">Make capture private, only accessible with a seed. Keep this box selected if the capture is already private and you want a new seed.</label>
-                        <br>
-                        <label for="seed_expire" class="form-check-label">When should the seed expire?</label>
-                        <input type="text" id="seed_expire" name="seed_expire" value="{{default_seed_expire}}">
-                      </div>
-                    </div>
-                  </div>
-                  <div class="alert alert-info" role="alert">
-                      All the captures are always visible by the platform administrators. If you want a truly
-                      private capture, you need to run your own instance of lookyloo.
-                  </div>
-                  <button type="submit" class="btn btn-primary">Change</button>
+                    method="post" enctype="multipart/form-data">
+                <fieldset class="lk-choice-cards">
+                  <legend class="visually-hidden">New visibility</legend>
+                  {% for value, icon_name, title, text in [
+                       ('public', 'globe2', 'Public', 'Listed on the public index of the captures, found by the search.'),
+                       ('unlisted', 'eye-slash', 'Unlisted', 'Not on the public index, but anyone with the link can open it.'),
+                       ('private', 'lock-fill', 'Private', 'Only with its link and a seed. Keep it chosen on a private capture to get a new seed.')] %}
+                  <label class="lk-choice-card" for="{{ value }}">
+                    <input class="form-check-input" type="radio" id="{{ value }}" name="visibility" value="{{ value }}"
+                           {% if visibility == value %}checked="checked"{% endif %}>
+                    <span class="lk-choice-icon">{{ render_icon(icon_name) }}</span>
+                    <span class="lk-choice-text"><strong>{{ title }}{% if visibility == value %} <small>(now)</small>{% endif %}</strong><span>{{ text }}</span></span>
+                  </label>
+                  {% endfor %}
+                </fieldset>
+                <div class="lk-seed-expire">
+                  <label for="seed_expire" class="form-label">Seed of a private capture: expires in</label>
+                  <input type="text" class="form-control form-control-sm" id="seed_expire" name="seed_expire" value="{{ default_seed_expire }}">
+                </div>
+                <p class="lk-panel-note">{{ render_icon('info-circle') }} The administrators of this instance always see every capture.
+                  For a truly private capture, run your own Lookyloo.</p>
+                <div class="lk-panel-submit">
+                  <span></span>
+                  <button type="submit" class="btn btn-primary">{{ render_icon('check2') }} Change the visibility</button>
+                </div>
               </form>
+            </div>
           </div>
       </div>
   </div>
@@ -957,12 +947,23 @@
           </div>
           <br>
           <div class="modal-body">
+            {# Actions > Push to another Lookyloo: the capture is sent to the instance
+               given (web_lookyloo_push_view). Doc: doc/ui/actions-panels.md #}
+            <div class="lk-panel">
+              {{ panel_header('Actions', 'Push to another Lookyloo',
+                              'Send this capture to another Lookyloo instance: it gets the whole capture, as if it had made it.',
+                              icon_name='cloud-upload') }}
               <form role="form" action="{{ url_for('web_lookyloo_push_view', tree_uuid=tree_uuid, seed=seed) }}"
-                    method=post enctype=multipart/form-data>
-                  <label for="remote_lookyloo_url" class="col-sm-2 col-form-label">Submit capture to:</label>
-                  <input type="text" class="form-control" name="remote_lookyloo_url" id="remote_lookyloo_url" required>
-                  <button type="submit" class="btn btn-primary">Submit</button>
+                    method="post" enctype="multipart/form-data" class="lk-push-form">
+                <label for="remote_lookyloo_url" class="form-label">URL of the Lookyloo instance</label>
+                <div class="lk-push-row">
+                  <input type="url" class="form-control lk-mono-input" name="remote_lookyloo_url" id="remote_lookyloo_url"
+                         placeholder="https://lookyloo.example.org" required>
+                  <button type="submit" class="btn btn-primary">{{ render_icon('cloud-upload') }} Push</button>
+                </div>
+                <p class="lk-panel-note">{{ render_icon('info-circle') }} The other instance must accept submissions from this one.</p>
               </form>
+            </div>
           </div>
       </div>
   </div>
@@ -1032,22 +1033,29 @@
 {% if enable_monitoring %}
 <div class="modal fade" id="monitoringModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
-    <form role="form" action="{{ url_for('monitor', tree_uuid=tree_uuid, seed=seed) }}" method=post enctype=multipart/form-data>
       <div class="modal-content">
           <div class="modal-header">
               <h5 class="modal-title" id="monitorModalLabel">Monitor capture</h5>
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <p>The capture will be submitted to the monitoring interface.</p>
-            {{monitoring_form(monitoring_settings, monitoring_collections, confirm_message="Yes, I want to submit this capture for monitoring.", auth=current_user.is_authenticated)}}
-          </div>
-          <div class="modal-footer">
-              <button type="submit" class="btn btn-success" id="btn-notification-monitoring">Send to monitoring</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            {# Actions > Monitor capture. The form is inside the body: the side panel takes
+               the body, a form around the whole modal was left behind (nothing was sent).
+               Doc: doc/ui/actions-panels.md #}
+            <div class="lk-panel">
+              {{ panel_header('Actions', 'Monitor capture',
+                              'Send this capture to the monitoring interface: the URL is captured again at the frequency chosen, and the changes are reported.',
+                              icon_name='activity') }}
+              <form role="form" action="{{ url_for('monitor', tree_uuid=tree_uuid, seed=seed) }}" method="post" enctype="multipart/form-data" class="lk-panel-form">
+                {{monitoring_form(monitoring_settings, monitoring_collections, confirm_message="Yes, I want to submit this capture for monitoring.", auth=current_user.is_authenticated)}}
+                <div class="lk-panel-submit">
+                  <span></span>
+                  <button type="submit" class="btn btn-primary" id="btn-notification-monitoring">{{ render_icon('activity') }} Send to monitoring</button>
+                </div>
+              </form>
+            </div>
           </div>
       </div>
-    </form>
   </div>
 </div>
 {% endif %}
@@ -1055,22 +1063,23 @@
 {% if enable_mail_notification %}
 <div class="modal fade" id="emailModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl" role="document">
-    <form role="form" action="{{ url_for('send_mail', tree_uuid=tree_uuid, seed=seed) }}" method=post enctype=multipart/form-data>
       <div class="modal-content">
           <div class="modal-header">
               <h5 class="modal-title" id="emailModalLabel">Notify by email</h5>
               <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <p>A notification of this capture will be sent to the owners of this Lookyloo instance. They may or may not act on it.</p>
-            {{notify_form(confirm_message)}}
-          </div>
-          <div class="modal-footer">
-              <button type="submit" class="btn btn-success" id="btn-notification-report">Send email</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            {# The form inside the body, like #monitoringModal (side panel) #}
+            <form role="form" action="{{ url_for('send_mail', tree_uuid=tree_uuid, seed=seed) }}" method="post" enctype="multipart/form-data">
+              <p>A notification of this capture will be sent to the owners of this Lookyloo instance. They may or may not act on it.</p>
+              {{notify_form(confirm_message)}}
+              <div class="lk-panel-submit">
+                <span></span>
+                <button type="submit" class="btn btn-success" id="btn-notification-report">Send email</button>
+              </div>
+            </form>
           </div>
       </div>
-    </form>
   </div>
 </div>
 {% endif %}

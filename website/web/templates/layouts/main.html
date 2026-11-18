@@ -95,6 +95,12 @@
             nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
     {% endif %}
+    {# MISP tags and the colours of the categories, on every page (js/components/misp_tag.js) #}
+    <script type="application/json" id="lk-category-colours">{{ category_colours() | tojson }}</script>
+    <script src='{{ url_for('static', filename='js/components/misp_tag.js') }}'
+            {{get_sri('static', 'js/components/misp_tag.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='js/components/toasts.js') }}'
             {{get_sri('static', 'js/components/toasts.js')}}
             nonce="{{ csp_nonce() }}"

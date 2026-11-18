@@ -10,6 +10,7 @@ import '../vendor/vitrine/esm/vt-json.js';
 import '../vendor/vitrine/esm/vt-table.js';
 import '../vendor/vitrine/esm/vt-stats.js';
 import '../vendor/vitrine/esm/vt-log.js';
+import '../vendor/vitrine/esm/vt-tags.js';
 
 const base = new URL('../vendor/vitrine/', import.meta.url).href;
 // Light / dark like the rest of Lookyloo (data-bs-theme on <html>, js/theme_toggle.js)
@@ -252,6 +253,106 @@ const tableButton = (label, title, onClick, iconPath = DOWNLOAD_ICON) => {
     return button;
 };
 
+// ---- MISP tags, drawn like MISP 3 (its events index): the tag split by
+// misp_tag_view() / _misp_tag() of website/web/__init__.py ({name, namespace,
+// value, lane, colour, clear}). Inline styles on the --lk-* tokens: the same in
+// the light DOM and inside the vitrine tables (shadow DOM). The Jinja twin is
+// macros/misp.html; the CSS twin .lk-misp-mk / .lk-misp-chip. ----
+// The renderer is shared: js/components/misp_tag.js (lkMispTag)
+const mispTag = (tag) => window.lkMispTag(tag);
+
+// ---- A vitrine table whose selected rows are sent with its form
+// (data-lk-form-select): each selected row gives a hidden field (row.field or the
+// attribute value, row.value); the rows with "selected": true are selected at
+// first; [data-lk-select-count] says how many. ----
+const setupSelectForms = (root) => {
+    root.querySelectorAll('vt-table[data-lk-form-select]:not([data-lk-select-ready])').forEach(table => {
+        const form = table.closest('form');
+        if (!form) return;
+        table.dataset.lkSelectReady = '';
+        const count = form.querySelector('[data-lk-select-count]');
+        const submit = form.querySelector('button[type="submit"]');
+        const extra = () => (form.querySelector('textarea[name="user_urls"]')?.value || '').split('\n').filter(line => line.trim()).length;
+        // [data-lk-select-chips]: the chosen rows above the table, as tags with a remove
+        // button (row.chip: a MISP tag; else the text of the row)
+        const chips = form.querySelector('[data-lk-select-chips]');
+        const keyOf = (row) => row[table.getAttribute('row-key')];
+        const drawChips = () => {
+            if (!chips) return;
+            const rows = table.selection || [];
+            chips.replaceChildren();
+            if (!rows.length) {
+                chips.appendChild(el('span', 'lk-pivot-description', chips.dataset.lkEmpty || 'Nothing chosen.'));
+                return;
+            }
+            rows.forEach(row => {
+                const item = el('span', 'lk-chosen');
+                item.appendChild(row.chip ? mispTag(row.chip) : el('span', null, row.url || keyOf(row)));
+                const remove = el('button', 'lk-chosen-remove');
+                remove.type = 'button';
+                remove.title = 'Remove';
+                remove.setAttribute('aria-label', `Remove ${row.tag || row.url || keyOf(row)}`);
+                remove.textContent = '×';
+                remove.addEventListener('click', () => {
+                    table.select((table.selectedKeys || []).filter(key => key !== keyOf(row)));
+                    table.dispatchEvent(new CustomEvent('vt-select'));
+                });
+                item.appendChild(remove);
+                chips.appendChild(item);
+            });
+        };
+        const update = () => {
+            drawChips();
+            const n = (table.selection || []).length;
+            const total = n + extra();
+            const noun = table.dataset.lkSelectNoun || 'row';
+            const plural = noun.endsWith('y') ? `${noun.slice(0, -1)}ies` : `${noun}s`;
+            if (count) count.textContent = `${n} ${n === 1 ? noun : plural} chosen`;
+            if (submit && table.dataset.lkSelectRequired !== undefined) submit.disabled = total === 0;
+        };
+        table.addEventListener('vt-select', update);
+        form.addEventListener('input', update);
+        // data-lk-no-select-all: each row is chosen one by one. vt-table has no option
+        // for it: its "select all" boxes (header, groups) and its selection menu are
+        // hidden in its shadow DOM, and Ctrl/⌘+A is stopped (not in its search field)
+        if (table.dataset.lkNoSelectAll !== undefined) {
+            customElements.whenDefined('vt-table').then(() => {
+                if (!table.shadowRoot) return;
+                const style = document.createElement('style');
+                style.textContent = 'thead .tb-check, .tb-group-inner .tb-check, .tb-select-more { display: none !important; }';
+                table.shadowRoot.appendChild(style);
+            });
+            table.addEventListener('keydown', (event) => {
+                const inField = event.composedPath()[0]?.matches?.('input, textarea');
+                if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a' && !inField) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                }
+            }, true);
+        }
+        customElements.whenDefined('vt-table').then(() => {
+            // After setupTables gave the data
+            requestAnimationFrame(() => {
+                const keys = (table.data || []).filter(row => row.selected).map(row => row[table.getAttribute('row-key')]);
+                if (keys.length) table.select(keys);
+                update();
+            });
+        });
+        form.addEventListener('submit', () => {
+            form.querySelectorAll('input[data-lk-from-table]').forEach(input => input.remove());
+            (table.selection || []).forEach(row => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = row.field || table.dataset.lkFormSelect;
+                // The value of the row, or its key (the categories: the machinetag)
+                input.value = row.value ?? row[table.getAttribute('row-key')];
+                input.dataset.lkFromTable = '';
+                form.appendChild(input);
+            });
+        });
+    });
+};
+
 // ---- Analysis > In this capture (tree/modals/tree_*.html) ----
 
 // Shows the node in the tree (js/tree_modals.js, LocateNode), from the side panel
@@ -296,6 +397,17 @@ const capturesColumn = { key: 'captures', label: 'Captures', type: 'number', wid
 const geoIp = (node, ip) => (window.lkIpGeo ? window.lkIpGeo.decorate(node, ip) : node);
 
 const TABLES = {
+    // Actions > Subsequent captures
+    subsequent: [
+        { key: 'url', label: 'URL', render: copyText },
+        { key: 'source', label: 'Found', width: 200 },
+    ],
+    // Actions > Manage categories: the machinetag as a MISP tag
+    categories: [
+        { key: 'tag', label: 'Category', width: 280, format: (value) => value, render: (value, row) => mispTag(row.chip) },
+        { key: 'type', label: 'Type', hidden: true },
+        { key: 'description', label: 'Meaning' },
+    ],
     urls: [
         capturesColumn,
         { key: 'url', label: 'URL', render: (value, row) => withCopy(panelLink(value, 'urlDetailsModal', row.detail), value) },
@@ -546,6 +658,96 @@ function setupCapturePanels(root = document) {
     setupLogs(root);
     setupMispExport(root);
     setupCopyButtons(root);
+    setupSelectForms(root);
+    // A vitrine <vt-tags> sent as one field per tag (data-lk-tags-field="<name>"): the
+    // routes read a list (request.form.getlist), vt-tags submits one JSON value
+    root.querySelectorAll('vt-tags[data-lk-tags-field]:not([data-lk-ready])').forEach(field => {
+        field.dataset.lkReady = '';
+        // The tags of the field, of the suggestions and of the browse panel drawn as MISP
+        // tags (vitrine gives no part for the options, nor a way to split a label): a
+        // stylesheet in the shadow DOM of the component, and an observer that rebuilds
+        // each label as MISP shows it (namespace small and grey, value; TLP / PAP as
+        // markings) with its full name as title. The tags come from the JSON of the field
+        // (misp_tag_option: value, label, kind = lane).
+        let byLabel = new Map();
+        try {
+            const data = JSON.parse(field.querySelector('script[type="application/json"]')?.textContent || '{}');
+            byLabel = new Map((data.options || []).map(option => [option.label, option]));
+        } catch (e) { /* no options: nothing to rebuild */ }
+        const rebuild = (label) => {
+            if (label.dataset.lkMisp !== undefined) return;
+            const option = byLabel.get(label.textContent.trim());
+            if (!option) return;
+            label.dataset.lkMisp = '';
+            label.title = option.value;
+            const [namespace, ...rest] = option.label.split(' ');
+            const marking = (option.kind || '').startsWith('markings');
+            label.classList.add(marking ? 'is-marking' : 'is-tag');
+            if (option.kind === 'markings-clear') label.classList.add('is-clear');
+            if (!rest.length) return;
+            const small = document.createElement('small');
+            small.textContent = namespace;
+            const value = document.createElement(marking ? 'b' : 'span');
+            value.textContent = rest.join(' ');
+            label.replaceChildren(small, value);
+        };
+        customElements.whenDefined('vt-tags').then(() => {
+            const shadow = field.shadowRoot;
+            if (!shadow || shadow.querySelector('style[data-lk-misp]')) return;
+            const style = document.createElement('style');
+            style.dataset.lkMisp = '';
+            style.textContent = `
+                .swatch, .tag.colored::before { display: none; }
+                .option-label, .tag-label { display: inline-flex; align-items: baseline; gap: 4px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+                .option-label {
+                    align-self: flex-start; width: fit-content; max-width: 100%; height: 20px; align-items: center;
+                    padding: 0 7px 0 6px; border: 1px solid var(--lk-color-rule); border-radius: 5px;
+                    border-left: 3px solid var(--_tag-color, var(--lk-color-rule)); background: var(--lk-color-surface-2);
+                    color: var(--lk-color-ink); font-size: 0.73rem;
+                }
+                .option-label small, .tag-label small { color: var(--lk-color-muted); font-size: 0.92em; font-weight: 600; }
+                .option-label.is-marking {
+                    height: 18px; padding: 0 5px; border: 1px solid var(--_tag-color, var(--lk-color-muted)); border-radius: 4px;
+                    background: color-mix(in srgb, var(--_tag-color, var(--lk-color-muted)) 14%, var(--lk-color-surface)); font-size: 0.7rem;
+                }
+                .option-label.is-marking.is-clear { border-color: var(--lk-color-rule-strong); background: transparent; }
+                .option-label b, .tag-label b { font-weight: 700; }
+                .option-description { font-family: var(--lk-font-mono); font-size: 0.68rem; color: var(--lk-color-muted); }
+                .browse-group { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+                .browse-option { align-items: center; gap: 8px; min-width: 0; }`;
+            shadow.appendChild(style);
+            const scan = () => shadow.querySelectorAll('.option-label, .tag-label').forEach(rebuild);
+            scan();
+            new MutationObserver(scan).observe(shadow, {childList: true, subtree: true});
+        });
+        // data-lk-browse-open: the "Browse all tags" panel open at first (no attribute
+        // for it in vitrine: its button is pressed once the component is drawn)
+        if (field.dataset.lkBrowseOpen !== undefined) {
+            customElements.whenDefined('vt-tags').then(() => requestAnimationFrame(() => {
+                const button = field.shadowRoot?.querySelector('[part~="browse-button"]');
+                if (button && button.getAttribute('aria-pressed') !== 'true') button.click();
+            }));
+        }
+        const form = field.closest('form');
+        form?.addEventListener('submit', () => {
+            form.querySelectorAll('input[data-lk-from-tags]').forEach(input => input.remove());
+            [].concat(field.value || []).forEach(value => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = field.dataset.lkTagsField;
+                input.value = typeof value === 'object' ? value.value : value;
+                input.dataset.lkFromTags = '';
+                form.appendChild(input);
+            });
+        });
+    });
+    // Actions > Push to MISP: "Push it anyway" enables the button when the capture is
+    // already on the MISP
+    root.querySelectorAll('form[data-lk-misp-push] [data-lk-force-push]:not([data-lk-ready])').forEach(box => {
+        box.dataset.lkReady = '';
+        const submit = box.form?.querySelector('button[type="submit"]');
+        box.addEventListener('change', () => { if (submit) submit.disabled = !box.checked; });
+    });
     // "+N" of a list of tags (MISP hits): shows / hides the others
     root.querySelectorAll('[data-lk-more]:not([data-lk-ready])').forEach(button => {
         button.dataset.lkReady = '';

@@ -7,6 +7,7 @@
   Doc: doc/ui/tree.md
 #}
 {% from 'bootstrap5/utils.html' import render_icon %}
+{% from 'macros/misp.html' import misp_tag %}
 
 {% macro menu_item(target, label, icon_name, remote=None, title=None, id=None) -%}
 <li><a href="#{{ target }}" class="dropdown-item" role="button" data-bs-toggle="modal" data-bs-target="#{{ target }}"
@@ -55,7 +56,8 @@
           <button type="button" class="lk-visibility lk-visibility-{{ vis[0] }}" data-bs-toggle="modal" data-bs-target="#visibilityModal"
                   title="{{ vis[3] }}. Click to change it.">{{ render_icon(vis[1]) }} {{ vis[2] }}</button>
         </li>
-        {% for c in info.categories|sort %}<li><span class="lk-tag lk-tag-slate" title="{{ c }}"><span>{{ c }}</span></span></li>{% endfor %}
+        {# The categories as MISP tags, with the colour of their type (macros/misp.html, doc/ui/misp-tags.md) #}
+        {% for c in info.categories|sort %}<li><a class="lk-category-tag" href="{{ url_for('index', category=c) }}" title="The other captures in {{ c }}">{{ misp_tag(misp_tag_view(c, category_colour(c))) }}</a></li>{% endfor %}
       </ul>
     </div>
   </div>

@@ -13,6 +13,7 @@ import logging
 import logging.config
 import os
 import re
+import types
 import time
 
 import markdown
@@ -23,7 +24,7 @@ from datetime import date, datetime, timedelta, timezone
 from difflib import Differ
 from importlib.metadata import version
 from io import BytesIO, StringIO
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from typing import Any, TypedDict, Literal
 from collections.abc import Sequence
 from collections.abc import Iterable
@@ -1198,10 +1199,23 @@ def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
         # only allow categorizing as user if the capture is less than 24h old
         if not flask_login.current_user.is_authenticated and cache.timestamp >= datetime.now().astimezone() - timedelta(days=1):
             can_categorize = True
+        taxonomy = taxonomies['content-classification']
+        # One row per category, for the vitrine table of the panel: the machinetag as a
+        # MISP tag (misp_tag_view), its type and meaning, attached or not
+        rows = []
+        for predicate in taxonomy.predicates.values():
+            for entry in predicate.entries.values():
+                tag = taxonomy.make_machinetag(predicate.predicate, entry)
+                rows.append({'tag': tag, 'chip': misp_tag_view(tag, category_colour(tag, predicate.predicate)),
+                             'type': predicate.expanded or predicate.predicate,
+                             'description': entry.description or entry.expanded or '',
+                             'attached': tag in current_categories})
         return render_template('tree/modals/categories_view.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
                                current_categories=current_categories,
-                               can_categorize=can_categorize,
-                               taxonomy=taxonomies.get('content-classification'))
+                               current_chips=[misp_tag_view(c, category_colour(c)) for c in current_categories],
+                               can_categorize=can_categorize, rows=rows,
+                               rows_selected=[{**row, 'selected': row['attached']} for row in rows],
+                               taxonomy=taxonomy)
 
     # Got a POST
     # If admin, we can remove categories, otherwise, we only add new ones.
@@ -1458,6 +1472,56 @@ MISP_THREAT_LEVELS = {1: 'High', 2: 'Medium', 3: 'Low', 4: 'Undefined'}
 MISP_MARKINGS = ('tlp:', 'pap:')
 
 
+def misp_tag_view(name: str, colour: str | None=None) -> dict[str, Any]:
+    '''A tag given by its name (and colour), split like MISP 3 shows it (_misp_tag):
+    for the categories of Lookyloo (machinetags) and the favourite tags of MISP.'''
+    return _misp_tag(types.SimpleNamespace(name=name, colour=colour))
+
+
+app.jinja_env.globals['misp_tag_view'] = misp_tag_view
+
+
+@app.template_filter('misp_tag_option')
+def misp_tag_option(tag: dict[str, Any]) -> dict[str, Any]:
+    '''A tag of misp_tag_view() as an option of a vitrine <vt-tags>: the full name is
+    the value, its colour the accent, grouped by lane (Push to MISP).'''
+    # kind: the lane, styled like MISP 3 (vt-tags::part(tag-kind-<lane>), capture-panels.css)
+    option: dict[str, Any] = {'value': tag['name'], 'label': f"{tag['namespace']} {tag['value']}" if tag['namespace'] else tag['value'],
+                              'group': tag['lane'].capitalize(), 'description': tag['name'],
+                              'kind': 'markings-clear' if tag.get('clear') else tag['lane']}
+    if tag.get('colour'):
+        option['color'] = tag['colour']
+    return option
+
+
+@functools.cache
+def _category_colours() -> dict[str, Any]:
+    with (Path(__file__).parent / 'category_colours.json').open('rb') as f:
+        return orjson.loads(f.read()).get('content-classification', {})
+
+
+def category_colours() -> dict[str, Any]:
+    '''All the colours of the categories, for js/components/misp_tag.js (layouts/main.html).'''
+    return _category_colours()
+
+
+app.jinja_env.globals['category_colours'] = category_colours
+
+
+def category_colour(machinetag: str, predicate: str | None=None) -> str | None:
+    '''The colour of a category of Lookyloo (website/web/category_colours.json): the one
+    of the category itself, or of its type (predicate). Doc: doc/ui/misp-tags.md'''
+    colours = _category_colours()
+    if colour := colours.get('entries', {}).get(machinetag):
+        return str(colour)
+    if predicate is None and ':' in machinetag:
+        predicate = machinetag.split(':', 1)[1].split('=', 1)[0]
+    return colours.get('predicates', {}).get(predicate)
+
+
+app.jinja_env.globals['category_colour'] = category_colour
+
+
 def _misp_tag(tag: Any) -> dict[str, Any]:
     '''A MISP tag split like the events index of MISP 3 shows it, in one of its lanes:
     - markings: tlp:* and pap:* ("tlp amber", amber+strict as "amber*");
@@ -1592,19 +1656,17 @@ def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
 
 @app.route('/tree/<uuid:tree_uuid>/misp_push', methods=['GET', 'POST'])
 def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
+    # The reasons are said in the panel (tree/modals/misp_push_view.html), not flashed
     if not lookyloo.misps.available:
-        flash('There are no MISP instances available.', 'error')
-        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
+        return render_template('tree/modals/misp_push_view.html', nothing_to_see='No MISP instance is configured on this Lookyloo.', seed=request.args.get('seed'))
 
     as_admin = flask_login.current_user.is_authenticated
     if not as_admin and not lookyloo.misps.has_public_misp:
-        flash('You need to be authenticated to push to MISP.', 'error')
-        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
+        return render_template('tree/modals/misp_push_view.html', nothing_to_see='You need to be logged in to push to MISP.', seed=request.args.get('seed'))
 
     event = lookyloo.misp_export(tree_uuid, as_admin=as_admin)
     if isinstance(event, dict):
-        flash(Markup('Unable to generate the MISP export: {}').format(event), 'error')
-        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
+        return render_template('tree/modals/misp_push_view.html', nothing_to_see=f'Unable to generate the MISP export: {event}', seed=request.args.get('seed'))
 
     if request.method == 'GET':
         # Initialize settings that will be displayed on the template
@@ -1624,7 +1686,8 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
             # the 1st attribute in the event is the link to lookyloo
             misp_instances_settings[name] = {
                 'default_tags': instance.default_tags,
-                'fav_tags': [tag.name for tag in instance.get_fav_tags()],
+                # name + colour, shown as MISP tags (misp_tag_view)
+                'fav_tags': [misp_tag_view(tag.name, getattr(tag, 'colour', None)) for tag in instance.get_fav_tags()],
                 'auto_publish': instance.auto_publish
             }
             if existing_misp_url := instance.get_existing_event_url(event[-1].attributes[0].value):
@@ -1933,15 +1996,20 @@ def urls_rendered_page(tree_uuid: str) -> WerkzeugResponse | str | Response:
     try:
         urls = lookyloo.get_urls_rendered_page(tree_uuid)
         guessed_urls = lookyloo.get_guessed_urls(tree_uuid)
+        # One row per URL for the vitrine table of the panel; field / value are the
+        # fields bulk_captures() reads (the index of the URL in its list, from 1)
+        rows = [{'key': f'g{index}', 'field': 'guessed_url', 'value': index, 'url': url, 'source': 'Guessed during the redirects'}
+                for index, url in enumerate(guessed_urls, start=1)]
+        rows += [{'key': f'u{index}', 'field': 'url', 'value': index, 'url': url, 'source': 'In the rendered page'}
+                 for index, url in enumerate(urls, start=1)]
         return render_template('tree/modals/urls_rendered.html', base_tree_uuid=tree_uuid,
-                               seed=request.args.get('seed'),
+                               seed=request.args.get('seed'), rows=rows,
                                urls=urls, guessed_urls=guessed_urls)
     except LookylooException:
-        flash('Unable to find the rendered node in this capture, cannot get the URLs.', 'error')
-        return render_template('tree/modals/urls_rendered.html', error='Unable to find the rendered node in this capture.', seed=request.args.get('seed'))
+        # Said in the panel, not flashed on the next page
+        return render_template('tree/modals/urls_rendered.html', error='Unable to find the rendered node in this capture, cannot get the URLs.', seed=request.args.get('seed'))
     except Exception as e:
         app.logger.warning(f'Unable to get URLs: {e}')
-        flash('Unable to find the rendered node in this capture.', 'error')
         return render_template('tree/modals/urls_rendered.html', error='Unable to find the rendered node in this capture.', seed=request.args.get('seed'))
 
 
@@ -3724,6 +3792,11 @@ def post_table(table_name: str, value: str='') -> Response:
             return jsonify({'error': f'Missing start {start} or length {length}.'})
 
         total, total_filtered, captures = get_index(public=show_hidden is False, show_error=show_error, category=category, offset=start, limit=length, search=search)
+        # The categories of the captures of this page only, from the index (one round trip,
+        # no file read), for the logged in users (admins) for now (js/components/capture_list.js)
+        categories: dict[str, set[str]] = {}
+        if enable_categorization and flask_login.current_user.is_authenticated and captures:
+            categories = get_indexing(flask_login.current_user).get_captures_categories([c[0] for c in captures])
         prepared_captures = []
         for capture_uuid, title, redirects, capture_time in captures:
             to_append = {
@@ -3740,6 +3813,8 @@ def post_table(table_name: str, value: str='') -> Response:
                                                                      redirects=redirects,
                                                                      uuid=capture_uuid),
                                           'filter': escape(' '.join(redirects))}
+            if capture_uuid in categories:
+                to_append['categories'] = sorted(categories[capture_uuid])
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 

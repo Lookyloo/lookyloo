@@ -453,3 +453,6 @@
   .lk-capture-table > thead > tr > th:last-child,
   .lk-capture-table td.lk-capture-time { width: 1% !important; white-space: nowrap; }
 }
+
+/* Categories of a capture (logged in users), under its title, as MISP tags */
+.lk-capture-categories { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }

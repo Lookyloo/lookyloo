@@ -116,3 +116,8 @@ a.lk-tag:hover {
     text-overflow: ellipsis;
   }
 }
+
+/* A category drawn as a MISP tag (js/components/misp_tag.js, macros/misp.html), as a
+   link to the captures of the category: no underline, the tag shows the hover */
+.lk-category-tag { display: inline-flex; text-decoration: none; }
+.lk-category-tag:hover > * { border-color: var(--lk-color-accent) !important; }

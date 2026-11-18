@@ -1,45 +1,41 @@
-{% if error %}
-{{error}}
-{%else%}
-<div>
-  <form role="form" action="{{ url_for('bulk_captures', tree_uuid=base_tree_uuid, seed=seed) }}" method=post enctype=multipart/form-data>
-    <div class="mb-3">
-      <label for="user_urls" class="form-label">Arbitrary URLs to capture in current context (with cookies)</label>
-      <textarea class="form-control" id="user_urls" name="user_urls" rows="3"></textarea>
-    </div>
-    {% if guessed_urls %}
-    <h4>URLs guessed during redirects:</h4>
-    <hr>
-    {% for url in guessed_urls %}
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="guessed_url" id="guest_url_{{loop.index}}" value="{{loop.index}}">
-      <label class="form-check-label text-wrap text-break" for="guessed_url_{{loop.index}}">{{url}}</label>
-    </div>
-    {% endfor %}
-    <hr>
-    {%endif%}
-    <h4>URLs in the rendered page:</h4>
-    <hr>
-    {% for url in urls %}
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="url" id="url_{{loop.index}}" value="{{loop.index}}">
-      <label class="form-check-label text-wrap text-break" for="url_{{loop.index}}">{{url}}</label>
-    </div>
-    {% endfor %}
-    <button type="button" class="btn btn-secondary" id="toggleURLs" title="(un)select all URLs">
-      Toggle selection
-    </button>
-    <hr>
-    <button type="submit" class="btn btn-primary" id="btn-capture-urls">Capture selected URLs</button>
-  </form>
-</div>
+{#
+  Actions > Subsequent captures: start new captures in the context of this one
+  (same settings and cookies, POST /bulk_captures/<uuid>): URLs typed by the user,
+  and the URLs guessed during the redirects or found in the rendered page, in a
+  vitrine <vt-table> (search, sort, filters, selection: js/capture_panels.js,
+  TABLES.subsequent, data-lk-form-select). The selected rows are sent as the fields
+  bulk_captures() reads (guessed_url / url: the index in their list).
+  HTML fragment for the side panel. Doc: doc/ui/actions-panels.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from "macros/panel.html" import panel_header, panel_section, panel_empty %}
+<div class="lk-panel">
+  {{ panel_header('Actions', 'Subsequent captures',
+                  'Capture other URLs in the context of this capture: same settings (browser, user agent, proxy...) and the cookies it got.',
+                  icon_name='diagram-3') }}
+  {% if error %}
+    {{ panel_empty('No URL to capture', error, icon_name='diagram-3') }}
+  {% else %}
+  <form role="form" action="{{ url_for('bulk_captures', tree_uuid=base_tree_uuid, seed=seed) }}" method="post" enctype="multipart/form-data">
+    {% call panel_section('Your URLs', 'pencil') %}
+      <label for="user_urls" class="lk-pivot-description">One URL per line, captured with the cookies of this capture.</label>
+      <textarea class="form-control lk-mono-input" id="user_urls" name="user_urls" rows="3" placeholder="https://example.com/next-step"></textarea>
+    {% endcall %}
 
-<script nonce="{{ csp_nonce() }}">
-  const toggleURLs = document.getElementById("toggleURLs");
-  if (toggleURLs) {
-    toggleURLs.addEventListener("click", function() {
-      checkAllBoxes("url");
-    });
-  }
-</script>
-{%endif%}
+    {% if rows %}
+    <p class="lk-field-label">Or choose URLs of the capture ({{ guessed_urls|length }} guessed during the redirects, {{ urls|length }} in the rendered page):</p>
+    <vt-table class="lk-vitrine" data-lk-table="subsequent" data-lk-form-select="url" data-lk-select-noun="URL" data-lk-select-required
+              row-key="key" selectable="multiple" bulk-bar="false"
+              variant="full" row-numbers="false" reorderable="false" expandable="false" wrap layout="table"
+              filters="false" copy="false" download="false" fullscreen="false" page-size="100"
+              label="URLs of the capture ({{ rows|length }})"></vt-table>
+    <script type="application/json">{{ rows | tojson }}</script>
+    {% endif %}
+
+    <div class="lk-panel-submit">
+      <span class="lk-pivot-description" data-lk-select-count></span>
+      <button type="submit" class="btn btn-primary" id="btn-capture-urls">{{ render_icon('camera') }} Capture the chosen URLs</button>
+    </div>
+  </form>
+  {% endif %}
+</div>

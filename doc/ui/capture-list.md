@@ -79,3 +79,14 @@ removes every DataTables control (`layout` with all positions set to `null`):
 the 10 latest captures, no paging, no "per page", no search. A "See all
 captures" button under the list (and the link next to the title) opens the
 full list (route `index`).
+
+## Categories (logged in users)
+
+For the logged in users (admins), for now, each row shows the categories of the
+capture under its title, as MISP tags with the colour of their type
+(`lkCategoryTag()`, [misp-tags.md](misp-tags.md)); a click lists the captures of
+that category. `post_table` (`indexTable`) reads them from the index for the rows
+of the page only, in one round trip (`get_captures_categories()` in
+`lookyloo/indexing.py`: a pipeline of `SMEMBERS capture_indexes|<uuid>|categories`),
+never from the files of the captures; the anonymous answer (cached 60 s) has none.
+Only the indexed captures have them, like the category filter.

@@ -1,0 +1,24 @@
+{#
+  MISP tags drawn like MISP 3 (its events index): a tag split by misp_tag_view() /
+  _misp_tag() of website/web/__init__.py ({name, namespace, value, lane, colour,
+  clear}). Styles: .lk-misp-mk / .lk-misp-chip in css/components/capture-panels.css.
+  The JS twin is mispTag() in js/capture_panels.js (vitrine tables).
+  Doc: doc/ui/misp-tags.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% macro misp_tag(tag) -%}
+{%- if tag['lane'] == 'markings' -%}
+<span class="lk-misp-mk{{ ' is-clear' if tag['clear'] }}"{% if tag['colour'] and not tag['clear'] %} style="--c: {{ tag['colour'] }}"{% endif %} title="{{ tag['name'] }}"><small>{{ tag['namespace'] }}</small><b>{{ tag['value'] }}</b></span>
+{%- elif tag['lane'] == 'attribution' -%}
+<span class="lk-misp-chip is-gx is-strong" title="{{ tag['name'] }}">{{ render_icon('incognito' if tag['namespace'] == 'actor' else 'shield-shaded') }}<span>{{ tag['value'] }}</span></span>
+{%- elif tag['lane'] == 'behaviour' -%}
+<span class="lk-misp-chip is-gx is-tid" title="{{ tag['value'] }}  {{ tag['namespace'] }}"><span>{{ tag['value'] }}</span></span>
+{%- else -%}
+<span class="lk-misp-chip is-tag"{% if tag['colour'] %} style="--tc: {{ tag['colour'] }}"{% endif %} title="{{ tag['name'] }}"><span>{% if tag['namespace'] %}<small>{{ tag['namespace'] }}</small> {% endif %}{{ tag['value'] }}</span></span>
+{%- endif -%}
+{%- endmacro %}
+
+{# A lane of tags: the first one(s), "+N" shows the others (js/capture_panels.js, data-lk-more) #}
+{% macro misp_lane(tags, shown=1) -%}
+<span class="lk-misp-ctx">{% for tag in tags %}{% if loop.index0 == shown %}<span class="lk-misp-rest" hidden>{% endif %}{{ misp_tag(tag) }}{% if loop.last and loop.length > shown %}</span><button type="button" class="lk-misp-more" data-lk-more aria-expanded="false" title="Show all">+{{ loop.length - shown }}</button>{% endif %}{% else %}<span class="lk-misp-none">—</span>{% endfor %}</span>
+{%- endmacro %}

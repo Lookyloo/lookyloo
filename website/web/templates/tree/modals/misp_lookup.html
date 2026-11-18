@@ -10,23 +10,7 @@
 #}
 {% from 'bootstrap5/utils.html' import render_icon %}
 {% from "macros/panel.html" import panel_header, panel_empty %}
-{# One tag of an event, as the events index of MISP 3 draws it in its lane #}
-{% macro misp_tag(tag) -%}
-{%- if tag['lane'] == 'markings' -%}
-<span class="lk-misp-mk{{ ' is-clear' if tag['clear'] }}"{% if tag['colour'] and not tag['clear'] %} style="--c: {{ tag['colour'] }}"{% endif %} title="{{ tag['name'] }}"><small>{{ tag['namespace'] }}</small><b>{{ tag['value'] }}</b></span>
-{%- elif tag['lane'] == 'attribution' -%}
-<span class="lk-misp-chip is-gx is-strong" title="{{ tag['name'] }}">{{ render_icon('incognito' if tag['namespace'] == 'actor' else 'shield-shaded') }}<span>{{ tag['value'] }}</span></span>
-{%- elif tag['lane'] == 'behaviour' -%}
-<span class="lk-misp-chip is-gx is-tid" title="{{ tag['value'] }}  {{ tag['namespace'] }}"><span>{{ tag['value'] }}</span></span>
-{%- else -%}
-<span class="lk-misp-chip is-tag"{% if tag['colour'] %} style="--tc: {{ tag['colour'] }}"{% endif %} title="{{ tag['name'] }}"><span>{% if tag['namespace'] %}<small>{{ tag['namespace'] }}</small> {% endif %}{{ tag['value'] }}</span></span>
-{%- endif -%}
-{%- endmacro %}
-{# A lane of tags (Attribution, Behaviour, Classification): like MISP 3, the first
-   one(s), "+N" shows the others (js/capture_panels.js, data-lk-more) #}
-{% macro misp_lane(tags, shown=1) -%}
-<span class="lk-misp-ctx">{% for tag in tags %}{% if loop.index0 == shown %}<span class="lk-misp-rest" hidden>{% endif %}{{ misp_tag(tag) }}{% if loop.last and loop.length > shown %}</span><button type="button" class="lk-misp-more" data-lk-more aria-expanded="false" title="Show all">+{{ loop.length - shown }}</button>{% endif %}{% else %}<span class="lk-misp-none">—</span>{% endfor %}</span>
-{%- endmacro %}
+{% from 'macros/misp.html' import misp_tag, misp_lane %}
 <div class="lk-panel">
   {{ panel_header('Analysis', 'MISP hits',
                   'Events of your MISP with the URLs, hostnames, domains, IPs, CNAMEs or resources of the nodes up to the rendered page. Values in the warning lists enabled on the MISP are skipped.',
