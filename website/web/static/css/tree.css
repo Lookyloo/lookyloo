@@ -20,6 +20,8 @@
 
 .flashed-messages {
   position: fixed;
+  /* Explicit: its place in the page moves with the free room around the tree */
+  left: 0;
   bottom: 5px;
   text-align: center;
   width: 50%;
@@ -39,25 +41,6 @@
   filter: blur(3px);
 }
 
-#help {
-  text-align: center;
-  border-style: solid;
-  border-color: #0d6efd;
-  border-radius: 25px;
-  text-decoration: none;
-  height: 50px;
-  width: 50px;
-  padding: 5px;
-  align-content: center;
-  background-color: #0d6efd;
-  color: white;
-}
-
-#help:hover {
-  background-color: light-dark(black, white);
-  color: light-dark(white, black);
-}
-
 /* Generic parts of menus */
 hr {
   display: block;
@@ -70,128 +53,105 @@ hr {
   border-width: 1px;
 }
 
-#menu-tree-top {
+/* ---------- Legend & icon filter (tree/legend.html, js/tree.js) ---------- */
+
+.lk-tree-legend {
+  position: fixed;
+  right: var(--lk-space-3);
+  bottom: var(--lk-space-3);
+  z-index: 1020;
+  width: 17rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-lg);
+  background: var(--lk-color-surface);
+  box-shadow: var(--lk-shadow-sm);
+  color: var(--lk-color-ink);
+}
+.lk-tree-legend:not([open]) { width: auto; }
+/* Hidden while the tree loads; js/tree.js adds .is-ready once it is drawn:
+   a short fade and slide up */
+.lk-tree-legend:not(.is-ready) {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(12px);
+}
+.lk-tree-legend.is-ready {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-tree-legend.is-ready { transition: none; }
+}
+.lk-tree-legend > summary {
+  position: sticky;
+  top: 0;
   display: flex;
-  flex-direction: row;
-  position: fixed;
-  width: 0;
+  align-items: center;
+  gap: var(--lk-space-2);
+  padding: var(--lk-space-2) var(--lk-space-3);
+  background: var(--lk-color-surface);
+  font-weight: var(--lk-font-weight-semibold);
+  cursor: pointer;
+}
+.lk-tree-legend[open] > summary { border-bottom: 1px solid var(--lk-color-rule); }
+.lk-legend-active {
+  margin-left: auto;
+  padding: 0 var(--lk-space-2);
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-accent);
+  color: var(--lk-color-on-accent);
+  font-size: var(--lk-font-size-xs);
 }
 
-/* menu vertical */
-#tree_logo {
-  width: 205px;
+.lk-legend-body { padding: var(--lk-space-2) var(--lk-space-2) var(--lk-space-3); }
+.lk-legend-hint { margin: 0 var(--lk-space-1) var(--lk-space-2); color: var(--lk-color-muted); font-size: var(--lk-font-size-xs); }
+.lk-legend-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+
+.lk-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  width: 100%;
+  padding: var(--lk-space-1) var(--lk-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--lk-radius-sm);
+  background: none;
+  color: var(--lk-color-ink);
+  text-align: left;
+  cursor: pointer;
+}
+.lk-legend-item:hover:not(:disabled) { background: var(--lk-color-surface-2); }
+.lk-legend-item[aria-pressed="true"] {
+  border-color: var(--lk-color-accent);
+  background: var(--lk-color-accent-soft);
+}
+.lk-legend-item:disabled { cursor: default; color: var(--lk-color-muted); }
+.lk-legend-item:disabled img { opacity: 0.55; }
+.lk-legend-item img { flex: none; }
+.lk-legend-label { flex: 1; }
+.lk-legend-count {
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-xs);
+  color: var(--lk-color-muted);
 }
 
-#menu_container_vertical {
-  position: sticky;
-  top: 5px;
-  left: 5px;
-  width: fit-content;
-  background-color: light-dark(white, #212529);;
+.lk-legend-absent { margin-top: var(--lk-space-2); border-top: 1px solid var(--lk-color-rule); padding-top: var(--lk-space-2); }
+.lk-legend-absent > summary {
+  padding: var(--lk-space-1) var(--lk-space-2);
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-xs);
+  cursor: pointer;
 }
+.lk-legend-clear { margin-top: var(--lk-space-2); padding-inline: var(--lk-space-2); display: inline-flex; align-items: center; gap: var(--lk-space-1); }
 
-#menu_vertical {
-  position: sticky;
-  top: 5px;
-  left: 5px;
-  border: 2px solid;
-  padding: 5px;
-}
-
-.menu_vertical_header {
-  padding: 5px;
-}
-
-#menu_container_vertical ul.components {
-    padding: 10px 0;
-}
-
-#menu_container_vertical ul li a {
-    padding: 5px;
-    font-size: 1.1em;
-    display: block;
-    text-align: center;;
-}
-
-/* menu horizontal */
-
-#menu_container_horizontal {
-  position: sticky;
-  top: 5px;
-  left: 217px;
-  width: 80%;
-}
-
-#menu_horizontal {
-  position: sticky;
-  top: 5px;
-  border: 2px solid;
-  background-color: light-dark(white, #212529);;
-  width: fit-content;
-}
-
-.hstack{
-  height: 106.6px;
-}
-
-
-/* Dropdown Menus */
-.dropbtn {
-  font-size: 16px;
-  width: 180px;
-  text-align: center;
-  height: 50px;
-}
-
-.dropdown-menu {
-  width: 180px;
-}
-
-.dropdown-item {
-  text-wrap: wrap;
-}
-
-/* Show the dropdown menus on hover */
-#capture-menu:hover #capture-menu-content {
-  display: block;
-}
-#actions-menu:hover #actions-menu-content {
-  display: block;
-}
-#tools-menu:hover #tools-menu-content {
-  display: block;
-}
-#admin-menu:hover #admin-menu-content {
-  display: block;
-}
-#extra-menu:hover #extra-menu-content {
-  display: block;
-}
-
-/* legend */
-#legend_container {
-  position: fixed;
-  bottom: 5px;
-  right: 5px;
-  padding: 5px;
-}
-
-#legend {
-  position: fixed;
-  top: 60%;
-  right: 5px;
-  background-color: light-dark(white, #212529);
-  color: light-dark(black, white);
-  border: 2px solid;
-  padding: 5px;
-}
-
-#legend_show {
-  position: fixed;
-  top: 85vw;
-  right: 10px;
-  width: 70px;
-}
+/* Nodes while the filter is on */
+g.node { transition: opacity var(--lk-transition-fast); }
+g.node.is-filter-dimmed { opacity: 0.2; }
+g.node.is-filter-match .node_data > rect { stroke: var(--lk-color-accent); stroke-width: 3px; }
 
 /* Fast categories*/
 .fast-categories {
@@ -253,3 +213,134 @@ hr {
 [data-bs-theme="dark"] circle.node[style*="#fff"] {
   fill: #343A40 !important;
 }
+
+/* ---------- Zoom (js/tree.js, setupZoom) and drag (js/capture_page.js) ---------- */
+
+.lk-tree-zoom {
+  position: fixed;
+  top: calc(var(--lk-capture-top-height, 160px) + var(--lk-space-2));
+  right: var(--lk-space-3);
+  z-index: 1020;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+}
+
+/* Zoom: a small pill ( −  100 %  + ) */
+.lk-zoom-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-surface);
+  box-shadow: var(--lk-shadow-sm);
+}
+.lk-zoom-pill button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  border: 0;
+  border-radius: var(--lk-radius-pill);
+  background: none;
+  color: var(--lk-color-ink);
+  font-size: var(--lk-font-size-xs);
+  transition: background var(--lk-transition-fast), color var(--lk-transition-fast);
+}
+#tree-zoom-out,
+#tree-zoom-in { width: 22px; padding: 0; }
+#tree-zoom-reset {
+  min-width: 2.9rem;
+  padding: 0 var(--lk-space-1);
+  font-weight: var(--lk-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--lk-color-muted);
+}
+.lk-zoom-pill button:hover:not(:disabled),
+.lk-zoom-pill button:focus-visible { background: var(--lk-color-accent-soft); color: var(--lk-color-accent); }
+.lk-zoom-pill button:disabled { color: var(--lk-color-muted); opacity: 0.4; cursor: default; }
+
+/* Center and Background: small round icon buttons, the name in the tooltip */
+.lk-tree-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 var(--lk-space-1);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-surface);
+  box-shadow: var(--lk-shadow-sm);
+  color: var(--lk-color-ink);
+  font-size: var(--lk-font-size-xs);
+  transition: border-color var(--lk-transition-fast), background var(--lk-transition-fast);
+}
+.lk-tree-chip span { display: none; }
+.lk-tree-chip.dropdown-toggle { padding-inline: var(--lk-space-2) 6px; }
+.lk-tree-chip.dropdown-toggle::after { margin-left: 2px; }
+.lk-tree-chip:hover,
+.lk-tree-chip:focus-visible,
+.lk-tree-chip.show { border-color: var(--lk-color-accent); background: var(--lk-color-accent-soft); }
+.lk-tree-background .dropdown-item { display: flex; align-items: center; gap: var(--lk-space-2); font-size: var(--lk-font-size-sm); }
+
+/* Dots background (default), on the body: the background of the body fills the
+   whole page (the tree and the free room around it), however far it scrolls */
+body.lk-capture-page.lk-bg-dots {
+  background-image: radial-gradient(var(--lk-color-rule-strong) 1.3px, transparent 1.4px);
+  background-size: 20px 20px;
+}
+
+
+#tree_svg { cursor: grab; }
+
+/* Free room around the tree (half the window on each side): the tree can be
+   moved far past its edges, and Center can put the first node in the middle.
+   inline-block: the box takes the size of the (zoomed) SVG, so the room is
+   also on the right and at the bottom. */
+#tree_svg.container-fluid {
+  display: inline-block;
+  width: auto;
+  min-width: 100%;
+  padding: 50vh 50vw;
+}
+#tree_svg.is-dragging { cursor: grabbing; }
+/* The texts of the tree are not selected while dragging it (js/capture_page.js);
+   the tooltips and pop-ups keep their texts selectable */
+#tree_svg svg { user-select: none; -webkit-user-select: none; }
+
+/* Drag past the edge of the free room (js/capture_page.js): a blue glow on the
+   side(s) of the window where the limit is reached, "you cannot go further";
+   fades out when released. One gradient per side, sized 0 when not reached. */
+.lk-tree-edge {
+  position: fixed;
+  inset: var(--lk-capture-top-height, 160px) 0 0 0;
+  z-index: 1010;
+  pointer-events: none;
+  --lk-edge-color: color-mix(in srgb, var(--lk-color-accent) 55%, transparent);
+  --lk-edge-l: 0px;
+  --lk-edge-r: 0px;
+  --lk-edge-t: 0px;
+  --lk-edge-b: 0px;
+  background:
+    linear-gradient(to right, var(--lk-edge-color), transparent) left / var(--lk-edge-l) 100% no-repeat,
+    linear-gradient(to left, var(--lk-edge-color), transparent) right / var(--lk-edge-r) 100% no-repeat,
+    linear-gradient(to bottom, var(--lk-edge-color), transparent) top / 100% var(--lk-edge-t) no-repeat,
+    linear-gradient(to top, var(--lk-edge-color), transparent) bottom / 100% var(--lk-edge-b) no-repeat;
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+.lk-tree-edge.is-left   { --lk-edge-l: 36px; opacity: 1; }
+.lk-tree-edge.is-right  { --lk-edge-r: 36px; opacity: 1; }
+.lk-tree-edge.is-top    { --lk-edge-t: 36px; opacity: 1; }
+.lk-tree-edge.is-bottom { --lk-edge-b: 36px; opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .lk-tree-edge { transition: none; }
+}
+
+/* Node cards: solid (js/tree.js draws them at 50 % opacity, the background
+   showed through); white in light mode, dark grey in dark mode (rules above) */
+.node_data > rect { opacity: 1 !important; }
