@@ -25,7 +25,7 @@ capture), with their MISP colours.
   panel through a stylesheet in its shadow DOM; an observer rebuilds each label as
   MISP shows it, namespace small and grey, TLP / PAP as markings, with the full
   tag name as title; 4 tags per line at most in the browse panel), and every category: the capture
-  bar of the tree (`tree/capture_bar.html`, links to the captures of the
+  bar of the tree (`tree/capture_bar.html`) and Capture > Details (links to the captures of the
   category), Actions > Manage categories, the categories page and the category
   filter of the list of the captures (`lkCategoryTag()` in
   `js/components/category_tag.js`, which replaces the former coloured pills).

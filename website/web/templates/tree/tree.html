@@ -3,6 +3,7 @@
 {% from 'bootstrap5/utils.html' import render_icon %}
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% from "macros/panel.html" import panel_header, panel_section %}
+{% from 'macros/misp.html' import misp_tag %}
 {% from 'macros/loader.html' import loader %}
 {% from "macros/macros.html" import monitoring_form %}
 {% from "macros/macros.html" import notify_form %}
@@ -264,7 +265,7 @@
         {# A click lists the captures in this category (index page) #}
         <div class="lk-panel-tags">
           {% for c in info.categories|sort %}
-          <a class="lk-tag lk-tag-slate" href="{{ url_for('index', category=c) }}" title="See the captures in this category">{{ c }}</a>
+          <a class="lk-category-tag" href="{{ url_for('index', category=c) }}" title="See the captures in this category: {{ c }}">{{ misp_tag(misp_tag_view(c, category_colour(c))) }}</a>
           {% endfor %}
         </div>
         {% endcall %}
