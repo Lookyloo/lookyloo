@@ -24,8 +24,7 @@ from importlib.metadata import version
 from io import BytesIO, StringIO
 from pathlib import PurePath
 from typing import Any, TypedDict, Literal
-from collections.abc import Sequence
-from collections.abc import Iterable
+from collections.abc import Sequence, Iterable, Collection
 from urllib.parse import unquote_plus, urlparse, urlencode
 from uuid import uuid4
 from zipfile import ZipFile
@@ -3304,20 +3303,6 @@ def __prepare_node_view(capture_uuid: str, nodes: Sequence[tuple[str, str] | tup
             'filter': escape(' '.join(n[0] for n in nodes))}
 
 
-def __prepare_title_in_modal(capture_uuid: str, title: str, from_popup: bool=False) -> dict[str, Markup]:
-    span_title = Markup('<span class="d-inline-block text-break">{title}</span>').format(title=title)
-    if from_popup:
-        return {'display': Markup('<a href="#" class="openNewTab" data-capture="{capture_uuid}">{span_title}</a>').format(capture_uuid=capture_uuid, span_title=span_title),
-                'filter': escape(title)}
-    return {'display': Markup('<a href="{url}">{span_title}</a>').format(url=url_for("tree", tree_uuid=capture_uuid), span_title=span_title),
-            'filter': escape(title)}
-
-
-def __prepare_landings_in_modal(landing_page: str) -> dict[str, Markup]:
-    return {'display': shorten_string(landing_page, with_copy_button=True),
-            'filter': escape(landing_page)}
-
-
 hostnames_view_template = app.jinja_env.from_string(source='''
 <ul class="list-group list-group-flush bg-transparent">
 {%for hostname in hostnames%}
@@ -3348,37 +3333,6 @@ def _capture_redirects(capture_uuid: str) -> list[str]:
         app.logger.warning(f'Unable to get the redirects of {capture_uuid}: {e}')
         return []
     return [str(url) for url in (getattr(cache, 'redirects', None) or [])]
-
-
-def _safe_capture_title(capture_uuid: str, title: str, nodes: Sequence[tuple[str, str] | tuple[str, str, str | None]] | None=None, from_popup: bool=False) -> dict[str, Markup]:
-    title_modal = __prepare_title_in_modal(capture_uuid, title, from_popup)
-    if nodes:
-        node_view = __prepare_node_view(capture_uuid, nodes, from_popup)
-    else:
-        node_view = {'display': '', 'filter': ''}
-    # NOTE: This one is safe, as the values are already safe
-    return {'display': Markup(f'{title_modal["display"]}</br>{node_view["display"]}'),
-            'filter': Markup(f'{title_modal["filter"]} {node_view["filter"]}')}
-
-
-index_link_template = app.jinja_env.from_string(source='''
-<b>Page title</b>: <span title="{{title}}">{{title}}</span><br>
-<b>Initial URL</b>: {{shorten_string(url, with_copy_button=True)}}<br>
-<a style="float: right;" href="{{url_for('tree', tree_uuid=capture_uuid)}}" class="btn btn-outline-primary" role="button">Show capture</a>
-''')
-
-redir_chain_template = app.jinja_env.from_string(source='''
-{% from 'bootstrap5/utils.html' import render_icon %}
-
-<div class="text-center">
- <div class="row"><div class="col">{{shorten_string(redirects[0], with_copy_button=True)}}</div></div>
- {% for r in redirects[1:] %}
-   <div class="row"><div class="col">{{ render_icon("arrow-down") }}</div></div>
-   <div class="row"><div class="col">{{ shorten_string(r, with_copy_button=True) }}</div></div>
- {% endfor %}
-</div>
-<a style="float: right;" href="{{url_for('redirects', tree_uuid=uuid)}}" class="btn btn-outline-primary" role="button">Download redirects</a>
-''')
 
 
 favicon_download_button_template = app.jinja_env.from_string(source='''
@@ -3435,7 +3389,7 @@ def post_table(table_name: str, value: str='') -> Response:
     length = request.form.get('length', type=int)
     search = request.form.get('search[value]', type=str)
     captures: list[tuple[str, str, datetime, str, str]] | list[tuple[str, str, str, datetime, list[tuple[str, str]]]] | list[tuple[str, str, str, datetime]] | list[tuple[str, str, list[str], datetime]]
-    to_append: dict[str, int | str | list[str] | dict[str, str] | dict[str, Markup]]
+    to_append: dict[str, int | str | list[str] | dict[str, str] | dict[str, Markup] | Collection[str]]
     if table_name == 'indexTable':
         show_error, category = get_index_params(request)
         show_hidden = (value == "hidden")
@@ -3448,23 +3402,20 @@ def post_table(table_name: str, value: str='') -> Response:
             return jsonify({'error': f'Missing start {start} or length {length}.'})
 
         total, total_filtered, captures = get_index(public=show_hidden is False, show_error=show_error, category=category, offset=start, limit=length, search=search)
-        prepared_captures = []
+        prepared_captures: list[Any] = []
         for capture_uuid, title, redirects, capture_time in captures:
-            to_append = {
-                'page': {'display': render_template(index_link_template,
-                                                    title=title,
-                                                    url=redirects[0],
-                                                    capture_uuid=capture_uuid),
-                         'filter': escape(title)},
-                'capture_time': capture_time.isoformat(),
-            }
-            to_append['redirects'] = {'display': Markup('No redirect'), 'filter': escape('')}
-            if redirects:
-                to_append['redirects'] = {'display': render_template(redir_chain_template,
-                                                                     redirects=redirects,
-                                                                     uuid=capture_uuid),
-                                          'filter': escape(' '.join(redirects))}
-            prepared_captures.append(to_append)
+            prepared_captures.append({
+                'page': {'display': {'title': title,
+                                     'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                                     'submitted_url': redirects[0],
+                                     'redirects': redirects[1:] if len(redirects) > 1 else [],
+                                     'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
+                                     'capture_time': capture_time.isoformat()
+                                     },
+                         'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                         },
+                'capture_time': capture_time.isoformat()
+            })
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
 
     if table_name == 'categoriesTable':
@@ -3473,7 +3424,8 @@ def post_table(table_name: str, value: str='') -> Response:
             nb_captures = get_indexing(flask_login.current_user).get_captures_category_count(category)
             to_append = {
                 'total_captures': nb_captures,
-                'category': {'display': Markup('<a href="{url}">{category}</a>').format(url=url_for("index", category=category), category=category),
+                'category': {'display': {'category_name': category,
+                                         'category_url': url_for("index", category=category)},
                              'filter': escape(category)}
             }
             prepared_captures.append(to_append)
@@ -3487,11 +3439,20 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page),
-                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
+                        'nodes': [{'href': url_for("tree", tree_uuid=capture_uuid, node_uuid=n[1]), 'url': n[0]} for n in nodes]
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3504,11 +3465,20 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page),
-                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
+                        'nodes': [{'href': url_for("tree", tree_uuid=capture_uuid, node_uuid=n[1]), 'url': n[0]} for n in nodes]
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3521,11 +3491,20 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page),
-                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
+                        'nodes': [{'href': url_for("tree", tree_uuid=capture_uuid, node_uuid=n[1]), 'url': n[0]} for n in nodes]
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3538,11 +3517,19 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time in captures:
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'capture_title': __prepare_title_in_modal(capture_uuid, title, from_popup),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid)
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3555,11 +3542,19 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time in captures:
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'capture_title': __prepare_title_in_modal(capture_uuid, title, from_popup),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid)
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3571,11 +3566,19 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time in captures:
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'capture_title': __prepare_title_in_modal(capture_uuid, title, from_popup),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid)
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3588,14 +3591,22 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time in captures:
-            hostnames = get_indexing(flask_login.current_user).get_capture_cloudflare_ns_hostnames(capture_uuid, cloudflare_ns)
+            hostnames = sorted(get_indexing(flask_login.current_user).get_capture_cloudflare_ns_hostnames(capture_uuid, cloudflare_ns))
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page),
-                'capture_title': _safe_capture_title(capture_uuid, title, from_popup=from_popup),
-                # Plain strings: shown by js/components/capture_list.js (textContent)
-                'hostnames': sorted(hostnames)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
+                        'nodes': [{'href': url_for("tree", tree_uuid=capture_uuid, node_uuid=n[1]), 'url': n[0]} for n in nodes],
+                        'hostnames': hostnames
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))} {escape(' '.join(hostnames))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3607,13 +3618,22 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            hostnames = sorted({hostname for name, *_ in nodes if (hostname := urlparse(name).hostname)})
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page),
-                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup),
-                # The hostnames of the capture that resolve to this IP (from its nodes)
-                'hostnames': sorted({hostname for name, *_ in nodes if (hostname := urlparse(name).hostname)})
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
+                        'nodes': [{'href': url_for("tree", tree_uuid=capture_uuid, node_uuid=n[1]), 'url': n[0]} for n in nodes],
+                        'hostnames': hostnames
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))} {escape(' '.join(hostnames))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3625,11 +3645,20 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page),
-                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
+                        'nodes': [{'href': url_for("tree", tree_uuid=capture_uuid, node_uuid=n[1]), 'url': n[0]} for n in nodes]
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3641,11 +3670,20 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page),
-                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
+                        'nodes': [{'href': url_for("tree", tree_uuid=capture_uuid, node_uuid=n[1]), 'url': n[0]} for n in nodes]
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3657,11 +3695,20 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page),
-                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
+                        'nodes': [{'href': url_for("tree", tree_uuid=capture_uuid, node_uuid=n[1]), 'url': n[0]} for n in nodes]
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3674,11 +3721,20 @@ def post_table(table_name: str, value: str='') -> Response:
             captures = captures[start:start + length]
         prepared_captures = []
         for capture_uuid, title, landing_page, capture_time, nodes in captures:
+            redirects = _capture_redirects(capture_uuid)
             to_append = {
                 'capture_time': capture_time.isoformat(),
-                'redirects': _capture_redirects(capture_uuid),
-                'landing_page': __prepare_landings_in_modal(landing_page),
-                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
+                'capture_info': {
+                    'display': {
+                        'title': title,
+                        'capture_url': url_for('tree', tree_uuid=capture_uuid),
+                        'landing_page': landing_page,
+                        'redirects': redirects,
+                        'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
+                        'nodes': [{'href': url_for("tree", tree_uuid=capture_uuid, node_uuid=n[1]), 'url': n[0]} for n in nodes]
+                    },
+                    'filter': f"{escape(title)} {escape(' '.join(redirects))}"
+                }
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
