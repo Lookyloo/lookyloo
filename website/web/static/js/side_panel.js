@@ -47,9 +47,14 @@
 
     // The page knows the room the panel takes (js/tree.js centres in what is left,
     // css/tree.css moves the tree controls and the legend)
+    // The legend of the tree (bottom right, left of the panel) is folded when the panel
+    // opens or changes width: it would hide the tree in the room left
+    let shown_width = 0;
     const applyWidth = () => {
         const docked = tabs.filter(tab => !tab.win);
         const width = current && !current.win ? panel_width : 0;
+        if (width && width !== shown_width) document.getElementById('legend')?.removeAttribute('open');
+        shown_width = width;
         panel.style.width = `${width}px`;
         root.style.setProperty('--lk-side-panel-space', docked.length ? `${width}px` : '0px');
         panel.hidden = docked.length === 0;

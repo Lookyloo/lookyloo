@@ -53,7 +53,9 @@ hr {
 
 .lk-tree-legend {
   position: fixed;
-  left: var(--lk-space-3);
+  /* Bottom right, left of the side panel when it is open (js/side_panel.js folds it
+     when the panel opens or changes width, so it never hides the tree) */
+  right: calc(var(--lk-side-panel-space, 0px) + var(--lk-space-3));
   bottom: var(--lk-space-3);
   z-index: 1020;
   width: 17rem;

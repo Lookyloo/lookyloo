@@ -237,7 +237,10 @@ body.lk-capture-page .lk-header { position: static; }
 }
 .lk-visibility:hover,
 .lk-visibility:focus-visible { border-color: var(--lk-color-accent); color: var(--lk-color-ink); }
-.lk-visibility-private { color: var(--lk-color-warning); border-color: var(--lk-color-warning-border); }
+/* The same colours as the badge of Actions > Visibility and sharing (.lk-visibility-badge):
+   public green, private amber, unlisted neutral */
+.lk-visibility-public { color: var(--lk-color-success); }
+.lk-visibility-private { color: var(--lk-color-warning); border-color: var(--lk-color-warning-border); background: var(--lk-color-warning-soft); }
 
 /* Copy button of the URL */
 .lk-capture-url .lk-copy {

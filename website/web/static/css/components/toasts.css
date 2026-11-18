@@ -76,3 +76,8 @@
 @media (max-width: 576px) {
   .lk-toasts { right: 12px; left: 12px; bottom: 12px; width: auto; }
 }
+/* Capture page: the legend of the tree is at the bottom right, the toasts go to the
+   bottom left (above the tree, never under the side panel) */
+@media (min-width: 577px) {
+  body.lk-capture-page .lk-toasts { right: auto; left: 16px; align-items: flex-start; }
+}

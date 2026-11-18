@@ -61,7 +61,7 @@ phase, before Bootstrap) and opens a tab instead:
 ## Around the panel
 
 `--lk-side-panel-space` (on `<html>`) is the width the panel takes: the tree
-controls move left of it (the legend is at the bottom left), the blue edge glow of the drag stops
+controls and the legend move left of it (the legend folds itself when the panel opens or changes width, `applyWidth()`), the blue edge glow of the drag stops
 at it, and Center (`js/tree.js`, `centerOnRoot`) centres the first node in the
 space left. Phones: the panel takes the whole width, no resize.
 

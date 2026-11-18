@@ -3,9 +3,9 @@
 The messages Flask flashes (`flash()` in `website/web/__init__.py`: "The capture
 has not been indexed yet", "Video(s) have been triggered", errors...) are shown
 the same way on every page, as toasts: a stack at the bottom right of the
-screen, left of the side panel on the capture page
-(`--lk-side-panel-space`, see [side-panel.md](side-panel.md)), the whole width on
-phones.
+screen (left of the side panel, `--lk-side-panel-space`, see
+[side-panel.md](side-panel.md)); on the capture page at the bottom left, as the
+legend of the tree is at the bottom right; the whole width on phones.
 
 - `templates/partials/toasts.html`, macro `toasts()`, called once by
   `layouts/main.html` (every page). It replaces the `render_messages()` of

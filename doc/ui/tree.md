@@ -14,8 +14,9 @@ height; the page starts under it.
 
 - **What was captured**: the screenshot thumbnail (click: screenshot modal),
   the favicon and the title of the page, the URL with a copy button, the time,
-  the number of redirects, the visibility (Public / Unlisted / Private, click:
-  visibility modal) and the categories.
+  the number of redirects, the visibility (Public in green / Unlisted / Private in amber, the
+  colours of Actions > Visibility and sharing; click:
+  visibility modal) and the categories (MISP tags, [misp-tags.md](misp-tags.md)).
 - **Menus**, with an icon per entry:
   - **Capture**: details, statistics, storage state, console messages,
     downloads, video, screenshot, MISP export.
@@ -45,7 +46,7 @@ No new modal and no new route: every entry opens the same modal (same IDs and
 
 ## Legend & filter (`tree/legend.html`)
 
-A panel at the bottom left (out of the way of the side panel) (a `<details>`) replaces the old static legend.
+A panel at the bottom right (left of the side panel when it is open; it folds itself when the side panel opens or changes width, so it does not hide the tree) (a `<details>`) replaces the old static legend.
 It is hidden while the tree loads; once the tree is drawn, `setupLegendFilter()`
 opens it and adds `.is-ready`: it fades in and slides up (300 ms, none with
 reduced motion). Each entry is a button carrying the data key of the node icon
