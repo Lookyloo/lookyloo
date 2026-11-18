@@ -11,6 +11,7 @@ import '../vendor/vitrine/esm/vt-table.js';
 import '../vendor/vitrine/esm/vt-stats.js';
 import '../vendor/vitrine/esm/vt-log.js';
 import '../vendor/vitrine/esm/vt-tags.js';
+import '../vendor/vitrine/esm/vt-terminal.js';
 
 const base = new URL('../vendor/vitrine/', import.meta.url).href;
 // Light / dark like the rest of Lookyloo (data-bs-theme on <html>, js/theme_toggle.js)
@@ -397,6 +398,49 @@ const capturesColumn = { key: 'captures', label: 'Captures', type: 'number', wid
 const geoIp = (node, ip) => (window.lkIpGeo ? window.lkIpGeo.decorate(node, ip) : node);
 
 const TABLES = {
+    // Download > Forensic acquisition: the elements with a trusted timestamp
+    forensic: [
+        { key: 'element', label: 'Element', render: copyText },
+        { key: 'download', label: 'File', width: 130, sortable: false,
+          render: (value) => {
+              const link = tableButton('Download', 'Download the element', () => { window.location.href = value; });
+              return link;
+          } },
+        { key: 'time', label: 'Trusted timestamp', width: 210,
+          render: (value, row) => {
+              if (!value) return el('span', 'lk-tt-none', 'None');
+              const wrap = el('span');
+              const date = new Date(value);
+              const pad = (n) => String(n).padStart(2, '0');
+              const text = isNaN(date) ? value
+                  : `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+              const time = el('time', null, text);
+              time.dateTime = value;
+              time.title = isNaN(date) ? value : date.toString();
+              wrap.append(time, ' ');
+              const tsr = el('a', 'lk-table-link', '.tsr');
+              tsr.href = row.tsr;
+              tsr.title = 'Download the timestamp response (.tsr)';
+              wrap.appendChild(tsr);
+              return wrap;
+          } },
+        { key: 'status', label: 'Validation', width: 150,
+          render: (value, row) => {
+              const badge = el('span', null, row.valid === null ? '—' : value);
+              const tone = row.valid === true ? 'success' : row.valid === false ? 'warning' : 'muted';
+              Object.assign(badge.style, row.valid === null ? {color: 'var(--lk-color-muted)'} : {
+                  display: 'inline-flex', padding: '1px 8px', borderRadius: '999px', fontSize: '0.8em', fontWeight: '600',
+                  color: `var(--lk-color-${tone})`, background: `var(--lk-color-${tone}-soft, var(--lk-color-surface-2))`,
+                  border: `1px solid var(--lk-color-${tone}-border, var(--lk-color-rule))`,
+              });
+              // Short, the message of the timestamps service as title
+              if (row.valid !== null) {
+                  badge.textContent = row.valid ? '✓ Valid' : '! Not validated';
+                  badge.title = value;
+              }
+              return badge;
+          } },
+    ],
     // Actions > Subsequent captures
     subsequent: [
         { key: 'url', label: 'URL', render: copyText },

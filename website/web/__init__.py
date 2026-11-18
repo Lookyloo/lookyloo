@@ -1282,8 +1282,31 @@ def download_elements(tree_uuid: str) -> str:
     parent_uuid = True if cache.parent else False
     has_downloads, _, _ = lookyloo.get_data(tree_uuid)
     has_video, _, _ = lookyloo.get_video(tree_uuid)
+    seed = request.args.get('seed')
+
+    # One row per element with a trusted timestamp (RFC 3161), for the vitrine table of
+    # the panel (TABLES.forensic in js/capture_panels.js): its download, the time, the
+    # .tsr and the validation. Plain values, written with textContent.
+    def stamp(name: str) -> dict[str, Any]:
+        if entry := tt_entries.get(name):
+            return {'time': entry[0].isoformat() if isinstance(entry[0], datetime) else str(entry[0]),
+                    'status': str(entry[1]), 'valid': bool(entry[2]),
+                    'tsr': url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name=name, seed=seed)}
+        return {'time': None, 'status': 'No trusted timestamp', 'valid': None, 'tsr': None}
+    stamped = [('Screenshot', 'png', url_for('image', tree_uuid=tree_uuid, seed=seed)),
+               ('Storage (cookies, local storage, IndexedDB, OPFS, WebAuthn)', 'storage', url_for('storage_state_download', tree_uuid=tree_uuid, seed=seed)),
+               ('Frames contents', 'frames', url_for('frames_download', tree_uuid=tree_uuid, seed=seed)),
+               ('HTTP Archive (HAR)', 'har', url_for('har_download', tree_uuid=tree_uuid, seed=seed)),
+               ('Rendered HTML page', 'html', url_for('html', tree_uuid=tree_uuid, seed=seed))]
+    if has_downloads:
+        stamped += [('Downloaded file: name', 'downloaded_filename', url_for('data', tree_uuid=tree_uuid, seed=seed)),
+                    ('Downloaded file: content', 'downloaded_file', url_for('data', tree_uuid=tree_uuid, seed=seed))]
+    if has_video:
+        stamped += [('Video: name', 'video_filename', url_for('video', tree_uuid=tree_uuid, seed=seed)),
+                    ('Video: content', 'video_file', url_for('video', tree_uuid=tree_uuid, seed=seed))]
+    stamped_rows = [{'key': name, 'element': label, 'download': href, **stamp(name)} for label, name, href in stamped]
     return render_template('tree/modals/download_elements.html', tree_uuid=tree_uuid,
-                           seed=request.args.get('seed'),
+                           seed=seed, stamped_rows=stamped_rows,
                            tt_entries=tt_entries, parent_uuid=parent_uuid,
                            b64_certificate=cert, error=error,
                            has_downloads=has_downloads,

@@ -1,282 +1,85 @@
+{#
+  Download > Forensic acquisition: the elements of the capture with their trusted
+  timestamp (RFC 3161) in a vitrine <vt-table> (js/capture_panels.js,
+  TABLES.forensic; rows from download_elements()): download, time, .tsr, validation.
+  Then the other exports, everything with the timestamps, the certificates, and
+  how to check a timestamp yourself (vitrine <vt-terminal>).
+  #dlTreeAsSVG is read by js/side_panel.js / js/tree_modals.js (the tree as PNG).
+  HTML fragment for the side panel. Doc: doc/ui/download-panels.md
+#}
 {% from 'bootstrap5/utils.html' import render_icon %}
-
-{% if error %}
-<div class="alert alert-warning" role="alert">
- Issue while getting trusted timestamps: {{error}}
-</div>
-{% endif %}
-
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col" width="10%">Download</th>
-      <th scope="col">Trusted Timestamp (RFC 3161)</th>
-      <th scope="col">Validation status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">Screenshot</th>
-      <td>
-          <a href="{{ url_for('image', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-      </td>
-      {% if tt_entries.get('png') %}
-       <td>{{tt_entries['png'][0]}}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='png', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-       </td>
-       <td>
-        <div class="alert {% if tt_entries['png'][2] %}alert-success{%else%}alert-warning{%endif%}" role="alert">
-          {{tt_entries['png'][1]}}
-        </div>
-       </td>
-      {% else %}
-       <td>Unavailable<td>
-       <td></td>
-      {%endif%}
-    </tr>
-    <tr>
-      <th scope="row">Storage (Cookies, Local Storage, Indexed DB, OPFS, WebAuth)</th>
-      <td><a href="{{ url_for('storage_state_download', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      {% if tt_entries.get('storage') %}
-       <td>{{tt_entries['storage'][0]}}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='storage', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-       </td>
-       <td>
-         <div class="alert {% if tt_entries['storage'][2] %}alert-success{%else%}alert-warning{%endif%}" role="alert">
-          {{tt_entries['storage'][1]}}
-         </div>
-       </td>
-      {% else %}
-       <td>Unavailable<td>
-       <td></td>
-      {% endif %}
-    </tr>
-    <tr>
-      <th scope="row">Frames contents (if any)</th>
-      <td><a href="{{ url_for('frames_download', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      {% if tt_entries.get('frames') %}
-       <td>{{tt_entries['frames'][0]}}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='frames', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-       </td>
-       <td>
-         <div class="alert {% if tt_entries['frames'][2] %}alert-success{%else%}alert-warning{%endif%}" role="alert">
-          {{tt_entries['frames'][1]}}
-         </div>
-       </td>
-      {% else %}
-       <td>Unavailable<td>
-       <td></td>
-      {% endif %}
-    </tr>
-    <tr>
-      <th scope="row">HTTP Archive (HAR)</th>
-      <td><a href="{{ url_for('har_download', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      {% if tt_entries.get('har') %}
-      <td>{{tt_entries['har'][0]}}
-       <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='har', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-      </td>
-      <td>
-        <div class="alert {% if tt_entries['har'][2] %}alert-success{%else%}alert-warning{%endif%}" role="alert">
-         {{tt_entries['har'][1]}}
-        </div>
-      </td>
-       {% else %}
-        <td>Unavailable<td>
-        <td></td>
-       {% endif %}
-    </tr>
-    <tr>
-      <th scope="row">Rendered HTML page</th>
-      <td><a href="{{ url_for('html', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      {% if tt_entries.get('html') %}
-       <td>{{tt_entries['html'][0]}}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='html', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-       </td>
-       <td>
-         <div class="alert {% if tt_entries['html'][2] %}alert-success{%else%}alert-warning{%endif%}" role="alert">
-           {{tt_entries['html'][1]}}
-         </div>
-       </td>
-      {% else %}
-       <td>Unavailable<td>
-       <td></td>
-      {% endif %}
-    </tr>
-    {% if has_downloads %}
-    <tr>
-      <th scope="row">Downloaded files</th>
-      <td><a href="{{ url_for('data', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>
-        {% if tt_entries.get('downloaded_filename') %}
-        Filename: {{tt_entries['downloaded_filename'][0]}}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='downloaded_filename', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-        {% else %}
-        Filename: Unavailable
-        {% endif %}
-        <br>
-        {% if tt_entries.get('downloaded_file') %}
-        Content: {{tt_entries['downloaded_file'][0]}}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='downloaded_file', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-        {% else %}
-        File content: Unavailable
-        {% endif %}
-      </td>
-      {% if tt_entries.get('downloaded_file') %}
-      <td>
-        <div class="alert {% if tt_entries['downloaded_file'][2] %}alert-success{%else%}alert-warning{%endif%}" role="alert">
-          {{tt_entries['downloaded_file'][1]}}
-        </div>
-      </td>
-      {%else%}
-      <td></td>
-      {% endif %}
-    </tr>
+{% from "macros/panel.html" import panel_header, panel_section %}
+{% macro export(label, icon_name, href=None, id=None, text=None) -%}
+<li class="lk-export">
+  <span class="lk-export-icon">{{ render_icon(icon_name) }}</span>
+  <span class="lk-export-text"><strong>{{ label }}</strong>{% if text %}<span>{{ text }}</span>{% endif %}</span>
+  <a class="btn btn-outline-secondary btn-sm" href="{{ href or '#' }}"{% if id %} id="{{ id }}"{% endif %} role="button">{{ render_icon('download') }} Download</a>
+</li>
+{%- endmacro %}
+<div class="lk-panel">
+  {% call panel_header('Download', 'Forensic acquisition',
+                       'Everything recorded for this capture, with a trusted timestamp (RFC 3161) proving when each element existed.',
+                       icon_name='archive') %}
+    {% if not error %}
+    <a class="btn btn-primary btn-sm" href="{{ url_for('all_trusted_timestamp', tree_uuid=tree_uuid, seed=seed) }}">{{ render_icon('file-earmark-zip') }} All, with the timestamps</a>
     {% endif %}
-    {% if has_video %}
-    <tr>
-      <th scope="row">Videos</th>
-      <td><a href="{{ url_for('video', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
+  {% endcall %}
 
-      <td>
-        {% if tt_entries.get('video_filename') %}
-        Filename: {{tt_entries['video_filename'][0]}}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='video_filename', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-        {% else %}
-        Filename: Unavailable
-        {% endif %}
-        <br>
-        {% if tt_entries.get('video_file') %}
-        Video: {{tt_entries['video_file'][0]}}
-        <a href="{{ url_for('trusted_timestamp_tsr', tree_uuid=tree_uuid, name='video_file', seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a>
-        {% else %}
-        Video: Unavailable
-        {% endif %}
-      </td>
-      {% if tt_entries.get('video_file') %}
-      <td>
-        <div class="alert {% if tt_entries['video_file'][2] %}alert-success{%else%}alert-warning{%endif%}" role="alert">
-          {{tt_entries['video_file'][1]}}
-        </div>
-      </td>
-      {%else%}
-      <td></td>
-      {% endif %}
-    </tr>
+  {% if error %}
+  <div class="lk-panel-alert is-warning">{{ render_icon('exclamation-triangle-fill') }}
+    <div>Unable to get the trusted timestamps: {{ error }}</div></div>
+  {% endif %}
+
+  {% call panel_section('Elements with a trusted timestamp', 'patch-check', stamped_rows|length) %}
+    <vt-table class="lk-vitrine" data-lk-table="forensic" row-key="key" variant="full" row-numbers="false"
+              selectable="none" reorderable="false" expandable="false" wrap layout="table" filters="false"
+              copy="false" download="false" fullscreen="false" search="false" page-sizes="false" page-size="20"
+              label="Elements with a trusted timestamp"></vt-table>
+    <script type="application/json">{{ stamped_rows | tojson }}</script>
+    {% if not error and b64_certificate %}
+    <p class="lk-pivot-description">Validated with <a href="data:application/x-pem-file;base64,{{ b64_certificate }}" download="certificates.pem">these certificates (certificates.pem)</a>.</p>
     {% endif %}
-    <tr>
-      <th scope="row">Rendered HTML page, as Markdown</th>
-      <td><a href="{{ url_for('html_as_markdown', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>N/A</td>
-      <td>N/A</td>
-    </tr>
-    <tr>
-      <th scope="row">Tree as PNG file</th>
-      <td><a href="#" id="dlTreeAsSVG" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>N/A</td>
-      <td>N/A</td>
-    </tr>
-    <tr>
-      <th scope="row">Cookie Jar</th>
-      <td><a href="{{ url_for('cookies', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>N/A</td>
-      <td>N/A</td>
-    </tr>
-    <tr>
-      <th scope="row">Hashes for all the ressources</th>
-      <td><a href="{{ url_for('hashes_tree', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>N/A</td>
-      <td>N/A</td>
-    </tr>
-    <tr>
-      <th scope="row">Full capture</th>
-      <td><a href="{{ url_for('export', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>N/A</td>
-      <td>N/A</td>
-    </tr>
-    <tr>
-      <th scope="row">Capture as MISP event</th>
-      <td><a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>N/A</td>
-      <td>N/A</td>
-    </tr>
-    {% if parent_uuid %}
-    <tr>
-      <th scope="row">... with the parents</th>
-      <td><a href="{{ url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, with_parents=True, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>N/A</td>
-      <td>N/A</td>
-    </tr>
-    {% endif %}
-    <tr>
-      <th scope="row">List of redirects</th>
-      <td><a href="{{ url_for('redirects', tree_uuid=tree_uuid, seed=seed) }}" role="button">{{ render_icon('cloud-download') }}</a></td>
-      <td>N/A</td>
-      <td>N/A</td>
-    </tr>
-  </tbody>
-</table>
+  {% endcall %}
 
-{% if not error %}
-<div class="alert alert-info" role="alert">
-  <a href="{{url_for('all_trusted_timestamp', tree_uuid=tree_uuid, seed=seed)}}">Download</a> all the elements with trusted timestamps.
-</div>
-<div class="alert alert-info" role="alert">
-  Trusted timestamps were validated with <a href="data:application/x-pem-file;base64,{{b64_certificate}}" download="certificates.pem">this certificate(s)</a>.
-</div>
+  {% call panel_section('Other exports', 'box-arrow-down') %}
+    <ul class="lk-exports">
+      {{ export('Rendered page, as Markdown', 'markdown', url_for('html_as_markdown', tree_uuid=tree_uuid, seed=seed)) }}
+      {{ export('Tree as a PNG image', 'diagram-3', id='dlTreeAsSVG') }}
+      {{ export('Cookie jar', 'cookie', url_for('cookies', tree_uuid=tree_uuid, seed=seed)) }}
+      {{ export('Hashes of all the resources', 'hash', url_for('hashes_tree', tree_uuid=tree_uuid, seed=seed)) }}
+      {{ export('Full capture', 'file-earmark-zip', url_for('export', tree_uuid=tree_uuid, seed=seed), text='To import it in another Lookyloo') }}
+      {{ export('Capture as a MISP event', 'send', url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, seed=seed)) }}
+      {% if parent_uuid %}{{ export('Capture as a MISP event, with the parents', 'send', url_for('GenericAPI_misp_export', capture_uuid=tree_uuid, with_parents=True, seed=seed)) }}{% endif %}
+      {{ export('List of the redirects', 'signpost-split', url_for('redirects', tree_uuid=tree_uuid, seed=seed)) }}
+    </ul>
+  {% endcall %}
 
-<div class="alert alert-primary" role="alert">
- When a trusted timestamp is listed above, it has been validated, but you can also validate the file manually:
-</div>
-<pre>
-  <code>openssl ts -CAfile certificates.pem -verify [timestamp_response].tsr -in png.tsr -data [element]</code>
-</pre>
-<div>
-  Example:
-  <pre>
-    <code>openssl ts -CAfile certificates.pem -verify -in screenshot.png.tsr -data screenshot.png</code>
-    <samp>
+  {% if not error %}
+  {% call panel_section('Check a timestamp yourself', 'terminal') %}
+    <p class="lk-pivot-description">A timestamp listed above has been validated, but anyone can check it again with OpenSSL,
+      the element, its <code>.tsr</code> and the certificates:</p>
+    <vt-terminal class="lk-vitrine" variant="full" download="false" fullscreen="false" search="false" label="Verify a timestamp">
+      <template>
+$ openssl ts -CAfile certificates.pem -verify -in screenshot.png.tsr -data screenshot.png
 Using configuration from /usr/lib/ssl/openssl.cnf
 Verification: OK
-    </samp>
-  </pre>
-</div>
-
-<hr/>
-
-<div class="alert alert-primary" role="alert">
- You can also show the content of the TSR file:
-</div>
-<pre>
-  <code>openssl ts -reply -in [timestamp_response].tsr -text</code>
-</pre>
-<div>
-  Example:
-  <pre>
-    <code>openssl ts -reply -in screenshot.png.tsr -text</code>
-    <samp>
-Using configuration from /usr/lib/ssl/openssl.cnf
+      </template>
+    </vt-terminal>
+    <p class="lk-pivot-description">And show what a <code>.tsr</code> file holds:</p>
+    <vt-terminal class="lk-vitrine" variant="full" download="false" fullscreen="false" search="false" label="Content of a timestamp">
+      <template>
+$ openssl ts -reply -in screenshot.png.tsr -text
 Status info:
 Status: Granted.
 Status description: Operation Okay
-Failure info: unspecified
-
 TST info:
 Version: 1
 Policy OID: 1.3.6.1.4.1.22177.300.22.1
 Hash Algorithm: sha512
-Message data:
-    0000 - 0f 64 63 e9 4d 96 be 05-40 1d 83 fa cb dd c1 62   .dc.M...@......b
-    0010 - 08 bf 0b 2e e3 07 df e8-6b a9 bf 35 b0 8f bc 58   ........k..5...X
-    0020 - 26 4b 8c e9 0f 6e f6 27-82 1a 81 df b9 16 9f 99   &K...n.'........
-    0030 - ed d7 33 a8 c7 1e 3d e3-1a 3e 6f e2 5c d3 70 8e   ..3...=..>o.\.p.
 Serial number: 0x086A1AC06DF0A3FAC191E2DDF676350C62664899
 Time stamp: Sep  8 12:48:07 2025 GMT
-Accuracy: unspecified
-Ordering: no
-Nonce: 0xDFF7090FF0BF7057
-TSA: unspecified
-    </samp>
-  </pre>
+      </template>
+    </vt-terminal>
+  {% endcall %}
+  {% endif %}
 </div>
-{% endif %}
