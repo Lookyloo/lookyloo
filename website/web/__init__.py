@@ -1189,6 +1189,10 @@ def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
         else:
             can_categorize = False
         cache = lookyloo.capture_cache(tree_uuid)
+        if not hasattr(cache, 'timestamp'):
+            flash(f'No timestamp in capture {tree_uuid}')
+            app.logger.warning(f'No timestamp in capture {tree_uuid}')
+            return redirect(url_for('index'))
         current_categories = cache.categories
         # only allow categorizing as user if the capture is less than 24h old
         if not flask_login.current_user.is_authenticated and cache.timestamp >= datetime.now().astimezone() - timedelta(days=1):
