@@ -90,3 +90,14 @@ of the page only, in one round trip (`get_captures_categories()` in
 `lookyloo/indexing.py`: a pipeline of `SMEMBERS capture_indexes|<uuid>|categories`),
 never from the files of the captures; the anonymous answer (cached 60 s) has none.
 Only the indexed captures have them, like the category filter.
+
+## While it loads
+
+`static/js/components/table_skeleton.js` (a module loaded by `layouts/page.html`):
+while a list of captures loads (any `.lk-capture-table`: the home, Recent captures,
+Hidden, the captures of the pivot pages), the rows of the page are replaced by
+placeholders in their shape, vitrine `<vt-skeleton>` (preview, title, URL, facts,
+time, button), the whole width of the table, one per row of the page (3 to 10).
+The eyes of the logo (the processing indicator of DataTables) stay over them.
+Shown at once (before the first answer), then before each request of DataTables
+(`preXhr.dt`) until its rows are drawn (`draw.dt`), events bound on the table itself.

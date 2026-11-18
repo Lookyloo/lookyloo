@@ -34,6 +34,11 @@
         nonce="{{ csp_nonce() }}"
         crossorigin="anonymous"></script>
 {% endfor %}
+{# Placeholders in the shape of the captures while a list of captures loads (vitrine, module) #}
+<script src="{{ url_for('static', filename='js/components/table_skeleton.js') }}"
+        {{get_sri('static', 'js/components/table_skeleton.js')}}
+        nonce="{{ csp_nonce() }}"
+        crossorigin="anonymous" type="module"></script>
 {% endblock %}
 
 {% block body_class %}lk-page{% endblock %}
