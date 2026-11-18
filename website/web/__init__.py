@@ -3689,7 +3689,8 @@ def _capture_redirects(capture_uuid: str) -> list[str]:
     front end writes them with textContent.'''
     try:
         cache = lookyloo.capture_cache(capture_uuid, quick=True)
-    except Exception:
+    except Exception as e:
+        app.logger.warning(f'Unable to get the redirects of {capture_uuid}: {e}')
         return []
     return [str(url) for url in (getattr(cache, 'redirects', None) or [])]
 
@@ -3945,7 +3946,8 @@ def post_table(table_name: str, value: str='') -> Response:
                 'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
                 'capture_title': _safe_capture_title(capture_uuid, title, from_popup=from_popup),
-                'hostnames': __prepare_list_hostnames(hostnames)
+                # Plain strings: shown by js/components/capture_list.js (textContent)
+                'hostnames': sorted(hostnames)
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})
@@ -3961,7 +3963,9 @@ def post_table(table_name: str, value: str='') -> Response:
                 'capture_time': capture_time.isoformat(),
                 'redirects': _capture_redirects(capture_uuid),
                 'landing_page': __prepare_landings_in_modal(landing_page),
-                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup)
+                'capture_title': _safe_capture_title(capture_uuid, title, nodes, from_popup),
+                # The hostnames of the capture that resolve to this IP (from its nodes)
+                'hostnames': sorted({hostname for name, *_ in nodes if (hostname := urlparse(name).hostname)})
             }
             prepared_captures.append(to_append)
         return jsonify({'draw': draw, 'recordsTotal': total, 'recordsFiltered': total if not search else total_filtered, 'data': prepared_captures})

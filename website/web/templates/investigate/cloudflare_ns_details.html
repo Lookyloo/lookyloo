@@ -11,7 +11,7 @@
                  share_url=url_for('cloudflare_ns_details', cloudflare_ns_key=cloudflare_ns_key, from_popup=True), from_popup=from_popup) }}
 
 {% call captures_section() %}
-<table id="cloudflareNSDetailsTable" class="table lk-capture-table" style="width:100%" data-cloudflarens="{{cloudflare_ns_key}}">
+<table id="cloudflareNSDetailsTable" class="table lk-capture-table" data-lk-hostnames-label="Hostnames on these name servers" style="width:100%" data-cloudflarens="{{cloudflare_ns_key}}">
   <thead>
     <tr>
       <th>Capture</th>

@@ -300,14 +300,8 @@ function lkParsePivotRow(row) {
     const landingCopy = landing.querySelector('[data-copy]');
     const url = landingCopy ? landingCopy.dataset.copy
         : (landing.querySelector('[title]')?.getAttribute('title') || landing.textContent.trim());
-    let hostnames = [];
-    if (row.hostnames) {
-        const fragment = lkParseFragment(row.hostnames.display);
-        hostnames = [...fragment.querySelectorAll('[data-copy]')].map(el => el.dataset.copy);
-        if (!hostnames.length && fragment.textContent.trim()) {
-            hostnames = fragment.textContent.trim().split(/\s+/);
-        }
-    }
+    // Hostnames of the capture related to the value (plain strings, post_table)
+    const hostnames = Array.isArray(row.hostnames) ? row.hostnames : [];
     // Redirect chain (redirects, added by post_table): first URL = the captured one
     const hops = Array.isArray(row.redirects) && row.redirects.length ? row.redirects : (url ? [url] : []);
     const uuid = href ? lkPreviewUuid(href) : null;
@@ -334,11 +328,6 @@ function lkPivotFacts(sprite, capture, facts) {
                     ` Found in ${capture.nodeCount} node${capture.nodeCount > 1 ? 's' : ''}`);
         facts.appendChild(item);
     }
-    capture.hostnames.forEach(hostname => {
-        const item = lkElement('li');
-        item.append(lkIcon(sprite, 'hdd-network'), ` ${hostname}`);
-        facts.appendChild(item);
-    });
     if (capture.nodes.length) {
         const details = lkElement('details', 'lk-route-details');
         details.appendChild(lkElement('summary', null, `Show the node${capture.nodes.length > 1 ? 's' : ''} with this value`));
@@ -359,6 +348,26 @@ function lkPivotFacts(sprite, capture, facts) {
     return fragment;
 }
 
+// The hostnames of the capture the value is related to (the ones served by the
+// Cloudflare name servers, the ones resolving to the IP...), always visible under
+// the URL: "<label>: host1 host2", each one a link to its own pivot page. The
+// label comes from data-lk-hostnames-label on the table.
+function lkHostnames(sprite, label, hostnames) {
+    const line = lkElement('div', 'lk-capture-hostnames');
+    const name = lkElement('span', 'lk-capture-hostnames-label');
+    name.append(lkIcon(sprite, 'hdd-network'), ` ${label}`);
+    line.appendChild(name);
+    hostnames.forEach(hostname => {
+        const link = lkElement('a', 'lk-hostname', hostname);
+        link.href = `/hostnames/${encodeURIComponent(hostname)}?from_popup=True`;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.title = `Other captures with ${hostname}`;
+        line.appendChild(link);
+    });
+    return line;
+}
+
 // DataTables columns of the pivot tables: [capture, time], like #IndexTable.
 // The sprite and the thumbnail URL come from the closest [data-lk-icons]
 // (captures_section() in macros/investigate.html).
@@ -366,6 +375,7 @@ function lkPivotColumns(table) {
     const holder = table.closest('[data-lk-icons]') || table;
     const sprite = holder.dataset.lkIcons;
     const thumbnail = holder.dataset.lkThumbnail || null;
+    const hostnamesLabel = table.dataset.lkHostnamesLabel || 'Hostnames';
     return [
         {
             data: null,
@@ -376,6 +386,9 @@ function lkPivotColumns(table) {
                 // redirect chain), plus where the value was found
                 const wrapper = lkCaptureCell(sprite, capture);
                 const facts = wrapper.querySelector('.lk-capture-facts');
+                if (capture.hostnames.length) {
+                    facts.before(lkHostnames(sprite, hostnamesLabel, capture.hostnames));
+                }
                 if (facts) {
                     wrapper.querySelector('.lk-capture-body').appendChild(lkPivotFacts(sprite, capture, facts));
                 }

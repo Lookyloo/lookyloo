@@ -56,9 +56,9 @@ The captures of a pivot page are shown like the list of the captures
 ([capture-list.md](capture-list.md)): blurred screenshot, title, URL with a copy
 button, relative time and a **View capture** button. `lkPivotColumns()` in
 `static/js/components/capture_list.js` builds the rows from the JSON of the
-pivot tables (`capture_time`, `capture_title`, `landing_page`, and `hostnames`
-for the Cloudflare one), unchanged; `render_tables.js` uses it through
-`lkPivotColumnsOr()` (plain columns if the component is not loaded). Instead of
+pivot tables (`capture_time`, `capture_title`, `landing_page`, `redirects`,
+and `hostnames` for the Cloudflare name servers and IP ones); `render_tables.js`
+uses it directly (the component is loaded on every page with these tables). Instead of
 the redirects, a row says in how many nodes of the capture the value was found,
 with a folded list of links to these nodes. The sprite and thumbnail URLs are
 set on the wrapper by `captures_section()`. The capture tree page loads the
@@ -69,6 +69,13 @@ trail, unencrypted hop, redirect chain with download): `post_table` adds the
 redirect chain of each capture to the pivot rows (`redirects`, from
 `_capture_redirects()`, read from the cache in valkey only, never builds a
 tree). On top of that, "Found in N nodes" and the folded list of these nodes.
+
+When the value is tied to some hostnames of the capture, they are always
+visible under the URL, as links to their own pivot page (`lkHostnames()`):
+the hostnames served by the Cloudflare name servers, the hostnames resolving to
+the IP (taken from the nodes). `post_table` sends them as plain strings
+(`hostnames`), the label comes from `data-lk-hostnames-label` on the table, so
+any other pivot table can show them the same way.
 
 On the favicon page, the favicon can be clicked (`zoom=True` of
 `pivot_header()`): `pivot.js` opens it in large in a `<dialog>` (same image, no
