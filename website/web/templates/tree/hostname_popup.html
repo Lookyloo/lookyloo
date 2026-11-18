@@ -109,14 +109,14 @@
         <ul>
             {% for ip in hostnode.resolved_ips['v4'] %}
               <li>
-                  {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
+                  <span data-lk-ip="{{ ip }}">{{ ip }}</span>{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
                   {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
                   {% if 'cloudflare' in hostnode.features and hostnode.cloudflare.get(ip) %} - Known Cloudflare IP{% endif %}
               </li>
             {% endfor %}
             {% for ip in hostnode.resolved_ips['v6'] %}
               <li>
-                  {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
+                  <span data-lk-ip="{{ ip }}">{{ ip }}</span>{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
                   {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
                   {% if 'cloudflare' in hostnode.features and hostnode.cloudflare.get(ip) %} - Known Cloudflare IP{% endif %}
               </li>
@@ -126,7 +126,7 @@
         <ul>
         {% for ip in hostnode.resolved_ips %}
           <li>
-              {{ ip }}{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
+              <span data-lk-ip="{{ ip }}">{{ ip }}</span>{% if uwhois_available %} (<a href="{{ url_for('whois', query=ip)}}">whois</a>){% endif %}
               {% if 'ipasn' in hostnode.features and hostnode.ipasn.get(ip) %}- AS{{ hostnode.ipasn[ip]['asn'] }} {% if uwhois_available %} (<a href="{{ url_for('whois', query='AS'+hostnode.ipasn[ip]['asn'])}}">whois</a>){% endif %}{% endif %}
           </li>
         {% endfor %}
@@ -206,7 +206,7 @@
         {% if url['url_object'].ip_address.is_loopback %}
           IP from HAR: <b>{{ url['url_object'].ip_address }}</b> (loopback address, capture via proxy)
         {% else %}
-          IP from HAR: <b>{{ url['url_object'].ip_address }}</b> (<a href="{{ url_for('ip_details', ip=url['url_object'].ip_address, from_popup=True) }}">see other captures</a>)
+          IP from HAR: <b data-lk-ip="{{ url['url_object'].ip_address }}">{{ url['url_object'].ip_address }}</b> (<a href="{{ url_for('ip_details', ip=url['url_object'].ip_address, from_popup=True) }}">see other captures</a>)
           {% if uwhois_available %}(<a href="{{ url_for('whois', query=url['url_object'].ip_address)}}">whois</a>){% endif %}
         {% endif %}
       </div>

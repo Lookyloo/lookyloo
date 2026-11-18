@@ -69,6 +69,7 @@ from pylacus import RemoteHeadedSessionResponse, PyLacus
 from zoneinfo import available_timezones
 
 from .genericapi import api as generic_api
+from . import geolookup
 from .helpers import (User, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load,
                       get_lookyloo_instance, get_indexing, build_keys_table)
@@ -466,7 +467,8 @@ app.jinja_env.globals.update(
      'details_modal_button': details_modal_button,
      'load_custom_css': load_custom_css,
      'load_custom_js': load_custom_js,
-     'lookyloo_version': pkg_version
+     'lookyloo_version': pkg_version,
+     'ip_geo_enabled': geolookup.enabled,
      }
 )
 
@@ -2451,6 +2453,21 @@ def analysis_rows(kind: str, tree_uuid: str) -> list[dict[str, Any]]:
                          'resource': url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=first.uuid),
                          'nodes': _analysis_nodes(_info['nodes'])})
     return sorted(rows, key=lambda row: row['captures'], reverse=True)
+
+
+@app.route('/ip_geolookup', methods=['GET'])
+def ip_geolookup() -> Response:
+    '''Geolocation of IPs for the flags and cards next to the IPs
+    (js/components/ip_geo.js): ?ip=1.2.3.4&ip=..., at most 50, global IPs only.
+    Asked to the mmdb-server of generic.json "ip_geolookup_url" by this server,
+    cached (website/web/geolookup.py). Logged in users (admins) only, for now.
+    Doc: doc/ui/ip-geolocation.md'''
+    if not geolookup.enabled():
+        return jsonify({'error': 'IP geolocation is disabled on this instance.'})
+    # For the moment, for the logged in users (admins) only
+    if not flask_login.current_user.is_authenticated:
+        return make_response(jsonify({'error': 'Only for logged in users.'}), 403)
+    return jsonify(geolookup.lookup(request.args.getlist('ip')))
 
 
 @app.route('/tree/<uuid:tree_uuid>/ips', methods=['GET'])

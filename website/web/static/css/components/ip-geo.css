@@ -1,0 +1,43 @@
+/*
+ * Geolocation of the IPs (js/components/ip_geo.js): the flag before an IP, and the
+ * card shown on it. Bootstrap variables as fallbacks: the node pages do not load
+ * the --lk-* tokens. Doc: doc/ui/ip-geolocation.md
+ */
+[data-lk-ip] { cursor: help; }
+[data-lk-ip] .lk-copy-btn, [data-lk-ip] .js-copy { cursor: pointer; }
+.lk-ip-flag { font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.lk-ip-card {
+  position: fixed;
+  z-index: 1095;
+  width: min(320px, calc(100vw - 16px));
+  padding: 12px 14px;
+  border: 1px solid var(--lk-color-rule, var(--bs-border-color));
+  border-radius: var(--lk-radius-lg, 10px);
+  background: var(--lk-color-surface, var(--bs-body-bg));
+  color: var(--lk-color-ink, var(--bs-body-color));
+  box-shadow: var(--lk-shadow-md, var(--bs-box-shadow));
+  font-size: 0.8125rem;
+  cursor: auto;
+}
+.lk-ip-card[hidden] { display: none; }
+.lk-ip-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.lk-ip-card-head strong { display: block; font-size: 0.95rem; }
+.lk-ip-card-head code { color: var(--lk-color-muted, var(--bs-secondary-color)); font-size: 0.75rem; }
+.lk-ip-card-flag { font-size: 1.9rem; line-height: 1; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.lk-ip-card-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 3px 12px; margin: 0; }
+.lk-ip-card-facts dt { color: var(--lk-color-muted, var(--bs-secondary-color)); font-weight: 500; }
+.lk-ip-card-facts dd { margin: 0; overflow-wrap: anywhere; }
+.lk-ip-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px;
+  padding-top: 8px; border-top: 1px solid var(--lk-color-rule, var(--bs-border-color)); }
+.lk-ip-card-source { color: var(--lk-color-muted, var(--bs-secondary-color)); font-size: 0.75rem; }
+.lk-ip-card-empty { margin: 0; color: var(--lk-color-muted, var(--bs-secondary-color)); }
+
+/* World map of the card: the country of the IP and a dot at its location */
+.lk-ip-map { margin: 0 0 10px; border-radius: var(--lk-radius-md, 6px); overflow: hidden;
+  background: var(--lk-color-surface-2, var(--bs-tertiary-bg)); }
+.lk-ip-map svg { display: block; width: 100%; height: auto; }
+.lk-ip-map-sphere { fill: var(--lk-color-accent-soft, var(--bs-primary-bg-subtle)); }
+.lk-ip-map-country { fill: var(--lk-color-surface, var(--bs-body-bg)); stroke: var(--lk-color-rule-strong, var(--bs-border-color)); stroke-width: 0.4; }
+.lk-ip-map-country.is-here { fill: var(--lk-color-accent, var(--bs-primary)); stroke: var(--lk-color-accent, var(--bs-primary)); }
+.lk-ip-map-halo { fill: var(--lk-color-danger, var(--bs-danger)); opacity: 0.25; }
+.lk-ip-map-dot { fill: var(--lk-color-danger, var(--bs-danger)); stroke: var(--lk-color-surface, var(--bs-body-bg)); stroke-width: 1.2; }

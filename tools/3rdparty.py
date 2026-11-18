@@ -14,6 +14,9 @@ import requests
 from lookyloo.default import get_homedir
 
 d3js_version = '7.9.1'
+# World map of the geolocation card of the IPs (js/components/ip_geo.js)
+world_atlas_version = '2.0.2'
+topojson_client_version = '3.1.0'
 jquery_version = "3.7.1"
 datatables_version = "3.1.5"
 datatables_rowgroup_version = "2.1.1"
@@ -113,6 +116,16 @@ if __name__ == '__main__':
     with (dest_dir / 'jquery.json-viewer.css').open('wb') as f:
         f.write(jquery_json_css.content)
         print(f'Downloaded jsontree css v{jquery_json_viewer_version}.')
+
+    world = requests.get(f'https://cdn.jsdelivr.net/npm/world-atlas@{world_atlas_version}/countries-110m.json')
+    with (dest_dir / 'countries-110m.json').open('wb') as f:
+        f.write(world.content)
+        print(f'Downloaded world-atlas v{world_atlas_version}.')
+
+    topojson = requests.get(f'https://cdn.jsdelivr.net/npm/topojson-client@{topojson_client_version}/dist/topojson-client.min.js')
+    with (dest_dir / 'topojson-client.min.js').open('wb') as f:
+        f.write(topojson.content)
+        print(f'Downloaded topojson-client v{topojson_client_version}.')
 
     install_vitrine(dest_dir)
     install_misp_logo(dest_dir)

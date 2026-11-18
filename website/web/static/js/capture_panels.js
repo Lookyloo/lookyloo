@@ -292,6 +292,8 @@ const nodesCell = (nodes) => {
 const nodesText = (nodes) => (Array.isArray(nodes) ? nodes.map(node => node.url).join(' ') : '');
 
 const capturesColumn = { key: 'captures', label: 'Captures', type: 'number', width: 110 };
+// An IP with its flag and geolocation card (js/components/ip_geo.js), when enabled
+const geoIp = (node, ip) => (window.lkIpGeo ? window.lkIpGeo.decorate(node, ip) : node);
 
 const TABLES = {
     urls: [
@@ -301,12 +303,12 @@ const TABLES = {
     hostnames: [
         capturesColumn,
         { key: 'hostname', label: 'Hostname', width: 220, render: (value, row) => withCopy(panelLink(value, 'hostnameDetailsModal', row.detail), value) },
-        { key: 'ip', label: 'IP', width: 160, render: (value, row) => (row.ip_detail ? withCopy(panelLink(value, 'ipDetailsModal', row.ip_detail), value) : value) },
+        { key: 'ip', label: 'IP', width: 180, render: (value, row) => (row.ip_detail ? geoIp(withCopy(panelLink(value, 'ipDetailsModal', row.ip_detail), value), value) : value) },
         { key: 'nodes', label: 'URLs in the capture', width: 380, sortable: false, format: nodesText, render: nodesCell },
     ],
     ips: [
         capturesColumn,
-        { key: 'ip', label: 'IP', width: 160, render: (value, row) => withCopy(panelLink(value, 'ipDetailsModal', row.detail), value) },
+        { key: 'ip', label: 'IP', width: 180, render: (value, row) => geoIp(withCopy(panelLink(value, 'ipDetailsModal', row.detail), value), value) },
         { key: 'hostname', label: 'Hostname', width: 220, render: (value, row) => withCopy(panelLink(value, 'hostnameDetailsModal', row.hostname_detail), value) },
         { key: 'nodes', label: 'URLs with the IP in the capture', width: 380, sortable: false, format: nodesText, render: nodesCell },
     ],

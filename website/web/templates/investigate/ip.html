@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="lk-pivot">
-{{ pivot_header('IP address', ip, description='Captures that contacted this IP address.', icon_name='pc-display-horizontal',
+{{ pivot_header('IP address', ip, description='Captures that contacted this IP address.', icon_name='pc-display-horizontal', ip=True,
                  share_url=url_for('ip_details', ip=ip, from_popup=True), from_popup=from_popup) }}
 
 {% if circl_pdns_available %}
