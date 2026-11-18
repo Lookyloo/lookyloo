@@ -34,7 +34,7 @@
   {% for name, misp_settings in misp_instances_settings.items() %}
   <div id="push_{{ name.replace(' ', '_') }}" {% if name != current_misp %}style="display:none"{% endif %}>
     <form role="form" action="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid, seed=seed) }}"
-          method="post" enctype="multipart/form-data" class="lk-panel-form" data-lk-misp-push>
+          method="post" enctype="multipart/form-data" class="lk-panel-form" data-lk-misp-push data-lk-busy="Pushing to MISP…">
       <input type="hidden" name="misp_instance_name" value="{{ name }}">
 
       {% if misp_settings.existing_event %}

@@ -18,7 +18,7 @@ all" (`data-lk-no-select-all`: the boxes of the header and the groups and the
 selection menu are hidden, Ctrl/⌘+A is stopped). The selected rows are sent as `categories`. Admins replace the categories (unselect to remove), the other users only add. Replaces the DataTable whose script built the form with `innerHTML` (the risky sink listed in AGENTS.md). |
 | Visibility and sharing | `tree/tree.html` `#visibilityModal` | The current visibility as a badge, the three choices (Public, Unlisted, Private) as cards with what they mean, the expiry of the seed (dimmed unless Private is chosen), the note about the administrators. |
 | Push to MISP | `tree/modals/misp_push_view.html` | MISP 3 logo at the top left, the title of the event, the default tags of the instance (MISP tags, [misp-tags.md](misp-tags.md)), the favourite tags of the MISP user in a vitrine `<vt-tags>` (edit mode: type to search, pick, remove; the "Browse all tags" panel open at first, `data-lk-browse-open`; grouped by lane; the chosen tags drawn like MISP 3 tags through `::part(tag)` / `::part(tag-kind-<lane>)` with their MISP colours; `misp_tag_option` filter). The tags chosen are sent as one `tags` field each (`data-lk-tags-field`: vt-tags submits one JSON value, the route reads a list). Publish, also the parents. When the capture is already on the MISP: a warning with the link, and \"Push it anyway\" enables the button (`data-lk-force-push`; the inline `onchange` was blocked by the CSP). The reasons it cannot push are said in the panel. |
-| Push to another Lookyloo | `tree/tree.html` `#lookylooPushModal` | The URL of the other instance and the Push button on one line. |
+| Push to another Lookyloo | `tree/tree.html` `#lookylooPushModal` | The URL of the other instance and the Push button on one line, the eyes of the logo while it is sent. `web_lookyloo_push_view()` checks the address first and says what is wrong instead of the raw PyLookyloo error ("Expecting value..."): nothing answers there, or it is not the home page of a Lookyloo (a page of it, another tool). |
 
 ## Selection of a vitrine table sent with a form
 
@@ -31,3 +31,10 @@ show 100 rows per page; `[data-lk-select-count]` says how many are chosen
 the row has a `chip`), each with a × to unselect it (Manage categories);
 `data-lk-select-required` keeps the button off until
 something is chosen (rows or typed URLs).
+
+## Forms being sent
+
+`data-lk-busy="<text>"` on a form (pushes to Lookyloo and MISP, subsequent
+captures, monitoring): on submit, the button is disabled and the eyes of the logo
+(the loader template of the side panel) with the text are shown in its submit bar,
+until the page answers (`js/capture_panels.js`).

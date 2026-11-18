@@ -741,6 +741,25 @@ function setupCapturePanels(root = document) {
             });
         });
     });
+    // Forms that take a while on the server (pushes, captures): data-lk-busy="<text>" shows
+    // the eyes of the logo with the text in the submit bar, and disables the button,
+    // until the page answers (macros/loader.html, through the template of the side panel)
+    root.querySelectorAll('form[data-lk-busy]:not([data-lk-busy-ready])').forEach(form => {
+        form.dataset.lkBusyReady = '';
+        form.addEventListener('submit', (event) => {
+            if (event.defaultPrevented) return;
+            const bar = form.querySelector('.lk-panel-submit') || form;
+            form.querySelectorAll('button[type="submit"]').forEach(button => { button.disabled = true; });
+            const busy = el('div', 'lk-panel-busy');
+            const template = document.getElementById('lk-side-panel-loader');
+            if (template) busy.appendChild(template.content.cloneNode(true));
+            const label = busy.querySelector('.lk-loader-label');
+            if (label) label.textContent = form.dataset.lkBusy;
+            else busy.appendChild(el('span', 'lk-pivot-description', form.dataset.lkBusy));
+            busy.setAttribute('role', 'status');
+            bar.prepend(busy);
+        });
+    });
     // Actions > Push to MISP: "Push it anyway" enables the button when the capture is
     // already on the MISP
     root.querySelectorAll('form[data-lk-misp-push] [data-lk-force-push]:not([data-lk-ready])').forEach(box => {

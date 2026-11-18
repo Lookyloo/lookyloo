@@ -17,6 +17,7 @@ import types
 import time
 
 import markdown
+import requests
 import orjson
 
 from collections import defaultdict
@@ -1640,11 +1641,24 @@ def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
         success, to_push = lookyloo.get_capture(tree_uuid)
         if success:
             pylookyloo = PyLookyloo(remote_lookyloo_url)
+            not_lookyloo = Markup('{url} does not look like a Lookyloo instance: give the address of its home page, like https://lookyloo.example.org (not a page of it, nor another tool).').format(url=remote_lookyloo_url)
             try:
+                if not pylookyloo.is_up:
+                    # Something answers there (but not the home page of a Lookyloo), or nothing
+                    try:
+                        requests.head(remote_lookyloo_url, timeout=10)
+                        flash(not_lookyloo, 'error')
+                    except requests.exceptions.RequestException:
+                        flash(Markup('Unable to reach {url}: is the address right, and is the instance up?').format(url=remote_lookyloo_url), 'error')
+                    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
                 uuid = pylookyloo.upload_capture(full_capture=to_push, quiet=True)
                 flash(Markup('Successfully pushed the capture: <a href="{root_url}/tree/{uuid}" target="_blank">{uuid}</a>.').format(root_url=pylookyloo.root_url, uuid=uuid), 'success')
             except PyLookylooError as e:
-                flash(Markup('Error while pushing capture: {}').format(e), 'error')
+                # The answer was not the JSON of the Lookyloo API (an HTML page): not a Lookyloo
+                if 'Expecting value' in str(e):
+                    flash(not_lookyloo, 'error')
+                else:
+                    flash(Markup('Error while pushing capture: {}').format(e), 'error')
             except Exception as e:
                 flash(Markup('Unable to push capture: {}').format(e), 'error')
         else:

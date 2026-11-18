@@ -16,7 +16,7 @@
   {% if error %}
     {{ panel_empty('No URL to capture', error, icon_name='diagram-3') }}
   {% else %}
-  <form role="form" action="{{ url_for('bulk_captures', tree_uuid=base_tree_uuid, seed=seed) }}" method="post" enctype="multipart/form-data">
+  <form role="form" action="{{ url_for('bulk_captures', tree_uuid=base_tree_uuid, seed=seed) }}" method="post" enctype="multipart/form-data" data-lk-busy="Starting the captures…">
     {% call panel_section('Your URLs', 'pencil') %}
       <label for="user_urls" class="lk-pivot-description">One URL per line, captured with the cookies of this capture.</label>
       <textarea class="form-control lk-mono-input" id="user_urls" name="user_urls" rows="3" placeholder="https://example.com/next-step"></textarea>

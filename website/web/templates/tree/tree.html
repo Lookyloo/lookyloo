@@ -955,14 +955,16 @@
                               'Send this capture to another Lookyloo instance: it gets the whole capture, as if it had made it.',
                               icon_name='cloud-upload') }}
               <form role="form" action="{{ url_for('web_lookyloo_push_view', tree_uuid=tree_uuid, seed=seed) }}"
-                    method="post" enctype="multipart/form-data" class="lk-push-form">
+                    method="post" enctype="multipart/form-data" class="lk-push-form" data-lk-busy="Pushing the capture…">
                 <label for="remote_lookyloo_url" class="form-label">URL of the Lookyloo instance</label>
                 <div class="lk-push-row">
                   <input type="url" class="form-control lk-mono-input" name="remote_lookyloo_url" id="remote_lookyloo_url"
                          placeholder="https://lookyloo.example.org" required>
                   <button type="submit" class="btn btn-primary">{{ render_icon('cloud-upload') }} Push</button>
                 </div>
-                <p class="lk-panel-note">{{ render_icon('info-circle') }} The other instance must accept submissions from this one.</p>
+                <p class="lk-panel-note">{{ render_icon('info-circle') }} The address of the home page of the other instance, like
+                  <code>https://lookyloo.example.org</code>; it must accept submissions from this one.</p>
+                <div class="lk-panel-submit lk-push-busy"></div>
               </form>
             </div>
           </div>
@@ -1047,7 +1049,7 @@
               {{ panel_header('Actions', 'Monitor capture',
                               'Send this capture to the monitoring interface: the URL is captured again at the frequency chosen, and the changes are reported.',
                               icon_name='activity') }}
-              <form role="form" action="{{ url_for('monitor', tree_uuid=tree_uuid, seed=seed) }}" method="post" enctype="multipart/form-data" class="lk-panel-form">
+              <form role="form" action="{{ url_for('monitor', tree_uuid=tree_uuid, seed=seed) }}" method="post" enctype="multipart/form-data" class="lk-panel-form" data-lk-busy="Sending to the monitoring…">
                 {{monitoring_form(monitoring_settings, monitoring_collections, confirm_message="Yes, I want to submit this capture for monitoring.", auth=current_user.is_authenticated)}}
                 <div class="lk-panel-submit">
                   <span></span>
