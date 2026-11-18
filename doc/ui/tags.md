@@ -34,3 +34,7 @@ option (`topStart`).
 
 On phones the categories table hides the machine tag column and the family of
 the tags (kept in the tooltip).
+
+**Categories**: they are now drawn as MISP tags with the colour of their type
+(`lkCategoryTag()` in `js/components/category_tag.js`, `macros/misp.html`), see
+[misp-tags.md](misp-tags.md). The `lk-tag-*` tints stay for the other tags.

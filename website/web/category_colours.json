@@ -1,0 +1,22 @@
+{
+  "_notes": "Colours of the categories of Lookyloo (taxonomy content-classification), drawn as MISP tags (doc/ui/misp-tags.md). One colour per type (predicate), like the MISP taxonomies; 'entries' sets the colour of one category (its machinetag). Hex colours only.",
+  "content-classification": {
+    "predicates": {
+      "general": "#0B6E99",
+      "technology": "#3A5A9B",
+      "cybersecurity": "#1C7C54",
+      "cybercrime": "#B3261E",
+      "markets": "#B26B00",
+      "communities": "#7B4FB0",
+      "digital-content": "#2C8C99",
+      "finance": "#5C7A1F",
+      "illegal-markets": "#8E1B4B",
+      "technical-services": "#5A6270",
+      "geopolitics-and-hacktivism": "#C2410C"
+    },
+    "entries": {
+      "content-classification:cybercrime=\"phishing\"": "#E3170A",
+      "content-classification:cybersecurity=\"malware\"": "#0E5E3A"
+    }
+  }
+}

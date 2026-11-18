@@ -1,10 +1,18 @@
-<h5 class="text-center">Click on the Cloudflare NameServer tuple to see the other captures it's been found in</h5>
-<table id="cloudflareNSTable" class="table table-striped" style="width:100%" data-treeuuid="{{tree_uuid}}">
-<thead>
- <tr>
-   <th>Number of captures</th>
-   <th>Cloudflare Nameserver tuple</th>
-   <th>Hostnames</th>
- </tr>
-</thead>
-</table>
+{#
+  Analysis > Cloudflare name servers: one row per value of the capture, in a vitrine <vt-table>
+  (js/capture_panels.js, TABLES.cloudflare_ns; rows from analysis_rows('cloudflare_ns') in
+  website/web/__init__.py). Links open the details panel of the value, or locate
+  the node in the tree. HTML fragment for the side panel. Doc: doc/ui/analysis-panels.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from "macros/panel.html" import panel_header, panel_empty %}
+<div class="lk-panel">
+  {{ panel_header('Analysis', 'Cloudflare name servers', 'Pairs of Cloudflare name servers of the hostnames of the capture: the same pair is often the same Cloudflare account.', icon_name='cloud') }}
+  {% if rows %}
+  <vt-table class="lk-vitrine" row-numbers="false" data-lk-table="cloudflare_ns" variant="full" selectable="none" reorderable="false" expandable="false"
+            wrap layout="table" filters="false" copy="false" download="false" fullscreen="false" page-size="25" label="Cloudflare name servers ({{ rows|length }})"></vt-table>
+  <script type="application/json">{{ rows | tojson }}</script>
+  {% else %}
+  {{ panel_empty('No Cloudflare name servers', 'No hostname of the capture is served by Cloudflare.', icon_name='cloud') }}
+  {% endif %}
+</div>

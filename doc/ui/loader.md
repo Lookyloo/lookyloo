@@ -14,6 +14,13 @@ loads never flash it, and it stops moving with `prefers-reduced-motion`.
 Both the macro and the CSS / JS are loaded by `layouts/page.html`. Used today
 as the DataTables processing indicator (see [tables.md](tables.md)).
 
+## Capture tree being built
+
+On the capture page (`tree/tree.html`), while the tree dump is fetched and
+drawn, `#tree-loading` shows the eyes with "Building the capture tree", fixed
+in the middle of the screen under the capture bar (`css/tree.css`).
+`js/tree.js` hides it once the tree is drawn.
+
 ## Waiting page of a capture
 
 `tree/tree_wait.html` is shown by `/tree/<uuid>` while the capture is queued,

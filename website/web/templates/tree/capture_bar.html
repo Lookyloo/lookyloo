@@ -1,0 +1,189 @@
+{#
+  Top of the capture page (tree/tree.html, block site_header): site header and
+  capture bar. The bar says what was captured (thumbnail, title, URL, time,
+  visibility, categories) and groups every action on the capture in menus.
+  IDs / data-remote / data-bs-target are read by js/tree_modals.js and js/tree.js
+  (menu_vertical, menu_horizontal, menu_horizontal_content): keep them.
+  Doc: doc/ui/tree.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from 'macros/misp.html' import misp_tag %}
+
+{% macro menu_item(target, label, icon_name, remote=None, title=None, id=None) -%}
+<li><a href="#{{ target }}" class="dropdown-item" role="button" data-bs-toggle="modal" data-bs-target="#{{ target }}"
+       {% if remote %}data-remote="{{ remote }}"{% endif %}{% if title %} title="{{ title }}"{% endif %}{% if id %} id="{{ id }}"{% endif %}>
+  {{ render_icon(icon_name) }}<span>{{ label }}</span></a></li>
+{%- endmacro %}
+{% macro menu_link(href, label, icon_name, title=None, id=None, classes='') -%}
+<li><a href="{{ href }}" class="dropdown-item {{ classes }}" role="button"{% if title %} title="{{ title }}"{% endif %}{% if id %} id="{{ id }}"{% endif %}>
+  {{ render_icon(icon_name) }}<span>{{ label }}</span></a></li>
+{%- endmacro %}
+
+<a class="visually-hidden-focusable lk-skip-link" href="#tree_svg">Skip to the capture tree</a>
+<div class="lk-capture-top" id="capture_top">
+{% include 'partials/header.html' %}
+
+<section class="lk-capture-bar" id="menu_vertical" aria-label="Capture">
+  <button type="button" class="lk-capture-fold" id="capture_fold" aria-expanded="true" aria-controls="menu_vertical"
+          title="Fold the capture bar">{{ render_icon('chevron-up') }}<span class="visually-hidden">Fold the capture bar</span></button>
+  <div class="lk-capture-identity">
+    <button type="button" class="lk-capture-thumb" data-bs-toggle="modal" data-bs-target="#screenshotModal"
+            title="Show the screenshot of the rendered page" aria-label="Show the screenshot of the rendered page">
+      <img src="data:image/png;base64,{{ screenshot_thumbnail }}" alt="" width="96" height="60">
+    </button>
+    <div class="lk-capture-text">
+      <h1 class="lk-capture-title">
+        {% if favicon %}<img class="lk-capture-favicon" src="data:{{ mime_favicon }};base64,{{ favicon }}" alt="" width="16" height="16">{% endif %}
+        <span>{{ page_title or 'Untitled page' }}</span>
+      </h1>
+      <p class="lk-capture-url">
+        <span title="{{ info.url }}">{{ info.url }}</span>
+        <button type="button" class="lk-copy js-copy" data-bs-toggle="tooltip" data-copy="{{ info.url }}"
+                title="Copy the URL" data-bs-original-title="Copy the URL" aria-label="Copy the URL">{{ render_icon('copy') }}</button>
+      </p>
+      <ul class="lk-capture-meta">
+        {% if info.timestamp %}
+        <li>{{ render_icon('clock') }} <span>{{ info.timestamp.strftime('%Y-%m-%d %H:%M') }}</span></li>
+        {% endif %}
+        {% if info.redirects|length > 1 %}
+        <li>{{ render_icon('signpost-split') }} {{ info.redirects|length - 1 }} redirect{{ 's' if info.redirects|length > 2 }}</li>
+        {% endif %}
+        {# Public, unlisted or private: a click opens the visibility modal #}
+        <li>
+          {% if info.private %}{% set vis = ('private', 'lock-fill', 'Private', 'Private: only with its secret link, or for logged-in users') %}
+          {% elif info.no_index %}{% set vis = ('unlisted', 'eye-slash', 'Unlisted', 'Unlisted: not on the public index, anyone with the link can open it') %}
+          {% else %}{% set vis = ('public', 'globe2', 'Public', 'Public: listed on the index, anyone can open it') %}{% endif %}
+          <button type="button" class="lk-visibility lk-visibility-{{ vis[0] }}" data-bs-toggle="modal" data-bs-target="#visibilityModal"
+                  title="{{ vis[3] }}. Click to change it.">{{ render_icon(vis[1]) }} {{ vis[2] }}</button>
+        </li>
+        {# The categories as MISP tags, with the colour of their type (macros/misp.html, doc/ui/misp-tags.md) #}
+        {% for c in info.categories|sort %}<li><a class="lk-category-tag" href="{{ url_for('index', category=c) }}" title="The other captures in {{ c }}">{{ misp_tag(misp_tag_view(c, category_colour(c))) }}</a></li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <nav class="lk-capture-actions" id="menu_horizontal" aria-label="Capture actions">
+    <div id="menu_horizontal_content" class="lk-capture-toolbar">
+      <div id="capture-menu" class="dropdown">
+        <button class="btn btn-sm lk-tool-btn dropdown-toggle" type="button" id="capture-menu-btn"
+                data-bs-toggle="dropdown" aria-expanded="false">{{ render_icon('camera') }}<span>Capture</span></button>
+        <ul class="dropdown-menu lk-tool-menu" aria-labelledby="capture-menu-btn">
+          {# Details and statistics in one panel (the statistics are a section of it) #}
+          {{ menu_item('detailsModal', 'Details & statistics', 'info-circle', title='How the capture was made, and the capture in numbers') }}
+          {{ menu_item('storageStateModal', 'Storage state', 'database', url_for('storage_state', tree_uuid=tree_uuid, seed=seed), 'The storage state at the end of the capture') }}
+          {{ menu_item('consoleMessagesModal', 'Console messages', 'terminal', url_for('console_messages', tree_uuid=tree_uuid, seed=seed), 'The messages in the debug console during the capture') }}
+          {% if has_downloads %}
+          {{ menu_item('downloadsModal', 'Downloads', 'download', url_for('downloads', tree_uuid=tree_uuid, seed=seed), 'The file(s) downloaded during the capture') }}
+          {% endif %}
+          {% if has_videos %}
+          {{ menu_item('videoModal', 'Video', 'film', url_for('videos', tree_uuid=tree_uuid, seed=seed), 'The video generated during the capture') }}
+          {% endif %}
+          {{ menu_item('screenshotModal', 'Page screenshot', 'image', title='Contains the URL rendered in the browser') }}
+          <li><hr class="dropdown-divider"></li>
+          {{ menu_item('mispExportModal', 'MISP export', 'box-arrow-up-right', title='The capture as a MISP event (JSON): read, copy or download it') }}
+        </ul>
+      </div>
+
+      <div id="tools-menu" class="dropdown">
+        <button class="btn btn-sm lk-tool-btn dropdown-toggle" type="button" id="tools-menu-btn"
+                data-bs-toggle="dropdown" aria-expanded="false">{{ render_icon('search') }}<span>Analysis</span></button>
+        <ul class="dropdown-menu lk-tool-menu" aria-labelledby="tools-menu-btn">
+          {% if not capture_indexed %}
+            {% if not current_user.is_authenticated and info.private %}
+            <li><span class="dropdown-item-text lk-tool-note">{{ render_icon('exclamation-triangle') }}Cannot index a private capture without being logged in.</span></li>
+            {% else %}
+            {{ menu_link(url_for('trigger_indexing', tree_uuid=tree_uuid, seed=seed), 'Index capture', 'exclamation-triangle', "The capture isn't (fully) indexed, index now.", classes='lk-tool-warning') }}
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+          {% endif %}
+          <li><h6 class="dropdown-header">Third parties</h6></li>
+          {{ menu_item('modulesModal', 'Third party reports', 'shield-check', url_for('trigger_modules', tree_uuid=tree_uuid, force=False, seed=seed), 'Lookups from supported 3rd party services') }}
+          {% if misp_lookup %}
+          {{ menu_item('mispLookupModal', 'Search events on MISP', 'search', url_for('web_misp_lookup_view', tree_uuid=tree_uuid, seed=seed)) }}
+          {% endif %}
+          {{ menu_item('historyModal', 'Historical lookups', 'clock-history', url_for('historical_lookups', tree_uuid=tree_uuid, force=False, seed=seed), 'Historical data and context about this capture') }}
+          {{ menu_item('hashlookupModal', 'Hashlookup hits', 'hash', url_for('hashlookup', tree_uuid=tree_uuid, seed=seed), 'Hits in Hashlookup') }}
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">In this capture</h6></li>
+          {{ menu_item('bodyHashesModal', 'Resources', 'file-earmark-code', url_for('tree_body_hashes', tree_uuid=tree_uuid, seed=seed), 'All resources contained in the tree') }}
+          {{ menu_item('ipsModal', 'IP addresses', 'hdd-network', url_for('tree_ips', tree_uuid=tree_uuid, seed=seed), 'All IPs contained in the tree') }}
+          {{ menu_item('hostnamesModal', 'Hostnames', 'globe2', url_for('tree_hostnames', tree_uuid=tree_uuid, seed=seed), 'All hostnames contained in the tree') }}
+          {{ menu_item('urlsModal', 'URLs', 'link-45deg', url_for('tree_urls', tree_uuid=tree_uuid, seed=seed), 'All URLs contained in the tree') }}
+          {{ menu_item('faviconsModal', 'Favicons', 'star', url_for('tree_favicons', tree_uuid=tree_uuid, seed=seed), 'Favicons found on the rendered page') }}
+          {{ menu_item('captureHashesTypesModal', '(Fuzzy) hashes types', 'fingerprint', url_for('tree_capture_hashes_types', tree_uuid=tree_uuid, seed=seed), 'Compare hashes of the rendered page') }}
+          {{ menu_item('identifiersModal', 'Other identifiers', 'upc-scan', url_for('tree_identifiers', tree_uuid=tree_uuid, seed=seed), 'Identifiers found on the rendered page') }}
+          {{ menu_item('cloudflareNSModal', 'Cloudflare name servers', 'cloud', url_for('tree_cloudflare_ns', tree_uuid=tree_uuid, seed=seed), 'Cloudflare name servers found in the capture') }}
+        </ul>
+      </div>
+
+      <div id="actions-menu" class="dropdown">
+        <button class="btn btn-sm lk-tool-btn dropdown-toggle" type="button" id="actions-menu-btn"
+                data-bs-toggle="dropdown" aria-expanded="false">{{ render_icon('lightning') }}<span>Actions</span></button>
+        <ul class="dropdown-menu lk-tool-menu" aria-labelledby="actions-menu-btn">
+          {{ menu_link(url_for('recapture', tree_uuid=tree_uuid, seed=seed), 'Re-capture', 'arrow-repeat', 'Submit the URL again') }}
+          {{ menu_item('urlsInPageModal', 'Subsequent captures', 'diagram-3', url_for('urls_rendered_page', tree_uuid=tree_uuid, seed=seed), 'Start a capture from one of the URLs rendered in the page') }}
+          {% if enable_monitoring %}
+            {% if monitoring_url %}
+            {{ menu_link(monitoring_url, 'Show monitoring', 'activity') }}
+            {% else %}
+            {{ menu_item('monitoringModal', 'Monitor capture', 'activity') }}
+            {% endif %}
+          {% endif %}
+          {% if enable_categorization or enable_bookmark or enable_context_by_users %}
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">Organize</h6></li>
+          {% if enable_categorization %}
+          {{ menu_item('categoriesModal', 'Manage categories', 'tags', url_for('categories_capture', tree_uuid=tree_uuid, seed=seed)) }}
+          {% endif %}
+          {% if enable_bookmark %}
+          {{ menu_link('#/', 'Unbookmark all nodes', 'flag', id='unbookmarkAllNodes') }}
+          {% endif %}
+          {% if enable_context_by_users %}
+          {{ menu_link('#/', "Mark all the capture's entries as known", 'check2-all', id='markAsKnown') }}
+          {% endif %}
+          {% endif %}
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">Share &amp; export</h6></li>
+          {{ menu_item('visibilityModal', 'Visibility and sharing', 'eye', title='Change the visibility of the capture, get a new seed') }}
+          {% if misp_push %}
+          {{ menu_item('mispPushModal', 'Prepare push to MISP', 'send', url_for('web_misp_push_view', tree_uuid=tree_uuid, seed=seed)) }}
+          {% endif %}
+          {{ menu_item('lookylooPushModal', 'Push to another Lookyloo', 'cloud-upload', title='Push the capture to another Lookyloo Instance') }}
+        </ul>
+      </div>
+
+      <div id="download-menu" class="dropdown">
+        <button class="btn btn-sm lk-tool-btn dropdown-toggle" type="button" id="download-menu-btn"
+                data-bs-toggle="dropdown" aria-expanded="false">{{ render_icon('download') }}<span>Download</span></button>
+        <ul class="dropdown-menu lk-tool-menu" aria-labelledby="download-menu-btn">
+          {{ menu_link(url_for('export', tree_uuid=tree_uuid, seed=seed), 'Full capture (zip)', 'file-earmark-zip', 'Everything Lookyloo stored for this capture, to import it in another instance') }}
+          {{ menu_link(url_for('image', tree_uuid=tree_uuid, seed=seed), 'Screenshot', 'image', 'The screenshot of the page (PNG)') }}
+          {{ menu_link(url_for('har_download', tree_uuid=tree_uuid, seed=seed), 'HTTP archive (HAR)', 'file-earmark-code', 'Every request and response of the capture') }}
+          {{ menu_item('downloadModal', 'Forensic acquisition', 'archive', url_for('download_elements', tree_uuid=tree_uuid, seed=seed), 'Forensic Acquisition of the Web Capture') }}
+        </ul>
+      </div>
+
+      {% if current_user.is_authenticated %}
+      <div id="admin-menu" class="dropdown">
+        <button class="btn btn-sm lk-tool-btn dropdown-toggle" type="button" id="admin-menu-btn"
+                data-bs-toggle="dropdown" aria-expanded="false">{{ render_icon('person-gear') }}<span>Admin</span></button>
+        <ul class="dropdown-menu dropdown-menu-end lk-tool-menu" aria-labelledby="admin-menu-btn">
+          {{ menu_link(url_for('rebuild_tree', tree_uuid=tree_uuid, seed=seed), 'Rebuild capture', 'hammer') }}
+          {{ menu_item('ollamaModal', 'Ollama report', 'robot', url_for('tree_ollama_report', tree_uuid=tree_uuid, seed=seed), 'Throw the capture in Ollama and hope') }}
+          <li><hr class="dropdown-divider"></li>
+          {{ menu_link(url_for('remove_capture', tree_uuid=tree_uuid, seed=seed), 'Remove capture', 'trash', id='removeCapture', classes='lk-tool-danger') }}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if enable_mail_notification %}
+      <button type="button" class="btn btn-sm btn-outline-danger lk-tool-btn" id="report-capture-btn" data-bs-toggle="modal" data-bs-target="#emailModal"
+              title="Notify the owners of this Lookyloo instance about this capture">{{ render_icon('flag') }}<span>Report suspicious capture</span></button>
+      {% endif %}
+
+      <a id="help" class="btn btn-sm lk-tool-btn lk-tool-icon" href="https://www.lookyloo.eu/docs/main/usage.html#_investigate_a_capture"
+         title="Lookyloo manual: investigate a capture" aria-label="Lookyloo manual" target="_blank" rel="noopener">{{ render_icon('question-circle') }}</a>
+    </div>
+  </nav>
+</section>
+</div>

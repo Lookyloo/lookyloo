@@ -1,72 +1,90 @@
-{% if nothing_to_see %}
-Nothing to see here.
-{% else %}
+{#
+  Actions > Prepare push to MISP: the capture as a MISP event, pushed to one of the
+  MISP instances: its title (event info), the default tags of the instance, the
+  favourite tags of the MISP user to add (checkboxes, name="tags"), publish or not,
+  also the parent captures. When the capture is already on the MISP, the push needs
+  "push anyway" (js/capture_panels.js, data-lk-force-push). The fields are the ones
+  web_misp_push_view() reads. #mispSelector / #push_<name>: js/tree_modals.js.
+  HTML fragment for the side panel. Doc: doc/ui/actions-panels.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from "macros/panel.html" import panel_header, panel_section, panel_empty %}
+{% from 'macros/misp.html' import misp_tag %}
+<div class="lk-panel">
+  {{ panel_header('Actions', 'Push to MISP',
+                  'Send this capture to your MISP as an event: its URLs, hostnames, IPs, resources and screenshot as attributes and objects.',
+                  logo=(url_for('static', filename='vendor/logos/misp-logo-horizontal.png'),
+                        url_for('static', filename='vendor/logos/misp-logo-horizontal-light.png'), 'MISP')) }}
+  {% if nothing_to_see %}
+    {{ panel_empty('Cannot push to MISP', nothing_to_see, icon_name='send') }}
+  {% else %}
 
-{% if misp_instances_settings|length > 1 %}
-<center>
-<label for="mispSelector">Select the MISP instance to push to</label>
-<br>
-<div class="btn-group" role="group" aria-label="MISP Selector" id="mispSelector">
-  {%for name in misp_instances_settings %}
-  <button type="button" value="push_{{name.replace(' ', '_')}}"
-          class="btn btn-outline-primary {%if name == current_misp%}active{%endif%}" href="#">{{name}}</a></li>
-  {%endfor%}
-</div>
-</center>
-{%endif%}
+  {% if misp_instances_settings|length > 1 %}
+  <div class="lk-misp-instances">
+    <span class="lk-pivot-description">MISP instance:</span>
+    <div class="btn-group btn-group-sm" role="group" aria-label="MISP instance" id="mispSelector">
+      {% for name in misp_instances_settings %}
+      <button type="button" value="push_{{ name.replace(' ', '_') }}" class="btn btn-outline-primary {% if name == current_misp %}active{% endif %}">{{ name }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 
-<div id="allInstances">
-{%if misp_instances_settings %}
-{%for name, misp_settings in misp_instances_settings.items() %}
-<div id="push_{{name.replace(' ', '_')}}" {%if name != current_misp%}style="display:none"{%endif%}>
-  <form role="form" action="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid, seed=seed) }}"
-        method=post enctype=multipart/form-data>
-    <label for="misp_instance_name" class="col-sm-2 col-form-label">Submit event to:</label>
-    <input type="text" class="form-control" name="misp_instance_name" value="{{name}}" readonly>
-    <label for="defaultTags" class="col-sm-6 col-form-label">Tags attached to the event by default</label>
-    <input type="text" class="form-control" name="defaultTags" value="{{', '.join(misp_settings['default_tags'])}}" disabled readonly>
-    <div class="row mb-3">
-      <div class="col-sm-10">
-        <label for="url" class="col-sm-2 col-form-label">Event info:</label>
-        <input type="text" class="form-control" name="event_info" value="{{event.info}}">
+  <div id="allInstances">
+  {% for name, misp_settings in misp_instances_settings.items() %}
+  <div id="push_{{ name.replace(' ', '_') }}" {% if name != current_misp %}style="display:none"{% endif %}>
+    <form role="form" action="{{ url_for('web_misp_push_view', tree_uuid=tree_uuid, seed=seed) }}"
+          method="post" enctype="multipart/form-data" class="lk-panel-form" data-lk-misp-push data-lk-busy="Pushing to MISP…">
+      <input type="hidden" name="misp_instance_name" value="{{ name }}">
+
+      {% if misp_settings.existing_event %}
+      <div class="lk-panel-alert is-warning">
+        {{ render_icon('exclamation-triangle-fill') }}
+        <div>This capture is already <a href="{{ misp_settings.existing_event }}" target="_blank" rel="noopener">an event on {{ name }}</a>.
+          <label class="lk-inline-check"><input class="form-check-input" type="checkbox" name="force_push" data-lk-force-push> Push it anyway</label></div>
       </div>
-    </div>
+      {% endif %}
 
-    <div class="row mb-3">
-      <div class="col-sm-10">
-        <label for="tags" class="col-sm-2 col-form-label">Available tags:</label>
-        <select class="form-control" name="tags" id="tags" multiple>
-          {% for tag_name in misp_settings['fav_tags'] %}
-          <option value="{{ tag_name }}">{{ tag_name }}</option>
-          {% endfor %}
-        </select>
+      {% call panel_section('Event', 'calendar-event') %}
+        <label for="event_info_{{ loop.index }}" class="form-label lk-field-label">Title of the event (info)</label>
+        <input type="text" class="form-control" id="event_info_{{ loop.index }}" name="event_info" value="{{ event.info }}">
+        <p class="lk-field-label">Pushed to <b>{{ name }}</b>, with the default tags of this instance:</p>
+        <div class="lk-misp-marks is-wrap">
+          {% for tag in misp_settings['default_tags'] %}{{ misp_tag(misp_tag_view(tag)) }}{% else %}<span class="lk-misp-none">none</span>{% endfor %}
+        </div>
+      {% endcall %}
+
+      {% call panel_section('Tags to add', 'tags', misp_settings['fav_tags']|length) %}
+        {% if misp_settings['fav_tags'] %}
+        <p class="lk-pivot-description">The favourite tags of your MISP user (star a tag on MISP to add it here).</p>
+        {# The favourite tags as the options of a vitrine <vt-tags> (type to search, pick,
+           remove), each with its MISP colour; sent as "tags" (data-lk-tags-field) #}
+        <vt-tags class="lk-vitrine lk-misp-tags-field" mode="edit" allow-create="false" browse
+                 placeholder="Add a tag" label="Tags to add" data-lk-tags-field="tags" data-lk-browse-open>
+          <script type="application/json">{{ {'value': [], 'options': misp_settings['fav_tags'] | map('misp_tag_option') | list} | tojson }}</script>
+        </vt-tags>
+        {% else %}
+        <p class="lk-pivot-description">Your MISP user has no favourite tags: star tags on MISP to choose them here.</p>
+        {% endif %}
+      {% endcall %}
+
+      {% call panel_section('Options', 'sliders') %}
+        <label class="lk-inline-check"><input class="form-check-input" type="checkbox" name="auto_publish" {% if misp_settings.auto_publish %}checked{% endif %}> Publish the event</label>
+        {% if has_parent %}
+        <label class="lk-inline-check"><input class="form-check-input" type="checkbox" name="with_parents"> Also push the parent captures</label>
+        {% endif %}
+      {% endcall %}
+
+      <div class="lk-panel-submit">
+        <span></span>
+        <button type="submit" class="btn btn-primary" id="btn-misp-push-{{ name }}"
+                {% if misp_settings.existing_event %}disabled{% endif %}>{{ render_icon('send') }} Push to {{ name }}</button>
       </div>
-    </div>
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="auto_publish"
-             {%if misp_settings.auto_publish %} checked {% endif %}></input>
-      <label for="auto_publish" class="form-check-label">Publish the event automatically</label>
-    </div>
-    {% if misp_settings.existing_event %}
-    <p>There is already an <a href="{{misp_settings.existing_event}}">event on your MISP instance</a> with this lookyloo capture.</p>
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="force_push" onchange="document.getElementById('btn-misp-push-{{name}}').disabled = !this.checked;"></input>
-      <label for="force_push" class="form-check-label">Tick this box if you want to push anyway</label>
-    </div>
-    {% endif %}
-    {% if has_parent %}
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="with_parents"></input>
-      <label for="with_parents" class="form-check-label">Also push the parents</label>
-    </div>
-    {% endif %}
-    <button type="submit" class="btn btn-primary" id="btn-misp-push-{{name}}"
-            {% if misp_settings.existing_event %}disabled=true{% endif %}>Push to {{name}}</button>
-  </form>
+    </form>
+  </div>
+  {% else %}
+    {{ panel_empty('No MISP instance available', 'Log in to push to the MISP instances reserved to the admins.', icon_name='send') }}
+  {% endfor %}
+  </div>
+  {% endif %}
 </div>
-{%endfor%}
-{%else%}
-None of the instances are available, please login.
-{%endif%}
-</div>
-{%endif%}

@@ -12,11 +12,16 @@ let margin = {
 let menuHeight = document.getElementById('menu_vertical').clientHeight + 60;
 let min_height = menuHeight * 2;
 
-let min_width = document.getElementById('menu_vertical').clientWidth + document.getElementById('menu_horizontal').clientWidth;
+// The capture bar (#menu_vertical) is as wide as the page, the menus are in it
+let min_width = document.getElementById('menu_vertical').clientWidth;
 
 let node_width = 10;
 let node_height = 55;
 let center_node = null;
+
+// Keys selected in the legend filter (tree/legend.html): the nodes having at
+// least one of them are highlighted, the others dimmed.
+const active_filters = new Set();
 
 document.getElementById('tree_svg').style.width = min_width;
 document.getElementById('tree_svg').style.height = min_height;
@@ -24,6 +29,111 @@ document.getElementById('tree_svg').style.height = min_height;
 let main_svg = d3.select("#tree_svg").append("svg")
             .attr("width", min_width + margin.right + margin.left)
             .attr("height", min_height + margin.top + margin.bottom)
+
+// Zoom of the tree (buttons of #tree-zoom, Ctrl + wheel): the SVG is drawn at its
+// size times tree_zoom, its viewBox keeps the coordinates of the layout (svg_size).
+// Limits: below, the cards are unreadable; above, a card no longer fits the window
+const ZOOM_MIN = 0.25;
+const ZOOM_MAX = 2;
+let tree_zoom = 1;
+let svg_size = {width: min_width + margin.right + margin.left, height: min_height + margin.top + margin.bottom};
+
+function applyZoom() {
+    main_svg.attr('viewBox', `0 0 ${svg_size.width} ${svg_size.height}`)
+            .attr('width', svg_size.width * tree_zoom)
+            .attr('height', svg_size.height * tree_zoom);
+}
+
+// Zoom, keeping the point under the pointer (or the centre of the window) in place
+function setZoom(zoom, client_x=null, client_y=null) {
+    zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(zoom * 100) / 100));
+    if (zoom === tree_zoom) return;
+    const rect = main_svg.node().getBoundingClientRect();
+    const cx = client_x ?? window.innerWidth / 2;
+    const cy = client_y ?? window.innerHeight / 2;
+    const point_x = (cx - rect.left) / tree_zoom;
+    const point_y = (cy - rect.top) / tree_zoom;
+    const old_zoom = tree_zoom;
+    tree_zoom = zoom;
+    applyZoom();
+    window.scrollTo({left: window.scrollX + point_x * (zoom - old_zoom), top: window.scrollY + point_y * (zoom - old_zoom), behavior: 'instant'});
+    updateZoomButtons();
+}
+
+// Bring the first node of the tree (the root) to the middle of the window, under
+// the capture bar (after a drag or a zoom that went far). As far as the free
+// room around the tree (css/tree.css, half the window) allows.
+// smooth: a short glide to the node (the Center button, the opening of the page);
+// instant when the user prefers reduced motion
+function centerOnRoot(align='middle', smooth=true) {
+    // The first node of the tree: the one without parent (not the first <g> of
+    // the SVG, whose order changes when nodes are expanded / collapsed)
+    const root_node = node_container.selectAll('g.node').filter(d => !d.parent).node();
+    if (!root_node) return;
+    scrollToNode(root_node, align, smooth);
+}
+
+// Scroll the page so that a node is in view: in the middle of the space left of
+// the side panel, under the capture bar ('left': near the left edge)
+function scrollToNode(node, align='middle', smooth=true) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) smooth = false;
+    // The card of the node, not its group: Firefox gives the <g> a box that also
+    // covers its hidden parts, and the view went far from the node
+    const card = node.querySelector('.node_data > rect') || node;
+    const box = card.getBoundingClientRect();
+    const top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-capture-top-height')) || 0;
+    // Room taken by the side panel at the right (js/side_panel.js): centred in what is left
+    const panel = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lk-side-panel-space')) || 0;
+    window.scrollTo({
+        left: align === 'left' ? window.scrollX + box.left - 40
+                               : window.scrollX + box.left + box.width / 2 - (window.innerWidth - panel) / 2,
+        top: window.scrollY + box.top + box.height / 2 - (top + window.innerHeight) / 2,
+        behavior: smooth ? 'smooth' : 'instant'});
+}
+
+// The node whose details are shown in the side panel (js/side_panel.js): outlined
+// in the tree (css/tree.css, .is-selected) and scrolled into view
+let selected_node = null;
+function selectNode(hostnode_uuid) {
+    clearNodeSelection();
+    selected_node = hostnode_uuid;
+    const node = document.getElementById(`node_${hostnode_uuid}`);
+    if (!node) return;   // in a collapsed branch
+    node.classList.add('is-selected');
+    // After the panel has taken its room
+    requestAnimationFrame(() => scrollToNode(node));
+}
+function clearNodeSelection() {
+    selected_node = null;
+    document.querySelectorAll('g.node.is-selected').forEach(n => n.classList.remove('is-selected'));
+}
+window.lkTree = { selectNode, clearNodeSelection };
+
+// Show the zoom, and disable - / + at the limits
+function updateZoomButtons() {
+    const reset = document.getElementById('tree-zoom-reset');
+    if (reset) reset.textContent = `${Math.round(tree_zoom * 100)} %`;
+    const zoom_out = document.getElementById('tree-zoom-out');
+    if (zoom_out) zoom_out.disabled = tree_zoom <= ZOOM_MIN;
+    const zoom_in = document.getElementById('tree-zoom-in');
+    if (zoom_in) zoom_in.disabled = tree_zoom >= ZOOM_MAX;
+}
+
+function setupZoom() {
+    document.getElementById('tree-zoom-in')?.addEventListener('click', () => setZoom(tree_zoom * 1.2));
+    document.getElementById('tree-zoom-out')?.addEventListener('click', () => setZoom(tree_zoom / 1.2));
+    document.getElementById('tree-zoom-reset')?.addEventListener('click', () => setZoom(1));
+    document.getElementById('tree-center')?.addEventListener('click', () => centerOnRoot());
+    // Ctrl + wheel over the tree: zoom the tree, not the page
+    document.getElementById('tree_svg').addEventListener('wheel', (event) => {
+        if (!event.ctrlKey) return;
+        // Not over the side panel, the legend or the controls: only over the tree
+        if (event.target.closest('#lk-side-panel, #legend, #tree-zoom')) return;
+        event.preventDefault();
+        setZoom(tree_zoom * Math.exp(-event.deltaY * 0.0015), event.clientX, event.clientY);
+    }, {passive: false});
+}
+setupZoom();
 
 // dummy container for tooltip
 d3.select('body')
@@ -47,6 +157,36 @@ pattern.append('rect')
     .attr('width', node_width)
     .attr('height', min_height)
     .attr("fill", "#EEEEEE");
+
+// Background of the tree (#tree-background buttons): columns (backstripes, in
+// the SVG), dots (default: CSS on #tree_svg, so the free room around the tree
+// has them too) or plain. Remembered in localStorage.
+const BACKGROUNDS = {columns: 'url(#backstripes)', dots: 'none', plain: 'none'};
+const BACKGROUND_KEY = 'lk-tree-background';
+let tree_background = 'columns';
+try {
+    const stored = localStorage.getItem(BACKGROUND_KEY);
+    if (stored in BACKGROUNDS) tree_background = stored;
+} catch (e) { /* storage unavailable: default */ }
+
+function setBackground(name) {
+    if (!(name in BACKGROUNDS)) return;
+    tree_background = name;
+    main_svg.select('#tree-background-rect').style('fill', BACKGROUNDS[name]);
+    // On the body: its background fills the whole page, however far it scrolls
+    document.body.classList.toggle('lk-bg-dots', name === 'dots');
+    document.querySelectorAll('#tree-background [data-background]').forEach(button => {
+        button.setAttribute('aria-pressed', button.dataset.background === name ? 'true' : 'false');
+        button.classList.toggle('active', button.dataset.background === name);
+    });
+    try {
+        localStorage.setItem(BACKGROUND_KEY, name);
+    } catch (e) { /* not remembered */ }
+}
+
+document.querySelectorAll('#tree-background [data-background]').forEach(button => {
+    button.addEventListener('click', () => setBackground(button.dataset.background));
+});
 
 // append the svg object to the body of the page
 // appends a 'group' element to 'svg'
@@ -72,15 +212,25 @@ try {
   root.y0 = 0;
 
   update(root);
+  setupLegendFilter(root);
   document.getElementById("tree-loading").style.display = "none";
 
   if (document.getElementById('tree_js').dataset.urlnode != null){
     history.scrollRestoration = "manual";
     LocateNode(document.getElementById('tree_js').dataset.urlnode);
-  }
-  else {
-    let rendered_node = document.getElementById('screenshot_thumbnail');
-    rendered_node.scrollIntoView({behavior: "smooth", block: "end", inline: "center"});
+    window.lkSidePanel?.restore();
+  } else {
+    // Open on the first node, near the left edge, the tree going right (it used
+    // to scroll smoothly to the node of the rendered page, at the bottom)
+    history.scrollRestoration = "manual";
+    // Once the layout is settled: the SVG still shrinks right after the first
+    // draw, and the node ended up under the left edge
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      centerOnRoot('left');
+      // The tabs of the side panel kept in the URL (#panels=..., js/side_panel.js), once
+      // the tree is drawn and placed: the node of a node tab is then selected (scrolled to)
+      window.lkSidePanel?.restore();
+    }));
   }
 
   if (parent_uuid != null) {
@@ -185,11 +335,91 @@ try {
 }
 
 
-function open_hostnode_popup(hostnode_uuid) {
+// ****************** Legend & icon filter (tree/legend.html) ******************
+
+// Does the node have this icon? Same test as icon_list(): true, a non-empty
+// string, a number > 0 or a non-empty list.
+function nodeHas(d, key) {
+    const value = d.data[key];
+    if (value instanceof Array) return value.length > 0;
+    if (typeof value === 'number') return value > 0;
+    return Boolean(value);
+}
+
+function applyLegendFilter() {
+    const filtering = active_filters.size > 0;
+    let matches = 0;
+    node_container.selectAll('g.node').each(function(d) {
+        const match = filtering && [...active_filters].some(key => nodeHas(d, key));
+        if (match) matches++;
+        d3.select(this)
+          .classed('is-filter-match', match)
+          .classed('is-filter-dimmed', filtering && !match);
+    });
+    const active = document.getElementById('legend-active');
+    if (active) {
+        active.hidden = !filtering;
+        active.textContent = filtering ? `${matches} node${matches === 1 ? '' : 's'}` : '';
+    }
+    const clear = document.getElementById('legend-clear');
+    if (clear) clear.hidden = !filtering;
+}
+
+function setupLegendFilter(root) {
+    const present = document.getElementById('legend-present');
+    if (!present) return;
+    const absent = document.getElementById('legend-absent');
+    const nodes = root.descendants();
+    let absent_count = 0;
+    present.querySelectorAll('.lk-legend-item').forEach(button => {
+        const key = button.dataset.key;
+        const count = nodes.filter(d => nodeHas(d, key)).length;
+        button.querySelector('.lk-legend-count').textContent = count;
+        if (count === 0) {
+            // Icons that are not in this capture: in the collapsed "Not in this capture"
+            button.disabled = true;
+            absent.appendChild(button.closest('li'));
+            absent_count++;
+            return;
+        }
+        button.title = `${button.title}: ${count} of ${nodes.length} nodes`;
+        button.addEventListener('click', () => {
+            if (active_filters.has(key)) active_filters.delete(key);
+            else active_filters.add(key);
+            button.setAttribute('aria-pressed', active_filters.has(key) ? 'true' : 'false');
+            applyLegendFilter();
+        });
+    });
+    // Most frequent first
+    [...present.children]
+        .sort((a, b) => b.querySelector('.lk-legend-count').textContent - a.querySelector('.lk-legend-count').textContent)
+        .forEach(li => present.appendChild(li));
+    document.getElementById('legend-absent-count').textContent = absent_count;
+    document.getElementById('legend-absent-panel').hidden = absent_count === 0;
+    document.getElementById('legend-clear').addEventListener('click', () => {
+        active_filters.clear();
+        present.querySelectorAll('.lk-legend-item').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        applyLegendFilter();
+    });
+    // The tree is drawn: the legend appears, open (css/tree.css, .is-ready)
+    const legend = document.getElementById('legend');
+    legend.open = true;
+    requestAnimationFrame(() => legend.classList.add('is-ready'));
+}
+
+function open_hostnode_popup(hostnode_uuid, name=null) {
     // /tree is kept, append the paramaters (seed, if present)
-    let win = window.open(`/tree/${treeUUID}/host/${hostnode_uuid}${document.location.search}`, '_blank', 'width=1024,height=768,left=200,top=100');
+    const url = `/tree/${treeUUID}/host/${hostnode_uuid}${document.location.search}`;
+    // In a tab of the side panel (js/side_panel.js); the ⇱ button of the tab
+    // opens it in its own window
+    if (window.lkSidePanel) {
+        window.lkSidePanel.openPage(url, name ? `Node: ${name}` : 'Node', 'hostnode', hostnode_uuid);
+        return;
+    }
+    let win = window.open(url, '_blank', 'width=1024,height=768,left=200,top=100');
     if (win == null) {
         alert("The browser didn't allow Lookyloo to open a pop-up. There should be an icon on the right of your URL bar to allow it.");
+        return;
     }
     win.focus();
 }
@@ -342,7 +572,7 @@ function text_entry(relative_x_pos, relative_y_pos, d) {
           .attr("stroke-width", ".2px")
           .style("opacity", .9)
           .attr('cursor', 'pointer')
-          .on('click', (event, d) => open_hostnode_popup(d.data.uuid))
+          .on('click', (event, d) => open_hostnode_popup(d.data.uuid, d.data.idna || d.data.name))
           .on('mouseover', (event, d) => {
               d3.select('#tooltip')
                   .style('opacity', 1)
@@ -373,7 +603,7 @@ function text_entry(relative_x_pos, relative_y_pos, d) {
           .attr("stroke-width", ".2px")
           .style("opacity", .9)
           .attr('cursor', 'pointer')
-          .on('click', (event, d) => open_hostnode_popup(d.data.uuid))
+          .on('click', (event, d) => open_hostnode_popup(d.data.uuid, d.data.idna || d.data.name))
           .on('mouseover', (event, d) => {
               d3.select('#tooltip')
                   .style('opacity', 1)
@@ -410,21 +640,23 @@ function update(root, computed_node_width=0) {
     tree.size([svgHeight, svgWidth])
 
     // Set background based on the computed width and height
+    main_svg.select('#tree-background-rect').remove();
     let background = main_svg.insert('rect', ':first-child')
+      .attr('id', 'tree-background-rect')
       .attr('y', 0)
       // Note: We want the background width with an extra computed_node_width
       // in order to make sure the last node is completely covered
       .attr('width', svgWidth + (margin.right + margin.left + computed_node_width))
       .attr('height', svgHeight + margin.top + margin.bottom)
-      .style('fill', "url(#backstripes)");
+      .style('fill', BACKGROUNDS[tree_background]);
+    setBackground(tree_background);
 
     // Update size
-    main_svg
-      .attr("width", svgWidth + (margin.right + margin.left)*2)
-      .attr("height", svgHeight + margin.top + margin.bottom)
+    svg_size = {width: svgWidth + (margin.right + margin.left)*2, height: svgHeight + margin.top + margin.bottom};
+    applyZoom();
 
     // Update pattern
-    main_svg.selectAll('pattern')
+    pattern
       .attr('width', `${computed_node_width * 2}px`)
     pattern.selectAll('rect')
       .attr('width', `${computed_node_width}px`)
@@ -811,4 +1043,6 @@ function update(root, computed_node_width=0) {
   if (computed_node_width === 0) {
     update(root, node_width)
   }
+  // Nodes shown again after an expand keep the legend filter
+  if (active_filters.size > 0) applyLegendFilter();
 }

@@ -1388,6 +1388,14 @@ class Indexing():
     def get_capture_categories(self, capture_uuid: str) -> set[str]:
         return self.redis.smembers(f'capture_indexes|{capture_uuid}|categories')
 
+    def get_captures_categories(self, capture_uuids: list[str]) -> dict[str, set[str]]:
+        '''The categories of several captures in one round trip (the rows of a page of the
+        list of the captures): a pipeline of SMEMBERS on their index.'''
+        pipeline = self.redis.pipeline()
+        for capture_uuid in capture_uuids:
+            pipeline.smembers(f'capture_indexes|{capture_uuid}|categories')
+        return dict(zip(capture_uuids, pipeline.execute()))
+
     def get_captures_category_count(self, category: str) -> int:
         return self.redis.zcard(f'categories|{category}|captures')
 

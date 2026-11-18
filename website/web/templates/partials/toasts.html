@@ -1,0 +1,29 @@
+{#
+  The flashed messages of every page (layouts/main.html), as toasts: a stack at
+  the bottom right of the screen (left of the side panel on the capture page),
+  one per message, its icon and colour by category. Errors and warnings stay
+  until closed; info and success go away after a few seconds (paused while the
+  mouse is over them). Style: css/components/toasts.css, behaviour:
+  js/components/toasts.js. Doc: doc/ui/toasts.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% macro toasts() -%}
+{% with messages = get_flashed_messages(with_categories=True) %}
+{% if messages %}
+{% set kinds = {'critical': 'danger', 'error': 'danger', 'danger': 'danger', 'warning': 'warning', 'success': 'success'} %}
+{% set icons = {'danger': 'x-octagon-fill', 'warning': 'exclamation-triangle-fill', 'success': 'check-circle-fill', 'info': 'info-circle-fill'} %}
+<section class="lk-toasts" aria-label="Messages">
+  {% for category, message in messages %}
+  {% set kind = kinds.get((category or '')|lower, 'info') %}
+  <div class="lk-toast is-{{ kind }}" role="{{ 'alert' if kind in ('danger', 'warning') else 'status' }}"
+       {% if kind in ('info', 'success') %}data-lk-autohide{% endif %}>
+    <span class="lk-toast-icon">{{ render_icon(icons[kind]) }}</span>
+    <div class="lk-toast-text">{{ message }}</div>
+    <button type="button" class="lk-toast-close" aria-label="Close this message" title="Close">{{ render_icon('x-lg') }}</button>
+    {% if kind in ('info', 'success') %}<span class="lk-toast-timer" aria-hidden="true"></span>{% endif %}
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+{% endwith %}
+{%- endmacro %}
