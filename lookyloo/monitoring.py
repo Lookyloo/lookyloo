@@ -39,7 +39,7 @@ class Monitoring():
             item = per_ip.setdefault(ip, {'ip': ip, 'hits': 0, 'user_agents': []})
             item['hits'] += int(hits)
             item['user_agents'].append(ua)
-        to_return['visitors'] = sorted(per_ip.values(), key=lambda i: i['hits'], reverse=True)
+        to_return['visitors'] = sorted(per_ip.values(), key=lambda i: i['hits'], reverse=True)[:50]
         return to_return
 
     @property

@@ -84,7 +84,14 @@
     <thead><tr><th>IP</th><th class="text-end">User agents</th><th class="text-end">Requests</th></tr></thead>
     <tbody>
     {% for v in visitors %}
-    <tr><td class="lk-mon-mono">{{ v.ip }}</td>{% for ua in v.user_agents %}<td class="text-end">{{ ua }}</td>{%endfor%}<td class="text-end"><strong>{{ '{:,}'.format(v.hits) }}</strong></td></tr>
+    <tr>
+        <td class="lk-mon-mono">{{ v.ip }}</td>
+        <td class="text-end">
+          {% for ua in v.user_agents %}
+          <div>{{ ua }}</div>
+          {% endfor %}
+        </td>
+        <td class="text-end"><strong>{{ '{:,}'.format(v.hits) }}</strong></td></tr>
     {% endfor %}
     </tbody>
   </table>
