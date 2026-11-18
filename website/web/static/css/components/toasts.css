@@ -1,0 +1,78 @@
+/*
+ * Toasts: the flashed messages of every page (partials/toasts.html,
+ * js/components/toasts.js). A stack at the bottom right, left of the side panel
+ * on the capture page. The fallbacks are Bootstrap variables: some pages (node
+ * pages) do not load the --lk-* tokens of css/components/site.css. Doc: doc/ui/toasts.md
+ */
+.lk-toasts {
+  position: fixed;
+  right: calc(var(--lk-side-panel-space, 0px) + 16px);
+  bottom: 16px;
+  z-index: 1090;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  width: min(400px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.lk-toast {
+  --lk-toast-tone: var(--lk-color-info, var(--bs-info));
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 10px 12px 14px;
+  overflow: hidden;
+  border: 1px solid var(--lk-color-rule, var(--bs-border-color));
+  border-left: 4px solid var(--lk-toast-tone);
+  border-radius: var(--lk-radius-lg, 10px);
+  background: var(--lk-color-surface, var(--bs-body-bg));
+  color: var(--lk-color-ink, var(--bs-body-color));
+  box-shadow: var(--lk-shadow-md, var(--bs-box-shadow));
+  font-size: 0.875rem;
+  line-height: 1.45;
+  pointer-events: auto;
+  animation: lk-toast-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.lk-toast.is-success { --lk-toast-tone: var(--lk-color-success, var(--bs-success)); }
+.lk-toast.is-warning { --lk-toast-tone: var(--lk-color-warning, var(--bs-warning)); }
+.lk-toast.is-danger { --lk-toast-tone: var(--lk-color-danger, var(--bs-danger)); }
+.lk-toast-icon { display: inline-flex; padding-top: 1px; color: var(--lk-toast-tone); }
+.lk-toast-icon svg { width: 18px; height: 18px; }
+.lk-toast-text { min-width: 0; overflow-wrap: anywhere; }
+.lk-toast-text a { color: var(--lk-color-accent, var(--bs-link-color)); font-weight: 600; }
+.lk-toast-close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; margin: -3px 0 0; padding: 0;
+  border: 0; border-radius: var(--lk-radius-sm, 4px); background: transparent;
+  color: var(--lk-color-muted, var(--bs-secondary-color)); cursor: pointer;
+}
+.lk-toast-close:hover { background: var(--lk-color-surface-2, var(--bs-tertiary-bg)); color: var(--lk-color-ink, var(--bs-body-color)); }
+.lk-toast-close svg { width: 12px; height: 12px; }
+/* Time left before an info / success toast goes away; paused under the mouse */
+.lk-toast-timer {
+  position: absolute; left: 0; bottom: 0; height: 3px; width: 100%;
+  background: var(--lk-toast-tone); opacity: 0.35; transform-origin: left;
+  animation: lk-toast-timer 7s linear forwards;
+  /* Runs only while the page is seen (js/components/toasts.js adds .is-seen to the
+     stack): a page opened in a background tab keeps its toasts until it is shown */
+  animation-play-state: paused;
+}
+.lk-toasts.is-seen .lk-toast-timer { animation-play-state: running; }
+.lk-toasts.is-seen .lk-toast:hover .lk-toast-timer,
+.lk-toasts.is-seen .lk-toast:focus-within .lk-toast-timer { animation-play-state: paused; }
+.lk-toast.is-leaving { animation: lk-toast-out 0.2s ease-in forwards; }
+@keyframes lk-toast-in { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes lk-toast-out { to { opacity: 0; transform: translateX(24px); } }
+@keyframes lk-toast-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .lk-toast, .lk-toast.is-leaving { animation: none; }
+  .lk-toast-timer { animation-duration: 7s; }
+}
+/* Phones: the whole width, the side panel takes the screen anyway */
+@media (max-width: 576px) {
+  .lk-toasts { right: 12px; left: 12px; bottom: 12px; width: auto; }
+}

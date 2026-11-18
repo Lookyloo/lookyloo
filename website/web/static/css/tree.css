@@ -24,16 +24,6 @@
   font: 12px sans-serif;
 }
 
-.flashed-messages {
-  position: fixed;
-  /* Explicit: its place in the page moves with the free room around the tree */
-  left: 0;
-  bottom: 5px;
-  text-align: center;
-  width: 50%;
-  transform: translate(50%);
-}
-
 .blur {
   filter: blur(10px);
 }
