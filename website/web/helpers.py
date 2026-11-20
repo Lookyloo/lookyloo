@@ -37,7 +37,9 @@ def src_request_ip(request: Request) -> str | None:
 
 
 class User(flask_login.UserMixin):  # type: ignore[misc]
-    pass
+
+    def __init__(self, user_id: str | None=None):
+        self.id = user_id
 
 
 def load_user_from_request(request: Request) -> User | None:

@@ -80,7 +80,7 @@ class Indexing():
         self.redis.delete('is_slow')
 
     @property
-    def status(self):
+    def status(self) -> dict[str, bool | int | str]:
         return {
             'is_slow': self.is_slow,
             'to_index': self.redis.hlen('lazy_index'),

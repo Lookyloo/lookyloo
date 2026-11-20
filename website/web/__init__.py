@@ -33,7 +33,7 @@ from zoneinfo import ZoneInfo
 from har2tree import HostNode, URLNode
 import flask_login  # type: ignore[import-untyped]
 from flask import (Flask, Response, Request, abort, flash, jsonify, redirect, render_template,
-                   request, send_file, url_for, make_response, send_from_directory)
+                   request, send_file, url_for, make_response, send_from_directory, session)
 from flask_bootstrap import Bootstrap5  # type: ignore[import-untyped]
 from flask_caching import Cache
 from flask_cors import CORS
@@ -54,6 +54,7 @@ from lookyloo import Lookyloo, LookylooException
 from lookyloo.monitoring import Monitoring
 from lookyloo_models import LookylooCaptureSettings, CaptureSettingsError, StorageStateSettings
 from pydantic import ValidationError
+from lookyloo.capturecache import CaptureCache
 from lookyloo.default import get_config, get_homedir, ConfigError
 from lookyloo.exceptions import (UnknownUUID, NoValidHarFile, LacusUnreachable, TreeNeedsRebuild,
                                  LookylooPrivateCapture, UUIDMissingInCache, MissingCaptureDirectory,
@@ -132,6 +133,7 @@ app.url_map.converters['sha512'] = Sha512Converter
 
 # Auth stuff
 login_manager = flask_login.LoginManager()
+login_manager.session_protection = 'strong'
 login_manager.init_app(app)
 build_keys_table()
 
@@ -175,8 +177,7 @@ def home_page() -> str:
 def user_loader(username: str) -> User | None:
     if username not in build_users_table():
         return None
-    user = User()
-    user.id = username
+    user = User(username)
     return user
 
 
@@ -193,8 +194,7 @@ def login() -> WerkzeugResponse | str | Response:
     username = request.form['username']
     users_table = build_users_table()
     if username in users_table and check_password_hash(users_table[username]['password'], request.form['password']):
-        user = User()
-        user.id = username
+        user = User(username)
         flask_login.login_user(user)
         flash(Markup('Logged in as: {}').format(flask_login.current_user.id), 'success')
     else:
@@ -499,28 +499,27 @@ def disabled_pages() -> None:
 
 @app.before_request
 def before_request() -> None:
-    if flask_login.current_user.is_authenticated:
-        # no need to check anything
-        return
     to_check: str | None = None
-    if request.view_args and 'tree_uuid' in request.view_args:
-        to_check = request.view_args['tree_uuid']
-    if request.view_args and 'capture_uuid' in request.view_args:
-        to_check = request.view_args['capture_uuid']
-    if not to_check:
-        # no capture UUID in this request, continue
-        return
-    if not lookyloo.capture_is_private(to_check):
-        # Not private, we good
-        return
-    if seed := request.args.get('seed'):
+    if 'known_private' not in session:
+        session['known_private'] = {}
+    if request.view_args:
+        if 'tree_uuid' in request.view_args:
+            to_check = request.view_args['tree_uuid']
+        elif 'capture_uuid' in request.view_args:
+            to_check = request.view_args['capture_uuid']
+    if to_check and lookyloo.capture_is_private(to_check):
+        # got a uuid, it is a private capture
+        # get a seed from the URL or from the session
+        seed = request.args.get('seed', session['known_private'].get(to_check))
         if lookyloo.capture_seed_valid(to_check, seed):
-            # we good
-            return
+            session['known_private'][to_check] = seed
+        elif flask_login.current_user.is_authenticated:
+            # force a new seed
+            seed, _ = lookyloo.add_seed(to_check, None)
+            session['known_private'][to_check] = seed
         else:
-            raise LookylooPrivateCapture(f'Private capture, invalid or expired seed for {to_check}.')
-    else:
-        raise LookylooPrivateCapture(f'Private capture, seed required (or login) for {to_check}.')
+            # just in case we have the UUID in the session, the seed is invalid
+            session['known_private'].pop(to_check, None)
 
 
 @app.after_request
@@ -656,11 +655,15 @@ def _get_body_hash_investigator(body_hash: str, offset: int | None=None, limit: 
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_body_hash(body_hash)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_body_hash(body_hash=body_hash, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     captures = []
     for cache in cached_captures:
         nodes_info: list[tuple[str, str]] = []
@@ -675,7 +678,7 @@ def _get_body_hash_investigator(body_hash: str, offset: int | None=None, limit: 
 
 
 def get_all_body_hashes(capture_uuid: str, /) -> dict[str, Any]:
-    cache = lookyloo.capture_cache(capture_uuid)
+    cache = lookyloo.capture_cache(capture_uuid, seed=session['known_private'].get(capture_uuid))
     to_return: dict[str, dict[str, int | str | list[tuple[URLNode, bool]]]] = defaultdict()
     for node in cache.tree.root_hartree.url_tree.traverse():
         if node.empty_response:
@@ -701,11 +704,15 @@ def get_hostname_investigator(hostname: str, offset: int | None=None, limit: int
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_hostname(hostname)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_hostname(hostname=hostname, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     _captures = [(cache, get_indexing(flask_login.current_user).get_capture_hostname_nodes(cache.uuid, hostname)) for cache in cached_captures]
     captures = []
     for cache, nodes in _captures:
@@ -726,11 +733,15 @@ def get_domain_investigator(domain: str, offset: int | None=None, limit: int | N
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_domain(domain)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_domain(domain=domain, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     _captures = [(cache, get_indexing(flask_login.current_user).get_capture_domain_nodes(cache.uuid, domain)) for cache in cached_captures]
     captures = []
     for cache, nodes in _captures:
@@ -751,11 +762,15 @@ def get_tld_investigator(tld: str, offset: int | None=None, limit: int | None=No
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_tld(tld)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_tld(tld=tld, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     _captures = [(cache, get_indexing(flask_login.current_user).get_capture_tld_nodes(cache.uuid, tld)) for cache in cached_captures]
     captures = []
     for cache, nodes in _captures:
@@ -776,11 +791,15 @@ def get_ip_investigator(ip: str, offset: int | None=None, limit: int | None=None
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_ip(ip)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_ip(ip=ip, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     _captures = [(cache, get_indexing(flask_login.current_user).get_capture_ip_nodes(cache.uuid, ip)) for cache in cached_captures]
     captures = []
     for cache, nodes in _captures:
@@ -796,7 +815,7 @@ def get_ip_investigator(ip: str, offset: int | None=None, limit: int | None=None
 
 
 def get_all_ips(capture_uuid: str, /) -> dict[str, Any]:
-    cache = lookyloo.capture_cache(capture_uuid)
+    cache = lookyloo.capture_cache(capture_uuid, seed=session['known_private'].get(capture_uuid))
     to_return: dict[str, dict[str, list[URLNode] | int]] = defaultdict()
     for urlnode in cache.tree.root_hartree.url_tree.traverse():
         ip: ipaddress.IPv4Address | ipaddress.IPv6Address | None = None
@@ -827,7 +846,7 @@ def get_all_cloudflare_ns(capture_uuid: str, /) -> dict[str, Any]:
 
 
 def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, Any]]:
-    cache = lookyloo.capture_cache(capture_uuid)
+    cache = lookyloo.capture_cache(capture_uuid, seed=session['known_private'].get(capture_uuid))
     to_return: dict[str, dict[str, list[URLNode] | int | str]] = defaultdict()
     for node in cache.tree.root_hartree.url_tree.traverse():
         if not node.hostname:
@@ -850,7 +869,7 @@ def get_all_hostnames(capture_uuid: str, /) -> dict[str, dict[str, Any]]:
 
 
 def get_all_urls(capture_uuid: str, /) -> dict[str, dict[str, int | str]]:
-    cache = lookyloo.capture_cache(capture_uuid)
+    cache = lookyloo.capture_cache(capture_uuid, seed=session['known_private'].get(capture_uuid))
     to_return: dict[str, dict[str, int | str]] = defaultdict()
     for node in cache.tree.root_hartree.url_tree.traverse():
         if not node.name:
@@ -870,11 +889,15 @@ def get_url_investigator(url: str, offset: int | None=None, limit: int | None=No
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_url(url)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_url(url=url, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     _captures = [(cache.tree, cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_url_nodes(cache.uuid, url)) for cache in cached_captures]
     captures = []
     for tree, capture_uuid, capture_title, landing_page, capture_ts, nodes in _captures:
@@ -895,11 +918,15 @@ def get_cookie_name_investigator(cookie_name: str, offset: int | None=None, limi
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_cookies_name(cookie_name)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_cookies_name(cookie_name=cookie_name, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     _captures = [(cache.tree, cache.uuid, cache.title, cache.redirects[-1], cache.timestamp, get_indexing(flask_login.current_user).get_capture_cookie_name_nodes(cache.uuid, cookie_name)) for cache in cached_captures]
     captures = []
     for tree, capture_uuid, capture_title, landing_page, capture_ts, nodes in _captures:
@@ -920,11 +947,15 @@ def get_identifier_investigator(identifier_type: str, identifier: str, offset: i
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_identifier(identifier_type, identifier)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_identifier(identifier_type=identifier_type, identifier=identifier, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     return total, [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
@@ -934,11 +965,15 @@ def get_capture_hash_investigator(hash_type: str, h: str, offset: int | None=Non
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_hash_type(hash_type, h)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_hash_type(hash_type=hash_type, h=h, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     return total, [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
@@ -948,11 +983,15 @@ def get_favicon_investigator(favicon_sha512: str, offset: int | None=None, limit
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_favicon(favicon_sha512)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_favicon(favicon_sha512=favicon_sha512, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     return total, [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
@@ -962,11 +1001,15 @@ def get_hhh_investigator(hhh: str, offset: int | None=None, limit: int | None=No
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_hhhash(hhh)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_hhhash(hhh, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
 
     _captures = [(cache, get_indexing(flask_login.current_user).get_capture_hhhash_nodes(cache.uuid, hhh)) for cache in cached_captures]
     captures = []
@@ -988,15 +1031,19 @@ def get_cloudflare_ns_investigator(cloudflare_ns: str, offset: int | None=None, 
     if search:
         cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
             [uuid for uuid, _ in get_indexing(flask_login.current_user).scan_captures_cloudflare_ns(cloudflare_ns)],
-            cached_captures_only=False) if capture.search(search)]
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
     else:
         cached_captures = lookyloo.sorted_capture_cache(
             get_indexing(flask_login.current_user).get_captures_cloudflare_ns(cloudflare_ns_key=cloudflare_ns, offset=offset, limit=limit),
-            cached_captures_only=False)
+            cached_captures_only=False,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
     return total, [(cache.uuid, cache.title, cache.redirects[-1], cache.timestamp) for cache in cached_captures]
 
 
-def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[HostNode, list[dict[str, Any]]]:
+def get_hostnode_investigator(capture: CaptureCache, /, node_uuid: str) -> tuple[HostNode, list[dict[str, Any]]]:
     '''Gather all the informations needed to display the Hostnode investigator popup.'''
 
     def normalize_known_content(h: str, /, known_content: dict[str, Any], url: URLNode) -> tuple[str | list[Any] | None, tuple[bool, Any] | None]:
@@ -1019,8 +1066,7 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
 
         return known, legitimate
 
-    cache = lookyloo.capture_cache(capture_uuid)
-    hostnode = lookyloo.get_hostnode_from_tree(cache.tree, node_uuid)
+    hostnode = lookyloo.get_hostnode_from_tree(capture.tree, node_uuid)
 
     known_content = lookyloo.context.find_known_content(hostnode)
 
@@ -1083,7 +1129,7 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
         if hasattr(url, 'cookies_received'):
             to_display_received: dict[str, dict[str, set[Iterable[str | None]]]] = {'3rd_party': defaultdict(set), 'sent': defaultdict(set), 'not_sent': defaultdict(set)}
             for domain, c_received, is_3rd_party in url.cookies_received:
-                if c_received not in cache.tree.root_hartree.cookies_sent:
+                if c_received not in capture.tree.root_hartree.cookies_sent:
                     # This cookie is never sent.
                     if is_3rd_party:
                         to_display_received['3rd_party'][c_received].add((domain, ))
@@ -1091,7 +1137,7 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
                         to_display_received['not_sent'][c_received].add((domain, ))
                     continue
 
-                for url_node in cache.tree.root_hartree.cookies_sent[c_received]:
+                for url_node in capture.tree.root_hartree.cookies_sent[c_received]:
                     if is_3rd_party:
                         to_display_received['3rd_party'][c_received].add((url_node.hostname, url_node.hostnode_uuid))
                     else:
@@ -1107,7 +1153,8 @@ def get_hostnode_investigator(capture_uuid: str, /, node_uuid: str) -> tuple[Hos
 @app.route('/tree/<uuid:tree_uuid>/host/<uuid:node_uuid>/hashes', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def hashes_hostnode(tree_uuid: str, node_uuid: str) -> Response:
-    success, hashes = lookyloo.get_hashes(tree_uuid, hostnode_uuid=node_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, hashes = lookyloo.get_hashes(capture, hostnode_uuid=node_uuid)
     if success:
         return send_file(BytesIO('\n'.join(hashes).encode()),
                          mimetype='test/plain', as_attachment=True, download_name=f'{tree_uuid}_hashes.{node_uuid}.txt')
@@ -1117,21 +1164,22 @@ def hashes_hostnode(tree_uuid: str, node_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/host/<uuid:node_uuid>/text', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def urls_hostnode(tree_uuid: str, node_uuid: str) -> Response:
-    cache = lookyloo.capture_cache(tree_uuid)
-    hostnode = lookyloo.get_hostnode_from_tree(cache.tree, node_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    hostnode = lookyloo.get_hostnode_from_tree(capture.tree, node_uuid)
     return send_file(BytesIO('\n'.join(url.name for url in hostnode.urls).encode()),
                      mimetype='test/plain', as_attachment=True, download_name=f'{tree_uuid}_urls.{node_uuid}.txt')
 
 
 @app.route('/tree/<uuid:tree_uuid>/host/<uuid:node_uuid>', methods=['GET'])
 def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | Response:
-    hostnode, urls = get_hostnode_investigator(tree_uuid, node_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    hostnode, urls = get_hostnode_investigator(capture, node_uuid)
 
     url_in_address_bar: str | None = None
     diff: str | None = None
     if hostnode.contains_rendered_urlnode:
         url_in_address_bar = '<Unable to load URL from address bar>'
-        if u := lookyloo.get_last_url_in_address_bar(tree_uuid):
+        if u := lookyloo.get_last_url_in_address_bar(capture):
             url_in_address_bar = unquote_plus(u)
         # we shouldn't havemore than one URL in that node, but it's for sure going to happen, so
         # let's take the first URL node only
@@ -1140,7 +1188,7 @@ def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | R
             diff = '\n'.join(d.compare([urls[0]['url_object'].name], [url_in_address_bar]))
     return render_template('tree/hostname_popup.html',
                            tree_uuid=tree_uuid,
-                           seed=request.args.get('seed'),
+                           seed=session['known_private'].get(tree_uuid),
                            hostnode_uuid=node_uuid,
                            hostnode=hostnode,
                            last_url_in_address_bar=url_in_address_bar,
@@ -1158,8 +1206,9 @@ def hostnode_popup(tree_uuid: str, node_uuid: str) -> str | WerkzeugResponse | R
 def trigger_modules(tree_uuid: str) -> WerkzeugResponse | str | Response:
     force = True if (request.args.get('force') and request.args.get('force') == 'True') else False
     auto_trigger = True if (request.args.get('auto_trigger') and request.args.get('auto_trigger') == 'True') else False
-    lookyloo.trigger_modules(tree_uuid, force=force, auto_trigger=auto_trigger, as_admin=flask_login.current_user.is_authenticated)
-    return redirect(url_for('modules', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    lookyloo.trigger_modules(capture, force=force, auto_trigger=auto_trigger, as_admin=flask_login.current_user.is_authenticated)
+    return redirect(url_for('modules', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
 
 
 @app.route('/tree/<uuid:tree_uuid>/historical_lookups', methods=['GET'])
@@ -1167,13 +1216,13 @@ def historical_lookups(tree_uuid: str) -> str | WerkzeugResponse | Response:
     force = True if (request.args.get('force') and request.args.get('force') == 'True') else False
     auto_trigger = True if (request.args.get('auto_trigger') and request.args.get('auto_trigger') == 'True') else False
     circl_pdns_queries: set[str | None] = set()
-    cache = lookyloo.capture_cache(tree_uuid)
-    triggered = lookyloo.circl_pdns.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger,
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    triggered = lookyloo.circl_pdns.capture_default_trigger(capture, force=force, auto_trigger=auto_trigger,
                                                             as_admin=flask_login.current_user.is_authenticated)
     if 'error' in triggered:
         flash(Markup('Unable to trigger the historical lookup: {}').format(triggered["error"]), 'error')
     else:
-        circl_pdns_queries = {urlparse(url).hostname for url in cache.redirects if urlparse(url).scheme in ['http', 'https'] and urlparse(url).hostname is not None}
+        circl_pdns_queries = {urlparse(url).hostname for url in capture.redirects if urlparse(url).scheme in ['http', 'https'] and urlparse(url).hostname is not None}
     return render_template('tree/modals/historical_lookups.html', circl_pdns_queries=circl_pdns_queries)
 
 
@@ -1188,16 +1237,17 @@ def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
             can_categorize = True
         else:
             can_categorize = False
-        cache = lookyloo.capture_cache(tree_uuid)
-        if not hasattr(cache, 'timestamp'):
+        capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+        if not hasattr(capture, 'timestamp'):
             flash(f'No timestamp in capture {tree_uuid}')
             app.logger.warning(f'No timestamp in capture {tree_uuid}')
             return redirect(url_for('index'))
-        current_categories = cache.categories
+        current_categories = capture.categories
         # only allow categorizing as user if the capture is less than 24h old
-        if not flask_login.current_user.is_authenticated and cache.timestamp >= datetime.now().astimezone() - timedelta(days=1):
+        if not flask_login.current_user.is_authenticated and capture.timestamp >= datetime.now().astimezone() - timedelta(days=1):
             can_categorize = True
-        return render_template('tree/modals/categories_view.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
+        return render_template('tree/modals/categories_view.html', tree_uuid=tree_uuid,
+                               seed=session['known_private'].get(tree_uuid),
                                current_categories=current_categories,
                                can_categorize=can_categorize,
                                taxonomy=taxonomies.get('content-classification'))
@@ -1205,31 +1255,34 @@ def categories_capture(tree_uuid: str) -> str | WerkzeugResponse | Response:
     # Got a POST
     # If admin, we can remove categories, otherwise, we only add new ones.
     categories = request.form.getlist('categories')
-    current, error = lookyloo.categorize_capture(tree_uuid, categories,
+    current, error = lookyloo.categorize_capture(capture, categories,
                                                  as_admin=flask_login.current_user.is_authenticated)
     if current:
         flash(Markup("Current categories {}").format(', '.join(current)), 'success')
     if error:
         flash(Markup("Unable to add categories {}").format(', '.join(error)), 'error')
-    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
 
 
 @app.route('/tree/<uuid:tree_uuid>/stats', methods=['GET'])
 def stats(tree_uuid: str) -> str:
-    stats = lookyloo.get_statistics(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    stats = lookyloo.get_statistics(capture)
     return render_template('tree/modals/statistics.html', uuid=tree_uuid, stats=stats)
 
 
 @app.route('/tree/<uuid:tree_uuid>/trusted_timestamp/<string:name>', methods=['GET'])
 def trusted_timestamp_tsr(tree_uuid: str, name: str) -> Response:
-    if tsr := lookyloo.get_trusted_timestamp(tree_uuid, name):
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    if tsr := lookyloo.get_trusted_timestamp(capture, name):
         return send_file(BytesIO(tsr), as_attachment=True, download_name=f'{tree_uuid}_{name}.tsr')
     return send_file(BytesIO(f'No trusted timestamp for {name}'.encode()), as_attachment=True, download_name='empty.txt')
 
 
 @app.route('/tree/<uuid:tree_uuid>/all_trusted_timestamp', methods=['GET'])
 def all_trusted_timestamp(tree_uuid: str) -> Response:
-    bundle = lookyloo.bundle_all_trusted_timestamps(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    bundle = lookyloo.bundle_all_trusted_timestamps(capture)
     if isinstance(bundle, BytesIO):
         return send_file(bundle, as_attachment=True, download_name=f'{tree_uuid}_all_trusted_timestamps.zip')
     return send_file(BytesIO(f'No trusted timestamp for {tree_uuid}'.encode()), as_attachment=True, download_name='empty.txt')
@@ -1238,7 +1291,8 @@ def all_trusted_timestamp(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/download_elements', methods=['GET'])
 def download_elements(tree_uuid: str) -> str:
     error: str | None
-    tts = lookyloo.check_trusted_timestamps(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    tts = lookyloo.check_trusted_timestamps(capture)
     tt_entries: dict[str, tuple[datetime, str, bool]]
     if isinstance(tts, dict):
         error = list(tts.values())[0]
@@ -1247,12 +1301,12 @@ def download_elements(tree_uuid: str) -> str:
     else:
         error = None
         tt_entries, cert = tts
-    cache = lookyloo.capture_cache(tree_uuid)
-    parent_uuid = True if cache.parent else False
-    has_downloads, _, _ = lookyloo.get_data(tree_uuid)
-    has_video, _, _ = lookyloo.get_video(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    parent_uuid = True if capture.parent else False
+    has_downloads, _, _ = lookyloo.get_data(capture)
+    has_video, _, _ = lookyloo.get_video(capture)
     return render_template('tree/modals/download_elements.html', tree_uuid=tree_uuid,
-                           seed=request.args.get('seed'),
+                           seed=session['known_private'].get(tree_uuid),
                            tt_entries=tt_entries, parent_uuid=parent_uuid,
                            b64_certificate=cert, error=error,
                            has_downloads=has_downloads,
@@ -1263,7 +1317,8 @@ def download_elements(tree_uuid: str) -> str:
 def get_downloaded_file(tree_uuid: str) -> Response:
     # NOTE: it can be 0
     index_in_zip = int(request.args['index_in_zip']) if 'index_in_zip' in request.args else None
-    success, filename, file = lookyloo.get_data(tree_uuid, index_in_zip=index_in_zip)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, filename, file = lookyloo.get_data(capture, index_in_zip=index_in_zip)
     if success:
         return send_file(file, as_attachment=True, download_name=f'{tree_uuid}_{filename}')
     return make_response('Unable to get the downloaded file.', 404)
@@ -1272,9 +1327,10 @@ def get_downloaded_file(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/downloads', methods=['GET'])
 def downloads(tree_uuid: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    success, filename, file = lookyloo.get_data(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, filename, file = lookyloo.get_data(capture)
     if not success:
-        return render_template('tree/modals/downloads.html', uuid=tree_uuid, files=None, seed=request.args.get('seed'))
+        return render_template('tree/modals/downloads.html', uuid=tree_uuid, files=None, seed=session['known_private'].get(tree_uuid))
     if filename and file:
         if filename.strip() == f'{tree_uuid}_multiple_downloads.zip':
             # We have a zipfile containing all the files downloaded during the capture
@@ -1289,7 +1345,7 @@ def downloads(tree_uuid: str) -> str:
 
     # TODO: add other info (like the mimetype)
     return render_template('tree/modals/downloads.html', tree_uuid=tree_uuid, files=files,
-                           seed=request.args.get('seed'),
+                           seed=session['known_private'].get(tree_uuid),
                            has_pandora=lookyloo.pandora.available, from_popup=from_popup)
 
 
@@ -1298,7 +1354,8 @@ def get_video(tree_uuid: str) -> Response:
     # NOTE: it can be 0
     index_in_zip = int(request.args['index_in_zip']) if 'index_in_zip' in request.args else None
     play_in_browser = bool(request.args['play_in_browser']) if 'play_in_browser' in request.args else False
-    success, filename, file = lookyloo.get_video(tree_uuid, index_in_zip=index_in_zip)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, filename, file = lookyloo.get_video(capture, index_in_zip=index_in_zip)
     if success:
         if play_in_browser:
             return send_file(file, as_attachment=False, mimetype='video/webm')
@@ -1310,9 +1367,10 @@ def get_video(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/videos', methods=['GET'])
 def videos(tree_uuid: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
-    success, filename, file = lookyloo.get_video(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, filename, file = lookyloo.get_video(capture)
     if not success:
-        return render_template('tree/modals/video.html', uuid=tree_uuid, files=None, seed=request.args.get('seed'))
+        return render_template('tree/modals/video.html', uuid=tree_uuid, files=None, seed=session['known_private'].get(tree_uuid))
     if filename and file:
         if filename.strip() == f'{tree_uuid}_multiple_videos.zip':
             # We have a zipfile containing all the videos generated during the capture
@@ -1326,7 +1384,7 @@ def videos(tree_uuid: str) -> str:
         files = [('Nothing there.', )]
 
     return render_template('tree/modals/video.html', tree_uuid=tree_uuid, files=files,
-                           seed=request.args.get('seed'), from_popup=from_popup)
+                           seed=session['known_private'].get(tree_uuid), from_popup=from_popup)
 
 
 @app.route('/tree/<uuid:tree_uuid>/storage_state', methods=['GET'])
@@ -1334,7 +1392,8 @@ def videos(tree_uuid: str) -> str:
 def storage_state(tree_uuid: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     storage = {}
-    success, storage_file = lookyloo.get_storage_state(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, storage_file = lookyloo.get_storage_state(capture)
     if success and storage_file and storage_file.getvalue():
         storage = orjson.loads(storage_file.getvalue())
         if 'cookies' in storage:
@@ -1350,7 +1409,7 @@ def storage_state(tree_uuid: str) -> str:
                             opfs['mimetype'] = m.mime_type
                             opfs['filename'] = PurePath(opfs['path']).name
 
-    return render_template('tree/modals/storage.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
+    return render_template('tree/modals/storage.html', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid),
                            storage=storage, from_popup=from_popup)
 
 
@@ -1358,10 +1417,11 @@ def storage_state(tree_uuid: str) -> str:
 def console_messages(tree_uuid: str) -> str:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     messages = []
-    success, console_messages = lookyloo.get_console_messages(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, console_messages = lookyloo.get_console_messages(capture)
     if success and console_messages and console_messages.getvalue():
         messages = orjson.loads(console_messages.getvalue())
-    return render_template('tree/modals/console_messages.html', tree_uuid=tree_uuid, seed=request.args.get('seed'),
+    return render_template('tree/modals/console_messages.html', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid),
                            messages=messages, from_popup=from_popup)
 
 
@@ -1380,6 +1440,7 @@ def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     else:
         current_misp = lookyloo.misps.default_instance
 
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
     misps_occurrences = {}
     for instance_name, instance in lookyloo.misps.items():
         if instance.admin_only and not as_admin:
@@ -1387,7 +1448,7 @@ def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
         if not current_misp:
             # Pick the first one we can
             current_misp = instance_name
-        if occurrences := lookyloo.get_misp_occurrences(tree_uuid,
+        if occurrences := lookyloo.get_misp_occurrences(capture,
                                                         as_admin=as_admin,
                                                         instance_name=instance_name):
             misps_occurrences[instance_name] = occurrences
@@ -1401,10 +1462,11 @@ def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if request.method == 'GET':
         # Only bots land in this page, avoid log entries.
         flash('Only support POST calls.', 'error')
-        return make_response(redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed'))), 405)
+        return make_response(redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid))), 405)
 
     if remote_lookyloo_url := request.form.get('remote_lookyloo_url'):
-        success, to_push = lookyloo.get_capture(tree_uuid)
+        capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+        success, to_push = lookyloo.get_capture(capture)
         if success:
             pylookyloo = PyLookyloo(remote_lookyloo_url)
             try:
@@ -1418,34 +1480,35 @@ def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
             flash(f'Capture {tree_uuid} does not exist ?!', 'error')
     else:
         flash('Remote Lookyloo URL missing.', 'error')
-    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
 
 
 @app.route('/tree/<uuid:tree_uuid>/misp_push', methods=['GET', 'POST'])
 def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
     if not lookyloo.misps.available:
         flash('There are no MISP instances available.', 'error')
-        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
+        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=session['known_private'].get(tree_uuid))
 
-    as_admin = flask_login.current_user.is_authenticated
-    if not as_admin and not lookyloo.misps.has_public_misp:
+    if not flask_login.current_user.is_authenticated and not lookyloo.misps.has_public_misp:
         flash('You need to be authenticated to push to MISP.', 'error')
-        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
+        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=session['known_private'].get(tree_uuid))
 
-    event = lookyloo.misp_export(tree_uuid, as_admin=as_admin)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    event = lookyloo.misp_export(capture, session_known_private=session['known_private'],
+                                 session_is_admin=flask_login.current_user.is_authenticated)
     if isinstance(event, dict):
         flash(Markup('Unable to generate the MISP export: {}').format(event), 'error')
-        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=request.args.get('seed'))
+        return render_template('tree/modals/misp_push_view.html', nothing_to_see=True, seed=session['known_private'].get(tree_uuid))
 
     if request.method == 'GET':
         # Initialize settings that will be displayed on the template
         misp_instances_settings = {}
-        if not as_admin and lookyloo.misps.default_misp.admin_only:
+        if not flask_login.current_user.is_authenticated and lookyloo.misps.default_misp.admin_only:
             current_misp = None
         else:
             current_misp = lookyloo.misps.default_instance
         for name, instance in lookyloo.misps.items():
-            if instance.admin_only and not as_admin:
+            if instance.admin_only and not flask_login.current_user.is_authenticated:
                 continue
 
             if not current_misp:
@@ -1461,32 +1524,33 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
             if existing_misp_url := instance.get_existing_event_url(event[-1].attributes[0].value):
                 misp_instances_settings[name]['existing_event'] = existing_misp_url
 
-        cache = lookyloo.capture_cache(tree_uuid)
         return render_template('tree/modals/misp_push_view.html',
                                current_misp=current_misp,
                                tree_uuid=tree_uuid,
-                               seed=request.args.get('seed'),
+                               seed=session['known_private'].get(tree_uuid),
                                event=event[0],
                                misp_instances_settings=misp_instances_settings,
-                               has_parent=True if cache and cache.parent else False)
+                               has_parent=True if capture and capture.parent else False)
 
     else:
         # event is a MISPEvent at this point
         misp_instance_name = request.form.get('misp_instance_name')
         if not misp_instance_name or misp_instance_name not in lookyloo.misps:
             flash(Markup('MISP instance {} is unknown.').format(misp_instance_name), 'error')
-            return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+            return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
         misp = lookyloo.misps[misp_instance_name]
         if not misp.enable_push:
             flash('Push not enabled in MISP module.', 'error')
-            return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+            return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
         # Submit the event
         tags = request.form.getlist('tags')
         error = False
         events: list[MISPEvent] = []
         with_parents = request.form.get('with_parents')
         if with_parents:
-            exports = lookyloo.misp_export(tree_uuid, True, as_admin=flask_login.current_user.is_authenticated)
+            exports = lookyloo.misp_export(capture, bool(with_parents),
+                                           session_known_private=session['known_private'],
+                                           session_is_admin=flask_login.current_user.is_authenticated)
             if isinstance(exports, dict):
                 flash(Markup('Unable to create event: {}').format(exports), 'error')
                 error = True
@@ -1496,7 +1560,7 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
             events = event
 
         if error:
-            return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+            return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
 
         for e in events:
             for tag in tags:
@@ -1506,7 +1570,7 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
         events[-1].info = request.form.get('event_info', 'Lookyloo Event')
 
         try:
-            new_events = misp.push(events, as_admin=as_admin,
+            new_events = misp.push(events, as_admin=flask_login.current_user.is_authenticated,
                                    allow_duplicates=True if request.form.get('force_push') else False,
                                    auto_publish=True if request.form.get('auto_publish') else False,
                                    )
@@ -1518,12 +1582,13 @@ def web_misp_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
             else:
                 for e in new_events:
                     flash(Markup('MISP event <a href="{root_url}/events/view/{eid}" target="_blank">{eid}</a> created on {root_url}.').format(root_url=misp.client.root_url, eid=e.id), 'success')
-        return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+        return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
 
 
 @app.route('/tree/<uuid:tree_uuid>/modules', methods=['GET'])
 def modules(tree_uuid: str) -> str | WerkzeugResponse | Response:
-    modules_responses = lookyloo.get_modules_responses(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    modules_responses = lookyloo.get_modules_responses(capture)
     if not modules_responses:
         return render_template('tree/modals/modules.html', nothing_found=True)
 
@@ -1608,15 +1673,15 @@ def modules(tree_uuid: str) -> str | WerkzeugResponse | Response:
 @app.route('/tree/<uuid:tree_uuid>/redirects', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def redirects(tree_uuid: str) -> Response:
-    cache = lookyloo.capture_cache(tree_uuid)
-    if not hasattr(cache, 'redirects'):
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    if not hasattr(capture, 'redirects'):
         return Response('Not available.', mimetype='text/text')
-    if not cache.redirects:
+    if not capture.redirects:
         return Response('No redirects.', mimetype='text/text')
-    if cache.url == cache.redirects[0]:
-        to_return = BytesIO('\n'.join(cache.redirects).encode())
+    if capture.url == capture.redirects[0]:
+        to_return = BytesIO('\n'.join(capture.redirects).encode())
     else:
-        to_return = BytesIO('\n'.join([cache.url] + cache.redirects).encode())
+        to_return = BytesIO('\n'.join([capture.url] + capture.redirects).encode())
     return send_file(to_return, mimetype='text/text',
                      as_attachment=True, download_name=f'{tree_uuid}_redirects.txt')
 
@@ -1624,11 +1689,12 @@ def redirects(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/image', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def image(tree_uuid: str) -> Response:
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
     max_width = request.args.get('width')
     if max_width and max_width.isdigit():
-        to_return = lookyloo.get_screenshot_thumbnail(tree_uuid, width=int(max_width))
+        to_return = lookyloo.get_screenshot_thumbnail(capture, width=int(max_width))
     else:
-        success, to_return = lookyloo.get_screenshot(tree_uuid)
+        success, to_return = lookyloo.get_screenshot(capture)
         if not success:
             error_img = get_homedir() / 'website' / 'web' / 'static' / 'images' / 'ui' / 'error_screenshot.png'
             with open(error_img, 'rb') as f:
@@ -1640,7 +1706,8 @@ def image(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/data', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def data(tree_uuid: str) -> Response:
-    success, filename, data = lookyloo.get_data(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, filename, data = lookyloo.get_data(capture)
     if not success:
         return make_response(Response('No files.', mimetype='text/text'), 404)
 
@@ -1656,7 +1723,8 @@ def data(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/video', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def video(tree_uuid: str) -> Response:
-    success, filename, data = lookyloo.get_video(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, filename, data = lookyloo.get_video(capture)
     if not success:
         return make_response(Response('No videos.', mimetype='text/text'), 404)
 
@@ -1674,14 +1742,16 @@ def video(tree_uuid: str) -> Response:
 @cache.cached(timeout=300)
 @file_response  # type: ignore[untyped-decorator]
 def thumbnail(tree_uuid: str, width: int) -> Response:
-    to_return = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=False, width=width)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    to_return = lookyloo.get_screenshot_thumbnail(capture, for_datauri=False, width=width)
     return send_file(to_return, mimetype='image/png')
 
 
 @app.route('/tree/<uuid:tree_uuid>/html', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def html(tree_uuid: str) -> Response:
-    success, to_return = lookyloo.get_html(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, to_return = lookyloo.get_html(capture)
     if success:
         return send_file(to_return, mimetype='text/html',
                          as_attachment=True, download_name=f'{tree_uuid}_page.html')
@@ -1691,7 +1761,8 @@ def html(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/html_as_markdown', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def html_as_markdown(tree_uuid: str) -> Response:
-    success, to_return = lookyloo.get_html_as_md(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, to_return = lookyloo.get_html_as_md(capture)
     if success:
         return send_file(to_return, mimetype='text/markdown',
                          as_attachment=True, download_name=f'{tree_uuid}_page.md')
@@ -1701,7 +1772,8 @@ def html_as_markdown(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/cookies', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def cookies(tree_uuid: str) -> Response:
-    success, to_return = lookyloo.get_cookies(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, to_return = lookyloo.get_cookies(capture)
     if success:
         return send_file(to_return, mimetype='application/json',
                          as_attachment=True, download_name=f'{tree_uuid}_cookies.json')
@@ -1711,7 +1783,8 @@ def cookies(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/storage_state_download', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def storage_state_download(tree_uuid: str) -> Response:
-    success, to_return = lookyloo.get_storage_state(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, to_return = lookyloo.get_storage_state(capture)
     if success:
         return send_file(to_return, mimetype='application/json',
                          as_attachment=True, download_name=f'{tree_uuid}_storage_state.json')
@@ -1721,7 +1794,8 @@ def storage_state_download(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/frames_download', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def frames_download(tree_uuid: str) -> Response:
-    success, to_return = lookyloo.get_frames(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, to_return = lookyloo.get_frames(capture)
     if success:
         return send_file(to_return, mimetype='application/json',
                          as_attachment=True, download_name=f'{tree_uuid}_frames.json')
@@ -1731,7 +1805,8 @@ def frames_download(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/har_download', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def har_download(tree_uuid: str) -> Response:
-    success, to_return = lookyloo.get_har(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, to_return = lookyloo.get_har(capture)
     if success:
         # The file is gzipped by default unpack and return as json
         return send_file(BytesIO(gzip.decompress(to_return.getvalue())), mimetype='application/json',
@@ -1742,7 +1817,8 @@ def har_download(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/hashes', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def hashes_tree(tree_uuid: str) -> Response:
-    success, hashes = lookyloo.get_hashes(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, hashes = lookyloo.get_hashes(capture)
     if success:
         return send_file(BytesIO('\n'.join(hashes).encode()),
                          mimetype='test/plain', as_attachment=True, download_name=f'{tree_uuid}_hashes.txt')
@@ -1752,7 +1828,8 @@ def hashes_tree(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/export', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def export(tree_uuid: str) -> Response:
-    success, to_return = lookyloo.get_capture(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, to_return = lookyloo.get_capture(capture)
     if success:
         return send_file(to_return, mimetype='application/zip',
                          as_attachment=True, download_name=f'{tree_uuid}_capture.zip')
@@ -1762,24 +1839,26 @@ def export(tree_uuid: str) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/urls_rendered_page', methods=['GET'])
 def urls_rendered_page(tree_uuid: str) -> WerkzeugResponse | str | Response:
     try:
-        urls = lookyloo.get_urls_rendered_page(tree_uuid)
-        guessed_urls = lookyloo.get_guessed_urls(tree_uuid)
+        capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+        urls = lookyloo.get_urls_rendered_page(capture)
+        guessed_urls = lookyloo.get_guessed_urls(capture)
         return render_template('tree/modals/urls_rendered.html', base_tree_uuid=tree_uuid,
-                               seed=request.args.get('seed'),
+                               seed=session['known_private'].get(tree_uuid),
                                urls=urls, guessed_urls=guessed_urls)
     except LookylooException:
         flash('Unable to find the rendered node in this capture, cannot get the URLs.', 'error')
-        return render_template('tree/modals/urls_rendered.html', error='Unable to find the rendered node in this capture.', seed=request.args.get('seed'))
+        return render_template('tree/modals/urls_rendered.html', error='Unable to find the rendered node in this capture.', seed=session['known_private'].get(tree_uuid))
     except Exception as e:
         app.logger.warning(f'Unable to get URLs: {e}')
         flash('Unable to find the rendered node in this capture.', 'error')
-        return render_template('tree/modals/urls_rendered.html', error='Unable to find the rendered node in this capture.', seed=request.args.get('seed'))
+        return render_template('tree/modals/urls_rendered.html', error='Unable to find the rendered node in this capture.', seed=session['known_private'].get(tree_uuid))
 
 
 @app.route('/tree/<uuid:tree_uuid>/hashlookup', methods=['GET'])
 def hashlookup(tree_uuid: str) -> str | WerkzeugResponse | Response:
     try:
-        merged, total_ressources = lookyloo.merge_hashlookup_tree(tree_uuid, as_admin=flask_login.current_user.is_authenticated)
+        capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+        merged, total_ressources = lookyloo.merge_hashlookup_tree(capture, as_admin=flask_login.current_user.is_authenticated)
         # We only want unique URLs for the template
         for sha1, entries in merged.items():
             entries['nodes'] = {node.name for node in entries['nodes']}
@@ -1795,55 +1874,54 @@ def bulk_captures(tree_uuid: str) -> WerkzeugResponse | str | Response:
         user = flask_login.current_user.get_id()
     else:
         user = src_request_ip(request)
-    cache = lookyloo.capture_cache(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
 
     urls_to_capture: list[str] = []
     if selected_urls := request.form.getlist('url'):
-        _urls = lookyloo.get_urls_rendered_page(tree_uuid)
+        _urls = lookyloo.get_urls_rendered_page(capture)
         urls_to_capture += [_urls[int(selected_id) - 1] for selected_id in selected_urls]
     if selected_urls_guessed := request.form.getlist('guessed_url'):
-        _urls = lookyloo.get_guessed_urls(tree_uuid)
+        _urls = lookyloo.get_guessed_urls(capture)
         urls_to_capture += [_urls[int(selected_id) - 1] for selected_id in selected_urls_guessed]
     if user_urls := request.form.get('user_urls'):
         urls_to_capture += user_urls.strip().split('\n')
 
     if not urls_to_capture:
         flash('Please provide URLs to capture, none were selected.', 'warning')
-        return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+        return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
 
     storage_state: StorageStateSettings | None = None
-    success, storage_state_file = lookyloo.get_storage_state(tree_uuid)
+    success, storage_state_file = lookyloo.get_storage_state(capture)
     if success:
         if storage_state_content := storage_state_file.getvalue():
             storage_state = StorageStateSettings.model_validate(orjson.loads(storage_state_content))
-    original_capture_settings = lookyloo.get_capture_settings(tree_uuid)
     bulk_captures = []
     for url in urls_to_capture:
-        if original_capture_settings:
-            capture = original_capture_settings.model_copy(
+        if capture.capture_settings:
+            capture_settings = capture.capture_settings.model_copy(
                 update={
                     'url': url,
                     'storage': storage_state,
-                    'referer': cache.redirects[-1] if cache.redirects else cache.url,
-                    'user_agent': cache.user_agent,
+                    'referer': capture.redirects[-1] if capture.redirects else capture.url,
+                    'user_agent': capture.user_agent,
                     'parent': tree_uuid,
-                    'listing': False if cache and cache.no_index else True,
-                    'private': True if cache and cache.private else False,
+                    'listing': False if capture and capture.no_index else True,
+                    'private': True if capture and capture.private else False,
                     'uuid': None
                 })
         else:
             _capture: dict[str, Any] = {
                 'url': url,
                 'storage': storage_state,
-                'referer': cache.redirects[-1] if cache.redirects else cache.url,
-                'user_agent': cache.user_agent,
+                'referer': capture.redirects[-1] if capture.redirects else capture.url,
+                'user_agent': capture.user_agent,
                 'parent': tree_uuid,
-                'listing': False if cache and cache.no_index else True,
-                'private': True if cache and cache.private else False,
+                'listing': False if capture and capture.no_index else True,
+                'private': True if capture and capture.private else False,
                 'uuid': None
             }
-            capture = LookylooCaptureSettings.model_validate(_capture)
-        new_capture_uuid, seed = lookyloo.enqueue_capture(capture, source='web', user=user,
+            capture_settings = LookylooCaptureSettings.model_validate(_capture)
+        new_capture_uuid, seed = lookyloo.enqueue_capture(capture_settings, source='web', user=user,
                                                           authenticated=flask_login.current_user.is_authenticated,
                                                           seed_expire=lookyloo.default_seed_expire)
         bulk_captures.append((new_capture_uuid, url, seed))
@@ -1857,8 +1935,8 @@ def visibility(tree_uuid: str) -> WerkzeugResponse:
     Allow normal users to make a capture mode private (public -> unlisted -> private)
     But do not allow a normal user to make it less private.
     """
-    cache = lookyloo.capture_cache(tree_uuid)
-    seed = request.args.get('seed')
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    seed = session['known_private'].get(tree_uuid)
 
     v: Literal['public', 'unlisted', 'private'] | None = request.form.get('visibility')  # type: ignore[assignment]
     if not v or v not in ['public', 'unlisted', 'private']:
@@ -1876,9 +1954,9 @@ def visibility(tree_uuid: str) -> WerkzeugResponse:
                 lookyloo.change_visibility(tree_uuid, visibility=v)
                 flash('Successfully made the capture public.', 'success')
             else:
-                if cache.private:
+                if capture.private:
                     flash('The capture is private, only an administrator can make it public.', 'error')
-                elif cache.no_index:
+                elif capture.no_index:
                     flash('The capture is unlisted, only an administrator can make it public.', 'error')
                 else:
                     flash('The capture was already public.', 'warning')
@@ -1887,9 +1965,9 @@ def visibility(tree_uuid: str) -> WerkzeugResponse:
                 lookyloo.change_visibility(tree_uuid, visibility=v)
                 flash('Successfully unlisted the capture.', 'success')
             else:
-                if cache.private:
+                if capture.private:
                     flash('The capture is private, only an administrator can change it to unlisted.', 'error')
-                elif cache.no_index:
+                elif capture.no_index:
                     flash('The capture was already unlisted.', 'warning')
                 else:
                     lookyloo.change_visibility(tree_uuid, visibility=v)
@@ -1900,7 +1978,8 @@ def visibility(tree_uuid: str) -> WerkzeugResponse:
 @app.route('/tree/<uuid:tree_uuid>/remove', methods=['GET'])
 @flask_login.login_required  # type: ignore[untyped-decorator]
 def remove_capture(tree_uuid: str) -> WerkzeugResponse:
-    lookyloo.remove_capture(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    lookyloo.remove_capture(capture)
     flash(f'{tree_uuid} successfully removed.', 'success')
     return redirect(url_for('index'))
 
@@ -1921,7 +2000,8 @@ def rebuild_tree(tree_uuid: str) -> WerkzeugResponse:
 def tree_ollama_report(tree_uuid: str) -> str:
     try:
         olr = OllamaReport()
-        ai_export = lookyloo.ai_export(tree_uuid)
+        capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+        ai_export = lookyloo.ai_export(capture)
         report = olr.get_report(ai_export)
     except Exception as e:
         report = 'Unable to get the Ollama report'
@@ -1931,16 +2011,16 @@ def tree_ollama_report(tree_uuid: str) -> str:
 
 @app.route('/tree/<uuid:tree_uuid>/cache', methods=['GET'])
 def cache_tree(tree_uuid: str) -> WerkzeugResponse:
-    lookyloo.capture_cache(tree_uuid)
+    lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
     return redirect(url_for('index'))
 
 
 @app.route('/tree/<uuid:tree_uuid>/monitor', methods=['POST', 'GET'])
 def monitor(tree_uuid: str) -> WerkzeugResponse:
-    cache = lookyloo.capture_cache(tree_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
     if not lookyloo.monitoring:
         flash("Monitoring not enabled.", 'error')
-        return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+        return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
     if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
         app.logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
@@ -1951,7 +2031,7 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
     frequency: str = request.form.get('frequency', 'daily')
     expire_at: float | None = datetime.fromisoformat(request.form['expire_at']).timestamp() if request.form.get('expire_at') else None
     never_expire: bool = bool(request.form.get('never_expire', False))
-    if capture_settings := cache.capture_settings:
+    if capture_settings := capture.capture_settings:
         try:
             if capture_settings.private:
                 # Cannot monitor a private capture.
@@ -1964,7 +2044,7 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
                                                           never_expire=never_expire,
                                                           notification={'email': notification_email} if notification_email else None)
             if monitoring_uuid:
-                cache.monitor_uuid = monitoring_uuid
+                capture.monitor_uuid = monitoring_uuid
                 flash(f"Sent to monitoring ({monitoring_uuid}).", 'success')
                 if collection:
                     flash(f"See monitored captures in the same collection here: {lookyloo.monitoring_public_url}/monitored/{collection}.", 'success')
@@ -1977,13 +2057,13 @@ def monitor(tree_uuid: str) -> WerkzeugResponse:
             app.logger.exception('Unable to trigger monitoring')
     else:
         flash("Unable to get capture settings, cannot monitor.", 'error')
-    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
 
 
 @app.route('/tree/<uuid:tree_uuid>/send_mail', methods=['POST', 'GET'])
 def send_mail(tree_uuid: str) -> WerkzeugResponse:
     if not enable_mail_notification:
-        return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+        return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
     if request.form.get('name') or not request.form.get('confirm'):
         # got a bot.
         app.logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
@@ -1994,24 +2074,26 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
         # skip clearly incorrect emails
         email = ''
     comment: str = request.form['comment'] if request.form.get('comment') else ''
-    send_status = lookyloo.send_mail(tree_uuid, as_admin=flask_login.current_user.is_authenticated, email=email, comment=comment)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    send_status = lookyloo.send_mail(capture, as_admin=flask_login.current_user.is_authenticated, email=email, comment=comment)
     if not send_status:
         flash("Unable to send email notification.", 'error')
     elif isinstance(send_status, dict) and 'error' in send_status:
         flash(f"Unable to send email: {send_status['error']}", 'error')
     else:
         flash("Email notification sent", 'success')
-    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
 
 
 @app.route('/tree/<uuid:tree_uuid>/trigger_indexing', methods=['POST', 'GET'])
 def trigger_indexing(tree_uuid: str) -> WerkzeugResponse:
-    success, message = lookyloo.index_capture(tree_uuid, authenticated=flask_login.current_user.is_authenticated)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, message = lookyloo.index_capture(capture, authenticated=flask_login.current_user.is_authenticated)
     if success:
         flash(message, 'success')
     else:
         flash(message, 'error')
-    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=request.args.get('seed')))
+    return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
 
 
 @app.route('/tree/<uuid:tree_uuid>', methods=['GET'])
@@ -2021,12 +2103,12 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
         flash("Unable to process your request.", 'warning')
         return redirect(url_for('index'))
 
-    seed = request.args.get('seed')
+    seed = session['known_private'].get(tree_uuid)
     seed_expire_at = None
     if seed:
         seed_expire_at = lookyloo.get_seed_expire_at(seed)
     try:
-        cache = lookyloo.capture_cache(tree_uuid, force_update=True)
+        capture = lookyloo.capture_cache(tree_uuid, seed=seed, force_update=True)
     except UUIDMissingInCache:
         try:
             status = lookyloo.get_capture_status(tree_uuid)
@@ -2041,7 +2123,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                 message = "The capture is ongoing."
 
             remote_headed_session: RemoteHeadedSessionResponse = {}
-            if capture_settings := lookyloo.get_capture_settings(tree_uuid):
+            if capture_settings := lookyloo.get_capture_settings_queue(tree_uuid):
                 if capture_settings.remote_lacus_name and capture_settings.remote_headfull:
                     if _l := lookyloo.lacus.get(capture_settings.remote_lacus_name):
                         if isinstance(_l, PyLacus):
@@ -2053,7 +2135,8 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                         app.logger.warning(f'Unknown remote lacus name ({capture_settings.remote_lacus_name})')
                     if view_url := remote_headed_session.get('view_url'):
                         remote_headed_session['view_url'] = f"{view_url}?{urlencode({'callback': request.url})}"
-            return render_template('tree/tree_wait.html', message=message, tree_uuid=tree_uuid, remote_headed_session=remote_headed_session, seed=seed)
+            return render_template('tree/tree_wait.html', message=message, tree_uuid=tree_uuid, remote_headed_session=remote_headed_session,
+                                   seed=seed)
         except LacusUnreachable:
             message = "Unable to connect to the Lacus backend, the capture will start as soon as the administrator wakes up."
             return render_template('tree/tree_wait.html', message=message, tree_uuid=tree_uuid, seed=seed)
@@ -2075,36 +2158,36 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
         raise e
 
     try:
-        b64_thumbnail = lookyloo.get_screenshot_thumbnail(tree_uuid, for_datauri=True)
-        success, screenshot = lookyloo.get_screenshot(tree_uuid)
+        b64_thumbnail = lookyloo.get_screenshot_thumbnail(capture, for_datauri=True)
+        success, screenshot = lookyloo.get_screenshot(capture)
         if success:
             screenshot_size = screenshot.getbuffer().nbytes
         else:
             screenshot_size = 0
-        meta = lookyloo.get_meta(tree_uuid)
+        meta = lookyloo.get_meta(capture)
         # Get a potential favicon, if it exists
-        mime_favicon, b64_potential_favicon = lookyloo.get_potential_favicons(tree_uuid, all_favicons=False, for_datauri=True)
+        mime_favicon, b64_potential_favicon = lookyloo.get_potential_favicons(capture, all_favicons=False, for_datauri=True)
         hostnode_to_highlight = None
         if node_uuid:
             try:
-                urlnode = cache.tree.root_hartree.get_url_node_by_uuid(node_uuid)
+                urlnode = capture.tree.root_hartree.get_url_node_by_uuid(node_uuid)
                 if urlnode:
                     hostnode_to_highlight = urlnode.hostnode_uuid
             except IndexError:
                 # node_uuid is not a urlnode, trying a hostnode
                 try:
-                    hostnode = cache.tree.root_hartree.get_host_node_by_uuid(node_uuid)
+                    hostnode = capture.tree.root_hartree.get_host_node_by_uuid(node_uuid)
                     if hostnode:
                         hostnode_to_highlight = hostnode.uuid
                 except IndexError as e:
                     app.logger.info(f'Invalid uuid ({e}): {node_uuid}')
-        if cache.error:
-            flash(cache.error, 'warning')
+        if capture.error:
+            flash(capture.error, 'warning')
 
         enable_monitoring, monitoring_collections, monitoring_settings = prepare_monitoring()
-        if lookyloo.monitoring and enable_monitoring and cache.monitor_uuid:
+        if lookyloo.monitoring and enable_monitoring and capture.monitor_uuid:
             # the capture is already monitored, pass the URL
-            monitoring_url = f'{lookyloo.monitoring_public_url}/changes_tracking/{cache.monitor_uuid}'
+            monitoring_url = f'{lookyloo.monitoring_public_url}/changes_tracking/{capture.monitor_uuid}'
         else:
             monitoring_url = ''
 
@@ -2116,23 +2199,23 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
         else:
             capture_indexed = all(indexed)
             if not capture_indexed:
-                if not flask_login.current_user.is_authenticated and cache.private:
+                if not flask_login.current_user.is_authenticated and capture.private:
                     flash('The capture is private and cannot be indexed. Some correlations will be missing.', 'info')
                 else:
                     flash('The capture has not been indexed yet. Some correlations will be missing.', 'warning')
 
-        has_downloads, _, _ = lookyloo.get_data(tree_uuid)
+        has_downloads, _, _ = lookyloo.get_data(capture)
         if has_downloads:
             flash('Download(s) have been triggered during the capture. View them in Capture > Downloads.', 'info')
-        has_video, _, _ = lookyloo.get_video(tree_uuid)
+        has_video, _, _ = lookyloo.get_video(capture)
         if has_video:
             flash('Video(s) have been triggered during the capture. View them in Capture > Videos.', 'info')
         return render_template('tree/tree.html',
                                tree_uuid=tree_uuid, public_domain=lookyloo.public_domain,
                                seed=seed, seed_expire_at=seed_expire_at,
-                               info=cache,
+                               info=capture,
                                default_seed_expire=lookyloo.default_seed_expire,
-                               screenshot_thumbnail=b64_thumbnail, page_title=cache.title if hasattr(cache, 'title') else '',
+                               screenshot_thumbnail=b64_thumbnail, page_title=capture.title if hasattr(capture, 'title') else '',
                                favicon=b64_potential_favicon,
                                mime_favicon=mime_favicon,
                                screenshot_size=screenshot_size,
@@ -2150,16 +2233,16 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                blur_screenshot=blur_screenshot, urlnode_uuid=hostnode_to_highlight,
                                auto_trigger_modules=auto_trigger_modules,
                                confirm_message=confirm_message if confirm_message else 'Tick to confirm.',
-                               parent_uuid=cache.parent,
-                               has_redirects=True if cache.redirects else False,
+                               parent_uuid=capture.parent,
+                               has_redirects=True if capture.redirects else False,
                                has_downloads=has_downloads,
                                has_videos=has_video,
                                capture_indexed=capture_indexed,
-                               capture_settings=cache.capture_settings.model_dump(exclude_none=True) if cache.capture_settings else {})
+                               capture_settings=capture.capture_settings.model_dump(exclude_none=True) if capture.capture_settings else {})
 
     except (NoValidHarFile, TreeNeedsRebuild) as e:
         app.logger.info(f'[{tree_uuid}] The capture exists, but we cannot use the HAR files: {e}')
-        flash(Markup('Unable to build a tree for {uuid}: {error}.').format(uuid=tree_uuid, error=cache.error), 'warning')
+        flash(Markup('Unable to build a tree for {uuid}: {error}.').format(uuid=tree_uuid, error=capture.error), 'warning')
         return index_generic()
     finally:
         lookyloo.update_tree_cache_info(os.getpid(), 'website')
@@ -2168,11 +2251,12 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
 @app.route('/tree/<uuid:tree_uuid>/mark_as_legitimate', methods=['POST'])
 @flask_login.login_required  # type: ignore[untyped-decorator]
 def mark_as_legitimate(tree_uuid: str) -> Response:
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
     if request.data:
         legitimate_entries: dict[str, Any] = request.get_json(force=True)
-        lookyloo.add_to_legitimate(tree_uuid, **legitimate_entries)
+        lookyloo.add_to_legitimate(capture, **legitimate_entries)
     else:
-        lookyloo.add_to_legitimate(tree_uuid)
+        lookyloo.add_to_legitimate(capture)
     return jsonify({'message': 'Legitimate entry added.'})
 
 
@@ -2199,8 +2283,8 @@ def tree_body_hashes(tree_uuid: str) -> str:
 @app.route('/tree/<uuid:tree_uuid>/ips', methods=['GET'])
 def tree_ips(tree_uuid: str) -> str:
     proxified = False
-    cache = lookyloo.capture_cache(tree_uuid)
-    if cache.capture_settings and cache.capture_settings.proxy:
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    if capture.capture_settings and capture.capture_settings.proxy:
         proxified = True
     return render_template('tree/modals/tree_ips.html', tree_uuid=tree_uuid, proxified=proxified)
 
@@ -2233,8 +2317,9 @@ def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
         h_request = input_json.get('ressource_hash')
         # Submit a downloaded file
         index_in_zip = input_json.get('index_in_zip')
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
     if node_uuid:
-        ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_request)
+        ressource = lookyloo.get_ressource(capture, node_uuid, h_request)
         if ressource:
             filename, content, mimetype = ressource
         elif h_request:
@@ -2245,11 +2330,11 @@ def pandora_submit(tree_uuid: str) -> dict[str, Any] | Response:
         # Can be 0
         # Submit a file from the zip
         _i = int(index_in_zip)
-        success, filename, content = lookyloo.get_data(tree_uuid, index_in_zip=_i)
+        success, filename, content = lookyloo.get_data(capture, index_in_zip=_i)
         if not success or not filename or not content.getbuffer().nbytes:
             return {'error': f'Unable to find file {_i} in tree {tree_uuid}'}
     else:
-        success, filename, content = lookyloo.get_data(tree_uuid)
+        success, filename, content = lookyloo.get_data(capture)
 
     response = lookyloo.pandora.submit_file(content, filename)
     return jsonify(response)
@@ -2346,7 +2431,8 @@ def ressources() -> str:
             url_nodes = get_indexing(flask_login.current_user).get_capture_body_hash_nodes(capture_uuid, h)
             url_node = url_nodes.pop()
             try:
-                ressource = lookyloo.get_ressource(capture_uuid, url_node, h)
+                capture = lookyloo.capture_cache(capture_uuid, seed=session['known_private'].get(capture_uuid), quick=True)
+                ressource = lookyloo.get_ressource(capture, url_node, h)
             except UUIDMissingInCache:
                 # The capture is still indexed but not in the cache anymore (archived, removed)
                 continue
@@ -2493,8 +2579,8 @@ def _prepare_capture_template(user_ua: str | None, predefined_settings: dict[str
 
 @app.route('/recapture/<uuid:tree_uuid>', methods=['GET'])
 def recapture(tree_uuid: str) -> str | Response | WerkzeugResponse:
-    cache = lookyloo.capture_cache(tree_uuid)
-    if capture_settings := cache.capture_settings:
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    if capture_settings := capture.capture_settings:
         return _prepare_capture_template(user_ua=request.headers.get('User-Agent'),
                                          predefined_settings=capture_settings.model_dump(exclude_none=True))
     return _prepare_capture_template(user_ua=request.headers.get('User-Agent'))
@@ -2508,7 +2594,8 @@ def ressource_by_hash(sha512: str) -> Response:
         # got UUIDs for this hash
         capture_uuid, urlnode_uuid = uuids
         content_fallback += f' in capture "{capture_uuid}" and node "{urlnode_uuid}"'
-        if ressource := lookyloo.get_ressource(capture_uuid, urlnode_uuid, sha512):
+        capture = lookyloo.capture_cache(capture_uuid, seed=session['known_private'].get(capture_uuid))
+        if ressource := lookyloo.get_ressource(capture, urlnode_uuid, sha512):
             filename, body, mimetype = ressource
             return send_file(body, as_attachment=True, download_name=filename)
 
@@ -2865,7 +2952,7 @@ def hhh_detail(hhh: str) -> str:
     headers: list[tuple[str, str]] = []
     if capture_node := get_indexing(flask_login.current_user).get_node_for_headers(hhh):
         capture_uuid, node_uuid = capture_node
-        cache = lookyloo.capture_cache(capture_uuid)
+        cache = lookyloo.capture_cache(capture_uuid, seed=session['known_private'].get(capture_uuid))
         if urlnode := lookyloo.get_urlnode_from_tree(cache.tree, node_uuid):
             headers = [(header["name"], header["value"]) for header in urlnode.response['headers']]
     return render_template('investigate/hhh_details.html', hhh=hhh, headers=headers, from_popup=from_popup)
@@ -2916,7 +3003,8 @@ def body_hash_details(body_hash: str) -> str:
     if uuids := get_indexing(flask_login.current_user).get_hash_uuids(body_hash):
         # got UUIDs for this hash
         capture_uuid, urlnode_uuid = uuids
-        if ressource := lookyloo.get_ressource(capture_uuid, urlnode_uuid, body_hash):
+        capture = lookyloo.capture_cache(capture_uuid, seed=session['known_private'].get(capture_uuid))
+        if ressource := lookyloo.get_ressource(capture, urlnode_uuid, body_hash):
             filename, body, mimetype = ressource
             ressource_size = body.getbuffer().nbytes
             if mimetype_to_generic(mimetype) == 'image':
@@ -3074,8 +3162,8 @@ def whois(query: str, email_only: int=0) -> Response:
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/request_cookies', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def urlnode_request_cookies(tree_uuid: str, node_uuid: str) -> Response | None:
-    cache = lookyloo.capture_cache(tree_uuid)
-    urlnode = lookyloo.get_urlnode_from_tree(cache.tree, node_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    urlnode = lookyloo.get_urlnode_from_tree(capture.tree, node_uuid)
     if not urlnode.request_cookie:
         return None
 
@@ -3086,8 +3174,8 @@ def urlnode_request_cookies(tree_uuid: str, node_uuid: str) -> Response | None:
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/response_cookies', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def urlnode_response_cookies(tree_uuid: str, node_uuid: str) -> Response | None:
-    cache = lookyloo.capture_cache(tree_uuid)
-    urlnode = lookyloo.get_urlnode_from_tree(cache.tree, node_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    urlnode = lookyloo.get_urlnode_from_tree(capture.tree, node_uuid)
     if not urlnode.response_cookie:
         return None
 
@@ -3100,15 +3188,14 @@ def urlnode_response_cookies(tree_uuid: str, node_uuid: str) -> Response | None:
 def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str) -> Response | None:
     # Note: we could simplify it with lookyloo.get_urls_rendered_page, but if at somepoint,
     # we have multiple page rendered on one tree, it will be a problem.
-    cache = lookyloo.capture_cache(tree_uuid)
-    urlnode = lookyloo.get_urlnode_from_tree(cache.tree, node_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    urlnode = lookyloo.get_urlnode_from_tree(capture.tree, node_uuid)
     if not hasattr(urlnode, 'rendered_html') or not urlnode.rendered_html:
         return None
 
     to_return = StringIO()
-    cache = lookyloo.capture_cache(tree_uuid)
     not_loaded_urls = sorted(set(urlnode.urls_in_rendered_page)
-                             - set(cache.tree.root_hartree.all_url_requests.keys()))
+                             - set(capture.tree.root_hartree.all_url_requests.keys()))
     to_return.writelines([f'{u}\n' for u in not_loaded_urls])
     return send_file(BytesIO(to_return.getvalue().encode()), mimetype='text/plain',
                      as_attachment=True, download_name=f'{tree_uuid}_urls_in_rendered_content.txt')
@@ -3118,8 +3205,8 @@ def urlnode_urls_in_rendered_content(tree_uuid: str, node_uuid: str) -> Response
 @file_response  # type: ignore[untyped-decorator]
 def urlnode_rendered_content(tree_uuid: str, node_uuid: str) -> Response | None:
     try:
-        cache = lookyloo.capture_cache(tree_uuid)
-        urlnode = lookyloo.get_urlnode_from_tree(cache.tree, node_uuid)
+        capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+        urlnode = lookyloo.get_urlnode_from_tree(capture.tree, node_uuid)
     except IndexError:
         to_send = b"Unable to find rendered content, the tree seem to be broken. Please reload the page and try again."
         lookyloo.remove_pickle(tree_uuid)
@@ -3136,13 +3223,13 @@ def urlnode_rendered_content(tree_uuid: str, node_uuid: str) -> Response | None:
 def urlnode_post_request(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | str | Response | None:
     from_popup = True if (request.args.get('from_popup') and request.args.get('from_popup') == 'True') else False
     render_in_modal = True if (request.args.get('render_in_modal') and request.args.get('render_in_modal') == 'True') else False
-    cache = lookyloo.capture_cache(tree_uuid)
-    urlnode = lookyloo.get_urlnode_from_tree(cache.tree, node_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    urlnode = lookyloo.get_urlnode_from_tree(capture.tree, node_uuid)
 
     if render_in_modal:
         # return modal
         return render_template('tree/prettify_text.html',
-                               download_link=url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=node_uuid, seed=request.args.get('seed')),
+                               download_link=url_for('urlnode_post_request', tree_uuid=tree_uuid, node_uuid=node_uuid, seed=session['known_private'].get(tree_uuid)),
                                post_info=urlnode.posted_data_info if 'posted_data_info' in urlnode.features else None,
                                from_popup=from_popup)
 
@@ -3178,7 +3265,8 @@ def get_ressource(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | str | Re
         h_request = request.form.get('ressource_hash')
     else:
         h_request = None
-    ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_request)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    ressource = lookyloo.get_ressource(capture, node_uuid, h_request)
     if ressource:
         filename, to_return, mimetype = ressource
         if not mimetype.startswith('image'):
@@ -3191,7 +3279,7 @@ def get_ressource(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | str | Re
     if render_in_modal:
         # return modal
         return render_template('tree/prettify_text.html',
-                               download_link=url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=node_uuid, seed=request.args.get('seed')),
+                               download_link=url_for('get_ressource', tree_uuid=tree_uuid, node_uuid=node_uuid, seed=session['known_private'].get(tree_uuid)),
                                from_popup=from_popup)
     else:
         return send_file(to_return, mimetype=mimetype, as_attachment=True, download_name=filename)
@@ -3201,7 +3289,8 @@ def get_ressource(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | str | Re
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/ressource_preview/<sha512:h_ressource>', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def get_ressource_preview(tree_uuid: str, node_uuid: str, h_ressource: str | None=None) -> Response:
-    ressource = lookyloo.get_ressource(tree_uuid, node_uuid, h_ressource)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    ressource = lookyloo.get_ressource(capture, node_uuid, h_ressource)
     if not ressource:
         return Response('No preview available.', mimetype='text/text')
     filename, r, mimetype = ressource
@@ -3214,7 +3303,8 @@ def get_ressource_preview(tree_uuid: str, node_uuid: str, h_ressource: str | Non
 @app.route('/tree/<uuid:tree_uuid>/url/<uuid:node_uuid>/hashes', methods=['GET'])
 @file_response  # type: ignore[untyped-decorator]
 def hashes_urlnode(tree_uuid: str, node_uuid: str) -> Response:
-    success, hashes = lookyloo.get_hashes(tree_uuid, urlnode_uuid=node_uuid)
+    capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+    success, hashes = lookyloo.get_hashes(capture, urlnode_uuid=node_uuid)
     if success:
         return send_file(BytesIO('\n'.join(hashes).encode()),
                          mimetype='test/plain', as_attachment=True, download_name=f'{tree_uuid}_{node_uuid}_hashes.txt')
@@ -3247,11 +3337,10 @@ def add_context(tree_uuid: str, node_uuid: str) -> WerkzeugResponse | None:
         if context_data.get('legitimate_description'):
             legitimate_details['description'] = context_data['legitimate_description']
         details['legitimate'] = legitimate_details
-    lookyloo.add_context(tree_uuid, urlnode_uuid=node_uuid, ressource_hash=ressource_hash,
-                         legitimate=legitimate, malicious=malicious, details=details)
+    lookyloo.add_context(ressource_hash=ressource_hash, legitimate=legitimate, malicious=malicious, details=details)
     if callback_str == 'hostnode_popup':
-        cache = lookyloo.capture_cache(tree_uuid)
-        hostnode_uuid = lookyloo.get_urlnode_from_tree(cache.tree, node_uuid).hostnode_uuid
+        capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+        hostnode_uuid = lookyloo.get_urlnode_from_tree(capture.tree, node_uuid).hostnode_uuid
         return redirect(url_for('hostnode_popup', tree_uuid=tree_uuid, node_uuid=hostnode_uuid))
     elif callback_str == 'ressources':
         return redirect(url_for('ressources') if page_enabled('ressources') else url_for('tree', tree_uuid=tree_uuid))
@@ -3332,11 +3421,11 @@ def _capture_redirects(capture_uuid: str) -> list[str]:
     cache in valkey only (quick=True): never builds a tree. Plain strings, the
     front end writes them with textContent.'''
     try:
-        cache = lookyloo.capture_cache(capture_uuid, quick=True)
+        capture = lookyloo.capture_cache(capture_uuid, seed=session['known_private'].get(capture_uuid), quick=True)
     except Exception as e:
         app.logger.warning(f'Unable to get the redirects of {capture_uuid}: {e}')
         return []
-    return [str(url) for url in (getattr(cache, 'redirects', None) or [])]
+    return [str(url) for url in (getattr(capture, 'redirects', None) or [])]
 
 
 favicon_download_button_template = app.jinja_env.from_string(source='''
@@ -3357,7 +3446,9 @@ def get_index(offset: int, limit: int, public: bool=True, show_error: bool=False
             # get all the *recent* captures in that category, then filter
             cached_captures = [capture for capture in lookyloo.sorted_capture_cache(
                 [*get_indexing(flask_login.current_user).get_captures_category(category)],
-                public=public, cached_captures_only=False) if capture.search(search)]
+                public=public, cached_captures_only=False,
+                session_known_private=session['known_private'],
+                session_is_admin=flask_login.current_user.is_authenticated) if capture.search(search)]
             total_filtered = len(cached_captures)
             cached_captures = cached_captures[offset: offset + limit]
         else:
@@ -3367,11 +3458,16 @@ def get_index(offset: int, limit: int, public: bool=True, show_error: bool=False
                     category,
                     offset=offset,
                     limit=limit),
-                public=public, cached_captures_only=False)
+                public=public, cached_captures_only=False,
+                session_known_private=session['known_private'],
+                session_is_admin=flask_login.current_user.is_authenticated)
     else:
         # We want to filter the captures on the index
         cut_time = (datetime.now() - lookyloo.time_delta_on_index)
-        cached_captures = lookyloo.sorted_capture_cache(public=public, cached_captures_only=True, index_cut_time=cut_time)
+        cached_captures = lookyloo.sorted_capture_cache(
+            public=public, cached_captures_only=True, index_cut_time=cut_time,
+            session_known_private=session['known_private'],
+            session_is_admin=flask_login.current_user.is_authenticated)
         if not show_error:
             cached_captures = [cached for cached in cached_captures if not cached.error]
         total = len(cached_captures)
@@ -3812,7 +3908,8 @@ def post_table(table_name: str, value: str='') -> Response:
     if table_name == 'faviconsTable':
         tree_uuid = value.strip()
         prepared_captures = []
-        success, favicons_zip = lookyloo.get_potential_favicons(tree_uuid, all_favicons=True, for_datauri=False)
+        capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+        success, favicons_zip = lookyloo.get_potential_favicons(capture, all_favicons=True, for_datauri=False)
         if not success:
             return jsonify({'error': 'No favicon found.'})
         with ZipFile(favicons_zip, 'r') as myzip:
