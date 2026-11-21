@@ -3702,7 +3702,6 @@ def post_table(table_name: str, value: str='') -> Response:
                         'landing_page': landing_page,
                         'redirects': redirects,
                         'download_redirects': url_for('redirects', tree_uuid=capture_uuid),
-                        'nodes': [{'href': url_for("tree", tree_uuid=capture_uuid, node_uuid=n[1]), 'url': n[0]} for n in nodes],
                         'hostnames': hostnames
                     },
                     'filter': f"{escape(title)} {escape(' '.join(redirects))} {escape(' '.join(hostnames))}"
