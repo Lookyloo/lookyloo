@@ -2069,11 +2069,11 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
         app.logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
 
-    email: str = request.form['email'] if request.form.get('email') else ''
+    email: str = request.form['email_notify'] if request.form.get('email_notify') else ''
     if '@' not in email:
         # skip clearly incorrect emails
         email = ''
-    comment: str = request.form['comment'] if request.form.get('comment') else ''
+    comment: str = request.form['comment_notify'] if request.form.get('comment_notify') else ''
     capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
     send_status = lookyloo.send_mail(capture, as_admin=flask_login.current_user.is_authenticated, email=email, comment=comment)
     if not send_status:
