@@ -2069,7 +2069,7 @@ def send_mail(tree_uuid: str) -> WerkzeugResponse:
         app.logger.debug(f'{src_request_ip(request)} is a bot - {request.headers.get("User-Agent")}.')
         return redirect('https://www.youtube.com/watch?v=iwGFalTRHDA')
 
-    email: str = request.form['email'] if request.form.get('email') else ''
+    email: str = request.form['reply_to'] if request.form.get('reply_to') else ''
     if '@' not in email:
         # skip clearly incorrect emails
         email = ''
@@ -2851,8 +2851,8 @@ def capture_web() -> str | Response | WerkzeugResponse:
             # auto report
             if request.form.get('auto-report'):
                 capture_query['auto_report'] = {
-                    'email': request.form.get('email_notify', ""),
-                    'comment': request.form.get('comment_notify', ""),
+                    'email': request.form.get('reply_to', ""),
+                    'comment': request.form.get('comment', ""),
                 }
                 if (not capture_query['auto_report']['email']
                         and not capture_query['auto_report']['comment']):
