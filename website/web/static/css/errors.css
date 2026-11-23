@@ -1,0 +1,61 @@
+/*
+ * Error pages (errors/error.html): 404, 500 and the errors of the views.
+ * The eyes of the loader as an illustration. Doc: doc/ui/errors.md
+ */
+
+.lk-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-block: var(--lk-space-7);
+}
+
+.lk-error .lk-loader {
+  margin-bottom: var(--lk-space-5);
+}
+
+.lk-error-code {
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-sm);
+  letter-spacing: 0.2em;
+  color: var(--lk-color-accent);
+  margin: 0 0 var(--lk-space-2);
+}
+
+.lk-error-title {
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--lk-space-3);
+}
+
+.lk-error-message {
+  color: var(--lk-color-muted);
+  max-width: 52ch;
+  margin: 0 0 var(--lk-space-4);
+}
+
+.lk-error-path code {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: var(--lk-space-1) var(--lk-space-3);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+  background: var(--lk-color-surface);
+  color: var(--lk-color-ink);
+}
+
+.lk-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--lk-space-2);
+  margin-top: var(--lk-space-4);
+}
+
+.lk-error-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+}

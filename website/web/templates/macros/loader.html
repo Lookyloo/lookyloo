@@ -1,0 +1,32 @@
+{#
+  Loading indicator with the eyes of the Lookyloo logo (broken rings + pupils
+  looking around). CSS: css/components/loader.css. Doc: doc/ui/loader.md
+
+    {% from 'macros/loader.html' import loader %}
+    {{ loader('Loading the capture tree') }}
+    {{ loader('Capture in progress', size='lg', show_label=True) }}
+
+  label       text for screen readers (and shown under the eyes if show_label)
+  size        'sm' | 'md' | 'lg' | 'xl'
+  show_label  display the label under the eyes
+  decorative  just the eyes (error pages): no role="status", shown at once
+
+    {{ loader('', size='xl', decorative=True) }}
+#}
+
+{% macro loader(label='Loading', size='md', show_label=False, decorative=False) -%}
+<span class="lk-loader lk-loader-{{ size }}{% if decorative %} lk-loader-decorative{% endif %}"
+      {% if decorative %}aria-hidden="true"{% else %}role="status"{% endif %}>
+  <svg class="lk-loader-eyes" viewBox="0 0 64 30" aria-hidden="true" focusable="false">
+    <g class="lk-eye">
+      <circle class="lk-eye-ring" cx="15" cy="15" r="11.5" pathLength="100"></circle>
+      <circle class="lk-eye-pupil" cx="17.5" cy="17.5" r="4.6"></circle>
+    </g>
+    <g class="lk-eye">
+      <circle class="lk-eye-ring" cx="49" cy="15" r="11.5" pathLength="100"></circle>
+      <circle class="lk-eye-pupil" cx="51.5" cy="17.5" r="4.6"></circle>
+    </g>
+  </svg>
+  {% if label %}<span class="{{ 'lk-loader-label' if show_label else 'visually-hidden' }}">{{ label }}</span>{% endif %}
+</span>
+{%- endmacro %}

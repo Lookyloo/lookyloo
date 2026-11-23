@@ -1,0 +1,145 @@
+/*
+ * Capture preview (js/components/capture_preview.js), at the left of each capture
+ * in the lists: the screenshot, blurred until clicked (.lk-thumb), or the
+ * identicon of the hostname when there is no screenshot (.lk-capture-preview).
+ * Doc: doc/ui/capture-list.md
+ */
+
+/* Screenshot thumbnail, blurred until clicked */
+.lk-thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 128px;
+  height: 80px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+  background: var(--lk-color-surface-2);
+  cursor: pointer;
+}
+
+.lk-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: filter var(--lk-transition-fast);
+}
+
+.lk-thumb.is-blurred img {
+  filter: blur(8px) saturate(0.6);
+  transform: scale(1.1); /* hides the blurred, transparent edges */
+}
+
+/* After a click: still slightly blurred, never in the clear (a page can be a
+   single shocking image). The clear screenshot is in the capture. */
+.lk-thumb.is-peek img {
+  filter: blur(1.2px);
+  transform: scale(1.03);
+}
+
+/* Labels drawn in CSS so the rows stay light, saying what to do: "Click to
+   preview" when strongly blurred; after the click, still slightly blurred on
+   purpose, "Open to see all" (else the light blur looks broken) */
+
+.lk-thumb.is-blurred::after {
+  content: 'Click to preview';
+  white-space: nowrap;
+}
+
+.lk-thumb.is-blurred::after,
+.lk-thumb.is-peek::after {
+  position: absolute;
+  inset: auto 0.35rem 0.35rem auto;
+  padding: 0.05rem 0.45rem;
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-surface);
+  color: var(--lk-color-ink);
+  font-size: var(--lk-font-size-xs);
+  font-weight: var(--lk-font-weight-medium);
+  opacity: 0.9;
+}
+
+.lk-thumb:hover {
+  border-color: var(--lk-color-rule-strong);
+}
+
+.lk-thumb:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px var(--lk-focus-ring);
+}
+
+.lk-capture-preview {
+  --lk-preview-hue: 220;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 128px;
+  height: 80px;
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+  /* Tones of the hue picked from the hostname */
+  background: hsl(var(--lk-preview-hue) 60% 96%);
+  color: hsl(var(--lk-preview-hue) 55% 45%);
+}
+
+[data-bs-theme="dark"] .lk-capture-preview {
+  background: hsl(var(--lk-preview-hue) 30% 20%);
+  color: hsl(var(--lk-preview-hue) 65% 68%);
+}
+
+.lk-identicon {
+  width: 44px;
+  height: 44px;
+  fill: currentColor;
+  shape-rendering: crispEdges;
+}
+
+/* No URL to draw from */
+.lk-capture-preview.is-empty {
+  background: var(--lk-color-surface-2);
+}
+
+@media (max-width: 576px) {
+  .lk-thumb,
+  .lk-capture-preview {
+    width: 88px;
+    height: 56px;
+  }
+
+  .lk-identicon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-thumb img {
+    transition: none;
+  }
+}
+
+/* Must come after the shared label rule: smaller, on one line */
+.lk-thumb.is-peek::after {
+  content: 'Open to see all';
+  white-space: nowrap;
+  font-size: 0.625rem;
+}
+
+/* Must also come after the shared rule: same small size as the other label */
+.lk-thumb.is-blurred::after {
+  font-size: 0.625rem;
+}
+
+@media (max-width: 576px) {
+  .lk-thumb.is-blurred::after {
+    content: 'Preview';
+  }
+
+  .lk-thumb.is-peek::after {
+    content: 'Open to see';
+  }
+}

@@ -77,6 +77,9 @@ class BackgroundIndexer(AbstractManager):
                 else:
                     to_force_reindex = self.indexing.redis.hlen('lazy_force_reindex')
                     self.logger.info(f'Reindexed {__counter_shutdown_force}, {to_force_reindex} to go.')
+            if self.shutdown_requested():
+                self.logger.warning('Shutdown requested, breaking.')
+                break
         self.logger.info('Done with force reindexing.')
 
     def _check_indexes(self, key: str) -> bool:
@@ -96,6 +99,7 @@ class BackgroundIndexer(AbstractManager):
         else:
             _iterator = self.redis.hscan_iter
 
+        # Can't use random keys there, as we're only popping the entries from lazy_index.
         for uuid, capture_dir in _iterator(key):
             if key == 'lazy_index':
                 # remove uuid

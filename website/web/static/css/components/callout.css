@@ -1,0 +1,44 @@
+/*
+ * Callout: a message box with an icon (info, warning, danger), e.g. on the
+ * capture form. Doc: doc/ui/capture.md
+ */
+
+/* Callouts (info / warning / danger): short notices inside pages */
+.lk-callout {
+  display: flex;
+  gap: var(--lk-space-2);
+  align-items: flex-start;
+  margin: var(--lk-space-2) 0 0;
+  padding: var(--lk-space-3) var(--lk-space-4);
+  border-radius: var(--lk-radius-md);
+  border: 1px solid var(--lk-color-info-border);
+  background: var(--lk-color-info-soft);
+  font-size: var(--lk-font-size-sm);
+}
+
+.lk-callout > .bi {
+  margin-top: 0.15rem;
+  color: var(--lk-color-info);
+}
+
+.lk-callout-warning {
+  border-color: var(--lk-color-warning-border);
+  background: var(--lk-color-warning-soft);
+}
+
+.lk-callout-warning > .bi {
+  color: var(--lk-color-warning);
+}
+
+.lk-callout-danger {
+  border-color: var(--lk-color-danger-border);
+  background: var(--lk-color-danger-soft);
+}
+
+.lk-callout-danger > .bi {
+  color: var(--lk-color-danger);
+}
+
+.lk-callout p {
+  margin: 0 0 var(--lk-space-1);
+}

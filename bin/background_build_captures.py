@@ -16,6 +16,7 @@ from redis import Redis
 from har2tree import Har2TreeError
 from lookyloo import Lookyloo
 from lookyloo_models import AutoReportSettings, MonitorCaptureSettings
+from lookyloo.capturecache import CaptureCache
 from lookyloo.default import AbstractManager, get_config, get_socket_path, try_make_file, LookylooException
 from lookyloo.exceptions import UUIDMissingInCache, NoValidHarFile, TreeNeedsRebuild, DuplicateUUID, MissingCaptureDirectory, CaptureLocked, TreeBuildFailed
 from lookyloo.helpers import (is_locked, get_sorted_captures_from_disk, make_dirs_list,
@@ -53,68 +54,64 @@ class BackgroundBuildCaptures(AbstractManager):
         self.redis = Redis(unix_socket_path=get_socket_path('cache'), decode_responses=True)
         self.cur_pid = os.getpid()
 
-    def __auto_report(self, path: Path, capture_uuid: str, logger: LookylooCacheLogAdapter) -> None:
+    def __auto_report(self, capture: CaptureCache, logger: LookylooCacheLogAdapter) -> None:
         logger.info('Triggering autoreport...')
         settings: None | AutoReportSettings = None
-        with (path / 'auto_report').open('rb') as f:
+        with (capture.capture_dir / 'auto_report').open('rb') as f:
             if ar := f.read():
                 # could be an empty file, which means no settings, just notify
                 settings = AutoReportSettings.model_validate_json(ar)
         try:
-            self.lookyloo.send_mail(capture_uuid, as_admin=True,
+            self.lookyloo.send_mail(capture, as_admin=True,
                                     email=settings.email if settings else '',
                                     comment=settings.comment if settings else '')
-            (path / 'auto_report').unlink()
+            (capture.capture_dir / 'auto_report').unlink()
         except Exception as e:
             logger.warning(f'Unable to send auto report: {e}')
         else:
             logger.info('Auto report sent.')
 
-    def __auto_monitor(self, path: Path, capture_uuid: str, logger: LookylooCacheLogAdapter) -> None:
+    def __auto_monitor(self, capture: CaptureCache, logger: LookylooCacheLogAdapter) -> None:
         if not self.lookyloo.monitoring:
             logger.warning('Unable to monitor, not enabled on the instance.')
-            (path / 'monitor_capture').unlink()
+            (capture.capture_dir / 'monitor_capture').unlink()
             return
 
         logger.info('Starting monitoring...')
         monitor_settings: MonitorCaptureSettings | None = None
         try:
-            with (path / 'monitor_capture').open('rb') as f:
+            with (capture.capture_dir / 'monitor_capture').open('rb') as f:
                 if m := f.read():
                     monitor_settings = MonitorCaptureSettings.model_validate_json(m)
         except FileNotFoundError:
             # processed by another script.
             return
-        (path / 'monitor_capture').unlink()
+        (capture.capture_dir / 'monitor_capture').unlink()
         if not monitor_settings:
             logger.warning('Unable to monitor, missing settings.')
             return
 
-        if capture_settings := self.lookyloo.get_capture_settings(capture_uuid):
-            monitor_settings.capture_settings = capture_settings
-        else:
-            logger.warning('Unable to monitor, missing capture settings.')
-            return
+        monitor_settings.capture_settings = capture.capture_settings
         try:
             monitoring_uuid = self.lookyloo.monitoring.monitor(monitor_capture_settings=monitor_settings)
             if isinstance(monitoring_uuid, dict):
                 # error message
                 logger.warning(f'Unable to trigger monitoring: {monitoring_uuid["message"]}')
                 return
-            with (path / 'monitor_uuid').open('w') as f:
+            with (capture.capture_dir / 'monitor_uuid').open('w') as f:
                 f.write(monitoring_uuid)
         except Exception as e:
             logger.warning(f'Unable to trigger monitoring: {e}')
         else:
             logger.info('Monitoring enabled.')
 
-    def _auto_trigger(self, path: Path, uuid: str, logger: LookylooCacheLogAdapter) -> None:
-        if (path / 'auto_report').exists():
+    def _auto_trigger(self, capture: CaptureCache, logger: LookylooCacheLogAdapter) -> None:
+        if (capture.capture_dir / 'auto_report').exists():
             # the pickle was built somewhere else, trigger report.
-            self.__auto_report(path, uuid, logger)
-        if (path / 'monitor_capture').exists():
+            self.__auto_report(capture, logger)
+        if (capture.capture_dir / 'monitor_capture').exists():
             # the pickle was built somewhere else, trigger monitoring.
-            self.__auto_monitor(path, uuid, logger)
+            self.__auto_monitor(capture, logger)
 
     def _to_run_forever(self) -> None:
         built_all_missing = self._build_missing_pickles()
@@ -141,7 +138,7 @@ class BackgroundBuildCaptures(AbstractManager):
                 if self.__build_pickle(uuid=str(uuid), trigger_modules=False):
                     to_process -= 1
                 # this call makes sure that the capture details are in the redis cache
-                self.lookyloo.capture_cache(str(uuid))
+                self.lookyloo.capture_cache(str(uuid), unsafe=True)
             except NoValidHarFile as e:
                 # don't care in the lazy bg build.
                 self.logger.debug(e)
@@ -234,12 +231,12 @@ class BackgroundBuildCaptures(AbstractManager):
         try:
             logger.info(f'Build pickle: {path.name}')
             start_build = time.monotonic()
-            cache = self.lookyloo.capture_cache(uuid)
+            cache = self.lookyloo.capture_cache(uuid, unsafe=True)
 
             if trigger_modules:
                 # only trigger modules for new captures
                 try:
-                    self.lookyloo.trigger_modules(uuid, auto_trigger=True, force=False, as_admin=False)
+                    self.lookyloo.trigger_modules(cache, auto_trigger=True, force=False, as_admin=False)
                 except Exception as e:
                     logger.warning(f'Unable to trigger modules: {e}')
                 # Trigger whois request on all nodes
@@ -249,7 +246,7 @@ class BackgroundBuildCaptures(AbstractManager):
                     except Exception as e:
                         logger.info(f'Unable to query whois for {node.name}: {e}')
                 # Monitor & auto report, to that last.
-                self._auto_trigger(path, uuid=uuid, logger=logger)
+                self._auto_trigger(cache, logger=logger)
 
             logger.info(f'Pickle built in {round(time.monotonic() - start_build, 3)}.')
             self.max_captures -= 1

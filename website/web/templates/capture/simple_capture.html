@@ -1,6 +1,11 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/page.html" %}
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% block title %}Capture{% endblock %}
+
+{% from 'macros/page.html' import page_header %}
+{% block page_header %}
+{{ page_header('Capture for takedown', description='Capture a URL and prepare the information needed to report it.', icon_name='flag', crumbs=[('New capture', url_for('capture_web'))]) }}
+{% endblock %}
 
 {% block card %}
 <meta property="og:title" content="Lookyloo" />
@@ -22,12 +27,6 @@
 
 {% block content %}
 <div class="container">
-  <center>
-    <a href="{{ url_for('index') }}" title="Go back to index">
-      <img src="{{ url_for('static', filename='images/ui/lookyloo.jpeg') }}"
-           alt="Lookyloo" width="25%">
-    </a>
-  </center>
   {{ render_messages(container=True, dismissible=True) }}
   <form role="form" action="{{ url_for('simple_capture') }}" method=post enctype=multipart/form-data>
     <!-- Submission type -->

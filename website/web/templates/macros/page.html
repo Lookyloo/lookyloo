@@ -1,0 +1,45 @@
+{#
+  Page building blocks for templates extending layouts/page.html.
+
+  page_header(title, description=None, icon_name=None, crumbs=())
+    Breadcrumb (Home / parents... / title) + a card with an icon, the title (h1)
+    and a short description. Anything passed with {% call %} is rendered as
+    actions on the right of the card.
+
+    title        page title (h1, and last item of the breadcrumb)
+    description  one sentence explaining what the page is for
+    icon_name    Bootstrap Icons name (https://icons.getbootstrap.com/)
+    crumbs       parent pages between Home and the current page:
+                 list of (label, url) tuples; url=None for a non-clickable level
+
+    {% from 'macros/page.html' import page_header %}
+    {% block page_header %}
+      {{ page_header('Cookies', description='Cookie names seen in the recent captures.',
+                     icon_name='cookie', crumbs=[('Explore', None)]) }}
+    {% endblock %}
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+
+{% macro page_header(title, description=None, icon_name=None, crumbs=()) -%}
+<header class="lk-page-head">
+  <nav class="lk-breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="{{ url_for('landing_page') }}">{{ render_icon('house') }} Home</a></li>
+      {% for label, url in crumbs %}
+      <li>{% if url %}<a href="{{ url }}">{{ label }}</a>{% else %}<span>{{ label }}</span>{% endif %}</li>
+      {% endfor %}
+      <li><span aria-current="page">{{ title }}</span></li>
+    </ol>
+  </nav>
+  <div class="lk-page-head-card">
+    {% if icon_name %}<span class="lk-page-head-icon" aria-hidden="true">{{ render_icon(icon_name) }}</span>{% endif %}
+    <div class="lk-page-head-text">
+      <h1>{{ title }}</h1>
+      {% if description %}<p>{{ description }}</p>{% endif %}
+    </div>
+    {% if caller %}
+    <div class="lk-page-head-actions">{{ caller() }}</div>
+    {% endif %}
+  </div>
+</header>
+{%- endmacro %}

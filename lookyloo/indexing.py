@@ -79,6 +79,25 @@ class Indexing():
     def unset_slow(self) -> None:
         self.redis.delete('is_slow')
 
+    @property
+    def status(self) -> dict[str, bool | int | str]:
+        return {
+            'is_slow': self.is_slow,
+            'to_index': self.redis.hlen('lazy_index'),
+            'to_reindex': self.redis.hlen('lazy_force_reindex'),
+            'indexed_urls': self.redis.scard('indexed_urls'),
+            'indexed_body_hashes': self.redis.scard('indexed_body_hashes'),
+            'indexed_cookies': self.redis.scard('indexed_cookies'),
+            'indexed_hhhashes': self.redis.scard('indexed_hhhashes'),
+            'indexed_favicons': self.redis.scard('indexed_favicons'),
+            'indexed_identifiers': self.redis.scard('indexed_identifiers'),
+            'indexed_categories': self.redis.scard('indexed_categories'),
+            'indexed_tlds': self.redis.scard('indexed_tlds'),
+            'indexed_domains': self.redis.scard('indexed_domains'),
+            'indexed_ips': self.redis.scard('indexed_ips'),
+            'indexed_cloudflare_ns': self.redis.scard('indexed_cloudflare_ns')
+        }
+
     @staticmethod
     def _raise_timeout(_, __) -> None:  # type: ignore[no-untyped-def]
         raise TimeoutError

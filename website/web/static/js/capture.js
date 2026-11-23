@@ -304,3 +304,20 @@ document.getElementById('unlisted').addEventListener('click', function (e) {
 document.getElementById('private').addEventListener('click', function (e) {
     document.getElementById('seed_expire').disabled = false;
 })
+
+// Collapsible sections (<details class="lk-form-section">): a link of the summary
+// panel opens its section; an invalid field in a closed section opens it too.
+document.querySelectorAll('.lk-capture-toc a').forEach(link => {
+    link.addEventListener('click', () => {
+        const target = document.querySelector(link.getAttribute('href'));
+        if (target && target.tagName === 'DETAILS') {
+            target.open = true;
+        }
+    });
+});
+document.querySelector('.lk-capture-form')?.addEventListener('invalid', event => {
+    const section = event.target.closest('details');
+    if (section) {
+        section.open = true;
+    }
+}, true);

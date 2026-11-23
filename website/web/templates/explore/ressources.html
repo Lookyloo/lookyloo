@@ -1,16 +1,22 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/page.html" %}
+{% from 'macros/tour.html' import tour %}
 
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% from 'macros/macros.html' import context_form %}
 
 {% block title %}Ressources{% endblock %}
 
+{% from 'macros/page.html' import page_header %}
+{% block page_header %}
+{{ page_header('Resources', description='Files (scripts, images, styles...) loaded by the recent captures, identified by their hash.', icon_name='file-earmark-binary', crumbs=[('Explore', None)]) }}
+{% endblock %}
+
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript" nonce="{{ csp_nonce() }}">
     new DataTable('#table', {
         "order": [[ 2, "desc" ]],
-        "pageLength": 500
+        "pageLength": 25
     });
 </script>
 
@@ -47,3 +53,10 @@
   </table>
   </div>
 {% endblock %}
+
+{# Tutorial of the page (js/components/tour.js, doc/ui/tour.md) #}
+{% block tour %}{{ tour([
+  (None, "Resources", "The files (scripts, images, styles…) seen in recent captures, most frequent first."),
+  ("#table", "The resources", "Click a resource to see every capture that loaded it: a script shared by many phishing pages stands out quickly."),
+  ("#lk-tour-menu-btn", "The tutorial, any time", "This button starts the tour of the page you are on, or the full tour of Lookyloo: every page, one after the other.")
+]) }}{% endblock %}

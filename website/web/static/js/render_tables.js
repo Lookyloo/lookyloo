@@ -15,11 +15,14 @@ function renderTables() {
         url: `/tables/indexTable/${indexType}${window.location.search}`,
         type: 'POST',
       },
-      columns : [
-          { data: {_: 'page.display', filter: 'page.filter'}, width: '40%' },
-          { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-          { data: {_: 'redirects.display', filter: 'redirects.filter'}, width: '40%' }
-      ],
+      // Capture list rows (js/components/capture_list.js)
+      columns: lkIndexColumns(document.getElementById('IndexTable')),
+      language: { searchPlaceholder: 'Filter by title or URL' },
+      // Active category filter on the same row as "per page" and the search field
+      layout: 'lkCompact' in document.getElementById('IndexTable').dataset
+        // Home page: the 10 latest captures only, the full list is on the index page
+        ? { topStart: null, topEnd: null, bottomStart: null, bottomEnd: null }
+        : { topStart: ['pageLength', lkIndexFilter(document.getElementById('IndexTable').dataset.lkIcons)].filter(Boolean) },
     })
   }
   if (document.getElementById('categoriesTable')) {
@@ -28,15 +31,22 @@ function renderTables() {
         retrieve: true,
         searching: true,
         drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
-        order: [[ 1, "desc" ]],
         pageLength: 25,
         ajax: {
             url: `/tables/categoriesTable/${window.location.search}`,
             type: 'POST',
             dataSrc:""
         },
-        columns: [{ data: {_: 'category.display', filter: 'category.filter'}, width: '90%' },
-                  { data: 'total_captures', width: '10%', orderable: true }]
+        // Category tags (js/components/category_tag.js) on the redesigned pages
+        ...(typeof lkCategoriesColumns === 'function' ? {
+          order: [[ 2, "desc" ]],
+          columns: lkCategoriesColumns(document.getElementById('categoriesTable')),
+          language: { searchPlaceholder: 'Filter categories' },
+        } : {
+          order: [[ 1, "desc" ]],
+          columns: [{ data: {_: 'category.display', filter: 'category.filter'}, width: '90%' },
+                    { data: 'total_captures', width: '10%', orderable: true }],
+        }),
       })
   }
   if (document.getElementById('HHHDetailsTable')) {
@@ -52,11 +62,7 @@ function renderTables() {
           url: `/tables/HHHDetailsTable/${hhh}${window.location.search}`,
           type: 'POST'
       },
-      columns : [
-          { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-          { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-          { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-      ],
+      columns: lkPivotColumns(document.getElementById('HHHDetailsTable')),
     })
   }
   if (document.getElementById('bodyHashDetailsTable')) {
@@ -72,11 +78,7 @@ function renderTables() {
           url: `/tables/bodyHashDetailsTable/${bodyhash}${window.location.search}`,
           type: 'POST'
       },
-      columns : [
-          { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-          { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-          { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-      ],
+      columns: lkPivotColumns(document.getElementById('bodyHashDetailsTable')),
     })
   }
   if (document.getElementById('hashTypeDetailsTable')) {
@@ -92,11 +94,7 @@ function renderTables() {
             url: `/tables/hashTypeDetailsTable/${hash_value}${window.location.search}`,
             type: 'POST'
         },
-        columns : [
-            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ],
+        columns: lkPivotColumns(document.getElementById('hashTypeDetailsTable')),
       });
   }
 
@@ -113,11 +111,7 @@ function renderTables() {
             url: `/tables/identifierDetailsTable/${identifier_value}${window.location.search}`,
             type: 'POST'
         },
-        columns : [
-            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ],
+        columns: lkPivotColumns(document.getElementById('identifierDetailsTable')),
       });
   }
   if (document.getElementById('bodyHashesTable')) {
@@ -291,11 +285,7 @@ function renderTables() {
             url: `/tables/cookieNameTable/${cookieName}${window.location.search}`,
             type: 'POST'
         },
-        columns : [
-            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ],
+        columns: lkPivotColumns(document.getElementById('cookieNameTable')),
       });
   }
 
@@ -312,11 +302,7 @@ function renderTables() {
            url: `/tables/ipTable/${hostname}${window.location.search}`,
            type: 'POST'
         },
-        columns : [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ],
+        columns: lkPivotColumns(document.getElementById('ipTable')),
     });
   }
 
@@ -333,11 +319,7 @@ function renderTables() {
            url: `/tables/hostnameTable/${hostname}${window.location.search}`,
            type: 'POST'
         },
-        columns : [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ],
+        columns: lkPivotColumns(document.getElementById('hostnameTable')),
     });
   }
 
@@ -354,11 +336,7 @@ function renderTables() {
            url: `/tables/domainTable/${domain}${window.location.search}`,
            type: 'POST'
         },
-        columns : [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ],
+        columns: lkPivotColumns(document.getElementById('domainTable')),
     });
   }
 
@@ -376,11 +354,7 @@ function renderTables() {
            url: `/tables/tldTable/${tld}${window.location.search}`,
            type: 'POST'
         },
-        columns : [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ],
+        columns: lkPivotColumns(document.getElementById('tldTable')),
     });
   }
 
@@ -398,11 +372,7 @@ function renderTables() {
             url: `/tables/urlTable/${url}${window.location.search}`,
             type: 'POST'
         },
-        columns : [
-            { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-            { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-            { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ],
+        columns: lkPivotColumns(document.getElementById('urlTable')),
       });
   }
 
@@ -419,11 +389,7 @@ function renderTables() {
            url: `/tables/faviconDetailsTable/${favicon}${window.location.search}`,
            type: 'POST'
         },
-        columns : [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '40%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '40%' }
-        ],
+        columns: lkPivotColumns(document.getElementById('faviconDetailsTable')),
       });
   }
   if (document.getElementById('cloudflareNSDetailsTable')) {
@@ -439,12 +405,7 @@ function renderTables() {
            url: `/tables/cloudflareNSDetailsTable/${cloudflarens}${window.location.search}`,
            type: 'POST'
         },
-        columns : [
-           { data: 'capture_time', width: '20%', render: DataTable.render.datetime_with_tz() },
-           { data: {_: 'capture_title.display', filter: 'capture_title.filter'}, width: '30%' },
-           { data: {_: 'landing_page.display', filter: 'landing_page.filter'}, width: '30%' },
-           { data: {_: 'hostnames.display', filter: 'hostnames.filter'}, width: '20%' }
-        ],
+        columns: lkPivotColumns(document.getElementById('cloudflareNSDetailsTable')),
       });
   }
  //It is allowed to have more than one table on the same page

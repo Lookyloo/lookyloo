@@ -33,24 +33,27 @@ class AbstractManager(ABC):
         self.force_stop = False
 
     @staticmethod
-    def is_running() -> list[tuple[str, float, set[str]]]:
+    def is_running() -> list[tuple[str, float, set[str], set[str]]]:
         try:
             r = Redis(unix_socket_path=get_socket_path('cache'), db=1, decode_responses=True)
-            running_scripts: dict[str, set[str]] = {}
+            to_return: list[tuple[str, float, set[str], set[str]]] = []
             for script_name, score in r.zrangebyscore('running', '-inf', '+inf', withscores=True):
+                alive: set[str] = set()
+                dead: set[str] = set()
                 for pid in r.smembers(f'service|{script_name}'):
                     try:
                         os.kill(int(pid), 0)
+                        alive.add(pid)
                     except OSError:
-                        print(f'Got a dead script: {script_name} - {pid}')
+                        dead.add(pid)
                         r.srem(f'service|{script_name}', pid)
                         other_same_services = r.scard(f'service|{script_name}')
                         if other_same_services:
                             r.zadd('running', {script_name: other_same_services})
                         else:
                             r.zrem('running', script_name)
-                running_scripts[script_name] = r.smembers(f'service|{script_name}')
-            return [(name, rank, running_scripts[name] if name in running_scripts else set()) for name, rank in r.zrangebyscore('running', '-inf', '+inf', withscores=True)]
+                to_return.append((script_name, len(alive), alive, dead))
+            return to_return
         except RedisConnectionError:
             print('Unable to connect to redis, the system is down.')
             return []
