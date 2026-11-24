@@ -191,13 +191,27 @@ def login() -> WerkzeugResponse | str | Response:
     if request.method == 'GET':
         return render_template('admin/login.html')
 
+    if next_try := session.get('next_try', None):
+        if next_try > datetime.now(timezone.utc):
+            flash(Markup('Please wait.'), 'error')
+            return redirect(url_for('index'))
+        else:
+            session.pop('next_try', None)
+
     username = request.form['username']
     users_table = build_users_table()
     if username in users_table and check_password_hash(users_table[username]['password'], request.form['password']):
+        session.pop('login_attempts', None)
+        session.pop('next_try', None)
         user = User(username)
         flask_login.login_user(user)
         flash(Markup('Logged in as: {}').format(flask_login.current_user.id), 'success')
     else:
+        if 'login_attempts' not in session:
+            session['login_attempts'] = 1
+        else:
+            session['login_attempts'] += 1
+        session['next_try'] = datetime.now(timezone.utc) + timedelta(seconds=session['login_attempts'] * 5)
         flash(Markup('Unable to login as: {}').format(username), 'error')
 
     return redirect(url_for('index'))
