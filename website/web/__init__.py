@@ -1459,25 +1459,32 @@ def web_misp_lookup_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
 
 @app.route('/tree/<uuid:tree_uuid>/lookyloo_push', methods=['GET', 'POST'])
 def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
+    if not flask_login.current_user.is_authenticated:
+        flash('This feature is admin only, prefer using the pull option from your instance.', 'error')
+        return make_response(redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid))), 403)
+
     if request.method == 'GET':
         # Only bots land in this page, avoid log entries.
         flash('Only support POST calls.', 'error')
         return make_response(redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid))), 405)
 
     if remote_lookyloo_url := request.form.get('remote_lookyloo_url'):
-        capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
-        success, to_push = lookyloo.get_capture(capture)
-        if success:
-            pylookyloo = PyLookyloo(remote_lookyloo_url)
-            try:
-                uuid = pylookyloo.upload_capture(full_capture=to_push, quiet=True)
-                flash(Markup('Successfully pushed the capture: <a href="{root_url}/tree/{uuid}" target="_blank">{uuid}</a>.').format(root_url=pylookyloo.root_url, uuid=uuid), 'success')
-            except PyLookylooError as e:
-                flash(Markup('Error while pushing capture: {}').format(e), 'error')
-            except Exception as e:
-                flash(Markup('Unable to push capture: {}').format(e), 'error')
+        pylookyloo = PyLookyloo(remote_lookyloo_url)
+        if pylookyloo.is_up:
+            capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
+            success, to_push = lookyloo.get_capture(capture)
+            if success:
+                try:
+                    uuid = pylookyloo.upload_capture(full_capture=to_push, quiet=True)
+                    flash(Markup('Successfully pushed the capture: <a href="{root_url}/tree/{uuid}" target="_blank">{uuid}</a>.').format(root_url=pylookyloo.root_url, uuid=uuid), 'success')
+                except PyLookylooError as e:
+                    flash(Markup('Error while pushing capture: {}').format(e), 'error')
+                except Exception as e:
+                    flash(Markup('Unable to push capture: {}').format(e), 'error')
+            else:
+                flash(f'Capture {tree_uuid} does not exist ?!', 'error')
         else:
-            flash(f'Capture {tree_uuid} does not exist ?!', 'error')
+            flash('Remote Lookyloo URL invalid or instance not up.', 'error')
     else:
         flash('Remote Lookyloo URL missing.', 'error')
     return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))

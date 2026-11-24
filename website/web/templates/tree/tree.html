@@ -394,11 +394,6 @@
                    data-bs-toggle="modal" data-bs-target="#mispPushModal" role="button">Prepare push to MISP</a>
                 </li>
               {% endif %}
-              </li>
-              <a href="#lookylooPushModal" data-bs-toggle="modal" data-bs-target="#lookylooPushModal" role="button"
-                 class="dropdown-item"
-                 title="Push the capture to another Lookyloo Instance">Push to another Lookyloo</a>
-              </li>
               <li>
               <a href="#visibilityModal" data-bs-toggle="modal" data-bs-target="#visibilityModal" role="button"
                  class="dropdown-item"
@@ -414,6 +409,11 @@
                 Admin only
               </button>
               <ul class="dropdown-menu" aria-labelledby="admin-menu-btn">
+              </li>
+                <a href="#lookylooPushModal" data-bs-toggle="modal" data-bs-target="#lookylooPushModal" role="button"
+                   class="dropdown-item"
+                   title="Push the capture to another Lookyloo Instance">Push to another Lookyloo</a>
+                </li>
                 <li>
                 <a href="{{ url_for('rebuild_tree', tree_uuid=tree_uuid, seed=seed) }}" class="dropdown-item" role="button">Rebuild capture</a>
                 </li>
