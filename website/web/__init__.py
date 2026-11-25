@@ -25,7 +25,7 @@ from io import BytesIO, StringIO
 from pathlib import PurePath
 from typing import Any, TypedDict, Literal
 from collections.abc import Sequence, Iterable, Collection
-from urllib.parse import unquote_plus, urlparse, urlencode
+from urllib.parse import unquote_plus, urlparse, urlencode, urlsplit
 from uuid import uuid4
 from zipfile import ZipFile
 from zoneinfo import ZoneInfo
@@ -2627,9 +2627,24 @@ def ressource_by_hash(sha512: str) -> Response:
 
 def __get_remote_capture(remote_lookyloo: str, remote_uuid: str) -> Markup | BytesIO:
     pylookyloo = PyLookyloo(remote_lookyloo)
+    # check if the hostname is an IP and if yes, that it's not private
+    # Hostnames resolving to private IPs are a problem for the sysadmin managing the instance
+    # The only possible call is a HEAD on the root and a GET request on /json/<uuid>/status
+    # they all return the same error.
+    if _h := urlsplit(pylookyloo.root_url).hostname:
+        try:
+            if not ipaddress.ip_address(_h).is_global:
+                return Markup('Unable to connect to "{}".').format(remote_lookyloo)
+        except ValueError:
+            # not an IP
+            pass
     if not pylookyloo.is_up:
         return Markup('Unable to connect to "{}".').format(remote_lookyloo)
-    status = pylookyloo.get_status(remote_uuid).get('status_code')
+    try:
+        status = pylookyloo.get_status(remote_uuid).get('status_code')
+    except Exception:
+        return Markup('Unable to connect to "{}".').format(remote_lookyloo)
+
     if status == -1:
         return Markup('Unknown capture "{}" from "{}".').format(remote_uuid, remote_lookyloo)
     if status in [0, 2]:
@@ -2648,12 +2663,16 @@ def submit_capture() -> str | Response | WerkzeugResponse:
 
     if request.method == 'POST':
         if request.form.get('pull_capture_domain') and request.form.get('pull_capture_uuid'):
-            remote_capture = __get_remote_capture(request.form['pull_capture_domain'],
-                                                  request.form['pull_capture_uuid'])
-            if isinstance(remote_capture, str):
-                messages['errors'].append(remote_capture)
-            else:
-                new_uuid, messages = lookyloo.unpack_full_capture_archive(remote_capture, listing)
+            try:
+                remote_capture = __get_remote_capture(request.form['pull_capture_domain'],
+                                                      request.form['pull_capture_uuid'])
+                if isinstance(remote_capture, str):
+                    messages['errors'].append(remote_capture)
+                else:
+                    new_uuid, messages = lookyloo.unpack_full_capture_archive(remote_capture, listing)
+            except Exception as e:
+                app.logger.warning(f"Unable to pull {request.form['pull_capture_uuid']} from {request.form['pull_capture_domain']}: {e}")
+                messages['errors'].append(f"Unable to pull {request.form['pull_capture_uuid']} from {request.form['pull_capture_domain']}")
 
         elif 'full_capture' in request.files and request.files['full_capture']:
             # it *only* accepts a lookyloo export.
