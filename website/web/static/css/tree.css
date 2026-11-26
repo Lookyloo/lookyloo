@@ -294,6 +294,15 @@ body.lk-capture-page.lk-bg-dots {
   background-size: 20px 20px;
 }
 
+/* Columns background (default), on the body too: one stripe per depth of the
+   tree, aligned by js/tree.js (updateColumns) on the tree at its zoom */
+body.lk-capture-page.lk-bg-columns {
+  background-image: linear-gradient(to right, var(--lk-color-surface-2) 0 50%, transparent 50% 100%);
+  background-size: calc(var(--lk-tree-column-width, 10px) * 2) 100%;
+  background-position: var(--lk-tree-column-left, 0) 0;
+  background-repeat: repeat;
+}
+
 
 #tree_svg { cursor: grab; }
 
