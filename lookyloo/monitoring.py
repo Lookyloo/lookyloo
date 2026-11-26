@@ -39,7 +39,7 @@ class Monitoring():
             item = per_ip.setdefault(ip, {'ip': ip, 'hits': 0, 'user_agents': []})
             item['hits'] += int(hits)
             item['user_agents'].append(ua)
-        to_return['visitors'] = sorted(per_ip.values(), key=lambda i: i['hits'], reverse=True)
+        to_return['visitors'] = sorted(per_ip.values(), key=lambda i: i['hits'], reverse=True)[:50]
         return to_return
 
     @property
@@ -94,6 +94,13 @@ class Monitoring():
                     backend_up = False
 
         return backend_up, errors
+
+    @property
+    def index_status(self) -> dict[str, Any]:
+        to_return = {'public': get_indexing().status}
+        if get_config('generic', 'index_everything'):
+            to_return['full'] = get_indexing(full=True).status
+        return to_return
 
     @property
     def services(self) -> list[tuple[str, float, set[str], set[str]]]:
@@ -165,4 +172,5 @@ class Monitoring():
                 to_add['state'] = 'Capturing'
                 ongoing_total += 1
             captures.append(to_add)
-        return {'captures': captures, 'ongoing_total': ongoing_total, 'queued_total': queued_total}
+        return {'captures': captures, 'ongoing_total': ongoing_total, 'queued_total': queued_total,
+                'lazy_build': self.lookyloo.redis.scard('lazy_background_build')}

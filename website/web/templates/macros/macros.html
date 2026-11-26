@@ -61,9 +61,9 @@
 
 {% macro notify_form(confirm_message='')%}
 <div class="row mb-3">
-  <label for="email_notify" class="col-sm-2 col-form-label">Your email address:</label>
+  <label for="reply_to" class="col-sm-2 col-form-label">Your email address:</label>
   <div class="col-sm-10">
-    <input type="email" class="form-control" name="email_notify" id="email_notify" placeholder="me@example.com">
+    <input type="email" class="form-control" name="reply_to" id="reply_to" placeholder="me@example.com">
     <div class="alert alert-warning" role="info">
         To get back in touch with you, if needed.
     </div>
@@ -71,9 +71,9 @@
   {{boat_form()}}
 </div>
 <div class="row mb-3">
-  <label for="comment_notify" class="col-sm-2 col-form-label">Comment:</label>
+  <label for="comment" class="col-sm-2 col-form-label">Comment:</label>
   <div class="col-sm-10">
-    <textarea class="form-control" name="comment_notify" id="comment_notify" rows="3" placeholder="Why should we have a look?"></textarea>
+    <textarea class="form-control" name="comment" id="comment" rows="3" placeholder="Why should we have a look?"></textarea>
     <div class="alert alert-warning" role="info">
         Reason you want to notify us about this URL.
     </div>

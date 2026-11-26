@@ -42,6 +42,7 @@ function applyZoom() {
     main_svg.attr('viewBox', `0 0 ${svg_size.width} ${svg_size.height}`)
             .attr('width', svg_size.width * tree_zoom)
             .attr('height', svg_size.height * tree_zoom);
+    updateColumns();
 }
 
 // Zoom, keeping the point under the pointer (or the centre of the window) in place
@@ -158,12 +159,24 @@ pattern.append('rect')
     .attr('height', min_height)
     .attr("fill", "#EEEEEE");
 
-// Background of the tree (#tree-background buttons): columns (backstripes, in
-// the SVG), dots (default: CSS on #tree_svg, so the free room around the tree
-// has them too) or plain. Remembered in localStorage.
-const BACKGROUNDS = {columns: 'url(#backstripes)', dots: 'none', plain: 'none'};
+// Background of the tree (#tree-background buttons): columns (default, one
+// stripe per depth), dots or plain. All drawn by CSS on the body, so the whole
+// page has them, not only the tree. Remembered in localStorage.
+const BACKGROUNDS = {columns: 'none', dots: 'none', plain: 'none'};
 const BACKGROUND_KEY = 'lk-tree-background';
 let tree_background = 'columns';
+// Width of one depth of the tree (layout coordinates), for the columns
+let column_width = node_width;
+
+// Columns on the body: aligned on the depths of the tree, at the current zoom
+function updateColumns() {
+    const svg = main_svg.node();
+    const left = svg.getBoundingClientRect().left + window.scrollX + margin.left * tree_zoom;
+    const style = document.body.style;
+    style.setProperty('--lk-tree-column-width', `${column_width * tree_zoom}px`);
+    style.setProperty('--lk-tree-column-left', `${left}px`);
+}
+window.addEventListener('resize', updateColumns);
 try {
     const stored = localStorage.getItem(BACKGROUND_KEY);
     if (stored in BACKGROUNDS) tree_background = stored;
@@ -175,6 +188,8 @@ function setBackground(name) {
     main_svg.select('#tree-background-rect').style('fill', BACKGROUNDS[name]);
     // On the body: its background fills the whole page, however far it scrolls
     document.body.classList.toggle('lk-bg-dots', name === 'dots');
+    document.body.classList.toggle('lk-bg-columns', name === 'columns');
+    if (name === 'columns') updateColumns();
     document.querySelectorAll('#tree-background [data-background]').forEach(button => {
         button.setAttribute('aria-pressed', button.dataset.background === name ? 'true' : 'false');
         button.classList.toggle('active', button.dataset.background === name);
@@ -655,6 +670,9 @@ function update(root, computed_node_width=0) {
     svg_size = {width: svgWidth + (margin.right + margin.left)*2, height: svgHeight + margin.top + margin.bottom};
     applyZoom();
 
+    // One column per depth of the tree, as wide as a node
+    column_width = computed_node_width;
+    updateColumns();
     // Update pattern
     pattern
       .attr('width', `${computed_node_width * 2}px`)

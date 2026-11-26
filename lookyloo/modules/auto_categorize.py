@@ -37,7 +37,7 @@ class AutoCategorize(AbstractModule):
         for category, settings in self.to_categorize.items():
             if category == "invalid_init_script":
                 if self._invalid_init_script(capture):
-                    lookyloo.categorize_capture(capture.uuid, settings['tags'], as_admin=True)
+                    lookyloo.categorize_capture(capture, settings['tags'], as_admin=True)
 
     def _invalid_init_script(self, capture: CaptureCache, /) -> bool:
         """On the public instance, we have bots that submit sentences in the init_script

@@ -148,7 +148,6 @@
           {% if misp_push %}
           {{ menu_item('mispPushModal', 'Prepare push to MISP', 'send', url_for('web_misp_push_view', tree_uuid=tree_uuid, seed=seed)) }}
           {% endif %}
-          {{ menu_item('lookylooPushModal', 'Push to another Lookyloo', 'cloud-upload', title='Push the capture to another Lookyloo Instance') }}
         </ul>
       </div>
 
@@ -169,6 +168,7 @@
                 data-bs-toggle="dropdown" aria-expanded="false">{{ render_icon('person-gear') }}<span>Admin</span></button>
         <ul class="dropdown-menu dropdown-menu-end lk-tool-menu" aria-labelledby="admin-menu-btn">
           {{ menu_link(url_for('rebuild_tree', tree_uuid=tree_uuid, seed=seed), 'Rebuild capture', 'hammer') }}
+          {{ menu_item('lookylooPushModal', 'Push to another Lookyloo', 'cloud-upload', title='Push the capture to another Lookyloo Instance') }}
           {{ menu_item('ollamaModal', 'Ollama report', 'robot', url_for('tree_ollama_report', tree_uuid=tree_uuid, seed=seed), 'Throw the capture in Ollama and hope') }}
           <li><hr class="dropdown-divider"></li>
           {{ menu_link(url_for('remove_capture', tree_uuid=tree_uuid, seed=seed), 'Remove capture', 'trash', id='removeCapture', classes='lk-tool-danger') }}

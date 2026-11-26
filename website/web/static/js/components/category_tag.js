@@ -24,17 +24,12 @@ function lkCategoryTag(sprite, category, href) {
 // DataTables columns of #categoriesTable: [tag, machine tag, captures]
 function lkCategoriesColumns(table) {
     const sprite = table.dataset.lkIcons;
-    const parse = row => {
-        const link = lkParseFragment(row.category.display).querySelector('a[href]');
-        return {category: link ? link.textContent : '', href: link ? link.getAttribute('href') : null};
-    };
     return [
         {
             data: {_: 'category.filter', filter: 'category.filter'},
             render: (data, type) => type === 'display' ? '' : data,
             createdCell: (cell, data, row) => {
-                const {category, href} = parse(row);
-                cell.appendChild(lkCategoryTag(sprite, category, href));
+                cell.appendChild(lkCategoryTag(sprite, row.category.display.category_name, row.category.display.category_url));
             },
         },
         {
@@ -44,7 +39,7 @@ function lkCategoriesColumns(table) {
             visible: window.matchMedia('(min-width: 769px)').matches,
             render: (data, type) => type === 'display' ? '' : data,
             createdCell: (cell, data, row) => {
-                cell.appendChild(lkElement('span', 'lk-machinetag', parse(row).category));
+                cell.appendChild(lkElement('span', 'lk-machinetag', row.category.display.category_name));
             },
         },
         {data: 'total_captures', orderable: true, className: 'lk-categories-count'},

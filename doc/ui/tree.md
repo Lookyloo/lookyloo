@@ -85,11 +85,13 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
   asks for reduced motion).
 - **Background** (`#tree-background`, `setBackground`): a button next to
   Center opens the list:
-  dots, columns (default: one stripe per depth, the former background) or
-  plain. Remembered in `localStorage` (`lk-tree-background`). The dots are a
-  CSS background of the `body` (`lk-bg-dots`), which fills the whole page
-  however far it is dragged; the columns
-  are the `#backstripes` pattern of the SVG.
+  columns (default, one stripe per depth), dots or plain. Remembered in
+  `localStorage` (`lk-tree-background`). Both are CSS backgrounds of the
+  `body` (`lk-bg-columns`, `lk-bg-dots`), so they fill the whole page, not
+  only the tree, however far it is dragged. The columns are aligned on the
+  depths of the tree by `updateColumns` (CSS variables
+  `--lk-tree-column-width` and `--lk-tree-column-left`, updated on zoom,
+  layout and window resize).
 - **Drag** (`js/capture_page.js`): press anywhere on the tree and move to move
   around it (the page scrolls). A press without movement is still a normal
   click; after a drag the click is swallowed. Links, buttons and the legend are

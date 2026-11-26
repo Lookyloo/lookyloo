@@ -35,26 +35,15 @@ function lkElement(tag, className, text) {
     return element;
 }
 
-function lkParseFragment(html) {
-    return new DOMParser().parseFromString(html || '', 'text/html').body;
-}
-
 // One row of the indexTable JSON -> plain values
 function lkParseIndexRow(row) {
-    const page = lkParseFragment(row.page.display);
-    const redirects = lkParseFragment(row.redirects.display);
-    const titleElement = page.querySelector('span[title]');
-    const link = page.querySelector('a[href]');
-    const download = redirects.querySelector('a[href]');
-    const url = page.querySelector('[data-copy]')?.dataset.copy || '';
-    const hops = [...redirects.querySelectorAll('[data-copy]')].map(el => el.dataset.copy);
     return {
-        title: titleElement ? titleElement.getAttribute('title') : '',
-        href: link ? link.getAttribute('href') : null,
-        url,
-        hops: hops.length ? hops : (url ? [url] : []),
-        redirectsHref: download ? download.getAttribute('href') : null,
-        time: row.capture_time,
+        title: row.page.display.title,
+        href: row.page.display.capture_url,
+        url: row.page.display.submitted_url,
+        hops: row.page.display.redirects,
+        redirectsHref: row.page.display.download_redirects,
+        time: row.page.display.capture_time,
         // Plain strings, only for the logged in users (post_table, indexTable)
         categories: Array.isArray(row.categories) ? row.categories : [],
     };
@@ -285,35 +274,15 @@ function lkIndexColumns(table) {
 // nodes of the capture the value was found, with the links to these nodes.
 
 function lkParsePivotRow(row) {
-    const title = lkParseFragment(row.capture_title.display);
-    const landing = lkParseFragment(row.landing_page.display);
-    // The link to the capture: the first one of the fragment (the others go to
-    // the nodes). From a popup (?from_popup=True) it is href="#" with the UUID
-    // in data-capture (openNewTab, js/generic.js): rebuilt as /tree/<uuid>.
-    const link = title.querySelector('a');
-    const href = link ? (link.dataset.capture ? `/tree/${link.dataset.capture}` : link.getAttribute('href')) : null;
-    const count = title.querySelector('b');
-    const nodes = [...title.querySelectorAll('li a[href]')].map(a => ({
-        href: a.getAttribute('href'),
-        url: a.querySelector('[title]')?.getAttribute('title') || a.textContent.trim(),
-    }));
-    const landingCopy = landing.querySelector('[data-copy]');
-    const url = landingCopy ? landingCopy.dataset.copy
-        : (landing.querySelector('[title]')?.getAttribute('title') || landing.textContent.trim());
-    // Hostnames of the capture related to the value (plain strings, post_table)
-    const hostnames = Array.isArray(row.hostnames) ? row.hostnames : [];
-    // Redirect chain (redirects, added by post_table): first URL = the captured one
-    const hops = Array.isArray(row.redirects) && row.redirects.length ? row.redirects : (url ? [url] : []);
-    const uuid = href ? lkPreviewUuid(href) : null;
     return {
-        title: link ? link.textContent.trim() : '',
-        href,
-        url: hops[0] || url,
-        hops,
-        redirectsHref: uuid && hops.length > 1 ? `/tree/${uuid}/redirects` : null,
-        nodes,
-        nodeCount: count ? Number(count.textContent) : nodes.length,
-        hostnames,
+        title: row.capture_info.display.title,
+        href: row.capture_info.display.capture_url,
+        url: row.capture_info.display.landing_page,
+        hops: row.capture_info.display.redirects,
+        redirectsHref: row.capture_info.display.download_redirects,
+        nodes: Array.isArray(row.capture_info.display.nodes) ? row.capture_info.display.nodes : [],
+        nodeCount: Array.isArray(row.capture_info.display.nodes) ? row.capture_info.display.nodes.length : 0,
+        hostnames: Array.isArray(row.capture_info.display.hostnames) ? row.capture_info.display.hostnames : [],
         time: row.capture_time,
     };
 }
@@ -379,7 +348,7 @@ function lkPivotColumns(table) {
     return [
         {
             data: null,
-            render: (data, type, row) => type === 'display' ? '' : (row.capture_title.filter || ''),
+            render: (data, type, row) => type === 'display' ? '' : (row.capture_info.filter || ''),
             createdCell: (cell, data, row) => {
                 const capture = {...lkParsePivotRow(row), thumbnail};
                 // Same row as the list of the captures (redirects, unencrypted hop,
