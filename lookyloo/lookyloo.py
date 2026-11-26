@@ -1008,6 +1008,7 @@ class Lookyloo():
             if query.headers is None:
                 query.headers = {}
             query.headers['dnt'] = query.dnt
+        requested_force = query.force
         if authenticated:
             if user_config := load_user_config(user):
                 try:
@@ -1015,6 +1016,13 @@ class Lookyloo():
                 except CaptureSettingsError as e:
                     self.logger.critical(f'Unable to apply user config for {user}: {e}')
                     raise e
+        # Forced recapture is an explicit request, not a saved user preference.
+        query.force = requested_force
+
+        if not authenticated:
+            if query.force:
+                self.logger.warning(f'Unauthenticated user "{user}" attempted to force a capture.')
+            query.force = False
 
         priority = get_priority(source, user, authenticated)
         if priority < -100:
@@ -1083,8 +1091,8 @@ class Lookyloo():
                     init_script=query.init_script,
                     uuid=query.uuid,
                     final_wait=query.final_wait,
-                    # force=query.force,
-                    # recapture_interval=query.recapture_interval,
+                    force=query.force,
+                    recapture_interval=query.recapture_interval,
                     priority=priority
                 )
                 # it has been queued.

@@ -2857,8 +2857,9 @@ def capture_web() -> str | Response | WerkzeugResponse:
                 if (not capture_query['auto_report']['email']
                         and not capture_query['auto_report']['comment']):
                     capture_query['auto_report'] = True
-            # Video recoring, admin only.
+            # Video recording and forced recapture, authenticated users only.
             capture_query['with_video'] = True if request.form.get('with_video') else False
+            capture_query['force'] = True if request.form.get('force') else False
 
         if request.form.get('url'):
             capture_query['url'] = request.form['url']

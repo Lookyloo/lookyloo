@@ -312,6 +312,11 @@
               <label class="form-check-label" for="with_video">Record a video of the capture</label>
               <p id="with_video_help" class="lk-hint">If selected, a video of the capture will be recorded. It might be pretty big.</p>
             </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="force" name="force" aria-describedby="force_help">
+              <label class="form-check-label" for="force">Force a new capture</label>
+              <p id="force_help" class="lk-hint">If selected, Lookyloo will request a new capture even if an identical capture was recently submitted.</p>
+            </div>
             {%endif%}
           </div>
         </div>

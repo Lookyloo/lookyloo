@@ -974,6 +974,7 @@ submit_fields_post = api.model('SubmitFieldsPost', {
     'headers': fields.String(description="Headers to pass to the capture", example='Accept-Language: en-US;q=0.5, fr-FR;q=0.4'),
     'proxy': fields.Url(description="Proxy to use for the capture. Format: [scheme]://[username]:[password]@[hostname]:[port]", example=''),
     'cookies': fields.String(description="JSON export of a list of cookies as exported from an other capture", example=''),
+    'force': fields.Boolean(description="Force a new capture instead of reusing a recent identical capture. Authenticated users only.", example=False),
     'auto_report': fields.Nested(auto_report_model, description="The settings for the automatic reporting.")
 })
 
@@ -990,6 +991,7 @@ class SubmitCapture(Resource):  # type: ignore[misc]
     @api.param('device_name', 'Use the pre-configured settings for this device')  # type: ignore[untyped-decorator]
     @api.param('referer', 'Referer to pass to the capture')  # type: ignore[untyped-decorator]
     @api.param('proxy', 'Proxy to use for the the capture')  # type: ignore[untyped-decorator]
+    @api.param('force', 'Force a new capture instead of reusing a recent identical capture. Authenticated users only.', default=False)  # type: ignore[untyped-decorator]
     @api.produces(['text/text', 'application/json'])  # type: ignore[untyped-decorator]
     def get(self) -> str | dict[str, str] | Response:
         if flask_login.current_user.is_authenticated:
@@ -1004,7 +1006,8 @@ class SubmitCapture(Resource):  # type: ignore[misc]
             'url': request.args['url'],
             'listing': False if 'listing' in request.args and request.args['listing'] in [0, '0'] else True,
             'allow_tracking': False if 'allow_tracking' in request.args and request.args['allow_tracking'] in [0, '0'] else True,
-            'java_script_enabled': False if 'java_script_enabled' in request.args and request.args['java_script_enabled'] in [0, '0'] else True
+            'java_script_enabled': False if 'java_script_enabled' in request.args and request.args['java_script_enabled'] in [0, '0'] else True,
+            'force': request.args.get('force', '').lower() in {'1', 'true', 'yes'}
         }
         if request.args.get('user_agent'):
             to_query['user_agent'] = request.args['user_agent']
