@@ -99,6 +99,7 @@ class BackgroundIndexer(AbstractManager):
         else:
             _iterator = self.redis.hscan_iter
 
+        # Can't use random keys there, as we're only popping the entries from lazy_index.
         for uuid, capture_dir in _iterator(key):
             if key == 'lazy_index':
                 # remove uuid

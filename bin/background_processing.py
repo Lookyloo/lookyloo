@@ -72,7 +72,7 @@ class Processing(AbstractManager):
                 continue
 
             try:
-                cache = self.lookyloo.capture_cache(uuid, quick=True)
+                cache = self.lookyloo.capture_cache(uuid, quick=True, unsafe=True)
             except NotCached:
                 continue
             # we do not want this method to build the pickle, **but** if the pickle exists
@@ -231,14 +231,14 @@ class Processing(AbstractManager):
         if self.assemblyline.available:
             for entry in self.assemblyline.get_notification_queue():
                 if current_uuid := entry['submission']['metadata'].get('lookyloo_uuid'):
-                    if cached := self.lookyloo.capture_cache(current_uuid):
+                    if cached := self.lookyloo.capture_cache(current_uuid, unsafe=True):
                         self.logger.debug(f'Found AssemblyLine response for {cached.uuid}: {entry}')
                         self.logger.debug(f'Ingest ID: {entry["ingest_id"]}, UUID: {entry["submission"]["metadata"]["lookyloo_uuid"]}')
                         with (cached.capture_dir / 'assemblyline_ingest.json').open('w') as f:
                             f.write(json.dumps(entry, indent=2, default=serialize_to_json))
 
         __counter_shutdown_force = 0
-        for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time, public=False):
+        for cached in self.lookyloo.sorted_capture_cache(index_cut_time=cut_time, public=False, session_is_admin=True):
             if cached.error:
                 continue
             __counter_shutdown_force += 1
@@ -262,7 +262,7 @@ class Processing(AbstractManager):
                         for hostname, lookup in lookups.items():
                             if lookup and isinstance(lookup, dict) and 'tags' in lookup:
                                 tags_to_add = [tag for tag in lookup['tags'] if tag.startswith('dark-web:topic')]
-                                self.lookyloo.categorize_capture(cached.uuid, categories=tags_to_add, as_admin=True)
+                                self.lookyloo.categorize_capture(cached, categories=tags_to_add, as_admin=True)
                     else:
                         # no onions in the redirects, do nothing
                         pass
@@ -276,7 +276,7 @@ class Processing(AbstractManager):
                     parsed = urlparse(redirect)
                     if parsed.hostname and parsed.hostname.endswith('.onion'):
                         try:
-                            ail_response = self.ail.submit(self.lookyloo.lacus_export(cached.uuid))
+                            ail_response = self.ail.submit(self.lookyloo.lacus_export(cached))
                         except Exception as e:
                             logger.error(f'Unable to submit capture to AIL: {e}')
                         # got one, break

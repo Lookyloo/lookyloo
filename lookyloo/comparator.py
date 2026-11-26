@@ -13,8 +13,7 @@ from lookyloo_models import CompareSettings
 from redis import ConnectionPool, Redis
 from redis.connection import UnixDomainSocketConnection
 
-from .context import Context
-from .capturecache import CapturesIndex
+from .capturecache import CaptureCache
 from .default import get_config, get_socket_path, LookylooException
 from .exceptions import TreeNeedsRebuild
 
@@ -28,8 +27,6 @@ class Comparator():
         self.redis_pool: ConnectionPool = ConnectionPool(connection_class=UnixDomainSocketConnection,
                                                          path=get_socket_path('cache'), decode_responses=True)
 
-        self.context = Context()
-        self._captures_index = CapturesIndex(self.redis, self.context)
         self.public_domain = get_config('generic', 'public_domain')
 
     @property
@@ -72,19 +69,7 @@ class Comparator():
         # IPs in hostnode + ASNs
         return different, to_return
 
-    def get_comparables_capture(self, capture_uuid: str) -> dict[str, Any]:
-        capture = self._captures_index.get_capture_cache(capture_uuid)
-
-        # Makes sure the tree is built and valid, force a rebuild otherwise
-        try:
-            _ = capture.tree
-        except TreeNeedsRebuild:
-            self.logger.warning(f"The tree for {capture_uuid} has to be rebuilt.")
-            self._captures_index.remove_pickle(capture_uuid)
-            capture = self._captures_index.get_capture_cache(capture_uuid)
-        except LookylooException as e:
-            return {'error': str(e)}
-
+    def get_comparables_capture(self, capture: CaptureCache) -> dict[str, Any]:
         to_return: dict[str, Any]
         try:
             if capture.error:
@@ -104,19 +89,19 @@ class Comparator():
                 to_return['redirects']['nodes'] = [self.get_comparables_node(a) for a in list(reversed(capture.tree.root_hartree.rendered_node.get_ancestors())) + [capture.tree.root_hartree.rendered_node]]
                 to_return['ressources'] = {(a.name, a.hostname) for a in capture.tree.root_hartree.rendered_node.traverse()}
         except TreeNeedsRebuild as e:
-            self.logger.warning(f"The tree for {capture_uuid} couldn't be built.")
+            self.logger.warning(f"The tree for {capture.uuid} couldn't be built.")
             to_return = {'error': str(e)}
         except LookylooException as e:
             to_return = {'error': str(e)}
         return to_return
 
-    def compare_captures(self, capture_left: str, capture_right: str, /, *, settings: CompareSettings | dict[str, Any] | str | None=None) -> tuple[bool, dict[str, Any]]:
+    def compare_captures(self, capture_left: CaptureCache, capture_right: CaptureCache, /, *, settings: CompareSettings | dict[str, Any] | str | None=None) -> tuple[bool, dict[str, Any]]:
         different: bool = False
         to_return: dict[str, dict[str,
                                   (str | list[str | dict[str, Any]]
                                    | dict[str, (int | str | list[int | str | dict[str, Any]])])]] = {}
-        to_return['lookyloo_urls'] = {'left': f'https://{self.public_domain}/tree/{capture_left}',
-                                      'right': f'https://{self.public_domain}/tree/{capture_right}'}
+        to_return['lookyloo_urls'] = {'left': f'https://{self.public_domain}/tree/{capture_left.uuid}',
+                                      'right': f'https://{self.public_domain}/tree/{capture_right.uuid}'}
         left = self.get_comparables_capture(capture_left)
         right = self.get_comparables_capture(capture_right)
         if 'error' in left and 'error' in right:

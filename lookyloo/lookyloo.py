@@ -338,20 +338,19 @@ class Lookyloo():
 
         return self._lacus
 
-    def add_context(self, capture_uuid: str, /, urlnode_uuid: str, *, ressource_hash: str,
-                    legitimate: bool, malicious: bool, details: dict[str, dict[str, str]]) -> None:
+    def add_context(self, *, ressource_hash: str, legitimate: bool, malicious: bool,
+                    details: dict[str, dict[str, str]]) -> None:
         '''Adds context information to a capture or a URL node'''
         if malicious:
             self.context.add_malicious(ressource_hash, details['malicious'])
         if legitimate:
             self.context.add_legitimate(ressource_hash, details['legitimate'])
 
-    def add_to_legitimate(self, capture_uuid: str, /, hostnode_uuid: str | None=None,
+    def add_to_legitimate(self, capture: CaptureCache, /, hostnode_uuid: str | None=None,
                           urlnode_uuid: str | None=None) -> None:
         '''Mark a full capture as legitimate.
         Iterates over all the nodes and mark them all as legitimate too.'''
-        cache = self.capture_cache(capture_uuid)
-        self.context.mark_as_legitimate(cache.tree, hostnode_uuid, urlnode_uuid)
+        self.context.mark_as_legitimate(capture.tree, hostnode_uuid, urlnode_uuid)
 
     def remove_pickle(self, capture_uuid: str, /) -> None:
         '''Remove the pickle from a specific capture.'''
@@ -383,42 +382,38 @@ class Lookyloo():
         '''Get a list of host nodes from a tree, by UUID'''
         return [tree.root_hartree.get_host_node_by_uuid(node_uuid) for node_uuid in node_uuids]
 
-    def get_statistics(self, capture_uuid: str) -> dict[str, Any]:
+    def get_statistics(self, capture: CaptureCache) -> dict[str, Any]:
         '''Get the statistics of a capture.'''
-        cache = self.capture_cache(capture_uuid)
-        return cache.tree.root_hartree.stats
+        return capture.tree.root_hartree.stats
 
-    def get_info(self, capture_uuid: str) -> dict[str, Any]:
+    def get_info(self, capture: CaptureCache) -> dict[str, Any]:
         '''Get basic information about the capture.'''
-        cache = self.capture_cache(capture_uuid)
-
-        to_return = {'uuid': cache.uuid,
-                     'url': cache.url if hasattr(cache, 'url') else 'Unable to get URL for the capture'}
-        if hasattr(cache, 'error') and cache.error:
-            to_return['error'] = cache.error
-        if hasattr(cache, 'title'):
-            to_return['title'] = cache.title
-        if hasattr(cache, 'timestamp'):
-            to_return['capture_time'] = cache.timestamp.isoformat()
-        if hasattr(cache, 'user_agent') and cache.user_agent:
-            to_return['user_agent'] = cache.user_agent
-        if hasattr(cache, 'referer'):
-            to_return['referer'] = cache.referer if cache.referer else ''
+        to_return = {'uuid': capture.uuid,
+                     'url': capture.url if hasattr(capture, 'url') else 'Unable to get URL for the capture'}
+        if hasattr(capture, 'error') and capture.error:
+            to_return['error'] = capture.error
+        if hasattr(capture, 'title'):
+            to_return['title'] = capture.title
+        if hasattr(capture, 'timestamp'):
+            to_return['capture_time'] = capture.timestamp.isoformat()
+        if hasattr(capture, 'user_agent') and capture.user_agent:
+            to_return['user_agent'] = capture.user_agent
+        if hasattr(capture, 'referer'):
+            to_return['referer'] = capture.referer if capture.referer else ''
         return to_return
 
-    def get_meta(self, capture_uuid: str) -> dict[str, str]:
+    def get_meta(self, capture: CaptureCache) -> dict[str, str]:
         '''Get the meta informations from a capture (mostly, details about the User Agent used.)'''
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
-        cache = self.capture_cache(capture_uuid)
-        metafile = cache.capture_dir / 'meta'
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
+        metafile = capture.capture_dir / 'meta'
         if metafile.exists():
             with metafile.open('rb') as f:
                 return orjson.loads(f.read())
 
-        if not cache.user_agent:
+        if not capture.user_agent:
             return {}
         meta = {}
-        ua = ParsedUserAgent(cache.user_agent)
+        ua = ParsedUserAgent(capture.user_agent)
         meta['user_agent'] = ua.string
         if ua.platform:
             meta['os'] = ua.platform
@@ -435,40 +430,32 @@ class Lookyloo():
             f.write(orjson.dumps(meta))
         return meta
 
-    def get_capture_settings(self, capture_uuid: str) -> LookylooCaptureSettings | None:
-        '''Get the capture settings from the cache or the disk.'''
+    def get_capture_settings_queue(self, capture_uuid: str) -> LookylooCaptureSettings | None:
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         try:
             if capture_settings := self.redis.hgetall(capture_uuid):
                 return LookylooCaptureSettings.model_validate(capture_settings)
-            return self.capture_cache(capture_uuid).capture_settings
+            return None
         except CaptureSettingsError as e:
-            logger.warning(f'Invalid capture settings: {e}')
-            raise e
-        except UUIDMissingInCache as e:
+            logger.warning(f'Invalid capture settings (queue): {e}')
             raise e
         except ValidationError as e:
-            logger.warning(f'Invalid capture settings: {e}')
+            logger.warning(f'Invalid capture settings (queue): {e}')
             raise LookylooCaptureSettingsError('Invalid capture settings', e)
 
-    def index_capture(self, capture_uuid: str, /, *, authenticated: bool) -> tuple[bool, str]:
+    def index_capture(self, capture: CaptureCache, /, *, authenticated: bool) -> tuple[bool, str]:
         """This method is called from the web interface (trigger indexing).
         If the index is slow, it is automatically added in the backlog and will be processed ASAP"""
-        try:
-            cache = self.capture_cache(capture_uuid)
-        except UUIDMissingInCache:
-            # the capture isn't ready yet, cannot index
-            return False, 'UUID Unknown, cannot index.'
 
         try:
-            if cache.private:
+            if capture.private:
                 # Do not index the private captures in public index
                 # NOTE: the unlisted captures are still in the index on-demand from the user, it is expected.
                 public_index_done = False
             else:
-                public_index_done = get_indexing().index_capture(capture_uuid, cache.capture_dir, force_manual=authenticated)
+                public_index_done = get_indexing().index_capture(capture.uuid, capture.capture_dir, force_manual=authenticated)
             if get_config('generic', 'index_everything'):
-                full_index_done = get_indexing(full=True).index_capture(capture_uuid, cache.capture_dir, force_manual=authenticated)
+                full_index_done = get_indexing(full=True).index_capture(capture.uuid, capture.capture_dir, force_manual=authenticated)
             else:
                 # quietly ignore it
                 full_index_done = True
@@ -476,34 +463,34 @@ class Lookyloo():
             if authenticated:
                 if public_index_done and full_index_done:
                     return True, 'Indexing in public and full index done.'
-                elif cache.private and full_index_done:
+                elif capture.private and full_index_done:
                     return True, 'Indexing in full index only (private capture).'
                 else:
                     return False, f'One of the index failed: Public: {public_index_done} / Full: {full_index_done}.'
             else:
                 if public_index_done:
                     return True, 'Indexing done.'
-                elif cache.private:
+                elif capture.private:
                     return False, 'Cannot index private capture.'
                 elif get_indexing().is_slow:
                     return False, 'The capture will be indexed later (slow).'
                 else:
                     return False, 'Unable to index capture, retry later.'
         except TreeNeedsRebuild:
-            self.logger.info(f'Cannot index {capture_uuid}, need to rebuild the tree first.')
-            self.redis.sadd('lazy_background_build', capture_uuid)
+            self.logger.info(f'Cannot index {capture.uuid}, need to rebuild the tree first.')
+            self.redis.sadd('lazy_background_build', capture.uuid)
             return False, 'Unable to index capture, tree not built, retry later.'
         except Exception as e:
-            self.logger.warning(f'Unable to index capture {capture_uuid}: {e}')
-            self.remove_pickle(capture_uuid)
+            self.logger.warning(f'Unable to index capture {capture.uuid}: {e}')
+            self.remove_pickle(capture.uuid)
             return False, 'Unable to index capture, capture cache broken, retry later.'
 
-    def categorize_capture(self, capture_uuid: str, /, categories: list[str], *, as_admin: bool) -> tuple[set[str], set[str]]:
+    def categorize_capture(self, capture: CaptureCache, /, categories: list[str], *, as_admin: bool) -> tuple[set[str], set[str]]:
         '''Add a category (MISP Taxonomy tag) to a capture.'''
         if not get_config('generic', 'enable_categorization'):
             return set(), set()
 
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
         # Make sure the category is mappable to the content-classification taxonomy
         valid_categories = set()
         invalid_categories = set()
@@ -519,28 +506,27 @@ class Lookyloo():
                 logger.warning(f'Unknown category: {category}')
                 invalid_categories.add(category)
 
-        cache = self._captures_index.get_capture_cache(capture_uuid)
         if as_admin:
             # Keep categories that aren't a part of the content-classification taxonomy, force the rest
-            current_categories = {c for c in cache.categories if not c.startswith('content-classification')}
+            current_categories = {c for c in capture.categories if not c.startswith('content-classification')}
             current_categories |= valid_categories
             current_categories |= invalid_categories
         else:
             # Only add categories.
-            current_categories = cache.categories
+            current_categories = capture.categories
             current_categories |= valid_categories
-        cache.categories = current_categories
+        capture.categories = current_categories
 
-        get_indexing().reindex_categories_capture(capture_uuid)
+        get_indexing().reindex_categories_capture(capture.uuid)
         if get_config('generic', 'index_everything'):
-            get_indexing(full=True).reindex_categories_capture(capture_uuid)
+            get_indexing(full=True).reindex_categories_capture(capture.uuid)
         return valid_categories, invalid_categories
 
-    def uncategorize_capture(self, capture_uuid: str, /, category: str) -> None:
+    def uncategorize_capture(self, capture_uuid: str, seed: str | None, /, category: str) -> None:
         '''Remove a category (MISP Taxonomy tag) from a capture.'''
         if not get_config('generic', 'enable_categorization'):
             return
-        categ_file = self._captures_index.get_capture_cache(capture_uuid).capture_dir / 'categories'
+        categ_file = self.capture_cache(capture_uuid, seed=seed).capture_dir / 'categories'
         # get existing categories if possible
         if categ_file.exists():
             with categ_file.open() as f:
@@ -555,80 +541,70 @@ class Lookyloo():
         if get_config('generic', 'index_everything'):
             get_indexing(full=True).reindex_categories_capture(capture_uuid)
 
-    def trigger_modules(self, capture_uuid: str, /, force: bool, auto_trigger: bool, as_admin: bool) -> dict[str, Any]:
+    def trigger_modules(self, capture: CaptureCache, /, force: bool, auto_trigger: bool, as_admin: bool) -> dict[str, Any]:
         '''Launch the 3rd party modules on a capture.
         It uses the cached result *if* the module was triggered the same day.
         The `force` flag re-triggers the module regardless of the cache.'''
-        try:
-            cache = self.capture_cache(capture_uuid)
-        except UUIDMissingInCache:
-            return {'error': f'UUID {capture_uuid} is either unknown or the tree is not ready yet.'}
 
-        self.uwhois.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
-        self.hashlookup.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        self.uwhois.capture_default_trigger(capture, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        self.hashlookup.capture_default_trigger(capture, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
 
         to_return: dict[str, dict[str, Any]] = {'PhishingInitiative': {}, 'VirusTotal': {}, 'UrlScan': {},
                                                 'URLhaus': {}}
-        to_return['PhishingInitiative'] = self.pi.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
-        to_return['VirusTotal'] = self.vt.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
-        to_return['UrlScan'] = self.urlscan.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
-        to_return['Phishtank'] = self.phishtank.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
-        to_return['URLhaus'] = self.urlhaus.capture_default_trigger(cache, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        to_return['PhishingInitiative'] = self.pi.capture_default_trigger(capture, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        to_return['VirusTotal'] = self.vt.capture_default_trigger(capture, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        to_return['UrlScan'] = self.urlscan.capture_default_trigger(capture, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        to_return['Phishtank'] = self.phishtank.capture_default_trigger(capture, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
+        to_return['URLhaus'] = self.urlhaus.capture_default_trigger(capture, force=force, auto_trigger=auto_trigger, as_admin=as_admin)
         return to_return
 
-    def get_modules_responses(self, capture_uuid: str) -> dict[str, Any]:
+    def get_modules_responses(self, capture: CaptureCache) -> dict[str, Any]:
         '''Get the responses of the modules from the cached responses on the disk'''
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
-        try:
-            # TODO: return a message when we cannot get the modules responses, update the code checking if it is falsy accordingly.
-            cache = self.capture_cache(capture_uuid)
-        except UUIDMissingInCache:
-            logger.warning('Unable to get the modules responses unless the capture is cached')
-            return {}
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
 
-        if not hasattr(cache, 'url'):
+        if not hasattr(capture, 'url'):
             logger.warning('The capture does not have a URL in the cache, it is broken.')
             return {}
 
         to_return: dict[str, Any] = {}
         if self.vt.available:
             to_return['vt'] = {}
-            if hasattr(cache, 'redirects') and cache.redirects:
-                for redirect in cache.redirects:
+            if hasattr(capture, 'redirects') and capture.redirects:
+                for redirect in capture.redirects:
                     to_return['vt'][redirect] = self.vt.get_url_lookup(redirect)
             else:
-                to_return['vt'][cache.url] = self.vt.get_url_lookup(cache.url)
+                to_return['vt'][capture.url] = self.vt.get_url_lookup(capture.url)
         if self.pi.available:
             to_return['pi'] = {}
-            if hasattr(cache, 'redirects') and cache.redirects:
-                for redirect in cache.redirects:
+            if hasattr(capture, 'redirects') and capture.redirects:
+                for redirect in capture.redirects:
                     to_return['pi'][redirect] = self.pi.get_url_lookup(redirect)
             else:
-                to_return['pi'][cache.url] = self.pi.get_url_lookup(cache.url)
+                to_return['pi'][capture.url] = self.pi.get_url_lookup(capture.url)
         if self.phishtank.available:
             to_return['phishtank'] = {'urls': {}, 'ips_hits': {}}
-            if hasattr(cache, 'redirects') and cache.redirects:
-                for redirect in cache.redirects:
+            if hasattr(capture, 'redirects') and capture.redirects:
+                for redirect in capture.redirects:
                     to_return['phishtank']['urls'][redirect] = self.phishtank.get_url_lookup(redirect)
             else:
-                to_return['phishtank']['urls'][cache.url] = self.phishtank.get_url_lookup(cache.url)
-            ips_hits = self.phishtank.lookup_ips_capture(cache)
+                to_return['phishtank']['urls'][capture.url] = self.phishtank.get_url_lookup(capture.url)
+            ips_hits = self.phishtank.lookup_ips_capture(capture)
             if ips_hits:
                 to_return['phishtank']['ips_hits'] = ips_hits
         if self.urlhaus.available:
             to_return['urlhaus'] = {'urls': {}}
-            if hasattr(cache, 'redirects') and cache.redirects:
-                for redirect in cache.redirects:
+            if hasattr(capture, 'redirects') and capture.redirects:
+                for redirect in capture.redirects:
                     to_return['urlhaus']['urls'][redirect] = self.urlhaus.get_url_lookup(redirect)
             else:
-                to_return['urlhaus']['urls'][cache.url] = self.urlhaus.get_url_lookup(cache.url)
+                to_return['urlhaus']['urls'][capture.url] = self.urlhaus.get_url_lookup(capture.url)
 
         if self.urlscan.available:
             to_return['urlscan'] = {'submission': {}, 'result': {}}
-            to_return['urlscan']['submission'] = self.urlscan.get_url_submission(cache)
+            to_return['urlscan']['submission'] = self.urlscan.get_url_submission(capture)
             if to_return['urlscan']['submission'] and 'uuid' in to_return['urlscan']['submission']:
                 # The submission was done, try to get the results
-                result = self.urlscan.url_result(cache)
+                result = self.urlscan.url_result(capture)
                 if 'error' not in result:
                     to_return['urlscan']['result'] = result
         return to_return
@@ -647,13 +623,12 @@ class Lookyloo():
                 return True, None
         return False, None
 
-    def remove_capture(self, capture_uuid: str) -> None:
+    def remove_capture(self, capture: CaptureCache) -> None:
         """Remove the capture, it won't be accessible anymore."""
 
         removed_captures_dir = get_homedir() / 'removed_captures'
         removed_captures_dir.mkdir(parents=True, exist_ok=True)
-        capture_dir = self._captures_index.get_capture_cache(capture_uuid).capture_dir
-        shutil.move(str(capture_dir), str(removed_captures_dir / capture_dir.name))
+        shutil.move(str(capture.capture_dir), str(removed_captures_dir / capture.capture_dir.name))
 
     def update_tree_cache_info(self, process_id: int, classname: str) -> None:
         self.redis.hset('tree_cache', f'{process_id}|{classname}', str(self._captures_index.lru_cache_status()))
@@ -699,7 +674,9 @@ class Lookyloo():
     def sorted_capture_cache(self, capture_uuids: Iterable[str] | None=None,
                              cached_captures_only: bool=True,
                              index_cut_time: datetime | None=None,
-                             public: bool=True) -> list[CaptureCache]:
+                             public: bool=True,
+                             *, session_known_private: dict[str, str] | None=None,
+                             session_is_admin: bool=False) -> list[CaptureCache]:
         '''Get all the captures in the cache, sorted by timestamp (new -> old).
         By default, this method will only return the captures that are currently cached.'''
         # Make sure we do not try to load archived captures that would still be in 'lookup_dirs'
@@ -732,7 +709,10 @@ class Lookyloo():
 
         for uuid in capture_uuids:
             try:
-                c = self.capture_cache(uuid, quick=cached_captures_only)
+                if session_is_admin:
+                    c = self.capture_cache(uuid, unsafe=True, quick=cached_captures_only)
+                else:
+                    c = self.capture_cache(uuid, seed=session_known_private.get(uuid) if session_known_private else None, quick=cached_captures_only)
                 if hasattr(c, 'timestamp'):
                     all_cache.append(c)
                 else:
@@ -741,7 +721,8 @@ class Lookyloo():
                 self.logger.info(f'Skipping {uuid}, not in cache (ongoing?).')
             except NotCached:
                 self.logger.info(f'Skipping {uuid}, not cached yet.')
-
+            except LookylooPrivateCapture:
+                self.logger.warning(f'Skipping {uuid}: Private capture.')
             except Exception as e:
                 self.logger.warning(f'Skipping {uuid}: {e}.')
 
@@ -887,20 +868,30 @@ class Lookyloo():
 
     def capture_is_private(self, capture_uuid: str) -> bool:
         try:
+            if _s := self.get_capture_settings_queue(capture_uuid):
+                # check setting in the queue
+                return _s.private
             if self.get_capture_status(capture_uuid) == CaptureStatusCore.DONE:
                 return self._captures_index.capture_is_private(capture_uuid)
-            # check if the settings say it's private
-            if _s := self.get_capture_settings(capture_uuid):
-                return _s.private
         except UUIDMissingInCache as e:
             # reraise the exception with a more helpfull error message
             raise UUIDMissingInCache('Cannot find this UUID in the cache, unknown privacy status.') from e
         raise UnknownUUID('Cannot find the privacy status of this capture.')
 
-    def capture_seed_valid(self, capture_uuid: str, seed: str) -> bool:
+    def capture_seed_valid(self, capture_uuid: str, seed: str | None) -> bool:
+        if not seed:
+            return False
         return self._captures_index.check_seed(capture_uuid, seed)
 
-    def capture_cache(self, capture_uuid: str, /, *, force_update: bool = False, quick: bool=False) -> CaptureCache:
+    @overload
+    def capture_cache(self, capture_uuid: str, /, *, unsafe: bool, force_update: bool = False, quick: bool=False) -> CaptureCache:
+        ...
+
+    @overload
+    def capture_cache(self, capture_uuid: str, /, *, seed: str | None, force_update: bool = False, quick: bool=False) -> CaptureCache:
+        ...
+
+    def capture_cache(self, capture_uuid: str, /, *, unsafe: bool=False, seed: str | None=None, force_update: bool = False, quick: bool=False) -> CaptureCache:
         """Get the cache from redis.
             * force_update: Reload the cache if needed (new format)
             * quick is True: Only return a cache **if** it is in valkey, doesn't try to build the tree.
@@ -909,14 +900,14 @@ class Lookyloo():
             raise UUIDMissingInCache(f'UUID {capture_uuid} does not exists in the cache (may be ongoing).')
 
         if quick:
-            cache = self._captures_index.get_capture_cache_quick(capture_uuid)
+            cache = self._captures_index._get_capture_cache_quick(capture_uuid, seed=seed, unsafe=unsafe)
             if not cache:
                 raise NotCached(f'{capture_uuid} is not in the cache.')
             return cache
 
         logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         try:
-            cache = self._captures_index.get_capture_cache(capture_uuid)
+            cache = self._captures_index._get_capture_cache(capture_uuid, seed=seed, unsafe=unsafe)
             if cache and force_update:
                 needs_update = False
                 if not cache.user_agent and not cache.error:
@@ -928,7 +919,7 @@ class Lookyloo():
                     needs_update = True
                 if needs_update:
                     self._captures_index.reload_cache(capture_uuid)
-                    cache = self._captures_index.get_capture_cache(capture_uuid)
+                    cache = self._captures_index._get_capture_cache(capture_uuid, seed=seed)
             return cache
         except NoValidHarFile as e:
             logger.debug('No HAR files, broken capture.')
@@ -1210,9 +1201,8 @@ class Lookyloo():
                 final_mails.add(mail)
         return final_mails
 
-    def contacts_filtered(self, capture_uuid: str) -> set[str]:
-        cache = self.capture_cache(capture_uuid)
-        rendered_hostnode = self.get_hostnode_from_tree(cache.tree, node_uuid=cache.tree.root_hartree.rendered_node.hostnode_uuid)
+    def contacts_filtered(self, capture: CaptureCache) -> set[str]:
+        rendered_hostnode = self.get_hostnode_from_tree(capture.tree, node_uuid=capture.tree.root_hartree.rendered_node.hostnode_uuid)
         result: set[str] = set()
         for node in reversed(rendered_hostnode.get_ancestors()):
             if mails := self.takedown_filtered(node):
@@ -1221,17 +1211,16 @@ class Lookyloo():
             result |= mails
         return result
 
-    def contacts(self, capture_uuid: str) -> list[dict[str, Any]]:
-        cache = self.capture_cache(capture_uuid)
-        rendered_hostnode = self.get_hostnode_from_tree(cache.tree, cache.tree.root_hartree.rendered_node.hostnode_uuid)
+    def contacts(self, capture: CaptureCache) -> list[dict[str, Any]]:
+        rendered_hostnode = self.get_hostnode_from_tree(capture.tree, capture.tree.root_hartree.rendered_node.hostnode_uuid)
         result = []
         for node in reversed(rendered_hostnode.get_ancestors()):
             result.append(self.takedown_details(node))
         result.append(self.takedown_details(rendered_hostnode))
         return result
 
-    def modules_filtered(self, capture_uuid: str) -> str | None:
-        response = self.get_modules_responses(capture_uuid)
+    def modules_filtered(self, capture: CaptureCache) -> str | None:
+        response = self.get_modules_responses(capture)
         if not response:
             return None
         modules = set()
@@ -1281,7 +1270,7 @@ class Lookyloo():
 
         return f"Malicious capture according to {len(modules)} module(s): {', '.join(modules)}"
 
-    def already_sent_mail(self, capture_uuid: str, /, uuid_only: bool=True) -> bool:
+    def already_sent_mail(self, capture: CaptureCache, /, uuid_only: bool=True) -> bool:
         '''Check if a mail was already sent for a specific capture.
         The check is either done on the UUID only, or on the chain of redirects (if any).
         In that second case, we take the chain of redirects, keep only the hostnames,
@@ -1290,32 +1279,30 @@ class Lookyloo():
         True if the mail was already sent in the last 24h, False otherwise.
         '''
         if uuid_only:
-            return bool(self.redis.exists(f'sent_mail|{capture_uuid}'))
-        cache = self.capture_cache(capture_uuid)
-        if hasattr(cache, 'redirects') and cache.redirects:
-            hostnames = [h for h, l in itertools.groupby(urlparse(redirect).hostname for redirect in cache.redirects if urlparse(redirect).hostname) if h is not None]
+            return bool(self.redis.exists(f'sent_mail|{capture.uuid}'))
+        if hasattr(capture, 'redirects') and capture.redirects:
+            hostnames = [h for h, l in itertools.groupby(urlparse(redirect).hostname for redirect in capture.redirects if urlparse(redirect).hostname) if h is not None]
             return bool(self.redis.exists(f'sent_mail|{"|".join(hostnames)}'))
         return False
 
-    def set_sent_mail_key(self, capture_uuid: str, /, deduplicate_interval: int) -> None:
+    def set_sent_mail_key(self, capture: CaptureCache, /, deduplicate_interval: int) -> None:
         '''Set the key for the sent mail in redis'''
-        self.redis.set(f'sent_mail|{capture_uuid}', 1, ex=deduplicate_interval)
-        cache = self.capture_cache(capture_uuid)
-        if hasattr(cache, 'redirects') and cache.redirects:
-            hostnames = [h for h, l in itertools.groupby(urlparse(redirect).hostname for redirect in cache.redirects if urlparse(redirect).hostname) if h is not None]
+        self.redis.set(f'sent_mail|{capture.uuid}', 1, ex=deduplicate_interval)
+        if hasattr(capture, 'redirects') and capture.redirects:
+            hostnames = [h for h, l in itertools.groupby(urlparse(redirect).hostname for redirect in capture.redirects if urlparse(redirect).hostname) if h is not None]
             self.redis.set(f'sent_mail|{"|".join(hostnames)}', 1, ex=deduplicate_interval)
 
-    def send_mail(self, capture_uuid: str, /, email: str | None=None, comment: str | None=None, *, as_admin: bool) -> bool | dict[str, Any]:
+    def send_mail(self, capture: CaptureCache, /, email: str | None=None, comment: str | None=None, *, as_admin: bool) -> bool | dict[str, Any]:
         '''Send an email notification regarding a specific capture'''
         if not get_config('generic', 'enable_mail_notification'):
             return {"error": "Unable to send mail: mail notification disabled"}
 
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
         email_config = get_config('generic', 'email')
         if email_deduplicate := email_config.get('deduplicate'):
-            if email_deduplicate.get('uuid') and self.already_sent_mail(capture_uuid, uuid_only=True):
+            if email_deduplicate.get('uuid') and self.already_sent_mail(capture, uuid_only=True):
                 return {"error": "Mail already sent (same UUID)"}
-            if email_deduplicate.get('hostnames') and self.already_sent_mail(capture_uuid, uuid_only=False):
+            if email_deduplicate.get('hostnames') and self.already_sent_mail(capture, uuid_only=False):
                 return {"error": "Mail already sent (same redirect chain)"}
             deduplicate_interval = email_deduplicate.get('interval_in_sec')
         else:
@@ -1325,23 +1312,22 @@ class Lookyloo():
         redirects = ''
         initial_url = ''
         misp = ''
-        cache = self.capture_cache(capture_uuid)
-        if hasattr(cache, 'url'):
+        if hasattr(capture, 'url'):
             if email_config['defang_urls']:
-                initial_url = defang(cache.url, colon=True, all_dots=True)
+                initial_url = defang(capture, colon=True, all_dots=True)
             else:
-                initial_url = cache.url
+                initial_url = capture.url
         else:
             initial_url = 'Unable to get URL from cache, this is probably a bug.'
-            if hasattr(cache, 'error') and cache.error:
-                initial_url += f' - {cache.error}'
+            if hasattr(capture, 'error') and capture.error:
+                initial_url += f' - {capture.error}'
 
-        if hasattr(cache, 'redirects') and cache.redirects:
+        if hasattr(capture, 'redirects') and capture.redirects:
             redirects = "Redirects:\n"
             if email_config['defang_urls']:
-                redirects += defang('\n'.join(cache.redirects), colon=True, all_dots=True)
+                redirects += defang('\n'.join(capture.redirects), colon=True, all_dots=True)
             else:
-                redirects += '\n'.join(cache.redirects)
+                redirects += '\n'.join(capture.redirects)
         else:
             redirects = "No redirects."
 
@@ -1349,19 +1335,19 @@ class Lookyloo():
             logger.info('There are no MISP instances available for a lookup.')
         else:
             for instance_name in self.misps.keys():
-                if occurrences := self.get_misp_occurrences(capture_uuid,
+                if occurrences := self.get_misp_occurrences(capture,
                                                             as_admin=as_admin,
                                                             instance_name=instance_name):
                     elements, misp_url = occurrences
                     for event_id, attributes in elements.items():
                         for value, ts in attributes:
-                            if value == cache.url:
+                            if value == capture.url:
                                 now = datetime.now(timezone.utc)
                                 diff = now - ts
                                 if diff.days < 1:  # MISP event should not be older than 24hours
                                     misp += f"\n{ts.isoformat()} : {misp_url}events/{event_id}"
                                 break  # some events have more than just one timestamp, we just take the first one
-        modules = self.modules_filtered(capture_uuid)
+        modules = self.modules_filtered(capture)
         msg = EmailMessage()
         msg['From'] = email_config['from']
         if email and EMAIL_RE.match(email):
@@ -1374,7 +1360,7 @@ class Lookyloo():
             recipient=msg['To'].addresses[0].display_name,
             modules=modules if modules else '',
             domain=self.public_domain,
-            uuid=capture_uuid,
+            uuid=capture.uuid,
             initial_url=initial_url,
             redirects=redirects,
             comment=comment if comment else '',
@@ -1385,10 +1371,10 @@ class Lookyloo():
         try:
             contact_for_takedown: list[str] | list[dict[str, Any]] | None
             if email_config.get('auto_filter_contacts'):
-                if f_contacts := self.contacts_filtered(capture_uuid):
+                if f_contacts := self.contacts_filtered(capture):
                     contact_for_takedown = list(f_contacts)
             else:
-                contact_for_takedown = self.contacts(capture_uuid)
+                contact_for_takedown = self.contacts(capture)
 
             if contact_for_takedown:
                 msg.add_attachment(orjson.dumps(contact_for_takedown, option=orjson.OPT_INDENT_2),
@@ -1413,27 +1399,27 @@ class Lookyloo():
                     s.login(smtp_auth['smtp_user'], smtp_auth['smtp_pass'])
                 s.send_message(msg)
                 if deduplicate_interval:
-                    self.set_sent_mail_key(capture_uuid, deduplicate_interval)
+                    self.set_sent_mail_key(capture, deduplicate_interval)
         except Exception as e:
             logger.exception(e)
             logger.warning(msg.as_string())
             return {"error": "Unable to send mail"}
         return True
 
-    def _load_tt_file(self, capture_uuid: str) -> dict[str, bytes] | None:
-        tt_file = self._captures_index.get_capture_cache(capture_uuid).capture_dir / '0.trusted_timestamps.json'
+    def _load_tt_file(self, capture: CaptureCache) -> dict[str, bytes] | None:
+        tt_file = capture.capture_dir / '0.trusted_timestamps.json'
         if not tt_file.exists():
             return None
 
         with tt_file.open() as f:
             return {name: b64decode(tst) for name, tst in orjson.loads(f.read()).items()}
 
-    def get_trusted_timestamp(self, capture_uuid: str, /, name: str) -> bytes | None:
-        if trusted_timestamps := self._load_tt_file(capture_uuid):
+    def get_trusted_timestamp(self, capture: CaptureCache, /, name: str) -> bytes | None:
+        if trusted_timestamps := self._load_tt_file(capture):
             return trusted_timestamps.get(name)
         return None
 
-    def _prepare_tsr_data(self, capture_uuid: str, *, logger: LookylooCacheLogAdapter) -> tuple[dict[str, tuple[TimeStampResponse, bytes, bool]], list[cryptography.x509.Certificate]] | dict[str, str]:
+    def _prepare_tsr_data(self, capture: CaptureCache, *, logger: LookylooCacheLogAdapter) -> tuple[dict[str, tuple[TimeStampResponse, bytes, bool]], list[cryptography.x509.Certificate]] | dict[str, str]:
 
         def check_certificate(_tsr: TimeStampResponse, _data: bytes) -> tuple[bool, list[cryptography.x509.Certificate]] | None:
             for certificate in trusted_store():
@@ -1457,7 +1443,7 @@ class Lookyloo():
                 logger.warning('Unable to verify with certificates in TSR ?!')
             return None
 
-        trusted_timestamps = self._load_tt_file(capture_uuid)
+        trusted_timestamps = self._load_tt_file(capture)
         if not trusted_timestamps:
             return {'warning': "No trusted timestamps in the capture."}
 
@@ -1466,35 +1452,35 @@ class Lookyloo():
         success: bool
         d: str | bytes | BytesIO | None
         if 'downloaded_filename' in trusted_timestamps and 'downloaded_file' in trusted_timestamps:
-            dl_success, dl_filename, dl_file_content = self.get_data(capture_uuid)
+            dl_success, dl_filename, dl_file_content = self.get_data(capture)
         if 'video_filename' in trusted_timestamps and 'video_file' in trusted_timestamps:
-            video_success, video_filename, video_content = self.get_video(capture_uuid)
+            video_success, video_filename, video_content = self.get_video(capture)
 
         for tsr_name, tst in trusted_timestamps.items():
             data: bytes = b''
             # turn the base64 encoded blobs back to bytes and TimeStampResponse for validation
             tsr = decode_timestamp_response(tst)
             if tsr_name == 'last_redirected_url':
-                if d := self.get_last_url_in_address_bar(capture_uuid):
+                if d := self.get_last_url_in_address_bar(capture):
                     data = d.encode()
             elif tsr_name == 'har':
-                success, d = self.get_har(capture_uuid)
+                success, d = self.get_har(capture)
                 if success:
                     data = gzip.decompress(d.getvalue())
             elif tsr_name == 'storage':
-                success, d = self.get_storage_state(capture_uuid)
+                success, d = self.get_storage_state(capture)
                 if success:
                     data = d.getvalue()
             elif tsr_name == 'frames':
-                success, d = self.get_frames(capture_uuid)
+                success, d = self.get_frames(capture)
                 if success:
                     data = d.getvalue()
             elif tsr_name == 'html':
-                success, d = self.get_html(capture_uuid)
+                success, d = self.get_html(capture)
                 if success:
                     data = d.getvalue()
             elif tsr_name == 'png':
-                success, d = self.get_screenshot(capture_uuid)
+                success, d = self.get_screenshot(capture)
                 if success:
                     data = d.getvalue()
             elif tsr_name == 'downloaded_filename':
@@ -1546,9 +1532,9 @@ class Lookyloo():
 
         return to_check, cert_to_return
 
-    def check_trusted_timestamps(self, capture_uuid: str) -> tuple[dict[str, tuple[datetime, str, bool]], str] | dict[str, str]:
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
-        tsr_data = self._prepare_tsr_data(capture_uuid, logger=logger)
+    def check_trusted_timestamps(self, capture: CaptureCache) -> tuple[dict[str, tuple[datetime, str, bool]], str] | dict[str, str]:
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
+        tsr_data = self._prepare_tsr_data(capture, logger=logger)
         if isinstance(tsr_data, dict):
             # error
             return tsr_data
@@ -1566,17 +1552,12 @@ class Lookyloo():
                 to_return[tsr_name] = (tsr.tst_info.gen_time, 'Unable to validate with a trusted certificate.', safe)
         return to_return, b64encode(b'\n'.join([certificate.public_bytes(Encoding.PEM) for certificate in certificates])).decode()
 
-    def bundle_all_trusted_timestamps(self, capture_uuid: str) -> BytesIO | dict[str, str]:
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
-        tsr_data = self._prepare_tsr_data(capture_uuid, logger=logger)
+    def bundle_all_trusted_timestamps(self, capture: CaptureCache) -> BytesIO | dict[str, str]:
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
+        tsr_data = self._prepare_tsr_data(capture, logger=logger)
         if isinstance(tsr_data, dict):
             # error
             return tsr_data
-
-        try:
-            cache = self.capture_cache(capture_uuid)
-        except UUIDMissingInCache:
-            return {'warning': 'The capture is not ready yet.'}
 
         to_check, certificates = tsr_data
         certs_as_pem = b'\n'.join([certificate.public_bytes(Encoding.PEM) for certificate in certificates])
@@ -1621,23 +1602,23 @@ class Lookyloo():
                 validator_bash += "echo ---------------------------------\n\n"
             z.writestr('validator.sh', validator_bash)
             tt_readme = get_tt_template()
-            readme_content = tt_readme.format(capture_uuid=capture_uuid,
-                                              initial_url=cache.url,
+            readme_content = tt_readme.format(capture_uuid=capture.uuid,
+                                              initial_url=capture.url,
                                               domain=self.public_domain)
             z.writestr('README.md', readme_content)
         to_return.seek(0)
         return to_return
 
-    def _get_raw(self, capture_uuid: str, /, extension: str='*', all_files: bool=True) -> tuple[bool, BytesIO]:
+    def _get_raw(self, capture: CaptureCache, /, extension: str='*', all_files: bool=True) -> tuple[bool, BytesIO]:
         '''Get file(s) from the capture directory'''
         try:
-            capture_dir = self._captures_index.get_capture_cache(capture_uuid).capture_dir
+            capture_dir = capture.capture_dir
         except NoValidHarFile:
-            return False, BytesIO(f'Capture {capture_uuid} has no HAR entries, which means it is broken.'.encode())
+            return False, BytesIO(f'Capture {capture.uuid} has no HAR entries, which means it is broken.'.encode())
         except UUIDMissingInCache:
-            return False, BytesIO(f'Capture {capture_uuid} not unavailable, try again later.'.encode())
+            return False, BytesIO(f'Capture {capture.uuid} not unavailable, try again later.'.encode())
         except MissingCaptureDirectory:
-            return False, BytesIO(f'No capture {capture_uuid} on the system (directory missing).'.encode())
+            return False, BytesIO(f'No capture {capture.uuid} on the system (directory missing).'.encode())
         all_paths = sorted(list(capture_dir.glob(f'*.{extension}')))
         if not all_files:
             # Only get the first one in the list
@@ -1666,21 +1647,21 @@ class Lookyloo():
         return True, to_return
 
     @overload
-    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[False], for_datauri: Literal[True]) -> tuple[str, str]:
+    def get_potential_favicons(self, capture: CaptureCache, /, all_favicons: Literal[False], for_datauri: Literal[True]) -> tuple[str, str]:
         ...
 
     @overload
-    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: Literal[True], for_datauri: Literal[False]) -> tuple[bool, BytesIO]:
+    def get_potential_favicons(self, capture: CaptureCache, /, all_favicons: Literal[True], for_datauri: Literal[False]) -> tuple[bool, BytesIO]:
         ...
 
-    def get_potential_favicons(self, capture_uuid: str, /, all_favicons: bool=False, for_datauri: bool=False) -> tuple[bool, BytesIO] | tuple[str, str]:
+    def get_potential_favicons(self, capture: CaptureCache, /, all_favicons: bool=False, for_datauri: bool=False) -> tuple[bool, BytesIO] | tuple[str, str]:
         '''Get rendered HTML'''
         # NOTE: we sometimes have multiple favicons, and sometimes,
         #       the first entry in the list is not actually a favicon. So we
         #       iterate until we find one (or fail to, but at least we tried)
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
         if not all_favicons and for_datauri:
-            favicons_paths = sorted(list(self._captures_index.get_capture_cache(capture_uuid).capture_dir.glob('*.potential_favicons.ico')))
+            favicons_paths = sorted(list(capture.capture_dir.glob('*.potential_favicons.ico')))
             if not favicons_paths:
                 logger.debug('No potential favicon found.')
                 return '', ''
@@ -1698,16 +1679,16 @@ class Lookyloo():
             else:
                 logger.info('No valid favicon found.')
                 return '', ''
-        return self._get_raw(capture_uuid, 'potential_favicons.ico', all_favicons)
+        return self._get_raw(capture, 'potential_favicons.ico', all_favicons)
 
-    def get_html(self, capture_uuid: str, /, all_html: bool=False) -> tuple[bool, BytesIO]:
+    def get_html(self, capture: CaptureCache, /, all_html: bool=False) -> tuple[bool, BytesIO]:
         '''Get rendered HTML'''
-        return self._get_raw(capture_uuid, 'html', all_html)
+        return self._get_raw(capture, 'html', all_html)
 
-    def get_html_as_md(self, capture_uuid: str, /, all_html: bool=False) -> tuple[bool, BytesIO]:
+    def get_html_as_md(self, capture: CaptureCache, /, all_html: bool=False) -> tuple[bool, BytesIO]:
         '''Get rendered HTML'''
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
-        success, html = self.get_html(capture_uuid, all_html=all_html)
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
+        success, html = self.get_html(capture, all_html=all_html)
         if success:
             try:
                 markdown = convert(html.getvalue().decode())
@@ -1720,13 +1701,13 @@ class Lookyloo():
                 return False, BytesIO()
         return success, html
 
-    def get_har(self, capture_uuid: str, /, all_har: bool=False) -> tuple[bool, BytesIO]:
+    def get_har(self, capture: CaptureCache, /, all_har: bool=False) -> tuple[bool, BytesIO]:
         '''Get rendered HAR'''
-        return self._get_raw(capture_uuid, 'har.gz', all_har)
+        return self._get_raw(capture, 'har.gz', all_har)
 
-    def get_video(self, capture_uuid: str, /, *, index_in_zip: int | None=None) -> tuple[bool, str, BytesIO]:
+    def get_video(self, capture: CaptureCache, /, *, index_in_zip: int | None=None) -> tuple[bool, str, BytesIO]:
         '''Get the video'''
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
 
         def _get_video_file_by_id_from_zip(data: BytesIO, index_in_zip: int) -> tuple[bool, str, BytesIO]:
             '''Get the a video file by index.
@@ -1739,12 +1720,12 @@ class Lookyloo():
                 with video_files.open(files_info[index_in_zip]) as f:
                     return True, files_info[index_in_zip].filename, BytesIO(f.read())
 
-        success, video_filename = self._get_raw(capture_uuid, 'video.filename', False)
+        success, video_filename = self._get_raw(capture, 'video.filename', False)
         if success:
             filename = video_filename.getvalue().decode().strip()
-            success, video = self._get_raw(capture_uuid, 'video', False)
+            success, video = self._get_raw(capture, 'video', False)
             if success:
-                if filename == f'{capture_uuid}_multiple_videos.zip' and index_in_zip is not None:
+                if filename == f'{capture.uuid}_multiple_videos.zip' and index_in_zip is not None:
                     # We have a zip file with multiple files in it
                     success, filename, video = _get_video_file_by_id_from_zip(video, index_in_zip)
                     if success:
@@ -1754,9 +1735,9 @@ class Lookyloo():
             return False, filename, video
         return False, 'Unable to get the file name', BytesIO()
 
-    def get_data(self, capture_uuid: str, /, *, index_in_zip: int | None=None) -> tuple[bool, str, BytesIO]:
+    def get_data(self, capture: CaptureCache, /, *, index_in_zip: int | None=None) -> tuple[bool, str, BytesIO]:
         '''Get the data'''
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
 
         def _get_downloaded_file_by_id_from_zip(data: BytesIO, index_in_zip: int) -> tuple[bool, str, BytesIO]:
             '''Get the a downloaded file by hash.
@@ -1769,12 +1750,12 @@ class Lookyloo():
                 with downloaded_files.open(files_info[index_in_zip]) as f:
                     return True, files_info[index_in_zip].filename, BytesIO(f.read())
 
-        success, data_filename = self._get_raw(capture_uuid, 'data.filename', False)
+        success, data_filename = self._get_raw(capture, 'data.filename', False)
         if success:
             filename = data_filename.getvalue().decode().strip()
-            success, data = self._get_raw(capture_uuid, 'data', False)
+            success, data = self._get_raw(capture, 'data', False)
             if success:
-                if filename == f'{capture_uuid}_multiple_downloads.zip' and index_in_zip is not None:
+                if filename == f'{capture.uuid}_multiple_downloads.zip' and index_in_zip is not None:
                     # We have a zip file with multiple files in it
                     success, filename, data = _get_downloaded_file_by_id_from_zip(data, index_in_zip)
                     if success:
@@ -1784,40 +1765,40 @@ class Lookyloo():
             return False, filename, data
         return False, 'Unable to get the file name', BytesIO()
 
-    def get_cookies(self, capture_uuid: str, /, all_cookies: bool=False) -> tuple[bool, BytesIO]:
+    def get_cookies(self, capture: CaptureCache, /, all_cookies: bool=False) -> tuple[bool, BytesIO]:
         '''Get the cookie(s)'''
-        return self._get_raw(capture_uuid, 'cookies.json', all_cookies)
+        return self._get_raw(capture, 'cookies.json', all_cookies)
 
-    def get_screenshot(self, capture_uuid: str) -> tuple[bool, BytesIO]:
+    def get_screenshot(self, capture: CaptureCache) -> tuple[bool, BytesIO]:
         '''Get the screenshot(s) of the rendered page'''
-        return self._get_raw(capture_uuid, 'png', all_files=False)
+        return self._get_raw(capture, 'png', all_files=False)
 
-    def get_storage_state(self, capture_uuid: str) -> tuple[bool, BytesIO]:
+    def get_storage_state(self, capture: CaptureCache) -> tuple[bool, BytesIO]:
         '''Get the storage state of the capture'''
-        return self._get_raw(capture_uuid, 'storage.json', all_files=False)
+        return self._get_raw(capture, 'storage.json', all_files=False)
 
-    def get_frames(self, capture_uuid: str) -> tuple[bool, BytesIO]:
+    def get_frames(self, capture: CaptureCache) -> tuple[bool, BytesIO]:
         '''Get the frames of the capture'''
-        return self._get_raw(capture_uuid, 'frames.json', all_files=False)
+        return self._get_raw(capture, 'frames.json', all_files=False)
 
-    def get_console_messages(self, capture_uuid: str) -> tuple[bool, BytesIO]:
+    def get_console_messages(self, capture: CaptureCache) -> tuple[bool, BytesIO]:
         '''Get the console entries of the capture'''
-        return self._get_raw(capture_uuid, 'console_messages.json', all_files=False)
+        return self._get_raw(capture, 'console_messages.json', all_files=False)
 
-    def get_last_url_in_address_bar(self, capture_uuid: str) -> str | None:
+    def get_last_url_in_address_bar(self, capture: CaptureCache) -> str | None:
         '''Get the URL in the address bar at the end of the capture'''
-        success, file = self._get_raw(capture_uuid, 'last_redirect.txt', all_files=False)
+        success, file = self._get_raw(capture, 'last_redirect.txt', all_files=False)
         if success:
             return file.getvalue().decode()
         return None
 
-    def get_screenshot_thumbnail(self, capture_uuid: str, /, for_datauri: bool=False, width: int=64) -> str | BytesIO:
+    def get_screenshot_thumbnail(self, capture: CaptureCache, /, for_datauri: bool=False, width: int=64) -> str | BytesIO:
         '''Get the thumbnail of the rendered page. Always crop to a square.'''
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
         to_return = BytesIO()
         size = width, width
         try:
-            success, s = self.get_screenshot(capture_uuid)
+            success, s = self.get_screenshot(capture)
             if success:
                 orig_screenshot = Image.open(s)
                 to_thumbnail = orig_screenshot.crop((0, 0, orig_screenshot.width, orig_screenshot.width))
@@ -1830,7 +1811,7 @@ class Lookyloo():
         except UnidentifiedImageError as e:
             # We might have a direct download link, and no screenshot. Assign the thumbnail accordingly.
             try:
-                success, filename, data = self.get_data(capture_uuid)
+                success, filename, data = self.get_data(capture)
                 if success:
                     logger.debug('Download link, set thumbnail.')
                     error_img: Path = get_homedir() / 'website' / 'web' / 'static' / 'images' / 'ui' / 'download.png'
@@ -1852,22 +1833,16 @@ class Lookyloo():
         else:
             return to_return
 
-    def get_capture(self, capture_uuid: str) -> tuple[bool, BytesIO]:
+    def get_capture(self, capture: CaptureCache) -> tuple[bool, BytesIO]:
         '''Get all the files related to this capture.'''
-        return self._get_raw(capture_uuid)
+        return self._get_raw(capture)
 
-    def get_guessed_urls(self, capture_uuid: str) -> list[str]:
+    def get_guessed_urls(self, capture: CaptureCache) -> list[str]:
         """Some URLs can be guessed from the landing page.
         This feature is a WIP, starting with getting the download links for google docs
         """
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
         to_return: list[str] = []
-        try:
-            cache = self.capture_cache(capture_uuid)
-        except UUIDMissingInCache:
-            logger.warning('Capture not cached, cannot guess URLs.')
-            return to_return
-        for redirect in cache.redirects:
+        for redirect in capture.redirects:
             parsed_url = urlparse(redirect)
             if (parsed_url.hostname == 'docs.google.com'
                     and (parsed_url.path.endswith('/edit') or parsed_url.path.endswith('/preview'))):
@@ -1883,12 +1858,11 @@ class Lookyloo():
                 to_return.append(new_parsed_url.geturl())
         return to_return
 
-    def get_urls_rendered_page(self, capture_uuid: str) -> list[str]:
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
-        cache = self.capture_cache(capture_uuid)
+    def get_urls_rendered_page(self, capture: CaptureCache) -> list[str]:
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
         try:
-            return sorted(set(cache.tree.root_hartree.rendered_node.urls_in_rendered_page)
-                          - set(cache.tree.root_hartree.all_url_requests.keys()))
+            return sorted(set(capture.tree.root_hartree.rendered_node.urls_in_rendered_page)
+                          - set(capture.tree.root_hartree.all_url_requests.keys()))
         except Har2TreeError as e:
             logger.warning(f'Unable to get the rendered page: {e}.')
             raise LookylooException("Unable to get the rendered page.")
@@ -1897,17 +1871,16 @@ class Lookyloo():
         b64 = base64.encodebytes(favicon)
         return str(mmh3.hash(b64))
 
-    def get_ressource(self, tree_uuid: str, /, urlnode_uuid: str, h: str | None) -> tuple[str, BytesIO, str] | None:
+    def get_ressource(self, capture: CaptureCache, /, urlnode_uuid: str, h: str | None) -> tuple[str, BytesIO, str] | None:
         '''Get a specific resource from a URL node. If a hash s also given, we want an embeded resource'''
 
         # Break immediately if we have the hash of the empty file
         if h == 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e':
             return ('empty', BytesIO(), 'inode/x-empty')
 
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': tree_uuid})
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
         try:
-            cache = self.capture_cache(tree_uuid)
-            url = self.get_urlnode_from_tree(cache.tree, urlnode_uuid)
+            url = self.get_urlnode_from_tree(capture.tree, urlnode_uuid)
         except IndexError:
             # unable to find the uuid, the cache is probably in a weird state.
             logger.info(f'Unable to find node "{urlnode_uuid}"')
@@ -1946,9 +1919,8 @@ class Lookyloo():
         obj.add_reference(vt_obj, 'analysed-with')
         return vt_obj
 
-    def __misp_add_urlscan_to_event(self, capture_uuid: str) -> MISPAttribute | None:
-        cache = self.capture_cache(capture_uuid)
-        response = self.urlscan.url_result(cache)
+    def __misp_add_urlscan_to_event(self, capture: CaptureCache) -> MISPAttribute | None:
+        response = self.urlscan.url_result(capture)
         if 'result' in response:
             attribute = MISPAttribute()
             attribute.value = response['result']
@@ -1956,26 +1928,25 @@ class Lookyloo():
             return attribute
         return None
 
-    def ai_export(self, capture_uuid: str) -> dict[str, str | list[dict[str, str]]]:
+    def ai_export(self, capture: CaptureCache) -> dict[str, str | list[dict[str, str]]]:
         '''Export a capture so you can shove it to an agent and it does things with it.
         This feature is beta and there is 0 control on what you're getting, use at your own risks.
         Also, whatever you get back from this method is (for now) as stable as a vibecoded project.
         '''
         to_return: dict[str, str | list[dict[str, str]]]
-        cache = self.capture_cache(capture_uuid)
         # get info from the nodes in the redirect chain
         chain = []
-        for node in list(reversed(cache.tree.root_hartree.rendered_node.get_ancestors())) + [cache.tree.root_hartree.rendered_node]:
+        for node in list(reversed(capture.tree.root_hartree.rendered_node.get_ancestors())) + [capture.tree.root_hartree.rendered_node]:
             entry = {'url': node.name}
             if hasattr(node, 'ip_address'):
                 entry['ip_address'] = str(node.ip_address)
             chain.append(entry)
         to_return = {'redirects': chain}
 
-        success, md = self.get_html_as_md(capture_uuid)
+        success, md = self.get_html_as_md(capture)
         if success:
             to_return['html_as_markdown'] = md.read().decode()
-        success, screenshot = self.get_screenshot(capture_uuid)
+        success, screenshot = self.get_screenshot(capture)
         if success:
             s_bin = screenshot.read()
             m = self.magicdb.best_magic_buffer(s_bin, None)
@@ -1983,25 +1954,27 @@ class Lookyloo():
             to_return['screenshot'] = f"data:{m.mime_type};base64,{image_data}"
         return to_return
 
-    def misp_export(self, capture_uuid: str, /, with_parent: bool=False, *, as_admin: bool) -> list[MISPEvent] | dict[str, str]:
+    def misp_export(self, capture: CaptureCache, /, with_parent: bool=False,
+                    *, session_known_private: dict[str, str] | None=None,
+                    session_is_admin: bool=False
+                    ) -> list[MISPEvent] | dict[str, str]:
         '''Export a capture in MISP format. You can POST the return of this method
         directly to a MISP instance and it will create an event.'''
-        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture_uuid})
-        cache = self.capture_cache(capture_uuid)
+        logger = LookylooCacheLogAdapter(self.logger, {'uuid': capture.uuid})
 
         # If this fails, no need to continue, the tree is broken.
-        cache.tree
+        capture.tree
 
         # ### NOTE: get all the relevant elements gathered during the capture:
         # * downloaded file(s)
 
         # if the file submitted on lookyloo cannot be displayed (PDF), it will be downloaded.
         # In the case, we want to have it as a FileObject in the export
-        success_downloaded, filename, pseudofile = self.get_data(capture_uuid)
+        success_downloaded, filename, pseudofile = self.get_data(capture)
         if success_downloaded and filename and pseudofile:
-            event = self.misps.export(cache, self.is_public_instance, filename, pseudofile)
+            event = self.misps.export(capture, self.is_public_instance, filename, pseudofile)
         else:
-            event = self.misps.export(cache, self.is_public_instance)
+            event = self.misps.export(capture, self.is_public_instance)
 
         if event.objects and isinstance(event.objects[-1], FileObject):
             content_before_rendering = event.objects[-1]
@@ -2018,17 +1991,17 @@ class Lookyloo():
                 misp_downloaded_files.comment = 'One or more files downloaded during the capture.'
                 event.add_object(misp_downloaded_files)
 
-        success, screenshot = self.get_screenshot(capture_uuid)
+        success, screenshot = self.get_screenshot(capture)
         if success:
             misp_screenshot: MISPAttribute = event.add_attribute('attachment', 'screenshot_landing_page.png',
                                                                  data=screenshot,
                                                                  comment='Screenshot of the page at the end of the capture',
                                                                  disable_correlation=True)  # type: ignore[assignment]
-            misp_screenshot.first_seen = cache.timestamp
+            misp_screenshot.first_seen = capture.timestamp
             if 'content_before_rendering' in locals():
                 content_before_rendering.add_reference(misp_screenshot, 'rendered-as', 'Screenshot of the page')
 
-        success, d = self.get_har(capture_uuid)
+        success, d = self.get_har(capture)
         if success:
             har = BytesIO(gzip.decompress(d.getvalue()))
             misp_har: MISPAttribute = event.add_attribute('attachment', 'har.json',
@@ -2036,14 +2009,14 @@ class Lookyloo():
                                                           comment='HTTP Archive (HAR) of the whole capture',
                                                           disable_correlation=True)  # type: ignore[assignment]
 
-        success, storage = self.get_storage_state(capture_uuid)
+        success, storage = self.get_storage_state(capture)
         if success:
             misp_storage: MISPAttribute = event.add_attribute('attachment', 'storage.json',
                                                               data=storage,
                                                               comment='The complete storage for the capture: Cookies, Local Storage and Indexed DB',
                                                               disable_correlation=True)  # type: ignore[assignment]
 
-        success, html = self.get_html(capture_uuid)
+        success, html = self.get_html(capture)
         if success:
             misp_rendered_html: MISPAttribute = event.add_attribute('attachment', 'rendered_page.html',
                                                                     data=html,
@@ -2053,12 +2026,12 @@ class Lookyloo():
             if 'content_before_rendering' in locals():
                 content_before_rendering.add_reference(misp_rendered_html, 'rendered-as', 'Rendered HTML at the end of the capture')
 
-        if url_address_bar := self.get_last_url_in_address_bar(capture_uuid):
+        if url_address_bar := self.get_last_url_in_address_bar(capture):
             misp_url_address_bar: MISPAttribute = event.add_attribute('url', url_address_bar,
                                                                       comment='The address in the browser address bar at the end of the capture.')  # type: ignore[assignment]
 
         if self.vt.available:
-            response = self.vt.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
+            response = self.vt.capture_default_trigger(capture, force=False, auto_trigger=False, as_admin=session_is_admin)
             if 'error' in response:
                 logger.debug(f'Unable to trigger VT: {response["error"]}')
             else:
@@ -2083,15 +2056,15 @@ class Lookyloo():
                 e_obj.add_reference(pt_attribute, 'known-as', 'Permalink on Phishtank')
 
         if self.urlscan.available:
-            response = self.urlscan.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
+            response = self.urlscan.capture_default_trigger(capture, force=False, auto_trigger=False, as_admin=session_is_admin)
             if 'error' in response:
                 logger.debug(f'Unable to trigger URLScan: {response["error"]}')
             else:
-                urlscan_attribute = self.__misp_add_urlscan_to_event(capture_uuid)
+                urlscan_attribute = self.__misp_add_urlscan_to_event(capture)
                 if urlscan_attribute:
                     event.add_attribute(**urlscan_attribute)
 
-        tsr_data = self._prepare_tsr_data(capture_uuid, logger=logger)
+        tsr_data = self._prepare_tsr_data(capture, logger=logger)
         if isinstance(tsr_data, dict):
             logger.debug(f'Unable to set TSR data: {tsr_data.get("warning")}')
         else:
@@ -2147,8 +2120,14 @@ class Lookyloo():
 
                 event.add_object(misp_tsr)
 
-        if with_parent and cache.parent:
-            parent = self.misp_export(cache.parent, with_parent, as_admin=as_admin)
+        if with_parent and capture.parent:
+            # FIXME: somehow need to get the relevant seed
+            if session_is_admin:
+                parent_capture = self.capture_cache(capture.parent, unsafe=True)
+            else:
+                parent_capture = self.capture_cache(capture.parent, seed=session_known_private.get(capture.parent) if session_known_private else None)
+            parent = self.misp_export(parent_capture, with_parent, session_is_admin=session_is_admin,
+                                      session_known_private=session_known_private)
             if isinstance(parent, dict):
                 # Something bad happened
                 return parent
@@ -2159,48 +2138,47 @@ class Lookyloo():
 
         return [event]
 
-    def lacus_export(self, capture_uuid: str) -> CaptureResponseJson:
+    def lacus_export(self, capture: CaptureCache) -> CaptureResponseJson:
         """Recreate an export in the same format as the ones we get from Lacus."""
-        cache = self.capture_cache(capture_uuid)
         to_return: CaptureResponseJson = {'status': CaptureStatusCore.DONE}
-        if last_redir := self.get_last_url_in_address_bar(capture_uuid):
+        if last_redir := self.get_last_url_in_address_bar(capture):
             to_return['last_redirected_url'] = last_redir
-        har_success, d = self.get_har(capture_uuid)
+        har_success, d = self.get_har(capture)
         if har_success:
             to_return['har'] = orjson.loads(gzip.decompress(d.getvalue()))
-        storage_success, d = self.get_storage_state(capture_uuid)
+        storage_success, d = self.get_storage_state(capture)
         if storage_success:
             to_return['storage'] = orjson.loads(d.getvalue())
-        if _e := cache.error:
+        if _e := capture.error:
             to_return['error'] = _e
-        html_success, d = self.get_html(capture_uuid)
+        html_success, d = self.get_html(capture)
         if html_success:
             to_return['html'] = d.getvalue().decode()
-        frames_success, d = self.get_frames(capture_uuid)
+        frames_success, d = self.get_frames(capture)
         if frames_success:
             to_return['frames'] = orjson.loads(d.getvalue())
-        png_success, d = self.get_screenshot(capture_uuid)
+        png_success, d = self.get_screenshot(capture)
         if png_success:
             to_return['png'] = base64.b64encode(d.getvalue()).decode()
-        data_success, dl_filename, dl_file_content = self.get_data(capture_uuid)
+        data_success, dl_filename, dl_file_content = self.get_data(capture)
         if data_success:
             to_return['downloaded_filename'] = dl_filename
             to_return['downloaded_file'] = base64.b64encode(dl_file_content.getvalue()).decode()
-        video_success, video_filename, video_content = self.get_data(capture_uuid)
+        video_success, video_filename, video_content = self.get_data(capture)
         if video_success:
             to_return['video_filename'] = video_filename
             to_return['video_file'] = base64.b64encode(video_content.getvalue()).decode()
-        favicons_success, favicons = self.get_potential_favicons(capture_uuid, all_favicons=True, for_datauri=False)
+        favicons_success, favicons = self.get_potential_favicons(capture, all_favicons=True, for_datauri=False)
         if favicons_success:
             to_return['potential_favicons'] = [base64.b64encode(fav).decode() for fav in favicons]
-        if tt := self._load_tt_file(capture_uuid):
+        if tt := self._load_tt_file(capture):
             to_return['trusted_timestamps'] = {name: b64encode(tst).decode() for name, tst in tt.items()}
-        cm_success, d = self.get_console_messages(capture_uuid)
+        cm_success, d = self.get_console_messages(capture)
         if cm_success:
             to_return['console_messages'] = orjson.loads(d.getvalue())
         return to_return
 
-    def get_misp_occurrences(self, capture_uuid: str, /, as_admin: bool,
+    def get_misp_occurrences(self, capture: CaptureCache, /, as_admin: bool,
                              *, instance_name: str | None=None) -> tuple[dict[int, set[tuple[str, datetime]]], str] | None:
         if instance_name is None:
             misp = self.misps.default_misp
@@ -2212,43 +2190,33 @@ class Lookyloo():
 
         if not misp.available:
             return None
-        try:
-            cache = self.capture_cache(capture_uuid)
-        except LookylooException:
-            self.logger.warning(f'Unable to get the modules responses unless the tree ({capture_uuid}) is cached.')
-            return None
-        nodes_to_lookup = cache.tree.root_hartree.rendered_node.get_ancestors() + [cache.tree.root_hartree.rendered_node]
+        nodes_to_lookup = capture.tree.root_hartree.rendered_node.get_ancestors() + [capture.tree.root_hartree.rendered_node]
         to_return: dict[int, set[tuple[str, datetime]]] = defaultdict(set)
         for node in nodes_to_lookup:
-            hits = misp.lookup(node, cache.tree.root_hartree.get_host_node_by_uuid(node.hostnode_uuid), as_admin=as_admin)
+            hits = misp.lookup(node, capture.tree.root_hartree.get_host_node_by_uuid(node.hostnode_uuid), as_admin=as_admin)
             for event_id, values in hits.items():
                 if not isinstance(event_id, int) or not isinstance(values, set):
                     continue
                 to_return[event_id].update(values)
         return to_return, misp.client.root_url
 
-    def get_hashes_with_context(self, tree_uuid: str, /, algorithm: str, *, urls_only: bool=False) -> dict[str, set[str]] | dict[str, list[URLNode]]:
+    def get_hashes_with_context(self, capture: CaptureCache, /, algorithm: str, *, urls_only: bool=False) -> dict[str, set[str]] | dict[str, list[URLNode]]:
         """Build (on demand) hashes for all the ressources of the tree, using the alorighm provided by the user.
         If you just want the hashes in SHA512, use the get_hashes method, it gives you a list of hashes an they're build
         with the tree. This method is computing the hashes when you query it, so it is slower."""
-        cache = self.capture_cache(tree_uuid)
-        hashes = cache.tree.root_hartree.build_all_hashes(algorithm)
+        hashes = capture.tree.root_hartree.build_all_hashes(algorithm)
         if urls_only:
             return {h: {node.name for node in nodes} for h, nodes in hashes.items()}
         return hashes
 
-    def merge_hashlookup_tree(self, tree_uuid: str, /, *, as_admin: bool) -> tuple[dict[str, dict[str, Any]], int]:
+    def merge_hashlookup_tree(self, capture: CaptureCache, /, *, as_admin: bool) -> tuple[dict[str, dict[str, Any]], int]:
         if not self.hashlookup.available:
             raise LookylooException('Hashlookup module not enabled.')
-        try:
-            cache = self.capture_cache(tree_uuid)
-        except UUIDMissingInCache:
-            raise LookylooException(f'Capture {tree_uuid} not ready.')
-        hashes_tree = self.get_hashes_with_context(tree_uuid, algorithm='sha1')
+        hashes_tree = self.get_hashes_with_context(capture, algorithm='sha1')
 
-        hashlookup_file = cache.capture_dir / 'hashlookup.json'
+        hashlookup_file = capture.capture_dir / 'hashlookup.json'
         if not hashlookup_file.exists():
-            self.hashlookup.capture_default_trigger(cache, force=False, auto_trigger=False, as_admin=as_admin)
+            self.hashlookup.capture_default_trigger(capture, force=False, auto_trigger=False, as_admin=as_admin)
 
         if not hashlookup_file.exists():
             # no hits on hashlookup
@@ -2264,25 +2232,24 @@ class Lookyloo():
             to_return[sha1]['hashlookup'] = hashlookup_entries[sha1]
         return to_return, len(hashes_tree)
 
-    def get_hashes(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> tuple[bool, set[str]]:
+    def get_hashes(self, capture: CaptureCache, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> tuple[bool, set[str]]:
         """Return hashes (sha512) of resources.
-        Only tree_uuid: All the hashes
-        tree_uuid and hostnode_uuid: hashes of all the resources in that hostnode (including embedded ressources)
-        tree_uuid, hostnode_uuid, and urlnode_uuid: hash of the URL node body, and embedded resources
+        Only capture: All the hashes
+        capture and hostnode_uuid: hashes of all the resources in that hostnode (including embedded ressources)
+        capture, hostnode_uuid, and urlnode_uuid: hash of the URL node body, and embedded resources
         """
         container: CrawledTree | HostNode | URLNode
-        cache = self.capture_cache(tree_uuid)
         if urlnode_uuid:
-            container = self.get_urlnode_from_tree(cache.tree, urlnode_uuid)
+            container = self.get_urlnode_from_tree(capture.tree, urlnode_uuid)
         elif hostnode_uuid:
-            container = self.get_hostnode_from_tree(cache.tree, hostnode_uuid)
+            container = self.get_hostnode_from_tree(capture.tree, hostnode_uuid)
         else:
-            container = cache.tree
+            container = capture.tree
         if container:
             return True, get_resources_hashes(container)
         return False, set()
 
-    def get_ips(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
+    def get_ips(self, capture: CaptureCache, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
         """Return all the unique IPs:
             * of a complete tree if no hostnode_uuid and urlnode_uuid are given
             * of a HostNode if hostnode_uuid is given
@@ -2299,14 +2266,13 @@ class Lookyloo():
                 return ip.compressed
             return None
 
-        cache = self.capture_cache(tree_uuid)
         if urlnode_uuid:
-            node = self.get_urlnode_from_tree(cache.tree, urlnode_uuid)
+            node = self.get_urlnode_from_tree(capture.tree, urlnode_uuid)
             if ip := get_node_ip(node):
                 return {ip}
             return set()
         elif hostnode_uuid:
-            node = self.get_hostnode_from_tree(cache.tree, hostnode_uuid)
+            node = self.get_hostnode_from_tree(capture.tree, hostnode_uuid)
             to_return = set()
             for urlnode in node.urls:
                 if ip := get_node_ip(urlnode):
@@ -2314,42 +2280,40 @@ class Lookyloo():
             return to_return
         else:
             to_return = set()
-            for urlnode in cache.tree.root_hartree.url_tree.traverse():
+            for urlnode in capture.tree.root_hartree.url_tree.traverse():
                 if ip := get_node_ip(urlnode):
                     to_return.add(ip)
             return to_return
 
-    def get_hostnames(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
+    def get_hostnames(self, capture: CaptureCache, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
         """Return all the unique hostnames:
             * of a complete tree if no hostnode_uuid and urlnode_uuid are given
             * of a HostNode if hostnode_uuid is given
             * of a URLNode if urlnode_uuid is given
         """
-        cache = self.capture_cache(tree_uuid)
         if urlnode_uuid:
-            node = self.get_urlnode_from_tree(cache.tree, urlnode_uuid)
+            node = self.get_urlnode_from_tree(capture.tree, urlnode_uuid)
             return {node.hostname}
         elif hostnode_uuid:
-            node = self.get_hostnode_from_tree(cache.tree, hostnode_uuid)
+            node = self.get_hostnode_from_tree(capture.tree, hostnode_uuid)
             return {node.name}
         else:
-            return {node.name for node in cache.tree.root_hartree.hostname_tree.traverse()}
+            return {node.name for node in capture.tree.root_hartree.hostname_tree.traverse()}
 
-    def get_urls(self, tree_uuid: str, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
+    def get_urls(self, capture: CaptureCache, /, hostnode_uuid: str | None=None, urlnode_uuid: str | None=None) -> set[str]:
         """Return all the unique URLs:
             * of a complete tree if no hostnode_uuid and urlnode_uuid are given
             * of a HostNode if hostnode_uuid is given
             * of a URLNode if urlnode_uuid is given
         """
-        cache = self.capture_cache(tree_uuid)
         if urlnode_uuid:
-            node = self.get_urlnode_from_tree(cache.tree, urlnode_uuid)
+            node = self.get_urlnode_from_tree(capture.tree, urlnode_uuid)
             return {node.name}
         elif hostnode_uuid:
-            node = self.get_hostnode_from_tree(cache.tree, hostnode_uuid)
+            node = self.get_hostnode_from_tree(capture.tree, hostnode_uuid)
             return {urlnode.name for urlnode in node.urls}
         else:
-            return {node.name for node in cache.tree.root_hartree.url_tree.traverse()}
+            return {node.name for node in capture.tree.root_hartree.url_tree.traverse()}
 
     def get_playwright_devices(self) -> dict[str, Any]:
         """Get the preconfigured devices from Playwright, fallback if pylacus and lacuscore failed"""

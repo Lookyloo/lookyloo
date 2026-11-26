@@ -58,6 +58,16 @@ if __name__ == '__main__':
         console.print(Padding(f'[{name}] Ongoing captures: {_details["ongoing_captures"]}', (0, 2)))
         console.print(Padding(f'[{name}] Enqueued captures: {_details["enqueued_captures"]}', (0, 2)))
 
+    console.print('Indexes status:')
+    for name, _info in m.index_status.items():
+        if _info['is_slow']:
+            console.print(Padding(f'[red]WARNING[/red]: Index {name} is slow.', (0, 2)))
+        console.print(Padding(f'[{name}] Lazy index: {_info["to_index"]}', (0, 2)))
+        console.print(Padding(f'[{name}] Lazy reindex: {_info["to_reindex"]}', (0, 2)))
+        for key in _info.keys():
+            if key.startswith('indexed'):
+                console.print(Padding(f'[{name}] Index {key} size: {_info[key]}', (0, 2)))
+
     console.print('Current queues:')
     for q, priority in m.queues:
         s = Padding(f'{q} Recently enqueued captures: {int(priority)}', (0, 2))
