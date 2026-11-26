@@ -1308,6 +1308,13 @@ class Lookyloo():
         else:
             deduplicate_interval = 0
 
+        reply_to: str | None = None
+        if email and EMAIL_RE.match(email):
+            # skip clearly incorrect emails (also avoids Reply-To header injection, if that's possible there?)
+            reply_to = email
+        if not email and email_config.get('require_reply_to'):
+            return {"error": "Reply-To email required."}
+
         smtp_auth = get_config('generic', 'email_smtp_auth')
         redirects = ''
         initial_url = ''
@@ -1350,9 +1357,9 @@ class Lookyloo():
         modules = self.modules_filtered(capture)
         msg = EmailMessage()
         msg['From'] = email_config['from']
-        if email and EMAIL_RE.match(email):
-            # skip clearly incorrect emails (also avoids Reply-To header injection, if that's possible there?)
-            msg['Reply-To'] = email
+
+        if reply_to:
+            msg['Reply-To'] = reply_to
         msg['To'] = email_config['to']
         msg['Subject'] = email_config['subject']
         body = get_email_template()

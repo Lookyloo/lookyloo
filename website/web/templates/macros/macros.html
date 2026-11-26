@@ -59,13 +59,13 @@
 
 {% endmacro %}
 
-{% macro notify_form(confirm_message='')%}
+{% macro notify_form(confirm_message='', require_reply_to=False)%}
 <div class="row mb-3">
   <label for="reply_to" class="col-sm-2 col-form-label">Your email address:</label>
   <div class="col-sm-10">
-    <input type="email" class="form-control" name="reply_to" id="reply_to" placeholder="me@example.com">
+    <input type="email" class="form-control" name="reply_to" id="reply_to" placeholder="me@example.com" {%if require_reply_to%}required{%endif%}>
     <div class="alert alert-warning" role="info">
-        To get back in touch with you, if needed.
+        To get back in touch with you, {%if require_reply_to%}required{%else%}if you want{%endif%}.
     </div>
   </div>
   {{boat_form()}}

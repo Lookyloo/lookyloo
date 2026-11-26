@@ -236,9 +236,12 @@ use_own_ua = get_config('generic', 'use_user_agents_users')
 enable_mail_notification = get_config('generic', 'enable_mail_notification')
 ignore_sri = get_config('generic', 'ignore_sri')
 if enable_mail_notification:
-    confirm_message = get_config('generic', 'email').get('confirm_message')
+    confirm_message = get_config('generic', 'email').get('confirm_message', 'Tick to confirm.')
+    notification_require_reply_to = get_config('generic', 'email').get('require_reply_to', False)
 else:
-    confirm_message = ''
+    confirm_message = 'Tick to confirm.'
+    notification_require_reply_to = False
+
 enable_context_by_users = get_config('generic', 'enable_context_by_users')
 enable_categorization = get_config('generic', 'enable_categorization')
 enable_bookmark = get_config('generic', 'enable_bookmark')
@@ -2241,6 +2244,7 @@ def tree(tree_uuid: str, node_uuid: str | None=None) -> Response | str | Werkzeu
                                mime_favicon=mime_favicon,
                                screenshot_size=screenshot_size,
                                meta=meta, enable_mail_notification=enable_mail_notification,
+                               notification_require_reply_to=notification_require_reply_to,
                                enable_monitoring=bool(lookyloo.monitoring),
                                ignore_sri=ignore_sri,
                                monitoring_settings=monitoring_settings,
