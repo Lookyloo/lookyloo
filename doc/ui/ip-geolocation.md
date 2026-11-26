@@ -24,12 +24,14 @@ ones of the panels loaded later); in a shadow DOM, call
 ## How
 
 - The data comes from an [mmdb-server](https://github.com/adulau/mmdb-server)
-  instance, `https://ip.circl.lu/geolookup/<ip>` by default
-  (`ip_geolookup_url` in `config/generic.json`; an empty string disables the
-  whole feature: no route answer, no script loaded).
+  instance, `https://ip.circl.lu/geolookup/<ip>` in the sample config. It is a
+  third party service, so the module is **disabled by default**: enable it in
+  `config/modules.json` (`"IPGeolookup": {"enabled": true, "url": "..."}`).
+  Disabled or without URL: no route answer, no script loaded. The requests go
+  through the global proxy of Lookyloo (`global_proxy` in `generic.json`).
 - The browser never asks the service: it asks `/ip_geolookup?ip=...&ip=...`
   (at most 50 IPs at once, batched by the page), and the server of Lookyloo asks
-  the service (`website/web/geolookup.py`), with a cache in memory (a day, 10 000
+  the service (module `lookyloo/modules/ip_geolookup.py`), with a cache in memory (a day, 10 000
   IPs). Private, loopback and other non global IPs are not looked up.
 - `static/js/components/ip_geo.js`: a small spinner is shown where the flag goes
   until the geolocation is there (inline style + Web Animations API, so it also

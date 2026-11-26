@@ -17,7 +17,6 @@ import types
 import time
 
 import markdown
-import requests
 import orjson
 
 from collections import defaultdict
@@ -66,12 +65,13 @@ from lookyloo.helpers import (UserAgents,
                               load_user_config,
                               get_taxonomies,
                               mimetype_to_generic,
+                              get_useragent_for_requests,
+                              global_proxy_for_requests,
                               )
 from pylacus import RemoteHeadedSessionResponse, PyLacus
 from zoneinfo import available_timezones
 
 from .genericapi import api as generic_api
-from . import geolookup
 from .helpers import (User, build_users_table, get_secret_key,
                       load_user_from_request, src_request_ip, sri_load,
                       get_lookyloo_instance, get_indexing, build_keys_table)
@@ -483,7 +483,7 @@ app.jinja_env.globals.update(
      'load_custom_css': load_custom_css,
      'load_custom_js': load_custom_js,
      'lookyloo_version': pkg_version,
-     'ip_geo_enabled': geolookup.enabled,
+     'ip_geo_enabled': lambda: lookyloo.ip_geolookup.available,
      }
 )
 
@@ -1745,16 +1745,13 @@ def web_lookyloo_push_view(tree_uuid: str) -> str | WerkzeugResponse | Response:
         capture = lookyloo.capture_cache(tree_uuid, seed=session['known_private'].get(tree_uuid))
         success, to_push = lookyloo.get_capture(capture)
         if success:
-            pylookyloo = PyLookyloo(remote_lookyloo_url)
+            # PyLookyloo only, with the global proxy of this instance (no direct request)
+            pylookyloo = PyLookyloo(remote_lookyloo_url, useragent=get_useragent_for_requests(),
+                                    proxies=global_proxy_for_requests())
             not_lookyloo = Markup('{url} does not look like a Lookyloo instance: give the address of its home page, like https://lookyloo.example.org (not a page of it, nor another tool).').format(url=remote_lookyloo_url)
             try:
                 if not pylookyloo.is_up:
-                    # Something answers there (but not the home page of a Lookyloo), or nothing
-                    try:
-                        requests.head(remote_lookyloo_url, timeout=10)
-                        flash(not_lookyloo, 'error')
-                    except requests.exceptions.RequestException:
-                        flash(Markup('Unable to reach {url}: is the address right, and is the instance up?').format(url=remote_lookyloo_url), 'error')
+                    flash(Markup('Unable to reach a Lookyloo at {url}: is it the address of its home page, and is the instance up?').format(url=remote_lookyloo_url), 'error')
                     return redirect(url_for('tree', tree_uuid=tree_uuid, seed=session['known_private'].get(tree_uuid)))
                 uuid = pylookyloo.upload_capture(full_capture=to_push, quiet=True)
                 flash(Markup('Successfully pushed the capture: <a href="{root_url}/tree/{uuid}" target="_blank">{uuid}</a>.').format(root_url=pylookyloo.root_url, uuid=uuid), 'success')
@@ -2670,15 +2667,15 @@ def analysis_rows(kind: str, tree_uuid: str) -> list[dict[str, Any]]:
 def ip_geolookup() -> Response:
     '''Geolocation of IPs for the flags and cards next to the IPs
     (js/components/ip_geo.js): ?ip=1.2.3.4&ip=..., at most 50, global IPs only.
-    Asked to the mmdb-server of generic.json "ip_geolookup_url" by this server,
-    cached (website/web/geolookup.py). Logged in users (admins) only, for now.
+    Asked to the mmdb-server of the IPGeolookup module (config/modules.json) by
+    this server, cached (lookyloo/modules/ip_geolookup.py). Logged in users (admins) only, for now.
     Doc: doc/ui/ip-geolocation.md'''
-    if not geolookup.enabled():
+    if not lookyloo.ip_geolookup.available:
         return jsonify({'error': 'IP geolocation is disabled on this instance.'})
     # For the moment, for the logged in users (admins) only
     if not flask_login.current_user.is_authenticated:
         return make_response(jsonify({'error': 'Only for logged in users.'}), 403)
-    return jsonify(geolookup.lookup(request.args.getlist('ip')))
+    return jsonify(lookyloo.ip_geolookup.lookup(request.args.getlist('ip')))
 
 
 @app.route('/tree/<uuid:tree_uuid>/ips', methods=['GET'])

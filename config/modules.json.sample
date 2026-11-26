@@ -44,6 +44,10 @@
   "OnionLookup": {
     "enabled": false
   },
+  "IPGeolookup": {
+    "enabled": false,
+    "url": "https://ip.circl.lu/geolookup/"
+  },
   "AIL": {
     "enabled": false,
     "url": "http://MyAIL:7000",
@@ -159,6 +163,7 @@
     "IPASNHistory": "Module to query IPASN History (https://ipasnhistory.circl.lu/)",
     "Cloudflare": "Module to check if an IP is on Cloudflare infrastructure",
     "AutoCategorize": "Module that runs after the capture is done and assign categories to captures based on rules.",
-    "Ollama": "Send the capture to a local Ollama server and generate a report."
+    "Ollama": "Send the capture to a local Ollama server and generate a report.",
+    "IPGeolookup": "Geolocation of the IPs shown in the web interface (flag + card with the country and the AS), from an mmdb-server instance (https://github.com/adulau/mmdb-server): url is its geolookup endpoint, the IP is added at the end. Queried by the server of Lookyloo (with a cache, through the global proxy), never by the browser of the users."
   }
 }
