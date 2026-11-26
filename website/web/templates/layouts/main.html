@@ -18,6 +18,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/generic.css') }}"
           {{get_sri('static', 'css/generic.css')}}
           crossorigin="anonymous">
+    {% if ip_geo_enabled() and current_user.is_authenticated %}
+    {# Flag + card next to the IPs (js/components/ip_geo.js) #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/ip-geo.css') }}"
+          {{get_sri('static', 'css/components/ip-geo.css')}}
+          crossorigin="anonymous">
+    {% endif %}
+    {# The flashed messages of every page (partials/toasts.html) #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/toasts.css') }}"
+          {{get_sri('static', 'css/components/toasts.css')}}
+          crossorigin="anonymous">
     <link rel="stylesheet" href="{{ url_for('static', filename='vendor/datatables.min.css') }}"
           {{get_sri('static', 'vendor/datatables.min.css')}}
           crossorigin="anonymous">
@@ -51,6 +61,8 @@
       {% block content %}{% endblock%}
     </div>
     {% block site_footer %}{% endblock %}
+    {% from 'partials/toasts.html' import toasts %}
+    {{ toasts() }}
     {% include "custom_footer.html" ignore missing %}
 
     {% block scripts %}
@@ -71,6 +83,26 @@
             crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='js/render_tables.js') }}'
             {{get_sri('static', 'js/render_tables.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    {% if ip_geo_enabled() and current_user.is_authenticated %}
+    {# The world map of the card loads D3, topojson-client and the map on first use: their URLs and SRI here #}
+    <script src='{{ url_for('static', filename='js/components/ip_geo.js') }}'
+            {{get_sri('static', 'js/components/ip_geo.js')}}
+            data-d3="{{ url_for('static', filename='vendor/d3.min.js') }}" data-d3-sri="{{ get_sri('static', 'vendor/d3.min.js')|replace('integrity=', '')|replace('"', '') }}"
+            data-topojson="{{ url_for('static', filename='vendor/topojson-client.min.js') }}" data-topojson-sri="{{ get_sri('static', 'vendor/topojson-client.min.js')|replace('integrity=', '')|replace('"', '') }}"
+            data-world="{{ url_for('static', filename='vendor/countries-110m.json') }}" data-world-sri="{{ get_sri('static', 'vendor/countries-110m.json')|replace('integrity=', '')|replace('"', '') }}"
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    {% endif %}
+    {# MISP tags and the colours of the categories, on every page (js/components/misp_tag.js) #}
+    <script type="application/json" id="lk-category-colours">{{ category_colours() | tojson }}</script>
+    <script src='{{ url_for('static', filename='js/components/misp_tag.js') }}'
+            {{get_sri('static', 'js/components/misp_tag.js')}}
+            nonce="{{ csp_nonce() }}"
+            crossorigin="anonymous"></script>
+    <script src='{{ url_for('static', filename='js/components/toasts.js') }}'
+            {{get_sri('static', 'js/components/toasts.js')}}
             nonce="{{ csp_nonce() }}"
             crossorigin="anonymous"></script>
     <script src='{{ url_for('static', filename='js/generic.js') }}'

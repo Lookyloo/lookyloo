@@ -1,48 +1,111 @@
-{% if nothing_to_see %}
-Nothing to see here.
-{% else %}
-<center>
-  <h1 class="display-4">MISP hits</h1>
-  <h6>Searching on URL, domain, IPs, and CNAMEs for all the nodes up to the rendered page.</h6>
-  <h6>Skips the entries in warnings lists enabled on your MISP instance.</h6>
-{% if misps_occurrences|length > 1 %}
-<br>
-<hr/>
-<label for="mispSelector">Select the MISP instance to search in</label>
-<br>
-<div class="btn-group" role="group" aria-label="MISP Selector" id="mispSelector">
-  {%for name in misps_occurrences %}
-  <button type="button" value="lookup_{{name.replace(' ', '_')}}" class="btn btn-outline-primary {%if name == current_misp%}active{%endif%}" href="#">{{name}}</a></li>
-  {%endfor%}
-</div>
-{%endif%}
-</center>
+{#
+  Analysis > Search events on MISP: the events of the MISP instance(s) with values
+  of the capture (URLs, hostnames, domains, IPs, CNAMEs, body hashes of the nodes
+  up to the rendered page), as the events index of MISP 3 shows them (its table,
+  markings, tag chips, org tiles and states, css/components/capture-panels.css,
+  .lk-misp-*), plus the values of the capture in each event (each one shows its
+  node in the tree). Rows from _misp_events() in website/web/__init__.py.
+  #mispSelector / #lookup_<name> are read by js/tree_modals.js (mispSelector).
+  HTML fragment for the side panel. Doc: doc/ui/analysis-panels.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from "macros/panel.html" import panel_header, panel_empty %}
+{% from 'macros/misp.html' import misp_tag, misp_lane %}
+<div class="lk-panel">
+  {{ panel_header('Analysis', 'MISP hits',
+                  'Events of your MISP with the URLs, hostnames, domains, IPs, CNAMEs or resources of the nodes up to the rendered page. Values in the warning lists enabled on the MISP are skipped.',
+                  logo=(url_for('static', filename='vendor/logos/misp-logo-horizontal.png'),
+                        url_for('static', filename='vendor/logos/misp-logo-horizontal-light.png'), 'MISP')) }}
 
-<div id="allInstances">
-{% if misps_occurrences %}
-{% for name, occurrences in misps_occurrences.items() %}
-<div id="lookup_{{name.replace(' ', '_')}}" {%if name != current_misp%}style="display:none"{%endif%}>
-{% set hits, root_url = occurrences %}
-{% if hits %}
-  <ul>
-  {% for event_id, values in hits.items() %}
-  <li><a href="{{root_url}}/events/{{event_id}}">Event {{event_id}}</a>:
-    <ul>
-    {% for v in values|sort %}
-      <li>{{ v }}</li>
-    {% endfor %}
-    </ul>
-  </li>
+  {% if nothing_to_see %}
+    {{ panel_empty('MISP is not available', 'No MISP instance is configured on this Lookyloo, or you need to be logged in to search on it.', icon_name='search') }}
+  {% elif not misps_occurrences %}
+    {{ panel_empty('No hit', 'None of the MISP instances available has an event with a value of this capture.', icon_name='search') }}
+  {% else %}
+
+  {% if misps_occurrences|length > 1 %}
+  <div class="lk-misp-instances">
+    <span class="lk-pivot-description">MISP instance:</span>
+    <div class="btn-group btn-group-sm" role="group" aria-label="MISP instance" id="mispSelector">
+      {% for name in misps_occurrences %}
+      <button type="button" value="lookup_{{ name.replace(' ', '_') }}" class="btn btn-outline-primary {% if name == current_misp %}active{% endif %}">{{ name }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div id="allInstances">
+  {% for name, occurrences in misps_occurrences.items() %}
+  {% set events, root_url = occurrences %}
+  <div id="lookup_{{ name.replace(' ', '_') }}" {% if name != current_misp %}style="display:none"{% endif %}>
+    {% if events %}
+    {% set values = events | map(attribute='values') | sum(start=[]) | map(attribute='value') | unique | list %}
+    {% set figures = [{'label': 'Events', 'value': events|length},
+                      {'label': 'Unpublished', 'value': events | rejectattr('published') | list | length},
+                      {'label': 'High threat', 'value': events | selectattr('threat_level', 'equalto', 'High') | list | length},
+                      {'label': 'Values of the capture', 'value': values|length}] %}
+    <vt-stats class="lk-vitrine lk-panel-stats" trend="false" changes="false" label="MISP hits">{{ figures | tojson }}</vt-stats>
+
+    <p class="lk-misp-count"><b>{{ events|length }}</b> shown, on <a href="{{ root_url }}/events/index" target="_blank" rel="noopener">{{ name }}</a></p>
+    <div class="lk-misp-table-wrap">
+    <table class="lk-misp-table">
+      <colgroup>
+        <col class="c-state"><col class="c-id"><col class="c-title"><col class="c-org"><col class="c-mk">
+        <col class="c-attrib"><col class="c-behav"><col class="c-classif"><col class="c-num"><col class="c-threat"><col class="c-date"><col class="c-changed"><col class="c-values">
+      </colgroup>
+      <thead>
+        <tr>
+          <th data-col="state" class="is-state" title="Publish state">{{ render_icon('upload') }}</th>
+          <th data-col="id">ID</th>
+          <th data-col="title">Title</th>
+          <th data-col="org">Creator</th>
+          <th data-col="mk">Markings</th>
+          <th data-col="attrib" class="is-lane">{{ render_icon('incognito') }} Attribution</th>
+          <th data-col="behav" class="is-lane">{{ render_icon('map') }} Behaviour</th>
+          <th data-col="classif" class="is-lane">{{ render_icon('tags') }} Classification</th>
+          <th data-col="num" class="is-num" title="Attributes">{{ render_icon('list-ul') }}</th>
+          <th data-col="threat">Threat</th>
+          <th data-col="date">Date</th>
+          <th data-col="changed" class="is-sorted">Changed {{ render_icon('arrow-down') }}</th>
+          <th data-col="values" class="is-lane">In this capture</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+        <tr>
+          <td data-col="state" class="is-state">{% if event['published'] %}<span class="lk-misp-st is-pub" title="Published">{{ render_icon('check-lg') }}</span>
+            {% else %}<span class="lk-misp-st is-unpub" title="Unpublished">{{ render_icon('floppy-fill') }}</span>{% endif %}</td>
+          <td data-col="id" class="is-id"><a href="{{ event['url'] }}" target="_blank" rel="noopener">#{{ event['id'] }}</a></td>
+          <td data-col="title"><a class="lk-misp-title" href="{{ event['url'] }}" target="_blank" rel="noopener" title="{{ event['info'] }}">{{ event['info'] }}</a></td>
+          <td data-col="org">{% if event['org'] %}<span class="lk-misp-org"><span class="lk-misp-org-tile m{{ event['org_mono'] }}" aria-hidden="true">{{ event['org_initials'] }}</span><span title="Created by {{ event['org'] }}">{{ event['org'] }}</span></span>{% else %}<span class="lk-misp-none">—</span>{% endif %}</td>
+          <td data-col="mk"><span class="lk-misp-marks is-wrap">{% for tag in event['markings'] %}{{ misp_tag(tag) }}{% else %}<span class="lk-misp-none">—</span>{% endfor %}</span></td>
+          <td data-col="attrib" class="is-lane">{{ misp_lane(event['attribution']) }}</td>
+          <td data-col="behav" class="is-lane">{{ misp_lane(event['behaviour'], 2) }}</td>
+          <td data-col="classif" class="is-lane">{{ misp_lane(event['classification'], 2) }}</td>
+          <td data-col="num" class="is-num"><a href="{{ event['url'] }}#tab-attributes" target="_blank" rel="noopener" title="{{ event['attribute_count'] or 0 }} attributes">{{ event['attribute_count'] or 0 }}</a></td>
+          <td data-col="threat"><span class="lk-misp-threat is-{{ event['threat_level']|lower }}" title="Threat level">{{ event['threat_level'] }}</span></td>
+          <td data-col="date" class="is-date">{{ event['date'] }}</td>
+          <td data-col="changed" class="is-date" title="Last change {{ event['changed']['full'] }}">{{ event['changed']['ago'] }}</td>
+          <td data-col="values" class="is-lane is-values">
+            <span class="lk-misp-ctx is-wrap">
+              {% for v in event['values'] %}
+              <span class="lk-misp-chip is-attr" title="Attribute changed {{ v['seen'] }}">
+                {% if v['hostnode'] %}<a href="#" role="button" data-lk-locate="{{ v['hostnode'] }}" title="Show the node in the tree">{{ v['value'] }}</a>{% else %}<span>{{ v['value'] }}</span>{% endif %}
+                <span data-lk-copy="{{ v['value'] }}"></span>
+              </span>
+              {% endfor %}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+      {{ panel_empty('No hit on ' ~ name, icon_name='search') }}
+    {% endif %}
+  </div>
   {% endfor %}
-  </ul>
-{% else %}
-  No hits
-{% endif %}
+  </div>
+  {% endif %}
 </div>
-{% endfor %}
-{%else%}
-No hits in any of the instances available.
-{%endif%}
-</div>
-
-{%endif%}

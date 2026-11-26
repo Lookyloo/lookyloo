@@ -17,6 +17,7 @@ from .circlpdns import CIRCLPDNS  # noqa
 from .ail import AIL  # noqa
 from .onion_lookup import OnionLookup  # noqa
 from .auto_categorize import AutoCategorize  # noqa
+from .ip_geolookup import IPGeolookup  # noqa
 
 __all__ = [
     'AssemblyLine',
@@ -36,5 +37,6 @@ __all__ = [
     'CIRCLPDNS',
     'AIL',
     'OnionLookup',
-    'AutoCategorize'
+    'AutoCategorize',
+    'IPGeolookup'
 ]

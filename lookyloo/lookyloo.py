@@ -85,7 +85,7 @@ from .helpers import (get_captures_dir, get_email_template, get_tt_template,
                       )
 from .modules import (MISPs, PhishingInitiative, UniversalWhois,
                       UrlScan, VirusTotal, Phishtank, Hashlookup,
-                      Pandora, URLhaus, CIRCLPDNS)
+                      Pandora, URLhaus, CIRCLPDNS, IPGeolookup)
 
 
 if TYPE_CHECKING:
@@ -219,6 +219,7 @@ class Lookyloo():
         self.pandora = Pandora()
         self.urlhaus = URLhaus(config_name='URLhaus')
         self.circl_pdns = CIRCLPDNS(config_name='CIRCLPDNS')
+        self.ip_geolookup = IPGeolookup(config_name='IPGeolookup')
 
         self.logger.info('Initializing context...')
         self.context = Context()

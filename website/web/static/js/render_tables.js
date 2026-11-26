@@ -419,6 +419,7 @@ function renderTables() {
           searching: true,
           drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
           order: [[ 1, "desc" ]],
+          language: { emptyTable: 'CIRCL Passive DNS has no record for this hostname.' },
           ajax: {
              url: `/tables/CIRCL_pdns_table/${query}${window.location.search}`,
              type: 'POST',
@@ -435,136 +436,8 @@ function renderTables() {
         });
       })
   }
-  if (document.getElementById('storageStateCookiesTable')) {
-      let cat_table = new DataTable('#storageStateCookiesTable', {
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        columns: [
-            {width: '7%'},
-            {width: '15%'},
-            {width: '20%'},
-            {width: '12%'},
-            {width: '13%'},
-            {width: '10%', render: DataTable.render.datetime_with_tz()},
-            {width: '5%'},
-            {width: '5%'},
-            {width: '6%'},
-            {width: '5%'}
-        ]
-      });
-  }
-  if (document.getElementById('storageStateCookiesTable')) {
-      let cat_table = new DataTable('#storageStateCookiesTable', {
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        columns: [
-            {width: '15%'},
-            {width: '20%'},
-            {width: '15%'},
-            {width: '25%'},
-            {width: '25%'}
-        ]
-      });
-  }
-  if (document.getElementById('consoleMessagesTable')) {
-      let cm_table = new DataTable('#consoleMessagesTable', {
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        columns: [
-            {width: '20%', render: DataTable.render.datetime_with_tz()},
-            {width: '10%'},
-            {width: '30%'},
-            {width: '25%'},
-            {width: '5%'},
-            {width: '10%'}
-        ]
-      });
-  }
-  if (document.getElementsByName('opfsTable').length > 0) {
-    let opfsTables = document.getElementsByName("opfsTable");
-    Array.from(opfsTables).forEach(function (opfsTable) {
-      let cat_table = new DataTable(`#${opfsTable.id}`, {
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        drawCallback: function (settings) { downloadOpfsFileListener(); },
-        columns: [
-            {width: '50%'},
-            {width: '20%'},
-            {width: '20%'},
-            {width: '10%'}
-        ]
-      });
-    });
-  }
-  if (document.getElementsByName('localStorageTable').length > 0) {
-    let localStorageTables = document.getElementsByName("localStorageTable");
-    Array.from(localStorageTables).forEach(function (localStorageTable) {
-      let cat_table = new DataTable(`#${localStorageTable.id}`, {
-        retrieve: true,
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        columns: [
-            {width: '20%'},
-            {width: '80%'}
-        ]
-      });
-    });
-  }
-  if (document.getElementById('category_table')) {
-      let cat_table = new DataTable('#category_table', {
-        retrieve: true,
-        drawCallback: function (settings) { newTabClickListener(); add_event_js_copy(); },
-        order: [[ 0, "desc" ]],
-        pageLength: 25,
-        lengthMenu: [25, 50, {label: 'All', value:-1} ],
-
-        rowGroup: {
-            dataSrc: [0],
-        },
-        columns: [{visible: false },
-                  { width: '60%', orderable: false },
-                  { width: '35%', orderable: false },
-                  { width: '5%', orderable: false, render: DataTable.render.select()}],
-        select: {
-          style: 'multi',
-          headerCheckbox: false,
-        },
-        layout: {
-            topStart: {
-                buttons: [
-                  {
-                    extend: 'selected',
-                    text: 'Review categories',
-                    action: function (e, dt, button, config) {
-                        let counter = dt.rows( { selected: true } ).count()
-                        let tags = dt.cells( dt.rows( { selected: true } ).nodes(), 2).data().toArray();
-                        document.getElementById('categories_counter').innerText = counter;
-                        let list = document.getElementById("categories_selected");
-                        list.innerHTML = '';
-                        tags.forEach((item) => {
-                            let elt = document.createElement("div");
-                            elt.className = "form-check";
-                            elt.innerHTML = `<input class="form-check-input" type="checkbox" name="categories" value='${item}' checked hidden> <label class="form-check-label">${item}</label>`;
-                            list.appendChild(elt);
-                        });
-                        document.getElementById('new_categories').style.display = 'block';
-                    }
-                  }
-                ],
-            }
-        }
-      });
-
-      cat_table.rows('.selected').select();
-      cat_table.on('user-select', function (e, dt, type, cell, originalEvent) {
-          if (originalEvent.target.parentNode.classList.contains("unselectable") ||
-              originalEvent.target.parentNode.parentNode.classList.contains("unselectable")) {
-              e.preventDefault();
-          }
-      });
-  }
+  // Storage state and console messages (tree/modals/storage.html, console_messages.html):
+  // vitrine <vt-table> / <vt-log>, set up by js/capture_panels.js
+  // Categories of a capture (tree/modals/categories_view.html): plain checkboxes now,
+  // set up by js/capture_panels.js (data-lk-categories)
 };

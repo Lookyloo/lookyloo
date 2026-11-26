@@ -1,112 +1,99 @@
-<div>
-{% if nothing_found %}
-    Nothing found on any of the modules.
-{% else %}
-{% if urlscan %}
-  <hr>
-  <center>
-    <h1 class="display-4">urlscan.io</h1>
-  <div>
-  {% if urlscan.get('permaurl') %}
-    <p>A scan was triggered for this capture,
-    <a href="{{ urlscan['permaurl'] }}">click to view it</a> on urlscan.io.</p>
-    {% if urlscan['malicious']%}
-    <p>It is considered malicious.</p>
-    {% endif%}
-    {% if urlscan['tags'] %}
-    <p>It is tagged as {{ ','.join(urlscan['tags']) }}.</p>
-    {% endif%}
+{#
+  Analysis > Third party reports: what the enabled third party services say about
+  the capture (urlscan.io, Phishtank, URLhaus, VirusTotal, Phishing Initiative),
+  one section per service with results (modules() in website/web/__init__.py).
+  HTML fragment for the side panel. Doc: doc/ui/analysis-panels.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from "macros/panel.html" import panel_header, panel_section, panel_empty %}
+{% set has_phishtank = phishtank and (phishtank.get('urls') or phishtank.get('ips_hits')) %}
+{% set has_urlhaus = urlhaus and urlhaus.get('urls') %}
+<div class="lk-panel">
+  {{ panel_header('Analysis', 'Third party reports',
+                  'What the third party services enabled on this instance know about the URLs and IPs of the capture.',
+                  icon_name='shield-check') }}
 
-  {% elif urlscan.get('error_message') %}
-  <p> Unable to trigger the scan, urlscan.io returned the following message:</p>
-  <p class="font-italic">{{ urlscan.get('error_message') }}</p>
-  {% endif%}
-  </div>
-  </center>
-{% endif%}
-{% if phishtank and (phishtank.get('urls') or phishtank.get('ips_hits')) %}
-<hr>
-<center>
-  <h1 class="display-4">Phishtank</h1>
-  <div>
+  {% if nothing_found or not (urlscan or has_phishtank or has_urlhaus or vt or pi) %}
+    {{ panel_empty('No report',
+                   "None of the third party services enabled on this instance (urlscan.io, Phishtank, URLhaus, VirusTotal, Phishing Initiative) has something on this capture, or none is configured.",
+                   icon_name='shield-check') }}
+  {% else %}
+
+  {% if urlscan %}
+  {% call panel_section('urlscan.io', 'search') %}
+    {% if urlscan.get('permaurl') %}
+    <dl class="lk-panel-facts">
+      <dt>Scan</dt><dd><a href="{{ urlscan['permaurl'] }}" target="_blank" rel="noopener">View it on urlscan.io</a></dd>
+      <dt>Verdict</dt><dd>{% if urlscan['malicious'] %}<span class="lk-report-bad">{{ render_icon('exclamation-triangle') }} Malicious</span>{% else %}Not flagged as malicious{% endif %}</dd>
+      {% if urlscan['tags'] %}<dt>Tags</dt><dd>{{ urlscan['tags'] | join(', ') }}</dd>{% endif %}
+    </dl>
+    {% elif urlscan.get('error_message') %}
+    <p class="lk-panel-note">{{ render_icon('exclamation-triangle') }} Unable to trigger the scan, urlscan.io said: <em>{{ urlscan.get('error_message') }}</em></p>
+    {% endif %}
+  {% endcall %}
+  {% endif %}
+
+  {% if has_phishtank %}
+  {% call panel_section('Phishtank', 'shield-exclamation') %}
     {% if phishtank.get('urls') %}
-    <p class="lead">Phishtank flagged the URLs below as phishing</p>
-    <dl class="row">
-    {% for url, permaurl in phishtank['urls'].items() %}
-    <dt class="col-sm-7">{{ shorten_string(url, with_copy_button=True) }}</dt>
-    <dd class="col-sm-3"><a href="{{ permaurl }}">View on phishtank</a></li></dd>
-    {% endfor %}
-    </dl>
-    {% endif%}
-
-    {% if phishtank.get('ips_hits') %}
-    <p class="lead">The IPs below are in the tree and are flagged as phishing on Phishtank</p>
-    {% for ip, entries in phishtank['ips_hits'].items() %}
-    <p>{{ ip }}</p>
-    <dl class="row">
-      {% for related_url, permaurl in entries %}
-      <dt class="col-sm-7">{{ shorten_string(related_url, with_copy_button=True) }}</dt>
-      <dd class="col-sm-3"><a href="{{ permaurl }}">View on phishtank</a></li></dd>
+    <p class="lk-pivot-description">URLs of the capture flagged as phishing:</p>
+    <ul class="lk-report-list">
+      {% for url, permaurl in phishtank['urls'].items() %}
+      <li><span class="lk-report-value">{{ url }}</span> <a href="{{ permaurl }}" target="_blank" rel="noopener">View on Phishtank</a></li>
       {% endfor %}
-    </dl>
+    </ul>
+    {% endif %}
+    {% if phishtank.get('ips_hits') %}
+    <p class="lk-pivot-description">IPs of the capture with URLs flagged as phishing:</p>
+    {% for ip, entries in phishtank['ips_hits'].items() %}
+    <p class="lk-report-value"><strong>{{ ip }}</strong></p>
+    <ul class="lk-report-list">
+      {% for related_url, permaurl in entries %}
+      <li><span class="lk-report-value">{{ related_url }}</span> <a href="{{ permaurl }}" target="_blank" rel="noopener">View on Phishtank</a></li>
+      {% endfor %}
+    </ul>
     {% endfor %}
-    {% endif%}
-  </div>
-</center>
-{% endif%}
-{% if urlhaus and urlhaus.get('urls') %}
-<hr>
-<center>
-  <h1 class="display-4">URL Haus</h1>
-  <div>
-    {% if urlhaus.get('urls') %}
-    <p class="lead">URL Haus knows the URLs below</p>
-    <dl class="row">
-    {% for entry in urlhaus['urls'] %}
-    <dt class="col-sm-7">{{ shorten_string(entry['url'], with_copy_button=True) }}</dt>
-    <dd class="col-sm-3"><a href="{{ entry['urlhaus_reference'] }}">View on URL Haus</a></li></dd>
-    {% endfor %}
-    </dl>
-    {% endif%}
-  </div>
-</center>
-{% endif%}
-{% if vt %}
-  <hr>
-  <center><h1 class="display-4">Virus Total</h1></center>
-  {% for url, entries in vt.items() %}
-      <div class="border-top my-3"></div>
-      <center>
-        <h3><small class="text-muted">URL</small>
-          {{ shorten_string(url, with_copy_button=True) }}
-        </h3>
-      </center>
+    {% endif %}
+  {% endcall %}
+  {% endif %}
+
+  {% if has_urlhaus %}
+  {% call panel_section('URLhaus', 'bug', urlhaus['urls']|length) %}
+    <p class="lk-pivot-description">URLs of the capture known by URLhaus:</p>
+    <ul class="lk-report-list">
+      {% for entry in urlhaus['urls'] %}
+      <li><span class="lk-report-value">{{ entry['url'] }}</span> <a href="{{ entry['urlhaus_reference'] }}" target="_blank" rel="noopener">View on URLhaus</a></li>
+      {% endfor %}
+    </ul>
+  {% endcall %}
+  {% endif %}
+
+  {% if vt %}
+  {% call panel_section('VirusTotal', 'virus', vt|length) %}
+    {% for url, entries in vt.items() %}
+    <div class="lk-report-item">
+      <p class="lk-report-value"><strong>{{ url }}</strong></p>
       {% if entries['malicious'] %}
-          <center>
-          <p class="lead">Detected as malicious by the following vendors</p>
-          <dl class="row">
-          {% for e in entries['malicious'] %}
-              <dt class="col-sm-3">{{ e[0] }}</dt>
-              <dd class="col-sm-3">{{ e[1] }}</dd>
-          {% endfor %}
-          </center>
-          </dl>
+      <p class="lk-report-bad">{{ render_icon('exclamation-triangle') }} Malicious for {{ entries['malicious']|length }} vendor(s):</p>
+      <dl class="lk-panel-facts">
+        {% for vendor, result in entries['malicious'] %}<dt>{{ vendor }}</dt><dd>{{ result }}</dd>{% endfor %}
+      </dl>
       {% else %}
-          <p class="lead">No vendors consider this URL as malicious.</p>
-      {% endif%}
-      <h5 class="text-right"><a href="{{ entries['permaurl'] }}">Full report on VirusTotal</a></h5>
-  {% endfor %}
-{% endif%}
-{% if pi%}
-  <center><h1 class="display-4">Phishing Initiative</h1></center>
-  {% for url, tag in pi.items() %}
-    <center>
-      <h3><small class="text-muted">URL</small>
-        {{ shorten_string(url, with_copy_button=True) }}
-      </h3>
-      <div>This URL is tagged as <b>{{ tag }}</b> on Phishing Initiative</div>
-    </center>
-  {% endfor %}
-{% endif%}
-{% endif %}
+      <p class="lk-pivot-description">No vendor considers this URL malicious.</p>
+      {% endif %}
+      <a href="{{ entries['permaurl'] }}" target="_blank" rel="noopener">Full report on VirusTotal</a>
+    </div>
+    {% endfor %}
+  {% endcall %}
+  {% endif %}
+
+  {% if pi %}
+  {% call panel_section('Phishing Initiative', 'flag', pi|length) %}
+    <dl class="lk-panel-facts">
+      {% for url, tag in pi.items() %}<dt class="lk-report-value">{{ url }}</dt><dd>Tagged <strong>{{ tag }}</strong></dd>{% endfor %}
+    </dl>
+  {% endcall %}
+  {% endif %}
+
+  {% endif %}
 </div>

@@ -9,11 +9,19 @@
   --lk-color-page: #F5F6F8;
   --lk-color-surface: #FFFFFF;
   --lk-color-surface-2: #F3F3F3;
+  /* Stripes of the tree background (columns), the original colours */
+  --lk-tree-stripe: #EEEEEE;
   --lk-color-ink: #171717;
   --lk-color-muted: #6B6B6B;
   --lk-color-rule: #E6E6E6;
   --lk-color-rule-strong: #C9C9C9;
   --lk-color-accent: #1D4ED8;
+  /* Org tiles of MISP 3 (.dk-logo.m0 to m5), for Analysis > Search events on MISP */
+  --lk-misp-org-0: #655B8A; --lk-misp-org-1: #885159; --lk-misp-org-2: #835836;
+  --lk-misp-org-3: #41704E; --lk-misp-org-4: #33715A; --lk-misp-org-5: #865163;
+  --lk-misp-on-org: #FFFFFF;
+  /* Galaxy chips of MISP 3 (.dk-chip.is-gx) */
+  --lk-misp-gx: #8B5CF6; --lk-misp-gx-ink: #6B34CE; --lk-misp-gx-wash: #F5F0FE;
   --lk-color-accent-soft: #EBEFFE;
   --lk-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
   --lk-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -43,10 +51,12 @@
 }
 
 [data-bs-theme="dark"] {
+  --lk-misp-gx-ink: #AB91FF; --lk-misp-gx-wash: #2A223C;
   /* Dark navy blue */
   --lk-color-page: #172033;
   --lk-color-surface: #1E293D;
   --lk-color-surface-2: #26324A;
+  --lk-tree-stripe: #2B3035;
   --lk-color-ink: #E8ECF4;
   --lk-color-muted: #9AA6BD;
   --lk-color-rule: #2F3B55;

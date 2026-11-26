@@ -1,0 +1,18 @@
+{#
+  Styles and script of the panels of the Capture menu (macros/panel.html,
+  js/capture_panels.js with the vitrine components). The capture page loads them
+  itself; the "Open as a page" versions of the panels (from_popup=True) import
+  these macros in their styles / scripts blocks. Doc: doc/ui/capture-panels.md
+#}
+{% macro panel_styles() -%}
+{% for stylesheet in ['css/components/capture-panels.css', 'css/components/vitrine.css'] %}
+<link rel="stylesheet" href="{{ url_for('static', filename=stylesheet) }}"
+      {{ get_sri('static', stylesheet) }} crossorigin="anonymous">
+{% endfor %}
+{%- endmacro %}
+
+{% macro panel_scripts() -%}
+<script src="{{ url_for('static', filename='js/capture_panels.js') }}"
+        {{ get_sri('static', 'js/capture_panels.js') }}
+        nonce="{{ csp_nonce() }}" crossorigin="anonymous" type="module"></script>
+{%- endmacro %}

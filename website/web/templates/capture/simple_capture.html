@@ -27,7 +27,6 @@
 
 {% block content %}
 <div class="container">
-  {{ render_messages(container=True, dismissible=True) }}
   <form role="form" action="{{ url_for('simple_capture') }}" method=post enctype=multipart/form-data>
     <!-- Submission type -->
 

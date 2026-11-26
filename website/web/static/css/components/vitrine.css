@@ -1,0 +1,33 @@
+/*
+ * Vitrine web components (vendor/vitrine/, installed by tools/3rdparty.py),
+ * themed with the Lookyloo tokens: add the class lk-vitrine to a <vt-*> element.
+ * The --vt-* tokens cross the shadow DOM of the components, so they follow the
+ * light / dark theme of the site. Doc: doc/ui/vitrine.md
+ */
+
+.lk-vitrine {
+  display: block;
+  --vt-bg: var(--lk-color-page);
+  --vt-surface: var(--lk-color-surface);
+  --vt-surface-sunken: var(--lk-color-surface-2);
+  --vt-surface-raised: var(--lk-color-surface);
+  --vt-border: var(--lk-color-rule);
+  --vt-border-strong: var(--lk-color-rule-strong);
+  --vt-fg: var(--lk-color-ink);
+  --vt-fg-muted: var(--lk-color-muted);
+  --vt-accent: var(--lk-color-accent);
+  --vt-accent-fg: var(--lk-color-accent);
+  --vt-on-accent: var(--lk-color-on-accent);
+  --vt-accent-soft: var(--lk-color-accent-soft);
+  --vt-success: var(--lk-color-success);
+  --vt-warning: var(--lk-color-warning);
+  --vt-danger: var(--lk-color-danger);
+  --vt-info: var(--lk-color-info);
+  --vt-font-mono: var(--lk-font-mono);
+  --vt-radius: var(--lk-radius-md);
+}
+.lk-vitrine[hidden] { display: none; }
+
+/* Copy buttons with feedback (copyWithFeedback, js/capture_panels.js) */
+.btn.is-copied { border-color: var(--lk-color-success); color: var(--lk-color-success); }
+.btn.is-copy-failed { border-color: var(--lk-color-danger); color: var(--lk-color-danger); }

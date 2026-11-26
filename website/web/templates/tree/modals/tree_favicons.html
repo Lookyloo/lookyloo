@@ -1,11 +1,18 @@
-<h5 class="text-center">Click on the favicon to see the other captures it's been found in</h5>
-<table id="faviconsTable" class="table table-striped" style="width:100%" data-treeuuid="{{tree_uuid}}">
-<thead>
- <tr>
-   <th>Number of captures</th>
-   <th>Favicon</th>
-   <th>Shodan MMH3</th>
-   <th>Download</th>
- </tr>
-</thead>
-</table>
+{#
+  Analysis > Favicons: one row per value of the capture, in a vitrine <vt-table>
+  (js/capture_panels.js, TABLES.favicons; rows from analysis_rows('favicons') in
+  website/web/__init__.py). Links open the details panel of the value, or locate
+  the node in the tree. HTML fragment for the side panel. Doc: doc/ui/analysis-panels.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from "macros/panel.html" import panel_header, panel_empty %}
+<div class="lk-panel">
+  {{ panel_header('Analysis', 'Favicons', 'The favicons found on the rendered page. Click one to see the other captures with it.', icon_name='star') }}
+  {% if rows %}
+  <vt-table class="lk-vitrine" row-numbers="false" data-lk-table="favicons" variant="full" selectable="none" reorderable="false" expandable="false"
+            wrap layout="table" filters="false" copy="false" download="false" fullscreen="false" page-size="25" label="Favicons ({{ rows|length }})"></vt-table>
+  <script type="application/json">{{ rows | tojson }}</script>
+  {% else %}
+  {{ panel_empty('No favicon', 'No favicon was found on the rendered page.', icon_name='star') }}
+  {% endif %}
+</div>

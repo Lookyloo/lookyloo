@@ -486,3 +486,16 @@
   .lk-capture-table > thead > tr > th:last-child,
   .lk-capture-table td.lk-capture-time { width: 1% !important; white-space: nowrap; }
 }
+
+/* Categories of a capture (logged in users), under its title, as MISP tags */
+.lk-capture-categories { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+
+/* While the list loads (js/components/table_skeleton.js): the rows of the previous
+   page are hidden, placeholders in their shape take the whole width */
+.lk-capture-table tbody.lk-skeleton-loading > tr:not(.lk-skeleton-row) { display: none; }
+.lk-skeleton-row > td { padding: var(--lk-space-3) var(--lk-space-4) !important; border-bottom: 1px solid var(--lk-color-rule); }
+.lk-skeleton-capture { display: flex; align-items: flex-start; gap: var(--lk-space-4); width: 100%; }
+.lk-skeleton-capture > vt-skeleton:first-child { flex: none; }
+.lk-skeleton-text { display: flex; flex: 1; flex-direction: column; gap: 10px; min-width: 0; padding-top: 2px; }
+.lk-skeleton-side { display: flex; flex: none; flex-direction: column; align-items: flex-end; gap: 8px; }
+@media (max-width: 576px) { .lk-skeleton-side { display: none; } }

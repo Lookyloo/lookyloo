@@ -56,12 +56,20 @@ DataTable.render.datetime_with_tz = function () {
     };
 }
 
+// The capture page, from the details of a node: its opener (pop-up window) or
+// its parent (tab of the side panel, js/side_panel.js); null otherwise
+function capturePage() {
+    if (window.opener) return window.opener;
+    if (window.parent !== window) return window.parent;
+    return null;
+}
+
 function newTabClickListener() {
     document.querySelectorAll('.openNewTab').forEach(el => el.addEventListener('click', event => {
-        if (window.opener === null) {
+        if (capturePage() === null) {
             return openTreeInNewTab(el.dataset.capture, el.dataset.hostnode)
         } else {
-            let success = window.opener.openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
+            let success = capturePage().openTreeInNewTab(el.dataset.capture, el.dataset.hostnode);
             if (! success) {
                 alert("Your browser doesn't allow Lookyloo to open a new tab. There should be an icon on the right side of your URL bar *in the main window* to allow it.");
             }
@@ -156,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }));
 
   document.querySelectorAll(".locateInTree").forEach(el => el.addEventListener('click', event => {
-    window.opener.LocateNode(el.dataset.hostnode);
+    capturePage()?.LocateNode(el.dataset.hostnode);
   }));
 
   // Make sure the never expire checkbox is never checked by default (macro monitoring_form)

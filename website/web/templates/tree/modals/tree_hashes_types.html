@@ -1,10 +1,18 @@
-<h5 class="text-center">Click on the hash to see the other captures it's been found in</h5>
-<table id="treeHashesTable" class="table table-striped" style="width:100%" data-treeuuid="{{tree_uuid}}">
-<thead>
- <tr>
-   <th>Number of captures</th>
-   <th>Hash</th>
-   <th>Hash type</th>
- </tr>
-</thead>
-</table>
+{#
+  Analysis > (Fuzzy) hashes types: one row per value of the capture, in a vitrine <vt-table>
+  (js/capture_panels.js, TABLES.hashes_types; rows from analysis_rows('hashes_types') in
+  website/web/__init__.py). Links open the details panel of the value, or locate
+  the node in the tree. HTML fragment for the side panel. Doc: doc/ui/analysis-panels.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% from "macros/panel.html" import panel_header, panel_empty %}
+<div class="lk-panel">
+  {{ panel_header('Analysis', '(Fuzzy) hashes types', 'Hashes of the rendered page (fuzzy and others): click one to see the captures with the same hash, often a page built the same way.', icon_name='fingerprint') }}
+  {% if rows %}
+  <vt-table class="lk-vitrine" row-numbers="false" data-lk-table="hashes_types" variant="full" selectable="none" reorderable="false" expandable="false"
+            wrap layout="table" filters="false" copy="false" download="false" fullscreen="false" page-size="25" label="(Fuzzy) hashes types ({{ rows|length }})"></vt-table>
+  <script type="application/json">{{ rows | tojson }}</script>
+  {% else %}
+  {{ panel_empty('No hash', icon_name='fingerprint') }}
+  {% endif %}
+</div>

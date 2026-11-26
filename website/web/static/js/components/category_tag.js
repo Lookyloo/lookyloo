@@ -1,6 +1,6 @@
 "use strict";
-// Category tags: a category as a coloured pill with an icon, like
-// content-classification:cybercrime="phishing" -> [bug] cybercrime · phishing
+// Category tags: a category drawn as a MISP tag (js/components/misp_tag.js), like
+// content-classification:cybercrime="phishing" -> |cybercrime phishing
 // Used by the categories table (#categoriesTable, explore/categories.html).
 //
 // Front-end only: built from the JSON of POST /tables/categoriesTable/ (unchanged),
@@ -8,44 +8,16 @@
 // DOMParser (inert), values are written back with textContent / attributes.
 // Styles: css/components/tag.css. Doc: doc/ui/tags.md
 
-// Family of the MISP taxonomy -> [tint, Bootstrap icon]
-const LK_CATEGORY_FAMILIES = {
-    'general': ['blue', 'newspaper'],
-    'technology': ['teal', 'cpu'],
-    'technical-services': ['teal', 'hdd-stack'],
-    'cybersecurity': ['green', 'shield-check'],
-    'cybercrime': ['red', 'bug'],
-    'illegal-markets': ['red', 'cart-x'],
-    'markets': ['amber', 'cart'],
-    'finance': ['amber', 'bank'],
-    'communities': ['pink', 'people'],
-    'digital-content': ['violet', 'play-btn'],
-    'geopolitics-and-hacktivism': ['violet', 'flag'],
-};
-const LK_CATEGORY_TAG = /^(?<namespace>[^:]+):(?<family>[^=]+)="?(?<value>[^"]*)"?$/;
-
-// Tag element of a category. href: link to the captures of this category (or null)
+// Tag element of a category: a MISP tag (js/components/misp_tag.js) with the colour of
+// its type (website/web/category_colours.json). href: link to the captures of this
+// category (or null)
 function lkCategoryTag(sprite, category, href) {
-    let tint = 'slate';
-    let iconName = 'tag';
-    let family = '';
-    let label = category;
-    const match = LK_CATEGORY_TAG.exec(category);
-    if (match) {
-        family = match.groups.family;
-        label = match.groups.value.replaceAll('-', ' ');
-        [tint, iconName] = LK_CATEGORY_FAMILIES[family] || [tint, iconName];
-    }
-    const tag = lkElement(href ? 'a' : 'span', `lk-tag lk-tag-${tint}`);
+    const tag = lkElement(href ? 'a' : 'span', 'lk-category-tag');
     if (href) {
         tag.href = href;
     }
     tag.title = category;
-    tag.appendChild(lkIcon(sprite, iconName));
-    if (family) {
-        tag.appendChild(lkElement('span', 'lk-tag-family', family.replaceAll('-', ' ')));
-    }
-    tag.appendChild(lkElement('span', null, label));
+    tag.appendChild(lkMispTag(lkMispTagView(category, lkCategoryColour(category))));
     return tag;
 }
 

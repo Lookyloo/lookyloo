@@ -1,0 +1,57 @@
+{#
+  Legend and icon filter of the capture tree (tree/tree.html), at the bottom
+  right. Each entry is a button with the data key of the node icon it explains
+  (data-key, the keys of icon_list() in js/tree.js). js/tree.js counts the nodes
+  having each key, keeps the icons of this capture at the top (most frequent
+  first) and moves the others to "Not in this capture"; clicking entries
+  highlights the nodes that have one of them and dims the others.
+  Doc: doc/ui/tree.md
+#}
+{% from 'bootstrap5/utils.html' import render_icon %}
+{% set legend = [
+  ('http_content', 'insecure.svg', 'Unencrypted requests', 'Nodes with at least one insecure (not HTTPS) request'),
+  ('malicious', 'bomb.svg', 'Known malicious', 'Nodes with known malicious content'),
+  ('empty', 'empty.svg', 'Empty responses', 'Nodes with URLs returning no content'),
+  ('posted_data', 'send-arrow-up.svg', 'POST requests', 'Nodes that POST content'),
+  ('response_cookie', 'cookie_received.png', 'Cookie received', 'Nodes receiving cookies in the responses'),
+  ('request_cookie', 'cookie_read.png', 'Cookie read', 'Nodes sending cookies in the requests'),
+  ('redirect', 'redirect.png', 'Redirect', 'Nodes whose responses redirect'),
+  ('redirect_to_nothing', 'cookie_in_url.png', 'Redirect to nowhere', 'Nodes redirecting to URLs missing in the capture'),
+  ('iframe', 'ifr.png', 'iFrame', 'Nodes loading resources from iFrames'),
+  ('js', 'javascript.png', 'JavaScript', 'Nodes loading JavaScript'),
+  ('font', 'font.png', 'Font', 'Nodes loading fonts'),
+  ('html', 'html.png', 'HTML', 'Nodes loading HTML'),
+  ('json', 'json.png', 'JSON', 'Nodes loading JSON'),
+  ('css', 'css.png', 'CSS', 'Nodes loading CSS'),
+  ('exe', 'exe.png', 'Executable', 'Nodes loading executables'),
+  ('image', 'img.png', 'Image', 'Nodes loading images'),
+  ('video', 'video.png', 'Video', 'Nodes loading videos'),
+  ('unknown_mimetype', 'wtf.png', 'Unknown content', 'Nodes loading content of an unknown type'),
+  ('downloaded_filename', 'download.png', 'Downloaded file', 'Nodes containing a downloaded file'),
+  ('websocket_session', 'websocket.svg', 'Websocket', 'Nodes containing a websocket session'),
+] %}
+{# Hidden while the tree loads: js/tree.js (setupLegendFilter) opens it, with an entry animation #}
+<details class="lk-tree-legend" id="legend">
+  <summary>{{ render_icon('funnel') }}<span>Legend &amp; filter</span>
+    <span class="lk-legend-active" id="legend-active" hidden></span></summary>
+  <div class="lk-legend-body">
+    <p class="lk-legend-hint">Click an icon to highlight the nodes that have it.</p>
+    <ul class="lk-legend-list" id="legend-present">
+      {% for key, file, label, title in legend %}
+      <li>
+        <button type="button" class="lk-legend-item" data-key="{{ key }}" title="{{ title }}" aria-pressed="false">
+          <img src="{{ url_for('static', filename='images/ui/' ~ file) }}" alt="" width="18" height="18">
+          <span class="lk-legend-label">{{ label }}</span>
+          <span class="lk-legend-count" aria-label="nodes"></span>
+        </button>
+      </li>
+      {% endfor %}
+    </ul>
+    <details class="lk-legend-absent" id="legend-absent-panel" hidden>
+      <summary>Not in this capture (<span id="legend-absent-count">0</span>)</summary>
+      <ul class="lk-legend-list" id="legend-absent"></ul>
+    </details>
+    <button type="button" class="btn btn-sm btn-link lk-legend-clear" id="legend-clear" hidden>
+      {{ render_icon('x-circle') }} Clear the filter</button>
+  </div>
+</details>

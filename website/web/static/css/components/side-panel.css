@@ -1,0 +1,223 @@
+/*
+ * Side panel of the capture page (tree/side_panel.html, js/side_panel.js): the
+ * panels of the menus, as tabs at the right of the tree. Doc: doc/ui/side-panel.md
+ */
+
+.lk-side-panel {
+  position: fixed;
+  top: var(--lk-capture-top-height, 160px);
+  right: 0;
+  bottom: 0;
+  z-index: 1025;
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  max-width: calc(100vw - 240px);
+  border-left: 1px solid var(--lk-color-rule);
+  background: var(--lk-color-surface);
+  box-shadow: -6px 0 18px rgba(0, 0, 0, 0.08);
+  color: var(--lk-color-ink);
+  outline: none;
+}
+.lk-side-panel[hidden] { display: none; }
+/* Inside the tree area (#tree_svg, cursor: grab), but not part of the tree:
+   the normal cursor (text, links, buttons keep theirs) */
+.lk-side-panel { cursor: auto; }
+.lk-side-panel.is-resizing { user-select: none; }
+
+/* Left edge: drag to change the width of the panel. Above everything in the panel
+   (the vitrine components have their own layers), on the whole height, with a
+   visible grip so it can be found */
+.lk-side-panel-resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -6px;
+  width: 12px;
+  cursor: ew-resize;
+  z-index: 100;
+  touch-action: none;
+}
+/* The line along the edge, in the accent colour on hover / while resizing */
+.lk-side-panel-resize::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 5px;
+  width: 2px;
+  background: transparent;
+  transition: background var(--lk-transition-fast);
+}
+/* The grip in the middle: a small pill with two lines */
+.lk-side-panel-resize::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 1px;
+  width: 10px;
+  height: 44px;
+  transform: translateY(-50%);
+  border: 1px solid var(--lk-color-rule-strong);
+  border-radius: var(--lk-radius-pill);
+  background:
+    linear-gradient(var(--lk-color-muted), var(--lk-color-muted)) 3px 50% / 1px 22px no-repeat,
+    linear-gradient(var(--lk-color-muted), var(--lk-color-muted)) 6px 50% / 1px 22px no-repeat,
+    var(--lk-color-surface);
+  box-shadow: var(--lk-shadow-sm);
+  transition: border-color var(--lk-transition-fast), background-color var(--lk-transition-fast);
+}
+.lk-side-panel-resize:hover::before,
+.lk-side-panel-resize:focus-visible::before,
+.lk-side-panel.is-resizing .lk-side-panel-resize::before { background: var(--lk-color-accent); }
+.lk-side-panel-resize:hover::after,
+.lk-side-panel-resize:focus-visible::after,
+.lk-side-panel.is-resizing .lk-side-panel-resize::after { border-color: var(--lk-color-accent); }
+.lk-side-panel.is-resizing, .lk-side-panel.is-resizing * { cursor: ew-resize !important; }
+/* While resizing, the frame of a node page must not take the mouse (it would keep
+   the moves, and the panel could only grow) */
+.lk-side-panel.is-resizing iframe { pointer-events: none; }
+
+/* Tabs, like a browser */
+.lk-side-panel-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--lk-space-1);
+  padding: var(--lk-space-1) var(--lk-space-1) 0 var(--lk-space-2);
+  border-bottom: 1px solid var(--lk-color-rule);
+  background: var(--lk-color-surface-2);
+}
+.lk-side-panel-tabs {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.lk-side-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-1);
+  flex: 0 1 12rem;
+  min-width: 6rem;
+  height: 30px;
+  padding: 0 var(--lk-space-1) 0 var(--lk-space-2);
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: var(--lk-radius-md) var(--lk-radius-md) 0 0;
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-xs);
+  cursor: pointer;
+}
+.lk-side-tab:hover { background: var(--lk-color-surface); color: var(--lk-color-ink); }
+.lk-side-tab[aria-selected="true"] {
+  position: relative;
+  top: 1px;
+  border-color: var(--lk-color-rule);
+  background: var(--lk-color-surface);
+  color: var(--lk-color-ink);
+  font-weight: var(--lk-font-weight-semibold);
+}
+/* Reorder by dragging (js/side_panel.js, startTabDrag): the dragged tab fades, a
+   line shows where it goes */
+.lk-side-tab { touch-action: none; user-select: none; }
+.lk-side-tab.is-dragged { opacity: 0.4; }
+.lk-side-tab.drop-before { box-shadow: inset 2px 0 0 var(--lk-color-accent); }
+.lk-side-tab.drop-after { box-shadow: inset -2px 0 0 var(--lk-color-accent); }
+.lk-side-tab.is-detached { font-style: italic; opacity: 0.75; }
+.lk-side-tab-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lk-side-tab-close {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--lk-radius-pill);
+  background: none;
+  color: inherit;
+  line-height: 1;
+}
+.lk-side-tab-close:hover { background: var(--lk-color-surface-3); color: var(--lk-color-ink); }
+
+.lk-side-panel-tools { display: flex; gap: 2px; padding-bottom: var(--lk-space-1); }
+.lk-side-panel-tools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--lk-radius-sm);
+  background: none;
+  color: var(--lk-color-muted);
+}
+.lk-side-panel-tools button:hover,
+.lk-side-panel-tools button:focus-visible { background: var(--lk-color-surface); color: var(--lk-color-ink); }
+
+/* Content of the current tab */
+.lk-side-panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  /* Scrolling past its end does not scroll the page (the tree) */
+  overscroll-behavior: contain;
+}
+.lk-side-panel-content > .modal-body { padding: var(--lk-space-4); }
+.lk-side-panel-content > .modal-footer {
+  position: sticky;
+  bottom: 0;
+  padding: var(--lk-space-2) var(--lk-space-4);
+  border-top: 1px solid var(--lk-color-rule);
+  background: var(--lk-color-surface);
+}
+.lk-side-panel-content { padding: 0; }
+.lk-side-panel-content:not(.is-page):not(:has(> .modal-body)) { padding: var(--lk-space-4); }
+.lk-side-panel-content.is-page { position: relative; height: 100%; }
+/* Over the frame of a node page while it loads (js/side_panel.js, openPage) */
+.lk-side-panel-loading.is-over-page { position: absolute; inset: 0; align-items: center; background: var(--lk-color-surface); }
+.lk-side-panel-content.is-page iframe { display: block; width: 100%; height: 100%; border: 0; }
+.lk-side-panel-content[hidden] { display: none; }
+.lk-side-panel-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--lk-space-6) var(--lk-space-4);
+  color: var(--lk-color-muted);
+}
+
+/* The tree controls and the legend stay left of the panel */
+body.has-side-panel .lk-tree-zoom { right: calc(var(--lk-side-panel-space, 0px) + var(--lk-space-3)); }
+body.has-side-panel .lk-tree-edge { right: var(--lk-side-panel-space, 0px); }
+
+/* A tab detached in its own window (js/side_panel.js, detach) */
+body.lk-detached-panel {
+  margin: 0;
+  background: var(--lk-color-surface);
+  color: var(--lk-color-ink);
+}
+.lk-detached-title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0;
+  padding: var(--lk-space-2) var(--lk-space-4);
+  border-bottom: 1px solid var(--lk-color-rule);
+  background: var(--lk-color-surface-2);
+  font-size: var(--lk-font-size-sm);
+  font-weight: var(--lk-font-weight-semibold);
+}
+
+@media (max-width: 767.98px) {
+  .lk-side-panel { left: 0; min-width: 0; max-width: none; width: auto !important; }
+  .lk-side-panel-resize { display: none; }
+}
+
+/* Back / forward of the current tab (js/side_panel.js, navigate) */
+.lk-side-panel-nav { display: flex; align-items: center; gap: 2px; padding: 0 var(--lk-space-1); flex: none; }
+.lk-side-panel-nav button {
+  display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+  padding: 0; border: 0; border-radius: var(--lk-radius-sm); background: transparent; color: var(--lk-color-ink);
+}
+.lk-side-panel-nav button:hover:not(:disabled) { background: var(--lk-color-surface-2); color: var(--lk-color-accent); }
+.lk-side-panel-nav button:disabled { opacity: 0.3; }

@@ -79,3 +79,25 @@ removes every DataTables control (`layout` with all positions set to `null`):
 the 10 latest captures, no paging, no "per page", no search. A "See all
 captures" button under the list (and the link next to the title) opens the
 full list (route `index`).
+
+## Categories (logged in users)
+
+For the logged in users (admins), for now, each row shows the categories of the
+capture under its title, as MISP tags with the colour of their type
+(`lkCategoryTag()`, [misp-tags.md](misp-tags.md)); a click lists the captures of
+that category. `post_table` (`indexTable`) reads them from the index for the rows
+of the page only, in one round trip (`get_captures_categories()` in
+`lookyloo/indexing.py`: a pipeline of `SMEMBERS capture_indexes|<uuid>|categories`),
+never from the files of the captures; the anonymous answer (cached 60 s) has none.
+Only the indexed captures have them, like the category filter.
+
+## While it loads
+
+`static/js/components/table_skeleton.js` (a module loaded by `layouts/page.html`):
+while a list of captures loads (any `.lk-capture-table`: the home, Recent captures,
+Hidden, the captures of the pivot pages), the rows of the page are replaced by
+placeholders in their shape, vitrine `<vt-skeleton>` (preview, title, URL, facts,
+time, button), the whole width of the table, one per row of the page (3 to 10).
+The eyes of the logo (the processing indicator of DataTables) stay over them.
+Shown at once (before the first answer), then before each request of DataTables
+(`preXhr.dt`) until its rows are drawn (`draw.dt`), events bound on the table itself.

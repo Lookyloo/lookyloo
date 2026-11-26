@@ -44,6 +44,8 @@ function lkParseIndexRow(row) {
         hops: row.page.display.redirects,
         redirectsHref: row.page.display.download_redirects,
         time: row.page.display.capture_time,
+        // Plain strings, only for the logged in users (post_table, indexTable)
+        categories: Array.isArray(row.categories) ? row.categories : [],
     };
 }
 
@@ -164,6 +166,16 @@ function lkCaptureCell(sprite, capture) {
     }
     title.title = capture.title || '';
     body.appendChild(title);
+
+    // The categories of the capture, under its title, as MISP tags with the colour of
+    // their type (js/components/misp_tag.js, category_tag.js); a click filters the list
+    if (capture.categories?.length && typeof lkCategoryTag === 'function') {
+        const tags = lkElement('div', 'lk-capture-categories');
+        capture.categories.forEach(category => {
+            tags.appendChild(lkCategoryTag(sprite, category, `/index?category=${encodeURIComponent(category)}`));
+        });
+        body.appendChild(tags);
+    }
 
     if (capture.url) {
         const url = lkElement('div', 'lk-capture-url');
