@@ -627,7 +627,9 @@ function update(root, computed_node_width=0) {
     svg_size = {width: svgWidth + (margin.right + margin.left)*2, height: svgHeight + margin.top + margin.bottom};
     applyZoom();
 
+    // One column per depth of the tree, as wide as a node
     column_width = computed_node_width;
+    updateColumns();
     // Update pattern
     pattern
       .attr('width', `${computed_node_width * 2}px`)
