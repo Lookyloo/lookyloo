@@ -72,9 +72,10 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
   in place; `100 %` resets. The SVG keeps the coordinates of the layout in its
   `viewBox` and is drawn at its size times the zoom, so nodes, links, tooltips
   and the legend filter are not affected.
-- **Free room**: half the window of empty space on each side of the tree
-  (`#tree_svg` padding `50vh 50vw`, `css/tree.css`), so the tree can be moved
-  far past its edges.
+- **Free room**: half the window of empty space above, on the right and below
+  the tree (`#tree_svg` padding `50vh 50vw 50vh 0`, `css/tree.css`), so the
+  tree can be moved far past its edges. None on the left: the page does not
+  scroll left past the start of the tree.
 - **Center** (`#tree-center`, `centerOnRoot`): brings the node of the URL
   rendered in the browser (`center_node`, the node with
   `contains_rendered_urlnode`) to the middle of the window, under the capture
