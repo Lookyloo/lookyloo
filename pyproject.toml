@@ -103,7 +103,7 @@ markupsafe = "^3.0.4"
 yara-x = "^1.24.0"
 ollama = "^0.6.3"
 markdown = "^3.11.3"
-justhtml = "^3.17.1"
+justhtml = "^3.18.0"
 flask-caching = "^2.5.1"
 
 [tool.poetry.group.dev.dependencies]
