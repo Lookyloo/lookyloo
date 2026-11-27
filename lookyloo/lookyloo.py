@@ -671,6 +671,28 @@ class Lookyloo():
         else:
             return self.redis.zrevrangebyscore('recent_captures', _before, _since)
 
+    def quick_search_captures(self, queries: list[str], /, *, public: bool=True) -> dict[str, list[CaptureCache]]:
+        """Search recent cached captures for each query.
+
+        The returned dictionary preserves the order of the non-empty, unique
+        queries. Each query is matched independently using CaptureCache.search.
+        Only captures already present in the cache are considered.
+        """
+        unique_queries = list(dict.fromkeys(query.strip() for query in queries if query.strip()))
+        if not unique_queries:
+            return {}
+
+        recent_captures = self.sorted_capture_cache(
+            public=public,
+            cached_captures_only=True,
+            index_cut_time=datetime.now() - self.time_delta_on_index
+        )
+        recent_captures = [capture for capture in recent_captures if not capture.error]
+        return {
+            query: [capture for capture in recent_captures if capture.search(query)]
+            for query in unique_queries
+        }
+
     def sorted_capture_cache(self, capture_uuids: Iterable[str] | None=None,
                              cached_captures_only: bool=True,
                              index_cut_time: datetime | None=None,
