@@ -9,6 +9,8 @@
   --lk-color-page: #F5F6F8;
   --lk-color-surface: #FFFFFF;
   --lk-color-surface-2: #F3F3F3;
+  /* Stripes of the tree background (columns), the original colours */
+  --lk-tree-stripe: #EEEEEE;
   --lk-color-ink: #171717;
   --lk-color-muted: #6B6B6B;
   --lk-color-rule: #E6E6E6;
@@ -47,6 +49,7 @@
   --lk-color-page: #172033;
   --lk-color-surface: #1E293D;
   --lk-color-surface-2: #26324A;
+  --lk-tree-stripe: #2B3035;
   --lk-color-ink: #E8ECF4;
   --lk-color-muted: #9AA6BD;
   --lk-color-rule: #2F3B55;

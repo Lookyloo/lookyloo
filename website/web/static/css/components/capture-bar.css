@@ -1,0 +1,249 @@
+/*
+ * Capture page (tree/tree.html): site header + capture bar with the menus
+ * (tree/capture_bar.html), sticky at the top while the tree scrolls.
+ * Fold button: js/capture_page.js. Doc: doc/ui/tree.md
+ */
+
+body.lk-capture-page { background: var(--lk-color-page); }
+
+/* Site header + capture bar: stay visible while the page scrolls, also
+   sideways (a zoomed tree is wider than the window: sticky would let the bar
+   scroll away to the left). js/capture_page.js keeps --lk-capture-top-height
+   equal to its height, the page starts under it. */
+.lk-capture-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+}
+body.lk-capture-page { padding-top: var(--lk-capture-top-height, 160px); }
+body.lk-capture-page .lk-header { position: static; }
+
+/* ---------- Capture bar ---------- */
+
+.lk-capture-bar {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lk-space-3) var(--lk-space-5);
+  padding: var(--lk-space-3) calc(var(--lk-space-5) + 28px) var(--lk-space-3) var(--lk-space-5);
+  background: var(--lk-color-surface);
+  border-bottom: 1px solid var(--lk-color-rule);
+}
+
+/* Fold button (top right of the bar) */
+.lk-capture-fold {
+  position: absolute;
+  top: var(--lk-space-2);
+  right: var(--lk-space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--lk-radius-sm);
+  background: none;
+  color: var(--lk-color-muted);
+}
+.lk-capture-fold:hover,
+.lk-capture-fold:focus-visible { border-color: var(--lk-color-rule); color: var(--lk-color-ink); background: var(--lk-color-surface-2); }
+.lk-capture-fold .bi { transition: transform var(--lk-transition-fast); }
+
+/* Folded: one line, title and toolbar icons only */
+.lk-capture-bar.is-folded { padding-block: var(--lk-space-1); flex-wrap: nowrap; }
+.lk-capture-bar.is-folded .lk-capture-fold { top: 50%; transform: translateY(-50%); }
+.lk-capture-bar.is-folded .lk-capture-fold .bi { transform: rotate(180deg); }
+.lk-capture-bar.is-folded .lk-capture-thumb,
+.lk-capture-bar.is-folded .lk-capture-url,
+.lk-capture-bar.is-folded .lk-capture-meta { display: none; }
+.lk-capture-bar.is-folded .lk-capture-title { font-size: var(--lk-font-size-sm); }
+.lk-capture-bar.is-folded .lk-tool-btn span { display: none; }
+.lk-capture-bar.is-folded .lk-tool-btn { padding-block: 2px; padding-inline: var(--lk-space-2); }
+
+.lk-capture-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-3);
+  /* Room for the title: the toolbar goes to the next line before squeezing it */
+  min-width: min(30rem, 100%);
+  flex: 1 1 30rem;
+}
+
+.lk-capture-thumb {
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-md);
+  background: var(--lk-color-surface-2);
+  overflow: hidden;
+  line-height: 0;
+  cursor: zoom-in;
+  transition: border-color var(--lk-transition-fast), box-shadow var(--lk-transition-fast);
+}
+.lk-capture-thumb:hover,
+.lk-capture-thumb:focus-visible {
+  border-color: var(--lk-color-accent);
+  box-shadow: var(--lk-shadow-sm);
+}
+.lk-capture-thumb img {
+  width: 96px;
+  height: 60px;
+  object-fit: cover;
+  object-position: top;
+}
+
+.lk-capture-text { min-width: 0; }
+
+.lk-capture-title {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: var(--lk-font-weight-semibold);
+  color: var(--lk-color-ink);
+}
+.lk-capture-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lk-capture-favicon {
+  flex: none;
+  box-sizing: content-box;
+  padding: 2px;
+  border-radius: 4px;
+  background: var(--lk-color-surface-2);
+}
+
+.lk-capture-url {
+  margin: 2px 0 0;
+  font-family: var(--lk-font-mono);
+  font-size: var(--lk-font-size-sm);
+  color: var(--lk-color-muted);
+  /* A long URL wraps (anywhere: URLs have no spaces) */
+  overflow-wrap: anywhere;
+}
+/* At most 3 lines: the full URL is in the title and the copy button */
+.lk-capture-url > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+.lk-capture-url { display: flex; align-items: flex-start; gap: var(--lk-space-1); }
+.lk-capture-url .lk-copy { flex: none; }
+
+.lk-capture-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-1) var(--lk-space-3);
+  margin: var(--lk-space-1) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--lk-font-size-xs);
+  color: var(--lk-color-muted);
+}
+.lk-capture-meta li { display: inline-flex; align-items: center; gap: 0.3em; }
+.lk-capture-meta .lk-relative-time { display: inline; }
+.lk-capture-meta .lk-absolute-time { display: inline; margin-left: 0.4em; opacity: 0.75; font-family: var(--lk-font-mono); }
+
+.lk-capture-flag {
+  padding: 1px var(--lk-space-2);
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-surface-2);
+  color: var(--lk-color-ink);
+  font-weight: var(--lk-font-weight-medium);
+}
+.lk-capture-flag-danger {
+  background: var(--lk-color-danger-soft);
+  color: var(--lk-color-danger);
+}
+
+/* ---------- Toolbar ---------- */
+
+.lk-capture-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lk-space-2);
+}
+
+.lk-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  border: 1px solid var(--lk-color-rule);
+  background: var(--lk-color-surface);
+  color: var(--lk-color-ink);
+  font-weight: var(--lk-font-weight-medium);
+}
+.lk-tool-btn:hover,
+.lk-tool-btn:focus-visible,
+.lk-tool-btn.show {
+  border-color: var(--lk-color-accent);
+  background: var(--lk-color-accent-soft);
+  color: var(--lk-color-ink);
+}
+.lk-tool-btn.btn-outline-danger { border-color: var(--lk-color-danger-border); color: var(--lk-color-danger); }
+.lk-tool-btn.btn-outline-danger:hover { background: var(--lk-color-danger-soft); border-color: var(--lk-color-danger); color: var(--lk-color-danger); }
+.lk-tool-icon { padding-inline: var(--lk-space-2); }
+
+.lk-tool-menu { min-width: 16rem; max-height: 70vh; overflow-y: auto; }
+.lk-tool-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--lk-space-2);
+  white-space: normal;
+}
+.lk-tool-menu .dropdown-item .bi { flex: none; color: var(--lk-color-muted); }
+.lk-tool-menu .dropdown-item:hover .bi,
+.lk-tool-menu .dropdown-item:focus .bi { color: inherit; }
+.lk-tool-warning,
+.lk-tool-warning .bi { color: var(--lk-color-warning) !important; }
+.lk-tool-danger,
+.lk-tool-danger .bi { color: var(--lk-color-danger) !important; }
+.lk-tool-note {
+  display: flex;
+  gap: var(--lk-space-2);
+  font-size: var(--lk-font-size-sm);
+  color: var(--lk-color-danger);
+}
+
+@media (max-width: 767.98px) {
+  .lk-capture-bar { padding: var(--lk-space-3); }
+  .lk-tool-btn span { display: none; }
+  .lk-tool-btn { padding-inline: var(--lk-space-2); }
+}
+
+/* Visibility of the capture (public / unlisted / private), opens the visibility modal */
+.lk-visibility {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 1px var(--lk-space-2);
+  border: 1px solid var(--lk-color-rule);
+  border-radius: var(--lk-radius-pill);
+  background: var(--lk-color-surface);
+  color: var(--lk-color-muted);
+  font-size: var(--lk-font-size-xs);
+}
+.lk-visibility:hover,
+.lk-visibility:focus-visible { border-color: var(--lk-color-accent); color: var(--lk-color-ink); }
+.lk-visibility-private { color: var(--lk-color-warning); border-color: var(--lk-color-warning-border); }
+
+/* Copy button of the URL */
+.lk-capture-url .lk-copy {
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--lk-color-muted);
+}
+.lk-capture-url .lk-copy:hover { color: var(--lk-color-accent); }
