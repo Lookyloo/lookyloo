@@ -987,14 +987,19 @@ class Lookyloo():
             self.logger.warning(f'[{query.uuid}] Attempted to enqueue a capture with an existing UUID, replace it.')
             query.uuid = None
 
-        if query.categories and not authenticated:
-            # remove from the list of categories the ones we don't know
-            query.categories = [c for c in query.categories if self._valid_category(c)]
-
-        if query.with_video and not authenticated:
-            # for now, only admin users can trigger a video recording.
-            self.logger.warning(f'Attempt to trigger a video recording as user "{user}"')
-            query.with_video = False
+        if not authenticated:
+            # cleanup settings for authenticated users
+            if query.categories:
+                # remove from the list of categories the ones we don't know
+                query.categories = [c for c in query.categories if self._valid_category(c)]
+            if query.with_video:
+                # Only admin users can trigger a video recording.
+                self.logger.warning(f'Attempt to trigger a video recording as user "{user}"')
+                query.with_video = False
+            if query.force:
+                # Only admins can force a new capture with duplicate recent settings
+                self.logger.warning(f'Unauthenticated user "{user}" attempted to force a capture.')
+                query.force = False
 
         # NOTE: Make sure we have a useragent
         if not query.user_agent:
@@ -1008,6 +1013,7 @@ class Lookyloo():
             if query.headers is None:
                 query.headers = {}
             query.headers['dnt'] = query.dnt
+
         if authenticated:
             if user_config := load_user_config(user):
                 try:
@@ -1083,7 +1089,7 @@ class Lookyloo():
                     init_script=query.init_script,
                     uuid=query.uuid,
                     final_wait=query.final_wait,
-                    # force=query.force,
+                    force=query.force,
                     # recapture_interval=query.recapture_interval,
                     priority=priority
                 )
