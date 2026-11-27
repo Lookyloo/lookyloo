@@ -247,6 +247,7 @@ enable_categorization = get_config('generic', 'enable_categorization')
 enable_bookmark = get_config('generic', 'enable_bookmark')
 auto_trigger_modules = get_config('generic', 'auto_trigger_modules')
 hide_captures_with_error = get_config('generic', 'hide_captures_with_error')
+pull_allow_list = get_config('generic', 'pull_allow_list')
 
 
 def prepare_monitoring() -> tuple[bool, list[str], dict[str, int | bool]]:
@@ -2629,25 +2630,29 @@ def ressource_by_hash(sha512: str) -> Response:
 
 # ################## Submit existing capture ##################
 
-def __get_remote_capture(remote_lookyloo: str, remote_uuid: str) -> Markup | BytesIO:
+def __get_remote_capture(remote_lookyloo: str, remote_uuid: str, as_admin: bool=False) -> Markup | BytesIO:
     pylookyloo = PyLookyloo(remote_lookyloo)
-    # check if the hostname is an IP and if yes, that it's not private
-    # Hostnames resolving to private IPs are a problem for the sysadmin managing the instance
-    # The only possible call is a HEAD on the root and a GET request on /json/<uuid>/status
-    # they all return the same error.
-    if _h := urlsplit(pylookyloo.root_url).hostname:
-        try:
-            if not ipaddress.ip_address(_h).is_global:
-                return Markup('Unable to connect to "{}".').format(remote_lookyloo)
-        except ValueError:
-            # not an IP
-            pass
+    if not as_admin:
+        if not pull_allow_list:
+            return Markup('Not allowed to pull from any Lookyloo instance.')
+
+        if _h := urlsplit(pylookyloo.root_url).hostname:
+            # check the allow list
+            for entry in pull_allow_list:
+                if entry.get('hostname') == _h:
+                    break
+            else:
+                # couldn't find it
+                return Markup('Not allowed to pull from "{}".').format(remote_lookyloo)
+        else:
+            return Markup('Invalid setting: "{}".').format(remote_lookyloo)
+
     if not pylookyloo.is_up:
         return Markup('Unable to connect to "{}".').format(remote_lookyloo)
     try:
         status = pylookyloo.get_status(remote_uuid).get('status_code')
     except Exception:
-        return Markup('Unable to connect to "{}".').format(remote_lookyloo)
+        return Markup('Unable to get "{}" from "{}".').format(remote_uuid, remote_lookyloo)
 
     if status == -1:
         return Markup('Unknown capture "{}" from "{}".').format(remote_uuid, remote_lookyloo)
