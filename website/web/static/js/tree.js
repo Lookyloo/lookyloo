@@ -61,16 +61,20 @@ function setZoom(zoom, client_x=null, client_y=null) {
     updateZoomButtons();
 }
 
-// Bring the first node of the tree (the root) to the middle of the window, under
-// the capture bar (after a drag or a zoom that went far). As far as the free
-// room around the tree (css/tree.css, half the window) allows.
+// Bring a node to the middle of the window, under the capture bar (after a
+// drag or a zoom that went far). As far as the free room around the tree
+// (css/tree.css, half the window) allows.
+// rendered: the node of the URL rendered in the browser (center_node, the
+// Center button); the first node of the tree (the root) when it is unknown or
+// hidden in a collapsed branch.
 // smooth: a short glide to the node (the Center button, the opening of the page);
 // instant when the user prefers reduced motion
-function centerOnRoot(align='middle', smooth=true) {
+function centerOnRoot(align='middle', smooth=true, rendered=false) {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) smooth = false;
+    let root_node = rendered && center_node ? document.getElementById(`node_${center_node}`) : null;
     // The first node of the tree: the one without parent (not the first <g> of
     // the SVG, whose order changes when nodes are expanded / collapsed)
-    const root_node = node_container.selectAll('g.node').filter(d => !d.parent).node();
+    if (!root_node) root_node = node_container.selectAll('g.node').filter(d => !d.parent).node();
     if (!root_node) return;
     // The card of the node, not its group: Firefox gives the <g> a box that also
     // covers its hidden parts, and the view went far from the node
@@ -99,7 +103,7 @@ function setupZoom() {
     document.getElementById('tree-zoom-in')?.addEventListener('click', () => setZoom(tree_zoom * 1.2));
     document.getElementById('tree-zoom-out')?.addEventListener('click', () => setZoom(tree_zoom / 1.2));
     document.getElementById('tree-zoom-reset')?.addEventListener('click', () => setZoom(1));
-    document.getElementById('tree-center')?.addEventListener('click', () => centerOnRoot());
+    document.getElementById('tree-center')?.addEventListener('click', () => centerOnRoot('middle', true, true));
     // Ctrl + wheel over the tree: zoom the tree, not the page
     document.getElementById('tree_svg').addEventListener('wheel', (event) => {
         if (!event.ctrlKey) return;

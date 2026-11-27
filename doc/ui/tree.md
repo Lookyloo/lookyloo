@@ -75,9 +75,11 @@ it explains (`data-key`: the keys of `icon_list()` in `js/tree.js`).
 - **Free room**: half the window of empty space on each side of the tree
   (`#tree_svg` padding `50vh 50vw`, `css/tree.css`), so the tree can be moved
   far past its edges.
-- **Center** (`#tree-center`, `centerOnRoot`): brings the first node of the
-  tree (the root, the node without parent) to the middle of the window, under
-  the capture bar. It measures the card of the node, not its group (Firefox
+- **Center** (`#tree-center`, `centerOnRoot`): brings the node of the URL
+  rendered in the browser (`center_node`, the node with
+  `contains_rendered_urlnode`) to the middle of the window, under the capture
+  bar. When that node is unknown (it happens) or hidden in a collapsed branch,
+  the first node of the tree (the root, the node without parent) instead. It measures the card of the node, not its group (Firefox
   gives the `<g>` a box that also covers its hidden parts). The page opens with the first node near the left edge instead (vertically
   centred, the tree going right), unless the link points to a node: then that
   node is shown. Both glide smoothly to the node (instant when the system
